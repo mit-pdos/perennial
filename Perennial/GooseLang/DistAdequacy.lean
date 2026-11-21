@@ -845,7 +845,10 @@ node has fewer than `T` live threads (`DistCrashThreadsBelow`), for every node
 `i` with thread pool `tp` and local state `σ`:
 * if the node's main thread has terminated with `v` then `φ i v`;
 * every thread of the node is a value or can take a step;
-* no thread of the node has an unrecovered panic. -/
+* no thread of the node has an unrecovered panic.
+The crashing nodes come first: node indices are only labels, so ordering them
+first loses no generality, and it matches `DistCrashNsteps boots`, which lets
+exactly the first `boots.length` nodes crash. -/
 theorem goose_dist_mixed_crash_adequacy [hPre : GooseGpreS GF] (N T : Nat)
     (crashing stable : List (Expr × state)) (g : GlobalState) (φ : Nat → val → Prop)
     (hφ : ∀ i p, ¬ φ i (PanicV p))
