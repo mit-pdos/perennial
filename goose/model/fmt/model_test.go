@@ -66,9 +66,9 @@ func (e *wrapErrors) Error() string   { return e.msg }
 func (e *wrapErrors) Unwrap() []error { return e.errs }
 
 
-func intVerb(format string, i int) (int, int, bool) {
+func intVerb(format string, i int) (byte, int, int, bool) {
 	if i+1 < len(format) && (format[i+1] == 'd' || format[i+1] == 'v') {
-		return 0, i + 2, true
+		return 'd', 0, i + 2, true
 	}
 	if i+1 < len(format) && format[i+1] == '0' {
 		j := i + 2
@@ -77,11 +77,11 @@ func intVerb(format string, i int) (int, int, bool) {
 			width = width*10 + int(format[j]-'0')
 			j++
 		}
-		if j > i+2 && j < len(format) && format[j] == 'd' && width <= 1000000 {
-			return width, j + 1, true
+		if j > i+2 && j < len(format) && (format[j] == 'd' || format[j] == 'x') && width <= 1000000 {
+			return format[j], width, j + 1, true
 		}
 	}
-	return 0, 0, false
+	return 0, 0, 0, false
 }
 
 func intArg(x any) (bool, uint64, bool) {
@@ -184,7 +184,7 @@ func formatInt(neg bool, mag uint64, width int) string {
 	return digits
 }
 
-func formatHex(neg bool, mag uint64) string {
+func formatHex(neg bool, mag uint64, width int) string {
 	var digits string
 	for {
 		d := byte(mag % 16)
@@ -198,6 +198,12 @@ func formatHex(neg bool, mag uint64) string {
 		if mag == 0 {
 			break
 		}
+	}
+	if neg {
+		width--
+	}
+	for len(digits) < width {
+		digits = "0" + digits
 	}
 	if neg {
 		return "-" + digits
@@ -233,15 +239,18 @@ func formatArg(format string, i int, x any) (string, int, bool) {
 		if !ok {
 			return "", 0, false
 		}
-		return formatHex(neg, mag), i + 2, true
+		return formatHex(neg, mag, 0), i + 2, true
 	}
-	width, next, ok := intVerb(format, i)
+	verb, width, next, ok := intVerb(format, i)
 	if !ok {
 		return "", 0, false
 	}
 	neg, mag, ok2 := anyIntArg(x)
 	if !ok2 {
 		return "", 0, false
+	}
+	if verb == 'x' {
+		return formatHex(neg, mag, width), next, true
 	}
 	return formatInt(neg, mag, width), next, true
 }

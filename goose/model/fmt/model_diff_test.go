@@ -68,13 +68,14 @@ var testFormats = []string{
 	"%+v", "%-5s", "%05d", "%016x", "%0d", "%00d", "%5%", "%v %v", "%s: %w", "%w %w", "%w, %v",
 	"%d %s", "%v%", "%.3s", "%5.2v", "%*d", "%[1]v", "%[2]v %[1]v", "%01234567d", "%012345678d",
 	"%.d", "%x.", "x%.", "%é", "%\xff", "%#x", "% d", "%+d", "%e", "%c", "%t", "%.5.d", "%v %d %s",
-	"%-w", "%+w", "%v %v %v",
+	"%-w", "%+w", "%v %v %v", "%05x", "%01x", "%0x", "%00x", "%016x-%016x.wal", "%016x %016d",
+	"%#016x", "%-016x", "%016X", "%01234567x",
 }
 
 func testArgs() []any {
 	ps := &plainStruct{a: []int{1, 2}}
 	return []any{
-		nil, 7, -3, int8(-1), uint64(1 << 63), "str", plainName("pn"), plainInt(-12),
+		nil, 7, -3, int8(-1), uint64(1 << 63), uint64(0), ^uint64(0), int64(-1 << 63), -255, "str", plainName("pn"), plainInt(-12),
 		true, 2.5, uintptr(9),
 		&recErr{"a"}, valErr{"b"}, &recStr{"c"}, &errStr{"d"}, decision(2), errCode(3),
 		stringerName("sn"), errorName("en"),
@@ -415,4 +416,103 @@ func TestModelErrorf(t *testing.T) {
 			}
 		}
 	}
+}
+
+// formatHex and the integer directives of intVerb against Go: %x and %0Nx of every value of
+// int8 and uint8 and of the extremes and random values of the 64-bit types, at widths 0 to 20
+// (a width of 0 is %x), and intVerb's reading of %0Nx.
+func TestFormatHexPad(t *testing.T) {
+	type val struct {
+		neg bool
+		mag uint64
+		x   any
+	}
+	var vals []val
+	for n := -128; n < 128; n++ {
+		vals = append(vals, val{n < 0, uint64(abs64(int64(n))), int8(n)})
+	}
+	for n := 0; n < 256; n++ {
+		vals = append(vals, val{false, uint64(n), uint8(n)})
+	}
+	for _, u := range []uint64{0, 1, 15, 16, 255, 1 << 32, 1<<63 - 1, 1 << 63, 1<<63 + 1,
+		1<<64 - 1, 0x694d71ddd3a1f00d} {
+		vals = append(vals, val{false, u, u})
+	}
+	for _, n := range []int64{0, -1, -15, -16, -255, -1 << 32, -1<<63 + 1, -1 << 63, 1<<63 - 1} {
+		vals = append(vals, val{n < 0, uint64(abs64(n)), n})
+	}
+	r := uint64(0x9e3779b97f4a7c15)
+	for k := 0; k < 20000; k++ {
+		r ^= r << 13
+		r ^= r >> 7
+		r ^= r << 17
+		u := r >> (r % 64)
+		vals = append(vals, val{false, u, u})
+		n := int64(u)
+		vals = append(vals, val{n < 0, uint64(abs64(n)), n})
+	}
+	for _, v := range vals {
+		if got, want := formatHex(v.neg, v.mag, 0), fmt.Sprintf("%x", v.x); got != want {
+			t.Errorf("formatHex(%v, %d, 0) = %q, Go's %%x %q", v.neg, v.mag, got, want)
+		}
+		for w := 1; w <= 20; w++ {
+			f := fmt.Sprintf("%%0%dx", w)
+			if got, want := formatHex(v.neg, v.mag, w), fmt.Sprintf(f, v.x); got != want {
+				t.Errorf("formatHex(%v, %d, %d) = %q, Go's %s %q", v.neg, v.mag, w, got, f, want)
+			}
+		}
+	}
+	for _, c := range []struct {
+		f    string
+		x    any
+		want string
+	}{
+		{"%016x", uint64(0), "0000000000000000"},
+		{"%016x", uint64(1 << 63), "8000000000000000"},
+		{"%016x", ^uint64(0), "ffffffffffffffff"},
+		{"%016x", int64(-1), "-000000000000001"},
+		{"%016x", int64(-1 << 63), "-8000000000000000"},
+		{"%05x", -255, "-00ff"},
+		{"%016x-%016x.wal", nil, "0000000000000001-00000000000000ab.wal"},
+	} {
+		var got string
+		if c.x == nil {
+			got = modelSprintf(c.f, uint64(1), uint64(0xab))
+		} else {
+			got = modelSprintf(c.f, c.x)
+		}
+		var goOut string
+		if c.x == nil {
+			goOut = fmt.Sprintf(c.f, uint64(1), uint64(0xab))
+		} else {
+			goOut = fmt.Sprintf(c.f, c.x)
+		}
+		if got != c.want || goOut != c.want {
+			t.Errorf("Sprintf(%q, %v): the model's %q, Go's %q, want %q", c.f, c.x, got, goOut,
+				c.want)
+		}
+	}
+	for _, c := range []struct {
+		f           string
+		verb        byte
+		width, next int
+		ok          bool
+	}{
+		{"%016x", 'x', 16, 5, true}, {"%05d", 'd', 5, 4, true}, {"%x", 0, 0, 0, false},
+		{"%0x", 0, 0, 0, false}, {"%05X", 0, 0, 0, false}, {"%d", 'd', 0, 2, true},
+		{"%v", 'd', 0, 2, true}, {"%016x-", 'x', 16, 5, true},
+	} {
+		verb, width, next, ok := intVerb(c.f, 0)
+		if verb != c.verb || width != c.width || next != c.next || ok != c.ok {
+			t.Errorf("intVerb(%q, 0) = %q, %d, %d, %v, want %q, %d, %d, %v", c.f, verb, width,
+				next, ok, c.verb, c.width, c.next, c.ok)
+		}
+	}
+}
+
+func abs64(n int64) uint64 {
+	if n < 0 {
+		return uint64(-(n + 1)) + 1
+	}
+	return uint64(n)
 }

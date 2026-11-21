@@ -164,19 +164,20 @@ theorem fmtDirectivesAux_simple {c : w8} (f : GoString)
       (⟨c, false⟩ :: ·) <$> fmtDirectivesAux none f := by
   rcases hc with rfl | rfl | rfl | rfl <;> simp [fmtDirectivesAux]
 
-/-- The digits after a `%0`, then `d` (`parseIntVerb`'s `%0Nd`): one directive of verb `d`, or
-`none` (a run of more than `maxNumDigits` digits). In flags phase or in a width phase. -/
+/-- The digits after a `%0`, then `d` or `x` (`parseIntVerb`'s `%0Nd`, `%0Nx`): one directive of
+that verb, or `none` (a run of more than `maxNumDigits` digits). In flags phase or in a width
+phase. -/
 theorem fmtDirectivesAux_digits_d (ds f : GoString) (hds : ∀ c ∈ ds, 48 ≤ c.toNat ∧ c.toNat ≤ 57)
-    (sharp : Bool) (ph : DirPhase) (hph : ph = .flags ∨ ∃ n, ph = .width n) (hsharp : sharp = false) :
-    fmtDirectivesAux (some (sharp, ph)) (ds ++ W8 100 :: f) = none ∨
-      fmtDirectivesAux (some (sharp, ph)) (ds ++ W8 100 :: f) =
-        (⟨W8 100, false⟩ :: ·) <$> fmtDirectivesAux none f := by
+    (sharp : Bool) (ph : DirPhase) (hph : ph = .flags ∨ ∃ n, ph = .width n) (hsharp : sharp = false)
+    (v : w8) (hv : v = W8 100 ∨ v = W8 120) :
+    fmtDirectivesAux (some (sharp, ph)) (ds ++ v :: f) = none ∨
+      fmtDirectivesAux (some (sharp, ph)) (ds ++ v :: f) =
+        (⟨v, false⟩ :: ·) <$> fmtDirectivesAux none f := by
   subst hsharp
   induction ds generalizing ph with
   | nil =>
     right
-    have h3 : ¬ (48 ≤ (W8 100).toNat ∧ (W8 100).toNat ≤ 57) := by decide
-    rcases hph with rfl | ⟨n, rfl⟩ <;> simp [fmtDirectivesAux, h3]
+    rcases hv with rfl | rfl <;> rcases hph with rfl | ⟨n, rfl⟩ <;> simp [fmtDirectivesAux]
   | cons c ds ih =>
     have hc := hds c (by simp)
     have hds' : ∀ c ∈ ds, 48 ≤ c.toNat ∧ c.toNat ≤ 57 := fun c' h => hds c' (by simp [h])
@@ -244,15 +245,15 @@ theorem auxStep_simple (format : GoString) (i next : Nat) (c : w8)
     (h : format.drop (i + 1) = c :: format.drop next) : AuxStep format i next := by
   unfold AuxStep; rw [h]; exact auxStepF_simple _ c hc
 
-theorem auxStepF_int (g tail : GoString) (w : Nat)
-    (h : parseIntVerb g = some (w, tail)) : AuxStepF g tail := by
+theorem auxStepF_int (g tail : GoString) (v : w8) (w : Nat)
+    (h : parseIntVerb g = some (v, w, tail)) : AuxStepF g tail := by
   cases hf : g with
   | nil => rw [hf] at h; simp [parseIntVerb] at h
   | cons c f =>
     rw [hf] at h
     by_cases hdv : c = W8 100 ∨ c = W8 118
     · simp only [parseIntVerb, hdv, ↓reduceIte, Option.some.injEq, Prod.mk.injEq] at h
-      rw [← h.2]
+      rw [← h.2.2]
       exact auxStepF_simple f c (by rcases hdv with h | h <;> simp [h])
     · have h0 : c = W8 48 := by
         apply Classical.byContradiction; intro h0
@@ -272,18 +273,18 @@ theorem auxStepF_int (g tail : GoString) (w : Nat)
         | cons d rest =>
           intro hds h
           simp only at h hds
-          by_cases hcond : (d :: rest).length < f.length ∧ d = W8 100 ∧ w' ≤ 1000000
+          by_cases hcond : (d :: rest).length < f.length ∧ (d = W8 100 ∨ d = W8 120) ∧ w' ≤ 1000000
           · rw [if_pos hcond] at h
             simp only [Option.some.injEq, Prod.mk.injEq] at h
-            obtain ⟨-, hrest⟩ := h
-            obtain ⟨-, rfl, -⟩ := hcond
+            obtain ⟨-, -, hrest⟩ := h
+            obtain ⟨-, hdv, -⟩ := hcond
             rw [hds] at hL
             simp only [fmtDirectivesAux_pct] at hL
-            have hstep : fmtDirectivesAux (some (false, .flags)) (W8 48 :: (ds ++ W8 100 :: rest)) =
-                fmtDirectivesAux (some (false, .flags)) (ds ++ W8 100 :: rest) := by
+            have hstep : fmtDirectivesAux (some (false, .flags)) (W8 48 :: (ds ++ d :: rest)) =
+                fmtDirectivesAux (some (false, .flags)) (ds ++ d :: rest) := by
               simp [fmtDirectivesAux]
             rw [hstep] at hL
-            rcases fmtDirectivesAux_digits_d ds rest hall false .flags (.inl rfl) rfl with hn | hc
+            rcases fmtDirectivesAux_digits_d ds rest hall false .flags (.inl rfl) rfl d hdv with hn | hc
             · rw [hn] at hL; cases hL
             · rw [hc, hrest] at hL
               cases hL' : fmtDirectivesAux none tail with
@@ -292,7 +293,8 @@ theorem auxStepF_int (g tail : GoString) (w : Nat)
                 rw [hL'] at hL
                 simp only [Option.map_eq_map, Option.map_some, Option.some.injEq] at hL
                 subst hL
-                exact ⟨_, L', rfl, by decide, by decide, rfl⟩
+                exact ⟨_, L', rfl, by rcases hdv with rfl | rfl <;> decide,
+                  by rcases hdv with rfl | rfl <;> decide, rfl⟩
           · rw [if_neg hcond] at h; cases h
 
 /-- The directives `formatArg` reads its argument at: `%s`, `%v`, `%x`, an integer directive. -/
@@ -314,12 +316,12 @@ theorem auxStepF_of_cond (f : GoString)
                   exact ⟨r, auxStepF_simple r _ (.inr (.inr (.inl rfl)))⟩
   · cases hp : parseIntVerb f with
     | none => rw [hp] at h; cases h
-    | some p => exact ⟨p.2, auxStepF_int f p.2 p.1 hp⟩
+    | some p => exact ⟨p.2.2, auxStepF_int f p.2.2 p.1 p.2.1 hp⟩
 
-theorem auxStep_int (format : GoString) (i next w : Nat)
-    (h : parseIntVerb (format.drop (i + 1)) = some (w, format.drop next)) :
+theorem auxStep_int (format : GoString) (i next : Nat) (v : w8) (w : Nat)
+    (h : parseIntVerb (format.drop (i + 1)) = some (v, w, format.drop next)) :
     AuxStep format i next :=
-  auxStepF_int _ _ w h
+  auxStepF_int _ _ v w h
 
 end fmt
 

@@ -1,7 +1,7 @@
 /-
 Shared definitions of the proofs of the Go `fmt` package: its `isPkgInit`, `SprintfOut` (the
-relation the result of `Sprintf` satisfies), the decimals and hexadecimals its integer directives
-write, the well-formedness of arguments (`ArgsWf`), and lemmas about them.
+relation the result of `Sprintf` satisfies), the (zero-padded) decimals and hexadecimals its
+integer directives write, the well-formedness of arguments (`ArgsWf`), and lemmas about them.
 -/
 module
 
@@ -234,6 +234,13 @@ negative: what `%x` writes. -/
 def hexadecimal (z : Int) : GoString :=
   if z < 0 then W8 45 :: hexNat z.natAbs else hexNat z.natAbs
 
+/-- What `%0Nx` writes for `N = w`: the hexadecimal of `z` with leading zeros up to width `w`, the
+sign of a negative `z` before the zeros (Go's `fmtInteger` with the `0` flag:
+`Sprintf("%05x", -255)` is `"-00ff"`). -/
+def hexPad (w : Nat) (z : Int) : GoString :=
+  if z < 0 then W8 45 :: padZeros (w - 1) (hexNat z.natAbs)
+  else padZeros w (hexNat z.natAbs)
+
 theorem hexNat_eq (n : Nat) :
     hexNat n = (if n < 16 then [] else hexNat (n / 16)) ++ [hexDigitByte (n % 16)] := by
   rw [hexNat]
@@ -279,6 +286,25 @@ theorem length_hexadecimal_le_of_nonneg (z : Int) (h0 : 0 ≤ z) (h : z < 2 ^ 64
   have := length_hexNat_le z.natAbs 16 (by omega) (by omega)
   unfold hexadecimal; rw [ite_eq_right (by omega)]; exact this
 
+theorem hexPad_zero (z : Int) : hexPad 0 z = hexadecimal z := by
+  unfold hexPad hexadecimal
+  split <;> rw [padZeros_of_le (by omega)]
+
+theorem hexPad_of_nonneg {z : Int} (w : Nat) (h : 0 ≤ z) :
+    hexPad w z = padZeros w (hexNat z.toNat) := by
+  simp only [hexPad, show ¬ z < 0 by omega, ↓reduceIte]
+  congr 2; omega
+
+/-- A non-negative integer below `16^N` (`N ≥ 1`) in hexadecimal with leading zeros up to `N`
+digits has exactly `N` digits. -/
+theorem length_hexPad_of_nonneg {z : Int} (N : Nat) (hN : 1 ≤ N) (h0 : 0 ≤ z) (h : z < 16 ^ N) :
+    (hexPad N z).length = N := by
+  rw [hexPad_of_nonneg _ h0, length_padZeros]
+  have := length_hexNat_le z.toNat N hN (by
+    have h' : ((16 ^ N : Nat) : Int) = 16 ^ N := Int.natCast_pow 16 N
+    omega)
+  omega
+
 /-! Tests of the hexadecimals. -/
 
 example : hexadecimal 0 = go!"0" := by
@@ -291,6 +317,25 @@ example : hexadecimal 0x694d71ddd3a1f00d = go!"694d71ddd3a1f00d" := by
   simp [hexadecimal, hexNat_eq, hexDigitByte]
 example : hexadecimal (-2 ^ 63) = go!"-8000000000000000" := by
   simp [hexadecimal, hexNat_eq, hexDigitByte]
+example : hexPad 5 (-255) = go!"-00ff" := by
+  simp [hexPad, padZeros, hexNat_eq, hexDigitByte]
+example : hexPad 16 0 = go!"0000000000000000" := by
+  simp [hexPad, padZeros, hexNat_eq, hexDigitByte]
+example : hexPad 16 (2 ^ 64 - 1) = go!"ffffffffffffffff" := by
+  simp [hexPad, padZeros, hexNat_eq, hexDigitByte]
+example : hexPad 16 (-1) = go!"-000000000000001" := by
+  simp [hexPad, padZeros, hexNat_eq, hexDigitByte]
+
+/-- What an integer directive of verb `v` (`parseIntVerb`: `d` for `%d`, `%v` and `%0Nd`, `x` for
+`%0Nx`) and width `w` writes for `z`: `hexPad w z` for `x`, `decimalPad w z` otherwise. -/
+def intVerbOut (v : w8) (w : Nat) (z : Int) : GoString :=
+  if v = W8 120 then hexPad w z else decimalPad w z
+
+theorem intVerbOut_d (w : Nat) (z : Int) : intVerbOut (W8 100) w z = decimalPad w z := by
+  simp only [intVerbOut]; rw [ite_eq_right (by decide)]
+
+theorem intVerbOut_x (w : Nat) (z : Int) : intVerbOut (W8 120) w z = hexPad w z := by
+  simp only [intVerbOut, ↓reduceIte]
 
 /-! ## The output of `Sprintf`
 
@@ -299,7 +344,7 @@ example : hexadecimal (-2 ^ 63) = go!"-8000000000000000" := by
 `W8 37` is `%`, `W8 115` is `s`, `W8 100` is `d`, `W8 118` is `v`, `W8 120` is `x`, `W8 48` is
 `0`. -/
 
-/-- The width of `%0Nd` read from `f` (after the `0`) with `w` read so far, and the rest of `f`:
+/-- The width of `%0Nd` or `%0Nx` read from `f` (after the `0`) with `w` read so far, and the rest of `f`:
 digits are read while the width so far is at most `10^6`, as in the model's `intVerb`. -/
 def scanWidth (w : Nat) : GoString → Nat × GoString
   | [] => (w, [])
@@ -308,27 +353,34 @@ def scanWidth (w : Nat) : GoString → Nat × GoString
     else (w, c :: r)
 
 /-- The integer directive at the start of `f` (the format after a `%`), as the model's `intVerb`
-reads it: its width and the rest of the format. `%d` and `%v` have width 0; `%0Nd` has a
-width `N` of one or more digits, at most `10^6`. -/
-def parseIntVerb : GoString → Option (Nat × GoString)
+reads it: the verb of its base (`d`, `W8 100`, or `x`, `W8 120`), its width and the rest of the
+format. `%d` and `%v` have verb `d` and width 0; `%0Nd` and `%0Nx` have a width `N` of one or more
+digits, at most `10^6`. (`%x` without a width is not one: `SprintfOut.hex`.) -/
+def parseIntVerb : GoString → Option (w8 × Nat × GoString)
   | [] => none
   | c :: f =>
-    if c = W8 100 ∨ c = W8 118 then some (0, f)
+    if c = W8 100 ∨ c = W8 118 then some (W8 100, 0, f)
     else if c = W8 48 then
       match scanWidth 0 f with
       | (w, d :: rest) =>
-        if (d :: rest).length < f.length ∧ d = W8 100 ∧ w ≤ 1000000 then some (w, rest) else none
+        if (d :: rest).length < f.length ∧ (d = W8 100 ∨ d = W8 120) ∧ w ≤ 1000000 then
+          some (d, w, rest)
+        else none
       | (_, []) => none
     else none
 
 /-! Tests of `parseIntVerb`. -/
 
-example : parseIntVerb go!"d" = some (0, []) := by decide
-example : parseIntVerb go!"v/x" = some (0, go!"/x") := by decide
-example : parseIntVerb go!"05d" = some (5, []) := by decide
-example : parseIntVerb go!"016dx" = some (16, go!"x") := by decide
+example : parseIntVerb go!"d" = some (W8 100, 0, []) := by decide
+example : parseIntVerb go!"v/x" = some (W8 100, 0, go!"/x") := by decide
+example : parseIntVerb go!"05d" = some (W8 100, 5, []) := by decide
+example : parseIntVerb go!"016dx" = some (W8 100, 16, go!"x") := by decide
+example : parseIntVerb go!"016x-" = some (W8 120, 16, go!"-") := by decide
 example : parseIntVerb go!"0d" = none := by decide
+example : parseIntVerb go!"0x" = none := by decide
+example : parseIntVerb go!"x" = none := by decide
 example : parseIntVerb go!"05v" = none := by decide
+example : parseIntVerb go!"05X" = none := by decide
 example : parseIntVerb go!"5d" = none := by decide
 
 /-- One of Go's ten (predeclared) integer types, which the model of `Sprintf` formats. -/
@@ -474,8 +526,8 @@ def SimpleDirective [GooseExts] [GoSemanticsFunctions] : GoString → List GoInt
 /-- `SprintfOut format args out`: `out` is a possible result of `fmt.Sprintf(format, args...)`,
 as the model of `Sprintf` formats it. Bytes other than `%` are copied, `%%` gives `%`, `%s` and
 `%v` with an interface holding a string (`StrArgValue`) next give that string, `%d`, `%v` and `%0Nd` with an interface
-holding an integer next give its (zero-padded) decimal, `%x` with an interface holding an integer
-next gives its hexadecimal; at any other directive, and after the
+holding an integer next give its (zero-padded) decimal, `%x` and `%0Nx` with an interface holding an
+integer next give its (zero-padded) hexadecimal; at any other directive, and after the
 format if arguments remain unused, the rest of the output is arbitrary. -/
 inductive SprintfOut [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] :
     GoString → List GoInterface → GoString → Prop
@@ -501,12 +553,13 @@ inductive SprintfOut [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] :
       (out : GoString) :
       StrArgValue ii x → SprintfOut f args out →
       SprintfOut (W8 37 :: W8 118 :: f) (interface.ok ii :: args) (x ++ out)
-  /-- An integer directive of width `w` (`%d`, `%v`: 0; `%0Nd`: `N`) of an interface holding the
-  integer `z` gives `decimalPad w z`, and consumes the argument. -/
-  | int (f rest : GoString) (w : Nat) (ii : GoInterfaceOk) (z : Int) (args : List GoInterface)
-      (out : GoString) :
-      parseIntVerb f = some (w, rest) → IntArgValue ii z → SprintfOut rest args out →
-      SprintfOut (W8 37 :: f) (interface.ok ii :: args) (decimalPad w z ++ out)
+  /-- An integer directive of verb `v` and width `w` (`%d`, `%v`: `d`, 0; `%0Nd`: `d`, `N`;
+  `%0Nx`: `x`, `N`) of an interface holding the integer `z` gives `intVerbOut v w z`
+  (`decimalPad w z` or `hexPad w z`), and consumes the argument. -/
+  | int (f rest : GoString) (v : w8) (w : Nat) (ii : GoInterfaceOk) (z : Int)
+      (args : List GoInterface) (out : GoString) :
+      parseIntVerb f = some (v, w, rest) → IntArgValue ii z → SprintfOut rest args out →
+      SprintfOut (W8 37 :: f) (interface.ok ii :: args) (intVerbOut v w z ++ out)
   /-- `%x` of an interface holding the integer `z` gives `hexadecimal z` (lowercase, no `0x`, a
   `-` if negative), and consumes the argument. -/
   | hex (f : GoString) (ii : GoInterfaceOk) (z : Int) (args : List GoInterface) (out : GoString) :
@@ -714,7 +767,7 @@ theorem SprintfOut.strArg_inv [go.IntoValInj GoString] {c : w8} {ii : GoInterfac
     cases hii
     rw [hx.uniq hy]
     exact ⟨out', rfl, h'⟩
-  | int f'' rest' w' ii' z' args' out' hp hz h' =>
+  | int f'' rest' v' w' ii' z' args' out' hp hz h' =>
     obtain ⟨-, hf⟩ := List.cons.inj hF
     subst hf
     obtain ⟨hii, -⟩ := List.cons.inj hA
@@ -760,12 +813,14 @@ theorem SprintfOut.str_x_prefix [go.IntoValInj GoString] (x : GoString)
     (h : SprintfOut go!"%s%x" (interface.mkOk go.string #x :: args) out) : x <+: out :=
   SprintfOut.str_prefix x go!"%x" args out h
 
-theorem SprintfOut.int_inv [go.string ↓u go.string] {f rest : GoString} {w : Nat} {ii : GoInterfaceOk} {z : Int}
+/-- An integer directive (`parseIntVerb`) of an interface holding the integer `z` gives
+`intVerbOut v w z`. -/
+theorem SprintfOut.intVerb_inv [go.string ↓u go.string] {f rest : GoString} {v : w8} {w : Nat} {ii : GoInterfaceOk} {z : Int}
     {args : List GoInterface} {out : GoString}
-    (hp : parseIntVerb f = some (w, rest)) (hz : IntArgValue ii z)
+    (hp : parseIntVerb f = some (v, w, rest)) (hz : IntArgValue ii z)
     (huniq : ∀ z', IntArgValue ii z' → z' = z)
     (h : SprintfOut (W8 37 :: f) (interface.ok ii :: args) out) :
-    ∃ out', out = decimalPad w z ++ out' ∧ SprintfOut rest args out' := by
+    ∃ out', out = intVerbOut v w z ++ out' ∧ SprintfOut rest args out' := by
   generalize hF : W8 37 :: f = F at h
   generalize hA : interface.ok ii :: args = A at h
   cases h with
@@ -786,14 +841,14 @@ theorem SprintfOut.int_inv [go.string ↓u go.string] {f rest : GoString} {w : N
     obtain ⟨hii, -⟩ := List.cons.inj hA
     cases hii
     exact absurd hz.isIntArgType hy.1.not_isIntArgType
-  | int f' rest' w' ii' z' args' out' hp' hz' h' =>
+  | int f' rest' v' w' ii' z' args' out' hp' hz' h' =>
     simp only [List.cons.injEq] at hF hA
     obtain ⟨-, rfl⟩ := hF
     obtain ⟨hii, rfl⟩ := hA
     cases hii
     rw [hp] at hp'
     simp only [Option.some.injEq, Prod.mk.injEq] at hp'
-    obtain ⟨rfl, rfl⟩ := hp'
+    obtain ⟨rfl, rfl, rfl⟩ := hp'
     rw [huniq z' hz']
     exact ⟨out', rfl, h'⟩
   | hex f' =>
@@ -809,6 +864,25 @@ theorem SprintfOut.int_inv [go.string ↓u go.string] {f rest : GoString} {w : N
     | nil => simp [parseIntVerb] at hp
     | cons c f =>
       exact Or.inr (Or.inr (Or.inl ⟨by rw [hp]; rfl, _, _, rfl, hz.isIntArgType⟩))
+
+/-- `%d`, `%v` or `%0Nd` (`parseIntVerb`'s verb `d`) of an interface holding the integer `z` gives
+`decimalPad w z`. -/
+theorem SprintfOut.int_inv [go.string ↓u go.string] {f rest : GoString} {w : Nat} {ii : GoInterfaceOk} {z : Int}
+    {args : List GoInterface} {out : GoString}
+    (hp : parseIntVerb f = some (W8 100, w, rest)) (hz : IntArgValue ii z)
+    (huniq : ∀ z', IntArgValue ii z' → z' = z)
+    (h : SprintfOut (W8 37 :: f) (interface.ok ii :: args) out) :
+    ∃ out', out = decimalPad w z ++ out' ∧ SprintfOut rest args out' := by
+  rw [← intVerbOut_d]; exact SprintfOut.intVerb_inv hp hz huniq h
+
+/-- `%0Nx` (`parseIntVerb`'s verb `x`) of an interface holding the integer `z` gives `hexPad w z`. -/
+theorem SprintfOut.hexPad_inv [go.string ↓u go.string] {f rest : GoString} {w : Nat} {ii : GoInterfaceOk} {z : Int}
+    {args : List GoInterface} {out : GoString}
+    (hp : parseIntVerb f = some (W8 120, w, rest)) (hz : IntArgValue ii z)
+    (huniq : ∀ z', IntArgValue ii z' → z' = z)
+    (h : SprintfOut (W8 37 :: f) (interface.ok ii :: args) out) :
+    ∃ out', out = hexPad w z ++ out' ∧ SprintfOut rest args out' := by
+  rw [← intVerbOut_x]; exact SprintfOut.intVerb_inv hp hz huniq h
 
 theorem SprintfOut.hex_inv {f : GoString} {ii : GoInterfaceOk} {z : Int}
     {args : List GoInterface} {out : GoString}
@@ -832,7 +906,7 @@ theorem SprintfOut.hex_inv {f : GoString} {ii : GoInterfaceOk} {z : Int}
   | strV =>
     simp only [List.cons.injEq] at hF
     exact absurd hF.2.1 (by decide)
-  | int f' _ _ _ _ _ _ hp =>
+  | int f' _ _ _ _ _ _ _ hp =>
     simp only [List.cons.injEq] at hF
     obtain ⟨-, rfl⟩ := hF
     simp [parseIntVerb] at hp
@@ -866,6 +940,12 @@ theorem IntArgValue.uniq_int [go.IntoValInj w64] (n : w64) :
     ∀ z', IntArgValue (interface.mk go.int #n) z' → z' = sint.Z n := by
   intro z' h
   obtain ⟨n', hv, rfl⟩ := IntArgValue.of_int h
+  rw [go.intoVal_inj hv]
+
+theorem IntArgValue.uniq_uint64 [go.IntoValInj w64] (n : w64) :
+    ∀ z', IntArgValue (interface.mk go.uint64 #n) z' → z' = uint.Z n := by
+  intro z' h
+  obtain ⟨n', hv, rfl⟩ := IntArgValue.of_uint64 h
   rw [go.intoVal_inj hv]
 
 theorem IntArgValue.uniq_uint16 [go.IntoValInj w16] (n : w16) :

@@ -62,14 +62,15 @@ noncomputable def arbitraryString : val :=
   (Lam BAnon
   (Val #())))))))
 
-/-- At `format[i]`, a `%`: whether an integer directive follows, with its width and the index
-after it (helpers of the model of `Sprintf`, like those below, not functions of package `fmt`).
-Goose's translation of
+/-- At `format[i]`, a `%`: whether an integer directive follows, with the verb of its base (`'d'`
+or `'x'`), its width and the index after it (helpers of the model of `Sprintf`, like those below,
+not functions of package `fmt`). Goose's translation (by the goose of this revision, with its
+function results in cells `$resI`) of
 
 ```go
-func intVerb(format string, i int) (int, int, bool) {
+func intVerb(format string, i int) (byte, int, int, bool) {
 	if i+1 < len(format) && (format[i+1] == 'd' || format[i+1] == 'v') {
-		return 0, i + 2, true
+		return 'd', 0, i + 2, true
 	}
 	if i+1 < len(format) && format[i+1] == '0' {
 		j := i + 2
@@ -78,26 +79,47 @@ func intVerb(format string, i int) (int, int, bool) {
 			width = width*10 + int(format[j]-'0')
 			j++
 		}
-		if j > i+2 && j < len(format) && format[j] == 'd' && width <= 1000000 {
-			return width, j + 1, true
+		if j > i+2 && j < len(format) && (format[j] == 'd' || format[j] == 'x') && width <= 1000000 {
+			return format[j], width, j + 1, true
 		}
 	}
-	return 0, 0, false
+	return 0, 0, 0, false
 }
 ```
 
-That is, `%d` and `%v` (width 0), and `%0Nd` with a decimal width `N` of one or more digits, at most
-`10^6` (Go's `fmt` refuses a larger one, stopping as this loop does). -/
+That is, `%d` and `%v` (verb `'d'`, width 0), and `%0Nd` and `%0Nx` (verb `'d'` or `'x'`) with a
+decimal width `N` of one or more digits, at most `10^6` (Go's `fmt` refuses a larger one, stopping
+as this loop does). `%x` without a width is `formatArg`'s own case, not this one. -/
 noncomputable def intVerb : val :=
   (LamV "format"
   (Lam "i"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Let "$res2" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Let "$res3" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (Var "i"))
   (Let "format" (App (Val (GoInstruction (GoAlloc go.string))) (Var "format"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W8 0))
+  (Let "$r1" (Val #(W64 0))
+  (Let "$r2" (Val #(W64 0))
+  (Let "$r3" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (Pair (Val #(W64 0)) (Val #(W64 0))) (Val #false)))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res3") (Var "$r3")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res2") (Var "$r2")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "$res0") (Var "$r0")))))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "format"))
   (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "format")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))) (Val #(W8 48)))) (Val #false)))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 2))))
@@ -106,9 +128,25 @@ noncomputable def intVerb : val :=
   (Let "width" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (If (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 2)))))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "format"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "format")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (Val #(W8 100)))) (Val #false)) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "width")) (Val #(W64 1000000)))) (Val #false)))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))))) (Val #false)) (If (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "format")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (Val #(W8 100)))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "format")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (Val #(W8 120))))) (Val #false)) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "width")) (Val #(W64 1000000)))) (Val #false)))
+  (Let "$r0" (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "format")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad go.int))) (Var "width"))
+  (Let "$r2" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1))))
+  (Let "$r3" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "width")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1))))) (Val #true)))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res3") (Var "$r3")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res2") (Var "$r2")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val doExecute)
   (Val #())))))
   (App (App (App (Val doFor) (Lam BAnon
@@ -128,10 +166,27 @@ noncomputable def intVerb : val :=
   (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "format"))
   (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))))) (If (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "format")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))) (Val #(W8 100)))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "format")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))) (Val #(W8 118))))) (Val #false)))
+  (Let "$r0" (Val #(W8 100))
+  (Let "$r1" (Val #(W64 0))
+  (Let "$r2" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 2))))
+  (Let "$r3" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (Pair (Val #(W64 0)) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 2))))) (Val #true)))
+  (Val #()))))
   (App (Val doExecute)
-  (Val #())))))))))
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res3") (Var "$r3")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res2") (Var "$r2")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (Pair (Pair (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.int))) (Var "$res1"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "$res2"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res3"))))))))))
 
 /-- The integer an argument holds, as a sign and a magnitude, if its dynamic type is one of Go's
 integer types. Goose's translation of
@@ -946,12 +1001,13 @@ noncomputable def formatInt : val :=
   (Val #()))))))))))))
 
 /-- The lowercase hexadecimal of the integer of sign `neg` and magnitude `mag`, without a `0x`
-prefix, the sign before the digits (Go's `fmtInteger` in base 16 with no flags, width or
-precision: `Sprintf("%x", -255)` is `"-ff"`). Goose's translation (by the goose of this
+prefix, with leading zeros up to `width` after the sign (Go's `fmtInteger` in base 16 with the `0`
+flag and the width, and no other flag or precision: `Sprintf("%x", -255)` is `"-ff"`,
+`Sprintf("%05x", -255)` is `"-00ff"`; `width` 0 is `%x`). Goose's translation (by the goose of this
 revision, with its function results in cells `$resI`) of
 
 ```go
-func formatHex(neg bool, mag uint64) string {
+func formatHex(neg bool, mag uint64, width int) string {
 	var digits string
 	for {
 		d := byte(mag % 16)
@@ -967,6 +1023,12 @@ func formatHex(neg bool, mag uint64) string {
 		}
 	}
 	if neg {
+		width--
+	}
+	for len(digits) < width {
+		digits = "0" + digits
+	}
+	if neg {
 		return "-" + digits
 	}
 	return digits
@@ -975,11 +1037,15 @@ func formatHex(neg bool, mag uint64) string {
 noncomputable def formatHex : val :=
   (LamV "neg"
   (Lam "mag"
+  (Lam "width"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
   (Seq (App (Val exceptionDo)
+  (Let "width" (App (Val (GoInstruction (GoAlloc go.int))) (Var "width"))
   (Let "mag" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "mag"))
   (Let "neg" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "neg"))
   (Let "digits" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (Var "digits"))
@@ -995,6 +1061,19 @@ noncomputable def formatHex : val :=
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "digits"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "width")))))) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (Val #(go!"0")) (App (Val (GoInstruction (GoLoad go.string))) (Var "digits"))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "digits") (Var "$r0")))))))
+  (Lam BAnon
+  (Val #()))))))
+  (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "neg"))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "width") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "width")) (Val #(W64 1)))))))
   (App (Val doExecute)
   (Val #()))))))
   (App (App (App (Val doFor) (Lam BAnon
@@ -1026,8 +1105,8 @@ noncomputable def formatHex : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "d") (Var "$r0")))))))))
   (Lam BAnon
-  (Val #()))))))))
-  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
+  (Val #())))))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")))))))
 
 /-- The string an argument holds, if its dynamic type is `string` or a type whose underlying type
 is `string` (a named string type, `type UID string`) and that implements none of `fmt.Formatter`,
@@ -1160,7 +1239,7 @@ noncomputable def strArg : val :=
 /-- At `format[i]`, a `%`: the directive's output for the argument `x` and the index after it, if
 the model formats it: `%s` or `%v` of a string (`strArg`: a `string`, or a named string type
 without formatting methods), `%x` of an integer (`anyIntArg`), or an integer directive (`intVerb`,
-which takes `%v` too) of an integer. Goose's translation (by the goose of this revision, with its function
+which takes `%v`, `%0Nd` and `%0Nx` too) of an integer. Goose's translation (by the goose of this revision, with its function
 results in cells `$resI`) of
 
 ```go
@@ -1179,15 +1258,18 @@ func formatArg(format string, i int, x any) (string, int, bool) {
 		if !ok {
 			return "", 0, false
 		}
-		return formatHex(neg, mag), i + 2, true
+		return formatHex(neg, mag, 0), i + 2, true
 	}
-	width, next, ok := intVerb(format, i)
+	verb, width, next, ok := intVerb(format, i)
 	if !ok {
 		return "", 0, false
 	}
 	neg, mag, ok2 := anyIntArg(x)
 	if !ok2 {
 		return "", 0, false
+	}
+	if verb == 'x' {
+		return formatHex(neg, mag, width), next, true
 	}
 	return formatInt(neg, mag, width), next, true
 }
@@ -1221,15 +1303,19 @@ noncomputable def formatArg : val :=
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "format"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
   (App (App (Val intVerb) (Var "$a0")) (Var "$a1"))))
-  (Let "$ret0" (Fst (Fst (Var "__p")))
-  (Let "$ret1" (Snd (Fst (Var "__p")))
-  (Let "$ret2" (Snd (Var "__p"))
+  (Let "$ret0" (Fst (Fst (Fst (Var "__p"))))
+  (Let "$ret1" (Snd (Fst (Fst (Var "__p"))))
+  (Let "$ret2" (Snd (Fst (Var "__p")))
+  (Let "$ret3" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "$r2" (Var "$ret2")
+  (Let "$r3" (Var "$ret3")
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "next" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "width" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Let "verb" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1245,6 +1331,7 @@ noncomputable def formatArg : val :=
   (Let "ok2" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "mag" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "neg" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1266,6 +1353,26 @@ noncomputable def formatArg : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "verb")) (Val #(W8 120)))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "neg"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "mag"))
+  (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "width"))
+  (App (App (App (Val formatHex) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad go.int))) (Var "next"))
+  (Let "$r2" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res2") (Var "$r2")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Val #()))))))
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok2")))
   (Let "$r0" (Val #(go!""))
   (Let "$r1" (Val #(W64 0))
@@ -1307,11 +1414,13 @@ noncomputable def formatArg : val :=
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r2")))))))
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r3")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "next") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "next") (Var "$r2")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "width") (Var "$r0")))))))))))))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "width") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "verb") (Var "$r0"))))))))))))))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "format"))
   (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "format")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))) (Val #(W8 120)))) (Val #false)))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))
@@ -1331,7 +1440,8 @@ noncomputable def formatArg : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "neg"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "mag"))
-  (App (App (Val formatHex) (Var "$a0")) (Var "$a1"))))
+  (Let "$a2" (Val #(W64 0))
+  (App (App (App (Val formatHex) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
   (Let "$r1" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 2))))
   (Let "$r2" (Val #true)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2654,7 +2764,7 @@ noncomputable def doPrintf : val :=
 
 /-- `Sprintf(format, a...)`: the formatted string (`doPrintf`, with `wrapErrs` false: a `%w` is a
 bad verb, as in Go's `Sprintf`). The model formats `%%`, and `%s`/`%v` of a string, `%d`, `%v`,
-`%0Nd` and `%x` of an integer, of inert arguments exactly, up to the first other directive; from
+`%0Nd`, `%x` and `%0Nx` of an integer, of inert arguments exactly, up to the first other directive; from
 there the output is an arbitrary string, and the model calls each later argument's `Error()` or
 `String()` where Go's formatting does (`visitRest`). It follows Go for the arguments the specs admit
 (`fmt.argsOk`, `Perennial/Proof/fmt/Args.lean`) and is stuck (`notModelled`) for the others it

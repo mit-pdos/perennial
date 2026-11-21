@@ -1,6 +1,6 @@
 /-
 The proofs of the Go `fmt` package: the shared definitions (`Base`: `isPkgInit`, `SprintfOut`,
-the decimals of the integer directives, `ArgsWf`; `Directives`: a format's directives; `Args`:
+the decimals and hexadecimals of the integer directives, `ArgsWf`; `Directives`: a format's directives; `Args`:
 the specs' premise on the arguments, `argsOk`, and what `Errorf` returns), the specs of the helpers
 of the model (`SprintfModel`, `VisitModel`, `DoPrintf`), the linked results (`Link`), `fmt.wp_<F>`
 for each function `F`, and results derived from them (`Results`).

@@ -22,7 +22,7 @@ variable [package_sem : fmt.Assumptions]
 
 /-- `fmt.Sprintf(format, args...)` returns a string `s` with `SprintfOut format args s`: `%%`, and
 `%s`/`%v` of a string (a `string`, or a named string type without formatting methods,
-`StrArgValue`), `%d`, `%v`, `%0Nd` and `%x` of an integer, are formatted, the rest of the output is
+`StrArgValue`), `%d`, `%v`, `%0Nd`, `%x` and `%0Nx` of an integer, are formatted, the rest of the output is
 arbitrary from any other directive on (see the model of `Sprintf`, `Perennial/TrustedCode/fmt.lean`).
 The arguments are `argsOk` the format under the method verbs `v s x X q`: Go calls their
 `Error()`/`String()` methods where its formatting does, which must return some string needing
