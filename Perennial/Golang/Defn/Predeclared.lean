@@ -1108,6 +1108,10 @@ class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
   underlying_bool : go.bool ↓u go.bool
   go_zero_val_bool : TypeReprUnderlying go.bool Bool
   go_unop_not_bool (b : Bool) : ⟦GoUnOp GoNot go.bool, #b⟧ ⤳[under] #(!b)
+  -- `T{}` of a type whose model has underlying type `bool`: Go has no composite literal of a
+  -- boolean type, so this is the image of `S{}` of a struct `S` that a trusted model represents
+  -- as a `bool` (`sync.Mutex`, `primitive.Mutex`: unlocked `false`), whose `S{}` is its zero value
+  composite_literal_bool_empty : ⟦CompositeLiteral go.bool, LiteralValueV []⟧ ⤳[under] #false
 
   [untypedInt_semantics : UntypedIntSemantics]
   [int_semantics : IntSemantics]
@@ -1157,7 +1161,8 @@ attribute [instance] PredeclaredSemantics.alloc_predeclared PredeclaredSemantics
   PredeclaredSemantics.max_unfold PredeclaredSemantics.panic_unfold PredeclaredSemantics.unsafe_sem
   PredeclaredSemantics.comparable_bool PredeclaredSemantics.go_eq_bool
   PredeclaredSemantics.underlying_bool PredeclaredSemantics.go_zero_val_bool
-  PredeclaredSemantics.go_unop_not_bool PredeclaredSemantics.untypedInt_semantics
+  PredeclaredSemantics.go_unop_not_bool PredeclaredSemantics.composite_literal_bool_empty
+  PredeclaredSemantics.untypedInt_semantics
   PredeclaredSemantics.int_semantics PredeclaredSemantics.int64_semantics
   PredeclaredSemantics.int32_semantics PredeclaredSemantics.int16_semantics
   PredeclaredSemantics.int8_semantics PredeclaredSemantics.uint_semantics
@@ -1179,6 +1184,7 @@ export PredeclaredSemantics (alloc_predeclared load_predeclared store_predeclare
   predeclared_underlying plain_scalar_underlying len_underlying cap_underlying clear_underlying copy_underlying
   delete_underlying make3_underlying make2_underlying make1_underlying min_unfold max_unfold panic_unfold
   unsafe_sem comparable_bool go_eq_bool underlying_bool go_zero_val_bool go_unop_not_bool
+  composite_literal_bool_empty
   untypedInt_semantics int_semantics int64_semantics int32_semantics int16_semantics
   int8_semantics uint_semantics uint64_semantics uint32_semantics uint16_semantics
   uint8_semantics uintptr_semantics untypedFloat_semantics float64_semantics float32_semantics
