@@ -27,7 +27,7 @@ def Println.impl : val :=
 var std = New(os.Stderr, "", LstdFlags)
 ```
 
-The model does nothing, and `std` is not allocated. `New` allocates a `Logger` and sets its
+The model skips it (`go.skipInit`): `std` is not allocated. `New` allocates a `Logger` and sets its
 output, prefix and flags (`SetOutput` takes the logger's own new mutex): it cannot panic, and it
 has no effect beyond the new logger and the variable. Translating it would need `os.Stderr`,
 whose initializer (`NewFile(uintptr(syscall.Stderr), "/dev/stderr")`) wraps a file
@@ -35,8 +35,7 @@ descriptor; `os` is not translated. The readers of `std` (`Default`, `Print*`, `
 and the closure that `init` stores) are not translated, and the models of `Printf` and
 `Println` above do not read it; a translated reader could not load the variable (nothing gives
 a points-to for it). -/
-def std.init : val :=
-  λ: <>, #()
+def std.init : val := go.skipInit
 
 /-- `log`'s `init` function (`log/log.go`):
 
