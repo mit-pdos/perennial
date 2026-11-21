@@ -118,6 +118,16 @@ type Ctx struct {
 
 	filter declfilter.DeclFilter
 	out    outputDecls
+
+	// The goose config directory, to read the skip entries of the packages
+	// this one imports (see skip.go).
+	configDir string
+	// imported package path -> its skipped variables -> reason
+	depSkips map[string]map[string]string
+	// the package's skipped variables, in source order
+	skipped []skippedVar
+	// the translated declaration being translated, for error messages
+	curDecl string
 }
 
 // NewPkgCtx initializes a context based on a properly loaded package
@@ -466,6 +476,7 @@ func (ctx *Ctx) selectorExprAddr(e *ast.SelectorExpr) glang.Expr {
 	selection := ctx.info.Selections[e]
 	if selection == nil {
 		if v, ok := ctx.info.ObjectOf(e.Sel).(*types.Var); ok {
+			ctx.checkNotSkipped(e, v)
 			return glang.NewCallExpr(glang.VerbatimExpr("GlobalVarAddr"),
 				ctx.termIdent(ctx.pkgRef(v.Pkg())+"."+v.Name()),
 				glang.Tt,
@@ -1697,8 +1708,9 @@ func (ctx *Ctx) exprAddr(e ast.Expr) glang.Expr {
 		return ctx.exprAddr(e.X)
 	case *ast.Ident:
 		obj := ctx.info.ObjectOf(e)
-		if _, ok := obj.(*types.Var); ok {
+		if v, ok := obj.(*types.Var); ok {
 			if obj.Pkg().Scope() == obj.Parent() {
+				ctx.checkNotSkipped(e, v)
 				return glang.NewCallExpr(glang.VerbatimExpr("GlobalVarAddr"),
 					ctx.termIdent(e.Name),
 					glang.Tt,
@@ -2536,6 +2548,8 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 	if funcName == "_" {
 		return
 	}
+	ctx.curDecl = funcName
+	defer func() { ctx.curDecl = "" }()
 
 	if d.Recv == nil {
 		funcName = ctx.funcDeclName(d)
@@ -2802,6 +2816,11 @@ func (ctx *Ctx) globalVarDecl(d *ast.GenDecl) {
 	for _, spec := range d.Specs {
 		s := spec.(*ast.ValueSpec)
 		for _, name := range s.Names {
+			if ctx.filter.GetAction(name.Name) == declfilter.Skip {
+				// no name, X.init, allocation or init step (skip.go)
+				ctx.recordSkipped(s, name)
+				continue
+			}
 			if name.Name == "_" {
 				continue
 			}
@@ -3074,6 +3093,7 @@ func (ctx *Ctx) packagePropClass() []glang.Decl {
 func (ctx *Ctx) finalExtraDecls() {
 	var decls = []glang.Decl{}
 
+	decls = append(decls, ctx.skippedDecls()...)
 	decls = append(decls, glang.VerbatimDecl{Content: ctx.leanInfoInstance()})
 
 	initFunc := glang.FuncDecl{Name: "initialize'"}
@@ -3099,6 +3119,14 @@ func (ctx *Ctx) finalExtraDecls() {
 InitLoop:
 	for i := range ctx.info.InitOrder {
 		init := ctx.info.InitOrder[len(ctx.info.InitOrder)-i-1]
+
+		// A skipped initializer has no step; the others keep Go's relative
+		// order. (checkSkipConfig has refused an initializer only partly
+		// skipped.)
+		if ctx.filter.GetAction(init.Lhs[0].Name()) == declfilter.Skip {
+			continue
+		}
+		ctx.curDecl = "the initializer of " + varNames(init.Lhs)
 
 		// Check if any of the LHS variables should be treated as axiomatized
 		for i := 0; i < len(init.Lhs); i++ {
@@ -3177,6 +3205,8 @@ InitLoop:
 			}
 		}
 	}
+
+	ctx.curDecl = ""
 
 	for _, importName := range ctx.importNamesOrdered {
 		pkg := importName.Imported()

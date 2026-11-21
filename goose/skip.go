@@ -13,11 +13,15 @@ package goose
 import (
 	"fmt"
 	"go/ast"
+	"go/printer"
 	"go/token"
 	"go/types"
+	"path/filepath"
 	"strings"
 
 	"github.com/mit-pdos/perennial/goose/declfilter"
+	"github.com/mit-pdos/perennial/goose/glang"
+	"github.com/mit-pdos/perennial/goose/util"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -102,4 +106,109 @@ func varNames(vs []*types.Var) string {
 		ns = append(ns, v.Name())
 	}
 	return strings.Join(ns, ", ")
+}
+
+// A skippedVar is a skipped package variable, as listed in the translation.
+type skippedVar struct {
+	// pkg.X, or for a blank variable pkg._@file.go:L: var _ ... (D4: each
+	// blank variable is listed, so that one a Go upgrade adds shows in the
+	// gold output and the trust baselines)
+	name   string
+	reason string
+}
+
+// recordSkipped records the skipped variable name of the declaration s.
+func (ctx *Ctx) recordSkipped(s *ast.ValueSpec, name *ast.Ident) {
+	reason, _ := ctx.filter.SkipReason(name.Name)
+	n := ctx.pkgPath + "." + name.Name
+	if name.Name == "_" {
+		var src strings.Builder
+		if err := printer.Fprint(&src, ctx.fset, s); err != nil {
+			panic(err)
+		}
+		pos := ctx.fset.Position(name.Pos())
+		n = fmt.Sprintf("%s._@%s:%d: var %s", ctx.pkgPath, filepath.Base(pos.Filename),
+			pos.Line, strings.Join(strings.Fields(src.String()), " "))
+	}
+	ctx.skipped = append(ctx.skipped, skippedVar{name: n, reason: reason})
+}
+
+// skippedDecls is the record of the package's skipped variables,
+// `skipped' : List go.SkippedVar`, with a doc comment listing them (D6: an
+// informational record, unused by the semantics, from which tools that read
+// the Lean environment list the skips in a result's import closure; its
+// names are strings, so it gives no handle on the variables). Nothing if the
+// package skips nothing.
+func (ctx *Ctx) skippedDecls() []glang.Decl {
+	if len(ctx.skipped) == 0 {
+		return nil
+	}
+	var b strings.Builder
+	b.WriteString("/-- The package variables goose does not translate (the `skip` entries of the package's\n" +
+		"goose config): no Lean name, allocation or initialization step, so no translated code names\n" +
+		"them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot\n" +
+		"panic, and has no effect beyond the variable), for the reason given.\n\n")
+	for _, v := range ctx.skipped {
+		fmt.Fprintf(&b, "- `%s`: %s\n", strings.TrimPrefix(v.name, ctx.pkgPath+"."),
+			strings.ReplaceAll(v.reason, "-/", "- /"))
+	}
+	b.WriteString("-/\nnoncomputable def skipped' : List go.SkippedVar := [")
+	for i, v := range ctx.skipped {
+		if i > 0 {
+			b.WriteString(",")
+		}
+		fmt.Fprintf(&b, "\n  ⟨%s, %s⟩", glang.LeanRawString(v.name), glang.LeanRawString(v.reason))
+	}
+	b.WriteString("]")
+	return []glang.Decl{glang.VerbatimDecl{Content: b.String()}}
+}
+
+// skipReason returns the reason of a skipped package variable v of this
+// package or of one it imports (D7: goose reads the imported package's
+// config from the config directory), and whether it is skipped.
+func (ctx *Ctx) skipReason(v *types.Var) (string, bool) {
+	if v.Pkg().Path() == ctx.pkgPath {
+		return ctx.filter.SkipReason(v.Name())
+	}
+	skips, ok := ctx.depSkips[v.Pkg().Path()]
+	if !ok {
+		skips = make(map[string]string)
+		// an unreadable config is reported by that package's translation
+		if c, err := util.ReadConfig(ctx.configDir, v.Pkg().Path()); err == nil {
+			for _, e := range c.Skip {
+				for _, n := range e.Names {
+					skips[n] = e.Reason
+				}
+			}
+		}
+		if ctx.depSkips == nil {
+			ctx.depSkips = make(map[string]map[string]string)
+		}
+		ctx.depSkips[v.Pkg().Path()] = skips
+	}
+	r, ok := skips[v.Name()]
+	return r, ok
+}
+
+// checkNotSkipped fails if the package variable v, referenced at n, is
+// skipped: translated code may not use a skipped variable (D7). Without this
+// check the Lean would not elaborate (the variable has no name); the error
+// says where and why.
+func (ctx *Ctx) checkNotSkipped(n ast.Node, v *types.Var) {
+	reason, ok := ctx.skipReason(v)
+	if !ok {
+		return
+	}
+	name := v.Name()
+	if v.Pkg().Path() != ctx.pkgPath {
+		name = v.Pkg().Path() + "." + name
+	}
+	decl := ctx.curDecl
+	if decl == "" {
+		decl = "code"
+	}
+	pos := ctx.fset.Position(n.Pos())
+	ctx.unsupported(n, "skipped variable %s (skip: %q) is referenced by translated %s at %s:%d; "+
+		"translate %s or do not translate %s",
+		name, reason, decl, filepath.Base(pos.Filename), pos.Line, v.Name(), decl)
 }
