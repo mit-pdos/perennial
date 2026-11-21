@@ -17,9 +17,14 @@ type mutexHolder struct {
 }
 
 // A mutex from a composite literal is unlocked, alone or as a field of a
-// struct literal.
+// struct literal: Lock returns, and Unlock (a fatal error on an unlocked
+// mutex) does not fail.
 func testMutexLiteral() bool {
 	m := sync.Mutex{}
+	m.Lock()
+	m.Unlock()
 	h := mutexHolder{mu: sync.Mutex{}, x: 1}
-	return m.TryLock() && h.mu.TryLock()
+	h.mu.Lock()
+	h.mu.Unlock()
+	return true
 }

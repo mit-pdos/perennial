@@ -24,8 +24,17 @@ theorem internal.sync.Mutex.TryLock.wp_proof :
     internal.sync.Mutex.TryLock.spec (GF := GF) (hG := hG) := by
   intro m R
   wp_start as #His
-  wp_apply wp_lock_trylock $$ His as %locked H
-  iapply HΦ $$ H
+  wp_apply wp_ArbitraryInt as %x _
+  by_cases hx : x = W64 0
+  · simp only [hx, decide_true]
+    wp_pures
+    iapply HΦ
+    simp only [Bool.false_eq_true, ↓reduceIte]
+    itrivial
+  · simp only [hx, decide_false]
+    wp_pures
+    wp_apply wp_lock_trylock $$ His as %locked H
+    iapply HΦ $$ H
 
 end proof
 

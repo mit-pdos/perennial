@@ -51,9 +51,12 @@ func (m *Mutex) TryLock() bool {
 	return true
 }
 ```
-as a compare-and-swap of `false` (unlocked) to `true`. -/
+as a compare-and-swap of `false` (unlocked) to `true`, which may also fail
+nondeterministically (`ArbitraryInt`): Go's `TryLock` returns `false` on an unlocked mutex
+in starvation mode, or when its CAS loses to a concurrent change of `state` (a waiter
+arriving), which the model's state does not record. -/
 def Mutex.TryLock.impl : val :=
-  λ: "m" <>, lock.trylock "m"
+  λ: "m" <>, if: ArbitraryInt =⟨go.uint64⟩ #(W64 0) then #false else lock.trylock "m"
 
 /-- Model of (internal/sync/mutex.go)
 ```go

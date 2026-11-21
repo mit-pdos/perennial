@@ -5056,9 +5056,10 @@ noncomputable def testsUseLocks.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- A mutex from a composite literal is unlocked, alone or as a field of a
-    struct literal.
+    struct literal: Lock returns, and Unlock (a fatal error on an unlocked
+    mutex) does not fail.
 
-    go: lock.go:21:6 -/
+    go: lock.go:22:6 -/
 noncomputable def testMutexLiteral.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -5066,19 +5067,31 @@ noncomputable def testMutexLiteral.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$r0" (App (Val (GoInstruction (CompositeLiteral _root_.Perennial.sync.Mutex.ty))) (LiteralValue []))
   (Let "m" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$v0" (App (Val (GoInstruction (CompositeLiteral _root_.Perennial.sync.Mutex.ty))) (LiteralValue []))
   (Let "$v1" (Val #(W64 1))
   (App (Val (GoInstruction (CompositeLiteral mutexHolder.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"mu")) (ElementExpression _root_.Perennial.sync.Mutex.ty (Var "$v0"))), (KeyedElement (some (KeyField go!"x")) (ElementExpression go.uint64 (Var "$v1")))]))))
   (Let "h" (App (Val (GoInstruction (GoAlloc mutexHolder.ty))) (App (Val (GoInstruction (GoZeroVal mutexHolder.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (If (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"TryLock"))) (Var "m")) (Val #())) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"TryLock"))) (App (Val (GoInstruction (StructFieldRef mutexHolder.ty go!"mu"))) (Var "h"))) (Val #())) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #true)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef mutexHolder.ty go!"mu"))) (Var "h"))) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef mutexHolder.ty go!"mu"))) (Var "h"))) (Val #()))))))
+  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore mutexHolder.ty))) (Pair (Var "h") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Unlock"))) (Var "m")) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (Var "m")) (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.sync.Mutex.ty))) (Pair (Var "m") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
