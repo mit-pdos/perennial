@@ -214,6 +214,7 @@ theorem spsc_rcv_au (γ : SpscNames) (ch : Loc) (P : Int → V → IProp GF) (R 
       recvAu γ.chanName V Φ := by
   unfold isSpsc recvAu
   iintro ⟨#Hchan, #Hinv⟩ ⟨Hlc1, Hlc2⟩ Hcons Hcont
+  iapply ncfupd_of_fupd
   iinv Hinv with Hi Hclose
   imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi
   icases spscInv_elim _ _ _ $$ Hi with ⟨%s, %sent, %recv, Hch, HsentI, HrecvI, %Hrel, Hm⟩
@@ -258,6 +259,7 @@ theorem spsc_rcv_au (γ : SpscNames) (ch : Loc) (P : Int → V → IProp GF) (R 
       itrivial
     imodintro
     unfold recvNestedAu
+    iapply ncfupd_of_fupd
     iinv Hinv with Hi Hclose
     imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc2 Hi with Hi
     icases spscInv_elim _ _ _ $$ Hi with ⟨%s, %sent, %recv, Hch, HsentI, HrecvI, %Hrel, Hm⟩
@@ -408,6 +410,7 @@ theorem spsc_send_au (γ : SpscNames) (ch : Loc) (P : Int → V → IProp GF) (R
       ▷ (spscProducer γ (sent ++ [v]) -∗ Φ) -∗ sendAu γ.chanName v Φ := by
   unfold isSpsc sendAu
   iintro ⟨#Hchan, #Hinv⟩ ⟨Hlc1, Hlc2, Hlc3⟩ ⟨Hprod, HP⟩ Hcont
+  iapply ncfupd_of_fupd
   imod lc_fupd_elim_later (E := ⊤) $$ Hlc1 Hcont with Hcont
   iinv Hinv with Hi Hclose
   imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc2 Hi with Hi
@@ -454,6 +457,7 @@ theorem spsc_send_au (γ : SpscNames) (ch : Loc) (P : Int → V → IProp GF) (R
       iexact HP
     imodintro
     unfold sendNestedAu
+    iapply ncfupd_of_fupd
     iinv Hinv with Hi Hclose
     imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc3 Hi with Hi
     icases spscInv_elim _ _ _ $$ Hi with ⟨%s, %sent1, %recv1, Hch, HsentI, HrecvI, %Hrel, Hm⟩
@@ -536,6 +540,7 @@ theorem spsc_close_au (γ : SpscNames) (ch : Loc) (P : Int → V → IProp GF) (
       closeAu γ.chanName V Φ := by
   unfold isSpsc closeAu
   iintro ⟨#Hchan, #Hinv⟩ Hlc1 ⟨Hprod, HR⟩ Hcont
+  iapply ncfupd_of_fupd
   iinv Hinv with Hi Hclose
   imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi
   icases spscInv_elim _ _ _ $$ Hi with ⟨%s, %sent0, %recv, Hch, HsentI, HrecvI, %Hrel, Hm⟩

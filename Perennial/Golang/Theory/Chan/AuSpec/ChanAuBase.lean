@@ -12,6 +12,14 @@ Notes:
   derived here).
 * `1/2` is `(1 : Qp).half`.
 * `isChan` and `ownChan` are sealed (`@[irreducible]` + `_unseal`).
+* The crash token. Each atomic update is a crash-token update
+  (`|NC={⊤,∅}=> …`, `ncfupd`, `Perennial/GooseLang/NotCrashed.lean`): the client's
+  update gets the generation's `notCrashed` and gives it back with the channel state,
+  so that an update linearized with a channel operation may open an invariant shared
+  with the generations after a crash (`inv_nc_acc`). The channel proofs run the
+  client's update before a step of the channel code (`wp_ncfupd`), where the token is
+  available. A plain update is one (`ncfupd_of_fupd`): a proof of an atomic update
+  that needs no token starts with `unfold sendAu; iapply ncfupd_of_fupd`.
 -/
 module
 
@@ -19,6 +27,7 @@ public import Perennial.Golang.Theory.Chan.AuSpec.ChanInit
 public import Perennial.Golang.Theory.Lock
 public import Perennial.Golang.Theory.Slice
 public import Perennial.Golang.Defn.Chan
+public import Perennial.GooseLang.NotCrashed
 
 @[expose] public section
 
@@ -158,7 +167,7 @@ variable [ZeroVal V]
 
 /-- Inner atomic update for receive completion (second phase of handshake). -/
 def recvNestedAu (Φ : V → Bool → IProp GF) : IProp GF :=
-  iprop(|={⊤,∅}=> ▷ ∃ s : ChanState V, "Hocinner" ∷ ownChan γ V s ∗
+  iprop(|NC={⊤,∅}=> ▷ ∃ s : ChanState V, "Hocinner" ∷ ownChan γ V s ∗
     "Hcontinner" ∷
     (match s with
       -- Case: Sender has committed, complete the exchange
@@ -169,7 +178,7 @@ def recvNestedAu (Φ : V → Bool → IProp GF) : IProp GF :=
 
 /-- Slow path receive: may need to block and wait. -/
 def recvAu (Φ : V → Bool → IProp GF) : IProp GF :=
-  iprop(|={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
+  iprop(|NC={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
     "Hcont" ∷
     (match s with
       -- Case: Sender is waiting, can complete immediately
@@ -186,7 +195,7 @@ def recvAu (Φ : V → Bool → IProp GF) : IProp GF :=
 
 /-- The atomic update of `nonblockingRecvAu`. -/
 def nonblockingRecvAuInner (Φ : V → Bool → IProp GF) : IProp GF :=
-  iprop(|={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
+  iprop(|NC={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
     "Hcont" ∷
     (match s with
       -- Case: Sender is waiting, can complete immediately
@@ -205,7 +214,7 @@ def nonblockingRecvAu (Φ : V → Bool → IProp GF) (Φnotready : IProp GF) : I
 
 /-- See `nonblockingSendAuAlt` documentation below. -/
 def nonblockingRecvAuAlt (Φ : V → Bool → IProp GF) (Φnotready : IProp GF) : IProp GF :=
-  iprop(|={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
+  iprop(|NC={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
     "Hcont" ∷
     (match s with
       | .SndPending v => iprop(ownChan γ V .RcvCommit ={∅,⊤}=∗ Φ v true)
@@ -218,7 +227,7 @@ variable {V}
 
 /-- Inner atomic update for send completion (second phase of handshake). -/
 def sendNestedAu (Φ : IProp GF) : IProp GF :=
-  iprop(|={⊤,∅}=> ▷ ∃ s : ChanState V, "Hocinner" ∷ ownChan γ V s ∗
+  iprop(|NC={⊤,∅}=> ▷ ∃ s : ChanState V, "Hocinner" ∷ ownChan γ V s ∗
     "Hcontinner" ∷
     (match s with
       -- Case: Receiver has committed, complete the exchange
@@ -229,7 +238,7 @@ def sendNestedAu (Φ : IProp GF) : IProp GF :=
 
 /-- Slow path send: may need to block and wait. -/
 def sendAu (v : V) (Φ : IProp GF) : IProp GF :=
-  iprop(|={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
+  iprop(|NC={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
     "Hcont" ∷
     (match s with
       -- Case: Receiver is waiting, can complete immediately
@@ -245,7 +254,7 @@ def sendAu (v : V) (Φ : IProp GF) : IProp GF :=
 
 /-- The atomic update of `nonblockingSendAu`. -/
 def nonblockingSendAuInner (v : V) (Φ : IProp GF) : IProp GF :=
-  iprop(|={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
+  iprop(|NC={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
     "Hcont" ∷
     (match s with
       -- Case: Receiver is waiting, can complete immediately
@@ -264,7 +273,7 @@ def nonblockingSendAu (v : V) (Φ Φnotready : IProp GF) : IProp GF :=
 This is only an illustrative example. Proofs and specs should always use
 `sendAu`. -/
 def bufferedSendAu (v : V) (Φ : IProp GF) : IProp GF :=
-  iprop(|={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
+  iprop(|NC={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
     "Hcont" ∷
     (match s with
       | .Buffered buf => iprop(ownChan γ V (.Buffered (buf ++ [v])) ={∅,⊤}=∗ Φ)
@@ -293,7 +302,7 @@ nonblocking channel operations. To be worth it, it would also require having a
 canonical version of the select spec, for which there are currently two (see
 `Perennial/Golang/Theory/Chan.lean`). -/
 def nonblockingSendAuAlt (v : V) (Φ Φnotready : IProp GF) : IProp GF :=
-  iprop(|={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
+  iprop(|NC={⊤,∅}=> ▷ ∃ s : ChanState V, "Hoc" ∷ ownChan γ V s ∗
     "Hcont" ∷
     (match s with
       | .RcvPending => iprop(ownChan γ V (.SndCommit v) ={∅,⊤}=∗ Φ)
@@ -308,7 +317,7 @@ def nonblockingSendAuAlt (v : V) (Φ Φnotready : IProp GF) : IProp GF :=
 variable (V)
 
 def closeAu (Φ : IProp GF) : IProp GF :=
-  iprop(|={⊤,∅}=> ▷ ∃ s : ChanState V, "Hocinner" ∷ ownChan γ V s ∗
+  iprop(|NC={⊤,∅}=> ▷ ∃ s : ChanState V, "Hocinner" ∷ ownChan γ V s ∗
     "Hcontinner" ∷
     (match s with
       -- Case: Ready to close unbuffered
@@ -480,8 +489,10 @@ theorem blocking_rcv_implies_nonblocking [ZeroVal V] (Φ : V → Bool → IProp 
   unfold nonblockingRecvAu nonblockingRecvAuInner
   isplit
   · unfold recvAu
-    imod Hau with ⟨%s, Hoc, Hcont⟩
+    iintro Hnc
+    imod Hau $$ Hnc with ⟨Hnc, %s, Hoc, Hcont⟩
     imodintro
+    iframe Hnc
     inext
     iexists s
     iframe Hoc
@@ -494,8 +505,10 @@ theorem blocking_send_implies_nonblocking (Φ : IProp GF) (v : V) :
   unfold nonblockingSendAu nonblockingSendAuInner
   isplit
   · unfold sendAu
-    imod Hchan with ⟨%s, Hoc, Hcont⟩
+    iintro Hnc
+    imod Hchan $$ Hnc with ⟨Hnc, %s, Hoc, Hcont⟩
     imodintro
+    iframe Hnc
     inext
     iexists s
     iframe Hoc
@@ -507,9 +520,10 @@ theorem blocking_send_implies_nonblocking (Φ : IProp GF) (v : V) :
 theorem sendNestedAu_wand (Φ1 Φ2 : IProp GF) :
     ⊢ sendNestedAu (V := V) γ Φ1 -∗ (Φ1 -∗ Φ2) -∗ sendNestedAu (V := V) γ Φ2 := by
   unfold sendNestedAu
-  iintro Hau Hw
-  imod Hau with Hau
+  iintro Hau Hw Hnc
+  imod Hau $$ Hnc with ⟨Hnc, Hau⟩
   imodintro
+  iframe Hnc
   inext
   icases Hau with ⟨%s, Hoc, Hcont⟩
   iexists s
@@ -523,9 +537,10 @@ theorem sendNestedAu_wand (Φ1 Φ2 : IProp GF) :
 theorem sendAu_wand (v : V) (Φ1 Φ2 : IProp GF) :
     ⊢ sendAu γ v Φ1 -∗ (Φ1 -∗ Φ2) -∗ sendAu γ v Φ2 := by
   unfold sendAu
-  iintro Hau Hw
-  imod Hau with Hau
+  iintro Hau Hw Hnc
+  imod Hau $$ Hnc with ⟨Hnc, Hau⟩
   imodintro
+  iframe Hnc
   inext
   icases Hau with ⟨%s, Hoc, Hcont⟩
   iexists s
@@ -544,9 +559,10 @@ theorem sendAu_wand (v : V) (Φ1 Φ2 : IProp GF) :
 theorem closeAu_wand (Φ1 Φ2 : IProp GF) :
     ⊢ closeAu γ V Φ1 -∗ (Φ1 -∗ Φ2) -∗ closeAu γ V Φ2 := by
   unfold closeAu
-  iintro Hau Hw
-  imod Hau with Hau
+  iintro Hau Hw Hnc
+  imod Hau $$ Hnc with ⟨Hnc, Hau⟩
   imodintro
+  iframe Hnc
   inext
   icases Hau with ⟨%s, Hoc, Hcont⟩
   iexists s
@@ -560,9 +576,10 @@ theorem closeAu_wand (Φ1 Φ2 : IProp GF) :
 theorem recvNestedAu_wand [ZeroVal V] (Φ1 Φ2 : V → Bool → IProp GF) :
     ⊢ recvNestedAu γ V Φ1 -∗ (∀ v ok, Φ1 v ok -∗ Φ2 v ok) -∗ recvNestedAu γ V Φ2 := by
   unfold recvNestedAu
-  iintro Hau Hw
-  imod Hau with Hau
+  iintro Hau Hw Hnc
+  imod Hau $$ Hnc with ⟨Hnc, Hau⟩
   imodintro
+  iframe Hnc
   inext
   icases Hau with ⟨%s, Hoc, Hcont⟩
   iexists s
@@ -576,9 +593,10 @@ theorem recvNestedAu_wand [ZeroVal V] (Φ1 Φ2 : V → Bool → IProp GF) :
 theorem recvAu_wand [ZeroVal V] (Φ1 Φ2 : V → Bool → IProp GF) :
     ⊢ recvAu γ V Φ1 -∗ (∀ v ok, Φ1 v ok -∗ Φ2 v ok) -∗ recvAu γ V Φ2 := by
   unfold recvAu
-  iintro Hau Hw
-  imod Hau with Hau
+  iintro Hau Hw Hnc
+  imod Hau $$ Hnc with ⟨Hnc, Hau⟩
   imodintro
+  iframe Hnc
   inext
   icases Hau with ⟨%s, Hoc, Hcont⟩
   iexists s
@@ -597,9 +615,10 @@ theorem recvAu_wand [ZeroVal V] (Φ1 Φ2 : V → Bool → IProp GF) :
 theorem nonblockingSendAuInner_wand (v : V) (Φ1 Φ2 : IProp GF) :
     ⊢ nonblockingSendAuInner γ v Φ1 -∗ (Φ1 -∗ Φ2) -∗ nonblockingSendAuInner γ v Φ2 := by
   unfold nonblockingSendAuInner
-  iintro Hau Hw
-  imod Hau with Hau
+  iintro Hau Hw Hnc
+  imod Hau $$ Hnc with ⟨Hnc, Hau⟩
   imodintro
+  iframe Hnc
   inext
   icases Hau with ⟨%s, Hoc, Hcont⟩
   iexists s
@@ -614,9 +633,10 @@ theorem nonblockingRecvAuInner_wand [ZeroVal V] (Φ1 Φ2 : V → Bool → IProp 
     ⊢ nonblockingRecvAuInner γ V Φ1 -∗ (∀ v ok, Φ1 v ok -∗ Φ2 v ok) -∗
       nonblockingRecvAuInner γ V Φ2 := by
   unfold nonblockingRecvAuInner
-  iintro Hau Hw
-  imod Hau with Hau
+  iintro Hau Hw Hnc
+  imod Hau $$ Hnc with ⟨Hnc, Hau⟩
   imodintro
+  iframe Hnc
   inext
   icases Hau with ⟨%s, Hoc, Hcont⟩
   iexists s
@@ -631,9 +651,10 @@ theorem nonblockingSendAuAlt_wand (v : V) (Φ1 Φ2 N1 N2 : IProp GF) :
     ⊢ nonblockingSendAuAlt γ v Φ1 N1 -∗ ((Φ1 -∗ Φ2) ∧ (N1 -∗ N2)) -∗
       nonblockingSendAuAlt γ v Φ2 N2 := by
   unfold nonblockingSendAuAlt
-  iintro Hau Hw
-  imod Hau with Hau
+  iintro Hau Hw Hnc
+  imod Hau $$ Hnc with ⟨Hnc, Hau⟩
   imodintro
+  iframe Hnc
   inext
   icases Hau with ⟨%s, Hoc, Hcont⟩
   iexists s
@@ -658,9 +679,10 @@ theorem nonblockingRecvAuAlt_wand [ZeroVal V] (Φ1 Φ2 : V → Bool → IProp GF
     ⊢ nonblockingRecvAuAlt γ V Φ1 N1 -∗ ((∀ v ok, Φ1 v ok -∗ Φ2 v ok) ∧ (N1 -∗ N2)) -∗
       nonblockingRecvAuAlt γ V Φ2 N2 := by
   unfold nonblockingRecvAuAlt
-  iintro Hau Hw
-  imod Hau with Hau
+  iintro Hau Hw Hnc
+  imod Hau $$ Hnc with ⟨Hnc, Hau⟩
   imodintro
+  iframe Hnc
   inext
   icases Hau with ⟨%s, Hoc, Hcont⟩
   iexists s

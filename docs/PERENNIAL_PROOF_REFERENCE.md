@@ -1315,6 +1315,55 @@ threads (`RealCrashThreadsBelow.of_single`), and `fsGF` (with `fsGpreS`)
 provides the ghost state of a filesystem program, so the example's
 `crash_safety` mentions neither.
 
+#### Crash-shared state and the crash token
+
+Files: `Perennial/GooseLang/NotCrashed.lean`, `GooseLang/CrashToken.lean`; example
+`Perennial/ProgramLogic/NotCrashedChanTest.lean`.
+
+State that a generation shares with the generations after its crash lives in an
+invariant of the form `inv N (P ∨ crashed ∗ tok)`: `P` while the generation runs, and
+after its crash `crashed ∗ tok`, which the crash obligation of `Hwp` (holding the
+exclusive `tok`) swaps in to take `P` for the next generation (`token γ`,
+`Ghost/Token.lean`, is a ready `tok`). A thread of the running generation must rule
+out the crash side to use `P` at all, to update it and also to read it (a later
+generation may have changed it): that takes the generation's `notCrashed`. No thread
+owns it: the state interpretation does (`gooseBstateInterp`), so a thread holds it
+only at a step. So a ghost step on crash-shared state needs one of:
+
+* `ncfupd E1 E2 P`, notation `|NC={E1,E2}=> P` (`|NC={E}=> P`): the crash-token
+  update, `notCrashed -∗ |={E1,E2}=> notCrashed ∗ P`. A plain update is one
+  (`ncfupd_of_fupd`); `ncfupd_trans`, `ncfupd_wand`, `ncfupd_bind`,
+  `ncfupd_fupd_l`/`_r` compose them. It is reducible: open one with
+  `imod H $$ Hnc with ⟨Hnc, H⟩`.
+* `inv_nc_acc Hsub : inv N (P ∨ crashed ∗ Q) ⊢ |NC={E, E ∖ N}=> ▷ P ∗ (▷ P ={E ∖ N, E}=∗ True)`:
+  open such an invariant on its live side (`notCrashed_or_crashed`, `ncfupd_or_crashed`:
+  the same without an invariant).
+* `wp_ncfupd e Φ h : (|NC={E}=> WP e {{ Φ }}) ⊢ WP e {{ Φ }}` for a non-value `e`
+  (`h : toVal e = none`, usually `rfl`): an update before a step (in a proof,
+  `iapply wp_ncfupd _ _ rfl` and `iintro Hnc` in place of `iapply fupd_wp`). Also
+  `wp_notCrashed_acc` (the same, unfolded).
+* `wp_atomic_nc`: `wp_atomic` whose mask-changing update before the atomic step is a
+  crash-token update (the client's update of a logically atomic spec around an atomic
+  step).
+* `wp_ncfupd_post e Φ h : WP e {{ v, |NC={E}=> Φ v }} ⊢ WP e {{ Φ }}`: an update in the
+  postcondition of a non-value `e`, run after its last step (a ghost step at a function's
+  return).
+
+The channel specifications' atomic updates (`sendAu`, `recvAu`, `sendNestedAu`,
+`recvNestedAu`, `closeAu`, the nonblocking and `Alt` ones, `bufferedSendAu`,
+`Golang/Theory/Chan/AuSpec/ChanAuBase.lean`) are crash-token updates:
+`|NC={⊤,∅}=> ▷ ∃ s, ownChan γ V s ∗ …`. The channel code runs the client's update at
+its linearization point (`wp_ncfupd`, in `ChanAuSend.lean`/`ChanAuRecv.lean`), so the
+update may open a crash-shared invariant: a ghost step on crash-shared state
+linearized with a send, a receive or a close (also in a `select` clause, whose
+precondition is such an update, and in the channel idioms). To prove one of them,
+`unfold sendAu`, then either `iintro Hnc` (to use the token: `inv_nc_acc ... $$ Hinv`,
+then `imod H $$ Hnc with ⟨Hnc, HP, Hclose⟩`, and give `Hnc` back after the mask-changing
+update to `∅`) or `iapply ncfupd_of_fupd` (without it, as before). The example
+`NotCrashedChanTest` is a goroutine whose `select { case ch <- 1: ; case <-done: }`
+increments a counter kept in a crash invariant exactly when the send fires, proved up to
+`goose_crash_adequacy` (`crash_safety`).
+
 ### Distributed systems
 
 Files: `Perennial/GooseLang/DistLang.lean` (`DistCfg`, `DistStep`,

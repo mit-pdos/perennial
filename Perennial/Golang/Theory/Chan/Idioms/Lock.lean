@@ -85,6 +85,7 @@ theorem lock_channel_send_au (γ : LockChannelNames) (ch : Loc) (v : V) (R : IPr
     ⊢ isLockChannel V γ ch R -∗ £ 1 -∗ ▷ (R -∗ Φ) -∗ sendAu γ.lchanName v Φ := by
   unfold isLockChannel sendAu
   iintro ⟨#Hchan, #Hinv⟩ Hlc Hcont
+  iapply ncfupd_of_fupd
   iinv Hinv with Hi Hclose
   imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc Hi with Hi
   unfold lockChannelInv
@@ -120,7 +121,8 @@ theorem lock_channel_nonblocking_send_au (γ : LockChannelNames) (ch : Loc) (v :
   unfold isLockChannel nonblockingSendAu nonblockingSendAuInner
   iintro ⟨#Hchan, #Hinv⟩ Hlc HΦ
   isplit
-  · iinv Hinv with Hi Hclose
+  · iapply ncfupd_of_fupd
+    iinv Hinv with Hi Hclose
     imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc Hi with Hi
     unfold lockChannelInv
     icases Hi with ⟨%s, %locked, Hch, %Hcap, Hi⟩
@@ -165,6 +167,7 @@ theorem lock_channel_recv_au (γ : LockChannelNames) (ch : Loc) (R : IProp GF)
       recvAu γ.lchanName V Φ := by
   unfold isLockChannel recvAu
   iintro ⟨#Hchan, #Hinv⟩ HR Hlc HΦcont
+  iapply ncfupd_of_fupd
   iinv Hinv with Hi Hclose
   imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc Hi with Hi
   unfold lockChannelInv

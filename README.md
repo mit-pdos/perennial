@@ -38,7 +38,11 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   generation's local ghost state `L`, which each generation's proof guarantees
   for the next generation after its crash, from its persistent `crashed` token (exclusive with the `notCrashed` that its state interpretation owns,
   `GooseLang/CrashToken.lean`). There are no crash reasoning principles yet
-  (no `crash_own`). End-to-end example: the Go package
+  (no `crash_own`) beyond the crash-token update (`ncfupd`,
+  `GooseLang/NotCrashed.lean`), by which a ghost step may use `notCrashed`
+  (to open an invariant `inv N (P ∨ crashed ∗ tok)` shared with later
+  generations), before a step or in the client's update of a channel
+  operation's atomic update. End-to-end example: the Go package
   `goose/testdata/examples/crashfs`, a boot program on a toy filesystem
   (`GooseLang/Ext/Fs`, Go side `crashfs/fsext`; not a sound model of a Linux
   filesystem, see `GooseLang/Ext/Fs/Impl.lean`) whose `panic` assertions never

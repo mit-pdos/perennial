@@ -70,6 +70,7 @@ theorem context.initialize'.wp_proof
   wp_apply_core chan.wp_close (V := Unit) ch γ $$ His_ch
   iintro -
   unfold closeAu
+  iapply ncfupd_of_fupd
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
   inext

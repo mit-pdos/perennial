@@ -74,6 +74,7 @@ theorem bag_recv_au (γ : ChanNames) (ch : Loc) (P : V → IProp GF) (Φ : V →
     ⊢ £ 1 ∗ £ 1 -∗ isChanBag γ ch P -∗ (▷ ∀ v, P v -∗ Φ v true) -∗ recvAu γ V Φ := by
   rw [isChanBag_unseal]; unfold isChanBagDef recvAu
   iintro ⟨Hlc1, Hlc2⟩ ⟨#Hch, #Hinv⟩ HΦ
+  iapply ncfupd_of_fupd
   iinv Hinv with Hi Hclose
   imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi
   unfold chanBagInv
@@ -100,6 +101,7 @@ theorem bag_recv_au (γ : ChanNames) (ch : Loc) (P : V → IProp GF) (Φ : V →
     · inext; iexists .RcvPending; iframe
     imodintro
     unfold recvNestedAu
+    iapply ncfupd_of_fupd
     iinv Hinv with Hi Hclose
     imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc2 Hi with Hi
     icases Hi with ⟨%s, Hoc1, Hi⟩
@@ -141,6 +143,7 @@ theorem bag_send_au (γ : ChanNames) (ch : Loc) (P : V → IProp GF) (v : V) (Φ
     ⊢ £ 1 ∗ £ 1 -∗ isChanBag γ ch P -∗ P v -∗ ▷ Φ -∗ sendAu γ v Φ := by
   rw [isChanBag_unseal]; unfold isChanBagDef sendAu
   iintro ⟨Hlc1, Hlc2⟩ ⟨#Hch, #Hinv⟩ HP HΦ
+  iapply ncfupd_of_fupd
   iinv Hinv with Hi Hclose
   imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi
   unfold chanBagInv
@@ -172,6 +175,7 @@ theorem bag_send_au (γ : ChanNames) (ch : Loc) (P : V → IProp GF) (v : V) (Φ
     · inext; iexists .SndPending v; iframe
     imodintro
     unfold sendNestedAu
+    iapply ncfupd_of_fupd
     iinv Hinv with Hi Hclose
     imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc2 Hi with Hi
     icases Hi with ⟨%s, Hoc1, Hi⟩

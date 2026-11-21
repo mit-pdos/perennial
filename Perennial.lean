@@ -14,6 +14,7 @@ public import Perennial.GooseLang.IPersist
 public import Perennial.GooseLang.Adequacy
 public import Perennial.GooseLang.AdequacyAlong
 public import Perennial.GooseLang.CrashToken
+public import Perennial.GooseLang.NotCrashed
 public import Perennial.GooseLang.CrashLang
 public import Perennial.GooseLang.CrashAdequacy
 public import Perennial.GooseLang.DistLang

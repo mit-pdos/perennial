@@ -672,6 +672,7 @@ theorem closed_chan_receive (γ : ChanNames) (Φ : Unit → Bool → IProp GF) :
     ⊢ inv closedchanN (ownChan γ Unit (.Closed [])) -∗ Φ () false -∗ recvAu γ Unit Φ := by
   iintro #Hinv HΦ
   unfold recvAu
+  iapply ncfupd_of_fupd
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
@@ -692,6 +693,7 @@ theorem closed_chan_nonblocking_receive (γ : ChanNames) (Φ : Unit → Bool →
       nonblockingRecvAuAlt γ Unit Φ Φnotready := by
   iintro #Hinv HΦ
   unfold nonblockingRecvAuAlt
+  iapply ncfupd_of_fupd
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
@@ -733,6 +735,7 @@ theorem broadcast_chan_nonblocking_receive_Q (ch : GoChan) (γ : ChanNames) (Q :
   icases ownBroadcastChan_open _ _ _ _ $$ Hown with ⟨%γch, #Hint, -⟩
   ihave #Hinv := isBroadcastChanInternal_inv _ _ _ _ $$ Hint
   unfold nonblockingRecvAuAlt
+  iapply ncfupd_of_fupd
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask

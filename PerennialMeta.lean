@@ -92,6 +92,7 @@ public import Perennial.GooseLang.Lang
 public import Perennial.GooseLang.Lifting
 public import Perennial.GooseLang.LiftingBytes
 public import Perennial.GooseLang.Locations
+public import Perennial.GooseLang.NotCrashed
 public import Perennial.GooseLang.Notation
 public import Perennial.GooseLang.Receipts
 public import Perennial.GooseLang.Threads

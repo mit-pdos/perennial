@@ -193,9 +193,10 @@ theorem wp_TrySend_blocking (ch : Loc) (v : V) (γ : ChanNames) :
       wp_apply wp_slice_append $$ [slice slice_cap Hsl] with %fr ⟨Hfr, Hfrsl, Hsl⟩
       · iframe
       icases HΦ with ⟨HΦ, -⟩
-      iapply fupd_wp
+      iapply wp_ncfupd _ _ rfl
+      iintro Hnc
       unfold sendAu
-      imod HΦ with HΦ
+      imod HΦ $$ Hnc with ⟨Hnc, HΦ⟩
       imod lc_fupd_elim_later $$ Hlc1 HΦ with HΦ
       iNamed HΦ
       ihave %Heq := ownChan_agree _ _ _ _ $$ offer Hoc
@@ -208,6 +209,7 @@ theorem wp_TrySend_blocking (ch : Loc) (v : V) (γ : ChanNames) :
       dsimp only
       imod Hcont $$ Hgv1 with Hstep
       imodintro
+      iframe Hnc
       wp_apply Mutex.wp_Unlock $$ [$lock $Hlock state buffer Hfr Hfrsl Hgv2]
       · iapply chanInvInner_intro _ _ _ (ChanPhysState.Buffered (buffer ++ [v]))
         simp only [chanPhys, chanLogical]
@@ -284,9 +286,10 @@ theorem wp_TrySend_blocking (ch : Loc) (v : V) (γ : ChanNames) :
       iNamed phys
       simp only [chanLogical]
       iNamed offer
-      iapply fupd_wp
+      iapply wp_ncfupd _ _ rfl
+      iintro Hnc
       unfold sendNestedAu
-      imod Hau with Hau
+      imod Hau $$ Hnc with ⟨Hnc, Hau⟩
       imod lc_fupd_elim_later $$ Hlc1 Hau with Hau
       iNamed Hau
       ihave %Hseq := ownChan_agree _ _ _ _ $$ Hocinner offer
@@ -295,6 +298,7 @@ theorem wp_TrySend_blocking (ch : Loc) (v : V) (γ : ChanNames) :
       dsimp only
       imod Hcontinner $$ Hgv1 with Hcont
       imodintro
+      iframe Hnc
       imod savedOffer_lc_agree γ V _ _ _ _ _ _ $$ Hlc2 offer2 Hoffer with ⟨%Heq, #Hpeq, #H, H1⟩
       wp_auto
       wp_apply Mutex.wp_Unlock $$ [$lock $Hlock state v slice slice_cap buffer Hpred H1 Hgv2]
@@ -337,9 +341,10 @@ theorem wp_TrySend_blocking (ch : Loc) (v : V) (γ : ChanNames) :
     simp only [chanLogical]
     iNamed offer
     ihave HP := Hau $$ HP
-    iapply fupd_wp
+    iapply wp_ncfupd _ _ rfl
+    iintro Hnc
     unfold recvAu
-    imod HP with HP
+    imod HP $$ Hnc with ⟨Hnc, HP⟩
     imod lc_fupd_elim_later $$ Hlc1 HP with HP
     iNamed HP
     ihave %Hseq := ownChan_agree _ _ _ _ $$ Hoc offer
@@ -351,7 +356,7 @@ theorem wp_TrySend_blocking (ch : Loc) (v : V) (γ : ChanNames) :
     imod Hcont $$ Hgv2 with Hcont1
     icases HΦ with ⟨HΦ, -⟩
     unfold sendAu
-    imod HΦ with HΦ
+    imod HΦ $$ Hnc with ⟨Hnc, HΦ⟩
     imod lc_fupd_elim_later $$ Hlc2 HΦ with HΦ
     iNamed HΦ
     ihave %Hseq := ownChan_agree _ _ _ _ $$ Hgv1 Hoc
@@ -361,6 +366,7 @@ theorem wp_TrySend_blocking (ch : Loc) (v : V) (γ : ChanNames) :
     dsimp only
     imod Hcont $$ Hgv2 with Hcont
     imodintro
+    iframe Hnc
     wp_apply Mutex.wp_Unlock $$ [$lock $Hlock state v slice slice_cap buffer Hgv1 Hcont1 Hpred Hoffer]
     · iapply chanInvInner_intro _ _ _ (ChanPhysState.SndDone v)
       simp only [chanPhys, chanLogical]
@@ -386,9 +392,10 @@ theorem wp_TrySend_blocking (ch : Loc) (v : V) (γ : ChanNames) :
     iexact HΦ
   | Closed buff =>
     icases HΦ with ⟨HΦ, -⟩
-    iapply fupd_wp
+    iapply wp_ncfupd _ _ rfl
+    iintro Hnc
     unfold sendAu
-    imod HΦ with HΦ
+    imod HΦ $$ Hnc with ⟨Hnc, HΦ⟩
     imod lc_fupd_elim_later $$ Hlc1 HΦ with HΦ
     iNamed HΦ
     cases buff with
@@ -433,8 +440,9 @@ theorem wp_TrySend_nonblocking (ch : Loc) (v : V) (γ : ChanNames) :
     wp_auto
     wp_if_destruct
     · icases HΦ with ⟨HΦ, -⟩
-      iapply fupd_wp
-      imod HΦ with HΦ
+      iapply wp_ncfupd _ _ rfl
+      iintro Hnc
+      imod HΦ $$ Hnc with ⟨Hnc, HΦ⟩
       imod lc_fupd_elim_later $$ Hlc1 HΦ with HΦ
       iNamed HΦ
       ihave %Heq := ownChan_agree _ _ _ _ $$ offer Hoc
@@ -447,6 +455,7 @@ theorem wp_TrySend_nonblocking (ch : Loc) (v : V) (γ : ChanNames) :
       dsimp only
       imod Hcont $$ Hgv1 with Hstep
       imodintro
+      iframe Hnc
       wp_apply wp_slice_literal (V := V) [v]
       isplitr
       · ipureintro; rfl
@@ -490,9 +499,10 @@ theorem wp_TrySend_nonblocking (ch : Loc) (v : V) (γ : ChanNames) :
     simp only [chanLogical]
     iNamed offer
     ihave HP := Hau $$ HP
-    iapply fupd_wp
+    iapply wp_ncfupd _ _ rfl
+    iintro Hnc
     unfold recvAu
-    imod HP with HP
+    imod HP $$ Hnc with ⟨Hnc, HP⟩
     imod lc_fupd_elim_later $$ Hlc1 HP with HP
     iNamed HP
     ihave %Hseq := ownChan_agree _ _ _ _ $$ Hoc offer
@@ -503,7 +513,7 @@ theorem wp_TrySend_nonblocking (ch : Loc) (v : V) (γ : ChanNames) :
     dsimp only
     imod Hcont $$ Hgv2 with Hcont1
     icases HΦ with ⟨HΦ, -⟩
-    imod HΦ with HΦ
+    imod HΦ $$ Hnc with ⟨Hnc, HΦ⟩
     imod lc_fupd_elim_later $$ Hlc2 HΦ with HΦ
     iNamed HΦ
     ihave %Hseq := ownChan_agree _ _ _ _ $$ Hgv1 Hoc
@@ -513,6 +523,7 @@ theorem wp_TrySend_nonblocking (ch : Loc) (v : V) (γ : ChanNames) :
     dsimp only
     imod Hcont $$ Hgv2 with Hcont
     imodintro
+    iframe Hnc
     wp_apply Mutex.wp_Unlock $$ [$lock $Hlock state v slice slice_cap buffer Hgv1 Hcont1 Hpred Hoffer]
     · iapply chanInvInner_intro _ _ _ (ChanPhysState.SndDone v)
       simp only [chanPhys, chanLogical]
@@ -538,8 +549,9 @@ theorem wp_TrySend_nonblocking (ch : Loc) (v : V) (γ : ChanNames) :
     iexact HΦ
   | Closed buff =>
     icases HΦ with ⟨HΦ, -⟩
-    iapply fupd_wp
-    imod HΦ with HΦ
+    iapply wp_ncfupd _ _ rfl
+    iintro Hnc
+    imod HΦ $$ Hnc with ⟨Hnc, HΦ⟩
     imod lc_fupd_elim_later $$ Hlc1 HΦ with HΦ
     iNamed HΦ
     cases buff with
@@ -583,8 +595,9 @@ theorem wp_TrySend_nonblocking_alt (ch : Loc) (v : V) (γ : ChanNames) :
     ihave %Hlen := ownSlice_len _ _ _ $$ slice
     wp_auto
     wp_if_destruct
-    · iapply fupd_wp
-      imod HΦ with HΦ
+    · iapply wp_ncfupd _ _ rfl
+      iintro Hnc
+      imod HΦ $$ Hnc with ⟨Hnc, HΦ⟩
       imod lc_fupd_elim_later $$ Hlc1 HΦ with HΦ
       iNamed HΦ
       ihave %Heq := ownChan_agree _ _ _ _ $$ offer Hoc
@@ -598,6 +611,7 @@ theorem wp_TrySend_nonblocking_alt (ch : Loc) (v : V) (γ : ChanNames) :
         constructor <;> word
       imod Hcont $$ Hgv1 with Hstep
       imodintro
+      iframe Hnc
       wp_apply wp_slice_literal (V := V) [v]
       isplitr
       · ipureintro; rfl
@@ -610,8 +624,9 @@ theorem wp_TrySend_nonblocking_alt (ch : Loc) (v : V) (γ : ChanNames) :
         simp only [chanPhys, chanLogical]
         iframe
       iexact Hstep
-    · iapply fupd_wp
-      imod HΦ with HΦ
+    · iapply wp_ncfupd _ _ rfl
+      iintro Hnc
+      imod HΦ $$ Hnc with ⟨Hnc, HΦ⟩
       imod lc_fupd_elim_later $$ Hlc1 HΦ with HΦ
       iNamed HΦ
       ihave %Heq := ownChan_agree _ _ _ _ $$ offer Hoc
@@ -620,6 +635,7 @@ theorem wp_TrySend_nonblocking_alt (ch : Loc) (v : V) (γ : ChanNames) :
       rw [ite_eq_right (by word)]
       imod Hcont $$ Hoc with HΦ
       imodintro
+      iframe Hnc
       wp_apply Mutex.wp_Unlock $$ [$lock $Hlock state buffer slice slice_cap offer]
       · iapply chanInvInner_intro _ _ _ (ChanPhysState.Buffered buffer)
         simp only [chanPhys, chanLogical]
@@ -628,8 +644,9 @@ theorem wp_TrySend_nonblocking_alt (ch : Loc) (v : V) (γ : ChanNames) :
   | Idle =>
     iNamed phys
     wp_auto
-    iapply fupd_wp
-    imod HΦ with HΦ
+    iapply wp_ncfupd _ _ rfl
+    iintro Hnc
+    imod HΦ $$ Hnc with ⟨Hnc, HΦ⟩
     imod lc_fupd_elim_later $$ Hlc1 HΦ with HΦ
     iNamed HΦ
     simp only [chanLogical]
@@ -639,6 +656,7 @@ theorem wp_TrySend_nonblocking_alt (ch : Loc) (v : V) (γ : ChanNames) :
     dsimp only
     imod Hcont $$ Hoc with HΦ
     imodintro
+    iframe Hnc
     wp_apply Mutex.wp_Unlock $$ [$lock $Hlock state v slice slice_cap buffer Hoffer Hpred offer]
     · iapply chanInvInner_intro _ _ _ (ChanPhysState.Idle)
       simp only [chanPhys, chanLogical]
@@ -650,8 +668,9 @@ theorem wp_TrySend_nonblocking_alt (ch : Loc) (v : V) (γ : ChanNames) :
   | SndWait v' =>
     iNamed phys
     wp_auto
-    iapply fupd_wp
-    imod HΦ with HΦ
+    iapply wp_ncfupd _ _ rfl
+    iintro Hnc
+    imod HΦ $$ Hnc with ⟨Hnc, HΦ⟩
     imod lc_fupd_elim_later $$ Hlc1 HΦ with HΦ
     iNamed HΦ
     simp only [chanLogical]
@@ -661,6 +680,7 @@ theorem wp_TrySend_nonblocking_alt (ch : Loc) (v : V) (γ : ChanNames) :
     dsimp only
     imod Hcont $$ Hoc with HΦ
     imodintro
+    iframe Hnc
     wp_apply Mutex.wp_Unlock $$ [$lock $Hlock state v slice slice_cap buffer Hoffer HP Hpred Hau offer]
     · iapply chanInvInner_intro _ _ _ (ChanPhysState.SndWait v')
       simp only [chanPhys, chanLogical]
@@ -676,9 +696,10 @@ theorem wp_TrySend_nonblocking_alt (ch : Loc) (v : V) (γ : ChanNames) :
     simp only [chanLogical]
     iNamed offer
     ihave HP := Hau $$ HP
-    iapply fupd_wp
+    iapply wp_ncfupd _ _ rfl
+    iintro Hnc
     unfold recvAu
-    imod HP with HP
+    imod HP $$ Hnc with ⟨Hnc, HP⟩
     imod lc_fupd_elim_later $$ Hlc1 HP with HP
     iNamed HP
     ihave %Hseq := ownChan_agree _ _ _ _ $$ Hoc offer
@@ -688,7 +709,7 @@ theorem wp_TrySend_nonblocking_alt (ch : Loc) (v : V) (γ : ChanNames) :
     imod ownChan_halves_update _ _ ChanState.RcvPending _ _ HcvIdle $$ offer Hoc with ⟨Hgv1, Hgv2⟩
     dsimp only
     imod Hcont $$ Hgv2 with Hcont1
-    imod HΦ with HΦ
+    imod HΦ $$ Hnc with ⟨Hnc, HΦ⟩
     imod lc_fupd_elim_later $$ Hlc2 HΦ with HΦ
     iNamed HΦ
     ihave %Hseq := ownChan_agree _ _ _ _ $$ Hgv1 Hoc
@@ -698,6 +719,7 @@ theorem wp_TrySend_nonblocking_alt (ch : Loc) (v : V) (γ : ChanNames) :
     dsimp only
     imod Hcont $$ Hgv2 with Hcont
     imodintro
+    iframe Hnc
     wp_apply Mutex.wp_Unlock $$ [$lock $Hlock state v slice slice_cap buffer Hgv1 Hcont1 Hpred Hoffer]
     · iapply chanInvInner_intro _ _ _ (ChanPhysState.SndDone v)
       simp only [chanPhys, chanLogical]
@@ -706,8 +728,9 @@ theorem wp_TrySend_nonblocking_alt (ch : Loc) (v : V) (γ : ChanNames) :
   | SndDone v' =>
     iNamed phys
     wp_auto
-    iapply fupd_wp
-    imod HΦ with HΦ
+    iapply wp_ncfupd _ _ rfl
+    iintro Hnc
+    imod HΦ $$ Hnc with ⟨Hnc, HΦ⟩
     imod lc_fupd_elim_later $$ Hlc1 HΦ with HΦ
     iNamed HΦ
     simp only [chanLogical]
@@ -717,6 +740,7 @@ theorem wp_TrySend_nonblocking_alt (ch : Loc) (v : V) (γ : ChanNames) :
     dsimp only
     imod Hcont $$ Hoc with HΦ
     imodintro
+    iframe Hnc
     wp_apply Mutex.wp_Unlock $$ [$lock $Hlock state v slice slice_cap buffer Hoffer Hpred Hau offer]
     · iapply chanInvInner_intro _ _ _ (ChanPhysState.SndDone v')
       simp only [chanPhys, chanLogical]
@@ -728,8 +752,9 @@ theorem wp_TrySend_nonblocking_alt (ch : Loc) (v : V) (γ : ChanNames) :
   | RcvDone =>
     iNamed phys
     wp_auto
-    iapply fupd_wp
-    imod HΦ with HΦ
+    iapply wp_ncfupd _ _ rfl
+    iintro Hnc
+    imod HΦ $$ Hnc with ⟨Hnc, HΦ⟩
     imod lc_fupd_elim_later $$ Hlc1 HΦ with HΦ
     iNamed HΦ
     simp only [chanLogical]
@@ -739,6 +764,7 @@ theorem wp_TrySend_nonblocking_alt (ch : Loc) (v : V) (γ : ChanNames) :
     dsimp only
     imod Hcont $$ Hoc with HΦ
     imodintro
+    iframe Hnc
     wp_apply Mutex.wp_Unlock $$ [$lock $Hlock state v slice slice_cap buffer Hoffer Hpred Hau offer]
     · iapply chanInvInner_intro _ _ _ (ChanPhysState.RcvDone)
       simp only [chanPhys, chanLogical]
@@ -748,8 +774,9 @@ theorem wp_TrySend_nonblocking_alt (ch : Loc) (v : V) (γ : ChanNames) :
       iframe
     iexact HΦ
   | Closed buff =>
-    iapply fupd_wp
-    imod HΦ with HΦ
+    iapply wp_ncfupd _ _ rfl
+    iintro Hnc
+    imod HΦ $$ Hnc with ⟨Hnc, HΦ⟩
     imod lc_fupd_elim_later $$ Hlc1 HΦ with HΦ
     iNamed HΦ
     cases buff with
@@ -838,8 +865,10 @@ theorem wp_BlockingSend (ch : Loc) (v : V) (γ : ChanNames) (Hcapnz : sint.Z γ.
   iintro Hlc
   ispecialize HΦ $$ Hlc
   unfold bufferedSendAu sendAu
-  imod HΦ with HΦ
+  iintro Hnc
+  imod HΦ $$ Hnc with ⟨Hnc, HΦ⟩
   imodintro
+  iframe Hnc
   inext
   iNamed HΦ
   ihave %Hcv := ownChan_cap_valid _ _ _ $$ Hoc
@@ -870,9 +899,10 @@ theorem wp_tryClose (ch : Loc) (γ : ChanNames) :
     simp only [ChanCapValid] at Hcv
     wp_auto
     icases HΦ with ⟨HΦ, -⟩
-    iapply fupd_wp
+    iapply wp_ncfupd _ _ rfl
+    iintro Hnc
     unfold closeAu
-    imod HΦ with HΦ
+    imod HΦ $$ Hnc with ⟨Hnc, HΦ⟩
     imod lc_fupd_elim_later $$ Hlc1 HΦ with HΦ
     iNamed HΦ
     ihave %Heq := ownChan_agree _ _ _ _ $$ Hocinner offer
@@ -883,6 +913,7 @@ theorem wp_tryClose (ch : Loc) (γ : ChanNames) :
     dsimp only
     imod Hcontinner $$ Hgv1 with HΦ
     imodintro
+    iframe Hnc
     wp_apply Mutex.wp_Unlock $$ [$lock $Hlock state slice slice_cap buffer Hgv2]
     · iapply chanInvInner_intro _ _ _ (ChanPhysState.Closed buffer)
       cases buffer with
@@ -905,9 +936,10 @@ theorem wp_tryClose (ch : Loc) (γ : ChanNames) :
     simp only [ChanCapValid] at Hcv
     wp_auto
     icases HΦ with ⟨HΦ, -⟩
-    iapply fupd_wp
+    iapply wp_ncfupd _ _ rfl
+    iintro Hnc
     unfold closeAu
-    imod HΦ with HΦ
+    imod HΦ $$ Hnc with ⟨Hnc, HΦ⟩
     imod lc_fupd_elim_later $$ Hlc1 HΦ with HΦ
     iNamed HΦ
     ihave %Heq := ownChan_agree _ _ _ _ $$ Hocinner offer
@@ -918,6 +950,7 @@ theorem wp_tryClose (ch : Loc) (γ : ChanNames) :
     dsimp only
     imod Hcontinner $$ Hgv1 with HΦ
     imodintro
+    iframe Hnc
     wp_apply Mutex.wp_Unlock $$ [$lock $Hlock state slice slice_cap buffer Hgv2 Hoffer]
     · iapply chanInvInner_intro _ _ _ (ChanPhysState.Closed [])
       simp only [chanPhys, chanLogical]
@@ -965,9 +998,10 @@ theorem wp_tryClose (ch : Loc) (γ : ChanNames) :
     iexact HΦ
   | Closed buff =>
     icases HΦ with ⟨HΦ, -⟩
-    iapply fupd_wp
+    iapply wp_ncfupd _ _ rfl
+    iintro Hnc
     unfold closeAu
-    imod HΦ with HΦ
+    imod HΦ $$ Hnc with ⟨Hnc, HΦ⟩
     imod lc_fupd_elim_later $$ Hlc1 HΦ with HΦ
     iNamed HΦ
     cases buff with

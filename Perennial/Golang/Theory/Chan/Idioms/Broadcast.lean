@@ -105,6 +105,7 @@ theorem broadcast_chan_receive (ch : GoChan) (γ : ChanNames) (Q : IProp GF)
       recvAu γ Unit Φ := by
   rw [ownBroadcastChan_unseal]; unfold ownBroadcastChanDef isBroadcastChanInternal recvAu
   iintro ⟨%γch, ⟨#His_ch, #Hinv⟩, Hown⟩ HΦ
+  iapply ncfupd_of_fupd
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
@@ -122,6 +123,7 @@ theorem broadcast_chan_receive (ch : GoChan) (γ : ChanNames) (Q : IProp GF)
     · inext; iexists .RcvPending; dsimp only; iframe
     imodintro
     unfold recvNestedAu
+    iapply ncfupd_of_fupd
     iinv Hinv with Hi Hclose
     iapply fupd_mask_intro Std.LawfulSet.empty_subset
     iintro Hmask
@@ -212,6 +214,7 @@ theorem ownBroadcastChan_nonblocking_receive (ch : GoChan) (γ : ChanNames) (Q :
   icases ownBroadcastChan_open _ _ _ _ $$ Hown with ⟨%γch, #Hint, Hown⟩
   ihave #Hinv := isBroadcastChanInternal_inv _ _ _ _ $$ Hint
   unfold nonblockingRecvAuAlt
+  iapply ncfupd_of_fupd
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
@@ -286,6 +289,7 @@ theorem broadcast_close_au (ch : GoChan) (γch : ChanNames) (Q : IProp GF) (Φ :
   icases ownBroadcastChan_open _ _ _ _ $$ Hown with ⟨%γi, #Hint, Hown⟩
   ihave #Hinv := isBroadcastChanInternal_inv _ _ _ _ $$ Hint
   unfold closeAu
+  iapply ncfupd_of_fupd
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
