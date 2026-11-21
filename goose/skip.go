@@ -248,3 +248,98 @@ func (ctx *Ctx) initAction(init *types.Initializer) declfilter.Action {
 		strings.Join(actions[declfilter.Axiomatize], ", "))
 	panic("unreachable")
 }
+
+// skipLint returns warnings (D9) for the skipped initializers that store to
+// a package-level variable, directly or through a function of the package
+// they call (transitively): such an effect beyond the variable is exactly
+// what a skip entry's reason must rule out, so goose points at it. It is a
+// warning, not an error: the store may be to a variable the initializer
+// itself allocates, or unreachable. Calls into other packages are not
+// followed (the reason must cover them).
+func (ctx *Ctx) skipLint(pkg *packages.Package) []string {
+	funcs := make(map[*types.Func]*ast.FuncDecl)
+	for _, f := range pkg.Syntax {
+		for _, d := range f.Decls {
+			if d, ok := d.(*ast.FuncDecl); ok && d.Body != nil {
+				if fn, ok := ctx.info.Defs[d.Name].(*types.Func); ok {
+					funcs[fn] = d
+				}
+			}
+		}
+	}
+	isPkgVar := func(e ast.Expr) (*types.Var, bool) {
+		for {
+			switch x := e.(type) {
+			case *ast.ParenExpr:
+				e = x.X
+			case *ast.SelectorExpr:
+				if v, ok := ctx.info.ObjectOf(x.Sel).(*types.Var); ok && !v.IsField() {
+					return v, v.Parent() == v.Pkg().Scope()
+				}
+				e = x.X
+			case *ast.IndexExpr:
+				e = x.X
+			case *ast.StarExpr:
+				e = x.X
+			case *ast.Ident:
+				v, ok := ctx.info.ObjectOf(x).(*types.Var)
+				return v, ok && v.Pkg() != nil && v.Parent() == v.Pkg().Scope()
+			default:
+				return nil, false
+			}
+		}
+	}
+	var warnings []string
+	for _, init := range ctx.info.InitOrder {
+		if ctx.filter.GetAction(init.Lhs[0].Name()) != declfilter.Skip {
+			continue
+		}
+		visited := make(map[*types.Func]bool)
+		var stores []string
+		var visit func(n ast.Node, where string)
+		visit = func(n ast.Node, where string) {
+			ast.Inspect(n, func(n ast.Node) bool {
+				var lhs []ast.Expr
+				switch s := n.(type) {
+				case *ast.AssignStmt:
+					lhs = s.Lhs
+				case *ast.IncDecStmt:
+					lhs = []ast.Expr{s.X}
+				case *ast.CallExpr:
+					var id *ast.Ident
+					switch f := s.Fun.(type) {
+					case *ast.Ident:
+						id = f
+					case *ast.SelectorExpr:
+						id = f.Sel
+					}
+					if id != nil {
+						if fn, ok := ctx.info.Uses[id].(*types.Func); ok && !visited[fn] {
+							if d, ok := funcs[fn]; ok {
+								visited[fn] = true
+								visit(d.Body, fn.Name())
+							}
+						}
+					}
+				}
+				for _, l := range lhs {
+					if v, ok := isPkgVar(l); ok {
+						pos := ctx.fset.Position(l.Pos())
+						stores = append(stores, fmt.Sprintf("%s (in %s, %s:%d)",
+							v.Name(), where, filepath.Base(pos.Filename), pos.Line))
+					}
+				}
+				return true
+			})
+		}
+		visit(init.Rhs, "the initializer")
+		if len(stores) > 0 {
+			pos := ctx.fset.Position(init.Lhs[0].Pos())
+			warnings = append(warnings, fmt.Sprintf(
+				"%s:%d: skipped initializer of %s stores to package variables: %s; "+
+					"its skip reason must show this is unobservable",
+				filepath.Base(pos.Filename), pos.Line, varNames(init.Lhs), strings.Join(stores, ", ")))
+		}
+	}
+	return warnings
+}

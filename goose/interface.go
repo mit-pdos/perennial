@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"os"
 	"strings"
 	"sync"
 
@@ -94,6 +95,9 @@ func translatePackage(pkg *packages.Package, config declfilter.FilterConfig, con
 	f := ctx.initFile(pkg, config)
 	if errs := ctx.checkSkipConfig(pkg, config); len(errs) != 0 {
 		return f, errors.Wrap(MultipleErrors(errs), "conversion failed")
+	}
+	for _, w := range ctx.skipLint(pkg) {
+		fmt.Fprintf(os.Stderr, "goose: warning: %s: %s\n", pkg.PkgPath, w)
 	}
 	preDecls, decls, errs := ctx.files(pkg.Syntax)
 
