@@ -13,6 +13,10 @@ Usage: etc/trusted-delta.py [TARGET] [--full] [--no-diff] [--check]
   --check    exit 1 if the change touches the trusted base (tier 0) at all,
              for use in hooks
 
+Skipped package variables: for every variable a goose config newly lists in a
+`[[skip]]` entry (or `skip = [...]`), it prints the reason and the variable's
+Go source (`go doc -u -src`).
+
 Tiers (see the skill): 0 = trusted (semantics, translator, trusted models,
 goose configuration); 1 = generated (trusted through goose; hand edits are
 suspect); 2 = program logic and libraries (proved, but can hide trust in an
@@ -25,7 +29,7 @@ rule, a new trusted `.impl`, a `trusted =` list, ...). For a new or changed
 trusted model whose docstring quotes Go code, it prints the real Go source of
 the function (`go doc -src`) next to it, when the Go toolchain can find it.
 """
-import os, re, subprocess, sys
+import os, re, subprocess, sys, tomllib
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
@@ -77,6 +81,8 @@ SIGNALS = [
     ("adequacy", r"\bgoose_(adequacy|invariance|init)\w*\b|GooseGpreS|receiptBound|threadBound", "an adequacy theorem or its parameters"),
     ("trusted-impl", r"\.impl\w*\s*(\[.*\])?\s*:\s*val\b|\.implWith\b", "a hand-written model of Go code"),
     ("trusted-list", r"^\s*trusted\s*=|^\s*\"!|^\s*translate\s*=|trust_proofgen|^\s*axiomatize\s*=", "goose configuration: what is trusted/translated/axiomatized"),
+    ("skip-list", r"^\s*\[\[skip\]\]|^\s*skip\s*=", "goose configuration: package variables not translated at all (trusted: not running each initializer is unobservable)"),
+    ("global-var-addr", r'GlobalVarAddr\s*\(?\s*go!"', "the address of a package variable by its literal name: the one way hand-written code can reach a variable goose skips (the name has no Lean declaration)"),
     ("extension", r"\bExtSemantics\b|\bGooseSemantics\b|\bextStep\w*|\bGooseExt\b", "an extension's semantics (new primitive operations)"),
     ("set_option", r"^\s*set_option\b", "an option change (linters off, max heartbeats, ...)"),
     ("verbatim", r"VerbatimExpr|Verbatim", "goose emits Lean text verbatim"),
@@ -163,12 +169,13 @@ def parse_diff(diff_args):
     return files
 
 # --------------------------------------------------------------- Go source lookup
-def go_source(symbol):
-    """`go doc -src strings.Split`; '' if the toolchain cannot find it."""
+def go_source(symbol, unexported=False):
+    """`go doc -src strings.Split` (`-u` also for unexported names); '' if the
+    toolchain cannot find it."""
     # read-only: never let `go doc` rewrite go.sum / go.work.sum
     env = dict(os.environ, GOFLAGS="-mod=readonly", GOWORK="off")
     try:
-        r = subprocess.run(["go", "doc", "-src", symbol], cwd=ROOT, capture_output=True,
+        r = subprocess.run(["go", "doc"] + (["-u"] if unexported else []) + ["-src", symbol], cwd=ROOT, capture_output=True,
                            text=True, timeout=60, env=env)
     except (OSError, subprocess.TimeoutExpired):
         return ""
@@ -206,17 +213,9 @@ def trusted_impls(path, files, rev):
     return out
 
 def toml_lists(path, rev_old, rev_new):
-    def lists(text):
-        d = {}
-        for key in ("translate", "trusted", "axiomatize"):
-            m = re.search(r"^\s*" + key + r"\s*=\s*\[(.*?)\]", text, re.S | re.M)
-            if m:
-                items = re.findall(r'"([^"]*)"', m.group(1))
-                d[key] = items
-        m = re.search(r"^\s*trust_proofgen\s*=\s*(\w+)", text, re.M)
-        if m:
-            d["trust_proofgen"] = [m.group(1)]
-        return d
+    """The pattern lists of a goose config, old and new: [(key, added, removed)].
+    `skip` maps each skipped name to its reason; its items are `name` strings
+    (skip_reasons gives the reasons)."""
     def show(rev):
         if rev is None:
             try:
@@ -225,13 +224,40 @@ def toml_lists(path, rev_old, rev_new):
                 return ""
         r = subprocess.run(["git", "show", f"{rev}:{path}"], cwd=ROOT, capture_output=True, text=True)
         return r.stdout if r.returncode == 0 else ""
-    old, new = lists(show(rev_old)), lists(show(rev_new))
+    old, new = goose_lists(show(rev_old)), goose_lists(show(rev_new))
     out = []
     for key in sorted(set(old) | set(new)):
         o, n = old.get(key, []), new.get(key, [])
         if o != n:
             out.append((key, [x for x in n if x not in o], [x for x in o if x not in n]))
-    return out
+    return out, skip_reasons(show(rev_new)), skip_reasons(show(rev_old))
+
+def parse_config(text):
+    try:
+        return tomllib.loads(text)
+    except tomllib.TOMLDecodeError as e:
+        print(f"(could not parse the goose config: {e})")
+        return {}
+
+def goose_lists(text):
+    c = parse_config(text)
+    d = {}
+    for key in ("translate", "trusted", "axiomatize", "imports"):
+        if key in c:
+            d[key] = [str(x) for x in c[key]]
+    if "trust_proofgen" in c:
+        d["trust_proofgen"] = [str(c["trust_proofgen"])]
+    if "skip" in c:
+        d["skip"] = [n for e in c["skip"] for n in e.get("names", [])]
+    return d
+
+def skip_reasons(text):
+    return {n: e.get("reason", "") for e in parse_config(text).get("skip", []) for n in e.get("names", [])}
+
+def config_pkg(path):
+    """The Go package of a goose config Perennial/Code/<pkg>.toml."""
+    pkg = os.path.relpath(path, "Perennial/Code")[: -len(".toml")]
+    return pkg.replace("_com/", ".com/").replace("_org/", ".org/").replace("_io/", ".io/")
 
 # --------------------------------------------------------------- main
 def main(argv):
@@ -298,10 +324,33 @@ def main(argv):
     # goose configuration deltas
     cfg = [(p, kind) for p, kind in tiered[0] if kind == "goose-config"]
     if cfg:
-        print("## goose configuration (trusted / translated / axiomatized)\n")
+        print("## goose configuration (trusted / translated / axiomatized / skipped)\n")
         for p, _ in cfg:
-            for key, added, removed in toml_lists(p, rev_old, rev_new):
+            lists, reasons, old_reasons = toml_lists(p, rev_old, rev_new)
+            for key, added, removed in lists:
                 print(f"- {p} `{key}`: added {added or '[]'}, removed {removed or '[]'}")
+                if key == "skip":
+                    pkg = config_pkg(p)
+                    for name in added:
+                        print(f"  - skipped `{pkg}.{name}`: reason: \"{reasons.get(name, '')}\"")
+                        print("    The reason must show that Go's initializer terminates, cannot panic "
+                              "and has no effect beyond the variable; read its callees (an effect "
+                              "on another variable or package, a registration, is not skippable).")
+                        if name == "_":
+                            print("    (`_`: every blank `var _` of the package; the translation's "
+                                  "`skipped'` lists each one with its source)")
+                            continue
+                        src = go_source(f"{pkg}.{name}", unexported=True)
+                        if src:
+                            lines = src.rstrip().split("\n")
+                            if len(lines) > 40:
+                                lines = lines[:40] + [f"... ({len(lines) - 40} more lines)"]
+                            print(f"    Go source (`go doc -u -src {pkg}.{name}`):\n")
+                            print("```go\n" + "\n".join(lines) + "\n```\n")
+                        else:
+                            print(f"    (`go doc -u -src {pkg}.{name}` found nothing: read the initializer yourself)")
+                    for name in removed:
+                        print(f"  - no longer skipped `{name}` (was: \"{old_reasons.get(name, '')}\")")
                 if key == "trusted":
                     pkg = os.path.relpath(p, "Perennial/Code")[: -len(".toml")]
                     for name in added:
