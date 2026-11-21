@@ -119,11 +119,25 @@ def decode (x : f.Bits) : FloatValue :=
   else
     .finite s ((2 ^ f.t + T) * pow2 (E - f.bias - f.t))  -- normal numbers: 1.T × 2^(E - bias)
 
-/-- The bit pattern of a value representable in the format (one that `decode` or `round`
-gives), the inverse of `decode`; NaN has many bit patterns, hence `none`. (On a finite value
-that the format cannot represent, the result means nothing.) A finite `m` is
-`M × 2 ^ (e - t)` with an integer significand `M`, at the exponent `e` of `m` clamped to at
-least `emin`: subnormal (or zero) if `M < 2 ^ t`, normal otherwise. -/
+/-- The bit pattern of a value representable in the format, the inverse of `decode`; NaN has
+many bit patterns, hence `none`. A finite `m` is `M × 2 ^ (e - t)` with an integer significand
+`M`, at the exponent `e` of `m` clamped to at least `emin`: subnormal (or zero) if `M < 2 ^ t`,
+normal otherwise.
+
+**Precondition: the value is representable in `f`** (NaN, `±∞`, or a finite value that some bit
+pattern of `f` decodes to). `encode` does not check it: on a finite value that `f` cannot
+represent (a magnitude off the format's grid, or `2 ^ (emax + 1)` or more) it still returns
+`some` bits, and those bits mean nothing (they need not decode to the value, or to anything
+near it).
+
+This is sound where `encode` is used, because it is only ever applied to values that are
+representable by construction: the results of the operations above (`add`, `sub`, `mul`, `div`,
+`neg`, `ofInt`, `convert` to `f`), each of which is NaN, an infinity, a signed zero, the
+negation of a `decode` result, or a `round` result in `f` (whose finite results are on `f`'s
+grid and below `2 ^ (emax + 1)`, by the definition of `round`). The step rules reach `encode`
+only through `encodes` (`float64Encodes`, `float32Encodes`) on those results, and the
+conversions below only on `ofInt` and `convert` results. The test vectors in
+`docs/design/float/` check against Go that the bits are right on such results. -/
 def encode : FloatValue → Option f.Bits
   | .nan => none
   | .inf s => some (f.pack s (2 ^ f.w - 1) 0)
