@@ -1200,3 +1200,19 @@ to be as easy to audit this assumption as possible; I'd even be ok with exposing
 the hash transition relation so that Sha256NoCollision could *directly* constrain the transition
 relation to avoid collisions"; "(noCollision = true might be a bit annoying to audit in
 comparison)" (2026-11-19, relayed by the coordinator of the dsverify axiom audit).
+
+## Case 38 — ACCEPTED: delete and clear on nil maps
+
+**Symptom.** Incomplete. The delete builtin read the map through nil after
+checking its key. Clear tried to store the empty map through nil.
+
+**Witness.** With `var m map[any]int`, both `delete(m, 42)` and `clear(m)`
+return and leave the map nil. `delete(m, []int{1})` still panics.
+
+**Taken.** The existing builtin definitions test the map for nil using its
+underlying map type, as length and lookup already do. Delete checks the key
+before the nil test. The non-nil operations keep their existing bodies.
+Cost: two nil tests in existing definitions, zero new semantic rules, zero
+translator changes.
+
+**Decision.** “Yes, fix nil-map semantics.” (2026-11-20)
