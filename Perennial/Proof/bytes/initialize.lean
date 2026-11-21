@@ -6,6 +6,7 @@ module
 public import Perennial.Spec.bytes.initialize
 public import Perennial.Spec.errors.initialize
 public import Perennial.Spec.errors.New
+public import Perennial.Spec.io.initialize
 
 @[expose] public section
 
@@ -24,6 +25,7 @@ variable [package_sem : bytes.Assumptions]
 
 theorem bytes.initialize'.wp_proof
     (wp_errors_initialize : errors.initialize'.spec (GF := GF) (hG := hG))
+    (wp_io_initialize : io.initialize'.spec (GF := GF) (hG := hG))
     (wp_New : errors.New.spec (GF := GF) (hG := hG)) :
     bytes.initialize'.spec (GF := GF) (hG := hG) := by
   intro get_is_pkg_init Hinit
@@ -34,6 +36,7 @@ theorem bytes.initialize'.wp_proof
   wp_auto
   wp_apply wp_GlobalAlloc (V := GoArray w8 256) asciiSpace (go.ArrayType 256 go.uint8) as _
   repeat (wp_apply wp_GlobalAlloc (V := GoInterface) _ go.error as _)
+  wp_apply wp_io_initialize _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hio⟩
   wp_apply wp_errors_initialize _ Hinit.2.1 $$ Hown as ⟨Hown, #Herrors⟩
   repeat (wp_apply wp_New as %_ _)
   iframe Hown

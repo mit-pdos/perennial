@@ -1,10 +1,13 @@
 /-
 The proofs of the Go `bytes` package: the shared definitions (`Base`: `isPkgInit`,
-`compareResult`) and the linked results (`Link`), `bytes.wp_<F>` for each function `F`.
+`compareResult`; `BufferBasics`: `ownBuffer`, a `*Buffer` and its content), the linked results
+(`Link`), `bytes.wp_<F>` for each function `F`, and `Results` (a `*Buffer` is a reader).
 -/
 module
 
 public import Perennial.Proof.bytes.Base
+public import Perennial.Proof.bytes.BufferBasics
 public import Perennial.Proof.bytes.Link
+public import Perennial.Proof.bytes.Results
 
 @[expose] public section

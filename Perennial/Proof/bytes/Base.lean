@@ -6,6 +6,7 @@ module
 
 public import Perennial.Proof.ProofPrelude
 public import Perennial.Proof.errors.Base
+public import Perennial.Proof.io.Base
 public import Perennial.Code.bytes
 public import Perennial.GeneratedProof.bytes
 

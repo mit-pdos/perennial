@@ -13,6 +13,9 @@ translate = [
   "multiWriter",
   "_",
   "blackHolePool",
+  "ReadAll",
+  "ReadAtLeast",
+  "ReadFull",
 ]
 
 # translate the definitions of all type declarations goose supports
