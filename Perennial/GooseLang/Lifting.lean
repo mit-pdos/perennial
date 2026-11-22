@@ -265,8 +265,8 @@ def pkgInitLe (σ0 σ : GMap GoString Bool) : Prop :=
 class GoStateGS (GF : BundledGFunctors) where
   package_inited_inG : GhostVarG GF (GMap GoString Bool)
   packageInitedName : GName
-  /-- The ghost state of `packageMonoName`. Not an instance: under `HeapGS` the one
-  `AllG GF` is `gooseAllG` (the adequacy theorems put the same one here). -/
+  /-- The ghost state of `packageMonoName` and `localNamesName`. Not an instance: under
+  `HeapGS` the one `AllG GF` is `gooseAllG` (the adequacy theorems put the same one here). -/
   package_mono_allG : AllG GF
   /-- A ghost map of the initialized packages (`initedOf`), which only grows: the program's
   half `ownGoState` holds its authority and its persistent elements, so that what it has seen
@@ -274,6 +274,11 @@ class GoStateGS (GF : BundledGFunctors) where
   entry (`PackageInitStart`), and the program logic then refuses the step
   (`ownGoState_update_start`'s premise). -/
   packageMonoName : GName
+  /-- The generation's supply of ghost names (`LocalNames.lean`): a ghost map from keys to
+  ghost names, whose authority, empty, the adequacy theorems hand to the generation's program
+  (`ownLocalNames`, `localName`). Here, with the package state, because what names its entries
+  is package-level facts (`isPkgInit`), which cannot take a ghost name as an argument. -/
+  localNamesName : GName
 
 class GoStatePreG (GF : BundledGFunctors) where
   package_inited_preG_inG : GhostVarG GF (GMap GoString Bool)
@@ -281,12 +286,12 @@ class GoStatePreG (GF : BundledGFunctors) where
 attribute [reducible, instance] GoStateGS.package_inited_inG GoStatePreG.package_inited_preG_inG
 
 abbrev goStateGSUpdatePre (GF : BundledGFunctors) (hT : GoStatePreG GF) (hA : AllG GF)
-    (γ γm : GName) : GoStateGS GF :=
-  ⟨hT.package_inited_preG_inG, γ, hA, γm⟩
+    (γ γm γn : GName) : GoStateGS GF :=
+  ⟨hT.package_inited_preG_inG, γ, hA, γm, γn⟩
 
-abbrev goStateGSUpdate (GF : BundledGFunctors) (hT : GoStateGS GF) (γ γm : GName) :
+abbrev goStateGSUpdate (GF : BundledGFunctors) (hT : GoStateGS GF) (γ γm γn : GName) :
     GoStateGS GF :=
-  ⟨hT.package_inited_inG, γ, hT.package_mono_allG, γm⟩
+  ⟨hT.package_inited_inG, γ, hT.package_mono_allG, γm, γn⟩
 
 variable {GF : BundledGFunctors}
 
@@ -450,10 +455,13 @@ theorem ownGoState_update_finish [hG : GoStateGS GF] (v v' : GMap GoString Bool)
     iapply (BigSepM.bigSepM_insert (Φ := fun p b => iprop(p ↪[hG.packageMonoName]□ b)) hp).2
     iframe He Hl
 
-theorem goState_init (hT : GoStatePreG GF) (hA : AllG GF) (package_inited : GMap GoString Bool) :
+/-- Allocate the package state, for the name `γn` of the generation's supply of ghost names
+(allocated by `localNames_init`, `LocalNames.lean`). -/
+theorem goState_init (hT : GoStatePreG GF) (hA : AllG GF) (γn : GName)
+    (package_inited : GMap GoString Bool) :
     ⊢@{IProp GF} |==> ∃ γ γm : GName,
-      ownGoStateCtx (hG := goStateGSUpdatePre GF hT hA γ γm) package_inited ∗
-      ownGoState (hG := goStateGSUpdatePre GF hT hA γ γm) package_inited := by
+      ownGoStateCtx (hG := goStateGSUpdatePre GF hT hA γ γm γn) package_inited ∗
+      ownGoState (hG := goStateGSUpdatePre GF hT hA γ γm γn) package_inited := by
   letI := hA
   unfold ownGoState ownGoStateCtx ownGoStateLb
   imod ghost_var_alloc package_inited with ⟨%γ, H⟩

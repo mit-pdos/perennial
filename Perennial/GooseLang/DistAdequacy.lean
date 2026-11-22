@@ -58,6 +58,11 @@ Notes:
   `crashFrame`). `goose_dist_crash_adequacy` is the case `stable = []`.
 * All the theorems are instances of one soundness core (`dist_soundness`), which
   allocates the global ghost state and reads the result off the invariant.
+* Each generation of each node has its own supply of ghost names
+  (`LocalNames.lean`). The variants `…_localNames` hand its authority, empty, to
+  the node's obligation (`nodeWpLocalNames`, `nodeStartLocalNames`) and, after a
+  crash, to the crash frame of `Hwp` (`ownLocalNames ∅` of `L'`); the theorems
+  without it are their corollaries (`nodeWp_localNames`, `nodeStart_localNames`).
 -/
 module
 
@@ -126,6 +131,36 @@ ghost state `G`: `nodeWpBody` for every local ghost state of the node. -/
 def nodeWp [G : GooseGlobalGS .hasLC GF] (T : Nat) (e : Expr) (σ : state) (φ : val → Prop) :
     IProp GF :=
   iprop(∀ L : GooseLocalGS GF, nodeWpBody (hG := ⟨G, L⟩) T e σ φ)
+
+/-- `nodeWpBody`, with the node's supply of ghost names (`LocalNames.lean`): the WP also gets its
+authority, empty (`ownLocalNames ∅`). -/
+def nodeWpBodyLocalNames [hG : HeapGS .hasLC GF] (T : Nat) (e : Expr) (σ : state)
+    (φ : val → Prop) : IProp GF :=
+  iprop(⌜threadBound GF = T⌝ -∗
+    ⌜hG.goose_localGS.goose_go_local_context = σ.goState.goLctx⌝ -∗
+    extsLocalStart (GF := GF) σ.world -∗ ownGoState σ.goState.packageState -∗
+    ownLocalNames ∅ -∗ threadTok ={⊤}=∗
+    WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
+
+/-- `nodeWp`, with the node's supply of ghost names: `nodeWpBodyLocalNames` for every local ghost
+state of the node. -/
+def nodeWpLocalNames [G : GooseGlobalGS .hasLC GF] (T : Nat) (e : Expr) (σ : state)
+    (φ : val → Prop) : IProp GF :=
+  iprop(∀ L : GooseLocalGS GF, nodeWpBodyLocalNames (hG := ⟨G, L⟩) T e σ φ)
+
+/-- A node's obligation that does not use the supply of ghost names is one that gets it. -/
+theorem nodeWp_localNames [G : GooseGlobalGS .hasLC GF] (T : Nat) (e : Expr) (σ : state)
+    (φ : val → Prop) : nodeWp (GF := GF) T e σ φ ⊢ nodeWpLocalNames T e σ φ := by
+  unfold nodeWp nodeWpBody nodeWpLocalNames nodeWpBodyLocalNames
+  iintro Hn %L %HT %Hlctx Hstart Hgs - Htok
+  iapply Hn $$ %L %HT %Hlctx Hstart Hgs Htok
+
+/-- `nodeWp_localNames`, for every node. -/
+theorem nodeWps_localNames [G : GooseGlobalGS .hasLC GF] {T : Nat} {es : List (Expr × state)}
+    {φ : Nat → val → Prop} :
+    ([∗list] i ↦ n ∈ es, nodeWp (GF := GF) T n.1 n.2 (φ i)) ⊢
+      [∗list] i ↦ n ∈ es, nodeWpLocalNames T n.1 n.2 (φ i) :=
+  BigSepL.bigSepL_mono_of_forall fun {i n} => nodeWp_localNames T n.1 n.2 (φ i)
 
 /-! ## The invariant of a distributed execution -/
 
@@ -229,6 +264,37 @@ theorem bdistInit_fuelOk {N T : Nat} {es : List (Expr × state)} {g : GlobalStat
   rw [Hthreads _ (List.mem_of_getElem? hj')]
   omega
 
+/-- `goose_local_init`, with the nodes' supplies of ghost names (`LocalNames.lean`): also the
+authority of the node's supply, empty (`ownLocalNames ∅`). -/
+theorem goose_local_init_localNames [hPre : GooseGpreS GF] [G : GooseGlobalGS .hasLC GF] (T : Nat)
+    (hT : 1 < T) (σ : state) (g : GlobalState) (Hinit : extsInitP σ.world g.globalWorld) :
+    ⊢@{IProp GF} |==> ∃ L : GooseLocalGS GF,
+      ⌜@ThreadGS.threadBound GF L.goose_threadGS = T⌝ ∗
+      ⌜L.goose_go_local_context = σ.goState.goLctx⌝ ∗
+      nodeInterp (L := L) σ (T - 2) ∗ extsLocalStart (L := L) σ.world ∗
+      ownGoState (hG := L.goose_go_stateGS) σ.goState.packageState ∗
+      ownLocalNames (hG := L.goose_go_stateGS) ∅ ∗
+      threadTok (hT := L.goose_threadGS) := by
+  imod na_heap_init (L := Loc) (V := val)
+    (hG := ⟨hPre.goose_preG_heap.na_heap_preG_inG, default⟩) tls σ.heap with ⟨%hHeap, Hh⟩
+  imod localNames_init hPre.goosePreGAllG with ⟨%γN, Hnames⟩
+  imod goState_init hPre.goose_preG_go_state hPre.goosePreGAllG γN σ.goState.packageState
+    with ⟨%γ, %γm, Hgs, Hgs'⟩
+  imod Exts.local_init exts _ hPre.goosePreGExts σ.world g.globalWorld Hinit
+    with ⟨%hFL, Hlctx, Hlstart⟩
+  imod thread_init T hT with ⟨%γT, HT⟩
+  imod crashToken_init with ⟨%γC, HC⟩
+  have Hsplit := (threadToks_add (hT := ⟨γT, T, hT⟩) (T - 2) 1).1
+  rw [show T - 2 + 1 = T - 1 by omega] at Hsplit
+  icases Hsplit $$ HT with ⟨Hfuel, Htok⟩
+  imodintro
+  iexists (⟨hFL, σ.goState.goLctx, hHeap,
+    goStateGSUpdatePre GF hPre.goose_preG_go_state hPre.goosePreGAllG γ γm γN,
+    ⟨γT, T, hT⟩, ⟨γC⟩⟩ : GooseLocalGS GF)
+  unfold nodeInterp threadFuel ownLocalNames
+  iframe
+  ipureintro; exact ⟨rfl, rfl, rfl⟩
+
 /-- Allocate a node's local ghost state. -/
 theorem goose_local_init [hPre : GooseGpreS GF] [G : GooseGlobalGS .hasLC GF] (T : Nat)
     (hT : 1 < T) (σ : state) (g : GlobalState) (Hinit : extsInitP σ.world g.globalWorld) :
@@ -238,22 +304,46 @@ theorem goose_local_init [hPre : GooseGpreS GF] [G : GooseGlobalGS .hasLC GF] (T
       nodeInterp (L := L) σ (T - 2) ∗ extsLocalStart (L := L) σ.world ∗
       ownGoState (hG := L.goose_go_stateGS) σ.goState.packageState ∗
       threadTok (hT := L.goose_threadGS) := by
-  imod na_heap_init (L := Loc) (V := val)
-    (hG := ⟨hPre.goose_preG_heap.na_heap_preG_inG, default⟩) tls σ.heap with ⟨%hHeap, Hh⟩
-  imod goState_init hPre.goose_preG_go_state hPre.goosePreGAllG σ.goState.packageState with ⟨%γ, %γm, Hgs, Hgs'⟩
-  imod Exts.local_init exts _ hPre.goosePreGExts σ.world g.globalWorld Hinit
-    with ⟨%hFL, Hlctx, Hlstart⟩
-  imod thread_init T hT with ⟨%γT, HT⟩
-  imod crashToken_init with ⟨%γC, HC⟩
-  have Hsplit := (threadToks_add (hT := ⟨γT, T, hT⟩) (T - 2) 1).1
-  rw [show T - 2 + 1 = T - 1 by omega] at Hsplit
-  icases Hsplit $$ HT with ⟨Hfuel, Htok⟩
+  imod goose_local_init_localNames T hT σ g Hinit
+    with ⟨%L, %HT, %Hlctx, Hσ, Hstart, Hgs, -, Htok⟩
   imodintro
-  iexists (⟨hFL, σ.goState.goLctx, hHeap, goStateGSUpdatePre GF hPre.goose_preG_go_state hPre.goosePreGAllG γ γm,
-    ⟨γT, T, hT⟩, ⟨γC⟩⟩ : GooseLocalGS GF)
-  unfold nodeInterp threadFuel
+  iexists L
   iframe
-  ipureintro; exact ⟨rfl, rfl, rfl⟩
+  ipureintro; exact ⟨HT, Hlctx⟩
+
+/-- `goose_nodes_init_gen`, with the nodes' supplies of ghost names (`LocalNames.lean`): `HO` also
+gets the authority of the node's supply, empty (`ownLocalNames ∅`). -/
+theorem goose_nodes_init_gen_localNames [hPre : GooseGpreS GF] [G : GooseGlobalGS .hasLC GF]
+    (T : Nat)
+    (hT : 1 < T) (g : GlobalState) (es : List (Expr × state)) (φ : Nat → val → Prop)
+    (Hinit : ∀ n, n ∈ es → extsInitP n.2.world g.globalWorld)
+    (O : Nat → Expr × state → IProp GF) (R : Nat → GooseLocalGS GF → IProp GF)
+    (HO : ∀ (i : Nat) (e : Expr) (σ : state) (L : GooseLocalGS GF), es[i]? = some (e, σ) →
+      @ThreadGS.threadBound GF L.goose_threadGS = T →
+      L.goose_go_local_context = σ.goState.goLctx →
+      ⊢ O i (e, σ) -∗ extsLocalStart (L := L) σ.world -∗
+        ownGoState (hG := L.goose_go_stateGS) σ.goState.packageState -∗
+        ownLocalNames (hG := L.goose_go_stateGS) ∅ -∗
+        threadTok (hT := L.goose_threadGS) ={⊤}=∗
+        gooseWptp (L := L) [e] [fun v => iprop(⌜φ i v⌝)] ∗ R i L) :
+    ⊢ ([∗list] i ↦ n ∈ es, O i n) ={⊤}=∗
+      [∗list] i ↦ n ∈ es.map (fun n => ([n.1], n.2, T - 2)), nodeInv (R i) (φ i) n := by
+  rw [BigSepL.bigSepL_map]
+  iintro H
+  iapply BigSepL2.bigSepL_fupd
+  iapply BigSepL.bigSepL_mono (Φ := fun i n => O i n) ?_ $$ H
+  intro i ⟨e, σ⟩ hi
+  iintro Ho
+  imod goose_local_init_localNames T hT σ g (Hinit (e, σ) (List.mem_of_getElem? hi))
+    with ⟨%L, %HT, %Hlctx, Hσ, Hstart, Hgs, Hnames, Htok⟩
+  imod HO i e σ L hi HT Hlctx $$ Ho Hstart Hgs Hnames Htok with ⟨Hwp, HR⟩
+  imodintro
+  unfold nodeInv
+  iexists L
+  iframe Hσ HR
+  iexists 0
+  simp only [forkPosts, List.replicate_zero]
+  iexact Hwp
 
 /-- Allocate every node's local ghost state and discharge its proof obligation:
 the nodes of the initial configuration in the ghost state, under the frames `R`
@@ -270,23 +360,11 @@ theorem goose_nodes_init_gen [hPre : GooseGpreS GF] [G : GooseGlobalGS .hasLC GF
         threadTok (hT := L.goose_threadGS) ={⊤}=∗
         gooseWptp (L := L) [e] [fun v => iprop(⌜φ i v⌝)] ∗ R i L) :
     ⊢ ([∗list] i ↦ n ∈ es, O i n) ={⊤}=∗
-      [∗list] i ↦ n ∈ es.map (fun n => ([n.1], n.2, T - 2)), nodeInv (R i) (φ i) n := by
-  rw [BigSepL.bigSepL_map]
-  iintro H
-  iapply BigSepL2.bigSepL_fupd
-  iapply BigSepL.bigSepL_mono (Φ := fun i n => O i n) ?_ $$ H
-  intro i ⟨e, σ⟩ hi
-  iintro Ho
-  imod goose_local_init T hT σ g (Hinit (e, σ) (List.mem_of_getElem? hi))
-    with ⟨%L, %HT, %Hlctx, Hσ, Hstart, Hgs, Htok⟩
-  imod HO i e σ L hi HT Hlctx $$ Ho Hstart Hgs Htok with ⟨Hwp, HR⟩
-  imodintro
-  unfold nodeInv
-  iexists L
-  iframe Hσ HR
-  iexists 0
-  simp only [forkPosts, List.replicate_zero]
-  iexact Hwp
+      [∗list] i ↦ n ∈ es.map (fun n => ([n.1], n.2, T - 2)), nodeInv (R i) (φ i) n :=
+  goose_nodes_init_gen_localNames T hT g es φ Hinit O R
+    (fun i e σ L hi HT Hlctx => by
+      iintro Ho Hstart Hgs - Htok
+      iapply HO i e σ L hi HT Hlctx $$ Ho Hstart Hgs Htok)
 
 /-! ## Soundness -/
 
@@ -385,12 +463,10 @@ theorem unrecoveredPanic_node {c : BDistCfg} {i : Nat} {tp : List Expr} {σ : st
 
 /-! ## Adequacy without crashes -/
 
-/-- Adequacy of the bounded semantics of a distributed system: under the
-hypotheses of `goose_dist_adequacy`, in every execution of the bounded semantics
-from `bdistInit N T es g`, every thread `e` of every node `i` can take a step
-or is a value; a value is not a panic, and if it is the main thread's, it
-satisfies `φ i`. -/
-theorem goose_dist_adequacy_blang [hPre : GooseGpreS GF] (N T : Nat) (hN : 0 < N) (hT : 1 < T)
+/-- `goose_dist_adequacy_blang`, with the nodes' supplies of ghost names (`LocalNames.lean`): the
+nodes' obligations get their supplies' authorities, empty (`nodeWpLocalNames`). -/
+theorem goose_dist_adequacy_blang_localNames [hPre : GooseGpreS GF] (N T : Nat) (hN : 0 < N)
+    (hT : 1 < T)
     (es : List (Expr × state)) (g : GlobalState) (φ : Nat → val → Prop)
     (hφ : ∀ i p, ¬ φ i (PanicV p))
     (Hinitg : extsInitgP g.globalWorld)
@@ -398,7 +474,7 @@ theorem goose_dist_adequacy_blang [hPre : GooseGpreS GF] (N T : Nat) (hN : 0 < N
     (Hwp : ∀ [GooseGlobalGS .hasLC GF],
       receiptBound GF = N →
       ⊢ extsGlobalStart (GF := GF) g.globalWorld ={⊤}=∗
-        [∗list] i ↦ n ∈ es, nodeWp T n.1 n.2 (φ i))
+        [∗list] i ↦ n ∈ es, nodeWpLocalNames T n.1 n.2 (φ i))
     {n : Nat} {κs : List Observation} {c : BDistCfg}
     (Hsteps : BDistNsteps n (bdistInit N T es g) κs c)
     {i : Nat} {tp : List Expr} {σ : state} {t : Nat} (Hi : c.nodes[i]? = some (tp, σ, t))
@@ -409,12 +485,13 @@ theorem goose_dist_adequacy_blang [hPre : GooseGpreS GF] (N T : Nat) (hN : 0 < N
   intro G HN
   iintro Hgstart Hg Hf
   imod (@Hwp G HN) $$ Hgstart with Hnodes
-  imod goose_nodes_init_gen (G := G) T hT g es φ Hinit (fun i n => nodeWp T n.1 n.2 (φ i))
+  imod goose_nodes_init_gen_localNames (G := G) T hT g es φ Hinit
+      (fun i n => nodeWpLocalNames T n.1 n.2 (φ i))
     (fun _ _ => iprop(emp)) ?_ $$ Hnodes with Hnodes
   · intro i e σ L _ HT Hlctx
-    iintro Hn Hstart Hgs Htok
-    unfold nodeWp nodeWpBody
-    imod Hn $$ %L %HT %Hlctx Hstart Hgs Htok with Hwp
+    iintro Hn Hstart Hgs Hnames Htok
+    unfold nodeWpLocalNames nodeWpBodyLocalNames
+    imod Hn $$ %L %HT %Hlctx Hstart Hgs Hnames Htok with Hwp
     imodintro
     isplitl [Hwp]
     · try simp only [gooseWptp]
@@ -434,6 +511,58 @@ theorem goose_dist_adequacy_blang [hPre : GooseGpreS GF] (N T : Nat) (hN : 0 < N
   iexists _
   iexact H
 
+/-- Adequacy of the bounded semantics of a distributed system: under the
+hypotheses of `goose_dist_adequacy`, in every execution of the bounded semantics
+from `bdistInit N T es g`, every thread `e` of every node `i` can take a step
+or is a value; a value is not a panic, and if it is the main thread's, it
+satisfies `φ i`. -/
+theorem goose_dist_adequacy_blang [hPre : GooseGpreS GF] (N T : Nat) (hN : 0 < N) (hT : 1 < T)
+    (es : List (Expr × state)) (g : GlobalState) (φ : Nat → val → Prop)
+    (hφ : ∀ i p, ¬ φ i (PanicV p))
+    (Hinitg : extsInitgP g.globalWorld)
+    (Hinit : ∀ n, n ∈ es → extsInitP n.2.world g.globalWorld)
+    (Hwp : ∀ [GooseGlobalGS .hasLC GF],
+      receiptBound GF = N →
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld ={⊤}=∗
+        [∗list] i ↦ n ∈ es, nodeWp T n.1 n.2 (φ i))
+    {n : Nat} {κs : List Observation} {c : BDistCfg}
+    (Hsteps : BDistNsteps n (bdistInit N T es g) κs c)
+    {i : Nat} {tp : List Expr} {σ : state} {t : Nat} (Hi : c.nodes[i]? = some (tp, σ, t))
+    {j : Nat} {e : Expr} (Hj : tp[j]? = some e) :
+    PrimStep.NotStuck (e, c.nodeState σ t) ∧
+      ∀ v, e = Val v → v.isPanic = false ∧ (j = 0 → φ i v) :=
+  goose_dist_adequacy_blang_localNames (GF := GF) N T hN hT es g φ hφ Hinitg Hinit
+    (@fun G HN => by
+      iintro Hg
+      imod @Hwp G HN $$ Hg with H
+      imodintro
+      iapply nodeWps_localNames $$ H)
+    Hsteps Hi Hj
+
+/-- `goose_dist_no_unrecovered_panic_blang`, with the nodes' supplies of ghost names
+(`LocalNames.lean`): the nodes' obligations get their supplies' authorities, empty
+(`nodeWpLocalNames`). -/
+theorem goose_dist_no_unrecovered_panic_blang_localNames [hPre : GooseGpreS GF] (N T : Nat)
+    (hN : 0 < N)
+    (hT : 1 < T) (es : List (Expr × state)) (g : GlobalState) (φ : Nat → val → Prop)
+    (hφ : ∀ i p, ¬ φ i (PanicV p))
+    (Hinitg : extsInitgP g.globalWorld)
+    (Hinit : ∀ n, n ∈ es → extsInitP n.2.world g.globalWorld)
+    (Hwp : ∀ [GooseGlobalGS .hasLC GF],
+      receiptBound GF = N →
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld ={⊤}=∗
+        [∗list] i ↦ n ∈ es, nodeWpLocalNames T n.1 n.2 (φ i))
+    {n : Nat} {κs : List Observation} {c : BDistCfg}
+    (Hsteps : BDistNsteps n (bdistInit N T es g) κs c)
+    {i : Nat} {tp : List Expr} {σ : state} {t : Nat} (Hi : c.nodes[i]? = some (tp, σ, t))
+    (e : Expr) (He : e ∈ tp) : ¬ UnrecoveredPanic e := by
+  intro Hu
+  obtain ⟨m, κs', c', tp', j, p, Hm, Hi', Hj, -⟩ := unrecoveredPanic_node Hi He Hu
+  have := (goose_dist_adequacy_blang_localNames N T hN hT es g φ hφ Hinitg Hinit Hwp
+    (Hsteps.append Hm) Hi'
+    Hj).2 (PanicV p) rfl
+  simp at this
+
 /-- No thread of the bounded semantics has an unrecovered panic: it would unwind
 to `PanicV p` without using fuel (`unrecoveredPanic_node`), contradicting
 `goose_dist_adequacy_blang`. -/
@@ -449,12 +578,63 @@ theorem goose_dist_no_unrecovered_panic_blang [hPre : GooseGpreS GF] (N T : Nat)
     {n : Nat} {κs : List Observation} {c : BDistCfg}
     (Hsteps : BDistNsteps n (bdistInit N T es g) κs c)
     {i : Nat} {tp : List Expr} {σ : state} {t : Nat} (Hi : c.nodes[i]? = some (tp, σ, t))
-    (e : Expr) (He : e ∈ tp) : ¬ UnrecoveredPanic e := by
-  intro Hu
-  obtain ⟨m, κs', c', tp', j, p, Hm, Hi', Hj, -⟩ := unrecoveredPanic_node Hi He Hu
-  have := (goose_dist_adequacy_blang N T hN hT es g φ hφ Hinitg Hinit Hwp (Hsteps.append Hm) Hi'
-    Hj).2 (PanicV p) rfl
-  simp at this
+    (e : Expr) (He : e ∈ tp) : ¬ UnrecoveredPanic e :=
+  goose_dist_no_unrecovered_panic_blang_localNames (GF := GF) N T hN hT es g φ hφ Hinitg Hinit
+    (@fun G HN => by
+      iintro Hg
+      imod @Hwp G HN $$ Hg with H
+      imodintro
+      iapply nodeWps_localNames $$ H)
+    Hsteps Hi e He
+
+/-- `goose_dist_adequacy`, with the nodes' supplies of ghost names (`LocalNames.lean`): the nodes'
+obligations get their supplies' authorities, empty (`nodeWpLocalNames`). `goose_dist_adequacy` is
+its corollary (`nodeWp_localNames`). -/
+theorem goose_dist_adequacy_localNames [hPre : GooseGpreS GF] (N T : Nat)
+    (es : List (Expr × state)) (g : GlobalState) (φ : Nat → val → Prop)
+    (hφ : ∀ i p, ¬ φ i (PanicV p))
+    (Hinitg : extsInitgP g.globalWorld)
+    (Hinit : ∀ n, n ∈ es → extsInitP n.2.world g.globalWorld)
+    (Hwp : ∀ [GooseGlobalGS .hasLC GF],
+      receiptBound GF = N →
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld ={⊤}=∗
+        [∗list] i ↦ n ∈ es, nodeWpLocalNames T n.1 n.2 (φ i))
+    (n : Nat) (κs : List Observation) (c : DistCfg)
+    (Hsteps : DistNsteps n (distInit es g) κs c)
+    (Hbound : n < N) (Hthreads : ∀ n, n ∈ es → n.2.threads = 1)
+    (Hlive : DistThreadsBelow T n (distInit es g)) :
+    ∀ i tp σ, c.nodes[i]? = some (tp, σ) →
+      (∀ v tp', tp = Val v :: tp' → φ i v) ∧
+      (∀ e, e ∈ tp → RealNotStuck e (σ, c.global)) ∧
+      (∀ e, e ∈ tp → ¬ UnrecoveredPanic e) := by
+  intro i tp σ Hi
+  -- the node exists initially, with a single thread, so `1 < T`
+  have hlen : i < es.length := by
+    have := (List.getElem?_eq_some_iff.mp Hi).1
+    rw [Hsteps.length] at this
+    simpa [distInit] using this
+  have hT : 1 < T := by
+    have := Hlive.start (i := i) (tp := [es[i].1]) (σ := es[i].2) (by simp [distInit, hlen])
+    rw [Hthreads _ (List.getElem_mem hlen)] at this
+    exact this
+  obtain ⟨bc, Hb, He⟩ := bdist_nsteps_of_real Hsteps T Hlive (bdistInit N T es g)
+    (bdistInit_erase N T es g) (by simp only [bdistInit]; omega) (bdistInit_fuelOk Hthreads)
+  -- node `i` of the bounded configuration
+  subst He
+  simp only [BDistCfg.erase, List.getElem?_map] at Hi
+  obtain ⟨⟨tp₀, σ₀, t⟩, Hbi, hx⟩ := Option.map_eq_some_iff.mp Hi
+  obtain ⟨rfl, rfl⟩ : tp = tp₀ ∧ σ = σ₀ := by
+    simp only [Prod.mk.injEq] at hx; exact ⟨hx.1.symm, hx.2.symm⟩
+  have Hadeq := fun {j} {e} (Hj : tp[j]? = some e) =>
+    goose_dist_adequacy_blang_localNames N T (by omega) hT es g φ hφ Hinitg Hinit Hwp Hb Hbi Hj
+  refine ⟨?_, ?_, ?_⟩
+  · rintro v tp' rfl
+    exact ((Hadeq (j := 0) (e := Val v) rfl).2 v rfl).2 rfl
+  · intro e he
+    obtain ⟨j, Hj⟩ := List.getElem?_of_mem he
+    exact realNotStuck_of_bounded (Hadeq Hj).1
+  · exact goose_dist_no_unrecovered_panic_blang_localNames N T (by omega) hT es g φ hφ Hinitg Hinit
+      Hwp Hb Hbi
 
 /-- Adequacy of GooseLang for distributed systems, for the real semantics, under
 the time-receipt and thread-bound assumptions: for any bounds `N` and `T`, for
@@ -488,34 +668,14 @@ theorem goose_dist_adequacy [hPre : GooseGpreS GF] (N T : Nat)
     ∀ i tp σ, c.nodes[i]? = some (tp, σ) →
       (∀ v tp', tp = Val v :: tp' → φ i v) ∧
       (∀ e, e ∈ tp → RealNotStuck e (σ, c.global)) ∧
-      (∀ e, e ∈ tp → ¬ UnrecoveredPanic e) := by
-  intro i tp σ Hi
-  -- the node exists initially, with a single thread, so `1 < T`
-  have hlen : i < es.length := by
-    have := (List.getElem?_eq_some_iff.mp Hi).1
-    rw [Hsteps.length] at this
-    simpa [distInit] using this
-  have hT : 1 < T := by
-    have := Hlive.start (i := i) (tp := [es[i].1]) (σ := es[i].2) (by simp [distInit, hlen])
-    rw [Hthreads _ (List.getElem_mem hlen)] at this
-    exact this
-  obtain ⟨bc, Hb, He⟩ := bdist_nsteps_of_real Hsteps T Hlive (bdistInit N T es g)
-    (bdistInit_erase N T es g) (by simp only [bdistInit]; omega) (bdistInit_fuelOk Hthreads)
-  -- node `i` of the bounded configuration
-  subst He
-  simp only [BDistCfg.erase, List.getElem?_map] at Hi
-  obtain ⟨⟨tp₀, σ₀, t⟩, Hbi, hx⟩ := Option.map_eq_some_iff.mp Hi
-  obtain ⟨rfl, rfl⟩ : tp = tp₀ ∧ σ = σ₀ := by
-    simp only [Prod.mk.injEq] at hx; exact ⟨hx.1.symm, hx.2.symm⟩
-  have Hadeq := fun {j} {e} (Hj : tp[j]? = some e) =>
-    goose_dist_adequacy_blang N T (by omega) hT es g φ hφ Hinitg Hinit Hwp Hb Hbi Hj
-  refine ⟨?_, ?_, ?_⟩
-  · rintro v tp' rfl
-    exact ((Hadeq (j := 0) (e := Val v) rfl).2 v rfl).2 rfl
-  · intro e he
-    obtain ⟨j, Hj⟩ := List.getElem?_of_mem he
-    exact realNotStuck_of_bounded (Hadeq Hj).1
-  · exact goose_dist_no_unrecovered_panic_blang N T (by omega) hT es g φ hφ Hinitg Hinit Hwp Hb Hbi
+      (∀ e, e ∈ tp → ¬ UnrecoveredPanic e) :=
+  goose_dist_adequacy_localNames (GF := GF) N T es g φ hφ Hinitg Hinit
+    (@fun G HN => by
+      iintro Hg
+      imod @Hwp G HN $$ Hg with H
+      imodintro
+      iapply nodeWps_localNames $$ H)
+    n κs c Hsteps Hbound Hthreads Hlive
 
 end dist
 
@@ -539,21 +699,47 @@ def nodeStart [G : GooseGlobalGS .hasLC GF] (T : Nat) (σ : state)
     extsLocalStart (L := L) σ.world -∗
     ownGoState (hG := L.goose_go_stateGS) σ.goState.packageState ={⊤}=∗ P L)
 
-/-- The frame of node `i` (local ghost state `L`) in an execution with crashes,
-where the nodes `es` (the first `es.length` nodes) have boot programs: for a node
-with a boot program, the node's initial state `σ₀` (its Go context is `L`'s), its
-thread bound, and its guarantee that the precondition `P i` of its boot program
-holds after it crashes, for whatever local ghost state `L'` the restart gets,
-from `L`'s `crashed`, the extensions' `crashStart L L'` and `L'`'s empty package
-state; a node without one (`es.length ≤ i`, a node that never crashes,
-`goose_dist_mixed_crash_adequacy`) owes nothing. -/
+/-- `nodeStart`, with the node's supply of ghost names (`LocalNames.lean`): `P` also from its
+authority, empty (`ownLocalNames ∅`). -/
+def nodeStartLocalNames [G : GooseGlobalGS .hasLC GF] (T : Nat) (σ : state)
+    (P : GooseLocalGS GF → IProp GF) : IProp GF :=
+  iprop(∀ L : GooseLocalGS GF, ⌜@ThreadGS.threadBound GF L.goose_threadGS = T⌝ -∗
+    ⌜L.goose_go_local_context = σ.goState.goLctx⌝ -∗
+    extsLocalStart (L := L) σ.world -∗
+    ownGoState (hG := L.goose_go_stateGS) σ.goState.packageState -∗
+    ownLocalNames (hG := L.goose_go_stateGS) ∅ ={⊤}=∗ P L)
+
+/-- A node's start that does not use the supply of ghost names is one that gets it. -/
+theorem nodeStart_localNames [G : GooseGlobalGS .hasLC GF] (T : Nat) (σ : state)
+    (P : GooseLocalGS GF → IProp GF) :
+    nodeStart (GF := GF) T σ P ⊢ nodeStartLocalNames T σ P := by
+  unfold nodeStart nodeStartLocalNames
+  iintro Hn %L %HT %Hlctx Hstart Hgs -
+  iapply Hn $$ %L %HT %Hlctx Hstart Hgs
+
+/-- `nodeStart_localNames`, for every node. -/
+theorem nodeStarts_localNames [G : GooseGlobalGS .hasLC GF] {T : Nat} {es : List (Expr × state)}
+    {P : Nat → GooseLocalGS GF → IProp GF} :
+    ([∗list] i ↦ n ∈ es, nodeStart (GF := GF) T n.2 (P i)) ⊢
+      [∗list] i ↦ n ∈ es, nodeStartLocalNames T n.2 (P i) :=
+  BigSepL.bigSepL_mono_of_forall fun {i n} => nodeStart_localNames T n.2 (P i)
+
+/-- The frame of node `i` (local ghost state `L`) in an execution with crashes, where the nodes `es`
+(the first `es.length` nodes) have boot programs: for a node with a boot program, the node's initial
+state `σ₀` (its Go context is `L`'s), its thread bound, and its guarantee that the precondition `P
+i` of its boot program holds after it crashes, for whatever local ghost state `L'` the restart gets,
+from `L`'s `crashed`, the extensions' `crashStart L L'`, `L'`'s empty package state and the
+authority of `L'`'s supply of ghost names, empty; a node without one (`es.length ≤ i`, a node that
+never crashes, `goose_dist_mixed_crash_adequacy`) owes nothing. -/
 def crashFrame [G : GooseGlobalGS .hasLC GF] (T : Nat) (es : List (Expr × state))
     (P : Nat → GooseLocalGS GF → IProp GF) (i : Nat) (L : GooseLocalGS GF) : IProp GF :=
   iprop((∃ (e : Expr) (σ₀ : state), ⌜es[i]? = some (e, σ₀)⌝ ∗
     ⌜@ThreadGS.threadBound GF L.goose_threadGS = T⌝ ∗
     ⌜L.goose_go_local_context = σ₀.goState.goLctx⌝ ∗
     ∀ L' : GooseLocalGS GF, crashed (hC := L.goose_crashGS) -∗ extsCrashStart L L' -∗
-      ownGoState (hG := L'.goose_go_stateGS) ∅ ={⊤}=∗ P i L') ∨ ⌜es.length ≤ i⌝)
+      ownGoState (hG := L'.goose_go_stateGS) ∅ -∗
+      ownLocalNames (hG := L'.goose_go_stateGS) ∅ ={⊤}=∗ P i L') ∨
+    ⌜es.length ≤ i⌝)
 
 /-- The proof obligation of a boot program in every generation of node `i`
 (the `Hwp` of `goose_dist_crash_adequacy`, for the global ghost state `G`). -/
@@ -567,7 +753,7 @@ abbrev BootWp [G : GooseGlobalGS .hasLC GF] (T : Nat) (es : List (Expr × state)
 
 /-- A crash of a node, in the ghost state: the node's part of the state
 interpretation gives way to that of a new local ghost state `L'`
-(`goose_crash_step`), whose boot program the node's crash frame and `Hwp`
+(`goose_crash_step_localNames`), whose boot program the node's crash frame and `Hwp`
 prove. -/
 theorem dist_crash_node [hPre : GooseGpreS GF] [G : GooseGlobalGS .hasLC GF] (T : Nat)
     (es : List (Expr × state)) (φ : Nat → val → Prop) (P : Nat → GooseLocalGS GF → IProp GF)
@@ -592,9 +778,9 @@ theorem dist_crash_node [hPre : GooseGpreS GF] [G : GooseGlobalGS .hasLC GF] (T 
   have hT : 1 < T := HT ▸ L.goose_threadGS.threadBound_gt
   ihave Hσ := (bstateInterp_split (L := L) σ c.global c.steps t κs).2 $$ [Hl Hg]
   · iframe
-  imod goose_crash_step (L := L) T hT hc c.global ⟨c.steps, t⟩ κs $$ Hσ
-    with ⟨%L', %HL'lctx, %HL'T, Hσ, Hcr, Hcs, Hgs, Htok⟩
-  imod HΨ $$ %L' Hcr Hcs Hgs with HP
+  imod goose_crash_step_localNames (L := L) T hT hc c.global ⟨c.steps, t⟩ κs $$ Hσ
+    with ⟨%L', %HL'lctx, %HL'T, Hσ, Hcr, Hcs, Hgs, Hnames, Htok⟩
+  imod HΨ $$ %L' Hcr Hcs Hgs Hnames with HP
   imod Hwp L' i e₀ σ₀ Hes HL'T (by rw [HL'lctx, Hlctx]) $$ HP Htok with ⟨Hwp, HR⟩
   icases (bstateInterp_split (L := L') σ' c.global c.steps (T - 2) κs).1 $$ Hσ with ⟨Hl, Hg⟩
   imodintro
@@ -661,6 +847,115 @@ theorem dist_crash_preservation [hPre : GooseGpreS GF] [G : GooseGlobalGS .hasLC
     imodintro
     iexact H
 
+/-- `goose_dist_mixed_crash_adequacy_blang`, with the nodes' supplies of ghost names
+(`LocalNames.lean`): `Hstart` gives the nodes' starts from their supplies' authorities, empty
+(`nodeStartLocalNames`, and `nodeWpLocalNames` for a stable node), and the crash frame of `Hwp` also
+gets that of the next generation (`ownLocalNames ∅` of `L'`). -/
+theorem goose_dist_mixed_crash_adequacy_blang_localNames [hPre : GooseGpreS GF] (N T : Nat)
+    (hN : 0 < N)
+    (hT : 1 < T) (crashing stable : List (Expr × state)) (g : GlobalState)
+    (φ : Nat → val → Prop) (hφ : ∀ i p, ¬ φ i (PanicV p))
+    (Hinitg : extsInitgP g.globalWorld)
+    (Hinit : ∀ n, n ∈ crashing ++ stable → extsInitP n.2.world g.globalWorld)
+    (P : ∀ [GooseGlobalGS .hasLC GF], Nat → GooseLocalGS GF → IProp GF)
+    (Hstart : ∀ [GooseGlobalGS .hasLC GF],
+      receiptBound GF = N →
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld ={⊤}=∗
+        ([∗list] i ↦ n ∈ crashing, nodeStartLocalNames T n.2 (P i)) ∗
+        [∗list] j ↦ n ∈ stable, nodeWpLocalNames T n.1 n.2 (φ (crashing.length + j)))
+    (Hwp : ∀ [hG : HeapGS .hasLC GF],
+      receiptBound GF = N →
+      threadBound GF = T →
+      ∀ (i : Nat) (e : Expr) (σ : state), crashing[i]? = some (e, σ) →
+      hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
+      ⊢ P i hG.goose_localGS -∗ threadTok ={⊤}=∗
+        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ i v⌝ }} ∗
+        ∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
+          extsCrashStart hG.goose_localGS L' -∗
+          ownGoState (hG := L'.goose_go_stateGS) ∅ -∗
+          ownLocalNames (hG := L'.goose_go_stateGS) ∅ ={⊤}=∗
+            P i L')
+    {n : Nat} {κs : List Observation} {c : BDistCfg}
+    (Hsteps : BDistCrashNsteps (crashing.map Prod.fst) T n
+      (bdistInit N T (crashing ++ stable) g) κs c)
+    {i : Nat} {tp : List Expr} {σ : state} {t : Nat} (Hi : c.nodes[i]? = some (tp, σ, t))
+    {j : Nat} {e : Expr} (Hj : tp[j]? = some e) :
+    PrimStep.NotStuck (e, c.nodeState σ t) ∧
+      ∀ v, e = Val v → v.isPanic = false ∧ (j = 0 → φ i v) := by
+  refine dist_soundness (GF := GF) N hN g φ hφ Hinitg n κs c ?_ Hi Hj
+  intro G HN
+  -- the boot obligation of every generation of a crashing node, as `BootWp`
+  have Hboot : BootWp (G := G) T crashing φ P := by
+    intro L i e σ Hes HT Hlctx
+    iintro HP Htok
+    imod (@Hwp ⟨G, L⟩ HN HT i e σ Hes Hlctx) $$ HP Htok with ⟨Hwp, HΨ⟩
+    imodintro
+    isplitl [Hwp]
+    · simp only [gooseWptp]
+      iapply BigSepL2.bigSepL2_singleton.2
+      iexact Hwp
+    unfold crashFrame
+    ileft
+    iexists e, σ
+    iframe HΨ
+    ipureintro
+    exact ⟨Hes, HT, Hlctx⟩
+  -- the obligation of node `i` of `crashing ++ stable`
+  let O : Nat → Expr × state → IProp GF := fun i n =>
+    if i < crashing.length then nodeStartLocalNames T n.2 (P i) else nodeWpLocalNames T n.1 n.2
+        (φ i)
+  iintro Hgstart Hg Hf
+  imod (@Hstart G HN) $$ Hgstart with ⟨Hc, Hs⟩
+  imod goose_nodes_init_gen_localNames (G := G) T hT g (crashing ++ stable) φ Hinit O
+    (crashFrame T crashing P) ?_ $$ [Hc Hs] with Hnodes
+  · intro i e σ L Hes HT Hlctx
+    by_cases hi : i < crashing.length
+    · -- a crashing node: its first generation, from `nodeStart`
+      have Hes' : crashing[i]? = some (e, σ) := by
+        rwa [List.getElem?_append_left hi] at Hes
+      simp only [O, hi, ↓reduceIte]
+      iintro Hn Hstart Hgs Hnames Htok
+      unfold nodeStartLocalNames
+      imod Hn $$ %L %HT %Hlctx Hstart Hgs Hnames with HP
+      iapply Hboot L i e σ Hes' HT Hlctx $$ HP Htok
+    · -- a stable node: its WP, and no crash frame
+      simp only [O, hi, ↓reduceIte]
+      iintro Hn Hstart Hgs Hnames Htok
+      unfold nodeWpLocalNames nodeWpBodyLocalNames
+      imod Hn $$ %L %HT %Hlctx Hstart Hgs Hnames Htok with Hwp
+      imodintro
+      isplitl [Hwp]
+      · simp only [gooseWptp]
+        iapply BigSepL2.bigSepL2_singleton.2
+        iexact Hwp
+      unfold crashFrame
+      iright
+      ipureintro
+      omega
+  · iapply BigSepL.bigSepL_append.2
+    isplitl [Hc]
+    · iapply BigSepL.bigSepL_mono ?_ $$ Hc
+      intro k x hk
+      have : k < crashing.length := (List.getElem?_eq_some_iff.mp hk).1
+      simp only [O, this, ↓reduceIte]
+      exact .rfl
+    · iapply BigSepL.bigSepL_mono ?_ $$ Hs
+      intro k x _
+      simp only [O, Nat.not_lt.mpr (Nat.le_add_left crashing.length k), ↓reduceIte]
+      rw [Nat.add_comm k]
+  have Hpres := dist_crash_preservation (G := G) T crashing φ P Hboot Hsteps []
+  rw [List.append_nil] at Hpres
+  imod Hpres $$ [Hg Hnodes] Hf with H
+  · unfold distInv bdistInit
+    iframe
+  imodintro
+  iapply step_fupdN_wand $$ H
+  iintro H
+  imod H
+  imodintro
+  iexists _
+  iexact H
+
 /-- Crash adequacy of the bounded semantics of a distributed system with nodes
 that crash and nodes that do not: under the hypotheses of
 `goose_dist_mixed_crash_adequacy`, in every execution with crashes of the
@@ -695,79 +990,67 @@ theorem goose_dist_mixed_crash_adequacy_blang [hPre : GooseGpreS GF] (N T : Nat)
     {i : Nat} {tp : List Expr} {σ : state} {t : Nat} (Hi : c.nodes[i]? = some (tp, σ, t))
     {j : Nat} {e : Expr} (Hj : tp[j]? = some e) :
     PrimStep.NotStuck (e, c.nodeState σ t) ∧
-      ∀ v, e = Val v → v.isPanic = false ∧ (j = 0 → φ i v) := by
-  refine dist_soundness (GF := GF) N hN g φ hφ Hinitg n κs c ?_ Hi Hj
-  intro G HN
-  -- the boot obligation of every generation of a crashing node, as `BootWp`
-  have Hboot : BootWp (G := G) T crashing φ P := by
-    intro L i e σ Hes HT Hlctx
-    iintro HP Htok
-    imod (@Hwp ⟨G, L⟩ HN HT i e σ Hes Hlctx) $$ HP Htok with ⟨Hwp, HΨ⟩
-    imodintro
-    isplitl [Hwp]
-    · simp only [gooseWptp]
-      iapply BigSepL2.bigSepL2_singleton.2
-      iexact Hwp
-    unfold crashFrame
-    ileft
-    iexists e, σ
-    iframe HΨ
-    ipureintro
-    exact ⟨Hes, HT, Hlctx⟩
-  -- the obligation of node `i` of `crashing ++ stable`
-  let O : Nat → Expr × state → IProp GF := fun i n =>
-    if i < crashing.length then nodeStart T n.2 (P i) else nodeWp T n.1 n.2 (φ i)
-  iintro Hgstart Hg Hf
-  imod (@Hstart G HN) $$ Hgstart with ⟨Hc, Hs⟩
-  imod goose_nodes_init_gen (G := G) T hT g (crashing ++ stable) φ Hinit O
-    (crashFrame T crashing P) ?_ $$ [Hc Hs] with Hnodes
-  · intro i e σ L Hes HT Hlctx
-    by_cases hi : i < crashing.length
-    · -- a crashing node: its first generation, from `nodeStart`
-      have Hes' : crashing[i]? = some (e, σ) := by
-        rwa [List.getElem?_append_left hi] at Hes
-      simp only [O, hi, ↓reduceIte]
-      iintro Hn Hstart Hgs Htok
-      unfold nodeStart
-      imod Hn $$ %L %HT %Hlctx Hstart Hgs with HP
-      iapply Hboot L i e σ Hes' HT Hlctx $$ HP Htok
-    · -- a stable node: its WP, and no crash frame
-      simp only [O, hi, ↓reduceIte]
-      iintro Hn Hstart Hgs Htok
-      unfold nodeWp nodeWpBody
-      imod Hn $$ %L %HT %Hlctx Hstart Hgs Htok with Hwp
+      ∀ v, e = Val v → v.isPanic = false ∧ (j = 0 → φ i v) :=
+  goose_dist_mixed_crash_adequacy_blang_localNames (GF := GF) N T hN hT crashing stable g φ hφ
+      Hinitg
+    Hinit P
+    (@fun G HN => by
+      iintro Hg
+      imod @Hstart G HN $$ Hg with ⟨Hc, Hs⟩
+      imodintro
+      isplitl [Hc]
+      · iapply nodeStarts_localNames $$ Hc
+      · iapply nodeWps_localNames (φ := fun j => φ (crashing.length + j)) $$ Hs)
+    (@fun hG HN HT i e σ Hes Hlctx => by
+      iintro HP Htok
+      imod Hwp (hG := hG) HN HT i e σ Hes Hlctx $$ HP Htok with ⟨Hwp, HΨ⟩
       imodintro
       isplitl [Hwp]
-      · simp only [gooseWptp]
-        iapply BigSepL2.bigSepL2_singleton.2
-        iexact Hwp
-      unfold crashFrame
-      iright
-      ipureintro
-      omega
-  · iapply BigSepL.bigSepL_append.2
-    isplitl [Hc]
-    · iapply BigSepL.bigSepL_mono ?_ $$ Hc
-      intro k x hk
-      have : k < crashing.length := (List.getElem?_eq_some_iff.mp hk).1
-      simp only [O, this, ↓reduceIte]
-      exact .rfl
-    · iapply BigSepL.bigSepL_mono ?_ $$ Hs
-      intro k x _
-      simp only [O, Nat.not_lt.mpr (Nat.le_add_left crashing.length k), ↓reduceIte]
-      rw [Nat.add_comm k]
-  have Hpres := dist_crash_preservation (G := G) T crashing φ P Hboot Hsteps []
-  rw [List.append_nil] at Hpres
-  imod Hpres $$ [Hg Hnodes] Hf with H
-  · unfold distInv bdistInit
-    iframe
+      · iexact Hwp
+      iintro %L' Hcr Hcs Hgs -
+      iapply HΨ $$ %L' Hcr Hcs Hgs)
+    Hsteps Hi Hj
+
+/-- `goose_dist_crash_adequacy_blang`, with the nodes' supplies of ghost names (`LocalNames.lean`):
+`Hstart` gives the nodes' starts from their supplies' authorities, empty (`nodeStartLocalNames`),
+and the crash frame of `Hwp` also gets that of the next generation (`ownLocalNames ∅` of `L'`). -/
+theorem goose_dist_crash_adequacy_blang_localNames [hPre : GooseGpreS GF] (N T : Nat) (hN : 0 < N)
+    (hT : 1 < T) (es : List (Expr × state)) (g : GlobalState) (φ : Nat → val → Prop)
+    (hφ : ∀ i p, ¬ φ i (PanicV p))
+    (Hinitg : extsInitgP g.globalWorld)
+    (Hinit : ∀ n, n ∈ es → extsInitP n.2.world g.globalWorld)
+    (P : ∀ [GooseGlobalGS .hasLC GF], Nat → GooseLocalGS GF → IProp GF)
+    (Hstart : ∀ [GooseGlobalGS .hasLC GF],
+      receiptBound GF = N →
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld ={⊤}=∗
+        [∗list] i ↦ n ∈ es, nodeStartLocalNames T n.2 (P i))
+    (Hwp : ∀ [hG : HeapGS .hasLC GF],
+      receiptBound GF = N →
+      threadBound GF = T →
+      ∀ (i : Nat) (e : Expr) (σ : state), es[i]? = some (e, σ) →
+      hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
+      ⊢ P i hG.goose_localGS -∗ threadTok ={⊤}=∗
+        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ i v⌝ }} ∗
+        ∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
+          extsCrashStart hG.goose_localGS L' -∗
+          ownGoState (hG := L'.goose_go_stateGS) ∅ -∗
+          ownLocalNames (hG := L'.goose_go_stateGS) ∅ ={⊤}=∗
+            P i L')
+    {n : Nat} {κs : List Observation} {c : BDistCfg}
+    (Hsteps : BDistCrashNsteps (es.map Prod.fst) T n (bdistInit N T es g) κs c)
+    {i : Nat} {tp : List Expr} {σ : state} {t : Nat} (Hi : c.nodes[i]? = some (tp, σ, t))
+    {j : Nat} {e : Expr} (Hj : tp[j]? = some e) :
+    PrimStep.NotStuck (e, c.nodeState σ t) ∧
+      ∀ v, e = Val v → v.isPanic = false ∧ (j = 0 → φ i v) := by
+  refine goose_dist_mixed_crash_adequacy_blang_localNames N T hN hT es [] g φ hφ Hinitg
+    (by rw [List.append_nil]; exact Hinit) P ?_ Hwp (by rw [List.append_nil]; exact Hsteps) Hi Hj
+  intro G HN
+  iintro Hg
+  imod (@Hstart G HN) $$ Hg with H
   imodintro
-  iapply step_fupdN_wand $$ H
-  iintro H
-  imod H
-  imodintro
-  iexists _
-  iexact H
+  iframe H
+  iapply BigSepL.bigSepL_nil.2
+  iempintro
 
 /-- Crash adequacy of the bounded semantics of a distributed system: under the
 hypotheses of `goose_dist_crash_adequacy`, in every execution with crashes of
@@ -800,16 +1083,94 @@ theorem goose_dist_crash_adequacy_blang [hPre : GooseGpreS GF] (N T : Nat) (hN :
     {i : Nat} {tp : List Expr} {σ : state} {t : Nat} (Hi : c.nodes[i]? = some (tp, σ, t))
     {j : Nat} {e : Expr} (Hj : tp[j]? = some e) :
     PrimStep.NotStuck (e, c.nodeState σ t) ∧
-      ∀ v, e = Val v → v.isPanic = false ∧ (j = 0 → φ i v) := by
-  refine goose_dist_mixed_crash_adequacy_blang N T hN hT es [] g φ hφ Hinitg
-    (by rw [List.append_nil]; exact Hinit) P ?_ Hwp (by rw [List.append_nil]; exact Hsteps) Hi Hj
-  intro G HN
-  iintro Hg
-  imod (@Hstart G HN) $$ Hg with H
-  imodintro
-  iframe H
-  iapply BigSepL.bigSepL_nil.2
-  iempintro
+      ∀ v, e = Val v → v.isPanic = false ∧ (j = 0 → φ i v) :=
+  goose_dist_crash_adequacy_blang_localNames (GF := GF) N T hN hT es g φ hφ Hinitg Hinit P
+    (@fun G HN => by
+      iintro Hg
+      imod @Hstart G HN $$ Hg with H
+      imodintro
+      iapply nodeStarts_localNames $$ H)
+    (@fun hG HN HT i e σ Hes Hlctx => by
+      iintro HP Htok
+      imod Hwp (hG := hG) HN HT i e σ Hes Hlctx $$ HP Htok with ⟨Hwp, HΨ⟩
+      imodintro
+      isplitl [Hwp]
+      · iexact Hwp
+      iintro %L' Hcr Hcs Hgs -
+      iapply HΨ $$ %L' Hcr Hcs Hgs)
+    Hsteps Hi Hj
+
+/-- `goose_dist_mixed_crash_adequacy`, with the nodes' supplies of ghost names (`LocalNames.lean`):
+`Hstart` gives the nodes' starts from their supplies' authorities, empty (`nodeStartLocalNames`, and
+`nodeWpLocalNames` for a stable node), and the crash frame of `Hwp` also gets that of the next
+generation (`ownLocalNames ∅` of `L'`). `goose_dist_mixed_crash_adequacy` is its corollary
+(`nodeStart_localNames`, `nodeWp_localNames`). -/
+theorem goose_dist_mixed_crash_adequacy_localNames [hPre : GooseGpreS GF] (N T : Nat)
+    (crashing stable : List (Expr × state)) (g : GlobalState) (φ : Nat → val → Prop)
+    (hφ : ∀ i p, ¬ φ i (PanicV p))
+    (Hinitg : extsInitgP g.globalWorld)
+    (Hinit : ∀ n, n ∈ crashing ++ stable → extsInitP n.2.world g.globalWorld)
+    (P : ∀ [GooseGlobalGS .hasLC GF], Nat → GooseLocalGS GF → IProp GF)
+    (Hstart : ∀ [GooseGlobalGS .hasLC GF],
+      receiptBound GF = N →
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld ={⊤}=∗
+        ([∗list] i ↦ n ∈ crashing, nodeStartLocalNames T n.2 (P i)) ∗
+        [∗list] j ↦ n ∈ stable, nodeWpLocalNames T n.1 n.2 (φ (crashing.length + j)))
+    (Hwp : ∀ [hG : HeapGS .hasLC GF],
+      receiptBound GF = N →
+      threadBound GF = T →
+      ∀ (i : Nat) (e : Expr) (σ : state), crashing[i]? = some (e, σ) →
+      hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
+      ⊢ P i hG.goose_localGS -∗ threadTok ={⊤}=∗
+        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ i v⌝ }} ∗
+        ∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
+          extsCrashStart hG.goose_localGS L' -∗
+          ownGoState (hG := L'.goose_go_stateGS) ∅ -∗
+          ownLocalNames (hG := L'.goose_go_stateGS) ∅ ={⊤}=∗
+            P i L')
+    (n : Nat) (κs : List Observation) (c : DistCfg)
+    (Hsteps : DistCrashNsteps (crashing.map Prod.fst) n (distInit (crashing ++ stable) g) κs c)
+    (Hbound : n < N) (Hthreads : ∀ n, n ∈ crashing ++ stable → n.2.threads = 1)
+    (Hlive : DistCrashThreadsBelow (crashing.map Prod.fst) T n
+      (distInit (crashing ++ stable) g)) :
+    ∀ i tp σ, c.nodes[i]? = some (tp, σ) →
+      (∀ v tp', tp = Val v :: tp' → φ i v) ∧
+      (∀ e, e ∈ tp → RealNotStuck e (σ, c.global)) ∧
+      (∀ e, e ∈ tp → ¬ UnrecoveredPanic e) := by
+  intro i tp σ Hi
+  have hlen : i < (crashing ++ stable).length := by
+    have := (List.getElem?_eq_some_iff.mp Hi).1
+    rw [Hsteps.length] at this
+    simpa [distInit] using this
+  have hT : 1 < T := by
+    have := Hlive.start (i := i) (tp := [(crashing ++ stable)[i].1])
+      (σ := (crashing ++ stable)[i].2)
+      (by simp only [distInit, List.getElem?_map, List.getElem?_eq_getElem hlen, Option.map_some])
+    rw [Hthreads _ (List.getElem_mem hlen)] at this
+    exact this
+  obtain ⟨bc, Hb, He⟩ := bdist_crash_nsteps_of_real Hsteps T Hlive
+    (bdistInit N T (crashing ++ stable) g) (bdistInit_erase N T (crashing ++ stable) g)
+    (by simp only [bdistInit]; omega) (bdistInit_fuelOk Hthreads)
+  subst He
+  simp only [BDistCfg.erase, List.getElem?_map] at Hi
+  obtain ⟨⟨tp₀, σ₀, t⟩, Hbi, hx⟩ := Option.map_eq_some_iff.mp Hi
+  obtain ⟨rfl, rfl⟩ : tp = tp₀ ∧ σ = σ₀ := by
+    simp only [Prod.mk.injEq] at hx; exact ⟨hx.1.symm, hx.2.symm⟩
+  have Hadeq := fun {m κs' c'} (Hm : BDistCrashNsteps (crashing.map Prod.fst) T m bc κs' c')
+      {i tp σ t} (Hi : c'.nodes[i]? = some (tp, σ, t)) {j} {e} (Hj : tp[j]? = some e) =>
+    goose_dist_mixed_crash_adequacy_blang_localNames N T (by omega) hT crashing stable g φ hφ
+        Hinitg Hinit
+      P Hstart Hwp (Hb.append Hm) Hi Hj
+  refine ⟨?_, ?_, ?_⟩
+  · rintro v tp' rfl
+    exact ((Hadeq (.refl _) Hbi (j := 0) (e := Val v) rfl).2 v rfl).2 rfl
+  · intro e he
+    obtain ⟨j, Hj⟩ := List.getElem?_of_mem he
+    exact realNotStuck_of_bounded (Hadeq (.refl _) Hbi Hj).1
+  · intro e he Hu
+    obtain ⟨m, κs', c', tp', j, p, Hm, Hi', Hj, -⟩ := unrecoveredPanic_node Hbi he Hu
+    have := (Hadeq Hm.crash Hi' Hj).2 (PanicV p) rfl
+    simp at this
 
 /-- Crash adequacy of GooseLang for distributed systems with nodes that crash
 and nodes that do not, for the real semantics: for any bounds `N` and `T`, for
@@ -878,40 +1239,69 @@ theorem goose_dist_mixed_crash_adequacy [hPre : GooseGpreS GF] (N T : Nat)
     ∀ i tp σ, c.nodes[i]? = some (tp, σ) →
       (∀ v tp', tp = Val v :: tp' → φ i v) ∧
       (∀ e, e ∈ tp → RealNotStuck e (σ, c.global)) ∧
+      (∀ e, e ∈ tp → ¬ UnrecoveredPanic e) :=
+  goose_dist_mixed_crash_adequacy_localNames (GF := GF) N T crashing stable g φ hφ Hinitg Hinit P
+    (@fun G HN => by
+      iintro Hg
+      imod @Hstart G HN $$ Hg with ⟨Hc, Hs⟩
+      imodintro
+      isplitl [Hc]
+      · iapply nodeStarts_localNames $$ Hc
+      · iapply nodeWps_localNames (φ := fun j => φ (crashing.length + j)) $$ Hs)
+    (@fun hG HN HT i e σ Hes Hlctx => by
+      iintro HP Htok
+      imod Hwp (hG := hG) HN HT i e σ Hes Hlctx $$ HP Htok with ⟨Hwp, HΨ⟩
+      imodintro
+      isplitl [Hwp]
+      · iexact Hwp
+      iintro %L' Hcr Hcs Hgs -
+      iapply HΨ $$ %L' Hcr Hcs Hgs)
+    n κs c Hsteps Hbound Hthreads Hlive
+
+/-- `goose_dist_crash_adequacy`, with the nodes' supplies of ghost names (`LocalNames.lean`):
+`Hstart` gives the nodes' starts from their supplies' authorities, empty (`nodeStartLocalNames`),
+and the crash frame of `Hwp` also gets that of the next generation (`ownLocalNames ∅` of `L'`).
+`goose_dist_crash_adequacy` is its corollary (`nodeStart_localNames`). -/
+theorem goose_dist_crash_adequacy_localNames [hPre : GooseGpreS GF] (N T : Nat)
+    (es : List (Expr × state)) (g : GlobalState) (φ : Nat → val → Prop)
+    (hφ : ∀ i p, ¬ φ i (PanicV p))
+    (Hinitg : extsInitgP g.globalWorld)
+    (Hinit : ∀ n, n ∈ es → extsInitP n.2.world g.globalWorld)
+    (P : ∀ [GooseGlobalGS .hasLC GF], Nat → GooseLocalGS GF → IProp GF)
+    (Hstart : ∀ [GooseGlobalGS .hasLC GF],
+      receiptBound GF = N →
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld ={⊤}=∗
+        [∗list] i ↦ n ∈ es, nodeStartLocalNames T n.2 (P i))
+    (Hwp : ∀ [hG : HeapGS .hasLC GF],
+      receiptBound GF = N →
+      threadBound GF = T →
+      ∀ (i : Nat) (e : Expr) (σ : state), es[i]? = some (e, σ) →
+      hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
+      ⊢ P i hG.goose_localGS -∗ threadTok ={⊤}=∗
+        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ i v⌝ }} ∗
+        ∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
+          extsCrashStart hG.goose_localGS L' -∗
+          ownGoState (hG := L'.goose_go_stateGS) ∅ -∗
+          ownLocalNames (hG := L'.goose_go_stateGS) ∅ ={⊤}=∗
+            P i L')
+    (n : Nat) (κs : List Observation) (c : DistCfg)
+    (Hsteps : DistCrashNsteps (es.map Prod.fst) n (distInit es g) κs c)
+    (Hbound : n < N) (Hthreads : ∀ n, n ∈ es → n.2.threads = 1)
+    (Hlive : DistCrashThreadsBelow (es.map Prod.fst) T n (distInit es g)) :
+    ∀ i tp σ, c.nodes[i]? = some (tp, σ) →
+      (∀ v tp', tp = Val v :: tp' → φ i v) ∧
+      (∀ e, e ∈ tp → RealNotStuck e (σ, c.global)) ∧
       (∀ e, e ∈ tp → ¬ UnrecoveredPanic e) := by
-  intro i tp σ Hi
-  have hlen : i < (crashing ++ stable).length := by
-    have := (List.getElem?_eq_some_iff.mp Hi).1
-    rw [Hsteps.length] at this
-    simpa [distInit] using this
-  have hT : 1 < T := by
-    have := Hlive.start (i := i) (tp := [(crashing ++ stable)[i].1])
-      (σ := (crashing ++ stable)[i].2)
-      (by simp only [distInit, List.getElem?_map, List.getElem?_eq_getElem hlen, Option.map_some])
-    rw [Hthreads _ (List.getElem_mem hlen)] at this
-    exact this
-  obtain ⟨bc, Hb, He⟩ := bdist_crash_nsteps_of_real Hsteps T Hlive
-    (bdistInit N T (crashing ++ stable) g) (bdistInit_erase N T (crashing ++ stable) g)
-    (by simp only [bdistInit]; omega) (bdistInit_fuelOk Hthreads)
-  subst He
-  simp only [BDistCfg.erase, List.getElem?_map] at Hi
-  obtain ⟨⟨tp₀, σ₀, t⟩, Hbi, hx⟩ := Option.map_eq_some_iff.mp Hi
-  obtain ⟨rfl, rfl⟩ : tp = tp₀ ∧ σ = σ₀ := by
-    simp only [Prod.mk.injEq] at hx; exact ⟨hx.1.symm, hx.2.symm⟩
-  have Hadeq := fun {m κs' c'} (Hm : BDistCrashNsteps (crashing.map Prod.fst) T m bc κs' c')
-      {i tp σ t} (Hi : c'.nodes[i]? = some (tp, σ, t)) {j} {e} (Hj : tp[j]? = some e) =>
-    goose_dist_mixed_crash_adequacy_blang N T (by omega) hT crashing stable g φ hφ Hinitg Hinit
-      P Hstart Hwp (Hb.append Hm) Hi Hj
-  refine ⟨?_, ?_, ?_⟩
-  · rintro v tp' rfl
-    exact ((Hadeq (.refl _) Hbi (j := 0) (e := Val v) rfl).2 v rfl).2 rfl
-  · intro e he
-    obtain ⟨j, Hj⟩ := List.getElem?_of_mem he
-    exact realNotStuck_of_bounded (Hadeq (.refl _) Hbi Hj).1
-  · intro e he Hu
-    obtain ⟨m, κs', c', tp', j, p, Hm, Hi', Hj, -⟩ := unrecoveredPanic_node Hbi he Hu
-    have := (Hadeq Hm.crash Hi' Hj).2 (PanicV p) rfl
-    simp at this
+  refine goose_dist_mixed_crash_adequacy_localNames N T es [] g φ hφ Hinitg
+    (by rw [List.append_nil]; exact Hinit) P ?_ Hwp n κs c (by rw [List.append_nil]; exact Hsteps)
+    Hbound (by rw [List.append_nil]; exact Hthreads) (by rw [List.append_nil]; exact Hlive)
+  intro G HN
+  iintro Hg
+  imod (@Hstart G HN) $$ Hg with H
+  imodintro
+  iframe H
+  iapply BigSepL.bigSepL_nil.2
+  iempintro
 
 /-- Crash adequacy of GooseLang for distributed systems, for the real
 semantics: for any bounds `N` and `T`, for the system whose node `i` has the
@@ -969,17 +1359,22 @@ theorem goose_dist_crash_adequacy [hPre : GooseGpreS GF] (N T : Nat)
     ∀ i tp σ, c.nodes[i]? = some (tp, σ) →
       (∀ v tp', tp = Val v :: tp' → φ i v) ∧
       (∀ e, e ∈ tp → RealNotStuck e (σ, c.global)) ∧
-      (∀ e, e ∈ tp → ¬ UnrecoveredPanic e) := by
-  refine goose_dist_mixed_crash_adequacy N T es [] g φ hφ Hinitg
-    (by rw [List.append_nil]; exact Hinit) P ?_ Hwp n κs c (by rw [List.append_nil]; exact Hsteps)
-    Hbound (by rw [List.append_nil]; exact Hthreads) (by rw [List.append_nil]; exact Hlive)
-  intro G HN
-  iintro Hg
-  imod (@Hstart G HN) $$ Hg with H
-  imodintro
-  iframe H
-  iapply BigSepL.bigSepL_nil.2
-  iempintro
+      (∀ e, e ∈ tp → ¬ UnrecoveredPanic e) :=
+  goose_dist_crash_adequacy_localNames (GF := GF) N T es g φ hφ Hinitg Hinit P
+    (@fun G HN => by
+      iintro Hg
+      imod @Hstart G HN $$ Hg with H
+      imodintro
+      iapply nodeStarts_localNames $$ H)
+    (@fun hG HN HT i e σ Hes Hlctx => by
+      iintro HP Htok
+      imod Hwp (hG := hG) HN HT i e σ Hes Hlctx $$ HP Htok with ⟨Hwp, HΨ⟩
+      imodintro
+      isplitl [Hwp]
+      · iexact Hwp
+      iintro %L' Hcr Hcs Hgs -
+      iapply HΨ $$ %L' Hcr Hcs Hgs)
+    n κs c Hsteps Hbound Hthreads Hlive
 
 end dist_crash
 

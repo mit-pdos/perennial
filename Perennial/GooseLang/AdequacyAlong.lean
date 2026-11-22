@@ -113,6 +113,38 @@ variable [GooseExts] [GooseInterp]
 variable [GooseSemantics] [GoGlobalContext]
 variable {GF : BundledGFunctors}
 
+/-- `goose_adequacy_below`, with the generation's supply of ghost names (`LocalNames.lean`): `Hwp`
+also gets its authority, empty (`ownLocalNames ∅`). `goose_adequacy_below` is its corollary. -/
+theorem goose_adequacy_below_localNames [hPre : GooseGpreS GF] (N T : Nat)
+    (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p))
+    (Hinitg : extsInitgP g.globalWorld) (Hinit : extsInitP σ.world g.globalWorld)
+    (Hwp : ∀ [hG : HeapGS .hasLC GF],
+      receiptBound GF = N →
+      threadBound GF = T →
+      hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld -∗
+        extsLocalStart (GF := GF) σ.world -∗
+        ownGoState σ.goState.packageState -∗ ownLocalNames ∅ -∗ threadTok ={⊤}=∗
+        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
+    (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState)
+    (Hsteps : RealNstepsBelow T n ([e], ((σ, g) : CfgState)) κs (t2, σ2))
+    (Hbound : n < N) (Hthreads : σ.threads = 1) :
+    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
+      (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2) := by
+  have hT : 1 < T := by have := Hsteps.start; simp only at this; omega
+  have Hadeq := goose_adequacy_blang_localNames N T (by omega) hT e σ g φ Hinitg Hinit Hwp
+  obtain ⟨c, t, Hb⟩ := bounded_nsteps_of_real_below Hsteps (N - 1) (by omega) (T - 2)
+    (by simp only; omega)
+  have Hreach : ([e], (((σ, g), ⟨N - 1, T - 2⟩) : BcfgState)) -·->ₜₚ* (t2, (σ2, ⟨c, t⟩)) :=
+    (Language.erasedStep_nSteps _ _).mpr ⟨n, κs, Hb⟩
+  refine ⟨?_, ?_, ?_⟩
+  · rintro v t2' rfl
+    exact Hadeq.adequate_result t2' (σ2, ⟨c, t⟩) v Hreach
+  · intro e2 he2
+    exact realNotStuck_of_bounded (Hadeq.adequate_not_stuck t2 (σ2, ⟨c, t⟩) e2 rfl Hreach he2)
+  · exact goose_no_unrecovered_panic_blang_localNames N T (by omega) hT e σ g φ hφ Hinitg Hinit Hwp
+      Hb
+
 /-- **Adequacy of GooseLang, with the thread bound on the execution.** As `goose_adequacy`, but
 about every real execution of `e` of fewer than `N` steps, from a configuration with the main
 thread only, *along which* fewer than `T` threads are live at every configuration
@@ -133,19 +165,12 @@ theorem goose_adequacy_below [hPre : GooseGpreS GF] (N T : Nat)
     (Hsteps : RealNstepsBelow T n ([e], ((σ, g) : CfgState)) κs (t2, σ2))
     (Hbound : n < N) (Hthreads : σ.threads = 1) :
     (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
-      (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2) := by
-  have hT : 1 < T := by have := Hsteps.start; simp only at this; omega
-  have Hadeq := goose_adequacy_blang N T (by omega) hT e σ g φ Hinitg Hinit Hwp
-  obtain ⟨c, t, Hb⟩ := bounded_nsteps_of_real_below Hsteps (N - 1) (by omega) (T - 2)
-    (by simp only; omega)
-  have Hreach : ([e], (((σ, g), ⟨N - 1, T - 2⟩) : BcfgState)) -·->ₜₚ* (t2, (σ2, ⟨c, t⟩)) :=
-    (Language.erasedStep_nSteps _ _).mpr ⟨n, κs, Hb⟩
-  refine ⟨?_, ?_, ?_⟩
-  · rintro v t2' rfl
-    exact Hadeq.adequate_result t2' (σ2, ⟨c, t⟩) v Hreach
-  · intro e2 he2
-    exact realNotStuck_of_bounded (Hadeq.adequate_not_stuck t2 (σ2, ⟨c, t⟩) e2 rfl Hreach he2)
-  · exact goose_no_unrecovered_panic_blang N T (by omega) hT e σ g φ hφ Hinitg Hinit Hwp Hb
+      (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2) :=
+  goose_adequacy_below_localNames (GF := GF) N T e σ g φ hφ Hinitg Hinit
+    (@fun hG HN HT Hlctx => by
+      iintro Hg Hl Hgs - Htok
+      iapply Hwp (hG := hG) HN HT Hlctx $$ Hg Hl Hgs Htok)
+    n κs t2 σ2 Hsteps Hbound Hthreads
 
 /-- Check: `goose_adequacy` is the instance of `goose_adequacy_below` at an execution all of
 whose executions of `n` steps stay below `T` threads (`RealNstepsBelow.of_threadsBelow`). -/
@@ -169,6 +194,31 @@ theorem goose_adequacy_of_below [hPre : GooseGpreS GF] (N T : Nat)
   goose_adequacy_below N T e σ g φ hφ Hinitg Hinit Hwp n κs t2 σ2
     (RealNstepsBelow.of_threadsBelow Hsteps Hlive) Hbound Hthreads
 
+/-- `goose_invariance_below`, with the generation's supply of ghost names (`LocalNames.lean`): `Hwp`
+also gets its authority, empty (`ownLocalNames ∅`). `goose_invariance_below` is its corollary. -/
+theorem goose_invariance_below_localNames [hPre : GooseGpreS GF] (N T : Nat)
+    (e : Expr) (σ : state) (g : GlobalState) (φinv : ExtsGlobalState exts → Prop)
+    (Hinitg : extsInitgP g.globalWorld) (Hinit : extsInitP σ.world g.globalWorld)
+    (Hwp : ∀ [hG : HeapGS .hasLC GF],
+      receiptBound GF = N →
+      threadBound GF = T →
+      hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld -∗
+        extsLocalStart (GF := GF) σ.world -∗
+        ownGoState σ.goState.packageState -∗ ownLocalNames ∅ -∗ threadTok ={⊤}=∗
+        WP e @ Stuckness.NotStuck; ⊤ {{ _v, True }} ∗
+        (∀ g', extsGlobalCtx (GF := GF) g' ={⊤,∅}=∗ ⌜φinv g'⌝))
+    {n : Nat} {κs : List Observation} {t2 : List Expr} {σ2 : CfgState}
+    (Hsteps : RealNstepsBelow T n ([e], ((σ, g) : CfgState)) κs (t2, σ2))
+    (Hbound : n < N) (Hthreads : σ.threads = 1) :
+    φinv σ2.2.globalWorld := by
+  have hT : 1 < T := by have := Hsteps.start; simp only at this; omega
+  obtain ⟨c, t, Hb⟩ := bounded_nsteps_of_real_below Hsteps (N - 1) (by omega) (T - 2)
+    (by simp only; omega)
+  exact goose_invariance_blang_localNames (σ2 := (σ2, ⟨c, t⟩)) N T (by omega) hT e σ g φinv Hinitg
+      Hinit Hwp
+    ((Language.erasedStep_nSteps _ _).mpr ⟨n, κs, Hb⟩)
+
 /-- Invariance (real semantics), with the thread bound on the execution: as `goose_invariance`,
 for every configuration reached by a real execution of fewer than `N` steps along which fewer
 than `T` threads are live. -/
@@ -187,12 +237,12 @@ theorem goose_invariance_below [hPre : GooseGpreS GF] (N T : Nat)
     {n : Nat} {κs : List Observation} {t2 : List Expr} {σ2 : CfgState}
     (Hsteps : RealNstepsBelow T n ([e], ((σ, g) : CfgState)) κs (t2, σ2))
     (Hbound : n < N) (Hthreads : σ.threads = 1) :
-    φinv σ2.2.globalWorld := by
-  have hT : 1 < T := by have := Hsteps.start; simp only at this; omega
-  obtain ⟨c, t, Hb⟩ := bounded_nsteps_of_real_below Hsteps (N - 1) (by omega) (T - 2)
-    (by simp only; omega)
-  exact goose_invariance_blang (σ2 := (σ2, ⟨c, t⟩)) N T (by omega) hT e σ g φinv Hinitg Hinit Hwp
-    ((Language.erasedStep_nSteps _ _).mpr ⟨n, κs, Hb⟩)
+    φinv σ2.2.globalWorld :=
+  goose_invariance_below_localNames (GF := GF) N T e σ g φinv Hinitg Hinit
+    (@fun hG HN HT Hlctx => by
+      iintro Hg Hl Hgs - Htok
+      iapply Hwp (hG := hG) HN HT Hlctx $$ Hg Hl Hgs Htok)
+    Hsteps Hbound Hthreads
 
 end adequacy
 
