@@ -1336,38 +1336,51 @@ flag cells and no new definitions: context-dependent translation and more truste
 real `fmt`, part 1, "new outcomes `breakTo`/`continueTo` plus `catchLabel` at the labeled
 statement", with no new step rules and unlabeled output unchanged.
 
-## Case 43 — ACCEPTED: a constant of type `float32` is its `float32` value, rounded once (branch `goose-float32-const`, issue #667)
+## Case 43 — ACCEPTED: an untyped float constant is its exact value; a constant of type `float32` is rounded once (branch `goose-float32-const`, issue #667)
 
-**Symptom.** Unsound. An untyped float constant is represented by its `float64` rounding, and goose
-translated its uses at `float32` as `Convert go.untypedFloat go.float32` of that (or of
-`GoNeg go.untypedFloat` of a literal), which `convert_untyped_float32` rounded again with
-`float64ToFloat32`. Go rounds the exact constant to `float32` once. Untyped float arithmetic at
-`float32` (`float32(1 + 0x1p-24)`, `var y float32 = a + b`) was emitted as `GoOp _ go.untypedFloat`,
-which has no rule (stuck, and the conversion to `float32` was dropped).
+**Symptom.** Unsound. An untyped float constant was represented at run time by its `float64`
+rounding (`#(W64 bits)`), and `convert_untyped_float32` rounded that again (`float64ToFloat32`);
+Go rounds the exact constant once. The same lossy value made `return C` at `T ~int64`, with
+`C = 1e18 + 1`, the `float64` 1e18 (and goose `nope`d `var x int64 = C` outside generic code:
+`untypedFloatToInt` went through `float64`). Untyped float arithmetic at `float32`
+(`float32(1 + 0x1p-24)`) was emitted as `GoOp _ go.untypedFloat` (stuck, conversion dropped).
 
-**Witness.** `float32(c)` with `const c = 1 + 0x1p-24 + 0x1p-60`: Go (go1.26.0, go1.27.3) gives
-bits `0x3f800001`, the model `0x3f800000` (the `float64` rounding is the tie `1 + 0x1p-24`, which
-rounds to even). `var z float32 = -1e-50`: Go gives `+0`, the model `float64ToFloat32(-1e-50)`,
-`-0` under the IEEE semantics of #654, so `1/z` was `-Inf`.
+**Witness.** `const H = 1 + 0x1p-24 + 0x1p-60`: `float32(H)` and `func f[T ~float32]() T { return
+H }` give `0x3f800001` in Go (go1.26.0), the model `0x3f800000`; `var z float32 = -1e-50` is `+0`
+in Go, `-0` in the model; `func g[T ~int64]() T { return C }` is 1000000000000000001 in Go.
+Explicit `T(H)` at `T ~float32` is `0x3f800000` in gc: go/types records `H` at its default type
+`float64`, and gc rounds through it.
 
-**Taken.** `exprSpecial`: an expression that go/types records as a constant whose type's
-underlying type is `float32` is emitted by `constantLiteral` (`constant.Float32Val` of the exact
-value, `-0` made `+0` as #666 does for `float64`): 1 goose branch, +5 lines. This covers every
-path, since go/types records the target type on the constant at each site (typed declarations,
-`float32(c)`, assignment, arguments, returns, composite-literal fields and elements, operands of
-`float32` arithmetic); a reference to a typed `float32` constant is now its value too. Goose then
-never emits `Convert go.untypedFloat go.float32` outside generic code, and there (`return c` at a
-type parameter instantiated with `float32`) the rule still rounded twice, so
-`convert_untyped_float32` and `float64ToFloat32` are removed: that conversion is stuck. Tests:
-`unittest/float.go` (`float32Consts`, both witnesses in every form), Go-checked semantics test
-`testFloat32ConstRoundsOnce`. Regenerated: only the two goose example packages; the std-lib and
-models output does not change.
+**Taken.** (1) Goose, `exprSpecial` (+5 lines, from the first version of the PR): an expression
+go/types records as a constant of a type whose underlying type is `float32` is emitted by
+`constantLiteral` (`constant.Float32Val` of the exact value, `-0` made `+0`). (2) The
+representation: `constantLiteral` at an untyped float emits `#(mkRat n d)`, go/constant's exact
+numerator and denominator (lowest terms), an existing value form (`intoVal` of a Lean `Rat`, as an
+untyped integer is `#(n : Int)`); no new value kind. (3) The rules, one shape per target, all on
+`#(mkRat n d)`: `neg_untyped_float` (to `mkRat (-n) d`), `convert_untyped_float64` /
+`convert_untyped_float32` (to `ratToFloat64` / `ratToFloat32`, `Float.lean`: `encode (ofConst
+q)`, `ofConst` being #654's `roundRat` with a zero result made `+0`),
+`convert_untyped_float_to_integer` (`[IsInteger t]`, only at `mkRat n 1`, steps to
+`Convert go.untypedInt t #n`; stuck on a non-integral constant, a compile error in Go).
+(4) Goose's untyped-float-at-int special case in `identExpr` and `untypedFloatToInt` deleted
+(-56 lines): a named untyped float constant is `Convert go.untypedFloat T c`, like every other
+untyped constant. (5) Explicit `T(c)`: goose already emits what go/types records,
+`Convert go.float64 T (Convert go.untypedFloat go.float64 c)`, which is gc's double rounding;
+to make it run, `convert_float64_to_float32` and its sibling `convert_float32_to_float64`
+(relational like the arithmetic rules, `float64ToFloat32` / `float32ToFloat64` = #654's
+`convert`, any NaN of a NaN). Cost: 3 rules changed, 3 added, 4 definitions; goose +13/-55 lines against `lean`.
+Regenerated: `math` (85 constants become rationals) and the goose examples. Tests: semantics
+`testUntypedFloatConstAtTypeParam`, `testUntypedFloatConvertAtTypeParam`,
+`testUntypedFloatConstToInt` (Go-checked and proved), `testFloat32ConstRoundsOnce`
+(Go-checked); unittest `float32ConstAt`, `intConstAt`, `compareIntFloat` gold.
 
-**Not taken.** Keeping the untyped representation and making the semantics round from an exact
-constant representation (a change of representation for every untyped float); keeping the rule
-for generic code (unsound there: gc rounds `return c` once, though `T(c)` gives `0x3f800000`).
+**Not taken.** The PR's first version: delete `convert_untyped_float32` (stuck in generic
+code). Goose folding every constant at every concrete type (the uniform extension of (1)): the
+untyped conversions would become dead outside generic code, and it rewrites about 500 sites of
+generated code and the proofs that step them; kept to `float32`, where it is still needed for
+untyped arithmetic. A nondeterministic rule allowing both roundings for `T(c)`.
 
-**Why.** Approved by the owner (upamanyus), relayed on #667: "compute `float32` constant bits from
-the exact `constant.Value`, rounded once, with a zero result made `+0`, on every path where a
-constant reaches `float32`". The rule removal is this agent's sibling fix for the one path goose
-cannot round (generic code), flagged for the owner in the PR.
+**Why.** The owner (upamanyus), on #676: goose changes and Lean rules are equally trusted;
+prefer a simple uniform semantics, "our Go semantics supports conversions from untyped
+constants", which generic code needs, so the conversions must be correct, not deleted: untyped
+float constants carry their exact value at run time, and each conversion rounds once.

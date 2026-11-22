@@ -993,32 +993,6 @@ func (ctx *Ctx) builtinIdent(e *ast.Ident) glang.Expr {
 	return nil
 }
 
-// untypedFloatToInt converts a constant (assumed to be a float) to an integer.
-//
-// Returns ok = false if the float doesn't fit in an int64.
-func untypedFloatToInt(c constant.Value) (i int64, ok bool) {
-	switch x := constant.Val(c).(type) {
-	case *big.Rat:
-		if x.IsInt() {
-			v, exact := x.Float64()
-			if !exact {
-				return 0, false
-			}
-			return int64(v), true
-		}
-	case *big.Float:
-		if x.IsInt() {
-			var acc big.Accuracy
-			i, acc = x.Int64()
-			if acc != big.Exact {
-				return 0, false
-			}
-			return i, true
-		}
-	}
-	return 0, false
-}
-
 func (ctx *Ctx) identExpr(e *ast.Ident, multipleBindings bool) glang.Expr {
 	// XXX: special case for a manually constructed Ident from select recv clause
 	if len(e.Name) > 0 && e.Name[0] == '$' {
@@ -1037,34 +1011,6 @@ func (ctx *Ctx) identExpr(e *ast.Ident, multipleBindings bool) glang.Expr {
 	obj := ctx.info.ObjectOf(e)
 	if constObj, ok := obj.(*types.Const); ok {
 		// is a constant
-		if constTy, ok := constObj.Type().(*types.Basic); ok && constTy.Kind() == types.UntypedFloat {
-			dstTy := ctx.typeOf(e)
-			if dstTy, ok := dstTy.(*types.Basic); ok && dstTy.Info()&types.IsInteger != 0 {
-				constInt, exact := untypedFloatToInt(constObj.Val())
-				if !exact {
-					ctx.nope(e, "float constant does not fit into int64")
-				}
-				constExpr := glang.VerbatimExpr(fmt.Sprintf("%d", constInt))
-				switch dstTy.Kind() {
-				case types.Uint64, types.Int64, types.Int:
-					return glang.Int64Val{
-						Value: constExpr,
-					}
-				case types.Uint32, types.Int32:
-					return glang.Int32Val{
-						Value: constExpr,
-					}
-				case types.Uint16, types.Int16:
-					return glang.Int16Val{
-						Value: constExpr,
-					}
-				case types.Uint8, types.Int8:
-					return glang.Int8Val{
-						Value: constExpr,
-					}
-				}
-			}
-		}
 		constE := ctx.termIdent(e.Name)
 		return ctx.handleImplicitConversion(e, constObj.Type(), ctx.typeOf(e), constE)
 	}
@@ -2788,7 +2734,14 @@ func (ctx *Ctx) constantLiteral(e ast.Expr) glang.Expr {
 			case int64:
 				return glang.ToVal{Value: glang.ZLiteral{Value: big.NewInt(v)}}
 			}
-		case types.Float64, types.UntypedFloat:
+		case types.UntypedFloat:
+			num, den := constant.Num(val), constant.Denom(val)
+			if num.Kind() != constant.Int || den.Kind() != constant.Int {
+				break
+			}
+			return glang.ToVal{Value: glang.VerbatimExpr(fmt.Sprintf("mkRat (%s : Int) %s",
+				num.ExactString(), den.ExactString()))}
+		case types.Float64:
 			f, _ := constant.Float64Val(val)
 			if f == 0 {
 				// -0 == 0 is true, so this turns -0 into +0: a Go constant is exact

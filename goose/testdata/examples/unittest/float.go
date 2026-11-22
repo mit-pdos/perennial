@@ -69,3 +69,14 @@ func float32Consts() []float32 {
 	return []float32{a, b, c, d, local, offTieF32, underflowF32, s.f, t.f, arr[0], arr[1], e,
 		takeFloat32(offTie), takeFloat32(-1e-50), takeFloat32(offTieUntyped)}
 }
+
+const bigIntegral = 1e18 + 1
+
+func float32ConstAt[T ~float32]() (T, T, T) {
+	return offTie, T(offTie), -offTie
+}
+
+func intConstAt[T ~int64]() (T, int64) {
+	var x int64 = bigIntegral
+	return bigIntegral, x
+}

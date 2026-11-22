@@ -207,6 +207,18 @@ func (suite *GoTestSuite) TestFloat32ConstRoundsOnce() {
 	suite.Equal(true, testFloat32ConstRoundsOnce())
 }
 
+func (suite *GoTestSuite) TestUntypedFloatConstAtTypeParam() {
+	suite.Equal(true, testUntypedFloatConstAtTypeParam())
+}
+
+func (suite *GoTestSuite) TestUntypedFloatConvertAtTypeParam() {
+	suite.Equal(true, testUntypedFloatConvertAtTypeParam())
+}
+
+func (suite *GoTestSuite) TestUntypedFloatConstToInt() {
+	suite.Equal(true, testUntypedFloatConstToInt())
+}
+
 func (suite *GoTestSuite) TestCopySimple() {
 	suite.Equal(true, testCopySimple())
 }

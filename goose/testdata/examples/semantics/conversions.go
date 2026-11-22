@@ -84,3 +84,52 @@ func testFloat32ConstRoundsOnce() bool {
 		box.f == 1+0x1p-23 && arr[0] == 1+0x1p-23 && float32Id(offTieConst) == 1+0x1p-23 &&
 		a-1 == 0x1p-23 && one+(0x1p-24+0x1p-60) == 1 && 1/z > 0 && 1/float32Id(-1e-50) > 0
 }
+
+const negUnderflow32Const = -1e-50
+
+const bigIntegralFloatConst = 1e18 + 1
+
+type myFloat32 float32
+
+type myInt64 int64
+
+func offTieAt[T ~float32]() T {
+	return offTieConst
+}
+
+func offTieConvertedAt[T ~float32]() T {
+	return T(offTieConst)
+}
+
+func negUnderflowAt[T ~float32]() T {
+	return negUnderflow32Const
+}
+
+func bigIntegralAt[T ~int64]() T {
+	return bigIntegralFloatConst
+}
+
+// an untyped float constant at a type parameter is rounded once, from its
+// exact value, at the instantiation; -1e-50 rounds to +0
+func testUntypedFloatConstAtTypeParam() bool {
+	return offTieAt[float32]() == 1+0x1p-23 && offTieAt[myFloat32]() == 1+0x1p-23 &&
+		1/negUnderflowAt[float32]() > 0 && 1/negUnderflowAt[myFloat32]() > 0
+}
+
+// T(c) at a type parameter converts c's default type, float64, so it rounds
+// c to float64 (the tie 1+0x1p-24) and then to float32 (1, the even one)
+func testUntypedFloatConvertAtTypeParam() bool {
+	return offTieConvertedAt[float32]() == 1 && offTieConvertedAt[myFloat32]() == 1
+}
+
+// an integral untyped float constant converts to an integer type exactly (its
+// float64 rounding would be 1e18)
+func testUntypedFloatConstToInt() bool {
+	var x int64 = bigIntegralFloatConst
+	y := int64(bigIntegralFloatConst)
+	var z uint64 = 1e19
+	const w = -bigIntegralFloatConst
+	var v int64 = w
+	return x == 1000000000000000001 && y == x && z == 10000000000000000000 && v == -x &&
+		bigIntegralAt[int64]() == x && bigIntegralAt[myInt64]() == 1000000000000000001
+}

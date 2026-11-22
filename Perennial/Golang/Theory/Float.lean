@@ -134,6 +134,15 @@ theorem float32Encodes_exists (d : FloatValue) : ∃ b, float32Encodes d b := by
   | some b => exact ⟨b, rfl⟩
   | none => exact ⟨0x7FC00000, by simp only; decide⟩
 
+/-- The encoding of a value that is not a NaN is its bit pattern. (The premise is a `==`, so that
+`decide +kernel` proves it of a closed value.) -/
+theorem float64Encodes_eq {d : FloatValue} {b f : w64} (h : (binary64.encode d == some b) = true)
+    (hf : float64Encodes d f) : f = b := by
+  simp only [float64Encodes, Format.encodes, eq_of_beq h] at hf; exact hf
+theorem float32Encodes_eq {d : FloatValue} {b f : w32} (h : (binary32.encode d == some b) = true)
+    (hf : float32Encodes d f) : f = b := by
+  simp only [float32Encodes, Format.encodes, eq_of_beq h] at hf; exact hf
+
 open Perennial.go in
 /-- `x < 0` of a `float64` `x` with a clear sign bit is `false`: the step of `x < 0`
 (`go.lt_float64`) with `#false` for `#(float64Leb x 0 && !float64Eq x 0)`. -/
@@ -240,6 +249,23 @@ theorem wp_float32_neg {t : go.GoType} [t ↓u go.float32] (v : w32) :
     {{ (f : w32), RET #f; ⌜float32Encodes (float32Neg v) f⌝ }} :=
   wp_go_step_rel (fun f : w32 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.neg_float32 v)
     (float32Encodes_exists _)
+
+/-! The conversions between `float64` and `float32` (`float32(x)`, `float64(x)`, also of named
+types): the result `f` encodes the rounding of `x` (any NaN if `x` is NaN). -/
+
+theorem wp_float64_to_float32 {t1 t2 : go.GoType} [t1 ↓u go.float64] [t2 ↓u go.float32]
+    (v : w64) :
+    {{ (True : IProp GF) }} (App (Val (GoInstruction (Convert t1 t2))) (Val #v)) @ s; E
+    {{ (f : w32), RET #f; ⌜float32Encodes (float64ToFloat32 v) f⌝ }} :=
+  wp_go_step_rel (fun f : w32 => #f) _ _ _ (fun _ _ _ => Iff.rfl)
+    (go.convert_float64_to_float32 v) (float32Encodes_exists _)
+
+theorem wp_float32_to_float64 {t1 t2 : go.GoType} [t1 ↓u go.float32] [t2 ↓u go.float64]
+    (v : w32) :
+    {{ (True : IProp GF) }} (App (Val (GoInstruction (Convert t1 t2))) (Val #v)) @ s; E
+    {{ (f : w64), RET #f; ⌜float64Encodes (float32ToFloat64 v) f⌝ }} :=
+  wp_go_step_rel (fun f : w64 => #f) _ _ _ (fun _ _ _ => Iff.rfl)
+    (go.convert_float32_to_float64 v) (float64Encodes_exists _)
 
 end wp
 
