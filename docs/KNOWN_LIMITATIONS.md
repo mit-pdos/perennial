@@ -169,6 +169,23 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   `struct{ a int }{}` from its own package, and the model has one type. Refusing such
   types would reject common code (`struct{ mu sync.Mutex; … }`); modelling it means
   qualifying field names everywhere.
+- **Conversions that involve struct tags are stuck (incomplete, sound).** Every field
+  declaration carries its tag (`go.field_decl.Field name type tag`, empty when absent;
+  `go.FieldDecl name type` is the untagged shorthand), and goose writes the tags of an unnamed
+  struct type's fields, so ``struct{ A int `json:"a"` }``, `struct{ A int }` and
+  ``struct{ A int `json:"b"` }`` are three types, as in Go. A defined struct type's underlying
+  type is written without its tags, and there is no rule for Go's "identical underlying types
+  if tags are ignored" (spec, "Conversions"), so these conversions, legal in Go, are stuck:
+  ```go
+  type T struct{ A int }
+  x := struct{ A int `json:"a"` }{1}
+  _ = T(x)                           // Go: allowed; the model is stuck
+  type U struct{ A int `json:"a"` }
+  _ = U(x)                           // Go: allowed (identical underlying types); stuck
+  _ = struct{ A int }(x)             // Go: allowed (ignoring tags); stuck
+  ```
+  Conversions between defined types (`T(u)` for `u` of type `U`) and from untagged struct
+  values are unaffected. A rule converting modulo tags would be added when a proof needs one.
 - **A struct type literal with embedded fields has no known method set.** In Go,
   `struct{ T }` has the methods promoted from `T`:
   ```go

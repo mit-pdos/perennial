@@ -1297,6 +1297,45 @@ alias (configuration coupling between packages, for a fact Go fixes).
 **Why.** Approved by the owner (upamanyus) directly, 2026-11-22: "every type alias always gets a
 reducible descriptor A.ty defined as its target, regardless of the package's config action".
 
+## Case 42 — ACCEPTED: labeled `break`/`continue`: `breakTo`/`continueTo` outcomes caught by `catchLabel` (branch `goose-labels`)
+
+**Symptom.** Incomplete. Goose refused every labeled statement (`statement *ast.LabeledStmt`), so
+`break L`/`continue L` had no translation; `fmt`'s `doPrintf` (`continue formatLoop` from a
+`switch` in a `switch` in an inner `for`, `break simpleFormat` from a `switch`) blocked the real
+`fmt` (#671).
+
+**Witness.** `L: for i { for j { switch { case j==1: continue L; case i==2: break L } } }` (Go:
+`[0 10]`); `continueFromNestedSwitch` and `miniPrintf` in `semantics/labels.go`.
+
+**Taken.** Three GooseLang definitions in `Defn/Loop.lean`, siblings of `doBreak`/`catchBreak`:
+`doBreakTo := λ: "l", (#"breakTo", "l")`, `doContinueTo := λ: "l", (#"continueTo", "l")`, and
+`catchLabel l b`, which turns `breakTo l` into `break`, `continueTo l` into `continue` and passes
+anything else on. No step rule, and `doFor`, the range helpers, `map.forRange`, `func.forRange`,
+`catchBreak` and `exceptionSeq` are unchanged: they already pass on any outcome that is not
+`execute`/`continue`/`break`, as they do `return`. Goose: `break L`/`continue L` become
+`doBreakTo #"L"`/`doContinueTo #"L"`; a labeled `for` or `range` has its body (inside the body
+thunk, so `continue L` runs the post statement and the loop-variable copy) wrapped in
+`catchLabel #"L"`; a labeled `switch`, type switch or `select` becomes `catchBreak (catchLabel
+#"L" s)`; `goto` and a label on any other statement stay refused (`unsupported`; negative tests
+`goto_stmt`, `label_block`). Unlabeled `break`/`continue` translate byte-for-byte as before (every other
+gold file and the regenerated std-lib/model output unchanged). Proof side: `forPostcondition`,
+`forRangePostcondition` and `forMapPostcondition` gain a "labeled outcome" disjunct
+(`wp_for_post_labeled`), with `PureWp` instances for `doBreakTo`/`doContinueTo`, `catchLabel` and
+the passes through `exceptionSeq`/`catchBreak`. Semantics tests `labels.go` (Go-checked), proofs in
+`Perennial/Proof/.../semantics/`. Cost: 3 definitions, 0 rules, 2 goose cases (`LabeledStmt`,
+labeled `BranchStmt`) plus a parameter on `forStmt`/`rangeStmt`, 2 negative tests.
+
+**Not taken.** (B) The label inside the existing `break`/`continue` value, with `doFor`, every range
+helper and `map.forRange` taking and comparing a label: changes existing definitions, every loop
+goose emits and `wp_for`'s statement (rejected on cost, like Case 10). (C) Goose desugaring with
+flag cells and no new definitions: context-dependent translation and more trusted goose code. A
+`doForLabeled` primitive that compares the label itself would still need `catchLabel` for
+`switch`/`select` and the range helpers.
+
+**Why.** Approved by the owner (upamanyus) directly, 2026-11-22: design A of the stage-0 plan for the
+real `fmt`, part 1, "new outcomes `breakTo`/`continueTo` plus `catchLabel` at the labeled
+statement", with no new step rules and unlabeled output unchanged.
+
 ## Case 43 — ACCEPTED: a constant of type `float32` is its `float32` value, rounded once (branch `goose-float32-const`, issue #667)
 
 **Symptom.** Unsound. An untyped float constant is represented by its `float64` rounding, and goose

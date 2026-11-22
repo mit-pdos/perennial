@@ -398,7 +398,8 @@ before `wp_for`.
 
 `wp_for_post` proves a `forPostcondition` goal at the end of an iteration with
 `wp_for_post_do` (fall-through: then the post statement runs, e.g. `i++`),
-`wp_for_post_continue`, `wp_for_post_break` or `wp_for_post_return`, then runs
+`wp_for_post_continue`, `wp_for_post_break`, `wp_for_post_return`,
+`wp_for_post_panic` or `wp_for_post_labeled` (below), then runs
 `wp_auto`. After it, re-establish the invariant (`iframe; iexists ...; ...`).
 
 Range loops are `for:` loops too: `slice.forRange`, and for arrays
@@ -409,6 +410,17 @@ their `for:` loop by `wp_auto` (`Theory/Array.lean`), whose counter is an extra
 switch or `select` ends that statement: Goose wraps such a statement in
 `catchBreak`, which `wp_auto` steps through (`break:` becomes `do:`; the
 `pure_catch_break_*` instances in `Theory/Loop.lean`).
+
+`break L` and `continue L` are `doBreakTo #"L"` and `doContinueTo #"L"`, whose
+outcomes `breakToVal L` and `continueToVal L` every loop, `switch` and `select`
+passes outward unchanged. Goose wraps the body of a loop labeled `L` in
+`catchLabel #"L"`, which turns them into `break` and `continue` of that loop
+(so `continue L` runs its post statement), and a labeled `switch` or `select`
+in `catchBreak (catchLabel #"L" ...)`; `wp_auto` steps through both
+(`pure_catch_label_*`). In an inner loop that `break L` or `continue L` leaves,
+`wp_for_post` proves the body's `forPostcondition` with `wp_for_post_labeled`
+(the loop ends with that outcome), and the proof continues in the enclosing
+loop's body. Example: `labeledContinue` in the semantics tests.
 
 A range over a string is `string.forRange s body` (`Golang/Defn/String.lean`): a
 `for:` loop over a byte index whose iteration decodes the rune at the index with
@@ -602,7 +614,7 @@ pointers (`safeMapKey_interface_pointer`); a proof with other interface keys giv
 
 | Lemma | |
 |:--|:--|
-| `wp_for`, `wp_for_post_do/continue/break/return/panic` | loops (used by the tactics) |
+| `wp_for`, `wp_for_post_do/continue/break/return/panic/labeled` | loops (used by the tactics) |
 | `wp_with_defer` | functions with `defer` (introduce `%defer Hdefer`, see `Once.wp_doSlow`); the body runs under a `Catch` (see "Panics") |
 | `wp_with_defer_recover`, `wp_recoverPanic` | functions whose deferred function literal calls `recover()` (introduce `%defer %pnc defer pnc`) and the `recover()` |
 | `wp_panic`, `wp_unwind`, `wp_catch`, `wp_catch_panic`, `wp_catch_val` | panics (see "Panics") |
@@ -667,7 +679,7 @@ written out in signatures as its descriptor's definition, `go.Named "<path>.<Nam
 A type alias `A` always has a reducible descriptor `A.ty`, defined as the descriptor of the
 type it denotes, whether its package's configuration translates, axiomatizes or trusts it
 (`example : dep.A.ty = dep.X.ty := rfl` for `type A = X`); only when goose cannot translate
-that type (an unnamed struct type with tags) is an untranslated alias's `A.ty` opaque.
+that type is an untranslated alias's `A.ty` opaque.
 
 ---
 

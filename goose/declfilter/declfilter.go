@@ -6,7 +6,9 @@ package declfilter
 
 import (
 	"fmt"
+	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/pelletier/go-toml/v2"
@@ -39,6 +41,35 @@ type FilterConfig struct {
 	// With translate_types, keep struct types axiomatized (their generated
 	// proofs are by far the most expensive part of translating types).
 	TranslateTypesExceptStructs bool `toml:"translate_types_except_structs"`
+	// Package variables that are not translated at all: see [SkipEntry].
+	Skip []SkipEntry `toml:"skip"`
+}
+
+// A SkipEntry lists package variables of the package that goose does not
+// translate, with the reason why that is sound:
+//
+//	[[skip]]
+//	names  = ["ErrFoo", "ErrBar"]
+//	reason = "errors.New of a constant: allocates; cannot panic; no effect beyond the variable"
+//
+// (or inline, skip = [{names = [...], reason = "..."}]). A skipped variable
+// gets no Lean name, no allocation and no step in the package's initialize',
+// so a reference to it from translated code is a goose error, and one from
+// hand-written Lean (another package's TrustedCode) fails to elaborate: that
+// verified code never touches the variable holds by construction. What is
+// trusted is the reason: that not running the variable's Go initializer is
+// unobservable (it terminates, cannot panic, and has no effect beyond the
+// variable). A blank variable (`var _ = ...`) has no identifier: it is named
+// by its position, "_@file.go:L" (BlankName; D4), each with its own entry
+// and reason. In a package that skips a blank variable, every blank variable
+// must be listed: a blank that a Go upgrade adds, or one that moves, fails
+// the translation until its entry is reviewed.
+type SkipEntry struct {
+	// Exact identifiers of package-level variables (D2: no globs, no "!"),
+	// or "_@file.go:L" for a blank variable.
+	Names []string `toml:"names"`
+	// Why skipping the initializers is unobservable; required.
+	Reason string `toml:"reason"`
 }
 
 type Bootstrap struct {
@@ -118,6 +149,8 @@ type declFilter struct {
 	trusted       stringSet
 	toTranslate   stringSet
 	trustProofGen bool
+	// skipped variable -> reason
+	skip map[string]string
 }
 
 type Action int
@@ -126,6 +159,8 @@ const (
 	Translate Action = iota
 	Axiomatize
 	Trust
+	// Skip: a package variable that is not translated at all (see SkipEntry).
+	Skip
 )
 
 // DeclFilter determines how to treat each declaration in a Go package.
@@ -134,9 +169,19 @@ type DeclFilter interface {
 	ShouldImport(string) bool
 	HasTrusted() bool
 	TrustProofGen() bool
+	// SkipReason returns the reason of a skipped name, and whether it is
+	// skipped.
+	SkipReason(string) (string, bool)
 }
 
+// GetAction returns how a declaration is treated. The precedence is skip >
+// translate > trusted > axiomatize (D3: a skip entry overrides a translate
+// glob, so `translate = ["*"]` needs no "!X"; an exact literal in translate
+// or trusted is a config error, see CheckSkip).
 func (df *declFilter) GetAction(name string) Action {
+	if _, ok := df.skip[name]; ok {
+		return Skip
+	}
 	switch {
 	case df.toTranslate.contains(name):
 		return Translate
@@ -159,6 +204,77 @@ func (df *declFilter) TrustProofGen() bool {
 	return df.trustProofGen
 }
 
+func (df *declFilter) SkipReason(name string) (string, bool) {
+	r, ok := df.skip[name]
+	return r, ok
+}
+
+// isGlob says whether a name in a skip entry is a pattern rather than an
+// identifier (D2: skip names are exact, so that a variable a Go upgrade adds
+// is never skipped silently).
+func isGlob(name string) bool {
+	return strings.ContainsAny(name, "*!")
+}
+
+// BlankName is the skip name of the blank package variable declared at line
+// line of file (the base name of a Go file of the package): "_@file.go:L"
+// (D4: a blank variable has no identifier; its position is what review saw).
+// Two blank variables on one line share the name.
+func BlankName(file string, line int) string {
+	return fmt.Sprintf("_@%s:%d", filepath.Base(file), line)
+}
+
+var blankNameRx = regexp.MustCompile(`^_@[^/:@]+\.go:[1-9][0-9]*$`)
+
+// IsBlankName says whether a skip name names a blank variable (BlankName).
+func IsBlankName(name string) bool {
+	return strings.HasPrefix(name, "_@")
+}
+
+// CheckSkip returns the errors of the config's skip entries that the config
+// alone shows: an entry without names or without a reason, a glob, a name in
+// two entries (or twice in one), and a name that is an exact literal in
+// translate or trusted (D3). The errors that need the package (a name that
+// is not one of its package-level variables, a multi-name initializer only
+// partly skipped) are goose's (translatePackage).
+func (c FilterConfig) CheckSkip() []error {
+	var errs []error
+	seen := make(map[string]bool)
+	for i, e := range c.Skip {
+		if len(e.Names) == 0 {
+			errs = append(errs, fmt.Errorf("skip entry %d has no names", i+1))
+		}
+		if strings.TrimSpace(e.Reason) == "" {
+			errs = append(errs, fmt.Errorf("skip entry %d (%s) has no reason: "+
+				"say why not running the initializers is unobservable",
+				i+1, strings.Join(e.Names, ", ")))
+		}
+		for _, n := range e.Names {
+			switch {
+			case n == "":
+				errs = append(errs, fmt.Errorf("skip entry %d has an empty name", i+1))
+			case n == "_":
+				errs = append(errs, fmt.Errorf(`skip name "_": list each blank variable `+
+					`by its position, "_@file.go:L", with its own reason`))
+			case IsBlankName(n) && !blankNameRx.MatchString(n):
+				errs = append(errs, fmt.Errorf(`skip name %q: a blank variable is named `+
+					`"_@file.go:L" (the base name of its Go file and its line)`, n))
+			case isGlob(n):
+				errs = append(errs, fmt.Errorf("skip name %q is a pattern: "+
+					"skip names are exact identifiers", n))
+			case seen[n]:
+				errs = append(errs, fmt.Errorf("skip name %q is listed twice", n))
+			case slices.Contains(c.ToTranslate, n):
+				errs = append(errs, fmt.Errorf("skip name %q is also listed in translate", n))
+			case slices.Contains(c.Trusted, n):
+				errs = append(errs, fmt.Errorf("skip name %q is also listed in trusted", n))
+			}
+			seen[n] = true
+		}
+	}
+	return errs
+}
+
 func New(c FilterConfig) DeclFilter {
 	toTranslate := c.ToTranslate
 	if len(toTranslate) == 0 {
@@ -175,6 +291,14 @@ func New(c FilterConfig) DeclFilter {
 	df.toTranslate = newStringSet(toTranslate)
 	df.trusted = newStringSet(c.Trusted)
 	df.trustProofGen = c.TrustProofGen
+	df.skip = make(map[string]string)
+	for _, e := range c.Skip {
+		for _, n := range e.Names {
+			if _, ok := df.skip[n]; !ok {
+				df.skip[n] = e.Reason
+			}
+		}
+	}
 	return &df
 }
 
@@ -185,7 +309,7 @@ type withTranslated struct {
 }
 
 func (df withTranslated) GetAction(name string) Action {
-	if df.names[name] {
+	if df.names[name] && df.DeclFilter.GetAction(name) != Skip {
 		return Translate
 	}
 	return df.DeclFilter.GetAction(name)

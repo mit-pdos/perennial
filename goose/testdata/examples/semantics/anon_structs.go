@@ -71,3 +71,30 @@ func testAnonStructArray() bool {
 	a[1].c = true
 	return !a[0].c && a[1].c
 }
+
+// an unnamed struct type with field tags (the tags are part of its type)
+func testAnonStructTagged() bool {
+	d := struct {
+		Name string `json:"name"`
+		n    int
+	}{Name: "a"}
+	d.n = 2
+	return d.Name == "a" && d.n == 2
+}
+
+// tags are part of an unnamed struct type's identity (Go spec, "Type identity")
+func testAnonStructTagTypesEqual() bool {
+	return !TypesEqual[struct {
+		A int `json:"a"`
+	}, struct{ A int }]() &&
+		!TypesEqual[struct {
+			A int `json:"a"`
+		}, struct {
+			A int `json:"b"`
+		}]() &&
+		TypesEqual[struct {
+			A int `json:"a"`
+		}, struct {
+			A int `json:"a"`
+		}]()
+}
