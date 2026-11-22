@@ -267,6 +267,49 @@ noncomputable def Split.impl : val :=
   (App (Val doExecute)
   (Var "$r0")))))))))
 
+/-- `(*Builder).copyCheck()`: panics if `b` is a copy by value of a Builder that has been
+written to; on first use, records `b` in `b.addr`. Go's (`strings/builder.go`)
+
+```go
+func (b *Builder) copyCheck() {
+	if b.addr == nil {
+		// This hack works around a failing of Go's escape analysis
+		// that was causing b to escape and be heap allocated.
+		// See issue 23382.
+		// TODO: once issue 7921 is fixed, this should be reverted to
+		// just "b.addr = b".
+		b.addr = (*Builder)(abi.NoEscape(unsafe.Pointer(b)))
+	} else if b.addr != b {
+		panic("strings: illegal use of non-zero Builder copied by value")
+	}
+}
+```
+
+Goose translates it, but the translation is stuck at the conversion of an `unsafe.Pointer` back to
+`*Builder`: the semantics converts an `unsafe.Pointer` only to a pointer to a plain type
+(`Golang/Defn/Plain.lean`, `convert_unsafe_to_pointer`), and `Builder` (a pointer and a slice) is
+not one. The round trip, through `abi.NoEscape` (`unsafe.Pointer(uintptr(p) ^ 0)`), gives gc back
+`b` itself, hidden from escape analysis, which the model does not have. The model is goose's
+translation of that code with `(*Builder)(abi.NoEscape(unsafe.Pointer(b)))` replaced by `b`, the
+code Go's own TODO names; nothing else differs (`(go.GoType.Named go!"strings.Builder" [])` is written out: `Code/strings.lean`
+imports this file). -/
+noncomputable def Builder.copyCheck.impl : val :=
+  (LamV "b"
+  (Lam BAnon
+  (Seq (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b"))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (App (Val (GoInstruction (StructFieldRef (go.GoType.Named go!"strings.Builder" []) go!"addr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b")))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Val UntypedNil)))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b"))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Pair (App (Val (GoInstruction (StructFieldRef (go.GoType.Named go!"strings.Builder" []) go!"addr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b"))) (Var "$r0")))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (App (Val (GoInstruction (StructFieldRef (go.GoType.Named go!"strings.Builder" []) go!"addr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b")))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b"))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"strings: illegal use of non-zero Builder copied by value")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (Val #()))))
+
 /-- Leaves a reader on each element of `s[i:len(s)]`, for good (a helper of `Builder.String.impl`,
 not a function of package `strings`): `StartRead` with no `FinishRead`, so that loads of those
 bytes still step and stores to them are stuck. -/
@@ -301,7 +344,7 @@ the bytes the string shares are written again only through a Builder restored fr
 value (as above), and in the model that write is stuck: the model is less defined than Go there,
 never different. Loads of the bytes (more `String` calls, `grow`'s copy) still step. -/
 noncomputable def Builder.String.impl : val :=
-  λ: "b",
+  λ: "b" <>,
     let: "buf" := ![go.SliceType go.byte]
       (StructFieldRef (go.Named go!"strings.Builder" []) go!"buf" "b") in
     let: "s" := Convert (go.SliceType go.byte) go.string "buf" in

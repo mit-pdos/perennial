@@ -287,7 +287,6 @@ def main():
             "strconv",
             "internal/strconv",
             "internal/stringslite",
-            "internal/abi",
             "internal/bytealg",
             "unicode/utf8",
             "strings",
