@@ -191,6 +191,10 @@ func (suite *GoTestSuite) TestUntypedRuneConst() {
 	suite.Equal(true, testUntypedRuneConst())
 }
 
+func (suite *GoTestSuite) TestNegUnderflowConstIsPosZero() {
+	suite.Equal(true, testNegUnderflowConstIsPosZero())
+}
+
 func (suite *GoTestSuite) TestCopySimple() {
 	suite.Equal(true, testCopySimple())
 }

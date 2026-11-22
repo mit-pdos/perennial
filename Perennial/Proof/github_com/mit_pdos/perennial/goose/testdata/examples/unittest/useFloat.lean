@@ -31,6 +31,8 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unittest.useFloat.
   -- the package constant `a` (a `def` of type `val`) must be unfolded
   simp only [a]
   wp_auto
+  wp_apply wp_float64_add as %y _
+  wp_apply wp_float64_mul as %z _
   wp_end
 
 end proof

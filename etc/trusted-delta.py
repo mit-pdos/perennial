@@ -4,6 +4,7 @@ the trusted base. Input to the `review-trusted` skill
 (.agents/skills/review-trusted/SKILL.md); it does not judge, it reports.
 
 Usage: etc/trusted-delta.py [TARGET] [--full] [--no-diff] [--check]
+       etc/trusted-delta.py --self-test
 
   TARGET     a commit (reviews that commit: COMMIT^..COMMIT), a range A..B, or
              nothing: the working tree against the merge base with origin/lean
@@ -12,6 +13,7 @@ Usage: etc/trusted-delta.py [TARGET] [--full] [--no-diff] [--check]
   --no-diff  print only the summary and the signal lines
   --check    exit 1 if the change touches the trusted base (tier 0) at all,
              for use in hooks
+  --self-test  check the signal patterns on built-in examples and exit
 
 Tiers (see the skill): 0 = trusted (semantics, translator, trusted models,
 goose configuration); 1 = generated (trusted through goose; hand edits are
@@ -21,7 +23,13 @@ axiom/sorry/opaque); 3 = proofs, docs, tooling.
 For every added line the report flags *signals*: constructs that add to or
 move the trusted base (assume, axiom, sorry, opaque, native_decide, ...) and
 constructs that change what the model does (Panic, AngelicExit, a new step
-rule, a new trusted `.impl`, a `trusted =` list, ...). For a new or changed
+rule, a new trusted `.impl`, a `trusted =` list, ...). A step rule takes many
+forms (`⟦i, a⟧ ⤳ e`, `⤳[t]`, `is_go_step_pure i a = fun e => ...`,
+`go.IsGoStepPureDet[Tagged] ...`, `IsGoStep`, `FuncUnfold`/`MethodUnfold`, a
+`BaseStep` constructor, or an `instance` of any of them); in a tier-0 file, a
+changed line anywhere inside such a declaration (a rule's continuation lines,
+e.g. the body of a relational `is_go_step_pure` rule) is flagged too, with the
+declaration it belongs to. For a new or changed
 trusted model whose docstring quotes Go code, it prints the real Go source of
 the function (`go doc -src`) next to it, when the Go toolchain can find it.
 """
@@ -60,20 +68,34 @@ def tier_of(path):
     return 3, "other"
 
 # --------------------------------------------------------------- signals
+# Declaration modifiers that may precede a keyword: `@[simp] private noncomputable axiom ...`.
+MODS = r"^\s*(@\[[^\]]*\]\s*)*((noncomputable|private|protected|scoped|local|public|unsafe|partial)\s+)*"
+
+# Every syntactic form of a Go step rule: the `⤳` notation (`⤳`, `⤳[tag]`), the
+# relation it abbreviates written out (`IsGoStepPureDet`, `IsGoStepPureDetTagged`),
+# an equation on the relation itself (`is_go_step_pure i a = fun e => ...`, how
+# nondeterministic rules are stated), the full step `IsGoStep`, an unfolding of a
+# Go function or method, and the base step relation of GooseLang.
+STEP_RULE = (r"⤳|\bis_go_step_pure\b|\bIsGoStepPureDet(Tagged)?\b|\bIsGoStep\b"
+             r"|HeadStep|base_step|BaseStep|\b(Func|Method)Unfold\b")
+
 # (name, regex on an added/removed line, why it matters)
 SIGNALS = [
-    ("axiom", r"^\s*(noncomputable\s+)?axiom\b", "a new axiom: trusted outright"),
+    ("axiom", MODS + r"axiom\b", "a new axiom: trusted outright"),
     ("sorry", r"\bsorry\b|\bsorryAx\b", "an unproved obligation; in tiers 0-2 it is an axiom"),
-    ("opaque", r"^\s*(noncomputable\s+)?opaque\b", "an opaque constant: a value nobody can inspect"),
+    ("opaque", MODS + r"opaque\b", "an opaque constant: a value nobody can inspect"),
     ("native", r"native_decide|bv_decide|ofReduceBool|Lean\.ofReduceBool", "trusts native code (forbidden by README)"),
-    ("implemented_by", r"implemented_by|@\[extern", "runtime behaviour differs from the definition"),
-    ("unsafe", r"^\s*unsafe\s+(def|theorem)|\bunsafe\s+def\b", "Lean unsafe definition"),
-    ("partial", r"^\s*partial\s+def\b", "partial def: an opaque constant in disguise"),
+    ("implemented_by", r"implemented_by|@\[extern|\bextern\s+\"", "runtime behaviour differs from the definition"),
+    ("unsafe", r"^\s*unsafe\s+(def|theorem)|\bunsafe\s+(def|instance|opaque|abbrev)\b", "Lean unsafe definition"),
+    ("partial", MODS + r"partial\s+def\b|\bpartial\s+def\b", "partial def: an opaque constant in disguise"),
     ("assume", r"\bassume\b|\w*[aA]ssume(No|Mul|Sum)\w*", "a model assumption: must be unreachable in Go (README, Model assumptions)"),
     ("angelic", r"AngelicExit", "an angelic exit: the model refuses to continue (sound only if Go cannot reach it)"),
     ("panic", r"\bPanic\s+\"|Panic \(|\bgo\.panic\b|PanicV", "a (stuck) run-time panic in the model"),
-    ("step-rule", r"⤳|⤳\[|HeadStep|base_step|BaseStep|\bFuncUnfold\b", "a semantics rule or unfolding"),
-    ("semantics-class", r"^\s*class\s+\w*Semantics\b|^\s*instance\b.*Semantics", "a semantics class or its instance"),
+    ("step-rule", STEP_RULE, "a semantics rule or unfolding (any form: `⤳`, `is_go_step_pure`, "
+     "`IsGoStepPureDet`, `FuncUnfold`, ...; in tier 0 also a changed line inside one)"),
+    ("semantics-class", r"^\s*class\s+\w*Semantics\b|" + MODS +
+     r"instance\b.*:\s*(\w+\.)*(\w*Semantics|GoLocalContext|GoGlobalContext|GooseExts)\b",
+     "a semantics class, or an instance of one (or of the contexts defining `is_go_step_pure`)"),
     ("adequacy", r"\bgoose_(adequacy|invariance|init)\w*\b|GooseGpreS|receiptBound|threadBound", "an adequacy theorem or its parameters"),
     ("trusted-impl", r"\.impl\w*\s*(\[.*\])?\s*:\s*val\b|\.implWith\b", "a hand-written model of Go code"),
     ("trusted-list", r"^\s*trusted\s*=|^\s*\"!|^\s*translate\s*=|trust_proofgen|^\s*axiomatize\s*=", "goose configuration: what is trusted/translated/axiomatized"),
@@ -81,6 +103,9 @@ SIGNALS = [
     ("set_option", r"^\s*set_option\b", "an option change (linters off, max heartbeats, ...)"),
     ("verbatim", r"VerbatimExpr|Verbatim", "goose emits Lean text verbatim"),
 ]
+
+# Outside tier 0, at most this many lines of each signal are listed per file.
+COLLAPSE = 8
 
 def is_prose(path, text):
     """Comment, markdown or toml-comment line: signals there are words, not code."""
@@ -95,6 +120,42 @@ def signals_in(line):
         if re.search(rx, line):
             out.append((name, why))
     return out
+
+def decl_statements(content):
+    """Split Lean source into declarations, so that a changed continuation line can be
+    attributed to the step rule it belongs to. A declaration starts at a code line of
+    indentation 0, or, inside a `class`/`structure`/`inductive` (whose fields and
+    constructors are the semantics' rules), of indentation <= 2.
+    -> (stmt index of each line (0-based), [(head line number (1-based), code text)],
+        whether each line holds code (not only comment))."""
+    lines = content.split("\n")
+    ids, stmts, is_code = [], [], []
+    in_comment, container = 0, False
+    for i, line in enumerate(lines):
+        t = line.strip()
+        code = ""
+        if in_comment:
+            if "-/" in line:
+                in_comment = 0
+                code = line.split("-/", 1)[1].strip()
+        elif t.startswith("/-"):
+            if "-/" not in t[2:]:
+                in_comment = 1
+            else:
+                code = t[2:].split("-/", 1)[1].strip()
+        elif not t.startswith("--"):
+            code = re.sub(r"\s--.*$", "", line).rstrip()
+        if code:
+            ind = len(line) - len(line.lstrip())
+            if ind == 0:
+                container = bool(re.match(MODS + r"(class\s+)?(class|structure|inductive)\b", line))
+            if ind == 0 or (container and ind <= 2) or not stmts:
+                stmts.append((i + 1, ""))
+            n, txt = stmts[-1]
+            stmts[-1] = (n, txt + "\n" + code)
+        ids.append(max(len(stmts) - 1, 0))
+        is_code.append(bool(code))
+    return ids, stmts, is_code
 
 # --------------------------------------------------------------- git
 def git(*args, check=True):
@@ -122,12 +183,12 @@ def parse_diff(diff_args):
     """-> {path: {"status": s, "hunks": [(new_lineno, '+'/'-', text)], "raw": str}}"""
     raw = git("diff", "--no-color", "-U3", "--no-ext-diff", *diff_args, "--")
     files, cur = {}, None
-    new_ln, in_comment = 0, False
+    new_ln, old_ln, in_comment = 0, 0, False
     for line in raw.split("\n"):
         if line.startswith("diff --git"):
             m = re.match(r"diff --git a/(.*) b/(.*)$", line)
             path = m.group(2)
-            cur = files[path] = {"status": "M", "lines": [], "raw": [line]}
+            cur = files[path] = {"status": "M", "lines": [], "old": [], "raw": [line]}
             in_comment = False
             continue
         if cur is None:
@@ -149,18 +210,59 @@ def parse_diff(diff_args):
         elif line.startswith("rename to"):
             cur["status"] = "R"
         elif line.startswith("@@"):
-            m = re.match(r"@@ -\d+(?:,\d+)? \+(\d+)", line)
-            new_ln = int(m.group(1))
+            m = re.match(r"@@ -(\d+)(?:,\d+)? \+(\d+)", line)
+            old_ln, new_ln = int(m.group(1)), int(m.group(2))
         elif line.startswith("+") and not line.startswith("+++"):
             cur["lines"].append((new_ln, "+", line[1:], prose))
+            cur["old"].append(None)
             new_ln += 1
         elif line.startswith("-") and not line.startswith("---"):
             cur["lines"].append((new_ln, "-", line[1:], prose))
+            cur["old"].append(old_ln)
+            old_ln += 1
         elif line.startswith(" "):
             new_ln += 1
+            old_ln += 1
     for f in files.values():
         f["raw"] = "\n".join(f["raw"])
     return files
+
+def file_at(rev, path):
+    """Content of `path` at `rev` (None: the working tree); '' if absent."""
+    if rev is None:
+        try:
+            return open(os.path.join(ROOT, path)).read()
+        except OSError:
+            return ""
+    r = subprocess.run(["git", "show", f"{rev}:{path}"], cwd=ROOT, capture_output=True, text=True)
+    return r.stdout if r.returncode == 0 else ""
+
+def step_rule_context_hits(path, f, rev_old, rev_new):
+    """Changed code lines of a tier-0 Lean file that lie inside a declaration containing a
+    step rule but do not themselves name one (e.g. the `fun e => ...` body of a relational
+    `is_go_step_pure` rule): one hit per declaration and side, unless the change already
+    names the rule on one of its own lines. -> [(ln, sign, name, text)]"""
+    if not path.endswith(".lean"):
+        return []
+    sides = {"+": decl_statements(file_at(rev_new, path)), "-": decl_statements(file_at(rev_old, path))}
+    direct, ctx = set(), {}
+    for (ln, s, text, prose), oln in zip(f["lines"], f["old"]):
+        if prose:
+            continue
+        ln = ln if s == "+" else oln
+        idx = ln - 1
+        ids, stmts, is_code = sides[s]
+        # a docstring line whose `/--` lies outside the hunk is still prose
+        if not (0 <= idx < len(ids)) or not stmts or not is_code[idx]:
+            continue
+        sid = ids[idx]
+        if re.search(STEP_RULE, text):
+            direct.add((s, sid))
+        elif re.search(STEP_RULE, stmts[sid][1]) and (s, sid) not in ctx:
+            head = stmts[sid][1].strip().split("\n", 1)[0].strip()
+            ctx[(s, sid)] = (ln, s, "step-rule",
+                             f"{text.strip()}  [in the rule at line {stmts[sid][0]}: {head[:80]}]")
+    return [h for k, h in ctx.items() if k not in direct]
 
 # --------------------------------------------------------------- Go source lookup
 def go_source(symbol):
@@ -233,8 +335,76 @@ def toml_lists(path, rev_old, rev_new):
             out.append((key, [x for x in n if x not in o], [x for x in o if x not in n]))
     return out
 
+# --------------------------------------------------------------- self-test
+def self_test():
+    """The signal patterns on examples of every form they are meant to catch (and a few
+    they must not). Run by `etc/trusted-delta.py --self-test`."""
+    must = {
+        "step-rule": [
+            "  neg_float64 (v : w64) : ⟦GoUnOp GoNeg go.float64, #v⟧ ⤳[under] #(float64Neg v)",
+            "  eq (v : w64) : ⟦GoOp GoEquals go.float64, (#v, #v)⟧ ⤳ #true",
+            "    is_go_step_pure (GoOp GoPlus t) glv((#v1, #v2)) =",
+            "  go_prealloc_step : is_go_step_pure GoPrealloc #() =",
+            "    go.IsGoStepPureDet InternalMapLookupId (PairV (map.mapV dv es) id)",
+            "instance foo : go.IsGoStepPureDetTagged under (GoOp GoPlus t) v e := ⟨⟨h⟩⟩",
+            "  len_chan : FuncUnfold go.len [t] f",
+            "  m : MethodUnfold t \"Len\" f",
+            "  | RecS f x e σg : BaseStep (Rec f x e) σg [] (Val (RecV f x e)) σg []",
+        ],
+        "axiom": ["axiom foo : False", "private axiom foo : False", "@[simp] noncomputable axiom x : Nat"],
+        "opaque": ["opaque f : Nat → Nat", "@[implemented_by g] private opaque f : Nat"],
+        "implemented_by": ["@[implemented_by fast] def f := 1", "@[extern \"lean_f\"] opaque f : Nat"],
+        "native": ["  native_decide", "  decide +kernel; bv_decide"],
+        "partial": ["partial def loop : Nat := loop", "private partial def loop : Nat := loop"],
+        "semantics-class": ["class FooSemantics [GoSemanticsFunctions] : Prop where",
+                            "noncomputable instance : GoLocalContext := ⟨f⟩",
+                            "instance foo [GooseExts] : go.Float64Semantics := ⟨⟩"],
+    }
+    must_not = {
+        "step-rule": ["  intro _ _ _ h; exact h.isGoStep_det_internal",
+                      "  float64Encodes (float64Add v1 v2) f"],
+        "axiom": ["  -- the axiom of choice", "#print axioms foo"],
+        "semantics-class": ["noncomputable instance runeStruct.zero_val [GooseExts] : ZeroVal runeStruct :=",
+                            "instance [GoSemanticsFunctions] (T : go.GoType) : Foo T := ⟨⟩"],
+    }
+    bad = []
+    for name, lines in must.items():
+        for ln in lines:
+            if name not in [n for n, _ in signals_in(ln)]:
+                bad.append(f"missed `{name}`: {ln!r}")
+    for name, lines in must_not.items():
+        for ln in lines:
+            if name in [n for n, _ in signals_in(ln)]:
+                bad.append(f"spurious `{name}`: {ln!r}")
+    # a continuation line of a multi-line relational rule belongs to that rule
+    src = "\n".join([
+        "class Float64Semantics [GoSemanticsFunctions] : Prop where",
+        "  /-- a docstring mentioning is_go_step_pure",
+        "  over two lines -/",
+        "  le_float64 (v1 v2 : w64) : ⟦GoOp GoLe go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Leb v1 v2)",
+        "  plus_float64 {t : go.GoType} [t ↓u go.float64] (v1 v2 : w64) :",
+        "    is_go_step_pure (GoOp GoPlus t) glv((#v1, #v2)) =",
+        "      fun (e : Expr) => ∃ f, e = #f ∧ float64Encodes (float64Add v1 v2) f",
+        "  zero_float64 : ZeroVal w64",
+        "",
+        "def helper (x : w64) : w64 := x",
+    ])
+    ids, stmts, is_code = decl_statements(src)
+    if not (ids[4] == ids[5] == ids[6] and re.search(STEP_RULE, stmts[ids[6]][1])):
+        bad.append("decl_statements: the body of `plus_float64` is not in its rule")
+    if ids[7] == ids[6] or re.search(STEP_RULE, stmts[ids[7]][1]):
+        bad.append("decl_statements: `zero_float64` is attributed to a step rule")
+    if re.search(STEP_RULE, stmts[ids[9]][1]) or "docstring" in stmts[ids[3]][1] or is_code[2]:
+        bad.append("decl_statements: comment text or a top-level def counted as a step rule")
+    for b in bad:
+        print("FAIL " + b)
+    print(f"trusted-delta self-test: {'FAILED' if bad else 'ok'}")
+    return 1 if bad else 0
+
 # --------------------------------------------------------------- main
 def main(argv):
+    if "--self-test" in argv:
+        return self_test()
     full = "--full" in argv
     nodiff = "--no-diff" in argv
     check = "--check" in argv
@@ -270,23 +440,34 @@ def main(argv):
     for t in range(4):
         for p, kind in tiered[t]:
             hits = []
-            for ln, s, text, prose in files[p]["lines"]:
+            for (ln, s, text, prose), oln in zip(files[p]["lines"], files[p]["old"]):
                 if prose:
                     continue
                 for name, why in signals_in(text):
-                    hits.append((ln, s, name, text.strip()))
+                    # a removed line is located by its line number in the old file
+                    hits.append((ln if s == "+" else oln, s, name, text.strip()))
+            if t == 0:
+                hits += step_rule_context_hits(p, files[p], rev_old, rev_new)
+                hits.sort(key=lambda h: (h[0], h[1] == "+"))
             if not hits:
                 continue
             nsig += len(hits)
             print(f"### {p}  (tier {t}, {kind})")
-            seen = set()
+            seen, per_name = set(), {}
             for ln, s, name, text in hits:
                 key = (ln, s, name)
                 if key in seen:
                     continue
                 seen.add(key)
-                loc = f"{p}:{ln}" if s == "+" else f"{p}:{ln} (removed)"
-                print(f"- `{name}` {loc}: `{text[:160]}`")
+                # outside tier 0 (e.g. a goose regeneration), list a few of each signal
+                per_name[name] = per_name.get(name, 0) + 1
+                if t > 0 and per_name[name] > COLLAPSE:
+                    continue
+                loc = f"{p}:{ln}" if s == "+" else f"{p}:{ln} (removed; old line)"
+                print(f"- `{name}` {loc}: `{text[:200]}`")
+            for name, n in per_name.items():
+                if t > 0 and n > COLLAPSE:
+                    print(f"- `{name}`: ... and {n - COLLAPSE} more lines in this file")
             print()
     if nsig == 0:
         print("(none)\n")

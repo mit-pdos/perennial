@@ -207,6 +207,26 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   1)`) get sequentially consistent byte semantics, which Intel does not promise when they
   are concurrent (assumption A3 of `docs/design/unsafe-memory.md`).
 
+## Floats
+
+- **Fused multiply-add (unsound).** The Go spec ("Floating-point operators") lets an
+  implementation fuse float operations, computing `x*y + z` with one rounding instead of
+  two, and gc does on arm64 (and other targets with an FMA instruction). The model rounds
+  every operation (`Float64Semantics`, `Golang/Defn/Predeclared.lean`), so a proof about
+  such an expression covers the unfused result only.
+
+  ```go
+  x, y, z := 1.0+0x1p-52, 1.0-0x1p-52, -1.0
+  r := x*y + z // amd64: 0; arm64 (fused): -0x1p-104
+  ```
+
+  An explicit conversion (`float64(x*y) + z`) prevents the fusion in Go; the model cannot
+  tell the two apart.
+- **`float32` of an untyped constant rounds twice.** Goose represents an untyped float
+  constant by its `float64` rounding, and `float32(c)` rounds that again
+  (`convert_untyped_float32`); Go rounds `c` once. The two differ for a constant just off a
+  point halfway between two `float32`s.
+
 ## The step bound of the adequacy theorems
 
 Not unsound, but hard to read. Every adequacy theorem (`goose_adequacy`,

@@ -30,6 +30,7 @@ The core of Goose's Go semantics, stated as typeclasses over an abstract
 module
 
 public import Perennial.GooseLang.Notation
+public import Perennial.Golang.Defn.Float
 
 @[expose] public section
 
@@ -57,35 +58,6 @@ abbrev _root_.Perennial.GoMap := Loc
 def nil : GoMap := null
 end map
 
-class FloatOps where
-  float64Neg : w64 → w64
-  float64Add : w64 → w64 → w64
-  float64Sub : w64 → w64 → w64
-  float64Mul : w64 → w64 → w64
-  float64Div : w64 → w64 → w64
-  float64Leb : w64 → w64 → Bool
-  float64Eq : w64 → w64 → Bool
-
-  float32Neg : w32 → w32
-  float32Add : w32 → w32 → w32
-  float32Sub : w32 → w32 → w32
-  float32Mul : w32 → w32 → w32
-  float32Div : w32 → w32 → w32
-  float32Leb : w32 → w32 → Bool
-  float32Eq : w32 → w32 → Bool
-
-  float64ToFloat32 : w64 → w32
-
-  -- integer to float conversions (`float64(n)`), uninterpreted: a float is an opaque bit pattern
-  int64ToFloat64 : w64 → w64
-  uint64ToFloat64 : w64 → w64
-  int32ToFloat64 : w32 → w64
-  uint32ToFloat64 : w32 → w64
-
-export FloatOps (float64Neg float64Add float64Sub float64Mul float64Div float64Leb float64Eq
-  float32Neg float32Add float32Sub float32Mul float32Div float32Leb float32Eq float64ToFloat32
-  int64ToFloat64 uint64ToFloat64 int32ToFloat64 uint32ToFloat64)
-
 class GoSemanticsFunctions [GooseExts] where
   underlying : go.GoType → go.GoType
   globalAddr : GoString → Loc
@@ -105,10 +77,6 @@ class GoSemanticsFunctions [GooseExts] where
   structFieldRef : Type → GoString → Loc → Loc
 
   arrayIndexRef (elem_type : Type) (i : Int) (l : Loc) : Loc
-
-  [float_ops : FloatOps]
-
-attribute [instance] GoSemanticsFunctions.float_ops
 
 export GoSemanticsFunctions (underlying globalAddr functions methods methodSet structFieldRef
   arrayIndexRef)
