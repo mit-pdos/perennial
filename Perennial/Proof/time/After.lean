@@ -21,7 +21,8 @@ variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
 /-- The timer's deadline `w` (Go's `when(d)` over the reading `x`) is reached only once the clock is
-`d` past `T = max n x` (`x` is at least `n` unless the clock has saturated at `clockMax`). -/
+`d` past `T = max n x` (`x` is at least `n` unless `n` exceeds `clockMax`, the clock's largest
+value). -/
 theorem time.after_when_enc (n : Int) (x d w y : w64)
     (hx : time.clockEnc n ≤ time.clockEnc (sint.Z x))
     (hw : (sint.Z d ≤ 0 ∧ w = x) ∨

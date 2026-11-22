@@ -192,7 +192,14 @@ The channel has capacity 0 or 1 (see `NewTimer`). The model computes `when(d)` a
 reading of the runtime clock (`runtimeClockNow`) in place of `runtimeNano()` (the same clock), and
 forks a goroutine that waits until the clock reaches it (the runtime fires the timer once
 `nanotime() >= when`) and then sends one arbitrary time on the channel (Go sends the current time,
-one of them). The timer is not reachable from the program, so it is never stopped or reset. -/
+one of them). The timer is not reachable from the program, so it is never stopped or reset.
+
+The model's clock starts at an arbitrary `int64` (`runtimeClockInit`), so it may read `≤ 0`, where
+Go's `runtimeNano()` is always positive (the comment in `when`, above). So `when(d)` may be `≤ 0` in
+the model, where the runtime would throw "timer when must be positive" (`runtime/time.go`,
+`timer.modify`), a throw that no Go run reaches; the model waits instead. This only adds executions
+that Go cannot have, never removes one: a deliberate, sound over-approximation (no throw and no
+positivity assumption to add). -/
 def After.impl : val :=
   λ: "d",
     let: "ch" := FuncResolve go.make2 [go.ChannelType go.sendrecv (go.Named go!"time.Time" [])]
