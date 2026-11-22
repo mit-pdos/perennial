@@ -22,7 +22,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE Iris.ProofMode
 section proof
 variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
@@ -37,21 +37,20 @@ theorem sync.Once.doSlow.wp_proof
   wp_start as ⟨#HO, #Hf⟩
   simp only [isOnce_unseal, isOnceDef]
   iNamed HO
-  wp_apply (lc := 2) wp_with_defer as %defer Hdefer
+  wp_apply wp_with_defer as %defer Hdefer
   wp_apply wp_Mutex_Lock $$ [$Hm] with ⟨Hlocked, Hlk⟩
   unfold OnceLockInv
   icases Hlk with ⟨%done, done2, HPQ⟩
   wp_apply_core wp_Bool_Load $$ [] [-]
   · iPkgInit
   iinv Qinv with Hi Hclose
-  imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi
-  unfold OnceInv
-  icases Hi with ⟨%done0, done1, #HQ⟩
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
+  inext
+  unfold OnceInv
+  icases Hi with ⟨%done0, done1, #HQ⟩
   icombine done1 done2 gives %Heq
   subst Heq
-  inext
   iexists done0
   iframe done1
   iintro done1
@@ -68,15 +67,14 @@ theorem sync.Once.doSlow.wp_proof
     wp_apply_core wp_Bool_Store $$ [] [-]
     · iPkgInit
     iinv Qinv with Hi Hclose
-    imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc2 Hi with Hi
-    icases Hi with ⟨%d, done1, #HQ1⟩
     iapply fupd_mask_intro Std.LawfulSet.empty_subset
     iintro Hmask
+    inext
+    icases Hi with ⟨%d, done1, #HQ1⟩
     icombine done1 done2 gives %Heq
     subst Heq
     ihave Hfull := (ownBool_halves (OnceDone (GF := GF) o) false).2 $$ [done1 done2]
     · iframe
-    inext
     iexists false
     iframe Hfull
     iintro Hfull
