@@ -1397,7 +1397,18 @@ func (ctx *Ctx) loopVarEscapes(v types.Object, nodes ...ast.Node) bool {
 	return escapes
 }
 
-func (ctx *Ctx) forStmt(s *ast.ForStmt, cont glang.Expr) glang.Expr {
+// loopBody translates the body of a for or range statement; with a label L,
+// `break L` and `continue L` in it end the iteration as `break` and `continue`.
+func (ctx *Ctx) loopBody(body *ast.BlockStmt, label *ast.Ident) glang.Expr {
+	e := ctx.blockStmt(body, nil)
+	if label != nil {
+		e = glang.CatchLabelExpr{Label: label.Name, Body: e}
+	}
+	return e
+}
+
+// forStmt translates a for statement with the label label (nil if none).
+func (ctx *Ctx) forStmt(s *ast.ForStmt, label *ast.Ident, cont glang.Expr) glang.Expr {
 	var cond glang.Expr = glang.GooseBoolLiteral(true)
 	if s.Cond != nil {
 		cond = ctx.expr(s.Cond)
@@ -1406,7 +1417,7 @@ func (ctx *Ctx) forStmt(s *ast.ForStmt, cont glang.Expr) glang.Expr {
 	if s.Post != nil {
 		post = ctx.stmt(s.Post, nil)
 	}
-	body := ctx.blockStmt(s.Body, nil)
+	body := ctx.loopBody(s.Body, label)
 
 	// Each iteration has its own copy of each variable x the init statement
 	// declares, which matters only if the loop captures x or takes its address
@@ -1448,7 +1459,8 @@ func (ctx *Ctx) forStmt(s *ast.ForStmt, cont glang.Expr) glang.Expr {
 	return glang.SeqExpr{Expr: e, Cont: cont}
 }
 
-func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
+// rangeStmt translates a range statement with the label label (nil if none).
+func (ctx *Ctx) rangeStmt(s *ast.RangeStmt, label *ast.Ident) glang.Expr {
 	if n, msg, bad := modelcheck.Range(ctx.info, s); bad {
 		ctx.unsupported(n, "%s", msg)
 	}
@@ -1460,7 +1472,7 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 		// recover() in the body of a range over a function returns nil in Go
 		ctx.recoverOK = false
 	}
-	body := ctx.blockStmt(s.Body, nil)
+	body := ctx.loopBody(s.Body, label)
 	ctx.recoverOK = recoverOK
 	var shared []*ast.Ident
 	for _, kv := range []struct {
@@ -1975,6 +1987,17 @@ func (ctx *Ctx) incDecStmt(stmt *ast.IncDecStmt, cont glang.Expr) glang.Expr {
 }
 
 func (ctx *Ctx) branchStmt(s *ast.BranchStmt, cont glang.Expr) glang.Expr {
+	if s.Tok == token.GOTO {
+		ctx.unsupported(s, "goto")
+	}
+	if s.Label != nil {
+		if s.Tok == token.CONTINUE {
+			return glang.SeqExpr{Expr: glang.ContinueToExpr{Label: s.Label.Name}, Cont: cont}
+		}
+		if s.Tok == token.BREAK {
+			return glang.SeqExpr{Expr: glang.BreakToExpr{Label: s.Label.Name}, Cont: cont}
+		}
+	}
 	if s.Tok == token.CONTINUE {
 		return glang.SeqExpr{Expr: glang.ContinueExpr{}, Cont: cont}
 	}
@@ -2003,6 +2026,24 @@ func breaksOut(body *ast.BlockStmt) bool {
 		return !found
 	})
 	return found
+}
+
+// labeledStmt translates a for, range, switch, type switch or select statement
+// with a label L, the target of `break L` and `continue L` in it.
+func (ctx *Ctx) labeledStmt(s *ast.LabeledStmt, cont glang.Expr) glang.Expr {
+	switch stmt := s.Stmt.(type) {
+	case *ast.ForStmt:
+		return ctx.forStmt(stmt, s.Label, cont)
+	case *ast.RangeStmt:
+		return glang.SeqExpr{Expr: ctx.rangeStmt(stmt, s.Label), Cont: cont}
+	case *ast.SwitchStmt, *ast.TypeSwitchStmt, *ast.SelectStmt:
+		return glang.SeqExpr{
+			Expr: glang.CatchBreakExpr{Body: glang.CatchLabelExpr{Label: s.Label.Name, Body: ctx.stmt(stmt, nil)}},
+			Cont: cont,
+		}
+	}
+	ctx.unsupported(s, "label on a statement other than for, range, switch or select")
+	return nil
 }
 
 func (ctx *Ctx) goStmt(e *ast.GoStmt, cont glang.Expr) glang.Expr {
@@ -2506,9 +2547,11 @@ func (ctx *Ctx) stmt(s ast.Stmt, cont glang.Expr) glang.Expr {
 	case *ast.ForStmt:
 		// note that this might be a nested loop,
 		// in which case the loop var gets replaced by the inner loop.
-		return ctx.forStmt(s, cont)
+		return ctx.forStmt(s, nil, cont)
 	case *ast.RangeStmt:
-		return glang.SeqExpr{Expr: ctx.rangeStmt(s), Cont: cont}
+		return glang.SeqExpr{Expr: ctx.rangeStmt(s, nil), Cont: cont}
+	case *ast.LabeledStmt:
+		return ctx.labeledStmt(s, cont)
 	case *ast.BlockStmt:
 		return ctx.blockStmt(s, cont)
 	case *ast.SwitchStmt:

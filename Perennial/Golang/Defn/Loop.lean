@@ -1,6 +1,7 @@
 /-
-Loops: `break:`, `continue:` and `for:`; and `catchBreak`, for a `break` that
-ends a `switch` or `select` statement.
+Loops: `break:`, `continue:` and `for:`; `catchBreak`, for a `break` that
+ends a `switch` or `select` statement; and `doBreakTo`, `doContinueTo` and
+`catchLabel`, for `break L` and `continue L`.
 -/
 module
 
@@ -53,6 +54,26 @@ def catchBreakDef : val :=
 
 @[irreducible] def catchBreak : val := catchBreakDef
 theorem catchBreak_unseal : catchBreak = catchBreakDef := by with_unfolding_all rfl
+
+def doBreakToDef : val := λ: "l", (#"breakTo", "l")
+@[irreducible] def doBreakTo : val := doBreakToDef
+theorem doBreakTo_unseal : doBreakTo = doBreakToDef := by with_unfolding_all rfl
+
+def doContinueToDef : val := λ: "l", (#"continueTo", "l")
+@[irreducible] def doContinueTo : val := doContinueToDef
+theorem doContinueTo_unseal : doContinueTo = doContinueToDef := by with_unfolding_all rfl
+
+/-- `catchLabel l b` is the outcome of the body of a loop, or of a `switch` or
+`select` statement, labeled `l` whose outcome is `b`: `break l` becomes `break`,
+`continue l` becomes `continue`, and the other outcomes are unchanged. -/
+def catchLabelDef : val :=
+  λ: "l" "b",
+    if: (Fst "b" =⟨go.string⟩ #"breakTo") && (Snd "b" =⟨go.string⟩ "l") then breakVal
+    else if: (Fst "b" =⟨go.string⟩ #"continueTo") && (Snd "b" =⟨go.string⟩ "l") then continueVal
+    else "b"
+
+@[irreducible] def catchLabel : val := catchLabelDef
+theorem catchLabel_unseal : catchLabel = catchLabelDef := by with_unfolding_all rfl
 
 namespace func
 
