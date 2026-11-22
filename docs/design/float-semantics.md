@@ -102,10 +102,12 @@ as the untyped integer `n`, and is stuck on any other (a compile error in Go). `
 `mkRat (-n) d`. Goose emits any expression that go/types records as a constant of a float type
 (`float64`, `float32`, or a named type of one) as its bits (`constantLiteral`, rounded once from
 the exact value, never `-0`), so the rules are reached only by constants at a type parameter (`return c` in `func f[T ~float32]() T`, rounded once at the instantiation, as gc
-does). An explicit `T(c)` at a type parameter is a conversion of `c` at its default type: goose
-emits what go/types records, `Convert go.float64 T (Convert go.untypedFloat go.float64 c)`,
-which rounds twice, as gc does (`T(1 + 0x1p-24 + 0x1p-60)` at `float32` is `0x3f800000`, while
-`return c` gives `0x3f800001`).
+does). An explicit `T(c)` at a type parameter is the same conversion of the exact value (goose
+emits `Convert go.untypedFloat T`, not what go/types records, `c` at its default type
+`float64`), following our reading of the spec's Conversions section: the constant is represented
+as a value of the type argument, rounded once. gc's explicit `T(c)` rounds through `float64`
+instead (`T(1 + 0x1p-24 + 0x1p-60)` at `float32` is `0x3f800000` in gc, `0x3f800001` here);
+whether that is intended is unresolved (`docs/KNOWN_LIMITATIONS.md`, "Floats").
 
 Float-to-integer conversion is unchanged (`ArbitraryInt`, implementation-defined in Go).
 

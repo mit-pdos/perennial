@@ -1007,7 +1007,12 @@ Not modelled (stuck): integer to `float32` conversions, and the integer types na
 An untyped float constant is its exact value, a rational `mkRat n d` (goose emits it in lowest
 terms). Converting it rounds that value once (`ratToFloat64`, `ratToFloat32`); converting it to
 an integer type is defined only when it is an integer (`mkRat n 1`), and is then the conversion
-of the untyped integer `n`. -/
+of the untyped integer `n`. These conversions are what goose emits for a constant at a type
+parameter, also for an explicit `T(c)`. There gc's behaviour differs from our reading of the
+spec's Conversions section (the constant is represented as a value of the type argument, rounded
+once): gc's explicit `T(c)` rounds through `float64` (`T(1 + 0x1p-24 + 0x1p-60)` at `float32`
+is `0x3f800000` in gc, `0x3f800001` here; `docs/KNOWN_LIMITATIONS.md`). Whether gc's behaviour is
+intended is unresolved. -/
 
 class UntypedFloatSemantics [GoSemanticsFunctions] : Prop where
   underlying_untyped_float : go.untypedFloat ↓u go.untypedFloat

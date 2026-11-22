@@ -25,20 +25,31 @@ variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.se
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedFloatConvertAtTypeParam.wp_proof :
     github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedFloatConvertAtTypeParam.spec (GF := GF) (hG := hG) := by
-  have h1 : float32Eq (W32 0x3f800000) (W32 0x3f800000) = true := by decide +kernel
+  have h1 : ratToFloat64 (mkRat 1152921573326323713 1152921504606846976) = W64 0x3ff0000010000000 :=
+    by decide +kernel
+  have h2 : float64Eq (W64 0x3ff0000010000000) (W64 0x3ff0000010000000) = true := by decide +kernel
   intro Φ
   iintro HΦ
   wp_func_call
   wp_call
   steps
-  wp_apply wp_float64_to_float32 as %f %Hf
-  obtain rfl := float32Encodes_eq (b := W32 0x3f800000) (by decide +kernel) Hf
-  rw [h1]
+  simp only [h1, h2]
   steps
-  wp_apply wp_float64_to_float32 as %f %Hf
-  obtain rfl := float32Encodes_eq (b := W32 0x3f800000) (by decide +kernel) Hf
+  simp only [h1, h2]
+  iexact HΦ
+
+/-- `T(c)` at a type parameter instantiated with `float32` rounds the exact constant once (the
+spec's reading; gc gives `0x3f800000`, `docs/KNOWN_LIMITATIONS.md`): `0x3f800001`. -/
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.offTieConvertedAt_float32
+    (Φ : val → IProp GF) :
+    ⊢ Φ #(W32 0x3f800001) -∗
+      WP (App (App (Val (GoInstruction (FuncResolve offTieConvertedAt [go.float32]))) (Val #()))
+        (Val #())) {{ Φ }} := by
+  have h1 : ratToFloat32 (mkRat 1152921573326323713 1152921504606846976) = W32 0x3f800001 :=
+    by decide +kernel
+  iintro HΦ
   steps
-  rw [h1]
+  simp only [h1]
   iexact HΦ
 
 end proof

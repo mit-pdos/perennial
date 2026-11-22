@@ -2776,7 +2776,7 @@ noncomputable def float32ConstAt.impl [GooseExts] [GoGlobalContext] (T : go.GoTy
   (Let "$res2" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat T))) (Val offTie))
-  (Let "$r1" (App (Val (GoInstruction (Convert go.float64 T))) (Val #(W64 4607182419068452864)))
+  (Let "$r1" (App (Val (GoInstruction (Convert go.untypedFloat T))) (Val #(mkRat (1152921573326323713 : Int) 1152921504606846976)))
   (Let "$r2" (App (Val (GoInstruction (Convert go.untypedFloat T))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val offTie)))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon

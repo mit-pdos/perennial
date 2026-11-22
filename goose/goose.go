@@ -373,6 +373,15 @@ func (ctx *Ctx) conversionExpr(s *ast.CallExpr) glang.Expr {
 	}
 	toType := ctx.info.TypeOf(s.Fun)
 	fromType := ctx.info.TypeOf(s.Args[0])
+	if _, ok := toType.(*types.TypeParam); ok {
+		// T(c) of a constant c is c's exact value represented at the type argument
+		// (go/types records c at its default type)
+		if val := ctx.info.Types[s.Args[0]].Value; val != nil {
+			if k, lit := untypedLiteral(val, val.Kind() == constant.Float); lit != nil {
+				return ctx.handleImplicitConversion(s, types.Typ[k], toType, lit)
+			}
+		}
+	}
 	return ctx.handleImplicitConversion(s, fromType, toType, ctx.expr(s.Args[0]))
 }
 
@@ -2727,20 +2736,10 @@ func (ctx *Ctx) constantLiteral(e ast.Expr) glang.Expr {
 			return glang.ToVal{Value: glang.StringLiteral{Value: v.(string)}}
 		case types.UntypedNil:
 			return glang.VerbatimExpr("UntypedNil")
-		case types.UntypedInt, types.UntypedRune:
-			switch v := v.(type) {
-			case *big.Int:
-				return glang.ToVal{Value: glang.ZLiteral{Value: v}}
-			case int64:
-				return glang.ToVal{Value: glang.ZLiteral{Value: big.NewInt(v)}}
+		case types.UntypedInt, types.UntypedRune, types.UntypedFloat:
+			if _, lit := untypedLiteral(val, t.Kind() == types.UntypedFloat); lit != nil {
+				return lit
 			}
-		case types.UntypedFloat:
-			num, den := constant.Num(val), constant.Denom(val)
-			if num.Kind() != constant.Int || den.Kind() != constant.Int {
-				break
-			}
-			return glang.ToVal{Value: glang.VerbatimExpr(fmt.Sprintf("mkRat (%s : Int) %s",
-				num.ExactString(), den.ExactString()))}
 		case types.Float64:
 			f, _ := constant.Float64Val(val)
 			if f == 0 {
@@ -2765,6 +2764,23 @@ func (ctx *Ctx) constantLiteral(e ast.Expr) glang.Expr {
 	}
 	ctx.unsupported(e, "unsupported constant val")
 	return nil
+}
+
+// untypedLiteral is the exact value of an integer or float constant, at untyped
+// float (#(mkRat n d), lowest terms) if asFloat, else at untyped int (#(n : Int)).
+// lit is nil for other constants.
+func untypedLiteral(val constant.Value, asFloat bool) (k types.BasicKind, lit glang.Expr) {
+	if asFloat {
+		num, den := constant.Num(val), constant.Denom(val)
+		if num.Kind() == constant.Int && den.Kind() == constant.Int {
+			return types.UntypedFloat, glang.ToVal{Value: glang.VerbatimExpr(
+				fmt.Sprintf("mkRat (%s : Int) %s", num.ExactString(), den.ExactString()))}
+		}
+	} else if val.Kind() == constant.Int {
+		v, _ := new(big.Int).SetString(val.ExactString(), 10)
+		return types.UntypedInt, glang.ToVal{Value: glang.ZLiteral{Value: v}}
+	}
+	return 0, nil
 }
 
 // constSpec handles one specification in a const block

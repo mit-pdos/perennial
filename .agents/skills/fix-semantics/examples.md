@@ -1366,11 +1366,15 @@ q)`, `ofConst` being #654's `roundRat` with a zero result made `+0`),
 `Convert go.untypedInt t #n`; stuck on a non-integral constant, a compile error in Go).
 (4) Goose's untyped-float-at-int special case in `identExpr` and `untypedFloatToInt` deleted
 (-56 lines): a named untyped float constant is `Convert go.untypedFloat T c`, like every other
-untyped constant. (5) Explicit `T(c)`: goose emits what go/types records, `c` at its default
-type `float64` and then `Convert go.float64 T`, which is gc's double rounding;
-to make it run, `convert_float64_to_float32` and its sibling `convert_float32_to_float64`
-(relational like the arithmetic rules, `float64ToFloat32` / `float32ToFloat64` = #654's
-`convert`, any NaN of a NaN). Cost: 3 rules changed, 3 added, 4 definitions; goose +13/-55 lines against `lean`.
+untyped constant. (5) Explicit `T(c)` of a constant at a type parameter: goose emits
+`Convert go.untypedFloat T` (or `go.untypedInt`) of the exact value, as for the implicit form,
+not what go/types records (`c` at its default type `float64`, then `Convert go.float64 T`).
+This follows the spec's Conversions section ("with the value represented as a value of the
+type argument"): rounded once. gc rounds through `float64` there (`T(H)` at `float32`:
+`0x3f800000`; `T(-1e-50)`: `-0`; `T(1e18 + 1)` at `int64`: 1e18), a divergence recorded neutrally
+in `KNOWN_LIMITATIONS.md` ("Floats"); whether gc's behaviour is intended is unresolved.
+`convert_float64_to_float32` and `convert_float32_to_float64` (relational like the arithmetic,
+#654's `convert`, any NaN of a NaN) are added as ordinary typed conversions. Cost: 3 rules changed, 3 added, 4 definitions; goose +13/-55 lines against `lean`.
 Regenerated: `math` (85 untyped constant declarations become rationals, 85 call sites become
 `float64` bits) and the goose examples. Tests: semantics
 `testUntypedFloatConstAtTypeParam`, `testUntypedFloatConvertAtTypeParam`,
@@ -1382,9 +1386,12 @@ code). Goose folding every constant at every concrete type (the uniform extensio
 untyped integer conversions would become dead outside generic code, and it rewrites about 330
 sites of generated code and the proofs that step them, for no soundness gain (an integer constant
 expression is exact, and a non-representable one is a compile error); kept to the float types,
-where run-time evaluation differs (signed zero) and untyped arithmetic needs it. A nondeterministic rule allowing both roundings for `T(c)`.
+where run-time evaluation differs (signed zero) and untyped arithmetic needs it. For `T(c)`: following go/types and gc (the PR's second version, double rounding), or a
+nondeterministic rule allowing both results.
 
 **Why.** The owner (upamanyus), on #676: goose changes and Lean rules are equally trusted;
 prefer a simple uniform semantics, "our Go semantics supports conversions from untyped
 constants", which generic code needs, so the conversions must be correct, not deleted: untyped
-float constants carry their exact value at run time, and each conversion rounds once.
+float constants carry their exact value at run time, and each conversion rounds once. On
+explicit `T(c)`: "the semantics follows the Go spec, not gc"; document the divergence neutrally,
+not as a gc bug.
