@@ -93,7 +93,9 @@ imports = ["!*"]
   package variable `X`, the model is its whole initialization `X.init : val`
   (allocation included), called where Go runs the initializer;
 * `[[skip]]` entries (`names = ["X", ...]`, exact package-variable names or
-  `"_"` for every blank `var _`, and a required `reason`): variables that are
+  `"_@file.go:L"` for the blank `var _` at that position, and a required
+  `reason`; a package that skips a blank variable lists every one, so a new or
+  moved blank fails the translation until reviewed): variables that are
   not translated at all, with no name, allocation or initialization step, for
   variables no verified code is to read. The reason is the trusted claim: not
   running the initializer is unobservable (it terminates, cannot panic, and
@@ -110,9 +112,9 @@ imports = ["!*"]
   ```
 
   (A variable that translated code is to read once it is modelled, but whose
-  initializer cannot be translated yet, is `trusted` with
-  `def X.init : val := go.skipInit`, which leaves `X` unallocated: a load or
-  store of it is stuck.)
+  initializer cannot be translated yet, is `trusted` with an explicit no-op
+  `def X.init : val := λ: <>, #()` whose docstring says why that is sound; it
+  leaves `X` unallocated: a load or store of it is stuck.)
 * every other declaration is *axiomatized*: its name and type are emitted,
   without a body, as an `opaque` constant (not an `axiom`: Lean checks that
   its type is inhabited, so it cannot make the logic inconsistent). A type `T`
@@ -129,7 +131,8 @@ imports = ["!*"]
 * types (`def S.ty : go.GoType`), and the struct value types `S` with fields `a'`, `b'`, ...;
 * `initialize'`, the package initialization function;
 * `skipped' : List go.SkippedVar`, if the config skips variables: each one's
-  `pkg.X` and reason (informational; the variables themselves have no name);
+  `pkg.X` (`pkg._@file.go:L` for a blank one), reason and Go declaration
+  (informational; the variables themselves have no name);
 * `class Assumptions`: the facts a proof may assume about the package, such as
   `FuncUnfold F [] F.impl` (calling `F` runs its body) and the struct
   field-access semantics. Proofs take `[package_sem : <pkg>.Assumptions]`.

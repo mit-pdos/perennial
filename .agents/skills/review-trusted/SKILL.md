@@ -354,8 +354,14 @@ That verified code never touches it is checked by construction (goose refuses
 a reference from translated code, in its package or one that imports it, and
 hand-written Lean cannot name it); what is trusted is the reason: *not running
 the variable's Go initializer is unobservable*. Check each added name against
-its real initializer (`etc/trusted-delta.py` prints `go doc -u -src` for it,
-and each blank `var _` is listed in the translation's `skipped'`):
+its real initializer (`etc/trusted-delta.py` prints `go doc -u -src` for it;
+a blank `var _` is named by its position, `_@file.go:L`, and its declaration
+is in the translation's `skipped'`). A changed `skipped'` entry in a generated
+file (`trusted-delta`'s "skipped package variables" section: a Go upgrade that
+adds, moves or changes a skipped variable) is checked the same way. The
+warnings of `goose/cmd/skiplint` (stores to, or addresses of, package
+variables in a skipped initializer) point at the second item below, but the
+lint is best-effort: its silence proves nothing.
 - it terminates and cannot panic, reading every callee the initializer
   reaches (a constant table, `errors.New`, an allocating constructor, an
   interface assertion: yes; anything that can fail, loop or block: BLOCK);
@@ -369,9 +375,16 @@ and each blank `var _` is listed in the translation's `skipped'`):
   only says "unused" for a variable with readers is REWORK: the readers show
   what translating them later will need).
 A skip is for a variable verified code is never to read; one it will read once
-modelled stays translated or trusted (`go.skipInit`, perennial#663). A literal
+modelled stays translated or trusted (an explicit no-op `X.init` whose
+docstring says why skipping is sound, perennial#663). A literal
 `GlobalVarAddr go!"pkg.X"` in hand-written code (signal `global-var-addr`)
-reaches a variable without its Lean name: if `X` is skipped, BLOCK.
+reaches a variable without its Lean name: if `X` is skipped, BLOCK (a load or
+store through it would be stuck, as the variable is never allocated, but no
+hand-written code has a reason to name it). A trusted initializer of several
+variables (`var c, d = pair()`) runs `c.init` then `d.init` where Go evaluates
+`pair()` once: the first `init` must carry the whole evaluation (effects, any
+panic) and say so in its docstring, the later ones only what is left for their
+own variable; a model that runs `pair()`'s effects in each: REWORK.
 
 ## Report format
 

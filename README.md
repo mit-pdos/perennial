@@ -243,17 +243,38 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   so that verified code never touches the variable holds by construction. The
   trusted claim of each entry is its reason: *not running the variable's Go
   initializer is unobservable* (it terminates, cannot panic, and has no effect
-  beyond the variable). `grep -A3 '\[\[skip\]\]' Perennial/Code` lists them;
-  the `review-trusted` rule R11 says how to check one.
+  beyond the variable). A blank variable (`var _ = ...`) is listed by its
+  position, `"_@file.go:L"`, with its own reason; a package that skips one
+  lists all of its blank variables, so that one a Go upgrade adds or moves
+  fails the translation until its entry is reviewed. Each entry of `skipped'`
+  carries the variable's Go declaration, so a changed initializer changes the
+  generated file, and `etc/trusted-delta.py` reports every added, removed or
+  changed `skipped'` entry as a change to the trusted base. (Hand-written Lean
+  can still write a skipped variable's address from a literal name,
+  `GlobalVarAddr go!"pkg.X"`: `trusted-delta` flags every such literal,
+  `global-var-addr`, and a load or store through it is stuck, as the variable
+  is never allocated.) `goose/cmd/skiplint`, run by
+  `etc/update-goose-new.py` after translating and separate from goose, warns
+  on the side about a skipped initializer that stores to a package variable
+  or takes one's address, directly or through its package's functions; it is
+  best-effort (it does not follow other packages, interfaces or pointers it
+  did not see taken), so every reason is still reviewed.
+  `grep -A3 '\[\[skip\]\]' Perennial/Code` lists the entries; the
+  `review-trusted` rule R11 says how to check one.
 * **Trusted package-variable initializers.** A package variable listed in a
   goose config's `trusted` gets its initializer `X.init` (allocation included)
-  from `Perennial/TrustedCode`. An initializer that the model skips although
-  translated code is to read the variable is
-  `def X.init : val := go.skipInit` (`Golang/Defn/Pkg.lean`): its trusted claim is
-  that Go's initializer can be skipped; the variable is not allocated, so a load
-  or store of it is stuck (taking its address steps), and `grep go.skipInit` lists
-  every such variable (`os.Stdout`, `log.std` and `math.useFMA`, until they
-  get real models: perennial#663). **Accepted for now, to remove later:** four such
+  from `Perennial/TrustedCode`. A few of them do nothing (`λ: <>, #()`)
+  although translated code is to read the variable once it is modelled
+  (`os.Stdout`, `log.std` and `math.useFMA`, until they get real models:
+  perennial#663): the variable is then not allocated, so a load or store of it
+  is stuck (taking its address steps), and each docstring says why skipping
+  Go's initializer is sound. An initializer of several variables
+  (`var c, d = pair()`, one Go evaluation) that is trusted or axiomatized
+  runs `c.init` then `d.init`: goose cannot split the evaluation, so by
+  convention the first variable's `init` carries all of it (its effects, any
+  panic, and the variables it gives values to), each later one only what is
+  left for its own variable (nothing, if the first did it all), and the first
+  one's docstring says so. **Accepted for now, to remove later:** four such
   models are trusted although goose translates the real source, so the
   `review-trusted` rule R2 grades them REWORK; they were accepted (2026-10-19)
   to finish the standard library's init proofs, and later reviews and
