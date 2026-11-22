@@ -99,8 +99,10 @@ type Ctx struct {
 	// mention; see anonStructOf)
 	anonStructs     map[string]*anonStruct
 	anonStructOrder []*anonStruct
-	// glangType is translating the field types of an unnamed struct type
-	inAnonStructFields bool
+	// glangType is translating a type declared before the package's aliases
+	// may be (the field types of an unnamed struct type, an alias's target),
+	// and writes the package's aliases as the types they denote
+	beforeAliases bool
 
 	importNames map[string]*types.PkgName
 	// spellOut: glangType writes the types this translation cannot name
@@ -2738,10 +2740,22 @@ func (ctx *Ctx) constantLiteral(e ast.Expr) glang.Expr {
 			}
 		case types.Float64, types.UntypedFloat:
 			f, _ := constant.Float64Val(val)
+			if f == 0 {
+				// -0 == 0 is true, so this turns -0 into +0: a Go constant is exact
+				// and never negative zero, but Float64Val returns -0 for a negative
+				// constant that underflows.
+				f = 0
+			}
 			bits := math.Float64bits(f)
 			return glang.Int64Val{Value: glang.ZLiteral{Value: new(big.Int).SetUint64(bits)}}
 		case types.Float32:
 			f, _ := constant.Float32Val(val)
+			if f == 0 {
+				// -0 == 0 is true, so this turns -0 into +0: a Go constant is exact
+				// and never negative zero, but Float32Val returns -0 for a negative
+				// constant that underflows.
+				f = 0
+			}
 			bits := math.Float32bits(f)
 			return glang.Int32Val{Value: glang.ZLiteral{Value: new(big.Int).SetUint64(uint64(bits))}}
 		}

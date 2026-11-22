@@ -21,7 +21,7 @@ variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
 /-- `d.Seconds()`: some `float64` (`float64(d / Second) + float64(d % Second) / 1e9`, over the
-semantics' uninterpreted floating-point operations). -/
+semantics' IEEE 754 operations). -/
 abbrev time.Duration.Seconds.spec : Prop :=
   ∀ (d : time.Duration),
     {{ (True : IProp GF) }}
