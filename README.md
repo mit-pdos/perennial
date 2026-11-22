@@ -130,7 +130,19 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
     are discharged with `word`, `omega` and `bv_omega`. Do not use `bv_decide`/`native_decide`: they trust
     native code (`Lean.ofReduceBool`); prove bitwise facts via `toNat`.
   * `GoString` is `List w8`.
-* **64-bit platform.** The Go semantics assumes a 64-bit platform: the
+* **Platform: gc on linux/amd64 (trusted assumption).** The model assumes Go
+  programs are built by gc for linux/amd64. Every allocation address lies in
+  `(0, maxAddr]`, `maxAddr = 2^47` (`GooseLang/Lang.lean`, `IsFresh`/`IsFreshBytes`),
+  gc's user address space there, and proofs use that bound to rule out address
+  overflow (`unsafe.Slice`, `unsafe.Add`). The bound is false elsewhere, where
+  a proof may claim "no panic" for a program gc stops:
+  * aix/ppc64: gc's heap hints lie above `0xa0<<52`.
+  * linux/arm64 PIE and android: globals and `zerobase` load near
+    `0xaaaa_xxxx_xxxx`, above 2^47, and the heap's fallback reservation maps near 2^48.
+  * s390x: the user address space (`TASK_SIZE`) is 2^64.
+
+  `docs/KNOWN_LIMITATIONS.md`, "Platform", repeats this.
+  The Go semantics also assumes a 64-bit platform: the
   word-sized types `int`, `uint` and `uintptr` are 64-bit (values `w64`).
   `uintptr` (`go.UintptrSemantics`, `Perennial/Golang/Defn/Predeclared.lean`)
   is an integer type like `uint64`. Pointer/`unsafe.Pointer` to/from `uintptr`

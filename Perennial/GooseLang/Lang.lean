@@ -808,7 +808,8 @@ def stateInitHeap (l : Loc) (v : val) (σ : state) : state :=
 def IsWriting {A} (mna : Option (NonAtomic A)) : Prop := ∃ x, mna = some (Writing, x)
 
 /-- The end of the address space: every allocation lies in `(0, maxAddr]`, gc's user address
-space on linux/amd64. -/
+space on linux/amd64. This is a trusted platform assumption, false on aix/ppc64, linux/arm64
+PIE/android and s390x: see `README.md`, "Platform", and `docs/KNOWN_LIMITATIONS.md`. -/
 def maxAddr : Int := 2 ^ 47
 
 /-- `l` is an address in `(0, maxAddr)` with no cell in `σg`: where `Alloc` may put its cell.
