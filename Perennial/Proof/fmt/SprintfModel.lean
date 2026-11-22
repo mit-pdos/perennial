@@ -1,11 +1,12 @@
 /-
 Specs of the helpers of the model of `fmt.Sprintf` (`Perennial/TrustedCode/fmt.lean`), which
-are not functions of package `fmt`: `arbitraryString`, `formatInt`, `formatHex`, `intVerb`,
+are not functions of package `fmt`: `formatInt`, `formatHex`, `intVerb`,
 `intArg`, `namedIntArg`, `anyIntArg` and `formatArg`.
 -/
 module
 
 public import Perennial.Proof.fmt.Directives
+public import Perennial.Proof.arbitraryString
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.model.strings.Base
 
 @[expose] public section
@@ -24,42 +25,6 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
-
-omit package_sem in
-/-- The helper `fmt.arbitraryString` of the model of `Sprintf` returns some string. -/
-theorem wp_arbitraryString :
-    {{ (True : IProp GF) }}
-      (App (Val arbitraryString) (Val #()))
-    {{ (s : GoString), RET #s; True }} := by
-  iintro %Φ - HΦ
-  unfold arbitraryString
-  wp_auto
-  ihave IH : iprop(∃ str : GoString, "s" ∷ s_ptr ↦ str) $$ [s]
-  · iexists _; iframe
-  wp_for IH
-  wp_apply wp_ArbitraryInt as %c -
-  wp_if_destruct
-  · wp_apply wp_ArbitraryInt as %b -
-    wp_bind (App (Val (GoInstruction (CompositeLiteral (go.SliceType go.byte))))
-      (Val (LiteralValueV _)))
-    iapply wp_slice_literal (V := w8) (t := go.byte) [W8 (uint.Z b)]
-    wp_auto
-    rw [show go.arrayLiteralSize
-      [KeyedElement none (ElementExpression go.byte #(W8 (uint.Z b)))] = 1 from rfl]
-    isplitl []
-    · ipureintro; rfl
-    iintro %sl_ptr ⟨Hsl, -⟩
-    wp_apply wp_bytes_to_string $$ Hsl as -
-    wp_for_post
-    iframe
-    iexists _
-    iframe
-  · have Hf : (!decide (c = W64 0)) = false := by
-      revert Hif; cases (!decide (c = W64 0)) <;> simp
-    rw [Hf]
-    simp only [_root_.decide_true, ↓reduceIte]
-    wp_auto
-    iapply HΦ; itrivial
 
 /-- The integer of sign `neg` and magnitude `mag`. -/
 def signedValue (neg : Bool) (mag : w64) : Int := if neg then -uint.Z mag else uint.Z mag

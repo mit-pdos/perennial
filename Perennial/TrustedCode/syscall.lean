@@ -6,7 +6,7 @@ its initializer runs that has no Go body (`runtime_envs`) or whose effect Perenn
 module
 
 public import Perennial.Golang.Defn.Pre
-public import Perennial.TrustedCode.fmt
+public import Perennial.TrustedCode.arbitraryString
 
 @[expose] public section
 
