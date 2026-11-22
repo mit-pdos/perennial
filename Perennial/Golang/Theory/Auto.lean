@@ -164,10 +164,10 @@ macro "wp_method_call" : tactic => `(tactic| (rw [method_unfold]; (try iPkgInit)
 section tactics
 open Lean Elab Tactic Meta Qq Iris.ProofMode
 
-/-- Is `e` (up to `named`) `isPkgInit _`? -/
+/-- Is `e` (up to `named`) `isPkgInit _` or `isPkgInitSome _`? -/
 meta def isPkgInitProp (e : Lean.Expr) : MetaM Bool := do
   let e ← whnfR (← instantiateMVars e)
-  return e.isAppOfArity ``isPkgInit 4
+  return e.isAppOfArity ``isPkgInit 4 || e.isAppOfArity ``isPkgInitSome 4
 
 /-- Move the `isPkgInit` conjuncts at the front of
 `H` to the intuitionistic context. Returns `false` if `H` was entirely an
@@ -204,7 +204,11 @@ meta partial def pkgInitInstFields (inst : Lean.Expr) (fuel : Nat := 20) : MetaM
   if fuel == 0 then return none
   match ← unfoldDefinition? inst with
   | some i => pkgInitInstFields i (fuel - 1)
-  | none => return none
+  | none =>
+    -- a projection, e.g. `IsPkgInitParam.inst x`: reduce the instance term only
+    let i ← whnf inst
+    if i == inst then return none
+    pkgInitInstFields i (fuel - 1)
 
 /-- In the conclusion of the Iris goal, unfold `isPkgInit pkg` into
 `□ deps ∗ □ P`, where `deps`/`P` are the fields of the
@@ -266,7 +270,8 @@ macro_rules
 
 /-- Finish the proof of a package's `wp_initialize'`: unfold `isPkgInit`
 in the goal (`isPkgInit_unfold`) and frame the dependencies' `isPkgInit`
-facts from the intuitionistic context. -/
+facts from the intuitionistic context (a dependency's `isPkgInitSome` from its
+fact at a parameter, by the `Frame` instance `isPkgInitSome_frame`). -/
 macro "is_pkg_init_finish" : tactic => `(tactic| (
   isPkgInit_unfold
   (try imodintro)

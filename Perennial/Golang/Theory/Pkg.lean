@@ -6,14 +6,17 @@ Package initialization.
 * `IsPkgInit PROP pkg_name`: the (canonical) post-initialization predicate of a
   package, split into the auto-generated dependency part `isPkgInitDeps` and
   the user-specified part `isPkgInitDef`; `isPkgInit pkg_name` asserts both.
+* `IsPkgInitParam PROP pkg_name`: a package whose fact takes a parameter (a family of
+  `IsPkgInit` instances); `isPkgInitSome pkg_name`, its fact at some parameter, is what
+  its importers' facts hold of it.
 * `GetIsPkgInitWf PROP pkg_name`: a pure predicate constraining
   `get_is_pkg_init` to contain the init predicates of `pkg_name` and its
   transitive dependencies.
 * `define_is_pkg_init P` (term) builds an `IsPkgInit` instance whose
   dependencies are computed from `pkgImportedPkgs`; `build_get_is_pkg_init_wf`
   (term) builds the `GetIsPkgInitWf` instance.
-* Tactics: `solve_pkg_init` (prove a goal `isPkgInit pkg` from the
-  intuitionistic context), `iPkgInit` (solve `isPkgInit` goals and conjuncts
+* Tactics: `solve_pkg_init` (prove a goal `isPkgInit pkg` or `isPkgInitSome pkg`
+  from the intuitionistic context), `iPkgInit` (solve such goals and conjuncts
   at the front of the goal).
 -/
 module
@@ -195,6 +198,69 @@ abbrev GetIsPkgInitProp (pkg_name : GoString) [GetIsPkgInitWf PROP pkg_name]
     (get_is_pkg_init : GoString → PROP) : Prop :=
   GetIsPkgInitWf.get_is_pkg_init_prop_def pkg_name get_is_pkg_init
 
+/-! ### Packages whose fact takes a parameter
+
+A package's fact may name something chosen by the program's proof rather than fixed by the
+package: per-run ghost state that the proof allocates before the program starts (the ghost
+name of a registry the package's initializer fills), say. Such a package declares
+`IsPkgInitParam PROP pkg` (a family of `IsPkgInit` instances, one per value of `Param`)
+instead of a single `IsPkgInit` instance. Code proved at a known parameter uses the
+instance at that value (`IsPkgInitParam.inst x`, typically through a local instance taking
+the parameter's class as an argument); an importer's fact holds `isPkgInitSome pkg` (the
+fact at some parameter: `define_is_pkg_init` writes it), so the importer's `IsPkgInit`
+instance does not take the parameter. The parameter does reach the importers'
+`GetIsPkgInitWf` instances (`build_get_is_pkg_init_wf` is unchanged): the well-formedness
+of `get_is_pkg_init` is what fixes the fact the package's initializer establishes, at the
+parameter its importers' initializers rely on. -/
+
+/-- A package whose post-initialization fact is a family of `IsPkgInit` instances indexed
+by `Param`. A package has either an `IsPkgInitParam` instance or an unconditional
+`IsPkgInit` one, not both. -/
+class IsPkgInitParam (PROP : Type _) [BI PROP] (pkg_name : GoString) where
+  /-- what the package's fact is parameterized by -/
+  Param : Type
+  /-- the package's `IsPkgInit` instance at each parameter -/
+  inst : Param → IsPkgInit PROP pkg_name
+
+/-- The fact of a parameterized package at some parameter: what its importers' facts hold
+of it (`define_is_pkg_init`). -/
+def isPkgInitSome (pkg_name : GoString) [IsPkgInitParam PROP pkg_name] : PROP :=
+  iprop(∃ x : IsPkgInitParam.Param PROP pkg_name,
+    @isPkgInit PROP _ pkg_name (IsPkgInitParam.inst x))
+
+instance isPkgInitSome_pers (pkg_name : GoString) [IsPkgInitParam PROP pkg_name] :
+    Persistent (isPkgInitSome (PROP := PROP) pkg_name) := by
+  unfold isPkgInitSome; infer_instance
+
+theorem isPkgInitSome_intro (pkg_name : GoString) [IsPkgInitParam PROP pkg_name]
+    (x : IsPkgInitParam.Param PROP pkg_name) :
+    @isPkgInit PROP _ pkg_name (IsPkgInitParam.inst x) ⊢
+      isPkgInitSome (PROP := PROP) pkg_name :=
+  exists_intro (Ψ := fun x => @isPkgInit PROP _ pkg_name (IsPkgInitParam.inst x)) x
+
+theorem isPkgInitSome_elim (pkg_name : GoString) [IsPkgInitParam PROP pkg_name] {Q : PROP}
+    (h : ∀ x : IsPkgInitParam.Param PROP pkg_name,
+      @isPkgInit PROP _ pkg_name (IsPkgInitParam.inst x) ⊢ Q) :
+    isPkgInitSome (PROP := PROP) pkg_name ⊢ Q :=
+  exists_elim h
+
+instance isPkgInitSome_fromExists (pkg_name : GoString) [IsPkgInitParam PROP pkg_name] :
+    Iris.ProofMode.FromExists (isPkgInitSome (PROP := PROP) pkg_name)
+      (fun x => @isPkgInit PROP _ pkg_name (IsPkgInitParam.inst x)) :=
+  ⟨.rfl⟩
+
+instance isPkgInitSome_intoExists (pkg_name : GoString) [IsPkgInitParam PROP pkg_name] :
+    Iris.ProofMode.IntoExists (isPkgInitSome (PROP := PROP) pkg_name)
+      (fun x => @isPkgInit PROP _ pkg_name (IsPkgInitParam.inst x)) :=
+  ⟨.rfl⟩
+
+/-- `iframe` proves `isPkgInitSome pkg` from the package's fact at a parameter. -/
+instance isPkgInitSome_frame (p : Bool) (pkg_name : GoString) [IsPkgInitParam PROP pkg_name]
+    (x : IsPkgInitParam.Param PROP pkg_name) :
+    Iris.ProofMode.Frame p (@isPkgInit PROP _ pkg_name (IsPkgInitParam.inst x))
+      (isPkgInitSome (PROP := PROP) pkg_name) iprop(emp) where
+  frame := sep_emp.1.trans (intuitionisticallyIf_elim.trans (isPkgInitSome_intro pkg_name x))
+
 end package_init_and_defined
 
 /-! ## Building `IsPkgInit` and `GetIsPkgInitWf` instances -/
@@ -219,7 +285,10 @@ meta def importedPkgs (pkg : Lean.Expr) : TermElabM (List Lean.Expr) := do
 
 /-- `define_is_pkg_init P`: an `IsPkgInit PROP pkg` instance with user part `P`
 and dependency part `isPkgInit dep1 ∗ ... ∗ True` computed from
-`pkgImportedPkgs pkg`. Must be used where the expected type is known. -/
+`pkgImportedPkgs pkg`. A dependency with an `IsPkgInitParam` instance contributes
+`isPkgInitSome dep` instead (whether or not an `IsPkgInit` instance for it is in
+scope, so that the fact does not depend on where it is defined). Must be used where
+the expected type is known. -/
 elab "define_is_pkg_init " P:term:max : term <= ety => do
   let ety ← whnfR (← instantiateMVars ety)
   unless ety.isAppOfArity ``IsPkgInit 3 do
@@ -231,8 +300,11 @@ elab "define_is_pkg_init " P:term:max : term <= ety => do
   let trueP ← mkAppOptM ``BIBase.pure #[some prop, none, some (mkConst ``True)]
   let mut acc := trueP
   for d in deps.reverse do
-    let inst ← synthInstance (← mkAppOptM ``IsPkgInit #[some prop, some bi, some d])
-    let pd ← mkAppOptM ``isPkgInit #[some prop, some bi, some d, some inst]
+    let pd ← match ← synthInstance? (← mkAppOptM ``IsPkgInitParam #[some prop, some bi, some d]) with
+      | some pinst => mkAppOptM ``isPkgInitSome #[some prop, some bi, some d, some pinst]
+      | none =>
+        let inst ← synthInstance (← mkAppOptM ``IsPkgInit #[some prop, some bi, some d])
+        mkAppOptM ``isPkgInit #[some prop, some bi, some d, some inst]
     acc ← mkAppOptM ``BIBase.sep #[some prop, none, some pd, some acc]
   let P ← elabTermEnsuringType P prop
   mkAppOptM ``IsPkgInit.mk #[some prop, some bi, some pkg, some acc, some P]
@@ -281,13 +353,18 @@ theorem pkg_init_intuitionistically {PROP : Type _} [BI PROP] {A T : PROP} (c : 
 section tactics
 open Lean Elab Tactic Meta Qq Iris.ProofMode
 
-/-- A proof of `P ⊢ target`, where `target` is `isPkgInit pkg`, by unfolding
-`isPkgInit` hypotheses into their dependencies. `failed` holds the packages whose
+/-- A proof of `P ⊢ target`, where `target` is `isPkgInit pkg` or `isPkgInitSome pkg`, by
+unfolding `isPkgInit` hypotheses into their dependencies. `failed` holds the packages whose
 dependencies were already searched without reaching `target`: the packages form a DAG
 (every package reaches `fmt`, `errors`, `sync`, ...), and without it each path to a
 package searched its whole dependency graph again (3.5s a call in etcd's server, 45 of
 `EtcdServer.LeaseRenew`'s 220s). It only prunes searches that fail, so the proof found is
-the one found without it. -/
+the one found without it.
+
+A target `isPkgInitSome pkg` is also proved from `pkg`'s fact at a parameter
+(`isPkgInit pkg` at an instance that unfolds to `IsPkgInitParam.inst x`). A hypothesis
+`isPkgInitSome pkg` is an atom, and the search descends through it under a binder for the
+parameter (`isPkgInitSome_elim`), to targets that do not depend on it. -/
 meta partial def pkgInitChain (target P : Lean.Expr) (fuel : Nat := 200)
     (failed : Option (IO.Ref (Std.HashSet Lean.Expr)) := none) : MetaM (Option Lean.Expr) := do
   let failed ← match failed with
@@ -300,6 +377,20 @@ meta partial def pkgInitChain (target P : Lean.Expr) (fuel : Nat := 200)
   let P' ← whnfR P
   if P'.isAppOfArity ``isPkgInit 4 then
     let key := P'.getArg! 2
+    -- `target` is `isPkgInitSome key` and `P'` is `key`'s fact at a parameter
+    if target.isAppOfArity ``isPkgInitSome 4 then
+      if ← withReducible (isDefEq (target.getArg! 2) key) then
+        let pinst := target.getArg! 3
+        let paramTy ← mkAppOptM ``IsPkgInitParam.Param
+          #[some (target.getArg! 0), some (target.getArg! 1), some key, some pinst]
+        let x ← mkFreshExprMVar paramTy
+        let instX ← mkAppOptM ``IsPkgInitParam.inst
+          #[some (target.getArg! 0), some (target.getArg! 1), some key, some pinst, some x]
+        if ← isDefEq instX (P'.getArg! 3) then
+          let x ← instantiateMVars x
+          unless x.hasExprMVar do
+            return some (← mkAppOptM ``isPkgInitSome_intro
+              #[none, none, some key, some pinst, some x])
     if (← failed.get).contains key then return none
     -- unfold the instance (e.g. built by `define_is_pkg_init`) to `IsPkgInit.mk`
     -- and take its dependency field (`whnf` would also unfold the BI operations)
@@ -309,11 +400,34 @@ meta partial def pkgInitChain (target P : Lean.Expr) (fuel : Nat := 200)
       if fuel == 0 then return none
       match ← unfoldDefinition? inst with
       | some i => instFields i (fuel - 1)
-      | none => return none
+      | none =>
+        -- a projection, e.g. `IsPkgInitParam.inst x`: reduce the instance term only
+        let i ← whnf inst
+        if i == inst then return none
+        instFields i (fuel - 1)
     let some deps ← instFields (P'.getArg! 3) 20 | failed.modify (·.insert key); return none
     let some c ← pkgInitChain target deps (fuel - 1) failed | failed.modify (·.insert key); return none
     let pf1 ← mkAppOptM ``isPkgInit_unfold_deps #[none, none, some (P'.getArg! 2), some (P'.getArg! 3)]
     return some (← mkAppM ``BIBase.Entails.trans #[pf1, c])
+  if P'.isAppOfArity ``isPkgInitSome 4 then
+    let key := P'.getArg! 2
+    if (← failed.get).contains key then return none
+    let prop := P'.getArg! 0
+    let bi := P'.getArg! 1
+    let pinst := P'.getArg! 3
+    let paramTy ← mkAppOptM ``IsPkgInitParam.Param #[some prop, some bi, some key, some pinst]
+    let r ← withLocalDeclD `x paramTy fun x => do
+      let instX ← mkAppOptM ``IsPkgInitParam.inst #[some prop, some bi, some key, some pinst, some x]
+      let Px ← mkAppOptM ``isPkgInit #[some prop, some bi, some key, some instX]
+      let some c ← pkgInitChain target Px (fuel - 1) failed | return none
+      let c ← instantiateMVars c
+      -- the proof found must not fix the parameter (it may when the target mentions `key`'s
+      -- instance at a parameter: `target` then is not provable from `isPkgInitSome key`)
+      if c.hasExprMVar then return none
+      return some (← mkLambdaFVars #[x] c)
+    let some h := r | failed.modify (·.insert key); return none
+    return some (← mkAppOptM ``isPkgInitSome_elim
+      #[none, none, some key, some pinst, some target, some h])
   if P'.isAppOfArity ``BIBase.sep 4 then
     if let some c ← pkgInitChain target (P'.getArg! 2) (fuel - 1) failed then
       return some (← mkAppOptM ``pkg_init_sep_l
@@ -327,12 +441,12 @@ meta partial def pkgInitChain (target P : Lean.Expr) (fuel : Nat := 200)
       return some (← mkAppM ``pkg_init_intuitionistically #[c])
   return none
 
-/-- Solve a goal `isPkgInit pkg` from an intuitionistic
+/-- Solve a goal `isPkgInit pkg` or `isPkgInitSome pkg` from an intuitionistic
 hypothesis, unfolding `isPkgInit` hypotheses into their dependencies. -/
 elab "solve_pkg_init" : tactic => do
   ProofModeM.runTactic `solve_pkg_init fun mvar { hyps, goal, .. } => do
     let target ← whnfR (← instantiateMVars goal)
-    unless target.isAppOfArity ``isPkgInit 4 do
+    unless target.isAppOfArity ``isPkgInit 4 || target.isAppOfArity ``isPkgInitSome 4 do
       throwIPMError "not an isPkgInit goal: {goal}"
     let failed ← IO.mkRef ({} : Std.HashSet Lean.Expr)
     for (_, ivar, p, P) in hypsList hyps do
@@ -346,7 +460,7 @@ elab "solve_pkg_init" : tactic => do
 
 end tactics
 
-/-- Solve an `isPkgInit` goal, or the `isPkgInit` conjuncts
+/-- Solve an `isPkgInit` (or `isPkgInitSome`) goal, or such conjuncts
 at the front of a `∗` goal. Fails if no progress is made. -/
 macro "iPkgInit" : tactic => `(tactic| first
   | solve_pkg_init
