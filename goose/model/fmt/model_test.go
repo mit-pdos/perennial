@@ -28,6 +28,15 @@ type notModelledPanic struct{}
 
 func notModelled() { panic(notModelledPanic{}) }
 
+// printerBuf(s) stands for the printer's buffer Fprintf hands Write (the model's primitive
+// printerBuf): the bytes of s in a slice of arbitrary capacity whose spare capacity holds arbitrary
+// bytes (gc's pooled buffer holds earlier output there, fprintf_alias_test.go).
+func printerBuf(s string) []byte { return []byte(s) }
+
+// retire(b) stands for the model's primitive retire: every cell of b up to its capacity is left
+// unusable (a write begun and never finished), as gc reuses the buffer for later prints.
+func retire(b []byte) {}
+
 // underlyingAs[T](x): reflect.ValueOf(x) read at T's kind, if x's dynamic type has T's underlying
 // type (TypeAssertUnderlying2 T).
 func underlyingAs[T any](x any) (T, bool) {
@@ -649,7 +658,10 @@ func modelPrintf(format string, a ...any) (int, error) {
 
 func modelFprintf(w io.Writer, format string, a ...any) (int, error) {
 	s, _, _ := doPrintf(format, a, false)
-	return w.Write([]byte(s))
+	b := printerBuf(s)
+	n, err := w.Write(b)
+	retire(b)
+	return n, err
 }
 
 func modelErrorf(format string, a ...any) error {

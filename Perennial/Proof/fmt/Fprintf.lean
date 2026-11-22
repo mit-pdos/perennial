@@ -32,13 +32,15 @@ theorem fmt.Fprintf.wp_proof :
   rw [fmt.modeVerbs_false] at hdo
   wp_apply hdo $$ [$Hsl $Hok] as %s %wsl %unk ⟨Hsl, %Hs, -⟩
   try wp_auto
-  wp_apply wp_string_to_bytes s as %bsl ⟨Hb, -⟩
+  wp_apply (wp_printerBuf s) as %bsl ⟨Hb, %spare, Hspare⟩
   try wp_auto
   wp_bind (App (Val #(methods ii.ty go!"Write" ii.v)) (Val #bsl))
   iunfold fmt.writeSpec at HW
   iapply HW $$ HP Hb
   inext
-  iintro %n %err - HQ
+  iintro %n %err Hb HQ
+  try wp_auto
+  wp_apply (wp_retire bsl s spare) $$ [$Hb $Hspare]
   try wp_auto
   iapply HΦ
   iframe

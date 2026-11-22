@@ -3476,18 +3476,86 @@ noncomputable def Printf.impl : val :=
   (App (App (App (Val doPrintf) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))))
   (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1"))))))))
 
+/-- Stores an arbitrary byte in each element of the `[]byte` `s` (a helper of `printerBuf`, not a
+function of package `fmt`), first to last: `s[0]`, then the rest `s[1:]`. -/
+noncomputable def fillArbitraryBytes : val :=
+  rec: "loop" "s" :=
+    if: #(W64 0) <⟨go.int⟩ FuncResolve go.len [go.SliceType go.byte] #() "s" then
+      IndexRef (go.SliceType go.byte) ("s", #(W64 0))
+        <-[go.byte] Convert go.uint64 go.byte ArbitraryInt ;;
+      "loop" (Slice (go.SliceType go.byte)
+        ("s", #(W64 1), FuncResolve go.len [go.SliceType go.byte] #() "s"))
+    else #()
+
+/-- The model's stand-in for the printer's buffer `p.buf` that Go's `Fprintf` hands `Write` (a
+primitive of the model, not a function of package `fmt`; in the Go the docstrings quote, a call
+`printerBuf(s)`): the bytes of `s` in a new slice of arbitrary capacity (`slice._new_cap`, as
+`append`'s new capacity) whose spare capacity holds arbitrary bytes. Go's buffer comes from a
+`sync.Pool` and holds, past its length, what earlier prints wrote there
+(`goose/model/fmt/fprintf_alias_test.go`); the model's arbitrary bytes include that. -/
+noncomputable def printerBuf : val :=
+  λ: "s",
+    let: "src" := Convert go.string (go.SliceType go.byte) "s" in
+    let: "n" := FuncResolve go.len [go.SliceType go.byte] #() "src" in
+    let: "b" := FuncResolve go.make3 [go.SliceType go.byte] #() "n" (slice._new_cap "n") in
+    fillArbitraryBytes (Slice (go.SliceType go.byte)
+      ("b", "n", FuncResolve go.cap [go.SliceType go.byte] #() "b")) ;;
+    FuncResolve go.copy [go.SliceType go.byte] #() "b" "src" ;;
+    "b"
+
+/-- Begins a write on each element of the `[]byte` `s`, and never finishes it (a helper of
+`retire`, not a function of package `fmt`): `PrepareWrite` with no `FinishStore`, so that any later
+load or store of those bytes is stuck. -/
+noncomputable def retireLoop : val :=
+  rec: "loop" "s" :=
+    if: #(W64 0) <⟨go.int⟩ FuncResolve go.len [go.SliceType go.byte] #() "s" then
+      PrepareWrite (IndexRef (go.SliceType go.byte) ("s", #(W64 0))) ;;
+      "loop" (Slice (go.SliceType go.byte)
+        ("s", #(W64 1), FuncResolve go.len [go.SliceType go.byte] #() "s"))
+    else #()
+
+/-- The model's stand-in for the printer's buffer going back to its `sync.Pool` after `Write`
+returns (a primitive of the model, not a function of package `fmt`; in the Go the docstrings quote,
+a call `retire(b)`): every element of `b` up to its capacity is left with a write begun and never
+finished (`retireLoop`), so that any later access through a slice that `Write` kept is stuck. In Go
+the buffer is reused by later prints, which overwrite those bytes
+(`goose/model/fmt/fprintf_alias_test.go`). -/
+noncomputable def retire : val :=
+  λ: "b",
+    retireLoop "b" ;;
+    retireLoop (Slice (go.SliceType go.byte)
+      ("b", FuncResolve go.len [go.SliceType go.byte] #() "b",
+        FuncResolve go.cap [go.SliceType go.byte] #() "b"))
+
 /-- `Fprintf(w, format, a...)`: formats as `Sprintf` does (`doPrintf`, with `wrapErrs` false), calling
-what Go's formatting calls of the arguments, then writes the formatted bytes to `w` with one call of
-its `Write` method (also when they are empty), and returns what `Write` returns, as Go's `Fprintf`
-does (`p.doPrintf(format, a); n, err = w.Write(p.buf)`). Go passes `Write` its printer's buffer,
-which goes back to a `sync.Pool` after the call; the model passes a new slice. The two differ only
-for a writer that keeps the slice after `Write` returns, which `io.Writer`'s contract forbids
-("Implementations must not retain p"): the specs require `Write` to give the slice back. Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
+what Go's formatting calls of the arguments, then calls `w.Write` once with the formatted bytes (also
+when they are empty), and returns what `Write` returns. Go's (`fmt/print.go`)
+
+```go
+func Fprintf(w io.Writer, format string, a ...any) (n int, err error) {
+	p := newPrinter()
+	p.doPrintf(format, a)
+	n, err = w.Write(p.buf)
+	p.free()
+	return
+}
+```
+
+hands `Write` its printer's buffer `p.buf`, which comes from a `sync.Pool` and goes back to it: its
+spare capacity holds what earlier prints wrote there, and a later print overwrites its bytes. The model
+hands `Write` the formatted bytes in a slice whose spare capacity holds arbitrary bytes (`printerBuf`),
+which includes gc's contents, and after `Write` returns leaves every element of that slice, up to its
+capacity, with a write begun and never finished (`retire`), so that a writer that keeps the slice
+(which `io.Writer` forbids: "Implementations must not retain p") is stuck when it later uses it: less
+defined than Go there, never different (`goose/model/fmt/fprintf_alias_test.go`). Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
 
 ```go
 func Fprintf(w io.Writer, format string, a ...any) (int, error) {
 	s, _, _ := doPrintf(format, a, false)
-	return w.Write([]byte(s))
+	b := printerBuf(s)
+	n, err := w.Write(b)
+	retire(b)
+	return n, err
 }
 ```
 
@@ -3516,12 +3584,23 @@ noncomputable def Fprintf.impl : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoLoad go.string))) (Var "s")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (Val printerBuf) (Var "$a0")))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
   (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.io.Writer.ty go!"Write"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.io.Writer.ty))) (Var "w"))) (Var "$a0")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -3529,7 +3608,16 @@ noncomputable def Fprintf.impl : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (Val retire) (Var "$a0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0"))))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b") (Var "$r0")))))))))
   (App (Val doExecute)
   (Var "$r2")))))
   (App (Val doExecute)
