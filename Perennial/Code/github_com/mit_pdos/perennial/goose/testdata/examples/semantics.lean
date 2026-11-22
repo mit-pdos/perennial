@@ -546,6 +546,12 @@ noncomputable instance «equals_unfold_struct#568e4f73» [GooseExts] [GoGlobalCo
 @[reducible] noncomputable def bigIntegralFloatConst [GooseExts] [GoGlobalContext] : val :=
   #(mkRat (1000000000000000001 : Int) 1)
 
+@[reducible] noncomputable def posZeroF64 [GooseExts] [GoGlobalContext] : val :=
+  #(W64 0)
+
+@[reducible] noncomputable def tinyF64 [GooseExts] [GoGlobalContext] : val :=
+  #(W64 2024)
+
 noncomputable def initOrder [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.initOrder"
 
@@ -755,6 +761,9 @@ noncomputable def testUntypedFloatConvertAtTypeParam [GooseExts] [GoGlobalContex
 
 noncomputable def testUntypedFloatConstToInt [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testUntypedFloatConstToInt"
+
+noncomputable def testFloat64ConstExprIsConst [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testFloat64ConstExprIsConst"
 
 noncomputable def testCopySimple [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCopySimple"
@@ -3490,7 +3499,7 @@ noncomputable def testNegUnderflowConstIsPosZero.impl [GooseExts] [GoGlobalConte
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Seq (App (Val exceptionDo)
   (let «local» := #(mkRat (-1 : Int) 100000000000000000000000000000000000000000000000000);
-  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (Val negUnderflowConst))
+  (Let "$r0" (Val #(W64 0))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W32 0))
@@ -3499,7 +3508,7 @@ noncomputable def testNegUnderflowConstIsPosZero.impl [GooseExts] [GoGlobalConte
   (Let "$r0" (Val #(W32 0))
   (Let "z" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(mkRat (1 : Int) 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000))))
+  (Let "$r0" (Val #(W64 0))
   (Let "w" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (If (If (If (App (Val (GoInstruction (GoOp GoGt go.float64))) (Pair (App (Val (GoInstruction (GoOp GoDiv go.float64))) (Pair (Val #(W64 4607182418800017408)) (App (Val (GoInstruction (GoLoad go.float64))) (Var "x")))) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoGt go.float32))) (Pair (App (Val (GoInstruction (GoOp GoDiv go.float32))) (Pair (Val #(W32 1065353216)) (App (Val (GoInstruction (GoLoad go.float32))) (Var "y")))) (Val #(W32 0)))) (Val #false)) (App (Val (GoInstruction (GoOp GoGt go.float32))) (Pair (App (Val (GoInstruction (GoOp GoDiv go.float32))) (Pair (Val #(W32 1065353216)) (App (Val (GoInstruction (GoLoad go.float32))) (Var "z")))) (Val #(W32 0)))) (Val #false)) (App (Val (GoInstruction (GoOp GoGt go.float64))) (Pair (App (Val (GoInstruction (GoOp GoDiv go.float64))) (Pair (Val #(W64 4607182418800017408)) (App (Val (GoInstruction (GoLoad go.float64))) (Var "w")))) (Val #(W64 0)))) (Val #false))
@@ -3603,7 +3612,7 @@ noncomputable def offTieConvertedAt.impl [GooseExts] [GoGlobalContext] (T : go.G
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "$r0" (App (Val (GoInstruction (Convert go.float64 T))) (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (Val offTieConst)))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.float64 T))) (Val #(W64 4607182419068452864)))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -3704,6 +3713,32 @@ noncomputable def testUntypedFloatConstToInt.impl [GooseExts] [GoGlobalContext] 
   (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "y") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "x") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- a typed float64 constant expression is a constant: -0 and an underflow of a
+    negative constant product are +0
+
+    go: conversions.go:143:6 -/
+noncomputable def testFloat64ConstExprIsConst.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Val #(W64 0))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 0))
+  (Let "y" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoGt go.float64))) (Pair (App (Val (GoInstruction (GoOp GoDiv go.float64))) (Pair (Val #(W64 4607182418800017408)) (App (Val (GoInstruction (GoLoad go.float64))) (Var "x")))) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoGt go.float64))) (Pair (App (Val (GoInstruction (GoOp GoDiv go.float64))) (Pair (Val #(W64 4607182418800017408)) (App (Val (GoInstruction (GoLoad go.float64))) (Var "y")))) (Val #(W64 0)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "y") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "x") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- go: copy.go:3:6 -/
@@ -16217,6 +16252,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testUntypedFloatConstAtTypeParam_unfold : FuncUnfold testUntypedFloatConstAtTypeParam [] testUntypedFloatConstAtTypeParam.impl
   testUntypedFloatConvertAtTypeParam_unfold : FuncUnfold testUntypedFloatConvertAtTypeParam [] testUntypedFloatConvertAtTypeParam.impl
   testUntypedFloatConstToInt_unfold : FuncUnfold testUntypedFloatConstToInt [] testUntypedFloatConstToInt.impl
+  testFloat64ConstExprIsConst_unfold : FuncUnfold testFloat64ConstExprIsConst [] testFloat64ConstExprIsConst.impl
   testCopySimple_unfold : FuncUnfold testCopySimple [] testCopySimple.impl
   testCopyShorterDst_unfold : FuncUnfold testCopyShorterDst [] testCopyShorterDst.impl
   testCopyShorterSrc_unfold : FuncUnfold testCopyShorterSrc [] testCopyShorterSrc.impl
@@ -16654,6 +16690,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testUntypedFloatConstAtTypeParam_unfold
   Assumptions.testUntypedFloatConvertAtTypeParam_unfold
   Assumptions.testUntypedFloatConstToInt_unfold
+  Assumptions.testFloat64ConstExprIsConst_unfold
   Assumptions.testCopySimple_unfold
   Assumptions.testCopyShorterDst_unfold
   Assumptions.testCopyShorterSrc_unfold

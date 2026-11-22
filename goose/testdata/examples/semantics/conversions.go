@@ -133,3 +133,15 @@ func testUntypedFloatConstToInt() bool {
 	return x == 1000000000000000001 && y == x && z == 10000000000000000000 && v == -x &&
 		bigIntegralAt[int64]() == x && bigIntegralAt[myInt64]() == 1000000000000000001
 }
+
+const posZeroF64 float64 = 0
+
+const tinyF64 float64 = 1e-320
+
+// a typed float64 constant expression is a constant: -0 and an underflow of a
+// negative constant product are +0
+func testFloat64ConstExprIsConst() bool {
+	x := -posZeroF64
+	y := -tinyF64 * 1e-10
+	return 1/x > 0 && 1/y > 0
+}

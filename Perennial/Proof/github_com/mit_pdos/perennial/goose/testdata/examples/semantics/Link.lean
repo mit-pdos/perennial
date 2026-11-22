@@ -54,6 +54,7 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFallthrough
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFallthroughBreak
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFallthroughReturn
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFloat64ConstExprIsConst
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIncompleteStruct
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testInterfaceNilWithType
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testLabeledBreak
@@ -282,6 +283,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testF
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testFallthroughReturn : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFallthroughReturn.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFallthroughReturn.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testFloat64ConstExprIsConst : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFloat64ConstExprIsConst.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFloat64ConstExprIsConst.wp_proof
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testIncompleteStruct : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIncompleteStruct.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIncompleteStruct.wp_proof

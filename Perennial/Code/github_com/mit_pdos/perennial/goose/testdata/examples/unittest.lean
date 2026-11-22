@@ -2552,10 +2552,10 @@ noncomputable def useFloat.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (Val a))
+  (Let "$r0" (Val #(W64 4607182418800017408))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoMul go.float64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.float64))) (Pair (App (Val (GoInstruction (GoLoad go.float64))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (Val a)))) (Val #(W64 4607182418800017408))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoMul go.float64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.float64))) (Pair (App (Val (GoInstruction (GoLoad go.float64))) (Var "x")) (Val #(W64 4607182418800017408)))) (Val #(W64 4607182418800017408))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.float64))) (Var "x"))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2612,11 +2612,11 @@ noncomputable def negUnderflowConsts.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$r0" (Val #(W32 0))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (Val negUnderflow))
+  (Let "$r0" (Val #(W64 0))
   (Let "$r1" (App (Val (GoInstruction (GoLoad go.float32))) (Var "x"))
-  (Let "$r2" (Val negUnderflowF64)
+  (Let "$r2" (Val #(W64 0))
   (Let "$r3" (Val #(W32 0))
-  (Let "$r4" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (Val «local»))
+  (Let "$r4" (Val #(W64 0))
   (Let "$r5" (Val #(W32 0))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2648,7 +2648,7 @@ noncomputable def negUnderflowLiterals.impl [GooseExts] [GoGlobalContext] : val 
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
   (Let "$res1" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(mkRat (1 : Int) 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000))))
+  (Let "$r0" (Val #(W64 0))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W32 0))
@@ -2776,7 +2776,7 @@ noncomputable def float32ConstAt.impl [GooseExts] [GoGlobalContext] (T : go.GoTy
   (Let "$res2" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat T))) (Val offTie))
-  (Let "$r1" (App (Val (GoInstruction (Convert go.float64 T))) (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (Val offTie)))
+  (Let "$r1" (App (Val (GoInstruction (Convert go.float64 T))) (Val #(W64 4607182419068452864)))
   (Let "$r2" (App (Val (GoInstruction (Convert go.untypedFloat T))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val offTie)))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon

@@ -1129,7 +1129,7 @@ func (ctx *Ctx) typeAssertExpr(e *ast.TypeAssertExpr, multipleBindings bool) gla
 
 func (ctx *Ctx) exprSpecial(e ast.Expr, multipleBindings bool) glang.Expr {
 	if tv := ctx.info.Types[e]; tv.Value != nil {
-		if b, ok := tv.Type.Underlying().(*types.Basic); ok && b.Kind() == types.Float32 {
+		if b, ok := tv.Type.Underlying().(*types.Basic); ok && (b.Kind() == types.Float32 || b.Kind() == types.Float64) {
 			return ctx.constantLiteral(e)
 		}
 	}
