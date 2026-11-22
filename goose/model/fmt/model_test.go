@@ -258,6 +258,40 @@ func hexNibble(d byte, upper bool) byte {
 	return 'a' + (d - 10)
 }
 
+// quoteByte: the byte c as strconv.Quote writes it inside the quotes, for c below 0x80: \" and
+// \\, the bytes from 0x20 to 0x7E themselves, the escapes \a \b \f \n \r \t \v, and \xNN for the
+// other control bytes and 0x7F. (Of a byte from 0x80 it gives \xNN too; quoteBytes never asks.)
+func quoteByte(c byte) string {
+	if c == '"' || c == '\\' {
+		return string([]byte{'\\', c})
+	}
+	if 0x20 <= c && c <= 0x7e {
+		return string([]byte{c})
+	}
+	if c == '\a' {
+		return `\a`
+	}
+	if c == '\b' {
+		return `\b`
+	}
+	if c == '\f' {
+		return `\f`
+	}
+	if c == '\n' {
+		return `\n`
+	}
+	if c == '\r' {
+		return `\r`
+	}
+	if c == '\t' {
+		return `\t`
+	}
+	if c == '\v' {
+		return `\v`
+	}
+	return string([]byte{'\\', 'x', hexNibble(c/16, false), hexNibble(c%16, false)})
+}
+
 // quoteBytes: strconv.Quote(string(b)), as fmtQ prints %q of b without flags, width or
 // precision, when every byte of b is ASCII (below 0x80): there strconv's escaping depends on no
 // table (IsPrint is true exactly from 0x20 to 0x7E). ok is false when a byte is not ASCII, where
@@ -268,29 +302,31 @@ func quoteBytes(b []byte) (string, bool) {
 		if c >= 0x80 {
 			return "", false
 		}
-		if c == '"' || c == '\\' {
-			out += string([]byte{'\\', c})
-		} else if 0x20 <= c && c <= 0x7e {
-			out += string([]byte{c})
-		} else if c == '\a' {
-			out += `\a`
-		} else if c == '\b' {
-			out += `\b`
-		} else if c == '\f' {
-			out += `\f`
-		} else if c == '\n' {
-			out += `\n`
-		} else if c == '\r' {
-			out += `\r`
-		} else if c == '\t' {
-			out += `\t`
-		} else if c == '\v' {
-			out += `\v`
-		} else {
-			out += string([]byte{'\\', 'x', hexNibble(c/16, false), hexNibble(c%16, false)})
-		}
+		out += quoteByte(c)
 	}
 	return out + "\"", true
+}
+
+// decBytes: %v and %d of b, as fmtBytes prints them: its bytes in decimal, separated by spaces,
+// in brackets.
+func decBytes(b []byte) string {
+	out := "["
+	for k, c := range b {
+		if k > 0 {
+			out += " "
+		}
+		out += formatInt(false, uint64(c), 0)
+	}
+	return out + "]"
+}
+
+// hexBytes: %x (upper false) and %X of b, as fmtBytes prints them: two hexadecimal digits a byte.
+func hexBytes(b []byte, upper bool) string {
+	var out string
+	for _, c := range b {
+		out += string([]byte{hexNibble(c/16, upper), hexNibble(c%16, upper)})
+	}
+	return out
 }
 
 // formatBytes: at format[i], a '%': the output of the directive for the argument x, if it is of
@@ -313,21 +349,10 @@ func formatBytes(format string, i int, x any) (string, int, bool) {
 		return string(b), i + 2, true
 	}
 	if verb == 'v' || verb == 'd' {
-		out := "["
-		for k, c := range b {
-			if k > 0 {
-				out += " "
-			}
-			out += formatInt(false, uint64(c), 0)
-		}
-		return out + "]", i + 2, true
+		return decBytes(b), i + 2, true
 	}
 	if verb == 'x' || verb == 'X' {
-		var out string
-		for _, c := range b {
-			out += string([]byte{hexNibble(c/16, verb == 'X'), hexNibble(c%16, verb == 'X')})
-		}
-		return out, i + 2, true
+		return hexBytes(b, verb == 'X'), i + 2, true
 	}
 	if verb == 'q' {
 		s, ok := quoteBytes(b)

@@ -172,6 +172,189 @@ theorem argsOk_of_argsWf {mv : List w8} {format : GoString} {xs : List GoInterfa
   ipureintro
   exact h
 
+/-! ### `[]byte` arguments
+
+The bytes of `[]byte` arguments are memory Go reads while formatting, so they are not part of the
+persistent `argOkAt`: a caller lends them separately, as a list of resources over the arguments
+(`bytesOwn`), naming their contents with `B` (`B x = some bs`), and gets them back. `argsOkB B`
+admits a lent `[]byte` argument under any directive; with `B` always `none` it is `argsOk`. -/
+
+/-- The bytes `bs` of the argument `x` lent for formatting, when `B x = some bs`: `x` holds a
+`[]byte` whose elements are `bs`, at fraction `dq`; nothing when `B x = none`. -/
+def bytesArgOwn (dq : DFrac) (B : GoInterface → Option GoString) (x : GoInterface) : IProp GF :=
+  match B x with
+  | none => iprop(emp)
+  | some bs => iprop(∃ (ii : GoInterfaceOk) (sl : GoSlice),
+      ⌜x = interface.ok ii ∧ ii.ty = go.SliceType go.byte ∧ ii.v = #sl⌝ ∗ sl ↦*{dq} bs)
+
+/-- `bytesArgOwn` of a lent argument: a `[]byte` holding the lent bytes. -/
+theorem bytesArgOwn_some {dq : DFrac} {B : GoInterface → Option GoString} {x : GoInterface}
+    {bs : GoString} (h : B x = some bs) :
+    bytesArgOwn (GF := GF) dq B x ⊣⊢ ∃ (ii : GoInterfaceOk) (sl : GoSlice),
+      ⌜x = interface.ok ii ∧ ii.ty = go.SliceType go.byte ∧ ii.v = #sl⌝ ∗ sl ↦*{dq} bs := by
+  unfold bytesArgOwn; rw [h]; exact .rfl
+
+/-- The bytes of every argument `x` with `B x = some _`, lent for formatting (`bytesArgOwn`). -/
+def bytesOwn (dq : DFrac) (B : GoInterface → Option GoString) (xs : List GoInterface) : IProp GF :=
+  iprop([∗list] x ∈ xs, bytesArgOwn dq B x)
+
+/-- `argOkAt`, or a `[]byte` whose bytes are lent (`B x ≠ none`, under any directive: Go calls no
+method of a `[]byte`). -/
+def argOkAtB (B : GoInterface → Option GoString) (mv : List w8) (d : Directive) (x : GoInterface) :
+    IProp GF :=
+  iprop(argOkAt mv d x ∨ ⌜(B x).isSome⌝)
+
+/-- `argsOkAt` with `argOkAtB`. -/
+def argsOkAtB (B : GoInterface → Option GoString) (mv : List w8) :
+    List Directive → List GoInterface → IProp GF
+  | _, [] => iprop(True)
+  | d :: ds, a :: xs => iprop(argOkAtB B mv d a ∗ argsOkAtB B mv ds xs)
+  | [], a :: xs => iprop(argOkAtB B mv ⟨W8 118, false⟩ a ∗ argsOkAtB B mv [] xs)
+
+/-- `argsOk` with `argOkAtB`: the arguments of `format` when the bytes named by `B` are lent. -/
+def argsOkB (B : GoInterface → Option GoString) (mv : List w8) (format : GoString)
+    (xs : List GoInterface) : IProp GF :=
+  iprop(⌜ArgsWf xs⌝ ∨ ∃ ds : List Directive, ⌜fmtDirectives format = some ds⌝ ∗ argsOkAtB B mv ds xs)
+
+instance argOkAtB_persistent (B : GoInterface → Option GoString) (mv : List w8) (d : Directive)
+    (x : GoInterface) : Persistent (argOkAtB (GF := GF) B mv d x) := by
+  unfold argOkAtB; infer_instance
+
+instance argsOkAtB_persistent (B : GoInterface → Option GoString) (mv : List w8)
+    (ds : List Directive) (xs : List GoInterface) : Persistent (argsOkAtB (GF := GF) B mv ds xs) := by
+  induction xs generalizing ds with
+  | nil => cases ds <;> unfold argsOkAtB <;> infer_instance
+  | cons x xs ih => cases ds <;> unfold argsOkAtB <;> infer_instance
+
+instance argsOkB_persistent (B : GoInterface → Option GoString) (mv : List w8) (format : GoString)
+    (xs : List GoInterface) : Persistent (argsOkB (GF := GF) B mv format xs) := by
+  unfold argsOkB; infer_instance
+
+theorem argsOkAtB_of_argsOkAt (B : GoInterface → Option GoString) (mv : List w8)
+    (ds : List Directive) (xs : List GoInterface) :
+    argsOkAt (GF := GF) mv ds xs ⊢ argsOkAtB B mv ds xs := by
+  induction xs generalizing ds with
+  | nil => cases ds <;> (unfold argsOkAtB; iintro -; itrivial)
+  | cons x xs ih =>
+    cases ds with
+    | nil =>
+      unfold argsOkAt argsOkAtB argOkAtB
+      iintro ⟨H, Hs⟩
+      isplitl [H]
+      · ileft; iexact H
+      · iapply ih; iexact Hs
+    | cons d ds =>
+      unfold argsOkAt argsOkAtB argOkAtB
+      iintro ⟨H, Hs⟩
+      isplitl [H]
+      · ileft; iexact H
+      · iapply ih; iexact Hs
+
+/-- `argsOk` admits what `argsOkB` does, whatever bytes are lent. -/
+theorem argsOkB_of_argsOk (B : GoInterface → Option GoString) (mv : List w8) (format : GoString)
+    (xs : List GoInterface) : argsOk (GF := GF) mv format xs ⊢ argsOkB B mv format xs := by
+  unfold argsOk argsOkB
+  iintro (%Hwf | ⟨%ds, %Hds, Hds⟩)
+  · ileft; ipureintro; exact Hwf
+  · iright; iexists ds
+    isplitr
+    · ipureintro; exact Hds
+    · iapply argsOkAtB_of_argsOkAt; iexact Hds
+
+/-- With no bytes lent, `bytesOwn` holds trivially. -/
+theorem bytesOwn_none (dq : DFrac) (xs : List GoInterface) :
+    ⊢ bytesOwn (GF := GF) dq (fun _ => none) xs := by
+  unfold bytesOwn
+  induction xs with
+  | nil => iapply BigSepL.bigSepL_nil.2; iempintro
+  | cons x xs ih =>
+    iapply BigSepL.bigSepL_cons.2
+    isplitl []
+    · unfold bytesArgOwn; iempintro
+    · iapply ih
+
+/-- The bytes of the argument at index `k`, out of `bytesOwn`, to be put back. -/
+theorem bytesOwn_lookup_acc {dq : DFrac} {B : GoInterface → Option GoString}
+    {xs : List GoInterface} {k : Nat} {x : GoInterface} (h : xs[k]? = some x) :
+    bytesOwn (GF := GF) dq B xs ⊢ bytesArgOwn dq B x ∗ (bytesArgOwn dq B x -∗ bytesOwn dq B xs) := by
+  unfold bytesOwn
+  iintro H
+  icases (BigSepL.bigSepL_lookup_acc (Φ := fun _ y => bytesArgOwn (GF := GF) dq B y) h).1 $$ H
+    with ⟨Hx, Hclose⟩
+  iframe Hx
+  iintro Hx
+  have hset : xs.set k x = xs := by
+    apply List.ext_getElem?
+    intro j
+    rw [List.getElem?_set]
+    by_cases hj : k = j
+    · subst hj
+      obtain ⟨hk, hx⟩ := List.getElem?_eq_some_iff.mp h
+      simp [hk, hx]
+    · simp [hj]
+  ihave H2 := Hclose $$ %x Hx
+  rw [hset]
+  iexact H2
+
+/-- A lent argument is a `[]byte` (`bytesArgOwn`), as a pure fact, keeping the bytes. -/
+theorem bytesOwn_ty (dq : DFrac) (B : GoInterface → Option GoString) (xs : List GoInterface) :
+    bytesOwn (GF := GF) dq B xs ⊢ bytesOwn dq B xs ∗
+      ⌜∀ x ∈ xs, (B x).isSome → ∃ ii, x = interface.ok ii ∧ ii.ty = go.SliceType go.byte⌝ := by
+  unfold bytesOwn
+  induction xs with
+  | nil => iintro H; iframe; ipureintro; intro x hx; cases hx
+  | cons x xs ih =>
+    iintro H
+    icases BigSepL.bigSepL_cons.1 $$ H with ⟨Hx, Hxs⟩
+    icases ih $$ Hxs with ⟨Hxs, %hxs⟩
+    cases hB : B x with
+    | none =>
+      isplitl [Hx Hxs]
+      · iapply BigSepL.bigSepL_cons.2; iframe
+      ipureintro
+      intro y hy hs
+      rcases List.mem_cons.mp hy with rfl | hy
+      · rw [hB] at hs; cases hs
+      · exact hxs y hy hs
+    | some bs =>
+      icases (bytesArgOwn_some (dq := dq) hB).1 $$ Hx with ⟨%ii, %sl, %Hp, Hsl⟩
+      obtain ⟨hx, hty, hv⟩ := Hp
+      isplitl [Hsl Hxs]
+      · iapply BigSepL.bigSepL_cons.2
+        iframe
+        iapply (bytesArgOwn_some (dq := dq) hB).2
+        iexists ii, sl
+        iframe
+        ipureintro; exact ⟨hx, hty, hv⟩
+      ipureintro
+      intro y hy hs
+      rcases List.mem_cons.mp hy with rfl | hy
+      · exact ⟨ii, hx, hty⟩
+      · exact hxs y hy hs
+
+/-- With no bytes lent, `argsOkB` is `argsOk`. -/
+theorem argsOk_of_argsOkB_none (mv : List w8) (format : GoString) (xs : List GoInterface) :
+    argsOkB (GF := GF) (fun _ => none) mv format xs ⊢ argsOk mv format xs := by
+  have hat : ∀ ds xs, argsOkAtB (GF := GF) (fun _ => none) mv ds xs ⊢ argsOkAt mv ds xs := by
+    intro ds xs
+    induction xs generalizing ds with
+    | nil => cases ds <;> (unfold argsOkAt; iintro -; itrivial)
+    | cons x xs ih =>
+      cases ds <;>
+        (unfold argsOkAtB argsOkAt argOkAtB
+         iintro ⟨(H | %H), Hs⟩
+         · isplitl [H]
+           · iexact H
+           · iapply ih; iexact Hs
+         · simp at H)
+  unfold argsOkB argsOk
+  iintro (%Hwf | ⟨%ds, %Hds, Hds⟩)
+  · ileft; ipureintro; exact Hwf
+  · iright; iexists ds
+    isplitr
+    · ipureintro; exact Hds
+    · iapply hat; iexact Hds
+
 /-- **What `Errorf(format, xs...)` returns, of message `s`** (the formatted string): a pointer error
 of a type with `Error() string` and no `Format` method, one of `*errors.errorString`,
 `*fmt.wrapError`, `*fmt.wrapErrors`, whose `Error()` returns `s`; and, when the

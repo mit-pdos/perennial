@@ -6,6 +6,7 @@ arguments' methods Go makes (through `visitRest`), and the arguments of the `%w`
 module
 
 public import Perennial.Proof.fmt.VisitModel
+public import Perennial.Proof.fmt.BytesModel
 
 @[expose] public section
 
@@ -185,84 +186,67 @@ theorem notBytes_of_argOkAt (mv : List w8) (c : w8) (hc : c ∈ byteVerbs) (ii :
     subst HP
     simp [byteVerbs] at hc
 
-set_option maxHeartbeats 1000000 in
-/-- The helper `fmt.formatBytes`, at an argument that is no `[]byte` when the byte after the `%` is a
-verb of `byteVerbs`: it formats nothing (`ok` false), reading no memory. -/
-theorem wp_formatBytes (format : GoString) (i : w64) (x : GoInterface)
-    (Hi : 0 ≤ sint.Z i ∧ sint.Z i < (format.length : Int))
-    (Hx : ∀ c, (format.drop (sint.nat i + 1)).head? = some c → c ∈ byteVerbs →
-      ∀ ii, x = interface.ok ii → ii.ty ≠ go.SliceType go.byte) :
-    {{ (True : IProp GF) }}
-      (App (App (App (Val formatBytes) (Val #format)) (Val #i)) (Val #x))
-    {{ (s : GoString) (next : w64), RET (PairV (PairV #s #next) #false); True }} := by
-  iintro %Φ - HΦ
-  unfold formatBytes
-  wp_auto
-  wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %Hflen
-  wp_if_destruct
-  · iapply HΦ; itrivial
-  have Hlt : sint.nat i + 1 < format.length := by word
-  obtain ⟨c, Hc, Hdrop⟩ : ∃ c, format[sint.nat i + 1]? = some c ∧
-      format.drop (sint.nat i + 1) = c :: format.drop (sint.nat i + 2) :=
-    ⟨_, List.getElem?_eq_getElem Hlt, List.drop_eq_getElem_cons Hlt⟩
-  have Hidx : format[sint.nat (i + W64 1)]? = some c := by
-    rw [show sint.nat (i + W64 1) = sint.nat i + 1 by word]; exact Hc
-  rw [if_pos (show 0 ≤ sint.Z (i + W64 1) by word), Hidx]
-  wp_auto
-  have Hxc := Hx c (by rw [Hdrop]; rfl)
-  by_cases hc : c ∈ byteVerbs
-  · have hB := Hxc hc
-    cases x with
-    | nil =>
-      repeat' (first | wp_if_destruct | wp_auto)
-      all_goals first
-        | (iapply HΦ; itrivial)
-        | (exfalso; simp_all [byteVerbs]; done)
-    | ok ii =>
-      have hnB := hB ii rfl
-      repeat' (first | wp_if_destruct | wp_auto | simp only [hnB, ↓reduceIte, decide_false])
-      all_goals first
-        | (iapply HΦ; itrivial)
-        | (exfalso; simp_all [byteVerbs]; done)
-  · repeat' (first | wp_if_destruct | wp_auto)
-    all_goals first
-      | (iapply HΦ; itrivial)
-      | (exfalso; simp_all [byteVerbs]; done)
+/-- An argument `argOkAtB` a directive `%c` of a `byteVerbs` verb that is a `[]byte` is lent. -/
+theorem lent_of_argOkAtB (B : GoInterface → Option GoString) (mv : List w8) (c : w8)
+    (hc : c ∈ byteVerbs) (ii : GoInterfaceOk) :
+    argOkAtB (GF := GF) B mv ⟨c, false⟩ (.ok ii) ⊢
+      ⌜ii.ty = go.SliceType go.byte → (B (.ok ii)).isSome⌝ := by
+  unfold argOkAtB
+  iintro (Hd | %HB)
+  · ihave %hn := notBytes_of_argOkAt _ c hc ii $$ Hd
+    ipureintro; intro h; exact absurd h hn
+  · ipureintro; intro _; exact HB
+
+/-- What `formatArg` needs of an inert argument (`ArgWf`), from its directive's `argOkAtB`: a lent
+argument is a `[]byte`, which is not inert. -/
+theorem argWf_of_argOkAtB_inert (B : GoInterface → Option GoString) (mv : List w8) (d : Directive)
+    (ii : GoInterfaceOk) (hi : InertTy ii.ty) (hT : d.verb ≠ W8 84)
+    (hB : (B (.ok ii)).isSome → ii.ty = go.SliceType go.byte) :
+    argOkAtB (GF := GF) B mv d (.ok ii) ⊢ ⌜ArgWf ii⌝ := by
+  unfold argOkAtB
+  iintro (Hd | %HB)
+  · iapply argWf_of_argOkAt_inert _ d ii hi hT; iexact Hd
+  · exfalso
+    have h := hB HB
+    rw [h] at hi
+    exact inertTy_not_ref hi (by rw [underlying_SliceType]; trivial)
 
 /-- The helper `fmt.doPrintf`: for arguments `argsOk` the format under the verbs of its mode,
 the formatted string (`SprintfOut`), after the calls Go makes of the arguments' methods; the
 arguments' slice comes back; and the arguments of the `%w` directives, unless the model gave up
 (`unknown`) at a directive `fmtDirectives` refuses, every argument being `ArgWf`. -/
-theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (dq : DFrac)
-    (wrapErrs : Bool) :
-    {{ sl ↦*{dq} xs ∗ argsOk (GF := GF) (modeVerbs wrapErrs) format xs }}
+theorem wp_doPrintfB (B : GoInterface → Option GoString) (dqb : DFrac) (format : GoString)
+    (sl : GoSlice) (xs : List GoInterface) (dq : DFrac) (wrapErrs : Bool) :
+    {{ sl ↦*{dq} xs ∗ bytesOwn dqb B xs ∗ argsOkB (GF := GF) B (modeVerbs wrapErrs) format xs }}
       (App (App (App (Val doPrintf) (Val #format)) (Val #sl)) (Val #wrapErrs))
     {{ (s : GoString) (wsl : GoSlice) (unknown : Bool), RET (PairV (PairV #s #wsl) #unknown);
-        sl ↦*{dq} xs ∗ ⌜SprintfOut format xs s⌝ ∗ ∃ ws : List w64, wsl ↦* ws ∗
+        sl ↦*{dq} xs ∗ bytesOwn dqb B xs ∗ ⌜SprintfOutB B format xs s⌝ ∗
+        ∃ ws : List w64, wsl ↦* ws ∗
         ⌜(unknown = true → ArgsWf xs ∧ fmtDirectives format = none) ∧
          (unknown = false → ∀ ds, fmtDirectives format = some ds →
             ws = (wrapArgs ds xs.length).map (fun j : Nat => W64 (j : Int))) ∧
          (unknown = false → ∀ w ∈ ws, ∃ j : Nat, w = W64 (j : Int) ∧ j < xs.length)⌝ }} := by
-  iintro %Φ ⟨Hsl, Hok⟩ HΦ
+  iintro %Φ ⟨Hsl, Hown, Hok⟩ HΦ
   unfold doPrintf
   wp_auto
   ihave %Hxlen := ownSlice_len $$ Hsl
+  icases bytesOwn_ty dqb B xs $$ Hown with ⟨Hown, %HBty⟩
   ihave IH : iprop(∃ (n k : w64) (acc : GoString),
       "i" ∷ i_ptr ↦ n ∗
       "argNum" ∷ argNum_ptr ↦ k ∗
       "out" ∷ out_ptr ↦ acc ∗
       "%Hn" ∷ ⌜0 ≤ sint.Z n ∧ sint.Z n ≤ (format.length : Int)⌝ ∗
       "%Hk" ∷ ⌜0 ≤ sint.Z k ∧ sint.Z k ≤ (xs.length : Int)⌝ ∗
-      "%Hacc" ∷ ⌜∀ r, SprintfOut (format.drop (sint.nat n)) (xs.drop (sint.nat k)) r →
-        SprintfOut format xs (acc ++ r)⌝ ∗
+      "%Hacc" ∷ ⌜∀ r, SprintfOutB B (format.drop (sint.nat n)) (xs.drop (sint.nat k)) r →
+        SprintfOutB B format xs (acc ++ r)⌝ ∗
       "%Hpre" ∷ ⌜∀ ds, fmtDirectives format = some ds → ∃ pre ds', ds = pre ++ ds' ∧
         (∀ d ∈ pre, d.verb ≠ W8 119) ∧ pre.length = sint.nat k ∧
         fmtDirectivesAux none (format.drop (sint.nat n)) = some ds'⌝ ∗
       "#Hargs" ∷ (⌜ArgsWf xs⌝ ∨ ∃ ds, ⌜fmtDirectivesAux none (format.drop (sint.nat n)) = some ds⌝ ∗
-          argsOkAt (GF := GF) (modeVerbs wrapErrs) ds (xs.drop (sint.nat k)))) $$ [i argNum out Hok]
+          argsOkAtB (GF := GF) B (modeVerbs wrapErrs) ds (xs.drop (sint.nat k)))) $$ [i argNum out Hok]
   · ihave #Hargs0 : iprop(⌜ArgsWf xs⌝ ∨ ∃ ds, ⌜fmtDirectivesAux none (format.drop 0) = some ds⌝ ∗
-        argsOkAt (GF := GF) (modeVerbs wrapErrs) ds (xs.drop 0)) $$ [Hok]
-    · iunfold argsOk at Hok
+        argsOkAtB (GF := GF) B (modeVerbs wrapErrs) ds (xs.drop 0)) $$ [Hok]
+    · iunfold argsOkB at Hok
       icases Hok with (%Hwf | ⟨%ds, %Hds, #Hds⟩)
       · ileft; ipureintro; exact Hwf
       · iright; iexists ds; isplitr
@@ -332,12 +316,19 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
               _root_.and_self, ↓reduceIte]
             wp_apply wp_load_slice_index sl (sint.Z k) xs dq x Hk.1 $$ [Hsl] with Hsl
             · iframe; ipureintro; exact Hx
-            -- `formatBytes`: an argument the specs admit is no `[]byte` under its verbs
+            -- `formatBytes`: a `[]byte` under its verbs is lent
+            have HxBty : ∀ ii, x = interface.ok ii → (B x).isSome → ii.ty = go.SliceType go.byte := by
+              intro ii h hs
+              obtain ⟨ii', h', hty⟩ := HBty x (List.mem_of_getElem? Hx) hs
+              rw [h] at h'; cases h'; exact hty
+            have hpct' : fmtDirectivesAux none (W8 37 :: format.drop (sint.nat n + 1)) =
+                fmtDirectivesAux none (format.drop (sint.nat n)) := by
+              rw [Hdrop]
             ihave %HxB : iprop(⌜∀ c, (format.drop (sint.nat n + 1)).head? = some c → c ∈ byteVerbs →
-                ∀ ii, x = interface.ok ii → ii.ty ≠ go.SliceType go.byte⌝) $$ [Hargs]
+                ∀ ii, x = interface.ok ii → ii.ty = go.SliceType go.byte → (B x).isSome⌝) $$ [Hargs]
             · icases Hargs with (%Hwf | ⟨%ds, %Hds, Hds⟩)
-              · ipureintro; intro _ _ _ ii h
-                exact ne_SliceType_of_argWf go.byte (Hwf ii (h ▸ List.mem_of_getElem? Hx))
+              · ipureintro; intro _ _ _ ii h hty
+                exact absurd hty (ne_SliceType_of_argWf go.byte (Hwf ii (h ▸ List.mem_of_getElem? Hx)))
               · cases x with
                 | nil => ipureintro; intro _ _ _ ii h; cases h
                 | ok ii =>
@@ -358,12 +349,52 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
                       simp only [Functor.map, Option.map_some, Option.some.injEq] at hL
                       subst hL
                       rw [Hdropk]
-                      simp only [argsOkAt]
+                      simp only [argsOkAtB]
                       icases Hds with ⟨Hd, -⟩
-                      ihave %hn := notBytes_of_argOkAt _ c' hc2 ii $$ Hd
+                      ihave %hn := lent_of_argOkAtB B _ c' hc2 ii $$ Hd
                       ipureintro; intro _ _ _ ii' h; cases h; exact hn
                   · ipureintro; intro c'' h1 h2; exact absurd ⟨c'', h1, h2⟩ hcond
-            wp_apply (wp_formatBytes format n x ⟨Hn.1, by word⟩ HxB) as %- %- -
+            icases (bytesOwn_lookup_acc (k := sint.nat k) Hx) $$ Hown with ⟨Hxb, Hclose⟩
+            wp_apply (wp_formatBytesB B dqb format n x ⟨Hn.1, by word⟩ HxB) $$ [$Hxb]
+              as %bs_s %bs_next %bs_ok ⟨Hxb, %Hb1, %Hb2⟩
+            ihave Hown := Hclose $$ Hxb
+            cases bs_ok
+            rotate_left
+            · -- formatted as a lent `[]byte`
+              obtain ⟨-, Hn1, Hn2, Hout, Hstep⟩ := Hb1 rfl
+              ihave #Hargs' : iprop(⌜ArgsWf xs⌝ ∨ ∃ ds,
+                  ⌜fmtDirectivesAux none (format.drop (sint.nat bs_next)) = some ds⌝ ∗
+                  argsOkAtB (GF := GF) B (modeVerbs wrapErrs) ds (xs.drop (sint.nat (k + W64 1)))) $$ [Hargs]
+              · icases Hargs with (%Hwf | ⟨%ds, %Hds, Hds⟩)
+                · ileft; ipureintro; exact Hwf
+                · iright
+                  obtain ⟨d', L', rfl, -, -, hL'⟩ := Hstep ds (by rw [hpct', Hds])
+                  iexists L'
+                  isplitr
+                  · ipureintro; exact hL'
+                  rw [Hdropk, show sint.nat (k + W64 1) = sint.nat k + 1 by word]
+                  simp only [argsOkAtB]
+                  icases Hds with ⟨-, Hds⟩
+                  iexact Hds
+              try wp_auto
+              wp_for_post
+              iframe
+              iexists _, _, _
+              iframe
+              iframe Hargs'
+              ipureintro
+              refine ⟨⟨by word, by word⟩, ⟨by word, by word⟩, fun r h => ?_, fun ds hds => ?_⟩
+              · rw [show sint.nat (k + W64 1) = sint.nat k + 1 by word] at h
+                have := Hacc (bs_s ++ r) (by rw [Hdrop, Hdropk]; exact Hout _ _ h)
+                simpa using this
+              · obtain ⟨pre, ds', rfl, hnw, hlen, hds'⟩ := Hpre ds hds
+                obtain ⟨d', L', rfl, hw, -, hL'⟩ := Hstep ds' (by rw [hpct', hds'])
+                refine ⟨pre ++ [d'], L', by simp, fun e he => ?_, ?_, hL'⟩
+                · rcases List.mem_append.mp he with he | he
+                  · exact hnw e he
+                  · rw [List.mem_singleton.mp he]; exact hw
+                · rw [List.length_append, hlen]; simp only [List.length_singleton]; word
+            have HnB := Hb2 rfl
             try wp_auto
             wp_if_destruct
             rotate_left
@@ -381,8 +412,8 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
                 · exact absurd (Hbi.2 (.inr ⟨ii, h, inertTy_of_isStrArgType hs⟩)) (by simp)
                 · exact absurd (Hbi.2 (.inr ⟨ii, h, inertTy_of_isIntArgType hi⟩)) (by simp)
               wp_auto
-              wp_apply (wp_visitRest format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
-                $$ [$Hsl $Hargs] as %wsl %unk ⟨Hsl, %ws, Hws, %Hvr⟩
+              wp_apply (wp_visitRest B dqb format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
+                $$ [$Hsl $Hown $Hargs] as %wsl %unk ⟨Hsl, Hown, %ws, Hws, %Hvr⟩
               wp_apply wp_arbitraryString as %junk -
               wp_for_post
               iapply HΦ
@@ -392,16 +423,13 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
               rw [Hdrop, Hdropk]
               exact .other _ _ _ (not_simpleDirective _ _ _ Hnp
                 (.inr fun ii h => (hns ii h).1) (.inr fun ii h => (hns ii h).2)
-                (.inr fun ii h => (hns ii h).2))
+                (.inr fun ii h => (hns ii h).2)) (HnB _)
             -- inert: `formatArg`
             have HxIn : ∀ ii, x = interface.ok ii → InertTy ii.ty := by
               intro ii h
               rcases Hbi.1 rfl with hn | ⟨ii', h', hi⟩
               · rw [h] at hn; cases hn
               · rw [h] at h'; cases h'; exact hi
-            have hpct' : fmtDirectivesAux none (W8 37 :: format.drop (sint.nat n + 1)) =
-                fmtDirectivesAux none (format.drop (sint.nat n)) := by
-              rw [Hdrop]
             ihave %HxWf : iprop(⌜((format.drop (sint.nat n + 1)).head? = some (W8 115) ∨
                 (format.drop (sint.nat n + 1)).head? = some (W8 118) ∨
                 (format.drop (sint.nat n + 1)).head? = some (W8 120) ∨
@@ -416,12 +444,12 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
                 · ipureintro; intro _ ii h; exact Hwf ii (h ▸ List.mem_of_getElem? Hx)
                 · obtain ⟨d', L', rfl, -, hT, -⟩ := hstep ds (by rw [hpct', Hds])
                   rw [Hdropk]
-                  simp only [argsOkAt]
+                  simp only [argsOkAtB]
                   icases Hds with ⟨Hd, -⟩
                   cases x with
                   | nil => ipureintro; intro _ ii h; cases h
                   | ok ii =>
-                    ihave %hw := argWf_of_argOkAt_inert _ d' ii (HxIn ii rfl) hT $$ Hd
+                    ihave %hw := argWf_of_argOkAtB_inert B _ d' ii (HxIn ii rfl) hT (fun hs => HxBty ii rfl hs) $$ Hd
                     ipureintro; intro _ ii' h; cases h; exact hw
               · ipureintro; intro h; exact absurd h hcond
             wp_auto
@@ -429,12 +457,12 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
               _root_.and_self, ↓reduceIte]
             wp_apply wp_load_slice_index sl (sint.Z k) xs dq x Hk.1 $$ [Hsl] with Hsl
             · iframe; ipureintro; exact Hx
-            wp_apply wp_formatArg format n x ⟨Hn.1, by word⟩ HxWf as %s %next %ok ⟨%Hf1, %Hf2⟩
+            wp_apply wp_formatArg B format n x ⟨Hn.1, by word⟩ HxWf as %s %next %ok ⟨%Hf1, %Hf2⟩
             cases ok
             · -- not formatted: from here on, `visitRest`
               wp_auto
-              wp_apply (wp_visitRest format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
-                $$ [$Hsl $Hargs] as %wsl %unk ⟨Hsl, %ws, Hws, %Hvr⟩
+              wp_apply (wp_visitRest B dqb format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
+                $$ [$Hsl $Hown $Hargs] as %wsl %unk ⟨Hsl, Hown, %ws, Hws, %Hvr⟩
               wp_apply wp_arbitraryString as %junk -
               wp_for_post
               iapply HΦ
@@ -442,11 +470,11 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
               ipureintro
               refine ⟨Hacc junk ?_, doPrintf_exit_wrap Hpre Hvr⟩
               rw [Hdrop, Hdropk]
-              exact .other _ _ _ (Hf2 rfl Hnp _)
+              exact .other _ _ _ (Hf2 rfl Hnp _) (HnB _)
             · obtain ⟨Hn1, Hn2, Hout, Hstep⟩ := Hf1 rfl
               ihave #Hargs' : iprop(⌜ArgsWf xs⌝ ∨ ∃ ds,
                   ⌜fmtDirectivesAux none (format.drop (sint.nat next)) = some ds⌝ ∗
-                  argsOkAt (GF := GF) (modeVerbs wrapErrs) ds (xs.drop (sint.nat (k + W64 1)))) $$ [Hargs]
+                  argsOkAtB (GF := GF) B (modeVerbs wrapErrs) ds (xs.drop (sint.nat (k + W64 1)))) $$ [Hargs]
               · icases Hargs with (%Hwf | ⟨%ds, %Hds, Hds⟩)
                 · ileft; ipureintro; exact Hwf
                 · iright
@@ -455,7 +483,7 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
                   isplitr
                   · ipureintro; exact hL'
                   rw [Hdropk, show sint.nat (k + W64 1) = sint.nat k + 1 by word]
-                  simp only [argsOkAt]
+                  simp only [argsOkAtB]
                   icases Hds with ⟨-, Hds⟩
                   iexact Hds
               wp_auto
@@ -481,8 +509,8 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
             wp_if_destruct
             · exfalso; word
             try wp_auto
-            wp_apply (wp_visitRest format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
-              $$ [$Hsl $Hargs] as %wsl %unk ⟨Hsl, %ws, Hws, %Hvr⟩
+            wp_apply (wp_visitRest B dqb format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
+              $$ [$Hsl $Hown $Hargs] as %wsl %unk ⟨Hsl, Hown, %ws, Hws, %Hvr⟩
             wp_apply wp_arbitraryString as %junk -
             wp_for_post
             iapply HΦ
@@ -490,7 +518,7 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
             ipureintro
             refine ⟨Hacc junk ?_, doPrintf_exit_wrap Hpre Hvr⟩
             rw [Hdrop, show xs.drop (sint.nat k) = [] from List.drop_eq_nil_of_le (by word)]
-            exact .other _ _ _ (not_simpleDirective_nil _ Hnp)
+            exact .other _ _ _ (not_simpleDirective_nil _ Hnp) (bytesSimple_nil _ _)
       · -- a trailing `%`
         have Hnp : (format.drop (sint.nat n + 1)).head? ≠ some (W8 37) := by
           rw [List.drop_eq_nil_of_le (by word)]; simp
@@ -507,8 +535,15 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
           · iframe; ipureintro; exact Hx
           have hdn : format.drop (sint.nat n + 1) = [] := List.drop_eq_nil_of_le (by word)
           -- `formatBytes`: nothing after the `%`
-          wp_apply (wp_formatBytes format n x ⟨Hn.1, by word⟩ (by rw [hdn]; intro _ h; cases h))
-            as %- %- -
+          icases (bytesOwn_lookup_acc (k := sint.nat k) Hx) $$ Hown with ⟨Hxb, Hclose⟩
+          wp_apply (wp_formatBytesB B dqb format n x ⟨Hn.1, by word⟩ (by rw [hdn]; intro _ h; cases h))
+            $$ [$Hxb] as %bs_s %bs_next %bs_ok ⟨Hxb, %Hb1, %Hb2⟩
+          ihave Hown := Hclose $$ Hxb
+          cases bs_ok
+          rotate_left
+          · exfalso
+            obtain ⟨h2, -, h3, -⟩ := Hb1 rfl
+            word
           try wp_auto
           wp_if_destruct
           rotate_left
@@ -520,8 +555,8 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
           wp_apply wp_inert as %bi %Hbi
           cases bi
           · try wp_auto
-            wp_apply (wp_visitRest format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
-              $$ [$Hsl $Hargs] as %wsl %unk ⟨Hsl, %ws, Hws, %Hvr⟩
+            wp_apply (wp_visitRest B dqb format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
+              $$ [$Hsl $Hown $Hargs] as %wsl %unk ⟨Hsl, Hown, %ws, Hws, %Hvr⟩
             wp_apply wp_arbitraryString as %junk -
             wp_for_post
             iapply HΦ
@@ -529,7 +564,7 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
             ipureintro
             refine ⟨Hacc junk ?_, doPrintf_exit_wrap Hpre Hvr⟩
             rw [Hdrop, hdn]
-            exact .other _ _ _ (by simp [SimpleDirective])
+            exact .other _ _ _ (by simp [SimpleDirective]) (by simp [BytesSimple])
           · have HxWf : ((format.drop (sint.nat n + 1)).head? = some (W8 115) ∨
                 (format.drop (sint.nat n + 1)).head? = some (W8 118) ∨
                 (format.drop (sint.nat n + 1)).head? = some (W8 120) ∨
@@ -541,11 +576,11 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
               _root_.and_self, ↓reduceIte]
             wp_apply wp_load_slice_index sl (sint.Z k) xs dq x Hk.1 $$ [Hsl] with Hsl
             · iframe; ipureintro; exact Hx
-            wp_apply wp_formatArg format n x ⟨Hn.1, by word⟩ HxWf as %s %next %ok ⟨%Hf1, %Hf2⟩
+            wp_apply wp_formatArg B format n x ⟨Hn.1, by word⟩ HxWf as %s %next %ok ⟨%Hf1, %Hf2⟩
             cases ok
             · wp_auto
-              wp_apply (wp_visitRest format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
-                $$ [$Hsl $Hargs] as %wsl %unk ⟨Hsl, %ws, Hws, %Hvr⟩
+              wp_apply (wp_visitRest B dqb format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
+                $$ [$Hsl $Hown $Hargs] as %wsl %unk ⟨Hsl, Hown, %ws, Hws, %Hvr⟩
               wp_apply wp_arbitraryString as %junk -
               wp_for_post
               iapply HΦ
@@ -553,7 +588,7 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
               ipureintro
               refine ⟨Hacc junk ?_, doPrintf_exit_wrap Hpre Hvr⟩
               rw [Hdrop, hdn]
-              exact .other _ _ _ (by simp [SimpleDirective])
+              exact .other _ _ _ (by simp [SimpleDirective]) (by simp [BytesSimple])
             · exfalso
               obtain ⟨-, -, -, Hstep⟩ := Hf1 rfl
               obtain ⟨_, _, h, -⟩ := Hstep [] (by rw [hdn]; rfl)
@@ -563,8 +598,8 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
           wp_if_destruct
           · exfalso; word
           try wp_auto
-          wp_apply (wp_visitRest format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
-            $$ [$Hsl $Hargs] as %wsl %unk ⟨Hsl, %ws, Hws, %Hvr⟩
+          wp_apply (wp_visitRest B dqb format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
+            $$ [$Hsl $Hown $Hargs] as %wsl %unk ⟨Hsl, Hown, %ws, Hws, %Hvr⟩
           wp_apply wp_arbitraryString as %junk -
           wp_for_post
           iapply HΦ
@@ -572,7 +607,7 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
           ipureintro
           refine ⟨Hacc junk ?_, doPrintf_exit_wrap Hpre Hvr⟩
           rw [Hdrop, show xs.drop (sint.nat k) = [] from List.drop_eq_nil_of_le (by word)]
-          exact .other _ _ _ (not_simpleDirective_nil _ Hnp)
+          exact .other _ _ _ (not_simpleDirective_nil _ Hnp) (bytesSimple_nil _ _)
     · -- a byte other than `%`
       have hlit : fmtDirectivesAux none (format.drop (sint.nat n)) =
           fmtDirectivesAux none (format.drop (sint.nat (n + W64 1))) := by
@@ -609,8 +644,8 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
     wp_auto
     wp_if_destruct
     · -- arguments are left: under `%v`
-      wp_apply (wp_visitRest format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
-        $$ [$Hsl $Hargs] as %wsl %unk ⟨Hsl, %ws, Hws, %Hvr⟩
+      wp_apply (wp_visitRest B dqb format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
+        $$ [$Hsl $Hown $Hargs] as %wsl %unk ⟨Hsl, Hown, %ws, Hws, %Hvr⟩
       wp_apply wp_arbitraryString as %junk -
       iapply HΦ
       iframe
@@ -638,6 +673,30 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
           rw [wrapArgsFrom_append_noW _ _ _ _ hnw]; rfl
         rw [List.append_nil] at this
         rw [this]; rfl
+
+/-- The helper `fmt.doPrintf`, with no bytes lent (`wp_doPrintfB`): for arguments `argsOk` the format
+under the verbs of its mode, the formatted string (`SprintfOut`), after the calls Go makes of the
+arguments' methods; the arguments' slice comes back; and the arguments of the `%w` directives, unless
+the model gave up (`unknown`) at a directive `fmtDirectives` refuses, every argument being `ArgWf`. -/
+theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (dq : DFrac)
+    (wrapErrs : Bool) :
+    {{ sl ↦*{dq} xs ∗ argsOk (GF := GF) (modeVerbs wrapErrs) format xs }}
+      (App (App (App (Val doPrintf) (Val #format)) (Val #sl)) (Val #wrapErrs))
+    {{ (s : GoString) (wsl : GoSlice) (unknown : Bool), RET (PairV (PairV #s #wsl) #unknown);
+        sl ↦*{dq} xs ∗ ⌜SprintfOut format xs s⌝ ∗ ∃ ws : List w64, wsl ↦* ws ∗
+        ⌜(unknown = true → ArgsWf xs ∧ fmtDirectives format = none) ∧
+         (unknown = false → ∀ ds, fmtDirectives format = some ds →
+            ws = (wrapArgs ds xs.length).map (fun j : Nat => W64 (j : Int))) ∧
+         (unknown = false → ∀ w ∈ ws, ∃ j : Nat, w = W64 (j : Int) ∧ j < xs.length)⌝ }} := by
+  iintro %Φ ⟨Hsl, Hok⟩ HΦ
+  ihave Hown := bytesOwn_none (GF := GF) (DFrac.own 1) xs
+  ihave #HokB := argsOkB_of_argsOk (GF := GF) (fun _ => none) _ _ _ $$ Hok
+  wp_apply (wp_doPrintfB (fun _ => none) (DFrac.own 1) format sl xs dq wrapErrs) $$ [$Hsl $Hown $HokB]
+    as %s %wsl %unk ⟨Hsl, -, %Hs, Hws⟩
+  iapply HΦ
+  iframe
+  ipureintro
+  exact Hs.toSprintfOut
 
 end wps
 

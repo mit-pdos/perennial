@@ -543,7 +543,7 @@ theorem ne_SliceType_of_argWf {ii : GoInterfaceOk} (t : go.GoType) (h : ArgWf ii
 set_option maxHeartbeats 4000000 in
 /-- The helper `fmt.visitArg`: for an argument `argOkAt` its directive (`verb`, `sharpV`), calls
 what Go's `printArg` calls of it (its `Error()` or `String()`, or nothing), and returns. -/
-theorem wp_visitArg (x : GoInterface) (verb : w8) (sharpV wrapErrs : Bool)
+theorem wp_visitArg_argOk (x : GoInterface) (verb : w8) (sharpV wrapErrs : Bool)
     (Hsv : sharpV = true → verb = W8 118 ∨ verb = W8 119) :
     {{ argOkAt (GF := GF) (modeVerbs wrapErrs) ⟨verb, sharpV⟩ x }}
       (App (App (App (App (Val visitArg) (Val #x)) (Val #verb)) (Val #sharpV)) (Val #wrapErrs))
@@ -653,6 +653,55 @@ theorem wp_visitArg (x : GoInterface) (verb : w8) (sharpV wrapErrs : Bool)
     · exact absurd HT hnT
     · exact absurd Hp.1 hnP
 
+/-- A `[]byte` is no predeclared basic type. -/
+theorem not_isBasicType_SliceType (t : go.GoType) : ¬ IsBasicType (go.SliceType t) := by
+  simp [IsBasicType, IsIntType, go.string, go.bool, go.int, go.int64, go.int32, go.int16, go.int8,
+    go.uint, go.uint64, go.uint32, go.uint16, go.uint8, go.uintptr, go.float32, go.float64]
+
+set_option maxHeartbeats 1000000 in
+/-- The helper `fmt.visitArg`: for an argument `argOkAtB` its directive, calls what Go's `printArg`
+calls of it (`wp_visitArg_argOk`), or reads the bytes of a lent `[]byte` (Go's `fmtBytes`, under
+every verb but `%T` and `%p`); the lent bytes come back. -/
+theorem wp_visitArg (B : GoInterface → Option GoString) (dqb : DFrac) (x : GoInterface) (verb : w8)
+    (sharpV wrapErrs : Bool) (Hsv : sharpV = true → verb = W8 118 ∨ verb = W8 119) :
+    {{ argOkAtB (GF := GF) B (modeVerbs wrapErrs) ⟨verb, sharpV⟩ x ∗ bytesArgOwn dqb B x }}
+      (App (App (App (App (Val visitArg) (Val #x)) (Val #verb)) (Val #sharpV)) (Val #wrapErrs))
+    {{ RET #(); bytesArgOwn dqb B x }} := by
+  iintro %Φ ⟨Hx, Hown⟩ HΦ
+  iunfold argOkAtB at Hx
+  icases Hx with (Hx | %HB)
+  · wp_apply (wp_visitArg_argOk x verb sharpV wrapErrs Hsv) $$ [$Hx]
+    iapply HΦ; iexact Hown
+  obtain ⟨bs, hbs⟩ := Option.isSome_iff_exists.mp HB
+  icases (bytesArgOwn_some (dq := dqb) hbs).1 $$ Hown with ⟨%ii, %sl, %Hp, Hsl⟩
+  obtain ⟨rfl, hty, hv⟩ := Hp
+  ihave Hback : iprop(sl ↦*{dqb} bs -∗ bytesArgOwn dqb B (interface.ok ii)) $$ []
+  · iintro Hsl
+    iapply (bytesArgOwn_some (dq := dqb) hbs).2
+    iexists ii, sl
+    iframe
+    ipureintro; exact ⟨rfl, hty, hv⟩
+  unfold visitArg
+  wp_auto
+  wp_if_destruct
+  · iapply HΦ; iapply Hback; iexact Hsl
+  wp_if_destruct
+  · iapply HΦ; iapply Hback; iexact Hsl
+  wp_apply wp_isBasic as %b %Hb
+  cases b
+  case true =>
+    exfalso
+    obtain ⟨ii', h', hb⟩ := Hb.1 rfl
+    cases h'
+    rw [hty] at hb
+    exact not_isBasicType_SliceType _ hb
+  wp_auto
+  simp only [hty, ↓reduceIte, decide_true, hv]
+  wp_auto
+  wp_apply wp_bytes_to_string $$ Hsl as Hsl
+  try wp_auto
+  iapply HΦ; iapply Hback; iexact Hsl
+
 theorem argsOkAt_nil_args (mv : List w8) (ds : List Directive) :
     ⊢ argsOkAt (GF := GF) mv ds [] := by
   cases ds <;> (unfold argsOkAt; itrivial)
@@ -663,26 +712,34 @@ theorem argOkAt_of_argWf (mv : List w8) (d : Directive) (x : GoInterface)
   | nil => unfold argOkAt; itrivial
   | ok ii => unfold argOkAt; ileft; ipureintro; exact h ii rfl
 
+theorem argOkAtB_of_argWf (B : GoInterface → Option GoString) (mv : List w8) (d : Directive)
+    (x : GoInterface) (h : ∀ ii, x = interface.ok ii → ArgWf ii) : ⊢ argOkAtB (GF := GF) B mv d x := by
+  unfold argOkAtB; ileft; iapply argOkAt_of_argWf; exact h
+
+theorem argsOkAtB_nil_args (B : GoInterface → Option GoString) (mv : List w8) (ds : List Directive) :
+    ⊢ argsOkAtB (GF := GF) B mv ds [] := by
+  cases ds <;> (unfold argsOkAtB; itrivial)
+
 set_option maxHeartbeats 4000000 in
 /-- The helper `fmt.visitRest`: from the `%`-or-literal at `format[i]` and the argument `k` on,
 calls what Go calls of each argument (its directive's, or `%v` for those left over), for arguments
 `argsOk` the directives left; returns the arguments of the `%w` directives (`wrapArgsFrom`), or
 gives up (`unknown`) at a directive `fmtDirectives` refuses, every argument being `ArgWf`. -/
-theorem wp_visitRest (format : GoString) (i : w64) (sl : GoSlice) (xs : List GoInterface)
+theorem wp_visitRest (B : GoInterface → Option GoString) (dqb : DFrac) (format : GoString) (i : w64) (sl : GoSlice) (xs : List GoInterface)
     (dq : DFrac) (k : w64) (wrapErrs : Bool)
     (Hi : 0 ≤ sint.Z i ∧ sint.Z i ≤ (format.length : Int)) (Hlen : (format.length : Int) < 2 ^ 63)
     (Hk : 0 ≤ sint.Z k ∧ sint.Z k ≤ (xs.length : Int)) :
-    {{ sl ↦*{dq} xs ∗
+    {{ sl ↦*{dq} xs ∗ bytesOwn dqb B xs ∗
         (⌜ArgsWf xs⌝ ∨ ∃ ds, ⌜fmtDirectivesAux none (format.drop (sint.nat i)) = some ds⌝ ∗
-          argsOkAt (GF := GF) (modeVerbs wrapErrs) ds (xs.drop (sint.nat k))) }}
+          argsOkAtB (GF := GF) B (modeVerbs wrapErrs) ds (xs.drop (sint.nat k))) }}
       (App (App (App (App (App (Val visitRest) (Val #format)) (Val #i)) (Val #sl)) (Val #k))
         (Val #wrapErrs))
     {{ (wsl : GoSlice) (unknown : Bool), RET (PairV #wsl #unknown);
-        sl ↦*{dq} xs ∗ ∃ ws : List w64, wsl ↦* ws ∗
+        sl ↦*{dq} xs ∗ bytesOwn dqb B xs ∗ ∃ ws : List w64, wsl ↦* ws ∗
         ⌜(unknown = true → ArgsWf xs ∧ fmtDirectivesAux none (format.drop (sint.nat i)) = none) ∧
          (unknown = false → ∃ ds, fmtDirectivesAux none (format.drop (sint.nat i)) = some ds ∧
             ws = (wrapArgsFrom (sint.nat k) ds xs.length).map (fun j : Nat => W64 (j : Int)))⌝ }} := by
-  iintro %Φ ⟨Hsl, Hargs⟩ HΦ
+  iintro %Φ ⟨Hsl, Hown, Hargs⟩ HΦ
   unfold visitRest
   wp_auto
   ihave %Hxlen := ownSlice_len $$ Hsl
@@ -698,7 +755,7 @@ theorem wp_visitRest (format : GoString) (i : w64) (sl : GoSlice) (xs : List GoI
         (pre ++ ·) <$> fmtDirectivesAux none (format.drop (sint.nat iv))⌝ ∗
       "%Hwsv" ∷ ⌜ws = (wrapArgsFrom (sint.nat k) pre xs.length).map (fun j : Nat => W64 (j : Int))⌝ ∗
       "Hargs" ∷ (⌜ArgsWf xs⌝ ∨ ∃ ds, ⌜fmtDirectivesAux none (format.drop (sint.nat iv)) = some ds⌝ ∗
-          argsOkAt (GF := GF) (modeVerbs wrapErrs) ds (xs.drop (sint.nat kv))))
+          argsOkAtB (GF := GF) B (modeVerbs wrapErrs) ds (xs.drop (sint.nat kv))))
       $$ [i argNum wrapped Hws0 Hwc0 Hargs]
   · iexists i, k, slice.nil, [], []
     rw [show zero_val GoSlice = slice.nil from rfl]
@@ -821,7 +878,7 @@ theorem wp_visitRest (format : GoString) (i : w64) (sl : GoSlice) (xs : List GoI
         have := Hkv.2.2; omega
       ihave Hargs' : iprop(⌜ArgsWf xs⌝ ∨
           ∃ ds, ⌜fmtDirectivesAux none (format.drop (sint.nat next)) = some ds⌝ ∗
-            argsOkAt (GF := GF) (modeVerbs wrapErrs) ds (xs.drop (sint.nat kv))) $$ [Hargs]
+            argsOkAtB (GF := GF) B (modeVerbs wrapErrs) ds (xs.drop (sint.nat kv))) $$ [Hargs]
       · icases Hargs with (%Hwf | ⟨%ds, %Hds, Hds⟩)
         · ileft; ipureintro; exact Hwf
         · iright
@@ -835,7 +892,7 @@ theorem wp_visitRest (format : GoString) (i : w64) (sl : GoSlice) (xs : List GoI
           isplitr
           · ipureintro; exact Hds'
           rw [List.drop_eq_nil_of_le (show xs.length ≤ sint.nat kv by omega)]
-          iapply argsOkAt_nil_args
+          iapply argsOkAtB_nil_args
       wp_for_post
       iframe
       iexists _, _, _, _, (pre ++ [⟨W8 (sint.Z verb), sharpV⟩])
@@ -854,12 +911,12 @@ theorem wp_visitRest (format : GoString) (i : w64) (sl : GoSlice) (xs : List GoI
         xs.drop (sint.nat kv) = x :: xs.drop (sint.nat kv + 1) :=
       ⟨_, List.getElem?_eq_getElem Hklt, List.drop_eq_getElem_cons Hklt⟩
     have Hkv1 : sint.nat (kv + W64 1) = sint.nat kv + 1 := by word
-    ihave ⟨Hxok, Hargs'⟩ : iprop(argOkAt (GF := GF) (modeVerbs wrapErrs) ⟨W8 (sint.Z verb), sharpV⟩ x ∗
+    ihave ⟨Hxok, Hargs'⟩ : iprop(argOkAtB (GF := GF) B (modeVerbs wrapErrs) ⟨W8 (sint.Z verb), sharpV⟩ x ∗
         (⌜ArgsWf xs⌝ ∨ ∃ ds, ⌜fmtDirectivesAux none (format.drop (sint.nat next)) = some ds⌝ ∗
-          argsOkAt (GF := GF) (modeVerbs wrapErrs) ds (xs.drop (sint.nat (kv + W64 1))))) $$ [Hargs]
+          argsOkAtB (GF := GF) B (modeVerbs wrapErrs) ds (xs.drop (sint.nat (kv + W64 1))))) $$ [Hargs]
     · icases Hargs with (%Hwf | ⟨%ds, %Hds, Hds⟩)
       · isplitl []
-        · iapply argOkAt_of_argWf
+        · iapply argOkAtB_of_argWf
           intro ii h; exact Hwf ii (h ▸ List.mem_of_getElem? Hx)
         · ileft; ipureintro; exact Hwf
       · rw [haux] at Hds
@@ -869,7 +926,7 @@ theorem wp_visitRest (format : GoString) (i : w64) (sl : GoSlice) (xs : List GoI
           cases fmtDirectivesAux none (format.drop (sint.nat next)) <;> simp
           exact fun h => h.symm
         rw [Hdropk]
-        simp only [argsOkAt]
+        simp only [argsOkAtB]
         icases Hds with ⟨Hd, Hds⟩
         iframe Hd
         iright
@@ -892,11 +949,13 @@ theorem wp_visitRest (format : GoString) (i : w64) (sl : GoSlice) (xs : List GoI
       wp_apply wp_slice_append $$ [$Hws $Hwc $Hsl2] as %wsl' ⟨Hws, Hwc, -⟩
       try wp_auto
       simp only [show 0 ≤ sint.Z kv ∧ sint.Z kv < sint.Z sl.len from ⟨by word, by word⟩,
-        and_self, ↓reduceIte]
+        _root_.and_self, ↓reduceIte]
       wp_apply wp_load_slice_index sl (sint.Z kv) xs dq x (by word) $$ [Hsl] with Hsl
       · iframe; ipureintro; exact Hx
       rw [← hw]
-      wp_apply (wp_visitArg x (W8 (sint.Z verb)) sharpV wrapErrs hsv) $$ [$Hxok]
+      icases (bytesOwn_lookup_acc (k := sint.nat kv) Hx) $$ Hown with ⟨Hxb, Hclose⟩
+      wp_apply (wp_visitArg B dqb x (W8 (sint.Z verb)) sharpV wrapErrs hsv) $$ [$Hxok $Hxb] as Hxb
+      ihave Hown := Hclose $$ Hxb
       wp_for_post
       iframe
       iexists _, _, _, _, (pre ++ [⟨W8 (sint.Z verb), sharpV⟩])
@@ -911,10 +970,12 @@ theorem wp_visitRest (format : GoString) (i : w64) (sl : GoSlice) (xs : List GoI
       simp only [hw, decide_false]
       wp_auto
       simp only [show 0 ≤ sint.Z kv ∧ sint.Z kv < sint.Z sl.len from ⟨by word, by word⟩,
-        and_self, ↓reduceIte]
+        _root_.and_self, ↓reduceIte]
       wp_apply wp_load_slice_index sl (sint.Z kv) xs dq x (by word) $$ [Hsl] with Hsl
       · iframe; ipureintro; exact Hx
-      wp_apply (wp_visitArg x (W8 (sint.Z verb)) sharpV wrapErrs hsv) $$ [$Hxok]
+      icases (bytesOwn_lookup_acc (k := sint.nat kv) Hx) $$ Hown with ⟨Hxb, Hclose⟩
+      wp_apply (wp_visitArg B dqb x (W8 (sint.Z verb)) sharpV wrapErrs hsv) $$ [$Hxok $Hxb] as Hxb
+      ihave Hown := Hclose $$ Hxb
       wp_for_post
       iframe
       iexists _, _, _, _, (pre ++ [⟨W8 (sint.Z verb), sharpV⟩])
@@ -935,7 +996,7 @@ theorem wp_visitRest (format : GoString) (i : w64) (sl : GoSlice) (xs : List GoI
     wp_auto
     ihave IH2 : iprop(∃ kv' : w64, "argNum" ∷ argNum_ptr ↦ kv' ∗
         "%Hkv'" ∷ ⌜sint.Z kv ≤ sint.Z kv' ∧ sint.Z kv' ≤ (xs.length : Int)⌝ ∗
-        "Hargs" ∷ (⌜ArgsWf xs⌝ ∨ argsOkAt (GF := GF) (modeVerbs wrapErrs) [] (xs.drop (sint.nat kv'))))
+        "Hargs" ∷ (⌜ArgsWf xs⌝ ∨ argsOkAtB (GF := GF) B (modeVerbs wrapErrs) [] (xs.drop (sint.nat kv'))))
       $$ [argNum Hargs]
     · iexists kv
       iframe
@@ -954,26 +1015,28 @@ theorem wp_visitRest (format : GoString) (i : w64) (sl : GoSlice) (xs : List GoI
           xs.drop (sint.nat kv') = x :: xs.drop (sint.nat kv' + 1) :=
         ⟨_, List.getElem?_eq_getElem Hklt, List.drop_eq_getElem_cons Hklt⟩
       have Hkv1 : sint.nat (kv' + W64 1) = sint.nat kv' + 1 := by word
-      ihave ⟨Hxok, Hargs'⟩ : iprop(argOkAt (GF := GF) (modeVerbs wrapErrs) ⟨W8 118, false⟩ x ∗
-          (⌜ArgsWf xs⌝ ∨ argsOkAt (GF := GF) (modeVerbs wrapErrs) [] (xs.drop (sint.nat (kv' + W64 1)))))
+      ihave ⟨Hxok, Hargs'⟩ : iprop(argOkAtB (GF := GF) B (modeVerbs wrapErrs) ⟨W8 118, false⟩ x ∗
+          (⌜ArgsWf xs⌝ ∨ argsOkAtB (GF := GF) B (modeVerbs wrapErrs) [] (xs.drop (sint.nat (kv' + W64 1)))))
         $$ [Hargs]
       · icases Hargs with (%Hwf | Hds)
         · isplitl []
-          · iapply argOkAt_of_argWf
+          · iapply argOkAtB_of_argWf
             intro ii h; exact Hwf ii (h ▸ List.mem_of_getElem? Hx)
           · ileft; ipureintro; exact Hwf
         · rw [Hdropk]
-          simp only [argsOkAt]
+          simp only [argsOkAtB]
           icases Hds with ⟨Hd, Hds⟩
           iframe Hd
           iright
           rw [Hkv1]
           iexact Hds
       simp only [show 0 ≤ sint.Z kv' ∧ sint.Z kv' < sint.Z sl.len from ⟨by word, by word⟩,
-        and_self, ↓reduceIte]
+        _root_.and_self, ↓reduceIte]
       wp_apply wp_load_slice_index sl (sint.Z kv') xs dq x (by word) $$ [Hsl] with Hsl
       · iframe; ipureintro; exact Hx
-      wp_apply (wp_visitArg x (W8 118) false wrapErrs (fun h => nomatch h)) $$ [$Hxok]
+      icases (bytesOwn_lookup_acc (k := sint.nat kv') Hx) $$ Hown with ⟨Hxb, Hclose⟩
+      wp_apply (wp_visitArg B dqb x (W8 118) false wrapErrs (fun h => nomatch h)) $$ [$Hxok $Hxb] as Hxb
+      ihave Hown := Hclose $$ Hxb
       wp_for_post
       iframe
       iexists _

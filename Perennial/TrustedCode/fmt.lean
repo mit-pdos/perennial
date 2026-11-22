@@ -1491,6 +1491,156 @@ noncomputable def hexNibble : val :=
   (Val #())))))))
   (App (Val (GoInstruction (GoLoad go.byte))) (Var "$res0"))))))
 
+/-- The byte `c` as `strconv.Quote` writes it inside the quotes, for `c` below `0x80` (a helper of `quoteBytes`): `\"` and `\\`, the bytes from `0x20` to `0x7E` themselves, the escapes `\a \b \f \n \r \t \v`, and `\xNN` for the other control bytes and `0x7F` (there `strconv`'s escaping depends on no table). Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
+
+```go
+func quoteByte(c byte) string {
+	if c == '"' || c == '\\' {
+		return string([]byte{'\\', c})
+	}
+	if 0x20 <= c && c <= 0x7e {
+		return string([]byte{c})
+	}
+	if c == '\a' {
+		return `\a`
+	}
+	if c == '\b' {
+		return `\b`
+	}
+	if c == '\f' {
+		return `\f`
+	}
+	if c == '\n' {
+		return `\n`
+	}
+	if c == '\r' {
+		return `\r`
+	}
+	if c == '\t' {
+		return `\t`
+	}
+	if c == '\v' {
+		return `\v`
+	}
+	return string([]byte{'\\', 'x', hexNibble(c/16, false), hexNibble(c%16, false)})
+}
+```
+
+with these edits: goose's `FuncResolve f [] #()` of a helper of this file replaced by `f`. -/
+noncomputable def quoteByte : val :=
+  (LamV "c"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "c" (App (Val (GoInstruction (GoAlloc go.byte))) (Var "c"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (Let "$v0" (Val #(W8 92))
+  (Let "$v1" (Val #(W8 120))
+  (Let "$v2" (Let "$a0" (App (Val (GoInstruction (GoOp GoDiv go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 16))))
+  (Let "$a1" (Val #false)
+  (App (App (Val hexNibble) (Var "$a0")) (Var "$a1"))))
+  (Let "$v3" (Let "$a0" (App (Val (GoInstruction (GoOp GoRemainder go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 16))))
+  (Let "$a1" (Val #false)
+  (App (App (Val hexNibble) (Var "$a0")) (Var "$a1"))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$v0"))), (KeyedElement none (ElementExpression go.byte (Var "$v1"))), (KeyedElement none (ElementExpression go.byte (Var "$v2"))), (KeyedElement none (ElementExpression go.byte (Var "$v3")))])))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 11)))))
+  (Let "$r0" (Val #(go!"\\v"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 9)))))
+  (Let "$r0" (Val #(go!"\\t"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 13)))))
+  (Let "$r0" (Val #(go!"\\r"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 10)))))
+  (Let "$r0" (Val #(go!"\\n"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 12)))))
+  (Let "$r0" (Val #(go!"\\f"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 8)))))
+  (Let "$r0" (Val #(go!"\\b"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 7)))))
+  (Let "$r0" (Val #(go!"\\a"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLe go.byte))) (Pair (Val #(W8 32)) (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")))) (App (Val (GoInstruction (GoOp GoLe go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 126)))) (Val #false)))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (Let "$v0" (App (Val (GoInstruction (GoLoad go.byte))) (Var "c"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$v0")))]))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 34)))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 92))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (Let "$v0" (Val #(W8 92))
+  (Let "$v1" (App (Val (GoInstruction (GoLoad go.byte))) (Var "c"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$v0"))), (KeyedElement none (ElementExpression go.byte (Var "$v1")))])))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")))))
+
 /-- `strconv.Quote(string(b))`, as Go's `fmtQ` prints `%q` of a `[]byte` without flags, width or precision, when every byte of `b` is ASCII (below `0x80`): there `strconv`'s escaping depends on no table (`IsPrint` is true exactly from `0x20` to `0x7E`; `\"` and `\\`, the seven escapes `\a \b \f \n \r \t \v`, `\xNN` for the other control bytes and `0x7F`). `ok` is false when a byte is not ASCII, where `strconv` decodes UTF-8 and consults its printable-rune tables (`isPrint16`, ..., trusted with unknown contents): the model does not follow it. Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
 
 ```go
@@ -1500,27 +1650,7 @@ func quoteBytes(b []byte) (string, bool) {
 		if c >= 0x80 {
 			return "", false
 		}
-		if c == '"' || c == '\\' {
-			out += string([]byte{'\\', c})
-		} else if 0x20 <= c && c <= 0x7e {
-			out += string([]byte{c})
-		} else if c == '\a' {
-			out += `\a`
-		} else if c == '\b' {
-			out += `\b`
-		} else if c == '\f' {
-			out += `\f`
-		} else if c == '\n' {
-			out += `\n`
-		} else if c == '\r' {
-			out += `\r`
-		} else if c == '\t' {
-			out += `\t`
-		} else if c == '\v' {
-			out += `\v`
-		} else {
-			out += string([]byte{'\\', 'x', hexNibble(c/16, false), hexNibble(c%16, false)})
-		}
+		out += quoteByte(c)
 	}
 	return out + "\"", true
 }
@@ -1555,46 +1685,9 @@ noncomputable def quoteBytes : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 34)))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 92))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (Let "$v0" (Val #(W8 92))
-  (Let "$v1" (App (Val (GoInstruction (GoLoad go.byte))) (Var "c"))
-  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$v0"))), (KeyedElement none (ElementExpression go.byte (Var "$v1")))]))))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLe go.byte))) (Pair (Val #(W8 32)) (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")))) (App (Val (GoInstruction (GoOp GoLe go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 126)))) (Val #false)))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (Let "$v0" (App (Val (GoInstruction (GoLoad go.byte))) (Var "c"))
-  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$v0")))])))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 7)))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (Val #(go!"\\a")))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 8)))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (Val #(go!"\\b")))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 12)))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (Val #(go!"\\f")))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 10)))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (Val #(go!"\\n")))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 13)))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (Val #(go!"\\r")))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 9)))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (Val #(go!"\\t")))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 11)))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (Val #(go!"\\v")))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (Let "$v0" (Val #(W8 92))
-  (Let "$v1" (Val #(W8 120))
-  (Let "$v2" (Let "$a0" (App (Val (GoInstruction (GoOp GoDiv go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 16))))
-  (Let "$a1" (Val #false)
-  (App (App (Val hexNibble) (Var "$a0")) (Var "$a1"))))
-  (Let "$v3" (Let "$a0" (App (Val (GoInstruction (GoOp GoRemainder go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 16))))
-  (Let "$a1" (Val #false)
-  (App (App (Val hexNibble) (Var "$a0")) (Var "$a1"))))
-  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$v0"))), (KeyedElement none (ElementExpression go.byte (Var "$v1"))), (KeyedElement none (ElementExpression go.byte (Var "$v2"))), (KeyedElement none (ElementExpression go.byte (Var "$v3")))])))))))))))))))))))))))
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.byte))) (Var "c"))
+  (App (Val quoteByte) (Var "$a0"))))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 128)))))
   (Let "$r0" (Val #(go!""))
   (Let "$r1" (Val #false)
@@ -1616,6 +1709,113 @@ noncomputable def quoteBytes : val :=
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (Var "$r0")))))))))
   (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res1")))))))
 
+/-- `%v` and `%d` of the `[]byte` `b`, as Go's `fmtBytes` prints them: its bytes in decimal, separated by spaces, in brackets (a helper of `formatBytes`). Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
+
+```go
+func decBytes(b []byte) string {
+	out := "["
+	for k, c := range b {
+		if k > 0 {
+			out += " "
+		}
+		out += formatInt(false, uint64(c), 0)
+	}
+	return out + "]"
+}
+```
+
+with these edits: goose's `FuncResolve f [] #()` of a helper of this file replaced by `f`. -/
+noncomputable def decBytes : val :=
+  (LamV "b"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
+  (Let "$r0" (Val #(go!"["))
+  (Let "out" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (Val #(go!"]"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (Let "c" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
+  (Let "k" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val (slice.forRange go.byte)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (Let "$a0" (Val #false)
+  (Let "$a1" (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")))
+  (Let "$a2" (Val #(W64 0))
+  (App (App (App (Val formatInt) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 0)))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (Val #(go!" ")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "k") (Var "$key")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "c") (Var "$value"))))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")))))
+
+/-- `%x` (`upper` false) and `%X` of the `[]byte` `b`, as Go's `fmtBytes` prints them: two hexadecimal characters a byte (a helper of `formatBytes`). Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
+
+```go
+func hexBytes(b []byte, upper bool) string {
+	var out string
+	for _, c := range b {
+		out += string([]byte{hexNibble(c/16, upper), hexNibble(c%16, upper)})
+	}
+	return out
+}
+```
+
+with these edits: goose's `FuncResolve f [] #()` of a helper of this file replaced by `f`. -/
+noncomputable def hexBytes : val :=
+  (LamV "b"
+  (Lam "upper"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "upper" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "upper"))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
+  (Let "out" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (Var "out"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (Let "c" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
+  (App (App (Val (slice.forRange go.byte)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (Let "$v0" (Let "$a0" (App (Val (GoInstruction (GoOp GoDiv go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 16))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.bool))) (Var "upper"))
+  (App (App (Val hexNibble) (Var "$a0")) (Var "$a1"))))
+  (Let "$v1" (Let "$a0" (App (Val (GoInstruction (GoOp GoRemainder go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 16))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.bool))) (Var "upper"))
+  (App (App (Val hexNibble) (Var "$a0")) (Var "$a1"))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$v0"))), (KeyedElement none (ElementExpression go.byte (Var "$v1")))]))))))))))))
+  (App (Val doExecute)
+  (Var "$key")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "c") (Var "$value")))))))))))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
+
 /-- At `format[i]`, a `%`: the output of the directive for the argument `x`, if it is of type `[]byte`, and the index after it, as Go's `fmtBytes` prints it, if the directive is `%s`, `%v`, `%d`, `%x`, `%X` or `%q` without flags, width or precision (`%q` only of ASCII bytes, `quoteBytes`): `string(b)`; the decimal bytes in brackets, separated by spaces; two hexadecimal digits a byte. It reads every byte of `x` then, as Go does, and nothing otherwise (the type assertion only after the verb: the proofs of the calls that never reach it need no ownership). Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
 
 ```go
@@ -1635,21 +1835,10 @@ func formatBytes(format string, i int, x any) (string, int, bool) {
 		return string(b), i + 2, true
 	}
 	if verb == 'v' || verb == 'd' {
-		out := "["
-		for k, c := range b {
-			if k > 0 {
-				out += " "
-			}
-			out += formatInt(false, uint64(c), 0)
-		}
-		return out + "]", i + 2, true
+		return decBytes(b), i + 2, true
 	}
 	if verb == 'x' || verb == 'X' {
-		var out string
-		for _, c := range b {
-			out += string([]byte{hexNibble(c/16, verb == 'X'), hexNibble(c%16, verb == 'X')})
-		}
-		return out, i + 2, true
+		return hexBytes(b, verb == 'X'), i + 2, true
 	}
 	if verb == 'q' {
 		s, ok := quoteBytes(b)
@@ -1757,9 +1946,9 @@ noncomputable def formatBytes : val :=
   (App (Val doExecute)
   (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "verb")) (Val #(W8 120)))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "verb")) (Val #(W8 88))))))
-  (Let "out" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (Var "out"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (Let "$a1" (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "verb")) (Val #(W8 88))))
+  (App (App (Val hexBytes) (Var "$a0")) (Var "$a1"))))
   (Let "$r1" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 2))))
   (Let "$r2" (Val #true)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1772,34 +1961,12 @@ noncomputable def formatBytes : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))))
-  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
-  (Let "c" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
-  (App (App (Val (slice.forRange go.byte)) (Var "$range"))
-  (Lam "$key"
-  (Lam "$value"
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (Let "$v0" (Let "$a0" (App (Val (GoInstruction (GoOp GoDiv go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 16))))
-  (Let "$a1" (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "verb")) (Val #(W8 88))))
-  (App (App (Val hexNibble) (Var "$a0")) (Var "$a1"))))
-  (Let "$v1" (Let "$a0" (App (Val (GoInstruction (GoOp GoRemainder go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 16))))
-  (Let "$a1" (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "verb")) (Val #(W8 88))))
-  (App (App (Val hexNibble) (Var "$a0")) (Var "$a1"))))
-  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$v0"))), (KeyedElement none (ElementExpression go.byte (Var "$v1")))]))))))))))))
-  (App (Val doExecute)
-  (Var "$key")))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "c") (Var "$value"))))))))))))
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
   (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "verb")) (Val #(W8 118)))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "verb")) (Val #(W8 100))))))
-  (Let "$r0" (Val #(go!"["))
-  (Let "out" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (Val #(go!"]"))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (Val decBytes) (Var "$a0")))
   (Let "$r1" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 2))))
   (Let "$r2" (Val #true)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1812,32 +1979,7 @@ noncomputable def formatBytes : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))))
-  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
-  (Let "c" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
-  (Let "k" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
-  (App (App (Val (slice.forRange go.byte)) (Var "$range"))
-  (Lam "$key"
-  (Lam "$value"
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (Let "$a0" (Val #false)
-  (Let "$a1" (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")))
-  (Let "$a2" (Val #(W64 0))
-  (App (App (App (Val formatInt) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 0)))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (Val #(go!" ")))))))
-  (App (Val doExecute)
-  (Val #()))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "k") (Var "$key")))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "c") (Var "$value"))))))))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
   (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "verb")) (Val #(W8 115)))))

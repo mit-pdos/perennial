@@ -6,6 +6,7 @@ model called the arguments' methods (2026-11), for the callers that pass no othe
 module
 
 public import Perennial.Proof.fmt.Link
+public import Perennial.Proof.fmt.BytesResults
 
 @[expose] public section
 

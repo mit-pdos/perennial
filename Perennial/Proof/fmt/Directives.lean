@@ -255,6 +255,24 @@ theorem auxStep_simple (format : GoString) (i next : Nat) (c : w8)
     (h : format.drop (i + 1) = c :: format.drop next) : AuxStep format i next := by
   unfold AuxStep; rw [h]; exact auxStepF_simple _ c hc
 
+theorem auxStepF_byteVerb (rest : GoString) (c : w8) (hc : c ∈ byteVerbs) :
+    AuxStepF (c :: rest) rest := by
+  intro L hL
+  rw [fmtDirectivesAux_byteVerb _ hc] at hL
+  cases hL' : fmtDirectivesAux none rest with
+  | none => rw [hL'] at hL; cases hL
+  | some L' =>
+    rw [hL'] at hL
+    simp only [Option.map_eq_map, Option.map_some, Option.some.injEq] at hL
+    subst hL
+    simp only [byteVerbs, List.mem_cons, List.not_mem_nil, or_false] at hc
+    refine ⟨_, L', rfl, ?_, ?_, rfl⟩ <;>
+      (rcases hc with rfl | rfl | rfl | rfl | rfl | rfl <;> decide)
+
+theorem auxStep_byteVerb (format : GoString) (i next : Nat) (c : w8) (hc : c ∈ byteVerbs)
+    (h : format.drop (i + 1) = c :: format.drop next) : AuxStep format i next := by
+  unfold AuxStep; rw [h]; exact auxStepF_byteVerb _ c hc
+
 theorem auxStepF_int (g tail : GoString) (w : Nat)
     (h : parseIntVerb g = some (w, tail)) : AuxStepF g tail := by
   cases hf : g with
