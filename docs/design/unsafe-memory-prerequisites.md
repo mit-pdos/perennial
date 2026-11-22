@@ -168,6 +168,9 @@ operation, which removes the cost above.)
 - **Not taken.** Modelling tags: a third `FieldDecl` argument, 7 match sites, 37 in
   Theory, and a new conversion rule.
 - **Closest case.** Case 7: leave it refused, which adds no trust.
+- **Later.** Superseded by mit-pdos/perennial#655: every field declaration carries its tag
+  (`go.field_decl.Field name type tag`), goose writes them for unnamed struct types, and the
+  conversions that would need the new rule stay stuck (`docs/KNOWN_LIMITATIONS.md`).
 
 ## P5. Blank struct fields (unsound)
 

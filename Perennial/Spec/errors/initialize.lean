@@ -20,8 +20,8 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : errors.Assumptions]
 
-/-- The package's `initialize'`: allocate `ErrUnsupported` (an `errors.New` error) and
-initialize `errorType`. -/
+/-- The package's `initialize'`: allocate `ErrUnsupported` (an `errors.New` error).
+(`errorType` is skipped: not translated.) -/
 abbrev errors.initialize'.spec : Prop :=
   ∀ (get_is_pkg_init : GoString → IProp GF),
   GetIsPkgInitProp pkg_id.errors get_is_pkg_init →

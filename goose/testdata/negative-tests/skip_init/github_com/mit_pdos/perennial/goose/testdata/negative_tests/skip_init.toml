@@ -1,0 +1,3 @@
+[[skip]]
+names = ["X"]
+reason = "a constant: cannot panic, no effect beyond the variable"

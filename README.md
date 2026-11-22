@@ -233,18 +233,53 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `Catch`, so a verified program does not die of a panic within the step bound.
   Run-time panics of builtins (`Panic "msg"`) are stuck. See
   `docs/PERENNIAL_PROOF_REFERENCE.md`, "Panics".
+* **Skipped package variables.** A package variable listed in a `[[skip]]`
+  entry of its goose config (`names`, and a required `reason`) is not
+  translated at all: goose emits no Lean name, no `X.init`, no allocation and
+  no step in `initialize'`, and lists the skipped variables with their
+  reasons in the package's `skipped' : List go.SkippedVar`
+  (`Golang/Defn/Pkg.lean`). Translated code that names one (in its package or
+  one that imports it) is a goose error, and hand-written Lean cannot name it,
+  so that verified code never touches the variable holds by construction. The
+  trusted claim of each entry is its reason: *not running the variable's Go
+  initializer is unobservable* (it terminates, cannot panic, and has no effect
+  beyond the variable). A blank variable (`var _ = ...`) is listed by its
+  position, `"_@file.go:L"`, with its own reason; a package that skips one
+  lists all of its blank variables, so that one a Go upgrade adds or moves
+  fails the translation until its entry is reviewed. Each entry of `skipped'`
+  carries the variable's Go declaration, so a changed initializer changes the
+  generated file, and `etc/trusted-delta.py` reports every added, removed or
+  changed `skipped'` entry as a change to the trusted base. (Hand-written Lean
+  can still write a skipped variable's address from a literal name,
+  `GlobalVarAddr go!"pkg.X"`: `trusted-delta` flags every such literal,
+  `global-var-addr`, and a load or store through it is stuck, as the variable
+  is never allocated.) `goose/cmd/skiplint`, run by
+  `etc/update-goose-new.py` after translating and separate from goose, warns
+  on the side about a skipped initializer that stores to a package variable
+  or takes one's address, directly or through its package's functions; it is
+  best-effort (it does not follow other packages, interfaces or pointers it
+  did not see taken), so every reason is still reviewed.
+  `grep -A3 '\[\[skip\]\]' Perennial/Code` lists the entries; the
+  `review-trusted` rule R11 says how to check one.
 * **Trusted package-variable initializers.** A package variable listed in a
   goose config's `trusted` gets its initializer `X.init` (allocation included)
-  from `Perennial/TrustedCode`. An initializer that the model skips is
-  `def X.init : val := go.skipInit` (`Golang/Defn/Pkg.lean`): its trusted claim is
-  that Go's initializer can be skipped; the variable is not allocated, so a load
-  or store of it is stuck (taking its address steps), and `grep go.skipInit` lists
-  every such variable. **Accepted for now, to remove later:** five such
+  from `Perennial/TrustedCode`. A few of them do nothing (`λ: <>, #()`)
+  although translated code is to read the variable once it is modelled
+  (`os.Stdout`, `log.std` and `math.useFMA`, until they get real models:
+  perennial#663): the variable is then not allocated, so a load or store of it
+  is stuck (taking its address steps), and each docstring says why skipping
+  Go's initializer is sound. An initializer of several variables
+  (`var c, d = pair()`, one Go evaluation) that is trusted or axiomatized
+  runs `c.init` then `d.init`: goose cannot split the evaluation, so by
+  convention the first variable's `init` carries all of it (its effects, any
+  panic, and the variables it gives values to), each later one only what is
+  left for its own variable (nothing, if the first did it all), and the first
+  one's docstring says so. **Accepted for now, to remove later:** four such
   models are trusted although goose translates the real source, so the
   `review-trusted` rule R2 grades them REWORK; they were accepted (2026-10-19)
   to finish the standard library's init proofs, and later reviews and
   soundness work should translate them away:
-  `crypto/ed25519.cryptocustomrand` and `time.asynctimerchan` (no-ops; the fix
+  `time.asynctimerchan` (the fix
   translates `internal/godebug`, trusting its runtime hooks `setUpdate` and
   `setNewIncNonDefault`, with `internal/bisect` and `internal/godebugs`;
   `asynctimerchan`'s model also allocates the model's runtime clock, runtime
@@ -255,9 +290,10 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   another package's variable reaches an init proof: a program-logic gap), and
   `crypto/rand.Reader` (stores a value of Go's dynamic type with a placeholder
   inside; needs `crypto/internal/rand` and `drbg`, whose init runs a FIPS
-  self-test). The no-ops for `errors.errorType` (a reflection type
-  descriptor), `math.useFMA` and `math/big.hasADX` (CPU features the runtime
-  detects) model irreducible behaviour. Each model's docstring says why it is
+  self-test). (A fifth, `crypto/ed25519.cryptocustomrand`, is now a skip
+  entry: no translated code reads it.) The no-op for `math.useFMA` (a CPU
+  feature the runtime detects) models irreducible behaviour;
+  `errors.errorType` and `math/big.hasADX`, the same kind, are skip entries. Each model's docstring says why it is
   faithful.
 * **`sync.Pool`.** `Get` and `Put` are trusted (`TrustedCode/sync.lean`): the real
   ones rely on runtime pinning to a P, pointer arithmetic and `eface` layout
@@ -304,8 +340,14 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   signature has a type goose does not support is an entry without a signature (`(id, none)`:
   it exists), and the method set of any other type (a struct type literal with
   embedded fields, a type declared in a function, a type of an untranslated package) is
-  unconstrained. Two limits of the model's type identity (`=` on `go.GoType`) apply here as
-  to type assertions: struct tags are not part of `go.StructType`, and the unexported field
+  unconstrained. Struct tags are part of `go.StructType`: every field declaration
+  (`go.field_decl.Field`/`Embedded name type tag`, the tag empty when there is none; the
+  shorthands `go.FieldDecl`/`go.EmbeddedField name type` for the usual untagged field) carries
+  its tag, which goose writes for the fields of unnamed struct types, so that `=` is Go's type
+  identity for them. A defined struct type's underlying type is written without its tags (its
+  identity is its name), so a conversion that Go allows only by ignoring tags, or between a
+  tagged unnamed struct type and a defined type, is stuck (`docs/KNOWN_LIMITATIONS.md`). One
+  limit of the model's type identity applies here as to type assertions: the unexported field
   names of struct type literals are not qualified by package. goose loads code with the build
   tag `goose`: a method declared only in files excluded by it (or included only by it) would
   make the emitted method set differ from the real build's.

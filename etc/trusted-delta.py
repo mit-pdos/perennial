@@ -12,8 +12,15 @@ Usage: etc/trusted-delta.py [TARGET] [--full] [--no-diff] [--check]
   --full     print the diff of every changed file, not only the trusted ones
   --no-diff  print only the summary and the signal lines
   --check    exit 1 if the change touches the trusted base (tier 0) at all,
-             for use in hooks
+             or changes a generated `skipped'` entry, for use in hooks
   --self-test  check the signal patterns on built-in examples and exit
+
+Skipped package variables: for every variable a goose config newly lists in a
+`[[skip]]` entry (or `skip = [...]`), it prints the reason and the variable's
+Go source (`go doc -u -src`). Every added, removed or changed entry of a
+generated `skipped'` list (`Perennial/Code/<pkg>.lean`: a Go upgrade that adds,
+moves or changes a skipped variable, or a changed reason) is a change to the
+trusted base too: it is listed in its own section, and counts for `--check`.
 
 Tiers (see the skill): 0 = trusted (semantics, translator, trusted models,
 goose configuration); 1 = generated (trusted through goose; hand edits are
@@ -33,7 +40,7 @@ declaration it belongs to. For a new or changed
 trusted model whose docstring quotes Go code, it prints the real Go source of
 the function (`go doc -src`) next to it, when the Go toolchain can find it.
 """
-import os, re, subprocess, sys
+import os, re, subprocess, sys, tomllib
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
@@ -99,6 +106,8 @@ SIGNALS = [
     ("adequacy", r"\bgoose_(adequacy|invariance|init)\w*\b|GooseGpreS|receiptBound|threadBound", "an adequacy theorem or its parameters"),
     ("trusted-impl", r"\.impl\w*\s*(\[.*\])?\s*:\s*val\b|\.implWith\b", "a hand-written model of Go code"),
     ("trusted-list", r"^\s*trusted\s*=|^\s*\"!|^\s*translate\s*=|trust_proofgen|^\s*axiomatize\s*=", "goose configuration: what is trusted/translated/axiomatized"),
+    ("skip-list", r"^\s*\[\[skip\]\]|^\s*skip\s*=", "goose configuration: package variables not translated at all (trusted: not running each initializer is unobservable)"),
+    ("global-var-addr", r'GlobalVarAddr\s*\(?\s*go!"', "the address of a package variable by its literal name: the one way hand-written code can reach a variable goose skips (the name has no Lean declaration)"),
     ("extension", r"\bExtSemantics\b|\bGooseSemantics\b|\bextStep\w*|\bGooseExt\b", "an extension's semantics (new primitive operations)"),
     ("set_option", r"^\s*set_option\b", "an option change (linters off, max heartbeats, ...)"),
     ("verbatim", r"VerbatimExpr|Verbatim", "goose emits Lean text verbatim"),
@@ -265,12 +274,13 @@ def step_rule_context_hits(path, f, rev_old, rev_new):
     return [h for k, h in ctx.items() if k not in direct]
 
 # --------------------------------------------------------------- Go source lookup
-def go_source(symbol):
-    """`go doc -src strings.Split`; '' if the toolchain cannot find it."""
+def go_source(symbol, unexported=False):
+    """`go doc -src strings.Split` (`-u` also for unexported names); '' if the
+    toolchain cannot find it."""
     # read-only: never let `go doc` rewrite go.sum / go.work.sum
     env = dict(os.environ, GOFLAGS="-mod=readonly", GOWORK="off")
     try:
-        r = subprocess.run(["go", "doc", "-src", symbol], cwd=ROOT, capture_output=True,
+        r = subprocess.run(["go", "doc"] + (["-u"] if unexported else []) + ["-src", symbol], cwd=ROOT, capture_output=True,
                            text=True, timeout=60, env=env)
     except (OSError, subprocess.TimeoutExpired):
         return ""
@@ -289,8 +299,7 @@ def trusted_impls(path, files, rev):
     if not names:
         return []
     # package = namespace of the file (Perennial/TrustedCode/<pkg path>.lean)
-    pkg = re.sub(r"^Perennial/TrustedCode/|\.lean$", "", path)
-    pkg = pkg.replace("_com/", ".com/").replace("_org/", ".org/").replace("_io/", ".io/")
+    pkg = config_pkg("Perennial/Code/" + re.sub(r"^Perennial/TrustedCode/|\.lean$", "", path) + ".toml", rev)
     try:
         content = git("show", f"{rev}:{path}") if rev else open(os.path.join(ROOT, path)).read()
     except SystemExit:
@@ -308,17 +317,9 @@ def trusted_impls(path, files, rev):
     return out
 
 def toml_lists(path, rev_old, rev_new):
-    def lists(text):
-        d = {}
-        for key in ("translate", "trusted", "axiomatize"):
-            m = re.search(r"^\s*" + key + r"\s*=\s*\[(.*?)\]", text, re.S | re.M)
-            if m:
-                items = re.findall(r'"([^"]*)"', m.group(1))
-                d[key] = items
-        m = re.search(r"^\s*trust_proofgen\s*=\s*(\w+)", text, re.M)
-        if m:
-            d["trust_proofgen"] = [m.group(1)]
-        return d
+    """The pattern lists of a goose config, old and new: [(key, added, removed)].
+    `skip` maps each skipped name to its reason; its items are `name` strings
+    (skip_reasons gives the reasons)."""
     def show(rev):
         if rev is None:
             try:
@@ -327,12 +328,118 @@ def toml_lists(path, rev_old, rev_new):
                 return ""
         r = subprocess.run(["git", "show", f"{rev}:{path}"], cwd=ROOT, capture_output=True, text=True)
         return r.stdout if r.returncode == 0 else ""
-    old, new = lists(show(rev_old)), lists(show(rev_new))
+    old, new = goose_lists(show(rev_old)), goose_lists(show(rev_new))
     out = []
     for key in sorted(set(old) | set(new)):
         o, n = old.get(key, []), new.get(key, [])
         if o != n:
             out.append((key, [x for x in n if x not in o], [x for x in o if x not in n]))
+    return out, skip_reasons(show(rev_new)), skip_reasons(show(rev_old))
+
+def parse_config(text):
+    try:
+        return tomllib.loads(text)
+    except tomllib.TOMLDecodeError as e:
+        print(f"(could not parse the goose config: {e})")
+        return {}
+
+def goose_lists(text):
+    c = parse_config(text)
+    d = {}
+    for key in ("translate", "trusted", "axiomatize", "imports"):
+        if key in c:
+            d[key] = [str(x) for x in c[key]]
+    if "trust_proofgen" in c:
+        d["trust_proofgen"] = [str(c["trust_proofgen"])]
+    if "skip" in c:
+        d["skip"] = [n for e in c["skip"] for n in e.get("names", [])]
+    return d
+
+def skip_reasons(text):
+    return {n: e.get("reason", "") for e in parse_config(text).get("skip", []) for n in e.get("names", [])}
+
+PKG_ID = re.compile(r'^namespace pkg_id\nnoncomputable def \S+ : GoString := go!"([^"]+)"', re.M)
+
+def config_pkg(path, rev=None):
+    """The Go package of a goose config Perennial/Code/<pkg>.toml: the Go path its translation
+    (Perennial/Code/<pkg>.lean, at `rev`, else at HEAD) declares as its `pkg_id`. The file name
+    is no guide: goose maps both `.` and `-` to `_` (github_com/mit_pdos/...). Without a
+    translation, the file name with `_` read as `/`-separated path components (right for the
+    standard library)."""
+    lean = path[: -len(".toml")] + ".lean"
+    for r in ([rev] if rev is not None else []) + ["HEAD"]:
+        m = PKG_ID.search(file_at(r, lean))
+        if m:
+            return m.group(1)
+    m = PKG_ID.search(file_at(None, lean))
+    return m.group(1) if m else os.path.relpath(path, "Perennial/Code")[: -len(".toml")]
+
+# --------------------------------------------------------------- skipped' entries
+LEAN_STR = re.compile(r'"((?:[^"\\]|\\.)*)"')
+
+def lean_unescape(s):
+    out, i = [], 0
+    while i < len(s):
+        c = s[i]
+        if c == "\\" and i + 1 < len(s):
+            n = s[i + 1]
+            if n == "n":
+                out.append("\n"); i += 2
+            elif n == "t":
+                out.append("\t"); i += 2
+            elif n == "r":
+                out.append("\r"); i += 2
+            elif n == "x":
+                out.append(chr(int(s[i + 2:i + 4], 16))); i += 4
+            elif n == "u":
+                j = s.index("}", i)
+                out.append(chr(int(s[i + 3:j], 16))); i = j + 1
+            else:
+                out.append(n); i += 2
+        else:
+            out.append(c); i += 1
+    return "".join(out)
+
+def skipped_entries(text):
+    """The entries of a generated `skipped' : List go.SkippedVar := [⟨"name", "reason", "decl"⟩,
+    ...]`: {name: (fields after the name)}. Strings are scanned as Lean literals, so a `⟩` or
+    `]` inside one does not end an entry."""
+    m = re.search(r"def skipped' : List go\.SkippedVar := \[", text)
+    if not m:
+        return {}
+    out, i, cur = {}, m.end(), None
+    while i < len(text):
+        c = text[i]
+        if c == '"':
+            sm = LEAN_STR.match(text, i)
+            if cur is not None:
+                cur.append(lean_unescape(sm.group(1)))
+            i = sm.end()
+            continue
+        if c == "⟨":
+            cur = []
+        elif c == "⟩" and cur is not None:
+            if cur:
+                out[cur[0]] = tuple(cur[1:])
+            cur = None
+        elif c == "]" and cur is None:
+            break
+        i += 1
+    return out
+
+def skipped_delta(path, rev_old, rev_new):
+    """Added, removed and changed `skipped'` entries of a generated file:
+    [(sign '+'/'-'/'~', name, old fields, new fields)]."""
+    old, new = skipped_entries(file_at(rev_old, path)), skipped_entries(file_at(rev_new, path))
+    out = []
+    for n in new:
+        if n not in old:
+            out.append(("+", n, None, new[n]))
+        elif old[n] != new[n]:
+            out.append(("~", n, old[n], new[n]))
+    for n in old:
+        if n not in new:
+            out.append(("-", n, old[n], None))
     return out
 
 # --------------------------------------------------------------- self-test
@@ -396,6 +503,18 @@ def self_test():
         bad.append("decl_statements: `zero_float64` is attributed to a step rule")
     if re.search(STEP_RULE, stmts[ids[9]][1]) or "docstring" in stmts[ids[3]][1] or is_code[2]:
         bad.append("decl_statements: comment text or a top-level def counted as a step rule")
+    # skipped' entries: Lean string literals, a `⟩` or `]` inside one, the decl field
+    gen = "\n".join([
+        "noncomputable def skipped' : List go.SkippedVar := [",
+        '  ⟨"p.X", "a \\"reason\\" with ⟩ and ]", "var X = f()"⟩,',
+        '  ⟨"p._@a.go:3", "an interface check\\nover two lines", "var _ I = (*T)(nil)"⟩]',
+        "",
+        "noncomputable instance info' : PkgInfo pkg_id.p where",
+    ])
+    want = {"p.X": ('a "reason" with ⟩ and ]', "var X = f()"),
+            "p._@a.go:3": ("an interface check\nover two lines", "var _ I = (*T)(nil)")}
+    if skipped_entries(gen) != want:
+        bad.append(f"skipped_entries: {skipped_entries(gen)!r}")
     for b in bad:
         print("FAIL " + b)
     print(f"trusted-delta self-test: {'FAILED' if bad else 'ok'}")
@@ -479,10 +598,33 @@ def main(argv):
     # goose configuration deltas
     cfg = [(p, kind) for p, kind in tiered[0] if kind == "goose-config"]
     if cfg:
-        print("## goose configuration (trusted / translated / axiomatized)\n")
+        print("## goose configuration (trusted / translated / axiomatized / skipped)\n")
         for p, _ in cfg:
-            for key, added, removed in toml_lists(p, rev_old, rev_new):
+            lists, reasons, old_reasons = toml_lists(p, rev_old, rev_new)
+            for key, added, removed in lists:
                 print(f"- {p} `{key}`: added {added or '[]'}, removed {removed or '[]'}")
+                if key == "skip":
+                    pkg = config_pkg(p, rev_new)
+                    for name in added:
+                        print(f"  - skipped `{pkg}.{name}`: reason: \"{reasons.get(name, '')}\"")
+                        print("    The reason must show that Go's initializer terminates, cannot panic "
+                              "and has no effect beyond the variable; read its callees (an effect "
+                              "on another variable or package, a registration, is not skippable).")
+                        if name.startswith("_@"):
+                            print("    (a blank `var _`, named by its position: its declaration is "
+                                  "in the translation's `skipped'`, below)")
+                            continue
+                        src = go_source(f"{pkg}.{name}", unexported=True)
+                        if src:
+                            lines = src.rstrip().split("\n")
+                            if len(lines) > 40:
+                                lines = lines[:40] + [f"... ({len(lines) - 40} more lines)"]
+                            print(f"    Go source (`go doc -u -src {pkg}.{name}`):\n")
+                            print("```go\n" + "\n".join(lines) + "\n```\n")
+                        else:
+                            print(f"    (`go doc -u -src {pkg}.{name}` found nothing: read the initializer yourself)")
+                    for name in removed:
+                        print(f"  - no longer skipped `{name}` (was: \"{old_reasons.get(name, '')}\")")
                 if key == "trusted":
                     pkg = os.path.relpath(p, "Perennial/Code")[: -len(".toml")]
                     for name in added:
@@ -495,6 +637,33 @@ def main(argv):
               "(name and type only). A `!pattern` in `translate` with the same name in "
               "`trusted` replaces goose's translation by a hand-written model: ask why "
               "the real translation is not used.\n")
+
+    # skipped' entries of generated files
+    nskipped = 0
+    gen = [p for p, kind in tiered[1] if kind == "generated-code" and p.endswith(".lean")]
+    deltas = [(p, d) for p in gen for d in [skipped_delta(p, rev_old, rev_new)] if d]
+    if deltas:
+        print("## Skipped package variables in generated code (TRUSTED)\n")
+        print("Each entry of a `skipped'` list is a trusted claim (not running the variable's Go "
+              "initializer is unobservable; rule R11): check every added or changed one against "
+              "its Go declaration and its reason.\n")
+        for p, d in deltas:
+            print(f"### {p}\n")
+            for sign, name, old, new in d:
+                nskipped += 1
+                word = {"+": "added", "-": "removed", "~": "changed"}[sign]
+                print(f"- {word} `{name}`")
+                fields = ("reason", "decl")
+                for k, f in enumerate(fields):
+                    o = old[k] if old and k < len(old) else None
+                    n = new[k] if new and k < len(new) else None
+                    if sign == "+" and n is not None:
+                        print(f"  - {f}: {n!r}")
+                    elif sign == "-" and o is not None:
+                        print(f"  - {f} was: {o!r}")
+                    elif sign == "~" and o != n:
+                        print(f"  - {f}: {o!r} -> {n!r}")
+            print()
 
     # trusted models vs Go source
     tm = [p for p, kind in tiered[0] if kind == "trusted-model"]
@@ -531,7 +700,7 @@ def main(argv):
         if not full and any(tiered[t] for t in (1, 2, 3)):
             print("(tiers 1-3 omitted; `--full` prints them, or `git diff` the files above)\n")
 
-    if check and tiered[0]:
+    if check and (tiered[0] or nskipped):
         return 1
     return 0
 

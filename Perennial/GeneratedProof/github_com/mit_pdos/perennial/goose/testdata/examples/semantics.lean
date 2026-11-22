@@ -2155,6 +2155,183 @@ noncomputable instance «struct#b17138a7_access_store_n» {T' : Type} [TypedPoin
 end def_
 end «struct#b17138a7»
 
+namespace «struct#2cd0f2f3»
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
+
+noncomputable instance «struct#2cd0f2f3_typed_pointsto» :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#2cd0f2f3» where
+  typedPointstoDef l v dq := iprop(
+    "Name" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#2cd0f2f3» go!"Name" l) v.Name' dq ∗
+    "n" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#2cd0f2f3» go!"n" l) v.n' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance «struct#2cd0f2f3_into_val_typed» :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#2cd0f2f3» github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#2cd0f2f3».underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance «struct#2cd0f2f3_access_load_Name» (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#2cd0f2f3») (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#2cd0f2f3» go!"Name" l) v.Name' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#2cd0f2f3» go!"Name" l) v.Name' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance «struct#2cd0f2f3_access_store_Name» (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#2cd0f2f3») (Name' : GoString) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#2cd0f2f3» go!"Name" l) v.Name' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#2cd0f2f3» go!"Name" l) Name' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Name' := Name' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#2cd0f2f3») (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance «struct#2cd0f2f3_access_load_n» (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#2cd0f2f3») (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#2cd0f2f3» go!"n" l) v.n' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#2cd0f2f3» go!"n" l) v.n' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance «struct#2cd0f2f3_access_store_n» (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#2cd0f2f3») (n' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#2cd0f2f3» go!"n" l) v.n' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#2cd0f2f3» go!"n" l) n' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with n' := n' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#2cd0f2f3») (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end «struct#2cd0f2f3»
+
+namespace «struct#fdd642b7»
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
+
+noncomputable instance «struct#fdd642b7_typed_pointsto» :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#fdd642b7» where
+  typedPointstoDef l v dq := iprop(
+    "A" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#fdd642b7» go!"A" l) v.A' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance «struct#fdd642b7_into_val_typed» :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#fdd642b7» github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#fdd642b7».underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance «struct#fdd642b7_access_load_A» (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#fdd642b7») (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#fdd642b7» go!"A" l) v.A' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#fdd642b7» go!"A" l) v.A' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance «struct#fdd642b7_access_store_A» (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#fdd642b7») (A' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#fdd642b7» go!"A" l) v.A' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#fdd642b7» go!"A" l) A' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with A' := A' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#fdd642b7») (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end «struct#fdd642b7»
+
+namespace «struct#45c926a9»
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
+
+noncomputable instance «struct#45c926a9_typed_pointsto» :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#45c926a9» where
+  typedPointstoDef l v dq := iprop(
+    "A" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#45c926a9» go!"A" l) v.A' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance «struct#45c926a9_into_val_typed» :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#45c926a9» github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#45c926a9».underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance «struct#45c926a9_access_load_A» (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#45c926a9») (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#45c926a9» go!"A" l) v.A' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#45c926a9» go!"A" l) v.A' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance «struct#45c926a9_access_store_A» (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#45c926a9») (A' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#45c926a9» go!"A" l) v.A' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#45c926a9» go!"A" l) A' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with A' := A' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#45c926a9») (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end «struct#45c926a9»
+
+namespace «struct#50e5a5ff»
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
+
+noncomputable instance «struct#50e5a5ff_typed_pointsto» :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#50e5a5ff» where
+  typedPointstoDef l v dq := iprop(
+    "A" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#50e5a5ff» go!"A" l) v.A' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance «struct#50e5a5ff_into_val_typed» :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#50e5a5ff» github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#50e5a5ff».underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance «struct#50e5a5ff_access_load_A» (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#50e5a5ff») (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#50e5a5ff» go!"A" l) v.A' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#50e5a5ff» go!"A" l) v.A' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance «struct#50e5a5ff_access_store_A» (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#50e5a5ff») (A' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#50e5a5ff» go!"A" l) v.A' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#50e5a5ff» go!"A" l) A' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with A' := A' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#50e5a5ff») (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end «struct#50e5a5ff»
+
 namespace «struct#3e1ef20f»
 section def_
 

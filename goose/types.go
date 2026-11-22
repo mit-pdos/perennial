@@ -161,6 +161,10 @@ func (ctx *Ctx) typeOf(e ast.Expr) types.Type {
 	return ctx.info.TypeOf(e)
 }
 
+// structType is the field list of t, without the fields' tags: the underlying
+// type of a defined struct type (whose identity is its name; the semantics of
+// its fields and of conversions, which ignore tags in Go, do not depend on
+// them). An unnamed struct type's fields carry their tags (taggedStructType).
 func (ctx *Ctx) structType(t *types.Struct) glang.StructType {
 	ty := glang.StructType{}
 	for i := range t.NumFields() {
@@ -172,6 +176,19 @@ func (ctx *Ctx) structType(t *types.Struct) glang.StructType {
 			Type:     ctx.glangType(t.Field(i), fieldType),
 			Embedded: t.Field(i).Embedded(),
 		})
+	}
+	return ty
+}
+
+// taggedStructType is the field list of the unnamed struct type t, with the
+// fields' tags: they are part of its identity (Go spec, "Type identity": "Two
+// struct types are identical if they have the same sequence of fields, and if
+// corresponding fields have the same names, and identical types, and identical
+// tags").
+func (ctx *Ctx) taggedStructType(t *types.Struct) glang.StructType {
+	ty := ctx.structType(t)
+	for i := range ty.Fields {
+		ty.Fields[i].Tag = t.Tag(i)
 	}
 	return ty
 }
@@ -283,11 +300,6 @@ func (ctx *Ctx) interfaceType(n locatable, t *types.Interface) glang.Expr {
 func (ctx *Ctx) glangType(n locatable, t types.Type) glang.Expr {
 	switch t := t.(type) {
 	case *types.Struct:
-		for i := range t.NumFields() {
-			if t.Tag(i) != "" {
-				ctx.unsupported(n, "struct tag on a struct type that is not a defined type")
-			}
-		}
 		if t.NumFields() == 0 {
 			return ctx.structType(t)
 		}
