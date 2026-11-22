@@ -45,3 +45,15 @@ func testUntypedRuneConst() bool {
 		string(slashRune) == "/" && string('é') == "\xc3\xa9" &&
 		string(0xD800+0*slashRune) == "\xef\xbf\xbd" && string(-1+0*slashRune) == "\xef\xbf\xbd"
 }
+
+const negUnderflowConst = -1e-400
+
+// a constant is never a negative zero: one that rounds to zero converts to +0
+func testNegUnderflowConstIsPosZero() bool {
+	const local = -1e-50
+	x := negUnderflowConst
+	var y float32 = negUnderflowConst
+	var z float32 = local
+	w := -1e-400
+	return 1/x > 0 && 1/y > 0 && 1/z > 0 && 1/w > 0
+}
