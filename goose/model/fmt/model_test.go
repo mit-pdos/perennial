@@ -8,6 +8,7 @@ package fmt_test
 import (
 	"errors"
 	"fmt"
+	"io"
 	"reflect"
 )
 
@@ -246,6 +247,97 @@ func formatArg(format string, i int, x any) (string, int, bool) {
 	return formatInt(neg, mag, width), next, true
 }
 
+// hexNibble: the hexadecimal digit of d (below 16), lowercase or uppercase.
+func hexNibble(d byte, upper bool) byte {
+	if d < 10 {
+		return '0' + d
+	}
+	if upper {
+		return 'A' + (d - 10)
+	}
+	return 'a' + (d - 10)
+}
+
+// quoteBytes: strconv.Quote(string(b)), as fmtQ prints %q of b without flags, width or
+// precision, when every byte of b is ASCII (below 0x80): there strconv's escaping depends on no
+// table (IsPrint is true exactly from 0x20 to 0x7E). ok is false when a byte is not ASCII, where
+// strconv decodes UTF-8 and consults its printable-rune tables.
+func quoteBytes(b []byte) (string, bool) {
+	out := "\""
+	for _, c := range b {
+		if c >= 0x80 {
+			return "", false
+		}
+		if c == '"' || c == '\\' {
+			out += string([]byte{'\\', c})
+		} else if 0x20 <= c && c <= 0x7e {
+			out += string([]byte{c})
+		} else if c == '\a' {
+			out += `\a`
+		} else if c == '\b' {
+			out += `\b`
+		} else if c == '\f' {
+			out += `\f`
+		} else if c == '\n' {
+			out += `\n`
+		} else if c == '\r' {
+			out += `\r`
+		} else if c == '\t' {
+			out += `\t`
+		} else if c == '\v' {
+			out += `\v`
+		} else {
+			out += string([]byte{'\\', 'x', hexNibble(c/16, false), hexNibble(c%16, false)})
+		}
+	}
+	return out + "\"", true
+}
+
+// formatBytes: at format[i], a '%': the output of the directive for the argument x, if it is of
+// type []byte, and the index after it, as Go's fmtBytes prints it, if the directive is %s, %v,
+// %d, %x, %X or %q, without flags, width or precision (%q only of ASCII bytes, quoteBytes). It
+// reads every byte of x then, as Go does, and nothing otherwise.
+func formatBytes(format string, i int, x any) (string, int, bool) {
+	if i+1 >= len(format) {
+		return "", 0, false
+	}
+	verb := format[i+1]
+	if verb != 's' && verb != 'v' && verb != 'd' && verb != 'x' && verb != 'X' && verb != 'q' {
+		return "", 0, false
+	}
+	b, ok := x.([]byte)
+	if !ok {
+		return "", 0, false
+	}
+	if verb == 's' {
+		return string(b), i + 2, true
+	}
+	if verb == 'v' || verb == 'd' {
+		out := "["
+		for k, c := range b {
+			if k > 0 {
+				out += " "
+			}
+			out += formatInt(false, uint64(c), 0)
+		}
+		return out + "]", i + 2, true
+	}
+	if verb == 'x' || verb == 'X' {
+		var out string
+		for _, c := range b {
+			out += string([]byte{hexNibble(c/16, verb == 'X'), hexNibble(c%16, verb == 'X')})
+		}
+		return out, i + 2, true
+	}
+	if verb == 'q' {
+		s, ok := quoteBytes(b)
+		if !ok {
+			return "", 0, false
+		}
+		return s, i + 2, true
+	}
+	return "", 0, false
+}
 
 // The new parts of the model of fmt (Perennial/TrustedCode/fmt.lean). In the scratch package these
 // sit next to the old helpers (oldmodel.go), with stubs for arbitrary, arbitraryString,
@@ -397,6 +489,10 @@ func visitArg(x any, verb byte, sharpV bool, wrapErrs bool) {
 	if isBasic(x) {
 		return
 	}
+	if b, ok := x.([]byte); ok {
+		_ = string(b) // printArg's fmtBytes: reads b, calls no method, under every verb
+		return
+	}
 	if verb == 'w' {
 		if _, ok := x.(error); !ok || !wrapErrs {
 			visitKind(x)
@@ -484,6 +580,15 @@ func doPrintf(format string, a []any, wrapErrs bool) (string, []int, bool) {
 			i += 2
 			continue
 		}
+		if argNum < len(a) {
+			s, next, ok := formatBytes(format, i, a[argNum])
+			if ok {
+				out += s
+				argNum++
+				i = next
+				continue
+			}
+		}
 		if argNum < len(a) && inert(a[argNum]) {
 			s, next, ok := formatArg(format, i, a[argNum])
 			if ok {
@@ -515,6 +620,11 @@ func modelPrintf(format string, a ...any) (int, error) {
 		return n, nil
 	}
 	return n, errors.New(arbitraryString())
+}
+
+func modelFprintf(w io.Writer, format string, a ...any) (int, error) {
+	s, _, _ := doPrintf(format, a, false)
+	return w.Write([]byte(s))
 }
 
 func modelErrorf(format string, a ...any) error {

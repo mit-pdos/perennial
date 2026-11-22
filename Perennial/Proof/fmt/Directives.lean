@@ -164,6 +164,17 @@ theorem fmtDirectivesAux_simple {c : w8} (f : GoString)
       (⟨c, false⟩ :: ·) <$> fmtDirectivesAux none f := by
   rcases hc with rfl | rfl | rfl | rfl <;> simp [fmtDirectivesAux]
 
+/-- The verbs under which the model formats a `[]byte` (`formatBytes`): `s v d x X q`. -/
+def byteVerbs : List w8 := [W8 115, W8 118, W8 100, W8 120, W8 88, W8 113]
+
+/-- A directive `%c` without flags, width or precision, `c` one of `byteVerbs`: one directive of
+verb `c`, then the rest. -/
+theorem fmtDirectivesAux_byteVerb {c : w8} (f : GoString) (hc : c ∈ byteVerbs) :
+    fmtDirectivesAux none (W8 37 :: c :: f) =
+      (⟨c, false⟩ :: ·) <$> fmtDirectivesAux none f := by
+  simp only [byteVerbs, List.mem_cons, List.not_mem_nil, or_false] at hc
+  rcases hc with rfl | rfl | rfl | rfl | rfl | rfl <;> simp [fmtDirectivesAux]
+
 /-- The digits after a `%0`, then `d` (`parseIntVerb`'s `%0Nd`): one directive of verb `d`, or
 `none` (a run of more than `maxNumDigits` digits). In flags phase or in a width phase. -/
 theorem fmtDirectivesAux_digits_d (ds f : GoString) (hds : ∀ c ∈ ds, 48 ≤ c.toNat ∧ c.toNat ≤ 57)

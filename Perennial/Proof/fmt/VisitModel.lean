@@ -505,6 +505,41 @@ def modeVerbs (wrapErrs : Bool) : List w8 := if wrapErrs then errorfVerbs else m
 theorem modeVerbs_false : modeVerbs false = methodVerbs := rfl
 theorem modeVerbs_true : modeVerbs true = errorfVerbs := rfl
 
+/-- A slice type has no methods (`go.NoMethods.slice`). -/
+theorem methodSet_SliceType (t : go.GoType) (m : GoString) :
+    methodSet (go.SliceType t) !! m = none := by
+  have h := (go.InterfaceSemantics.method_set_no_methods (go.SliceType t)).method_set_is m
+  simpa [go.methodSetLookup] using h
+
+/-- A slice type is its own underlying type. -/
+theorem underlying_SliceType (t : go.GoType) : underlying (go.SliceType t) = go.SliceType t :=
+  (go.underlying_not_named (t := go.SliceType t)).is_underlying
+
+/-- A type of string or integer kind is no slice type. -/
+theorem ne_SliceType_of_kind {T : go.GoType} (t : go.GoType)
+    (h : underlying T = go.string ∨ IsIntType (underlying T)) : T ≠ go.SliceType t := by
+  rintro rfl
+  rw [underlying_SliceType] at h
+  simp [IsIntType, go.string, go.int, go.int64, go.int32, go.int16, go.int8, go.uint, go.uint64,
+    go.uint32, go.uint16, go.uint8] at h
+
+/-- A type with a method is no slice type. -/
+theorem ne_SliceType_of_method {T : go.GoType} (t : go.GoType) {m : GoString} {s : go.signature}
+    (h : methodSet T !! m = some s) : T ≠ go.SliceType t := by
+  rintro rfl
+  rw [methodSet_SliceType] at h
+  cases h
+
+/-- A well-formed argument's type is no slice type: a predeclared basic type, or one of integer or
+string kind. -/
+theorem ne_SliceType_of_argWf {ii : GoInterfaceOk} (t : go.GoType) (h : ArgWf ii) :
+    ii.ty ≠ go.SliceType t := by
+  intro he
+  rcases h.2.2 with hb | (hi | ⟨hi, -⟩) | ⟨hs | ⟨-, hu, -⟩, -⟩ <;>
+    simp_all [IsBasicType, IsIntType, underlying_SliceType, go.string, go.bool, go.int, go.int64,
+      go.int32, go.int16, go.int8, go.uint, go.uint64, go.uint32, go.uint16, go.uint8, go.uintptr,
+      go.float32, go.float64]
+
 set_option maxHeartbeats 4000000 in
 /-- The helper `fmt.visitArg`: for an argument `argOkAt` its directive (`verb`, `sharpV`), calls
 what Go's `printArg` calls of it (its `Error()` or `String()`, or nothing), and returns. -/
@@ -552,15 +587,19 @@ theorem wp_visitArg (x : GoInterface) (verb : w8) (sharpV wrapErrs : Bool)
         · exact absurd (Or.inl hs) hnb
         · exact ⟨hm, .inl hu⟩
       obtain ⟨⟨hF, hG, hE, hS⟩, hk⟩ := hnf
+      have hnB := ne_SliceType_of_kind go.byte hk
       repeat' (first | wp_if_destruct | wp_auto | simp only [tsc_method1, tsc_error, hF, hG, hE, hS,
-        reduceCtorEq, decide_false] | wp_apply (wp_visitKind _ ⟨_, rfl, hk⟩))
-      all_goals (iapply HΦ; itrivial)
+        hnB, ↓reduceIte, reduceCtorEq, decide_false] | wp_apply (wp_visitKind _ ⟨_, rfl, hk⟩))
+      all_goals first
+        | (iapply HΦ; itrivial)
+        | (exfalso; simp_all; done)
     · -- an integer kind with `Error()`/`String()` under a verb that calls neither
       obtain ⟨hnm, hk, hF, -⟩ := Hni
+      have hnB := ne_SliceType_of_kind go.byte (.inr hk)
       cases wrapErrs <;> simp only [modeVerbs, Bool.false_eq_true, ↓reduceIte] at hnm
       all_goals
         repeat' (first | wp_if_destruct | wp_auto | simp only [tsc_method1, tsc_error, hF,
-          reduceCtorEq, decide_false] | wp_apply (wp_visitKind _ ⟨_, rfl, .inr hk⟩))
+          hnB, ↓reduceIte, reduceCtorEq, decide_false] | wp_apply (wp_visitKind _ ⟨_, rfl, .inr hk⟩))
       all_goals first
         | (iapply HΦ; itrivial)
         | (exfalso; simp_all [methodVerbs, errorfVerbs]; done)
@@ -577,15 +616,19 @@ theorem wp_visitArg (x : GoInterface) (verb : w8) (sharpV wrapErrs : Bool)
           · exact absurd (Or.inl hs) hnb
           · exact ⟨hm, .inl hu⟩
         obtain ⟨⟨hF, hG, hE, hS⟩, hk⟩ := hnf
+        have hnB := ne_SliceType_of_kind go.byte hk
         repeat' (first | wp_if_destruct | wp_auto | simp only [tsc_method1, tsc_error, hF, hG, hE, hS,
-          reduceCtorEq, decide_false] | wp_apply (wp_visitKind _ ⟨_, rfl, hk⟩))
-        all_goals (iapply HΦ; itrivial)
+          hnB, ↓reduceIte, reduceCtorEq, decide_false] | wp_apply (wp_visitKind _ ⟨_, rfl, hk⟩))
+        all_goals first
+          | (iapply HΦ; itrivial)
+          | (exfalso; simp_all; done)
       · obtain ⟨hF, hE⟩ := hE
+        have hnB := ne_SliceType_of_method go.byte hE
         iunfold stringMethodSpec at HE
         cases wrapErrs <;> simp only [modeVerbs, Bool.false_eq_true, ↓reduceIte] at hmv
         all_goals
           repeat' (first | wp_if_destruct | wp_auto | simp only [tsc_method1, tsc_error, hF, hE,
-            noArgStringSig, reduceCtorEq, decide_false, decide_true] |
+            hnB, ↓reduceIte, noArgStringSig, reduceCtorEq, decide_false, decide_true] |
             (wp_bind (App (Val #(methods ii.ty go!"Error" ii.v)) (Val #()))
              iapply HE
              inext
@@ -594,11 +637,12 @@ theorem wp_visitArg (x : GoInterface) (verb : w8) (sharpV wrapErrs : Bool)
           | (iapply HΦ; itrivial)
           | (exfalso; simp_all [methodVerbs, errorfVerbs]; done)
       · obtain ⟨hF, hE, hS, hR⟩ := hS
+        have hnB := ne_SliceType_of_method go.byte hS
         iunfold stringMethodSpec at HS
         cases wrapErrs <;> simp only [modeVerbs, Bool.false_eq_true, ↓reduceIte] at hmv
         all_goals
           repeat' (first | wp_if_destruct | wp_auto | simp only [tsc_method1, tsc_error, hF, hE, hS,
-            hR, noArgStringSig, reduceCtorEq, decide_false, decide_true] |
+            hR, hnB, ↓reduceIte, noArgStringSig, reduceCtorEq, decide_false, decide_true] |
             (wp_bind (App (Val #(methods ii.ty go!"String" ii.v)) (Val #()))
              iapply HS
              inext

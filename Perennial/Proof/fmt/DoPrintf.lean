@@ -162,6 +162,73 @@ theorem argWf_of_argOkAt_inert (mv : List w8) (d : Directive) (ii : GoInterfaceO
   · exfalso; exact hT HT
   · exfalso; exact inertTy_not_ref hi Hp.2
 
+/-- An argument `argOkAt` a directive `%c` of a `byteVerbs` verb is no `[]byte`: the specs admit a
+`[]byte` only under `%T` and `%p`. -/
+theorem notBytes_of_argOkAt (mv : List w8) (c : w8) (hc : c ∈ byteVerbs) (ii : GoInterfaceOk) :
+    argOkAt (GF := GF) mv ⟨c, false⟩ (.ok ii) ⊢ ⌜ii.ty ≠ go.SliceType go.byte⌝ := by
+  unfold argOkAt
+  iintro (%Hwf | %Hni | ⟨%Hm, Hok⟩ | %HT | %Hp)
+  · ipureintro; exact ne_SliceType_of_argWf go.byte Hwf
+  · ipureintro; exact ne_SliceType_of_kind go.byte (.inr Hni.2.1)
+  · iunfold argOk at Hok
+    icases Hok with (%Hwf | ⟨-, %hE⟩ | ⟨-, %hS⟩)
+    · ipureintro; exact ne_SliceType_of_argWf go.byte Hwf
+    · ipureintro; exact ne_SliceType_of_method go.byte hE.2
+    · ipureintro; exact ne_SliceType_of_method go.byte hS.2.2.1
+  · exfalso
+    simp only at HT
+    subst HT
+    simp [byteVerbs] at hc
+  · exfalso
+    obtain ⟨HP, -⟩ := Hp
+    simp only at HP
+    subst HP
+    simp [byteVerbs] at hc
+
+set_option maxHeartbeats 1000000 in
+/-- The helper `fmt.formatBytes`, at an argument that is no `[]byte` when the byte after the `%` is a
+verb of `byteVerbs`: it formats nothing (`ok` false), reading no memory. -/
+theorem wp_formatBytes (format : GoString) (i : w64) (x : GoInterface)
+    (Hi : 0 ≤ sint.Z i ∧ sint.Z i < (format.length : Int))
+    (Hx : ∀ c, (format.drop (sint.nat i + 1)).head? = some c → c ∈ byteVerbs →
+      ∀ ii, x = interface.ok ii → ii.ty ≠ go.SliceType go.byte) :
+    {{ (True : IProp GF) }}
+      (App (App (App (Val formatBytes) (Val #format)) (Val #i)) (Val #x))
+    {{ (s : GoString) (next : w64), RET (PairV (PairV #s #next) #false); True }} := by
+  iintro %Φ - HΦ
+  unfold formatBytes
+  wp_auto
+  wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %Hflen
+  wp_if_destruct
+  · iapply HΦ; itrivial
+  have Hlt : sint.nat i + 1 < format.length := by word
+  obtain ⟨c, Hc, Hdrop⟩ : ∃ c, format[sint.nat i + 1]? = some c ∧
+      format.drop (sint.nat i + 1) = c :: format.drop (sint.nat i + 2) :=
+    ⟨_, List.getElem?_eq_getElem Hlt, List.drop_eq_getElem_cons Hlt⟩
+  have Hidx : format[sint.nat (i + W64 1)]? = some c := by
+    rw [show sint.nat (i + W64 1) = sint.nat i + 1 by word]; exact Hc
+  rw [if_pos (show 0 ≤ sint.Z (i + W64 1) by word), Hidx]
+  wp_auto
+  have Hxc := Hx c (by rw [Hdrop]; rfl)
+  by_cases hc : c ∈ byteVerbs
+  · have hB := Hxc hc
+    cases x with
+    | nil =>
+      repeat' (first | wp_if_destruct | wp_auto)
+      all_goals first
+        | (iapply HΦ; itrivial)
+        | (exfalso; simp_all [byteVerbs]; done)
+    | ok ii =>
+      have hnB := hB ii rfl
+      repeat' (first | wp_if_destruct | wp_auto | simp only [hnB, ↓reduceIte, decide_false])
+      all_goals first
+        | (iapply HΦ; itrivial)
+        | (exfalso; simp_all [byteVerbs]; done)
+  · repeat' (first | wp_if_destruct | wp_auto)
+    all_goals first
+      | (iapply HΦ; itrivial)
+      | (exfalso; simp_all [byteVerbs]; done)
+
 /-- The helper `fmt.doPrintf`: for arguments `argsOk` the format under the verbs of its mode,
 the formatted string (`SprintfOut`), after the calls Go makes of the arguments' methods; the
 arguments' slice comes back; and the arguments of the `%w` directives, unless the model gave up
@@ -261,6 +328,46 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
             obtain ⟨x, Hx, Hdropk⟩ : ∃ x, xs[sint.nat k]? = some x ∧
                 xs.drop (sint.nat k) = x :: xs.drop (sint.nat k + 1) :=
               ⟨_, List.getElem?_eq_getElem Hklt, List.drop_eq_getElem_cons Hklt⟩
+            simp only [show 0 ≤ sint.Z k ∧ sint.Z k < sint.Z sl.len from ⟨Hk.1, by word⟩,
+              _root_.and_self, ↓reduceIte]
+            wp_apply wp_load_slice_index sl (sint.Z k) xs dq x Hk.1 $$ [Hsl] with Hsl
+            · iframe; ipureintro; exact Hx
+            -- `formatBytes`: an argument the specs admit is no `[]byte` under its verbs
+            ihave %HxB : iprop(⌜∀ c, (format.drop (sint.nat n + 1)).head? = some c → c ∈ byteVerbs →
+                ∀ ii, x = interface.ok ii → ii.ty ≠ go.SliceType go.byte⌝) $$ [Hargs]
+            · icases Hargs with (%Hwf | ⟨%ds, %Hds, Hds⟩)
+              · ipureintro; intro _ _ _ ii h
+                exact ne_SliceType_of_argWf go.byte (Hwf ii (h ▸ List.mem_of_getElem? Hx))
+              · cases x with
+                | nil => ipureintro; intro _ _ _ ii h; cases h
+                | ok ii =>
+                  by_cases hcond : ∃ c', (format.drop (sint.nat n + 1)).head? = some c' ∧
+                      c' ∈ byteVerbs
+                  · obtain ⟨c', hc1, hc2⟩ := hcond
+                    have hcons : format.drop (sint.nat n + 1) =
+                        c' :: (format.drop (sint.nat n + 1)).tail := by
+                      cases h : format.drop (sint.nat n + 1) with
+                      | nil => rw [h] at hc1; cases hc1
+                      | cons a r => rw [h] at hc1; cases hc1; rfl
+                    have hL := fmtDirectivesAux_byteVerb (format.drop (sint.nat n + 1)).tail hc2
+                    rw [← hcons, ← Hdrop, Hds] at hL
+                    cases hL' : fmtDirectivesAux none (format.drop (sint.nat n + 1)).tail with
+                    | none => rw [hL'] at hL; cases hL
+                    | some L' =>
+                      rw [hL'] at hL
+                      simp only [Functor.map, Option.map_some, Option.some.injEq] at hL
+                      subst hL
+                      rw [Hdropk]
+                      simp only [argsOkAt]
+                      icases Hds with ⟨Hd, -⟩
+                      ihave %hn := notBytes_of_argOkAt _ c' hc2 ii $$ Hd
+                      ipureintro; intro _ _ _ ii' h; cases h; exact hn
+                  · ipureintro; intro c'' h1 h2; exact absurd ⟨c'', h1, h2⟩ hcond
+            wp_apply (wp_formatBytes format n x ⟨Hn.1, by word⟩ HxB) as %- %- -
+            try wp_auto
+            wp_if_destruct
+            rotate_left
+            · exfalso; word
             simp only [show 0 ≤ sint.Z k ∧ sint.Z k < sint.Z sl.len from ⟨Hk.1, by word⟩,
               _root_.and_self, ↓reduceIte]
             wp_apply wp_load_slice_index sl (sint.Z k) xs dq x Hk.1 $$ [Hsl] with Hsl
@@ -371,6 +478,9 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
                 · rw [List.length_append, hlen]; simp only [List.length_singleton]; word
           · -- no argument left
             try wp_auto
+            wp_if_destruct
+            · exfalso; word
+            try wp_auto
             wp_apply (wp_visitRest format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
               $$ [$Hsl $Hargs] as %wsl %unk ⟨Hsl, %ws, Hws, %Hvr⟩
             wp_apply wp_arbitraryString as %junk -
@@ -395,8 +505,19 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
             _root_.and_self, ↓reduceIte]
           wp_apply wp_load_slice_index sl (sint.Z k) xs dq x Hk.1 $$ [Hsl] with Hsl
           · iframe; ipureintro; exact Hx
-          wp_apply wp_inert as %bi %Hbi
           have hdn : format.drop (sint.nat n + 1) = [] := List.drop_eq_nil_of_le (by word)
+          -- `formatBytes`: nothing after the `%`
+          wp_apply (wp_formatBytes format n x ⟨Hn.1, by word⟩ (by rw [hdn]; intro _ h; cases h))
+            as %- %- -
+          try wp_auto
+          wp_if_destruct
+          rotate_left
+          · exfalso; word
+          simp only [show 0 ≤ sint.Z k ∧ sint.Z k < sint.Z sl.len from ⟨Hk.1, by word⟩,
+            _root_.and_self, ↓reduceIte]
+          wp_apply wp_load_slice_index sl (sint.Z k) xs dq x Hk.1 $$ [Hsl] with Hsl
+          · iframe; ipureintro; exact Hx
+          wp_apply wp_inert as %bi %Hbi
           cases bi
           · try wp_auto
             wp_apply (wp_visitRest format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
@@ -438,6 +559,10 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
               obtain ⟨_, _, h, -⟩ := Hstep [] (by rw [hdn]; rfl)
               cases h
         · -- no argument left
+          try wp_auto
+          wp_if_destruct
+          · exfalso; word
+          try wp_auto
           wp_apply (wp_visitRest format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
             $$ [$Hsl $Hargs] as %wsl %unk ⟨Hsl, %ws, Hws, %Hvr⟩
           wp_apply wp_arbitraryString as %junk -
