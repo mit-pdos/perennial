@@ -640,6 +640,79 @@ theorem SprintfOutB.toSprintfOut [GooseExts] [GoGlobalContext] [GoSemanticsFunct
   | bytesQ _ _ _ _ _ _ hB => cases hB
   | other f args junk hs _ => exact .other f args junk hs
 
+section bytes_inv
+variable [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] {B : GoInterface → Option GoString}
+
+theorem SprintfOutB.done_inv {out : GoString} (h : SprintfOutB B [] [] out) : out = [] := by
+  cases h
+  rfl
+
+/-- A byte other than `%` is copied. -/
+theorem SprintfOutB.byte_inv {c : w8} {f : GoString} {args : List GoInterface} {out : GoString}
+    (hc : c ≠ W8 37) (h : SprintfOutB B (c :: f) args out) :
+    ∃ out', out = c :: out' ∧ SprintfOutB B f args out' := by
+  generalize hF : c :: f = F at h
+  cases h
+  case byte c' f' _ out' _ h' =>
+    simp only [List.cons.injEq] at hF
+    obtain ⟨rfl, rfl⟩ := hF
+    exact ⟨out', rfl, h'⟩
+  all_goals first
+    | (cases hF; done)
+    | (simp only [List.cons.injEq] at hF; exact absurd hF.1 hc)
+
+/-- **`%q` of a lent `[]byte` of ASCII bytes gives `quoteASCII bs`** (`strconv.Quote(string(bs))`),
+and consumes the argument: the caller's way to read off the output of, e.g., `Fprintf(w, "%q",
+b)`. -/
+theorem SprintfOutB.bytesQ_inv {ii : GoInterfaceOk} {bs f : GoString} {args : List GoInterface}
+    {out : GoString} (hty : ii.ty = go.SliceType go.byte) (hB : B (interface.ok ii) = some bs)
+    (ha : ∀ b ∈ bs, uint.nat b < 128)
+    (h : SprintfOutB B (W8 37 :: W8 113 :: f) (interface.ok ii :: args) out) :
+    ∃ out', out = quoteASCII bs ++ out' ∧ SprintfOutB B f args out' := by
+  generalize hF : W8 37 :: W8 113 :: f = F at h
+  generalize hA : interface.ok ii :: args = A at h
+  cases h
+  case bytesQ ii' bs' f' args' out' _ hB' _ h' =>
+    simp only [List.cons.injEq] at hF hA
+    obtain ⟨-, -, rfl⟩ := hF
+    obtain ⟨hA1, rfl⟩ := hA
+    cases hA1
+    rw [hB] at hB'
+    cases hB'
+    exact ⟨out', rfl, h'⟩
+  case other f' args' junk _ hBS =>
+    exfalso
+    simp only [List.cons.injEq] at hF
+    obtain ⟨-, rfl⟩ := hF
+    subst hA
+    exact hBS ⟨ii, bs, rfl, hty, hB, .inr (.inr (.inr (.inr (.inr ⟨rfl, ha⟩))))⟩
+  case int f0 rest w ii0 z args0 out0 hp _ _ =>
+    exfalso
+    simp only [List.cons.injEq] at hF
+    obtain ⟨-, rfl⟩ := hF
+    revert hp
+    simp [parseIntVerb]
+  case bytesV c0 ii0 bs0 f0 args0 out0 hc _ _ _ =>
+    exfalso
+    simp only [List.cons.injEq] at hF
+    rcases hc with rfl | rfl <;> exact absurd hF.2.1 (by decide)
+  case bytesX upper ii0 bs0 f0 args0 out0 _ _ _ =>
+    exfalso
+    simp only [List.cons.injEq] at hF
+    cases upper <;> exact absurd hF.2.1 (by decide)
+  all_goals exfalso
+  all_goals simp_all (config := { decide := true }) [parseIntVerb]
+
+/-- `Sprintf("%q", b)` of a lent `[]byte` `b` of ASCII bytes is `quoteASCII bs`. -/
+theorem SprintfOutB.q_ascii {ii : GoInterfaceOk} {bs : GoString} {out : GoString}
+    (hty : ii.ty = go.SliceType go.byte) (hB : B (interface.ok ii) = some bs)
+    (ha : ∀ b ∈ bs, uint.nat b < 128)
+    (h : SprintfOutB B [W8 37, W8 113] [interface.ok ii] out) : out = quoteASCII bs := by
+  obtain ⟨out', rfl, h'⟩ := SprintfOutB.bytesQ_inv hty hB ha h
+  rw [SprintfOutB.done_inv h', List.append_nil]
+
+end bytes_inv
+
 /-- The arguments' dynamic types tell the truth about `string`s: an argument whose dynamic type
 is `string` holds a string. (Go's typing guarantees it; a `GoInterface` does not.) -/
 def StringArgsWf [GooseExts] [GoGlobalContext] (args : List GoInterface) : Prop :=

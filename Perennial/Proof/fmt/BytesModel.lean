@@ -670,6 +670,32 @@ theorem wp_fillArbitraryBytes :
     ipureintro; rfl
 
 set_option maxHeartbeats 2000000 in
+/-- The model's `printerAlloc n`: a slice of `n` zeros with its capacity (`nil` for some `n = 0`). -/
+theorem wp_printerAlloc (n : w64) (hn : 0 ≤ sint.Z n) :
+    {{ (True : IProp GF) }}
+      (App (Val printerAlloc) (Val #n))
+    {{ (b : GoSlice), RET #b; b ↦* List.replicate (sint.nat n) (zero_val w8) ∗
+        ownSliceCap w8 b (DFrac.own 1) }} := by
+  iintro %Φ - HΦ
+  unfold printerAlloc
+  wp_pures
+  wp_if_destruct
+  · wp_apply wp_ArbitraryInt as %x -
+    wp_pures
+    wp_if_destruct
+    · iapply HΦ
+      rw [show sint.nat (W64 0) = 0 from rfl, List.replicate_zero]
+      isplitl []
+      · iapply ownSlice_nil
+      · iapply ownSliceCap_nil
+    · wp_apply wp_new_cap as %c %Hc
+      wp_apply (wp_slice_make3 (V := w8) _ c ⟨by word, Hc⟩) as %b ⟨Hb, Hcap, -⟩
+      iapply HΦ; iframe
+  · wp_apply wp_new_cap as %c %Hc
+    wp_apply (wp_slice_make3 (V := w8) n c ⟨hn, Hc⟩) as %b ⟨Hb, Hcap, -⟩
+    iapply HΦ; iframe
+
+set_option maxHeartbeats 2000000 in
 /-- The model's `printerBuf s`: a new slice holding `s`, with its spare capacity (some bytes). -/
 theorem wp_printerBuf (s : GoString) :
     {{ (True : IProp GF) }}
@@ -681,8 +707,7 @@ theorem wp_printerBuf (s : GoString) :
   wp_apply wp_string_to_bytes s as %src ⟨Hsrc, -⟩
   ihave %Hsl := ownSlice_len $$ Hsrc
   wp_pures
-  wp_apply wp_new_cap as %c %Hc
-  wp_apply (wp_slice_make3 (V := w8) src.len c ⟨Hsl.2, Hc⟩) as %b ⟨Hb, Hcap, %Hbc⟩
+  wp_apply (wp_printerAlloc src.len Hsl.2) as %b ⟨Hb, Hcap⟩
   ihave %Hblen := ownSlice_len $$ Hb
   ihave %Hbwf := ownSlice_wf b _ _ $$ Hb
   icases ownSliceCap_split (V := w8) b.cap b $$ [$Hcap] with ⟨%vs0, Hspare, -⟩

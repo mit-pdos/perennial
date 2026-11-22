@@ -3487,17 +3487,27 @@ noncomputable def fillArbitraryBytes : val :=
         ("s", #(W64 1), FuncResolve go.len [go.SliceType go.byte] #() "s"))
     else #()
 
+/-- A new `[]byte` of length `n` and arbitrary capacity (`slice._new_cap`), or, when `n` is 0,
+possibly `nil` (a helper of `printerBuf`, not a function of package `fmt`): a fresh printer's `buf`
+is `nil`, and `pp.free` drops a buffer above 64 KiB (`p.buf = nil`), so Go's `Fprintf` can hand
+`Write` a `nil` slice when the output is empty. -/
+noncomputable def printerAlloc : val :=
+  λ: "n",
+    if: ("n" =⟨go.int⟩ #(W64 0)) && (ArbitraryInt =⟨go.uint64⟩ #(W64 0)) then #slice.nil
+    else FuncResolve go.make3 [go.SliceType go.byte] #() "n" (slice._new_cap "n")
+
 /-- The model's stand-in for the printer's buffer `p.buf` that Go's `Fprintf` hands `Write` (a
 primitive of the model, not a function of package `fmt`; in the Go the docstrings quote, a call
 `printerBuf(s)`): the bytes of `s` in a new slice of arbitrary capacity (`slice._new_cap`, as
-`append`'s new capacity) whose spare capacity holds arbitrary bytes. Go's buffer comes from a
+`append`'s new capacity) whose spare capacity holds arbitrary bytes, or, for an empty `s`, possibly
+`nil` (`printerAlloc`). Go's buffer comes from a
 `sync.Pool` and holds, past its length, what earlier prints wrote there
 (`goose/model/fmt/fprintf_alias_test.go`); the model's arbitrary bytes include that. -/
 noncomputable def printerBuf : val :=
   λ: "s",
     let: "src" := Convert go.string (go.SliceType go.byte) "s" in
     let: "n" := FuncResolve go.len [go.SliceType go.byte] #() "src" in
-    let: "b" := FuncResolve go.make3 [go.SliceType go.byte] #() "n" (slice._new_cap "n") in
+    let: "b" := printerAlloc "n" in
     fillArbitraryBytes (Slice (go.SliceType go.byte)
       ("b", "n", FuncResolve go.cap [go.SliceType go.byte] #() "b")) ;;
     FuncResolve go.copy [go.SliceType go.byte] #() "b" "src" ;;
@@ -3518,8 +3528,9 @@ noncomputable def retireLoop : val :=
 returns (a primitive of the model, not a function of package `fmt`; in the Go the docstrings quote,
 a call `retire(b)`): every element of `b` up to its capacity is left with a write begun and never
 finished (`retireLoop`), so that any later access through a slice that `Write` kept is stuck. In Go
-the buffer is reused by later prints, which overwrite those bytes
-(`goose/model/fmt/fprintf_alias_test.go`). -/
+the buffer goes back to the pool and later prints overwrite those bytes, unless it is above 64 KiB,
+which `pp.free` drops (then a kept slice stays intact in Go): the model is less defined than Go in
+both cases (`goose/model/fmt/fprintf_alias_test.go`). -/
 noncomputable def retire : val :=
   λ: "b",
     retireLoop "b" ;;
@@ -3542,9 +3553,10 @@ func Fprintf(w io.Writer, format string, a ...any) (n int, err error) {
 ```
 
 hands `Write` its printer's buffer `p.buf`, which comes from a `sync.Pool` and goes back to it: its
-spare capacity holds what earlier prints wrote there, and a later print overwrites its bytes. The model
-hands `Write` the formatted bytes in a slice whose spare capacity holds arbitrary bytes (`printerBuf`),
-which includes gc's contents, and after `Write` returns leaves every element of that slice, up to its
+spare capacity holds what earlier prints wrote there, and a later print overwrites its bytes (a buffer
+above 64 KiB is dropped instead, `p.buf = nil`, and never reused, so that the next printer's may be
+`nil`). The model hands `Write` the formatted bytes in a slice whose spare capacity holds arbitrary
+bytes, possibly `nil` when they are empty (`printerBuf`), which includes gc's slices, and after `Write` returns leaves every element of that slice, up to its
 capacity, with a write begun and never finished (`retire`), so that a writer that keeps the slice
 (which `io.Writer` forbids: "Implementations must not retain p") is stuck when it later uses it: less
 defined than Go there, never different (`goose/model/fmt/fprintf_alias_test.go`). Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of

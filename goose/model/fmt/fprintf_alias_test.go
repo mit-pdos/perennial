@@ -3,7 +3,8 @@ package fmt_test
 // The evidence for the model of fmt.Fprintf (Perennial/TrustedCode/fmt.lean, Fprintf.impl): gc
 // hands Write its printer's pooled buffer, not a copy of the formatted bytes. Its spare capacity
 // holds what earlier prints left there, and a writer that keeps the slice past the call sees it
-// overwritten by a later print. The model hands Write a slice whose spare capacity holds arbitrary
+// overwritten by a later print (unless the buffer is above 64 KiB, which pp.free drops, so that the
+// next printer's buffer is nil and Write may get a nil slice). The model hands Write a slice whose spare capacity holds arbitrary
 // bytes (printerBuf), so gc's contents are among the model's outcomes, and after Write returns it
 // leaves every cell of that slice, up to its capacity, with a write begun and never finished
 // (retire), so that any later access through a kept slice is stuck: less defined than Go there,
@@ -11,6 +12,7 @@ package fmt_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 )
 
@@ -60,4 +62,25 @@ func TestFprintfKeptSliceOverwritten(t *testing.T) {
 		}
 	}
 	t.Fatal("the kept slice was never overwritten; gc no longer reuses the printer's buffer")
+}
+
+type nilcheck struct{ isNil bool }
+
+func (k *nilcheck) Write(p []byte) (int, error) {
+	k.isNil = p == nil
+	return len(p), nil
+}
+
+// TestFprintfNilBuffer: after a print above 64 KiB (whose buffer pp.free drops), Fprintf with empty
+// output hands Write a nil slice, which the model's printerBuf allows for an empty output.
+func TestFprintfNilBuffer(t *testing.T) {
+	for try := 0; try < 10; try++ {
+		fmt.Fprintf(nop{}, "%s", strings.Repeat("x", 70000))
+		k := &nilcheck{}
+		fmt.Fprintf(k, "")
+		if k.isNil {
+			return
+		}
+	}
+	t.Fatal("Write never got a nil slice; gc no longer drops large printer buffers")
 }

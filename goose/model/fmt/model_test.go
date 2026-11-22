@@ -30,7 +30,8 @@ func notModelled() { panic(notModelledPanic{}) }
 
 // printerBuf(s) stands for the printer's buffer Fprintf hands Write (the model's primitive
 // printerBuf): the bytes of s in a slice of arbitrary capacity whose spare capacity holds arbitrary
-// bytes (gc's pooled buffer holds earlier output there, fprintf_alias_test.go).
+// bytes (gc's pooled buffer holds earlier output there), or, for an empty s, possibly nil (gc's
+// fresh printer's buffer, or one after a buffer above 64 KiB was dropped): fprintf_alias_test.go.
 func printerBuf(s string) []byte { return []byte(s) }
 
 // retire(b) stands for the model's primitive retire: every cell of b up to its capacity is left
