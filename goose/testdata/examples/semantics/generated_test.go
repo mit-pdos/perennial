@@ -351,6 +351,78 @@ func (suite *GoTestSuite) TestDowncastInterface() {
 	suite.Equal(true, testDowncastInterface())
 }
 
+func (suite *GoTestSuite) TestLabeledContinue() {
+	suite.Equal(true, testLabeledContinue())
+}
+
+func (suite *GoTestSuite) TestLabeledBreak() {
+	suite.Equal(true, testLabeledBreak())
+}
+
+func (suite *GoTestSuite) TestBreakLoopFromSwitch() {
+	suite.Equal(true, testBreakLoopFromSwitch())
+}
+
+func (suite *GoTestSuite) TestContinueNestedSwitch() {
+	suite.Equal(true, testContinueNestedSwitch())
+}
+
+func (suite *GoTestSuite) TestLabeledSwitch() {
+	suite.Equal(true, testLabeledSwitch())
+}
+
+func (suite *GoTestSuite) TestLabeledSelect() {
+	suite.Equal(true, testLabeledSelect())
+}
+
+func (suite *GoTestSuite) TestLabeledTypeSwitch() {
+	suite.Equal(true, testLabeledTypeSwitch())
+}
+
+func (suite *GoTestSuite) TestRangeSliceLabeled() {
+	suite.Equal(true, testRangeSliceLabeled())
+}
+
+func (suite *GoTestSuite) TestRangeMapLabeled() {
+	suite.Equal(true, testRangeMapLabeled())
+}
+
+func (suite *GoTestSuite) TestRangeMapBreakLabeled() {
+	suite.Equal(true, testRangeMapBreakLabeled())
+}
+
+func (suite *GoTestSuite) TestRangeIntLabeled() {
+	suite.Equal(true, testRangeIntLabeled())
+}
+
+func (suite *GoTestSuite) TestRangeFuncLabeled() {
+	suite.Equal(true, testRangeFuncLabeled())
+}
+
+func (suite *GoTestSuite) TestBreakThroughRangeFunc() {
+	suite.Equal(true, testBreakThroughRangeFunc())
+}
+
+func (suite *GoTestSuite) TestReturnInLabeledLoop() {
+	suite.Equal(true, testReturnInLabeledLoop())
+}
+
+func (suite *GoTestSuite) TestClosureAcrossContinue() {
+	suite.Equal(true, testClosureAcrossContinue())
+}
+
+func (suite *GoTestSuite) TestSameLabelNested() {
+	suite.Equal(true, testSameLabelNested())
+}
+
+func (suite *GoTestSuite) TestCountPairs() {
+	suite.Equal(true, testCountPairs())
+}
+
+func (suite *GoTestSuite) TestMiniPrintf() {
+	suite.Equal(true, testMiniPrintf())
+}
+
 func (suite *GoTestSuite) TestsUseLocks() {
 	suite.Equal(true, testsUseLocks())
 }

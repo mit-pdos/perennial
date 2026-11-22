@@ -1,7 +1,7 @@
 /-
 Specs of the trusted models of `os` (`Perennial/TrustedCode/os.lean`) that `os`'s initializer
-runs: `runtime_args` (an arbitrary `[]string`), and the standard streams' initializers (`Stdin`,
-`Stdout`: nothing; `Stderr`: the variable holds some pointer). `os`'s initializer is proved by
+runs: `runtime_args` (an arbitrary `[]string`), and the standard streams' initializers (`Stdout`:
+nothing; `Stderr`: the variable holds some pointer; `Stdin` is skipped, not translated). `os`'s initializer is proved by
 its clients (it is names-only here but for its initializers).
 -/
 module
@@ -32,12 +32,6 @@ theorem wp_runtime_args_impl :
     {{ (s : GoSlice), RET #s; ∃ xs : List GoString,
         s ↦* xs ∗ ownSliceCap GoString s (DFrac.own 1) }} :=
   syscall.wp_arbitraryStrings
-
-/-- `Stdin`'s initializer (the model) does nothing. -/
-theorem wp_Stdin_init :
-    {{ (True : IProp GF) }} (App (Val Stdin.init) (Val #())) {{ RET #(); True }} := by
-  wp_start
-  iapply HΦ; itrivial
 
 /-- `Stdout`'s initializer (the model) does nothing. -/
 theorem wp_Stdout_init :

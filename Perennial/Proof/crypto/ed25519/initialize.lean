@@ -28,8 +28,6 @@ theorem crypto.ed25519.initialize'.wp_proof :
   iframe Hown
   iintro Hown
   wp_auto
-  -- cryptocustomrand: its trusted initializer does nothing
-  wp_call
   iframe Hown
   is_pkg_init_finish
 

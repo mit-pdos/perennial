@@ -827,6 +827,18 @@ func (e BreakExpr) Lean(m LeanMode) string {
 	return eApp(eVal("doBreak"), eVal("#()"))
 }
 
+func (e BreakToExpr) Lean(m LeanMode) string {
+	return eApp(eVal("doBreakTo"), NewStringVal(e.Label).Lean(LeanExpr))
+}
+
+func (e ContinueToExpr) Lean(m LeanMode) string {
+	return eApp(eVal("doContinueTo"), NewStringVal(e.Label).Lean(LeanExpr))
+}
+
+func (e CatchLabelExpr) Lean(m LeanMode) string {
+	return eApp(eVal("catchLabel"), NewStringVal(e.Label).Lean(LeanExpr), e.Body.Lean(LeanExpr))
+}
+
 func (e ReturnExpr) Lean(m LeanMode) string {
 	return eLetLike("App", []string{eVal("doReturn")}, e.Value.Lean(LeanExpr))
 }
