@@ -3,9 +3,12 @@ module
 
 public import Perennial.Proof.ProofPrelude
 public import Perennial.ManualProof.strings
+public import Perennial.GeneratedProof.internal.abi
+public import Perennial.GeneratedProof.internal.bytealg
 public import Perennial.GeneratedProof.internal.stringslite
 public import Perennial.GeneratedProof.io
 public import Perennial.GeneratedProof.sync
+public import Perennial.GeneratedProof.unicode.utf8
 public import Perennial.Golang.Theory
 public import Perennial.Code.strings
 

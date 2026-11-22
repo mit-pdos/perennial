@@ -1,0 +1,8 @@
+# Only MakeNoZero (strings.Builder's grow): a `go:linkname` to the runtime with no Go body
+# ("external function"), trusted (TrustedCode/internal/bytealg.lean).
+# `MaxLen`, which the package's initializer (`init.0`) sets
+translate = ["MaxLen"]
+imports = ["!*"]
+# `init.0` sets `MaxLen` from `cpu.X86.HasAVX2`, which the runtime finds with `cpuid` (assembly):
+# trusted, as one of the two values (TrustedCode/internal/bytealg.lean)
+trusted = ["MakeNoZero", "init.0"]

@@ -1,6 +1,9 @@
-translate = ["Builder", "asciiSpace", "HasSuffix", "TrimSuffix", "NewReplacer"]
-imports = ["!*", "internal/stringslite", "sync", "io"]
-trusted = ["Join", "HasPrefix", "Compare", "TrimPrefix", "Split"]
+# Builder's methods are translated; only `String` is trusted (TrustedCode/strings.lean): its
+# `unsafe.String(unsafe.SliceData(b.buf), len(b.buf))` returns a string that aliases the buffer.
+# `copyCheck`'s `abi.NoEscape` and `grow`'s `bytealg.MakeNoZero` are trusted in their packages.
+translate = ["Builder", "Builder.*", "!Builder.String", "asciiSpace", "HasSuffix", "TrimSuffix", "NewReplacer"]
+imports = ["!*", "internal/stringslite", "sync", "io", "internal/abi", "internal/bytealg", "unicode/utf8"]
+trusted = ["Builder.String", "Join", "HasPrefix", "Compare", "TrimPrefix", "Split"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

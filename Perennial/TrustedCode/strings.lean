@@ -267,6 +267,47 @@ noncomputable def Split.impl : val :=
   (App (Val doExecute)
   (Var "$r0")))))))))
 
+/-- Leaves a reader on each element of `s[i:len(s)]`, for good (a helper of `Builder.String.impl`,
+not a function of package `strings`): `StartRead` with no `FinishRead`, so that loads of those
+bytes still step and stores to them are stuck. -/
+noncomputable def Builder.readLock : val :=
+  rec: "loop" "s" "i" :=
+    if: "i" <⟨go.int⟩ FuncResolve go.len [go.SliceType go.byte] #() "s" then
+      StartRead (IndexRef (go.SliceType go.byte) ("s", "i")) ;;
+      "loop" "s" ("i" +⟨go.int⟩ #(W64 1))
+    else #()
+
+/-- `(*Builder).String()`: the accumulated string. Go's (`strings/builder.go`)
+
+```go
+func (b *Builder) String() string {
+	return unsafe.String(unsafe.SliceData(b.buf), len(b.buf))
+}
+```
+
+returns a string that shares the buffer's bytes; goose rejects `unsafe.String` (an `unsafe`
+reinterpretation of a byte array as a string). The rest of `Builder` is goose's translation of
+the real source.
+
+The model returns `string(b.buf)`, a copy, and then leaves a reader on each byte of `b.buf`
+(`Builder.readLock`), so that any later store to one of those bytes is stuck. Go strings are
+immutable only while nothing writes the bytes they share: after
+```go
+b.WriteString("a"); saved := b; b.WriteString("b"); s := b.String()
+b = saved; b.WriteString("c")   // copyCheck passes: b.addr == &b
+```
+gc's `s` is `"ac"`, where a copy would stay `"ab"`. `Builder` itself only appends past `len(b.buf)`;
+the bytes the string shares are written again only through a Builder restored from a copy by
+value (as above), and in the model that write is stuck: the model is less defined than Go there,
+never different. Loads of the bytes (more `String` calls, `grow`'s copy) still step. -/
+noncomputable def Builder.String.impl : val :=
+  λ: "b",
+    let: "buf" := ![go.SliceType go.byte]
+      (StructFieldRef (go.Named go!"strings.Builder" []) go!"buf" "b") in
+    let: "s" := Convert (go.SliceType go.byte) go.string "buf" in
+    Builder.readLock "buf" #(W64 0) ;;
+    "s"
+
 end code
 end strings
 
