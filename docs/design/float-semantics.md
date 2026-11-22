@@ -85,11 +85,30 @@ through the wp lemmas below. Alternatives considered:
 
 Which operations are nondeterministic: `+ - * /` and unary `-` (also of a NaN: IEEE 754 and gc
 on amd64 flip the sign bit of a NaN, but the Go spec does not promise it, and not every target
-has a non-arithmetic negation). Comparisons (`==`, `<`, ...) and integer-to-float conversions
+has a non-arithmetic negation), and the conversions `float32(x)` of a `float64` and `float64(x)`
+of a `float32` (`float64ToFloat32`, `float32ToFloat64`: the rounding, or any NaN of a NaN).
+Comparisons (`==`, `<`, ...) and integer-to-float conversions
 never produce a NaN and stay deterministic `⤳[under]` rules, so automation steps them; the
 conversions return bits, `(encode (ofInt n)).getD 0` (a rounding is never NaN, so the default
-is never used). `float32(c)` of an untyped constant is deterministic too, `float64ToFloat32`
-(a constant is never NaN). There is no rule for `float32(x)` of a `float64` variable.
+is never used).
+
+**Constants.** An untyped float constant is its exact value at run time, the rational
+`#(mkRat n d)` (goose emits it in lowest terms from go/types' exact `constant.Value`), as an
+untyped integer constant is `#(n : Int)`. Its conversions round that value once:
+`convert_untyped_float64` and `convert_untyped_float32` step to `ratToFloat64 q` and
+`ratToFloat32 q` (`ofConst`: the rounding of `q`, `+0` if it rounds to zero, as a Go constant is
+never `-0`), and `convert_untyped_float_to_integer` converts an integral constant (`mkRat n 1`)
+as the untyped integer `n`, and is stuck on any other (a compile error in Go). `-c` is
+`mkRat (-n) d`. Goose emits any expression that go/types records as a constant of a float type
+(`float64`, `float32`, or a named type of one) as its bits (`constantLiteral`, rounded once from
+the exact value, never `-0`), so the rules are reached only by constants at a type parameter (`return c` in `func f[T ~float32]() T`, rounded once at the instantiation, as gc
+does). An explicit `T(c)` at a type parameter is the same conversion of the exact value (goose
+emits `Convert go.untypedFloat T`, not what go/types records, `c` at its default type
+`float64`), following our reading of the spec's Conversions section: the constant is represented
+as a value of the type argument, rounded once. gc's explicit `T(c)` rounds through `float64`
+instead (`T(1 + 0x1p-24 + 0x1p-60)` at `float32` is `0x3f800000` in gc, `0x3f800001` here);
+whether that is intended is unresolved (`docs/KNOWN_LIMITATIONS.md`, "Floats").
+
 Float-to-integer conversion is unchanged (`ArbitraryInt`, implementation-defined in Go).
 
 In proofs, each arithmetic operation takes one `wp_apply`: `wp_apply wp_float64_add as %f Hf`
@@ -103,10 +122,8 @@ instances of `wp_go_step_rel`, the spec of any instruction with a relational pur
   operations, computing `x*y + z` with one rounding (gc emits `FMADDD` for it on arm64). The
   model rounds every operation, so it is *more* defined than Go here: a proof about such an
   expression is about the unfused evaluation only (`docs/KNOWN_LIMITATIONS.md`, "Floats").
-- `float32(c)` of an untyped constant rounds the constant's `float64` rounding (goose's
-  representation), not the constant: double rounding (`docs/KNOWN_LIMITATIONS.md`).
-- Not modelled (stuck, hence sound): `float64` ↔ `float32` conversions of variables, integer to
-  `float32` conversions, integer types narrower than 32 bits to floats.
+- Not modelled (stuck, hence sound): integer to `float32` conversions, integer types narrower
+  than 32 bits to floats.
 
 ## Lemmas (`Theory/Float.lean`)
 

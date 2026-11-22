@@ -1296,3 +1296,103 @@ alias (configuration coupling between packages, for a fact Go fixes).
 
 **Why.** Approved by the owner (upamanyus) directly, 2026-11-22: "every type alias always gets a
 reducible descriptor A.ty defined as its target, regardless of the package's config action".
+
+## Case 42 — ACCEPTED: labeled `break`/`continue`: `breakTo`/`continueTo` outcomes caught by `catchLabel` (branch `goose-labels`)
+
+**Symptom.** Incomplete. Goose refused every labeled statement (`statement *ast.LabeledStmt`), so
+`break L`/`continue L` had no translation; `fmt`'s `doPrintf` (`continue formatLoop` from a
+`switch` in a `switch` in an inner `for`, `break simpleFormat` from a `switch`) blocked the real
+`fmt` (#671).
+
+**Witness.** `L: for i { for j { switch { case j==1: continue L; case i==2: break L } } }` (Go:
+`[0 10]`); `continueFromNestedSwitch` and `miniPrintf` in `semantics/labels.go`.
+
+**Taken.** Three GooseLang definitions in `Defn/Loop.lean`, siblings of `doBreak`/`catchBreak`:
+`doBreakTo := λ: "l", (#"breakTo", "l")`, `doContinueTo := λ: "l", (#"continueTo", "l")`, and
+`catchLabel l b`, which turns `breakTo l` into `break`, `continueTo l` into `continue` and passes
+anything else on. No step rule, and `doFor`, the range helpers, `map.forRange`, `func.forRange`,
+`catchBreak` and `exceptionSeq` are unchanged: they already pass on any outcome that is not
+`execute`/`continue`/`break`, as they do `return`. Goose: `break L`/`continue L` become
+`doBreakTo #"L"`/`doContinueTo #"L"`; a labeled `for` or `range` has its body (inside the body
+thunk, so `continue L` runs the post statement and the loop-variable copy) wrapped in
+`catchLabel #"L"`; a labeled `switch`, type switch or `select` becomes `catchBreak (catchLabel
+#"L" s)`; `goto` and a label on any other statement stay refused (`unsupported`; negative tests
+`goto_stmt`, `label_block`). Unlabeled `break`/`continue` translate byte-for-byte as before (every other
+gold file and the regenerated std-lib/model output unchanged). Proof side: `forPostcondition`,
+`forRangePostcondition` and `forMapPostcondition` gain a "labeled outcome" disjunct
+(`wp_for_post_labeled`), with `PureWp` instances for `doBreakTo`/`doContinueTo`, `catchLabel` and
+the passes through `exceptionSeq`/`catchBreak`. Semantics tests `labels.go` (Go-checked), proofs in
+`Perennial/Proof/.../semantics/`. Cost: 3 definitions, 0 rules, 2 goose cases (`LabeledStmt`,
+labeled `BranchStmt`) plus a parameter on `forStmt`/`rangeStmt`, 2 negative tests.
+
+**Not taken.** (B) The label inside the existing `break`/`continue` value, with `doFor`, every range
+helper and `map.forRange` taking and comparing a label: changes existing definitions, every loop
+goose emits and `wp_for`'s statement (rejected on cost, like Case 10). (C) Goose desugaring with
+flag cells and no new definitions: context-dependent translation and more trusted goose code. A
+`doForLabeled` primitive that compares the label itself would still need `catchLabel` for
+`switch`/`select` and the range helpers.
+
+**Why.** Approved by the owner (upamanyus) directly, 2026-11-22: design A of the stage-0 plan for the
+real `fmt`, part 1, "new outcomes `breakTo`/`continueTo` plus `catchLabel` at the labeled
+statement", with no new step rules and unlabeled output unchanged.
+
+## Case 43 — ACCEPTED: an untyped float constant is its exact value; a constant of type `float32` is rounded once (branch `goose-float32-const`, issue #667)
+
+**Symptom.** Unsound. An untyped float constant was represented at run time by its `float64`
+rounding (`#(W64 bits)`), and `convert_untyped_float32` rounded that again (`float64ToFloat32`);
+Go rounds the exact constant once. The same lossy value made `return C` at `T ~int64`, with
+`C = 1e18 + 1`, the `float64` 1e18 (and goose `nope`d `var x int64 = C` outside generic code:
+`untypedFloatToInt` went through `float64`). Untyped float arithmetic at `float32`
+(`float32(1 + 0x1p-24)`) was emitted as `GoOp _ go.untypedFloat` (stuck, conversion dropped).
+
+**Witness.** `const H = 1 + 0x1p-24 + 0x1p-60`: `float32(H)` and `func f[T ~float32]() T { return
+H }` give `0x3f800001` in Go (go1.26.0), the model `0x3f800000`; `var z float32 = -1e-50` is `+0`
+in Go, `-0` in the model; `func g[T ~int64]() T { return C }` is 1000000000000000001 in Go.
+Explicit `T(H)` at `T ~float32` is `0x3f800000` in gc: go/types records `H` at its default type
+`float64`, and gc rounds through it.
+
+**Taken.** (1) Goose, `exprSpecial` (+5 lines; `float32` in the PR's first version, extended to
+`float64` after the trusted review found its sibling: `const a float64 = 0; x := -a` was a run-time
+`GoNeg go.float64`, `-0`, where Go gives `+0`; likewise `-t * 1e-10` underflowing): an expression
+go/types records as a constant of a type whose underlying type is `float32` or `float64` is
+emitted by `constantLiteral` (`Float32Val`/`Float64Val` of the exact value, `-0` made `+0`). (2) The
+representation: `constantLiteral` at an untyped float emits `#(mkRat n d)`, go/constant's exact
+numerator and denominator (lowest terms), an existing value form (`intoVal` of a Lean `Rat`, as an
+untyped integer is `#(n : Int)`); no new value kind. (3) The rules, one shape per target, all on
+`#(mkRat n d)`: `neg_untyped_float` (to `mkRat (-n) d`), `convert_untyped_float64` /
+`convert_untyped_float32` (to `ratToFloat64` / `ratToFloat32`, `Float.lean`: `encode (ofConst
+q)`, `ofConst` being #654's `roundRat` with a zero result made `+0`),
+`convert_untyped_float_to_integer` (`[IsInteger t]`, only at `mkRat n 1`, steps to
+`Convert go.untypedInt t #n`; stuck on a non-integral constant, a compile error in Go).
+(4) Goose's untyped-float-at-int special case in `identExpr` and `untypedFloatToInt` deleted
+(-56 lines): a named untyped float constant is `Convert go.untypedFloat T c`, like every other
+untyped constant. (5) Explicit `T(c)` of a constant at a type parameter: goose emits
+`Convert go.untypedFloat T` of a float constant's exact value, as for the implicit form (an
+integer constant keeps its default type `int`: exact, and `T(0)` at a float type stays runnable),
+not what go/types records (`c` at its default type `float64`, then `Convert go.float64 T`).
+This follows the spec's Conversions section ("with the value represented as a value of the
+type argument"): rounded once. gc rounds through `float64` there (`T(H)` at `float32`:
+`0x3f800000`; `T(-1e-50)`: `-0`; `T(1e18 + 1)` at `int64`: 1e18), a divergence recorded neutrally
+in `KNOWN_LIMITATIONS.md` ("Floats"); whether gc's behaviour is intended is unresolved.
+`convert_float64_to_float32` and `convert_float32_to_float64` (relational like the arithmetic,
+#654's `convert`, any NaN of a NaN) are added as ordinary typed conversions. Cost: 3 rules changed, 3 added, 4 definitions; goose +35/-61 lines against `lean`.
+Regenerated: `math` (85 untyped constant declarations become rationals, 85 call sites become
+`float64` bits) and the goose examples. Tests: semantics
+`testUntypedFloatConstAtTypeParam`, `testUntypedFloatConvertAtTypeParam`,
+`testUntypedFloatConstToInt`, `testFloat64ConstExprIsConst` (Go-checked and proved), `testFloat32ConstRoundsOnce`
+(Go-checked); unittest `float32ConstAt`, `intConstAt`, `compareIntFloat` gold.
+
+**Not taken.** The PR's first version: delete `convert_untyped_float32` (stuck in generic
+code). Goose folding every constant at every concrete type (the uniform extension of (1)): the
+untyped integer conversions would become dead outside generic code, and it rewrites about 330
+sites of generated code and the proofs that step them, for no soundness gain (an integer constant
+expression is exact, and a non-representable one is a compile error); kept to the float types,
+where run-time evaluation differs (signed zero) and untyped arithmetic needs it. For `T(c)`: following go/types and gc (the PR's second version, double rounding), or a
+nondeterministic rule allowing both results.
+
+**Why.** The owner (upamanyus), on #676: goose changes and Lean rules are equally trusted;
+prefer a simple uniform semantics, "our Go semantics supports conversions from untyped
+constants", which generic code needs, so the conversions must be correct, not deleted: untyped
+float constants carry their exact value at run time, and each conversion rounds once. On
+explicit `T(c)`: "the semantics follows the Go spec, not gc"; document the divergence neutrally,
+not as a gc bug.

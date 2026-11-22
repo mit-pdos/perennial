@@ -828,7 +828,8 @@ def forMapPostcondition (P : IProp GF) (Φ : val → IProp GF) (bv : val) : IPro
   iprop((⌜bv = continueVal⌝ ∗ P) ∨
     (⌜bv = executeVal⌝ ∗ P) ∨
     (⌜bv = breakVal⌝ ∗ Φ executeVal) ∨
-    (∃ v, ⌜bv = returnVal v⌝ ∗ Φ bv))
+    (∃ v, ⌜bv = returnVal v⌝ ∗ Φ bv) ∨
+    (⌜isLabeledOutcome bv⌝ ∗ Φ bv))
 
 /-- Reading the map cell: the value read is the map's entries `ps`. -/
 theorem wp_ownMap_read (mref : Loc) (dq : DFrac) (m : GMap K V) (Φ : val → IProp GF) :
@@ -951,7 +952,8 @@ theorem wp_map_for_range_gen (P : List K → Nat → GMap K V → IProp GF) (bod
       iapply wp_wand $$ Hb
       iintro %bv Hpost
       unfold forMapPostcondition
-      icases Hpost with (⟨%hbv, Hinv⟩ | ⟨%hbv, Hinv⟩ | ⟨%hbv, HΦ'⟩ | ⟨%v', %hbv, HΦ'⟩)
+      icases Hpost with (⟨%hbv, Hinv⟩ | ⟨%hbv, Hinv⟩ | ⟨%hbv, HΦ'⟩ | ⟨%v', %hbv, HΦ'⟩ |
+        ⟨%hbv, HΦ'⟩)
       · subst hbv
         rw [continueVal_unseal]; simp only [continueValDef]
         wp_auto
@@ -968,6 +970,13 @@ theorem wp_map_for_range_gen (P : List K → Nat → GMap K V → IProp GF) (bod
         rw [returnVal_unseal]; simp only [returnValDef]
         wp_auto
         iexact HΦ'
+      · obtain ⟨l, rfl | rfl⟩ := hbv
+        · rw [breakToVal_unseal]; simp only [breakToValDef]
+          wp_auto
+          iexact HΦ'
+        · rw [continueToVal_unseal]; simp only [continueToValDef]
+          wp_auto
+          iexact HΦ'
   · rw [List.drop_of_length_le (by omega)]
     simp only [List.map_nil, List.foldr_nil]
     wp_auto
@@ -981,11 +990,13 @@ theorem forMapPostcondition_mono (P Q : IProp GF) (Φ Ψ : val → IProp GF) (bv
       forMapPostcondition Q Ψ bv := by
   iintro Hw H
   unfold forMapPostcondition
-  icases H with (⟨%hbv, HP⟩ | ⟨%hbv, HP⟩ | ⟨%hbv, HΦ⟩ | ⟨%v', %hbv, HΦ⟩)
+  icases H with (⟨%hbv, HP⟩ | ⟨%hbv, HP⟩ | ⟨%hbv, HΦ⟩ | ⟨%v', %hbv, HΦ⟩ | ⟨%hbv, HΦ⟩)
   · ileft; iframe %hbv; icases Hw with ⟨HPQ, -⟩; iapply HPQ $$ HP
   · iright; ileft; iframe %hbv; icases Hw with ⟨HPQ, -⟩; iapply HPQ $$ HP
   · iright; iright; ileft; iframe %hbv; icases Hw with ⟨-, HΦΨ⟩; iapply HΦΨ $$ HΦ
-  · iright; iright; iright; iexists v'; iframe %hbv; icases Hw with ⟨-, HΦΨ⟩; iapply HΦΨ $$ HΦ
+  · iright; iright; iright; ileft; iexists v'; iframe %hbv; icases Hw with ⟨-, HΦΨ⟩
+    iapply HΦΨ $$ HΦ
+  · iright; iright; iright; iright; iframe %hbv; icases Hw with ⟨-, HΦΨ⟩; iapply HΦΨ $$ HΦ
 
 /-- `for range` over a map the loop only reads (`mref ↦${dq} m`, any fraction): the body is
 called on each key of `m` once, in the order of `keys`, with its value. -/

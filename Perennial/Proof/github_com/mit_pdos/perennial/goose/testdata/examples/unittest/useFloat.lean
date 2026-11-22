@@ -28,8 +28,6 @@ local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.exam
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unittest.useFloat.wp_proof :
     github_com.mit_pdos.perennial.goose.testdata.examples.unittest.useFloat.spec (GF := GF) (hG := hG) := by
   wp_start
-  -- the package constant `a` (a `def` of type `val`) must be unfolded
-  simp only [a]
   wp_auto
   wp_apply wp_float64_add as %y _
   wp_apply wp_float64_mul as %z _

@@ -32,16 +32,12 @@ theorem reflect.initialize'.wp_proof :
   wp_apply wp_GlobalAlloc (V := w64) floatRegSize go.uintptr as Hfs
   wp_apply wp_GlobalAlloc (V := w64) floatArgRegs go.int as Hfa
   wp_apply wp_GlobalAlloc (V := w64) intArgRegs go.int as Hia
-  -- stringType, bytesType, uint8Type: their trusted initializers do nothing
-  wp_call
   -- kindNames
   wp_apply wp_slice_literal (V := GoString) (t := go.string) _
   isplitr
   · ipureintro; rfl
   iintro %_ ⟨_, _⟩
   wp_auto
-  wp_call
-  wp_call
   iframe Hown
   is_pkg_init_finish
 

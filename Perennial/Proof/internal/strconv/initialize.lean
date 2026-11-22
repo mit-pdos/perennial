@@ -59,8 +59,6 @@ theorem internal.strconv.initialize'.wp_proof
        · ipureintro; rfl
        iintro %_ ⟨_, _⟩)
     | wp_auto)
-  -- pow10Tab: its trusted initializer does nothing
-  wp_call
   iframe Hown
   is_pkg_init_finish
 

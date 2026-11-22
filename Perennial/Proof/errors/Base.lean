@@ -108,7 +108,7 @@ theorem newVar_ne (X Y m1 m2 : GoString) (h : m1 ≠ m2) (v1 v2 : GoInterface) :
   exact go.intoVal_inj he
 
 /-- The package-initialized state (persistent): `ErrUnsupported` holds its `errors.New` error
-(`errorType`, a runtime type descriptor, has no cell: `TrustedCode/errors.lean`). -/
+(`errorType`, a runtime type descriptor, is skipped: `Code/errors.toml`). -/
 abbrev isInit : IProp GF :=
   iprop("#HErrUnsupported" ∷ newVar ErrUnsupported go!"unsupported operation")
 

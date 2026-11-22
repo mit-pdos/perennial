@@ -34,9 +34,6 @@ attribute [irreducible] joinError.ty
 noncomputable def ErrUnsupported [GooseExts] [GoGlobalContext] : GoString :=
   go!"errors.ErrUnsupported"
 
-noncomputable def errorType [GooseExts] [GoGlobalContext] : GoString :=
-  go!"errors.errorType"
-
 noncomputable def New [GooseExts] [GoGlobalContext] : GoString :=
   go!"errors.New"
 
@@ -537,6 +534,19 @@ noncomputable def asType.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : va
   (Val #()))))))
   (Pair (App (Val (GoInstruction (GoLoad E))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res1"))))))))
 
+/-- The package variables goose does not translate (the `skip` entries of the package's
+goose config): no Lean name, allocation or initialization step, so no translated code names
+them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot
+panic, and has no effect beyond the variable), for the reason given.
+
+- `errorType` (`var errorType = reflectlite.TypeOf((*error)(nil)).Elem()`): `reflectlite.TypeOf((*error)(nil)).Elem()` (wrap.go): reads the static runtime type descriptor
+of `error` (`abi.TypeOf`, through `unsafe`), which the semantics cannot represent; it allocates
+nothing the program can see, cannot panic and has no other effect. Read only by `As`, which is
+not translated.
+-/
+noncomputable def skipped' : List go.SkippedVar := [
+  ⟨"errors.errorType", "`reflectlite.TypeOf((*error)(nil)).Elem()` (wrap.go): reads the static runtime type descriptor\nof `error` (`abi.TypeOf`, through `unsafe`), which the semantics cannot represent; it allocates\nnothing the program can see, cannot panic and has no other effect. Read only by `As`, which is\nnot translated.", "var errorType = reflectlite.TypeOf((*error)(nil)).Elem()"⟩]
+
 noncomputable instance info' : PkgInfo pkg_id.errors where
   pkgImportedPkgs := []
 
@@ -549,11 +559,8 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"unsupported operation"))
   (App (App (Val (GoInstruction (FuncResolve New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val errorType.init) (Val #())))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrUnsupported))) (Val #())) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrUnsupported))) (Val #())) (Var "$r0")))))))
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrUnsupported go.error)) (Val #()))))))))
 

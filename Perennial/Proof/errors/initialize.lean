@@ -37,8 +37,6 @@ theorem errors.initialize'.wp_proof :
   · iunfold errors.newVar
     iexists _
     iframe HEU E
-  -- errorType: its trusted initializer does nothing
-  wp_call
   iframe Hown
   is_pkg_init_finish
 

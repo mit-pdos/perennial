@@ -827,6 +827,18 @@ func (e BreakExpr) Lean(m LeanMode) string {
 	return eApp(eVal("doBreak"), eVal("#()"))
 }
 
+func (e BreakToExpr) Lean(m LeanMode) string {
+	return eApp(eVal("doBreakTo"), NewStringVal(e.Label).Lean(LeanExpr))
+}
+
+func (e ContinueToExpr) Lean(m LeanMode) string {
+	return eApp(eVal("doContinueTo"), NewStringVal(e.Label).Lean(LeanExpr))
+}
+
+func (e CatchLabelExpr) Lean(m LeanMode) string {
+	return eApp(eVal("catchLabel"), NewStringVal(e.Label).Lean(LeanExpr), e.Body.Lean(LeanExpr))
+}
+
 func (e ReturnExpr) Lean(m LeanMode) string {
 	return eLetLike("App", []string{eVal("doReturn")}, e.Value.Lean(LeanExpr))
 }
@@ -1172,6 +1184,17 @@ func (s SelectStmtClauses) Lean(m LeanMode) string {
 func (d StructType) LeanFields() string {
 	var comps []string
 	for _, fd := range d.Fields {
+		// a field with a tag is go.field_decl.Field/Embedded with it; one without
+		// is written with the shorthand for the empty tag, FieldDecl/EmbeddedField
+		if fd.Tag != "" {
+			fdcons := "go.field_decl.Field"
+			if fd.Embedded {
+				fdcons = "go.field_decl.Embedded"
+			}
+			comps = append(comps, lapp(fdcons, LeanStringLit(fd.Name), fd.Type.Lean(LeanTerm),
+				LeanStringLit(fd.Tag)))
+			continue
+		}
 		fdcons := "go.field_decl.FieldDecl"
 		if fd.Embedded {
 			fdcons = "go.field_decl.EmbeddedField"
