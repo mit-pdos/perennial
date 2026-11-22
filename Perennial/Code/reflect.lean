@@ -1067,26 +1067,26 @@ goose config): no Lean name, allocation or initialization step, so no translated
 them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot
 panic, and has no effect beyond the variable), for the reason given.
 
-- `stringType`: `rtypeOf("")`, `rtypeOf(([]byte)(nil))`, `rtypeOf(uint8(0))` (map.go, value.go): each reads the
+- `stringType` (`var stringType = rtypeOf("")`): `rtypeOf("")`, `rtypeOf(([]byte)(nil))`, `rtypeOf(uint8(0))` (map.go, value.go): each reads the
 static runtime type descriptor of its argument's type (`abi.TypeOf`, which reinterprets an
 interface's memory through `unsafe`; the semantics cannot represent the descriptors); they
 allocate nothing the program can see, cannot panic and have no other effect. Read only by
 `Value.MapIndex`/`SetMapIndex`, `Value.Bytes` and `Value.Index`, which are not translated.
-- `bytesType`: `rtypeOf("")`, `rtypeOf(([]byte)(nil))`, `rtypeOf(uint8(0))` (map.go, value.go): each reads the
+- `bytesType` (`var bytesType = rtypeOf(([]byte)(nil))`): `rtypeOf("")`, `rtypeOf(([]byte)(nil))`, `rtypeOf(uint8(0))` (map.go, value.go): each reads the
 static runtime type descriptor of its argument's type (`abi.TypeOf`, which reinterprets an
 interface's memory through `unsafe`; the semantics cannot represent the descriptors); they
 allocate nothing the program can see, cannot panic and have no other effect. Read only by
 `Value.MapIndex`/`SetMapIndex`, `Value.Bytes` and `Value.Index`, which are not translated.
-- `uint8Type`: `rtypeOf("")`, `rtypeOf(([]byte)(nil))`, `rtypeOf(uint8(0))` (map.go, value.go): each reads the
+- `uint8Type` (`var uint8Type = rtypeOf(uint8(0))`): `rtypeOf("")`, `rtypeOf(([]byte)(nil))`, `rtypeOf(uint8(0))` (map.go, value.go): each reads the
 static runtime type descriptor of its argument's type (`abi.TypeOf`, which reinterprets an
 interface's memory through `unsafe`; the semantics cannot represent the descriptors); they
 allocate nothing the program can see, cannot panic and have no other effect. Read only by
 `Value.MapIndex`/`SetMapIndex`, `Value.Bytes` and `Value.Index`, which are not translated.
 -/
 noncomputable def skipped' : List go.SkippedVar := [
-  ⟨"reflect.stringType", "`rtypeOf(\"\")`, `rtypeOf(([]byte)(nil))`, `rtypeOf(uint8(0))` (map.go, value.go): each reads the\nstatic runtime type descriptor of its argument's type (`abi.TypeOf`, which reinterprets an\ninterface's memory through `unsafe`; the semantics cannot represent the descriptors); they\nallocate nothing the program can see, cannot panic and have no other effect. Read only by\n`Value.MapIndex`/`SetMapIndex`, `Value.Bytes` and `Value.Index`, which are not translated."⟩,
-  ⟨"reflect.bytesType", "`rtypeOf(\"\")`, `rtypeOf(([]byte)(nil))`, `rtypeOf(uint8(0))` (map.go, value.go): each reads the\nstatic runtime type descriptor of its argument's type (`abi.TypeOf`, which reinterprets an\ninterface's memory through `unsafe`; the semantics cannot represent the descriptors); they\nallocate nothing the program can see, cannot panic and have no other effect. Read only by\n`Value.MapIndex`/`SetMapIndex`, `Value.Bytes` and `Value.Index`, which are not translated."⟩,
-  ⟨"reflect.uint8Type", "`rtypeOf(\"\")`, `rtypeOf(([]byte)(nil))`, `rtypeOf(uint8(0))` (map.go, value.go): each reads the\nstatic runtime type descriptor of its argument's type (`abi.TypeOf`, which reinterprets an\ninterface's memory through `unsafe`; the semantics cannot represent the descriptors); they\nallocate nothing the program can see, cannot panic and have no other effect. Read only by\n`Value.MapIndex`/`SetMapIndex`, `Value.Bytes` and `Value.Index`, which are not translated."⟩]
+  ⟨"reflect.stringType", "`rtypeOf(\"\")`, `rtypeOf(([]byte)(nil))`, `rtypeOf(uint8(0))` (map.go, value.go): each reads the\nstatic runtime type descriptor of its argument's type (`abi.TypeOf`, which reinterprets an\ninterface's memory through `unsafe`; the semantics cannot represent the descriptors); they\nallocate nothing the program can see, cannot panic and have no other effect. Read only by\n`Value.MapIndex`/`SetMapIndex`, `Value.Bytes` and `Value.Index`, which are not translated.", "var stringType = rtypeOf(\"\")"⟩,
+  ⟨"reflect.bytesType", "`rtypeOf(\"\")`, `rtypeOf(([]byte)(nil))`, `rtypeOf(uint8(0))` (map.go, value.go): each reads the\nstatic runtime type descriptor of its argument's type (`abi.TypeOf`, which reinterprets an\ninterface's memory through `unsafe`; the semantics cannot represent the descriptors); they\nallocate nothing the program can see, cannot panic and have no other effect. Read only by\n`Value.MapIndex`/`SetMapIndex`, `Value.Bytes` and `Value.Index`, which are not translated.", "var bytesType = rtypeOf(([]byte)(nil))"⟩,
+  ⟨"reflect.uint8Type", "`rtypeOf(\"\")`, `rtypeOf(([]byte)(nil))`, `rtypeOf(uint8(0))` (map.go, value.go): each reads the\nstatic runtime type descriptor of its argument's type (`abi.TypeOf`, which reinterprets an\ninterface's memory through `unsafe`; the semantics cannot represent the descriptors); they\nallocate nothing the program can see, cannot panic and have no other effect. Read only by\n`Value.MapIndex`/`SetMapIndex`, `Value.Bytes` and `Value.Index`, which are not translated.", "var uint8Type = rtypeOf(uint8(0))"⟩]
 
 noncomputable instance info' : PkgInfo pkg_id.reflect where
   pkgImportedPkgs := []

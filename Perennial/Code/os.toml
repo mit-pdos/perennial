@@ -7,8 +7,8 @@
 # Trusted models (TrustedCode/os.lean):
 # * `runtime_args` (a `go:linkname` into the runtime, no Go body): an arbitrary `[]string`;
 # * `Stdout`, `Stderr` (`NewFile(uintptr(syscall.Stdout), "/dev/stdout")`, ...): `Stdout` does
-#   nothing (`go.skipInit`: the variable is not allocated, code using it is stuck; it is to get a
-#   real model, perennial#663), `Stderr` allocates its variable and stores a fresh pointer whose
+#   nothing (the variable is not allocated, code using it is stuck; it is to get a real model,
+#   perennial#663), `Stderr` allocates its variable and stores a fresh pointer whose
 #   memory is not a `File` (raft's logger stores `os.Stderr`; any use of the file is stuck). Not
 #   translated by the user's decision (fix-semantics Case 33): `NewFile` reaches `Fcntl`, the
 #   runtime poller and `SetFinalizer`.
@@ -34,9 +34,9 @@ translate_types = true
 [[skip]]
 names = ["Stdin"]
 reason = """
-`NewFile(uintptr(syscall.Stdin), "/dev/stdin")` (file.go): `newFileFromNewFile` wraps the
-descriptor in a new `*File` (`unix.IsNonblock`, an `fcntl` that cannot fail on a valid
-descriptor; `pfd.Init`, the runtime poller's `runtime_pollOpen`) and sets a finalizer: cannot
-panic, no effect beyond the new `File` and the variable (the descriptor is the process's, open
-before `main`). Not translated by the user's decision (fix-semantics Case 33). Not read by
+`NewFile(uintptr(syscall.Stdin), "/dev/stdin")` (file.go): `newFileFromNewFile` reads the
+descriptor's flags (`unix.Fcntl(fd, syscall.F_GETFL, 0)`, a system call whose error it ignores)
+and wraps the descriptor in a new `*File` (`newFile`: `pfd.Init`, the runtime poller's
+`runtime_pollOpen` if the descriptor is non-blocking) with a finalizer: cannot panic, no effect
+beyond the new `File` and the variable (the descriptor is the process's, open before `main`). Not translated by the user's decision (fix-semantics Case 33). Not read by
 translated code."""

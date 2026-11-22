@@ -699,33 +699,33 @@ goose config): no Lean name, allocation or initialization step, so no translated
 them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot
 panic, and has no effect beyond the variable), for the reason given.
 
-- `isPrint16`: The printable-rune tables (isprint.go): slice literals of constants, so the initializers
+- `isPrint16` (`var isPrint16 = []uint16{ 0x0020, 0x007e, 0x00a1, 0x0377, 0x037a, 0x037f, 0x0384, 0x0556, 0x0559, 0x058a, 0x058d, 0x05c7 … [sha256:846ebe7abe83d355]`): The printable-rune tables (isprint.go): slice literals of constants, so the initializers
 allocate and store constants, cannot panic and have no effect beyond the variables. Read only by
 `IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;
 none of them is translated.
-- `isNotPrint16`: The printable-rune tables (isprint.go): slice literals of constants, so the initializers
+- `isNotPrint16` (`var isNotPrint16 = []uint16{ 0x00ad, 0x038b, 0x038d, 0x03a2, 0x0530, 0x0590, 0x061c, 0x06dd, 0x083f, 0x085f, 0x08e2, 0x0 … [sha256:438180f2281536e2]`): The printable-rune tables (isprint.go): slice literals of constants, so the initializers
 allocate and store constants, cannot panic and have no effect beyond the variables. Read only by
 `IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;
 none of them is translated.
-- `isPrint32`: The printable-rune tables (isprint.go): slice literals of constants, so the initializers
+- `isPrint32` (`var isPrint32 = []uint32{ 0x010000, 0x01004d, 0x010050, 0x01005d, 0x010080, 0x0100fa, 0x010100, 0x010102, 0x010107, 0x01 … [sha256:bbd6738f466472c6]`): The printable-rune tables (isprint.go): slice literals of constants, so the initializers
 allocate and store constants, cannot panic and have no effect beyond the variables. Read only by
 `IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;
 none of them is translated.
-- `isNotPrint32`: The printable-rune tables (isprint.go): slice literals of constants, so the initializers
+- `isNotPrint32` (`var isNotPrint32 = []uint16{ 0x000c, 0x0027, 0x003b, 0x003e, 0x018f, 0x039e, 0x057b, 0x058b, 0x0593, 0x0596, 0x05a2, 0x0 … [sha256:e9b6530f460e5afd]`): The printable-rune tables (isprint.go): slice literals of constants, so the initializers
 allocate and store constants, cannot panic and have no effect beyond the variables. Read only by
 `IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;
 none of them is translated.
-- `isGraphic`: The printable-rune tables (isprint.go): slice literals of constants, so the initializers
+- `isGraphic` (`var isGraphic = []uint16{ 0x00a0, 0x1680, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007, 0x2008, 0x2009 … [sha256:df8246e26708df69]`): The printable-rune tables (isprint.go): slice literals of constants, so the initializers
 allocate and store constants, cannot panic and have no effect beyond the variables. Read only by
 `IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;
 none of them is translated.
 -/
 noncomputable def skipped' : List go.SkippedVar := [
-  ⟨"strconv.isPrint16", "The printable-rune tables (isprint.go): slice literals of constants, so the initializers\nallocate and store constants, cannot panic and have no effect beyond the variables. Read only by\n`IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;\nnone of them is translated."⟩,
-  ⟨"strconv.isNotPrint16", "The printable-rune tables (isprint.go): slice literals of constants, so the initializers\nallocate and store constants, cannot panic and have no effect beyond the variables. Read only by\n`IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;\nnone of them is translated."⟩,
-  ⟨"strconv.isPrint32", "The printable-rune tables (isprint.go): slice literals of constants, so the initializers\nallocate and store constants, cannot panic and have no effect beyond the variables. Read only by\n`IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;\nnone of them is translated."⟩,
-  ⟨"strconv.isNotPrint32", "The printable-rune tables (isprint.go): slice literals of constants, so the initializers\nallocate and store constants, cannot panic and have no effect beyond the variables. Read only by\n`IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;\nnone of them is translated."⟩,
-  ⟨"strconv.isGraphic", "The printable-rune tables (isprint.go): slice literals of constants, so the initializers\nallocate and store constants, cannot panic and have no effect beyond the variables. Read only by\n`IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;\nnone of them is translated."⟩]
+  ⟨"strconv.isPrint16", "The printable-rune tables (isprint.go): slice literals of constants, so the initializers\nallocate and store constants, cannot panic and have no effect beyond the variables. Read only by\n`IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;\nnone of them is translated.", "var isPrint16 = []uint16{ 0x0020, 0x007e, 0x00a1, 0x0377, 0x037a, 0x037f, 0x0384, 0x0556, 0x0559, 0x058a, 0x058d, 0x05c7 … [sha256:846ebe7abe83d355]"⟩,
+  ⟨"strconv.isNotPrint16", "The printable-rune tables (isprint.go): slice literals of constants, so the initializers\nallocate and store constants, cannot panic and have no effect beyond the variables. Read only by\n`IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;\nnone of them is translated.", "var isNotPrint16 = []uint16{ 0x00ad, 0x038b, 0x038d, 0x03a2, 0x0530, 0x0590, 0x061c, 0x06dd, 0x083f, 0x085f, 0x08e2, 0x0 … [sha256:438180f2281536e2]"⟩,
+  ⟨"strconv.isPrint32", "The printable-rune tables (isprint.go): slice literals of constants, so the initializers\nallocate and store constants, cannot panic and have no effect beyond the variables. Read only by\n`IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;\nnone of them is translated.", "var isPrint32 = []uint32{ 0x010000, 0x01004d, 0x010050, 0x01005d, 0x010080, 0x0100fa, 0x010100, 0x010102, 0x010107, 0x01 … [sha256:bbd6738f466472c6]"⟩,
+  ⟨"strconv.isNotPrint32", "The printable-rune tables (isprint.go): slice literals of constants, so the initializers\nallocate and store constants, cannot panic and have no effect beyond the variables. Read only by\n`IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;\nnone of them is translated.", "var isNotPrint32 = []uint16{ 0x000c, 0x0027, 0x003b, 0x003e, 0x018f, 0x039e, 0x057b, 0x058b, 0x0593, 0x0596, 0x05a2, 0x0 … [sha256:e9b6530f460e5afd]"⟩,
+  ⟨"strconv.isGraphic", "The printable-rune tables (isprint.go): slice literals of constants, so the initializers\nallocate and store constants, cannot panic and have no effect beyond the variables. Read only by\n`IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;\nnone of them is translated.", "var isGraphic = []uint16{ 0x00a0, 0x1680, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007, 0x2008, 0x2009 … [sha256:df8246e26708df69]"⟩]
 
 noncomputable instance info' : PkgInfo pkg_id.strconv where
   pkgImportedPkgs := [pkg_id.errors, pkg_id.internal.strconv, pkg_id.internal.stringslite]

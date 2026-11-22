@@ -128,6 +128,8 @@ type Ctx struct {
 	depSkips map[string]map[string]string
 	// the package's skipped variables, in source order
 	skipped []skippedVar
+	// whether the package skips blank variables (then it skips all of them)
+	skipsBlank bool
 	// the translated declaration being translated, for error messages
 	curDecl string
 }
@@ -2830,7 +2832,7 @@ func (ctx *Ctx) globalVarDecl(d *ast.GenDecl) {
 	for _, spec := range d.Specs {
 		s := spec.(*ast.ValueSpec)
 		for _, name := range s.Names {
-			if ctx.filter.GetAction(name.Name) == declfilter.Skip {
+			if ctx.varAction(name.Name, name.Pos()) == declfilter.Skip {
 				// no name, X.init, allocation or init step (skip.go)
 				ctx.recordSkipped(s, name)
 				continue
@@ -3122,7 +3124,8 @@ func (ctx *Ctx) finalExtraDecls() {
 			glang.Tt), e)
 	}
 
-	if ctx.filter.GetAction("_") == declfilter.Axiomatize {
+	// (a package that skips blank variables lists all of them: checkSkipConfig)
+	if ctx.filter.GetAction("_") == declfilter.Axiomatize && !ctx.skipsBlank {
 		decls = append(decls, glang.AxiomDecl{
 			DeclName: "_'init",
 			Type:     glang.VerbatimExpr("val"),

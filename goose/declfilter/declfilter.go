@@ -6,6 +6,7 @@ package declfilter
 
 import (
 	"fmt"
+	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
@@ -58,10 +59,14 @@ type FilterConfig struct {
 // verified code never touches the variable holds by construction. What is
 // trusted is the reason: that not running the variable's Go initializer is
 // unobservable (it terminates, cannot panic, and has no effect beyond the
-// variable). The name "_" stands for every blank `var _ = ...` of the
-// package.
+// variable). A blank variable (`var _ = ...`) has no identifier: it is named
+// by its position, "_@file.go:L" (BlankName; D4), each with its own entry
+// and reason. In a package that skips a blank variable, every blank variable
+// must be listed: a blank that a Go upgrade adds, or one that moves, fails
+// the translation until its entry is reviewed.
 type SkipEntry struct {
-	// Exact identifiers of package-level variables (D2: no globs, no "!").
+	// Exact identifiers of package-level variables (D2: no globs, no "!"),
+	// or "_@file.go:L" for a blank variable.
 	Names []string `toml:"names"`
 	// Why skipping the initializers is unobservable; required.
 	Reason string `toml:"reason"`
@@ -211,6 +216,21 @@ func isGlob(name string) bool {
 	return strings.ContainsAny(name, "*!")
 }
 
+// BlankName is the skip name of the blank package variable declared at line
+// line of file (the base name of a Go file of the package): "_@file.go:L"
+// (D4: a blank variable has no identifier; its position is what review saw).
+// Two blank variables on one line share the name.
+func BlankName(file string, line int) string {
+	return fmt.Sprintf("_@%s:%d", filepath.Base(file), line)
+}
+
+var blankNameRx = regexp.MustCompile(`^_@[^/:@]+\.go:[1-9][0-9]*$`)
+
+// IsBlankName says whether a skip name names a blank variable (BlankName).
+func IsBlankName(name string) bool {
+	return strings.HasPrefix(name, "_@")
+}
+
 // CheckSkip returns the errors of the config's skip entries that the config
 // alone shows: an entry without names or without a reason, a glob, a name in
 // two entries (or twice in one), and a name that is an exact literal in
@@ -233,6 +253,12 @@ func (c FilterConfig) CheckSkip() []error {
 			switch {
 			case n == "":
 				errs = append(errs, fmt.Errorf("skip entry %d has an empty name", i+1))
+			case n == "_":
+				errs = append(errs, fmt.Errorf(`skip name "_": list each blank variable `+
+					`by its position, "_@file.go:L", with its own reason`))
+			case IsBlankName(n) && !blankNameRx.MatchString(n):
+				errs = append(errs, fmt.Errorf(`skip name %q: a blank variable is named `+
+					`"_@file.go:L" (the base name of its Go file and its line)`, n))
 			case isGlob(n):
 				errs = append(errs, fmt.Errorf("skip name %q is a pattern: "+
 					"skip names are exact identifiers", n))

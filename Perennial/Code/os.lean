@@ -951,15 +951,15 @@ goose config): no Lean name, allocation or initialization step, so no translated
 them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot
 panic, and has no effect beyond the variable), for the reason given.
 
-- `Stdin`: `NewFile(uintptr(syscall.Stdin), "/dev/stdin")` (file.go): `newFileFromNewFile` wraps the
-descriptor in a new `*File` (`unix.IsNonblock`, an `fcntl` that cannot fail on a valid
-descriptor; `pfd.Init`, the runtime poller's `runtime_pollOpen`) and sets a finalizer: cannot
-panic, no effect beyond the new `File` and the variable (the descriptor is the process's, open
-before `main`). Not translated by the user's decision (fix-semantics Case 33). Not read by
+- `Stdin` (`var Stdin = NewFile(uintptr(syscall.Stdin), "/dev/stdin")`): `NewFile(uintptr(syscall.Stdin), "/dev/stdin")` (file.go): `newFileFromNewFile` reads the
+descriptor's flags (`unix.Fcntl(fd, syscall.F_GETFL, 0)`, a system call whose error it ignores)
+and wraps the descriptor in a new `*File` (`newFile`: `pfd.Init`, the runtime poller's
+`runtime_pollOpen` if the descriptor is non-blocking) with a finalizer: cannot panic, no effect
+beyond the new `File` and the variable (the descriptor is the process's, open before `main`). Not translated by the user's decision (fix-semantics Case 33). Not read by
 translated code.
 -/
 noncomputable def skipped' : List go.SkippedVar := [
-  ⟨"os.Stdin", "`NewFile(uintptr(syscall.Stdin), \"/dev/stdin\")` (file.go): `newFileFromNewFile` wraps the\ndescriptor in a new `*File` (`unix.IsNonblock`, an `fcntl` that cannot fail on a valid\ndescriptor; `pfd.Init`, the runtime poller's `runtime_pollOpen`) and sets a finalizer: cannot\npanic, no effect beyond the new `File` and the variable (the descriptor is the process's, open\nbefore `main`). Not translated by the user's decision (fix-semantics Case 33). Not read by\ntranslated code."⟩]
+  ⟨"os.Stdin", "`NewFile(uintptr(syscall.Stdin), \"/dev/stdin\")` (file.go): `newFileFromNewFile` reads the\ndescriptor's flags (`unix.Fcntl(fd, syscall.F_GETFL, 0)`, a system call whose error it ignores)\nand wraps the descriptor in a new `*File` (`newFile`: `pfd.Init`, the runtime poller's\n`runtime_pollOpen` if the descriptor is non-blocking) with a finalizer: cannot panic, no effect\nbeyond the new `File` and the variable (the descriptor is the process's, open before `main`). Not translated by the user's decision (fix-semantics Case 33). Not read by\ntranslated code.", "var Stdin = NewFile(uintptr(syscall.Stdin), \"/dev/stdin\")"⟩]
 
 noncomputable instance info' : PkgInfo pkg_id.os where
   pkgImportedPkgs := [pkg_id.io.fs, pkg_id.sync, pkg_id.syscall, pkg_id.internal.poll, pkg_id.errors]

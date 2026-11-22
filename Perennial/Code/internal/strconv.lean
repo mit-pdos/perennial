@@ -1732,12 +1732,12 @@ goose config): no Lean name, allocation or initialization step, so no translated
 them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot
 panic, and has no effect beyond the variable), for the reason given.
 
-- `pow10Tab`: A 696-entry array literal of 128-bit powers of ten (pow10tab.go, generated): stores constants,
+- `pow10Tab` (`var pow10Tab = [...]uint128{ {0xfa8fd5a0081c0288, 0x1732c869cd60e453}, {0x9c99e58405118195, 0x0e7fbd42205c8eb4}, {0xc3c0 … [sha256:bbdbbfdd7144c230]`): A 696-entry array literal of 128-bit powers of ten (pow10tab.go, generated): stores constants,
 cannot panic and has no effect beyond the variable. Read only by `pow10` (math.go), which only
 the float conversions (`ParseFloat`, `FormatFloat` and their helpers) call; none is translated.
 -/
 noncomputable def skipped' : List go.SkippedVar := [
-  ⟨"internal/strconv.pow10Tab", "A 696-entry array literal of 128-bit powers of ten (pow10tab.go, generated): stores constants,\ncannot panic and has no effect beyond the variable. Read only by `pow10` (math.go), which only\nthe float conversions (`ParseFloat`, `FormatFloat` and their helpers) call; none is translated."⟩]
+  ⟨"internal/strconv.pow10Tab", "A 696-entry array literal of 128-bit powers of ten (pow10tab.go, generated): stores constants,\ncannot panic and has no effect beyond the variable. Read only by `pow10` (math.go), which only\nthe float conversions (`ParseFloat`, `FormatFloat` and their helpers) call; none is translated.", "var pow10Tab = [...]uint128{ {0xfa8fd5a0081c0288, 0x1732c869cd60e453}, {0x9c99e58405118195, 0x0e7fbd42205c8eb4}, {0xc3c0 … [sha256:bbdbbfdd7144c230]"⟩]
 
 noncomputable instance info' : PkgInfo pkg_id.internal.strconv where
   pkgImportedPkgs := [pkg_id.math.bits]

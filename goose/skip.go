@@ -11,6 +11,7 @@ package goose
 // revised on its own.
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"go/ast"
 	"go/printer"
@@ -38,9 +39,12 @@ func configError(pkgPath string, err error) *ConversionError {
 // checkSkipConfig returns the errors of the package's skip entries: those the
 // config alone shows (declfilter.FilterConfig.CheckSkip) and those that need
 // the package: a name that is not one of its package-level variables (a stale
-// entry, e.g. after a Go upgrade; "_" needs at least one blank variable), and
-// an initializer of several variables that is only partly skipped (D5: the
-// initializer, one Go evaluation, is the unit).
+// entry, e.g. after a Go upgrade), a blank-variable name "_@file.go:L" with
+// no blank variable there, a blank variable left unlisted in a package that
+// skips blank variables (D4: a blank variable that a Go upgrade adds or moves
+// fails the translation until its entry is reviewed), and an initializer of
+// several variables that is only partly skipped (D5: the initializer, one Go
+// evaluation, is the unit).
 func (ctx *Ctx) checkSkipConfig(pkg *packages.Package, config declfilter.FilterConfig) (errs []error) {
 	for _, err := range config.CheckSkip() {
 		errs = append(errs, configError(pkg.PkgPath, err))
@@ -48,24 +52,36 @@ func (ctx *Ctx) checkSkipConfig(pkg *packages.Package, config declfilter.FilterC
 	if len(errs) > 0 {
 		return
 	}
-	hasBlank := false
+	// the blank package variables, by skip name, in source order
+	var blanks []string
+	blankSpec := make(map[string]*ast.ValueSpec)
 	for _, f := range pkg.Syntax {
 		for _, d := range f.Decls {
 			if d, ok := d.(*ast.GenDecl); ok && d.Tok == token.VAR {
 				for _, s := range d.Specs {
 					for _, n := range s.(*ast.ValueSpec).Names {
-						hasBlank = hasBlank || n.Name == "_"
+						if n.Name == "_" {
+							b := ctx.blankName(n.Pos())
+							if _, ok := blankSpec[b]; !ok {
+								blanks = append(blanks, b)
+								blankSpec[b] = s.(*ast.ValueSpec)
+							}
+						}
 					}
 				}
 			}
 		}
 	}
+	skipsBlank := false
 	for _, e := range config.Skip {
 		for _, n := range e.Names {
-			if n == "_" {
-				if !hasBlank {
+			if declfilter.IsBlankName(n) {
+				skipsBlank = true
+				if _, ok := blankSpec[n]; !ok {
 					errs = append(errs, configError(pkg.PkgPath,
-						fmt.Errorf(`skip name "_": the package has no blank package variable`)))
+						fmt.Errorf("skip name %q: the package has no blank package variable there "+
+							"(moved or removed?): review the package's blank variables and list "+
+							"each by its current position", n)))
 				}
 				continue
 			}
@@ -75,11 +91,22 @@ func (ctx *Ctx) checkSkipConfig(pkg *packages.Package, config declfilter.FilterC
 			}
 		}
 	}
+	if skipsBlank {
+		for _, b := range blanks {
+			if _, ok := ctx.filter.SkipReason(b); !ok {
+				errs = append(errs, configError(pkg.PkgPath,
+					fmt.Errorf("the blank package variable %s (%s) is not listed in a skip entry: "+
+						"the package skips blank variables, so each one is listed by its position "+
+						"with its own reason; review it and add it (a new or moved blank variable "+
+						"needs review)", b, declSource(ctx.fset, blankSpec[b], false))))
+			}
+		}
+	}
 	var e errorCatcher
 	for _, init := range ctx.info.InitOrder {
 		var skipped, kept []string
 		for _, v := range init.Lhs {
-			if ctx.filter.GetAction(v.Name()) == declfilter.Skip {
+			if ctx.varAction(v.Name(), v.Pos()) == declfilter.Skip {
 				skipped = append(skipped, v.Name())
 			} else {
 				kept = append(kept, v.Name())
@@ -97,8 +124,52 @@ func (ctx *Ctx) checkSkipConfig(pkg *packages.Package, config declfilter.FilterC
 	for _, err := range e.errs {
 		errs = append(errs, err)
 	}
+	ctx.skipsBlank = skipsBlank
 	return
 }
+
+// blankName is the skip name of a blank package variable declared at pos
+// (declfilter.BlankName).
+func (ctx *Ctx) blankName(pos token.Pos) string {
+	p := ctx.fset.Position(pos)
+	return declfilter.BlankName(p.Filename, p.Line)
+}
+
+// varAction is how the package variable name, declared at pos, is treated: a
+// blank variable is skipped by its position (D4), any other variable by its
+// name.
+func (ctx *Ctx) varAction(name string, pos token.Pos) declfilter.Action {
+	if name == "_" {
+		if _, ok := ctx.filter.SkipReason(ctx.blankName(pos)); ok {
+			return declfilter.Skip
+		}
+	}
+	return ctx.filter.GetAction(name)
+}
+
+// docEscape keeps text from closing or opening a Lean comment.
+func docEscape(s string) string {
+	return strings.NewReplacer("-/", "- /", "/-", "/ -").Replace(s)
+}
+
+// declSource is the Go declaration s, `var X = ...`, on one line. With short,
+// a long one is cut to its first maxDeclLen characters and ends with a hash of the
+// whole declaration, so that a change to a long initializer still changes
+// the text.
+func declSource(fset *token.FileSet, s *ast.ValueSpec, short bool) string {
+	var b strings.Builder
+	if err := printer.Fprint(&b, fset, s); err != nil {
+		panic(err)
+	}
+	src := "var " + strings.Join(strings.Fields(b.String()), " ")
+	if r := []rune(src); short && len(r) > maxDeclLen {
+		sum := sha256.Sum256([]byte(src))
+		src = fmt.Sprintf("%s … [sha256:%x]", string(r[:maxDeclLen]), sum[:8])
+	}
+	return src
+}
+
+const maxDeclLen = 120
 
 func varNames(vs []*types.Var) string {
 	var ns []string
@@ -110,27 +181,26 @@ func varNames(vs []*types.Var) string {
 
 // A skippedVar is a skipped package variable, as listed in the translation.
 type skippedVar struct {
-	// pkg.X, or for a blank variable pkg._@file.go:L: var _ ... (D4: each
-	// blank variable is listed, so that one a Go upgrade adds shows in the
-	// gold output and the trust baselines)
+	// pkg.X, or pkg._@file.go:L for a blank variable (D4)
 	name   string
 	reason string
+	// the Go declaration (declSource), so that a change to the initializer
+	// changes the entry
+	decl string
 }
 
 // recordSkipped records the skipped variable name of the declaration s.
 func (ctx *Ctx) recordSkipped(s *ast.ValueSpec, name *ast.Ident) {
-	reason, _ := ctx.filter.SkipReason(name.Name)
-	n := ctx.pkgPath + "." + name.Name
-	if name.Name == "_" {
-		var src strings.Builder
-		if err := printer.Fprint(&src, ctx.fset, s); err != nil {
-			panic(err)
-		}
-		pos := ctx.fset.Position(name.Pos())
-		n = fmt.Sprintf("%s._@%s:%d: var %s", ctx.pkgPath, filepath.Base(pos.Filename),
-			pos.Line, strings.Join(strings.Fields(src.String()), " "))
+	key := name.Name
+	if key == "_" {
+		key = ctx.blankName(name.Pos())
 	}
-	ctx.skipped = append(ctx.skipped, skippedVar{name: n, reason: reason})
+	reason, _ := ctx.filter.SkipReason(key)
+	ctx.skipped = append(ctx.skipped, skippedVar{
+		name:   ctx.pkgPath + "." + key,
+		reason: reason,
+		decl:   declSource(ctx.fset, s, true),
+	})
 }
 
 // skippedDecls is the record of the package's skipped variables,
@@ -149,15 +219,16 @@ func (ctx *Ctx) skippedDecls() []glang.Decl {
 		"them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot\n" +
 		"panic, and has no effect beyond the variable), for the reason given.\n\n")
 	for _, v := range ctx.skipped {
-		fmt.Fprintf(&b, "- `%s`: %s\n", strings.TrimPrefix(v.name, ctx.pkgPath+"."),
-			strings.ReplaceAll(v.reason, "-/", "- /"))
+		fmt.Fprintf(&b, "- `%s` (`%s`): %s\n", strings.TrimPrefix(v.name, ctx.pkgPath+"."),
+			docEscape(strings.ReplaceAll(v.decl, "`", "'")), docEscape(v.reason))
 	}
 	b.WriteString("-/\nnoncomputable def skipped' : List go.SkippedVar := [")
 	for i, v := range ctx.skipped {
 		if i > 0 {
 			b.WriteString(",")
 		}
-		fmt.Fprintf(&b, "\n  ⟨%s, %s⟩", glang.LeanRawString(v.name), glang.LeanRawString(v.reason))
+		fmt.Fprintf(&b, "\n  ⟨%s, %s, %s⟩", glang.LeanRawString(v.name), glang.LeanRawString(v.reason),
+			glang.LeanRawString(v.decl))
 	}
 	b.WriteString("]")
 	return []glang.Decl{glang.VerbatimDecl{Content: b.String()}}
@@ -226,7 +297,7 @@ func (ctx *Ctx) checkNotSkipped(n ast.Node, v *types.Var) {
 func (ctx *Ctx) initAction(init *types.Initializer) declfilter.Action {
 	actions := make(map[declfilter.Action][]string)
 	for _, v := range init.Lhs {
-		a := ctx.filter.GetAction(v.Name())
+		a := ctx.varAction(v.Name(), v.Pos())
 		if a == declfilter.Trust {
 			a = declfilter.Axiomatize
 		}
@@ -247,99 +318,4 @@ func (ctx *Ctx) initAction(init *types.Initializer) declfilter.Action {
 		varNames(init.Lhs), strings.Join(actions[declfilter.Translate], ", "),
 		strings.Join(actions[declfilter.Axiomatize], ", "))
 	panic("unreachable")
-}
-
-// skipLint returns warnings (D9) for the skipped initializers that store to
-// a package-level variable, directly or through a function of the package
-// they call (transitively): such an effect beyond the variable is exactly
-// what a skip entry's reason must rule out, so goose points at it. It is a
-// warning, not an error: the store may be to a variable the initializer
-// itself allocates, or unreachable. Calls into other packages are not
-// followed (the reason must cover them).
-func (ctx *Ctx) skipLint(pkg *packages.Package) []string {
-	funcs := make(map[*types.Func]*ast.FuncDecl)
-	for _, f := range pkg.Syntax {
-		for _, d := range f.Decls {
-			if d, ok := d.(*ast.FuncDecl); ok && d.Body != nil {
-				if fn, ok := ctx.info.Defs[d.Name].(*types.Func); ok {
-					funcs[fn] = d
-				}
-			}
-		}
-	}
-	isPkgVar := func(e ast.Expr) (*types.Var, bool) {
-		for {
-			switch x := e.(type) {
-			case *ast.ParenExpr:
-				e = x.X
-			case *ast.SelectorExpr:
-				if v, ok := ctx.info.ObjectOf(x.Sel).(*types.Var); ok && !v.IsField() {
-					return v, v.Parent() == v.Pkg().Scope()
-				}
-				e = x.X
-			case *ast.IndexExpr:
-				e = x.X
-			case *ast.StarExpr:
-				e = x.X
-			case *ast.Ident:
-				v, ok := ctx.info.ObjectOf(x).(*types.Var)
-				return v, ok && v.Pkg() != nil && v.Parent() == v.Pkg().Scope()
-			default:
-				return nil, false
-			}
-		}
-	}
-	var warnings []string
-	for _, init := range ctx.info.InitOrder {
-		if ctx.filter.GetAction(init.Lhs[0].Name()) != declfilter.Skip {
-			continue
-		}
-		visited := make(map[*types.Func]bool)
-		var stores []string
-		var visit func(n ast.Node, where string)
-		visit = func(n ast.Node, where string) {
-			ast.Inspect(n, func(n ast.Node) bool {
-				var lhs []ast.Expr
-				switch s := n.(type) {
-				case *ast.AssignStmt:
-					lhs = s.Lhs
-				case *ast.IncDecStmt:
-					lhs = []ast.Expr{s.X}
-				case *ast.CallExpr:
-					var id *ast.Ident
-					switch f := s.Fun.(type) {
-					case *ast.Ident:
-						id = f
-					case *ast.SelectorExpr:
-						id = f.Sel
-					}
-					if id != nil {
-						if fn, ok := ctx.info.Uses[id].(*types.Func); ok && !visited[fn] {
-							if d, ok := funcs[fn]; ok {
-								visited[fn] = true
-								visit(d.Body, fn.Name())
-							}
-						}
-					}
-				}
-				for _, l := range lhs {
-					if v, ok := isPkgVar(l); ok {
-						pos := ctx.fset.Position(l.Pos())
-						stores = append(stores, fmt.Sprintf("%s (in %s, %s:%d)",
-							v.Name(), where, filepath.Base(pos.Filename), pos.Line))
-					}
-				}
-				return true
-			})
-		}
-		visit(init.Rhs, "the initializer")
-		if len(stores) > 0 {
-			pos := ctx.fset.Position(init.Lhs[0].Pos())
-			warnings = append(warnings, fmt.Sprintf(
-				"%s:%d: skipped initializer of %s stores to package variables: %s; "+
-					"its skip reason must show this is unobservable",
-				filepath.Base(pos.Filename), pos.Line, varNames(init.Lhs), strings.Join(stores, ", ")))
-		}
-	}
-	return warnings
 }

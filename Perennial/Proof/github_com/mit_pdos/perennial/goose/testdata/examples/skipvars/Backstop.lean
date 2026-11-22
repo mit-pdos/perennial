@@ -26,8 +26,13 @@ example [GooseExts] [GoGlobalContext] : GoString := github_com.mit_pdos.perennia
 
 example : (github_com.mit_pdos.perennial.goose.testdata.examples.skipvars.skipped'.map (·.name)) =
     ["github.com/mit-pdos/perennial/goose/testdata/examples/skipvars.X", "github.com/mit-pdos/perennial/goose/testdata/examples/skipvars.a", "github.com/mit-pdos/perennial/goose/testdata/examples/skipvars.b", "github.com/mit-pdos/perennial/goose/testdata/examples/skipvars.Z",
-     "github.com/mit-pdos/perennial/goose/testdata/examples/skipvars._@skipvars.go:38: var _ I = (*T)(nil)",
-     "github.com/mit-pdos/perennial/goose/testdata/examples/skipvars._@skipvars.go:39: var _ = T{}"] := by
+     "github.com/mit-pdos/perennial/goose/testdata/examples/skipvars._@skipvars.go:38", "github.com/mit-pdos/perennial/goose/testdata/examples/skipvars._@skipvars.go:39", "github.com/mit-pdos/perennial/goose/testdata/examples/skipvars.table"] := by
+  rfl
+
+-- each entry carries the variable's Go declaration (a blank variable's too)
+example : (github_com.mit_pdos.perennial.goose.testdata.examples.skipvars.skipped'.map (·.decl)).take 6 =
+    ["var X = newX()", "var a, b = pair()", "var a, b = pair()", "var Z T",
+     "var _ I = (*T)(nil)", "var _ = T{}"] := by
   rfl
 
 end Perennial

@@ -4,9 +4,22 @@ names = ["X"]
 reason = "newX allocates a uint64 and returns its address: it terminates, cannot panic, and has no effect beyond X"
 
 [[skip]]
-names = ["a", "b", "Z"]
-reason = "pair returns two constants; Z has no initializer"
+names = ["a", "b"]
+reason = "pair returns two constants: it terminates, cannot panic, and has no effect beyond a and b"
 
 [[skip]]
-names = ["_"]
-reason = "an interface check and a struct literal: no calls"
+names = ["Z"]
+reason = "no initializer: Go zeroes Z, with no effect beyond it"
+
+# blank variables, each by its position (a new or moved one fails the translation)
+[[skip]]
+names = ["_@skipvars.go:38"]
+reason = "an interface check, (*T)(nil) converted to I: no calls, no effect"
+
+[[skip]]
+names = ["_@skipvars.go:39"]
+reason = "a struct literal T{}: no calls, no effect"
+
+[[skip]]
+names = ["table"]
+reason = "an array of constants: no calls, no effect beyond table"

@@ -45,3 +45,7 @@ var last = mid + 1
 func Last() uint64 {
 	return last
 }
+
+// skipped: a long initializer, listed in skipped' cut short with a hash of
+// the whole declaration
+var table = [12]uint64{1000000001, 1000000002, 1000000003, 1000000004, 1000000005, 1000000006, 1000000007, 1000000008, 1000000009, 1000000010, 1000000011, 1000000012}

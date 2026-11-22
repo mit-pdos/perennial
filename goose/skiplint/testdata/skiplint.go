@@ -1,4 +1,4 @@
-// Package skiplint is the input of TestSkipLint (skip_test.go): skipped
+// Package skiplint is the input of TestCheck (../skiplint_test.go): skipped
 // initializers that store to package variables, directly or through the
 // package's functions, and ones that do not.
 package skiplint
@@ -34,3 +34,14 @@ func newC() *uint64 {
 
 // only allocates
 var C = newC()
+
+var tbl uint64
+
+// stores to tbl through an alias: the address is flagged
+func setTbl() uint64 {
+	p := &tbl
+	*p = 7
+	return 0
+}
+
+var D = setTbl()

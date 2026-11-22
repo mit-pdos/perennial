@@ -74,12 +74,12 @@ goose config): no Lean name, allocation or initialization step, so no translated
 them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot
 panic, and has no effect beyond the variable), for the reason given.
 
-- `cryptocustomrand`: `godebug.New("cryptocustomrand")` (ed25519.go): `internal/godebug`'s `New(name)` is
+- `cryptocustomrand` (`var cryptocustomrand = godebug.New("cryptocustomrand")`): `godebug.New("cryptocustomrand")` (ed25519.go): `internal/godebug`'s `New(name)` is
 `return &Setting{name: name}`, an allocation: cannot panic, no effect beyond the variable. Read
 only by `GenerateKey`, which is not translated.
 -/
 noncomputable def skipped' : List go.SkippedVar := [
-  ⟨"crypto/ed25519.cryptocustomrand", "`godebug.New(\"cryptocustomrand\")` (ed25519.go): `internal/godebug`'s `New(name)` is\n`return &Setting{name: name}`, an allocation: cannot panic, no effect beyond the variable. Read\nonly by `GenerateKey`, which is not translated."⟩]
+  ⟨"crypto/ed25519.cryptocustomrand", "`godebug.New(\"cryptocustomrand\")` (ed25519.go): `internal/godebug`'s `New(name)` is\n`return &Setting{name: name}`, an allocation: cannot panic, no effect beyond the variable. Read\nonly by `GenerateKey`, which is not translated.", "var cryptocustomrand = godebug.New(\"cryptocustomrand\")"⟩]
 
 noncomputable instance info' : PkgInfo pkg_id.crypto.ed25519 where
   pkgImportedPkgs := []

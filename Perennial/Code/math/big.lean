@@ -542,12 +542,12 @@ goose config): no Lean name, allocation or initialization step, so no translated
 them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot
 panic, and has no effect beyond the variable), for the reason given.
 
-- `hasADX`: `cpu.X86.HasADX && cpu.X86.HasBMI2` (arith_amd64.go): reads two booleans of `internal/cpu`,
+- `hasADX` (`var hasADX = cpu.X86.HasADX && cpu.X86.HasBMI2`): `cpu.X86.HasADX && cpu.X86.HasBMI2` (arith_amd64.go): reads two booleans of `internal/cpu`,
 which the runtime sets before any package is initialized; cannot panic, no effect beyond the
 variable. Read only by the assembly of `addMulVVWW` (arith_amd64.s), which is not translated.
 -/
 noncomputable def skipped' : List go.SkippedVar := [
-  ⟨"math/big.hasADX", "`cpu.X86.HasADX && cpu.X86.HasBMI2` (arith_amd64.go): reads two booleans of `internal/cpu`,\nwhich the runtime sets before any package is initialized; cannot panic, no effect beyond the\nvariable. Read only by the assembly of `addMulVVWW` (arith_amd64.s), which is not translated."⟩]
+  ⟨"math/big.hasADX", "`cpu.X86.HasADX && cpu.X86.HasBMI2` (arith_amd64.go): reads two booleans of `internal/cpu`,\nwhich the runtime sets before any package is initialized; cannot panic, no effect beyond the\nvariable. Read only by the assembly of `addMulVVWW` (arith_amd64.s), which is not translated.", "var hasADX = cpu.X86.HasADX && cpu.X86.HasBMI2"⟩]
 
 noncomputable instance info' : PkgInfo pkg_id.math.big where
   pkgImportedPkgs := [pkg_id.fmt, pkg_id.errors]

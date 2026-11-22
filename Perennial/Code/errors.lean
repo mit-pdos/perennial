@@ -539,13 +539,13 @@ goose config): no Lean name, allocation or initialization step, so no translated
 them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot
 panic, and has no effect beyond the variable), for the reason given.
 
-- `errorType`: `reflectlite.TypeOf((*error)(nil)).Elem()` (wrap.go): reads the static runtime type descriptor
+- `errorType` (`var errorType = reflectlite.TypeOf((*error)(nil)).Elem()`): `reflectlite.TypeOf((*error)(nil)).Elem()` (wrap.go): reads the static runtime type descriptor
 of `error` (`abi.TypeOf`, through `unsafe`), which the semantics cannot represent; it allocates
 nothing the program can see, cannot panic and has no other effect. Read only by `As`, which is
 not translated.
 -/
 noncomputable def skipped' : List go.SkippedVar := [
-  ⟨"errors.errorType", "`reflectlite.TypeOf((*error)(nil)).Elem()` (wrap.go): reads the static runtime type descriptor\nof `error` (`abi.TypeOf`, through `unsafe`), which the semantics cannot represent; it allocates\nnothing the program can see, cannot panic and has no other effect. Read only by `As`, which is\nnot translated."⟩]
+  ⟨"errors.errorType", "`reflectlite.TypeOf((*error)(nil)).Elem()` (wrap.go): reads the static runtime type descriptor\nof `error` (`abi.TypeOf`, through `unsafe`), which the semantics cannot represent; it allocates\nnothing the program can see, cannot panic and has no other effect. Read only by `As`, which is\nnot translated.", "var errorType = reflectlite.TypeOf((*error)(nil)).Elem()"⟩]
 
 noncomputable instance info' : PkgInfo pkg_id.errors where
   pkgImportedPkgs := []

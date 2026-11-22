@@ -119,20 +119,22 @@ goose config): no Lean name, allocation or initialization step, so no translated
 them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot
 panic, and has no effect beyond the variable), for the reason given.
 
-- `X`: newX allocates a uint64 and returns its address: it terminates, cannot panic, and has no effect beyond X
-- `a`: pair returns two constants; Z has no initializer
-- `b`: pair returns two constants; Z has no initializer
-- `Z`: pair returns two constants; Z has no initializer
-- `_@skipvars.go:38: var _ I = (*T)(nil)`: an interface check and a struct literal: no calls
-- `_@skipvars.go:39: var _ = T{}`: an interface check and a struct literal: no calls
+- `X` (`var X = newX()`): newX allocates a uint64 and returns its address: it terminates, cannot panic, and has no effect beyond X
+- `a` (`var a, b = pair()`): pair returns two constants: it terminates, cannot panic, and has no effect beyond a and b
+- `b` (`var a, b = pair()`): pair returns two constants: it terminates, cannot panic, and has no effect beyond a and b
+- `Z` (`var Z T`): no initializer: Go zeroes Z, with no effect beyond it
+- `_@skipvars.go:38` (`var _ I = (*T)(nil)`): an interface check, (*T)(nil) converted to I: no calls, no effect
+- `_@skipvars.go:39` (`var _ = T{}`): a struct literal T{}: no calls, no effect
+- `table` (`var table = [12]uint64{1000000001, 1000000002, 1000000003, 1000000004, 1000000005, 1000000006, 1000000007, 1000000008, 1 … [sha256:a52e01dab471a2e7]`): an array of constants: no calls, no effect beyond table
 -/
 noncomputable def skipped' : List go.SkippedVar := [
-  ⟨"github.com/mit-pdos/perennial/goose/testdata/examples/skipvars.X", "newX allocates a uint64 and returns its address: it terminates, cannot panic, and has no effect beyond X"⟩,
-  ⟨"github.com/mit-pdos/perennial/goose/testdata/examples/skipvars.a", "pair returns two constants; Z has no initializer"⟩,
-  ⟨"github.com/mit-pdos/perennial/goose/testdata/examples/skipvars.b", "pair returns two constants; Z has no initializer"⟩,
-  ⟨"github.com/mit-pdos/perennial/goose/testdata/examples/skipvars.Z", "pair returns two constants; Z has no initializer"⟩,
-  ⟨"github.com/mit-pdos/perennial/goose/testdata/examples/skipvars._@skipvars.go:38: var _ I = (*T)(nil)", "an interface check and a struct literal: no calls"⟩,
-  ⟨"github.com/mit-pdos/perennial/goose/testdata/examples/skipvars._@skipvars.go:39: var _ = T{}", "an interface check and a struct literal: no calls"⟩]
+  ⟨"github.com/mit-pdos/perennial/goose/testdata/examples/skipvars.X", "newX allocates a uint64 and returns its address: it terminates, cannot panic, and has no effect beyond X", "var X = newX()"⟩,
+  ⟨"github.com/mit-pdos/perennial/goose/testdata/examples/skipvars.a", "pair returns two constants: it terminates, cannot panic, and has no effect beyond a and b", "var a, b = pair()"⟩,
+  ⟨"github.com/mit-pdos/perennial/goose/testdata/examples/skipvars.b", "pair returns two constants: it terminates, cannot panic, and has no effect beyond a and b", "var a, b = pair()"⟩,
+  ⟨"github.com/mit-pdos/perennial/goose/testdata/examples/skipvars.Z", "no initializer: Go zeroes Z, with no effect beyond it", "var Z T"⟩,
+  ⟨"github.com/mit-pdos/perennial/goose/testdata/examples/skipvars._@skipvars.go:38", "an interface check, (*T)(nil) converted to I: no calls, no effect", "var _ I = (*T)(nil)"⟩,
+  ⟨"github.com/mit-pdos/perennial/goose/testdata/examples/skipvars._@skipvars.go:39", "a struct literal T{}: no calls, no effect", "var _ = T{}"⟩,
+  ⟨"github.com/mit-pdos/perennial/goose/testdata/examples/skipvars.table", "an array of constants: no calls, no effect beyond table", "var table = [12]uint64{1000000001, 1000000002, 1000000003, 1000000004, 1000000005, 1000000006, 1000000007, 1000000008, 1 … [sha256:a52e01dab471a2e7]"⟩]
 
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.skipvars where
   pkgImportedPkgs := []
