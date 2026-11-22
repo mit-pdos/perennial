@@ -251,6 +251,7 @@ def main():
             "./crashfs/...",
             "./netfs/...",
             "./unsafememory/...",
+            "./xpkgalias/...",
         )
 
     if args.models:

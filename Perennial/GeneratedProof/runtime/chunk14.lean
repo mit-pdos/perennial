@@ -8,8 +8,8 @@ public import Perennial.GeneratedProof.internal.runtime.sys
 public import Perennial.Golang.Theory
 public import Perennial.Code.runtime
 public import Perennial.GeneratedProof.runtime.chunk7
-public import Perennial.GeneratedProof.runtime.chunk10
 public import Perennial.GeneratedProof.runtime.chunk11
+public import Perennial.GeneratedProof.runtime.chunk12
 
 @[expose] public section
 

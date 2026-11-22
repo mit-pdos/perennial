@@ -1265,3 +1265,34 @@ etcd-grove's WAL proofs: equality, and `string(c)` only for ASCII `c`), which pu
 into closed statements.
 
 **Why.** Signed off by the user, 2026-11-21 (relayed by the coordinator etcd-grove-03), after Case 39.
+
+## Case 41 — ACCEPTED: every type alias has a reducible descriptor (branch `goose-alias-ty`)
+
+**Symptom.** Translation incomplete, and a misnamed declaration. Only an alias the configuration
+translates got its descriptor (`@[reducible] def A.ty := <target>`); an axiomatized one was
+`opaque A : go.GoType` (a name nothing refers to: references are `A.ty`), a trusted one nothing.
+So `autotypes` refused every struct type with a field of another package's alias ("we do not know
+if the alias is translated in its package"), and `typeNameable` spelled out such aliases in
+signatures. Kubernetes' and protobuf's structs hit it (etcd-grove, closed PR #646).
+
+**Witness.** `package dep; type L = dep2.Y` axiomatized; `type S struct{ p *dep.L }` in another
+package: axiomatized by `translate_types` although Go needs nothing from dep's configuration.
+
+**Taken.** An alias denotes its target, so there is nothing to hide: `typeDecl` emits `A.ty`
+(reducible, `types.Unalias` of the alias, with its type parameters) for every alias whatever the
+action, the target written with the types the package cannot name spelled out (`go.Named
+"<path>.<Name>" args`, as in signatures) and same-package aliases as what they denote (aliases are
+declared in source order; the flag of unnamed struct fields, renamed `beforeAliases`). When goose
+cannot translate the target (a tagged unnamed struct) an untranslated alias's `A.ty` is opaque,
+as an untranslatable named type's underlying. `autotypes` drops its alias decisions, the
+cross-package refusal and the same-package alias ordering, and checks an alias's target only
+where the Lean value type is needed. Regenerated: runtime (14 `opaque` aliases become `A.ty`, and
+13 structs with fields like `*_type` are now translated), reflect (8 `opaque` aliases). Test `xpkgalias`
+(translated, axiomatized, trusted, generic, later and cross-package alias-of-alias aliases; an
+opaque one) with `rfl` checks in Perennial/Proof.
+
+**Not taken.** PR #646: read the dependency's configuration to learn whether it translates the
+alias (configuration coupling between packages, for a fact Go fixes).
+
+**Why.** Approved by the owner (upamanyus) directly, 2026-11-22: "every type alias always gets a
+reducible descriptor A.ty defined as its target, regardless of the package's config action".

@@ -99,8 +99,10 @@ type Ctx struct {
 	// mention; see anonStructOf)
 	anonStructs     map[string]*anonStruct
 	anonStructOrder []*anonStruct
-	// glangType is translating the field types of an unnamed struct type
-	inAnonStructFields bool
+	// glangType is translating a type declared before the package's aliases
+	// may be (the field types of an unnamed struct type, an alias's target),
+	// and writes the package's aliases as the types they denote
+	beforeAliases bool
 
 	importNames map[string]*types.PkgName
 	// spellOut: glangType writes the types this translation cannot name
