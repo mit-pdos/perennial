@@ -106,6 +106,12 @@ def main():
         action="store_true",
     )
     parser.add_argument(
+        "--no-skiplint",
+        help="do not run goose's skiplint (a best-effort lint of the goose configs' skip "
+        "entries, run after translating; its warnings never fail the update)",
+        action="store_true",
+    )
+    parser.add_argument(
         "--goose-examples",
         help="also translate tests in Goose",
         action="store_true",
@@ -188,6 +194,33 @@ def main():
             check=True,
         )
 
+    # skiplint (goose/cmd/skiplint): separate from the translator, which neither
+    # runs it nor depends on it; its warnings are printed at the end
+    skiplint_warnings = []
+    skiplint_bin = None
+    if not args.modelcheck and not args.no_skiplint and not args.dry_run:
+        skiplint_dir = tempfile.mkdtemp(prefix="skiplint-")
+        atexit.register(shutil.rmtree, skiplint_dir, ignore_errors=True)
+        skiplint_bin = path.join(skiplint_dir, "skiplint")
+        subprocess.run(
+            ["go", "build", "-o", skiplint_bin, "./goose/cmd/skiplint"],
+            cwd=perennial_dir,
+            check=True,
+        )
+
+    def run_skiplint(src_path, pkgs):
+        if skiplint_bin is None:
+            return
+        cmd = [skiplint_bin, "-configdir", code_dir, "-dir", src_path] + pkgs
+        if args.verbose:
+            print(" ".join(cmd))
+        r = subprocess.run(cmd, capture_output=True, text=True)
+        skiplint_warnings.extend(r.stdout.splitlines())
+        if r.returncode != 0:
+            skiplint_warnings.append(
+                f"skiplint did not run on {src_path}: {' '.join(pkgs)}: {r.stderr.strip()}"
+            )
+
     def run_goose(src_path, *pkgs, extra_args=None):
         if src_path is None:
             return
@@ -221,6 +254,7 @@ def main():
             ]
             + pkgs
         )
+        run_skiplint(src_path, pkgs)
 
         proofgen_bin = path.join(gopath, "bin", "proofgen")
 
@@ -244,13 +278,14 @@ def main():
         run_goose(
             path.join(goose_dir, "testdata/examples"),
             "./filteredimport",
-            "./skipinit/...",
+            "./skipvars",
             "./semantics",
             "./unittest/...",
             "./channel/...",
             "./crashfs/...",
             "./netfs/...",
             "./unsafememory/...",
+            "./xpkgalias/...",
         )
 
     if args.models:
@@ -310,6 +345,10 @@ def main():
     if args.std_lib:
         run_goose(goose_dir, "internal/runtime/atomic", "internal/runtime/sys")
     pm.wait_all()
+    if skiplint_warnings:
+        print("skiplint (best-effort; every skip reason is still reviewed):", file=sys.stderr)
+        for w in skiplint_warnings:
+            print("  " + w, file=sys.stderr)
     if modelcheck_failures:
         print("modelcheck reported code the semantics models incorrectly in:", file=sys.stderr)
         for f in modelcheck_failures:

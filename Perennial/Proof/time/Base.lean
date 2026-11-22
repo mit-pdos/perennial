@@ -17,7 +17,7 @@ Notes on the package's specs:
   translated `AfterFunc`), `stopTimer` and `resetTimer` (used by the translated `Timer.Stop`
   and `Timer.Reset`), and `NewTimer`, `NewTicker`, `Ticker.Stop` and `Ticker.Reset`. All the
   timer and ticker specs are proved over these models. `Time.After` is translated and proved.
-* `Duration.Seconds` (over the semantics' uninterpreted floating-point operations) and
+* `Duration.Seconds` (over the semantics' IEEE 754 operations) and
   `Duration.String` (`format`, `fmtFrac`, `fmtInt`: a 32-byte buffer, every index in bounds) are
   translated and proved; their specs say only that they return some value.
 * The runtime's monotonic clock is modeled as runtime state (`TrustedCode/time.lean`, "The

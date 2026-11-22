@@ -9,6 +9,9 @@ for each proved function `F`. By Go source file:
 * `conversions.go`, `int_conversions.go`: conversions (the `[]byte -> string`
   conversion is handled with `wp_bytes_to_string`) and integer conversions.
 * `interfaces_complex.go`, `type_equality.go`, `structs.go`, `new.go`, `slices.go`.
+* `labels.go`: labeled `break` and `continue` (`catchLabel` at the labeled statement): out
+  of inner loops and `switch`es (`doPrintf`'s shape), of a labeled `switch`, and of labeled
+  range loops; `countPairs` for every `n`.
 * `loopvars.go`: each iteration of a loop has its own iteration variables.
 * `nil.go`: comparisons with `nil`.
 * `panic.go`: `panic`.

@@ -23,7 +23,7 @@ variable [package_sem : bytes.Assumptions]
 theorem bytes.NewBuffer.wp_proof :
     bytes.NewBuffer.spec (GF := GF) (hG := hG) := by
   intro b bs
-  wp_start as Hb
+  wp_start as ⟨Hb, Hc⟩
   ihave %Hlen := ownSlice_len $$ Hb
   wp_auto
   iapply HΦ

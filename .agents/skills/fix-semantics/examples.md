@@ -1265,3 +1265,73 @@ etcd-grove's WAL proofs: equality, and `string(c)` only for ASCII `c`), which pu
 into closed statements.
 
 **Why.** Signed off by the user, 2026-11-21 (relayed by the coordinator etcd-grove-03), after Case 39.
+
+## Case 41 — ACCEPTED: every type alias has a reducible descriptor (branch `goose-alias-ty`)
+
+**Symptom.** Translation incomplete, and a misnamed declaration. Only an alias the configuration
+translates got its descriptor (`@[reducible] def A.ty := <target>`); an axiomatized one was
+`opaque A : go.GoType` (a name nothing refers to: references are `A.ty`), a trusted one nothing.
+So `autotypes` refused every struct type with a field of another package's alias ("we do not know
+if the alias is translated in its package"), and `typeNameable` spelled out such aliases in
+signatures. Kubernetes' and protobuf's structs hit it (etcd-grove, closed PR #646).
+
+**Witness.** `package dep; type L = dep2.Y` axiomatized; `type S struct{ p *dep.L }` in another
+package: axiomatized by `translate_types` although Go needs nothing from dep's configuration.
+
+**Taken.** An alias denotes its target, so there is nothing to hide: `typeDecl` emits `A.ty`
+(reducible, `types.Unalias` of the alias, with its type parameters) for every alias whatever the
+action, the target written with the types the package cannot name spelled out (`go.Named
+"<path>.<Name>" args`, as in signatures) and same-package aliases as what they denote (aliases are
+declared in source order; the flag of unnamed struct fields, renamed `beforeAliases`). When goose
+cannot translate the target (a tagged unnamed struct) an untranslated alias's `A.ty` is opaque,
+as an untranslatable named type's underlying. `autotypes` drops its alias decisions, the
+cross-package refusal and the same-package alias ordering, and checks an alias's target only
+where the Lean value type is needed. Regenerated: runtime (14 `opaque` aliases become `A.ty`, and
+13 structs with fields like `*_type` are now translated), reflect (8 `opaque` aliases). Test `xpkgalias`
+(translated, axiomatized, trusted, generic, later and cross-package alias-of-alias aliases; an
+opaque one) with `rfl` checks in Perennial/Proof.
+
+**Not taken.** PR #646: read the dependency's configuration to learn whether it translates the
+alias (configuration coupling between packages, for a fact Go fixes).
+
+**Why.** Approved by the owner (upamanyus) directly, 2026-11-22: "every type alias always gets a
+reducible descriptor A.ty defined as its target, regardless of the package's config action".
+
+## Case 42 — ACCEPTED: labeled `break`/`continue`: `breakTo`/`continueTo` outcomes caught by `catchLabel` (branch `goose-labels`)
+
+**Symptom.** Incomplete. Goose refused every labeled statement (`statement *ast.LabeledStmt`), so
+`break L`/`continue L` had no translation; `fmt`'s `doPrintf` (`continue formatLoop` from a
+`switch` in a `switch` in an inner `for`, `break simpleFormat` from a `switch`) blocked the real
+`fmt` (#671).
+
+**Witness.** `L: for i { for j { switch { case j==1: continue L; case i==2: break L } } }` (Go:
+`[0 10]`); `continueFromNestedSwitch` and `miniPrintf` in `semantics/labels.go`.
+
+**Taken.** Three GooseLang definitions in `Defn/Loop.lean`, siblings of `doBreak`/`catchBreak`:
+`doBreakTo := λ: "l", (#"breakTo", "l")`, `doContinueTo := λ: "l", (#"continueTo", "l")`, and
+`catchLabel l b`, which turns `breakTo l` into `break`, `continueTo l` into `continue` and passes
+anything else on. No step rule, and `doFor`, the range helpers, `map.forRange`, `func.forRange`,
+`catchBreak` and `exceptionSeq` are unchanged: they already pass on any outcome that is not
+`execute`/`continue`/`break`, as they do `return`. Goose: `break L`/`continue L` become
+`doBreakTo #"L"`/`doContinueTo #"L"`; a labeled `for` or `range` has its body (inside the body
+thunk, so `continue L` runs the post statement and the loop-variable copy) wrapped in
+`catchLabel #"L"`; a labeled `switch`, type switch or `select` becomes `catchBreak (catchLabel
+#"L" s)`; `goto` and a label on any other statement stay refused (`unsupported`; negative tests
+`goto_stmt`, `label_block`). Unlabeled `break`/`continue` translate byte-for-byte as before (every other
+gold file and the regenerated std-lib/model output unchanged). Proof side: `forPostcondition`,
+`forRangePostcondition` and `forMapPostcondition` gain a "labeled outcome" disjunct
+(`wp_for_post_labeled`), with `PureWp` instances for `doBreakTo`/`doContinueTo`, `catchLabel` and
+the passes through `exceptionSeq`/`catchBreak`. Semantics tests `labels.go` (Go-checked), proofs in
+`Perennial/Proof/.../semantics/`. Cost: 3 definitions, 0 rules, 2 goose cases (`LabeledStmt`,
+labeled `BranchStmt`) plus a parameter on `forStmt`/`rangeStmt`, 2 negative tests.
+
+**Not taken.** (B) The label inside the existing `break`/`continue` value, with `doFor`, every range
+helper and `map.forRange` taking and comparing a label: changes existing definitions, every loop
+goose emits and `wp_for`'s statement (rejected on cost, like Case 10). (C) Goose desugaring with
+flag cells and no new definitions: context-dependent translation and more trusted goose code. A
+`doForLabeled` primitive that compares the label itself would still need `catchLabel` for
+`switch`/`select` and the range helpers.
+
+**Why.** Approved by the owner (upamanyus) directly, 2026-11-22: design A of the stage-0 plan for the
+real `fmt`, part 1, "new outcomes `breakTo`/`continueTo` plus `catchLabel` at the labeled
+statement", with no new step rules and unlabeled output unchanged.

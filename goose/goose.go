@@ -99,8 +99,10 @@ type Ctx struct {
 	// mention; see anonStructOf)
 	anonStructs     map[string]*anonStruct
 	anonStructOrder []*anonStruct
-	// glangType is translating the field types of an unnamed struct type
-	inAnonStructFields bool
+	// glangType is translating a type declared before the package's aliases
+	// may be (the field types of an unnamed struct type, an alias's target),
+	// and writes the package's aliases as the types they denote
+	beforeAliases bool
 
 	importNames map[string]*types.PkgName
 	// spellOut: glangType writes the types this translation cannot name
@@ -118,6 +120,18 @@ type Ctx struct {
 
 	filter declfilter.DeclFilter
 	out    outputDecls
+
+	// The goose config directory, to read the skip entries of the packages
+	// this one imports (see skip.go).
+	configDir string
+	// imported package path -> its skipped variables -> reason
+	depSkips map[string]map[string]string
+	// the package's skipped variables, in source order
+	skipped []skippedVar
+	// whether the package skips blank variables (then it skips all of them)
+	skipsBlank bool
+	// the translated declaration being translated, for error messages
+	curDecl string
 }
 
 // NewPkgCtx initializes a context based on a properly loaded package
@@ -466,6 +480,7 @@ func (ctx *Ctx) selectorExprAddr(e *ast.SelectorExpr) glang.Expr {
 	selection := ctx.info.Selections[e]
 	if selection == nil {
 		if v, ok := ctx.info.ObjectOf(e.Sel).(*types.Var); ok {
+			ctx.checkNotSkipped(e, v)
 			return glang.NewCallExpr(glang.VerbatimExpr("GlobalVarAddr"),
 				ctx.termIdent(ctx.pkgRef(v.Pkg())+"."+v.Name()),
 				glang.Tt,
@@ -1382,7 +1397,18 @@ func (ctx *Ctx) loopVarEscapes(v types.Object, nodes ...ast.Node) bool {
 	return escapes
 }
 
-func (ctx *Ctx) forStmt(s *ast.ForStmt, cont glang.Expr) glang.Expr {
+// loopBody translates the body of a for or range statement; with a label L,
+// `break L` and `continue L` in it end the iteration as `break` and `continue`.
+func (ctx *Ctx) loopBody(body *ast.BlockStmt, label *ast.Ident) glang.Expr {
+	e := ctx.blockStmt(body, nil)
+	if label != nil {
+		e = glang.CatchLabelExpr{Label: label.Name, Body: e}
+	}
+	return e
+}
+
+// forStmt translates a for statement with the label label (nil if none).
+func (ctx *Ctx) forStmt(s *ast.ForStmt, label *ast.Ident, cont glang.Expr) glang.Expr {
 	var cond glang.Expr = glang.GooseBoolLiteral(true)
 	if s.Cond != nil {
 		cond = ctx.expr(s.Cond)
@@ -1391,7 +1417,7 @@ func (ctx *Ctx) forStmt(s *ast.ForStmt, cont glang.Expr) glang.Expr {
 	if s.Post != nil {
 		post = ctx.stmt(s.Post, nil)
 	}
-	body := ctx.blockStmt(s.Body, nil)
+	body := ctx.loopBody(s.Body, label)
 
 	// Each iteration has its own copy of each variable x the init statement
 	// declares, which matters only if the loop captures x or takes its address
@@ -1433,7 +1459,8 @@ func (ctx *Ctx) forStmt(s *ast.ForStmt, cont glang.Expr) glang.Expr {
 	return glang.SeqExpr{Expr: e, Cont: cont}
 }
 
-func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
+// rangeStmt translates a range statement with the label label (nil if none).
+func (ctx *Ctx) rangeStmt(s *ast.RangeStmt, label *ast.Ident) glang.Expr {
 	if n, msg, bad := modelcheck.Range(ctx.info, s); bad {
 		ctx.unsupported(n, "%s", msg)
 	}
@@ -1445,7 +1472,7 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 		// recover() in the body of a range over a function returns nil in Go
 		ctx.recoverOK = false
 	}
-	body := ctx.blockStmt(s.Body, nil)
+	body := ctx.loopBody(s.Body, label)
 	ctx.recoverOK = recoverOK
 	var shared []*ast.Ident
 	for _, kv := range []struct {
@@ -1697,8 +1724,9 @@ func (ctx *Ctx) exprAddr(e ast.Expr) glang.Expr {
 		return ctx.exprAddr(e.X)
 	case *ast.Ident:
 		obj := ctx.info.ObjectOf(e)
-		if _, ok := obj.(*types.Var); ok {
+		if v, ok := obj.(*types.Var); ok {
 			if obj.Pkg().Scope() == obj.Parent() {
+				ctx.checkNotSkipped(e, v)
 				return glang.NewCallExpr(glang.VerbatimExpr("GlobalVarAddr"),
 					ctx.termIdent(e.Name),
 					glang.Tt,
@@ -1959,6 +1987,17 @@ func (ctx *Ctx) incDecStmt(stmt *ast.IncDecStmt, cont glang.Expr) glang.Expr {
 }
 
 func (ctx *Ctx) branchStmt(s *ast.BranchStmt, cont glang.Expr) glang.Expr {
+	if s.Tok == token.GOTO {
+		ctx.unsupported(s, "goto")
+	}
+	if s.Label != nil {
+		if s.Tok == token.CONTINUE {
+			return glang.SeqExpr{Expr: glang.ContinueToExpr{Label: s.Label.Name}, Cont: cont}
+		}
+		if s.Tok == token.BREAK {
+			return glang.SeqExpr{Expr: glang.BreakToExpr{Label: s.Label.Name}, Cont: cont}
+		}
+	}
 	if s.Tok == token.CONTINUE {
 		return glang.SeqExpr{Expr: glang.ContinueExpr{}, Cont: cont}
 	}
@@ -1987,6 +2026,24 @@ func breaksOut(body *ast.BlockStmt) bool {
 		return !found
 	})
 	return found
+}
+
+// labeledStmt translates a for, range, switch, type switch or select statement
+// with a label L, the target of `break L` and `continue L` in it.
+func (ctx *Ctx) labeledStmt(s *ast.LabeledStmt, cont glang.Expr) glang.Expr {
+	switch stmt := s.Stmt.(type) {
+	case *ast.ForStmt:
+		return ctx.forStmt(stmt, s.Label, cont)
+	case *ast.RangeStmt:
+		return glang.SeqExpr{Expr: ctx.rangeStmt(stmt, s.Label), Cont: cont}
+	case *ast.SwitchStmt, *ast.TypeSwitchStmt, *ast.SelectStmt:
+		return glang.SeqExpr{
+			Expr: glang.CatchBreakExpr{Body: glang.CatchLabelExpr{Label: s.Label.Name, Body: ctx.stmt(stmt, nil)}},
+			Cont: cont,
+		}
+	}
+	ctx.unsupported(s, "label on a statement other than for, range, switch or select")
+	return nil
 }
 
 func (ctx *Ctx) goStmt(e *ast.GoStmt, cont glang.Expr) glang.Expr {
@@ -2490,9 +2547,11 @@ func (ctx *Ctx) stmt(s ast.Stmt, cont glang.Expr) glang.Expr {
 	case *ast.ForStmt:
 		// note that this might be a nested loop,
 		// in which case the loop var gets replaced by the inner loop.
-		return ctx.forStmt(s, cont)
+		return ctx.forStmt(s, nil, cont)
 	case *ast.RangeStmt:
-		return glang.SeqExpr{Expr: ctx.rangeStmt(s), Cont: cont}
+		return glang.SeqExpr{Expr: ctx.rangeStmt(s, nil), Cont: cont}
+	case *ast.LabeledStmt:
+		return ctx.labeledStmt(s, cont)
 	case *ast.BlockStmt:
 		return ctx.blockStmt(s, cont)
 	case *ast.SwitchStmt:
@@ -2536,6 +2595,8 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 	if funcName == "_" {
 		return
 	}
+	ctx.curDecl = funcName
+	defer func() { ctx.curDecl = "" }()
 
 	if d.Recv == nil {
 		funcName = ctx.funcDeclName(d)
@@ -2724,10 +2785,22 @@ func (ctx *Ctx) constantLiteral(e ast.Expr) glang.Expr {
 			}
 		case types.Float64, types.UntypedFloat:
 			f, _ := constant.Float64Val(val)
+			if f == 0 {
+				// -0 == 0 is true, so this turns -0 into +0: a Go constant is exact
+				// and never negative zero, but Float64Val returns -0 for a negative
+				// constant that underflows.
+				f = 0
+			}
 			bits := math.Float64bits(f)
 			return glang.Int64Val{Value: glang.ZLiteral{Value: new(big.Int).SetUint64(bits)}}
 		case types.Float32:
 			f, _ := constant.Float32Val(val)
+			if f == 0 {
+				// -0 == 0 is true, so this turns -0 into +0: a Go constant is exact
+				// and never negative zero, but Float32Val returns -0 for a negative
+				// constant that underflows.
+				f = 0
+			}
 			bits := math.Float32bits(f)
 			return glang.Int32Val{Value: glang.ZLiteral{Value: new(big.Int).SetUint64(uint64(bits))}}
 		}
@@ -2802,6 +2875,11 @@ func (ctx *Ctx) globalVarDecl(d *ast.GenDecl) {
 	for _, spec := range d.Specs {
 		s := spec.(*ast.ValueSpec)
 		for _, name := range s.Names {
+			if ctx.varAction(name.Name, name.Pos()) == declfilter.Skip {
+				// no name, X.init, allocation or init step (skip.go)
+				ctx.recordSkipped(s, name)
+				continue
+			}
 			if name.Name == "_" {
 				continue
 			}
@@ -3074,6 +3152,7 @@ func (ctx *Ctx) packagePropClass() []glang.Decl {
 func (ctx *Ctx) finalExtraDecls() {
 	var decls = []glang.Decl{}
 
+	decls = append(decls, ctx.skippedDecls()...)
 	decls = append(decls, glang.VerbatimDecl{Content: ctx.leanInfoInstance()})
 
 	initFunc := glang.FuncDecl{Name: "initialize'"}
@@ -3088,7 +3167,8 @@ func (ctx *Ctx) finalExtraDecls() {
 			glang.Tt), e)
 	}
 
-	if ctx.filter.GetAction("_") == declfilter.Axiomatize {
+	// (a package that skips blank variables lists all of them: checkSkipConfig)
+	if ctx.filter.GetAction("_") == declfilter.Axiomatize && !ctx.skipsBlank {
 		decls = append(decls, glang.AxiomDecl{
 			DeclName: "_'init",
 			Type:     glang.VerbatimExpr("val"),
@@ -3096,20 +3176,25 @@ func (ctx *Ctx) finalExtraDecls() {
 	}
 
 	// initialize all global vars
-InitLoop:
 	for i := range ctx.info.InitOrder {
 		init := ctx.info.InitOrder[len(ctx.info.InitOrder)-i-1]
 
-		// Check if any of the LHS variables should be treated as axiomatized
-		for i := 0; i < len(init.Lhs); i++ {
-			varName := init.Lhs[i].Name()
-			if ctx.filter.GetAction(varName) != declfilter.Translate {
+		switch ctx.initAction(init) {
+		case declfilter.Skip:
+			// A skipped initializer has no step; the others keep Go's
+			// relative order.
+			continue
+		case declfilter.Axiomatize, declfilter.Trust:
+			// Not translated: the X.init of each of its variables, left to
+			// right (a blank variable's is the package's _.init).
+			for i := len(init.Lhs) - 1; i >= 0; i-- {
 				e = glang.NewDoSeq(
-					glang.NewCallExpr(ctx.termIdent(varName+"'init"), glang.Tt),
+					glang.NewCallExpr(ctx.termIdent(init.Lhs[i].Name()+"'init"), glang.Tt),
 					e)
-				continue InitLoop
 			}
+			continue
 		}
+		ctx.curDecl = "the initializer of " + varNames(init.Lhs)
 		if n, msg, bad := modelcheck.PackageVar(ctx.info, init); bad {
 			ctx.unsupported(n, "%s", msg)
 		}
@@ -3177,6 +3262,8 @@ InitLoop:
 			}
 		}
 	}
+
+	ctx.curDecl = ""
 
 	for _, importName := range ctx.importNamesOrdered {
 		pkg := importName.Imported()

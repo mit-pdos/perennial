@@ -88,14 +88,16 @@ theorem wp_bytes_to_string (sl : GoSlice) (str : GoString) (dq : DFrac)
   iapply HΦ $$ Hsl
 
 /-- The postcondition of the body of a range loop: after the body ends normally or with
-`continue`, the loop goes on with `P`; after `break`, `return` or a panic, the loop
-ends with that outcome (`Φ executeVal` for `break`). -/
+`continue`, the loop goes on with `P`; after `break`, `return`, a panic or `break l`/`continue l`
+for another statement's label `l`, the loop ends with that outcome (`Φ executeVal` for
+`break`). -/
 def forRangePostcondition (P : IProp GF) (Φ : val → IProp GF) (bv : val) : IProp GF :=
   iprop((⌜bv = continueVal⌝ ∗ P) ∨
     (⌜bv = executeVal⌝ ∗ P) ∨
     (⌜bv = breakVal⌝ ∗ Φ executeVal) ∨
     (∃ v, ⌜bv = returnVal v⌝ ∗ Φ bv) ∨
-    (∃ p, ⌜bv = PanicV p⌝ ∗ Φ bv))
+    (∃ p, ⌜bv = PanicV p⌝ ∗ Φ bv) ∨
+    (⌜isLabeledOutcome bv⌝ ∗ Φ bv))
 
 theorem forRangePostcondition_do (P : IProp GF) (Φ : val → IProp GF) :
     P ⊢ forRangePostcondition P Φ executeVal := by
@@ -129,6 +131,15 @@ theorem forRangePostcondition_return (P : IProp GF) (Φ : val → IProp GF) (v :
   iexists v
   iframe H
   ipureintro; rfl
+
+theorem forRangePostcondition_labeled (P : IProp GF) (Φ : val → IProp GF) (bv : val)
+    (h : isLabeledOutcome bv) :
+    Φ bv ⊢ forRangePostcondition P Φ bv := by
+  iintro H
+  unfold forRangePostcondition
+  iright; iright; iright; iright; iright
+  iframe H
+  ipureintro; exact h
 
 set_option maxRecDepth 20000 in
 open github_com.mit_pdos.perennial.goose.model.strings in
@@ -184,7 +195,8 @@ theorem wp_string_for_range (str : GoString) (body : GoFunc) (P : Nat → IProp 
       have h := congrArg List.tail Hn.1
       simpa [hcons, List.tail_drop] using h
     unfold forRangePostcondition
-    icases Hpost with (⟨%hbv, HP⟩ | ⟨%hbv, HP⟩ | ⟨%hbv, HΦ'⟩ | ⟨%v, %hbv, HΦ'⟩ | ⟨%p, %hbv, HΦ'⟩)
+    icases Hpost with (⟨%hbv, HP⟩ | ⟨%hbv, HP⟩ | ⟨%hbv, HΦ'⟩ | ⟨%v, %hbv, HΦ'⟩ | ⟨%p, %hbv, HΦ'⟩ |
+      ⟨%hbv, HΦ'⟩)
     · subst hbv
       iapply wp_for_post_continue
       wp_call
@@ -207,6 +219,8 @@ theorem wp_string_for_range (str : GoString) (body : GoFunc) (P : Nat → IProp 
       iexact HΦ'
     · subst hbv
       iapply wp_for_post_panic
+      iexact HΦ'
+    · iapply wp_for_post_labeled _ _ _ _ _ _ hbv
       iexact HΦ'
   · have hc : ¬ sint.Z (W64 (n : Int)) < sint.Z (W64 (str.length : Int)) := by word
     simp only [decide_eq_false hc, decide_eq_false false_neq_true, Bool.false_eq_true,

@@ -18,3 +18,23 @@ func compareIntFloat(x int) bool {
 func compareFloatInt(x int) bool {
 	return b < x
 }
+
+const (
+	negUnderflow            = -1e-400
+	negUnderflow32          = -1e-50
+	negUnderflowF64 float64 = -1e-400
+	negUnderflowF32 float32 = -1e-50
+)
+
+func negUnderflowConsts() (float64, float32, float64, float32, float64, float32) {
+	const local = -1e-400
+	const local32 float32 = -1e-50
+	var x float32 = negUnderflow32
+	return negUnderflow, x, negUnderflowF64, negUnderflowF32, local, local32
+}
+
+func negUnderflowLiterals() (float64, float32) {
+	x := -1e-400
+	var y float32 = -1e-50
+	return x, y
+}
