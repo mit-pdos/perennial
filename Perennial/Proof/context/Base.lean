@@ -949,9 +949,20 @@ instance safeMapKey_timerCtx (c : Loc) :
       (interface.mkOk (go.GoType.PointerType context.timerCtx.ty) #c : GoInterface) :=
   safeMapKey_interface_pointer _ _ _
 
-/-- A parent context in the scope of these specs: `Background()`, or a context (`isContext`). -/
+/-- The context `TODO()` returns: a `todoCtx{}` as a `Context`. Like `Background()`'s, its
+`Done()` is `nil` (both embed `emptyCtx`), so it is not an `isContext`. -/
+abbrev todoCtxVal : GoInterfaceOk :=
+  interface.mk todoCtx.ty #(zero_val todoCtx)
+
+theorem todoCtx_ne_stopCtx : context.todoCtx.ty ≠ context.stopCtx.ty := by
+  unfold context.todoCtx.ty context.stopCtx.ty
+  intro h; injection h with h1; simp at h1
+
+/-- A parent context in the scope of these specs: `Background()` or `TODO()` (the two empty
+contexts, never done: Go's `parentCancelCtx` returns `false` on their `nil` `Done()`, so
+`removeChild` and `propagateCancel` return at once for them), or a context (`isContext`). -/
 def isParentCtx (parent : GoInterfaceOk) : IProp GF :=
-  iprop(⌜parent = backgroundCtxVal⌝ ∨ ∃ s, isContext parent s)
+  iprop(⌜parent = backgroundCtxVal ∨ parent = todoCtxVal⌝ ∨ ∃ s, isContext parent s)
 
 instance isParentCtx_pers (parent : GoInterfaceOk) : Persistent (isParentCtx (GF := GF) parent) := by
   unfold isParentCtx; infer_instance
