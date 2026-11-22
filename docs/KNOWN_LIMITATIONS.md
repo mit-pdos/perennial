@@ -12,6 +12,19 @@ zero-size elements, and `strings.Join`'s total length). They are not repeated he
 
 Each entry: what goes wrong, a Go witness, and where in the model it comes from.
 
+## Platform
+
+- **The model assumes gc on linux/amd64 (trusted assumption).** Every allocation lies in
+  `(0, maxAddr]`, `maxAddr = 2^47` (`IsFresh`/`IsFreshBytes`, `GooseLang/Lang.lean`), which
+  holds for gc's user address space on linux/amd64, and proofs use it to rule out address
+  overflow (`unsafe.Slice`'s length check, `unsafe.Add`'s range). It is false on:
+  - aix/ppc64: gc's heap hints lie above `0xa0<<52`.
+  - linux/arm64 PIE and android: globals and `zerobase` load near `0xaaaa_xxxx_xxxx`.
+  - s390x: the user address space (`TASK_SIZE`) is 2^64.
+
+  There a proof can claim "no panic" for an `unsafe.Slice` that gc rejects. See
+  `README.md`, "Platform".
+
 ## Maps
 
 - **A key that `==` cannot test fully is accepted (unsound).** Go hashes every component
@@ -144,8 +157,8 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   check needs the layout table, which R1 of `docs/design/unsafe-memory.md` adds for plain
   types only.
 - **Out of memory is outside the model.** The heap is bounded: every allocation lies in
-  `(0, maxAddr]`, `maxAddr = 2^47` (gc's user address space on linux/amd64,
-  `GooseLang/Lang.lean`). When no free range is left, an allocation steps to itself forever
+  `(0, maxAddr]`, `maxAddr = 2^47` (`GooseLang/Lang.lean`; valid only for gc on
+  linux/amd64, "Platform" above). When no free range is left, an allocation steps to itself forever
   (`AllocOOMS`, `AllocBytesOOMS`), so a proof covers only the executions that do not run out
   of memory, where gc ends the program with a fatal error.
 
@@ -206,6 +219,26 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   same bytes (`atomic.AddUint64(&u, 1)` and `atomic.AddUint32((*uint32)(unsafe.Pointer(&u)),
   1)`) get sequentially consistent byte semantics, which Intel does not promise when they
   are concurrent (assumption A3 of `docs/design/unsafe-memory.md`).
+
+## Floats
+
+- **Fused multiply-add (unsound).** The Go spec ("Floating-point operators") lets an
+  implementation fuse float operations, computing `x*y + z` with one rounding instead of
+  two, and gc does on arm64 (and other targets with an FMA instruction). The model rounds
+  every operation (`Float64Semantics`, `Golang/Defn/Predeclared.lean`), so a proof about
+  such an expression covers the unfused result only.
+
+  ```go
+  x, y, z := 1.0+0x1p-52, 1.0-0x1p-52, -1.0
+  r := x*y + z // amd64: 0; arm64 (fused): -0x1p-104
+  ```
+
+  An explicit conversion (`float64(x*y) + z`) prevents the fusion in Go; the model cannot
+  tell the two apart.
+- **`float32` of an untyped constant rounds twice.** Goose represents an untyped float
+  constant by its `float64` rounding, and `float32(c)` rounds that again
+  (`convert_untyped_float32`); Go rounds `c` once. The two differ for a constant just off a
+  point halfway between two `float32`s.
 
 ## The step bound of the adequacy theorems
 

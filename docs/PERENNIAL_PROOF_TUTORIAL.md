@@ -91,7 +91,9 @@ imports = ["!*"]
 * `trusted`: declarations with a hand-written model in `Perennial/TrustedCode`
   (`sync.toml` trusts `"Mutex", "Mutex.*"`, which really have data races); for a
   package variable `X`, the model is its whole initialization `X.init : val`
-  (allocation included), called where Go runs the initializer;
+  (allocation included), called where Go runs the initializer (an initializer
+  that can be skipped is `def X.init : val := go.skipInit`, which leaves `X`
+  unallocated: a load or store of it is stuck);
 * every other declaration is *axiomatized*: its name and type are emitted,
   without a body, as an `opaque` constant (not an `axiom`: Lean checks that
   its type is inhabited, so it cannot make the logic inconsistent). A type `T`

@@ -1035,6 +1035,148 @@ noncomputable def ReadAll.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b") (Var "$r0")))))))))
   (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1")))))))
 
+/-- go: multi.go:9:18 -/
+noncomputable def eofReader.Read.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Val #(W64 0))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr EOF))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1"))))))))
+
+/-- go: multi.go:17:24 -/
+noncomputable def multiReader.Read.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "mr"
+  (Lam "p"
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Let "$res0" (Var "n")
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Let "$res1" (Var "err")
+  (Seq (App (Val exceptionDo)
+  (Let "mr" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType multiReader.ty)))) (Var "mr"))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 0))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr EOF))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType Reader.ty)))) (App (Val (GoInstruction (StructFieldRef multiReader.ty go!"readers"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType multiReader.ty)))) (Var "mr"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType Reader.ty)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (App (Val (GoInstruction (MethodResolve Reader.ty go!"Read"))) (App (Val (GoInstruction (GoLoad Reader.ty))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType Reader.ty)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType Reader.ty)))) (App (Val (GoInstruction (StructFieldRef multiReader.ty go!"readers"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType multiReader.ty)))) (Var "mr")))) (Val #(W64 0)))))) (Var "$a0")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 0)))) (Val #true) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr EOF))) (Val #()))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr EOF))) (Val #()))))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType Reader.ty)))) (App (Val (GoInstruction (StructFieldRef multiReader.ty go!"readers"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType multiReader.ty)))) (Var "mr"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType Reader.ty)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))) (Val #false)))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #()))))
+  (App (Val doExecute)
+  (Val #())))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr EOF))) (Val #()))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert eofReader.ty Reader.ty))) (App (Val (GoInstruction (CompositeLiteral eofReader.ty))) (LiteralValue [])))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType Reader.ty)))) (App (Val (GoInstruction (StructFieldRef multiReader.ty go!"readers"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType multiReader.ty)))) (Var "mr"))))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType Reader.ty)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType Reader.ty)]))) (Val #())) (Var "$s")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType Reader.ty)))) (Pair (App (Val (GoInstruction (StructFieldRef multiReader.ty go!"readers"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType multiReader.ty)))) (Var "mr"))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Reader.ty))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType Reader.ty)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType Reader.ty)))) (App (Val (GoInstruction (StructFieldRef multiReader.ty go!"readers"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType multiReader.ty)))) (Var "mr")))) (Val #(W64 0)))) (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0"))))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType Reader.ty)))) (App (Val (GoInstruction (StructFieldRef multiReader.ty go!"readers"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType multiReader.ty)))) (Var "mr"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType Reader.ty)]))) (Val #())) (Var "$a0"))) (Val #(W64 1)))))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.PointerType multiReader.ty)))) (App (Val (GoInstruction (GoLoad Reader.ty))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType Reader.ty)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType Reader.ty)))) (App (Val (GoInstruction (StructFieldRef multiReader.ty go!"readers"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType multiReader.ty)))) (Var "mr")))) (Val #(W64 0))))))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType multiReader.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType multiReader.ty)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType Reader.ty)))) (App (Val (GoInstruction (StructFieldRef multiReader.ty go!"readers"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType multiReader.ty)))) (Var "r"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doContinue) (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType Reader.ty)))) (Pair (App (Val (GoInstruction (StructFieldRef multiReader.ty go!"readers"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType multiReader.ty)))) (Var "mr"))) (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType multiReader.ty)))) (Pair (Var "r") (Var "$r0"))))))))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (Lam BAnon
+  (Val #())))))))
+  (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1"))))))))))
+
+/-- MultiReader returns a Reader that's the logical concatenation of
+    the provided input readers. They're read sequentially. Once all
+    inputs have returned EOF, Read will return EOF.  If any of the readers
+    return a non-nil, non-EOF error, Read will return that error.
+
+    go: multi.go:73:6 -/
+noncomputable def MultiReader.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "readers"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Reader.ty))) (App (Val (GoInstruction (GoZeroVal Reader.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "readers" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType Reader.ty)))) (Var "readers"))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType Reader.ty)]))) (Val #())) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType Reader.ty)))) (Var "readers"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType Reader.ty)]))) (Val #())) (Var "$a0"))))
+  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType Reader.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType Reader.ty)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType multiReader.ty) Reader.ty))) (App (Val (GoInstruction (GoAlloc multiReader.ty))) (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType Reader.ty)))) (Var "r"))
+  (App (Val (GoInstruction (CompositeLiteral multiReader.ty))) (LiteralValue [(KeyedElement none (ElementExpression (go.GoType.SliceType Reader.ty) (Var "$v0")))])))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Reader.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType Reader.ty)))) (Var "r"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType Reader.ty)))) (Var "readers"))
+  (App (App (App (Val (GoInstruction (FuncResolve go.copy [(go.GoType.SliceType Reader.ty)]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType Reader.ty)))) (Pair (Var "r") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad Reader.ty))) (Var "$res0")))))
+
 noncomputable instance info' : PkgInfo pkg_id.io where
   pkgImportedPkgs := [pkg_id.errors, pkg_id.sync]
 
@@ -1776,11 +1918,16 @@ class eofReader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   underlying : go.UnderlyingDirectedEq eofReader.ty eofReader.underlying
   method_set : go.MethodSetIs eofReader.ty [(go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType eofReader.ty) [(go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error])))]
+  Read_unfold : MethodUnfold eofReader.ty go!"Read" eofReader.Read.impl
+  ptr_Read_unfold : MethodUnfold (go.GoType.PointerType eofReader.ty) go!"Read" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve eofReader.ty go!"Read"))) (App (Val (GoInstruction (GoLoad eofReader.ty))) (Var "$r"))))
 
 attribute [instance] eofReader.TypeAssumptions.type_repr
   eofReader.TypeAssumptions.underlying
   eofReader.TypeAssumptions.method_set
   eofReader.TypeAssumptions.ptr_method_set
+  eofReader.TypeAssumptions.Read_unfold
+  eofReader.TypeAssumptions.ptr_Read_unfold
 
 structure multiReader [GooseExts] where
   mk ::
@@ -1809,6 +1956,7 @@ class multiReader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext]
   set_readers : ∀ (x : multiReader) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet multiReader.underlying go!"readers") (PairV #x #y) (Val #(({ x with readers' := y } : multiReader)))
   method_set : go.MethodSetIs multiReader.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType multiReader.ty) [(go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"WriteTo", (some (go.signature.Signature [Writer.ty] false [go.int64, go.error]))), (go!"io.writeToWithBuffer", (some (go.signature.Signature [Writer.ty, (go.GoType.SliceType go.byte)] false [go.int64, go.error])))]
+  ptr_Read_unfold : MethodUnfold (go.GoType.PointerType multiReader.ty) go!"Read" multiReader.Read.impl
 
 attribute [instance] multiReader.TypeAssumptions.type_repr
   multiReader.TypeAssumptions.underlying
@@ -1816,6 +1964,7 @@ attribute [instance] multiReader.TypeAssumptions.type_repr
   multiReader.TypeAssumptions.set_readers
   multiReader.TypeAssumptions.method_set
   multiReader.TypeAssumptions.ptr_method_set
+  multiReader.TypeAssumptions.ptr_Read_unfold
 
 structure multiWriter [GooseExts] where
   mk ::
@@ -2079,6 +2228,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   LimitReader_unfold : FuncUnfold LimitReader [] LimitReader.impl
   NewSectionReader_unfold : FuncUnfold NewSectionReader [] NewSectionReader.impl
   ReadAll_unfold : FuncUnfold ReadAll [] ReadAll.impl
+  MultiReader_unfold : FuncUnfold MultiReader [] MultiReader.impl
   import_errors_Assumption : _root_.Perennial.errors.Assumptions
   import_sync_Assumption : _root_.Perennial.sync.Assumptions
 
@@ -2126,6 +2276,7 @@ attribute [instance] Assumptions.Reader_instance
   Assumptions.LimitReader_unfold
   Assumptions.NewSectionReader_unfold
   Assumptions.ReadAll_unfold
+  Assumptions.MultiReader_unfold
   Assumptions.import_errors_Assumption
   Assumptions.import_sync_Assumption
 

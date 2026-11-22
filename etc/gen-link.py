@@ -116,6 +116,22 @@ def result_name(spec):
     return ".".join(cs[:-1] + ["wp_" + strip_guillemets(cs[-1])])
 
 
+SPECS = {}
+
+
+def link_arg(callee, n):
+    """The result of `callee` as an argument in `theorem <result of n>`, whose name opens
+    the namespaces of `n`'s prefixes: qualified from the root when one of them would
+    capture it (`sync.wp_initialize'` under `internal.poll` would be
+    `internal.sync.wp_initialize'`)."""
+    r = result_name(callee)
+    ns = components(n)[:-1]
+    for i in range(1, len(ns) + 1):
+        if ".".join(ns[:i] + [callee]) in SPECS:
+            return "_root_.Perennial." + r
+    return r
+
+
 def proof_signature(text, start):
     """The text from `theorem X.wp_proof` to its `:=` (or the end of the axiom's statement)."""
     # the `:=` outside brackets (not the `(GF := GF)` of a hypothesis)
@@ -148,6 +164,7 @@ def main():
         name = names[0]
         check_file_name(path, name, pkg)
         specs[name] = (pkg, path)
+    SPECS.update(specs)
 
     # proofs, by package: name -> (file, hypotheses [(hyp name, callee spec)], open/variable lines)
     packages = {}
@@ -295,7 +312,7 @@ def main():
             lines += vs
             for n in ns:
                 _, hyps, _ = proofs[n]
-                args = "".join(f" {result_name(c)}" for _, c in hyps)
+                args = "".join(f" {link_arg(c, n)}" for _, c in hyps)
                 lines += ["", f"theorem {result_name(n)} : {n}.spec (GF := GF) (hG := hG) :=",
                           f"  {n}.wp_proof{args}"]
         lines += ["", "end link", "", "end Perennial", ""]

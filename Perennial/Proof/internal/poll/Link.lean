@@ -25,7 +25,7 @@ variable [sem : go.Semantics]
 variable [package_sem : internal.poll.Assumptions]
 
 theorem internal.poll.wp_initialize' : internal.poll.initialize'.spec (GF := GF) (hG := hG) :=
-  internal.poll.initialize'.wp_proof internal.syscall.unix.wp_initialize' sync.wp_initialize' syscall.wp_initialize' errors.wp_initialize' sync.wp_OnceValue
+  internal.poll.initialize'.wp_proof internal.syscall.unix.wp_initialize' _root_.Perennial.sync.wp_initialize' syscall.wp_initialize' errors.wp_initialize' sync.wp_OnceValue
 
 end link
 

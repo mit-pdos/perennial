@@ -43,54 +43,60 @@ func (ctx *Ctx) typeDecl(spec *ast.TypeSpec) {
 		})
 	}
 
-	switch ctx.filter.GetAction(spec.Name.Name) {
-	case declfilter.Axiomatize:
+	if alias, ok := ctx.typeOf(spec.Name).(*types.Alias); ok {
+		ctx.out.typeAliasDecls = append(ctx.out.typeAliasDecls, ctx.aliasDecl(spec, alias))
+		return
+	}
+
+	if ctx.filter.GetAction(spec.Name.Name) == declfilter.Axiomatize {
 		typ := ctx.typeOf(spec.Name)
-		var tps *types.TypeParamList
-		if alias, ok := typ.(*types.Alias); ok {
-			tps = alias.TypeParams()
-		} else if named, ok := typ.(*types.Named); ok {
-			tps = named.TypeParams()
-		}
-
-		var typeStr glang.Expr = glang.VerbatimExpr("go.type")
-		if tps != nil && tps.Len() > 0 {
-			var params []string
-			for i := 0; i < tps.Len(); i++ {
-				params = append(params, tps.At(i).Obj().Name())
+		if named, ok := typ.(*types.Named); ok {
+			var typeStr glang.Expr = glang.VerbatimExpr("go.type")
+			if tps := named.TypeParams(); tps != nil && tps.Len() > 0 {
+				var params []string
+				for i := 0; i < tps.Len(); i++ {
+					params = append(params, tps.At(i).Obj().Name())
+				}
+				typeStr = glang.GenericTypeExpr{Params: params}
 			}
-			typeStr = glang.GenericTypeExpr{Params: params}
-		}
-
-		if _, ok := typ.(*types.Alias); ok {
-			ctx.out.typeAliasDecls = append(ctx.out.typeAliasDecls, glang.AxiomDecl{
-				DeclName: typeName,
-				Type:     typeStr,
-			})
-		} else if _, ok := typ.(*types.Named); ok {
 			ctx.out.typeAliasDecls = append(ctx.out.typeAliasDecls, glang.AxiomDecl{
 				DeclName: glang.TypeImpl(glang.ToIdent(typeName)),
 				Type:     typeStr,
 			})
 		}
-		return
-	case declfilter.Translate:
-		if aliasedType, ok := ctx.typeOf(spec.Name).(*types.Alias); ok {
-			var typeParams []string
-			if tps := aliasedType.TypeParams(); tps != nil {
-				for i := range tps.Len() {
-					typeParams = append(typeParams, tps.At(i).Obj().Name())
-				}
-			}
-			ctx.out.typeAliasDecls = append(ctx.out.typeAliasDecls, glang.TypeDecl{
-				Name:       typeName,
-				Body:       ctx.glangType(spec.Type, types.Unalias(aliasedType)),
-				TypeParams: typeParams,
-				Alias:      true,
-			})
-		}
-	case declfilter.Trust:
 	}
+}
+
+// aliasDecl is the descriptor of an alias, whatever the declaration filter
+// says of it: the descriptor of the type it denotes, with the types this
+// translation cannot name spelled out (nameableSignature). When goose cannot
+// translate that type, the descriptor of an alias the filter does not
+// translate is opaque, as the underlying type of such a named type.
+func (ctx *Ctx) aliasDecl(spec *ast.TypeSpec, alias *types.Alias) (d glang.TypeDecl) {
+	d = glang.TypeDecl{Name: spec.Name.Name, Alias: true}
+	if tps := alias.TypeParams(); tps != nil {
+		for i := range tps.Len() {
+			d.TypeParams = append(d.TypeParams, tps.At(i).Obj().Name())
+		}
+	}
+	if ctx.filter.GetAction(spec.Name.Name) != declfilter.Translate {
+		defer func() {
+			if r := recover(); r != nil {
+				if _, isGooseErr := r.(gooseError); !isGooseErr {
+					panic(r)
+				}
+				d.Body = nil
+			}
+		}()
+	}
+	// the package's aliases are declared in source order, so the target
+	// writes them as what they denote
+	saved, savedSpell := ctx.beforeAliases, ctx.spellOut
+	ctx.beforeAliases = true
+	ctx.spellOut = true
+	defer func() { ctx.beforeAliases, ctx.spellOut = saved, savedSpell }()
+	d.Body = ctx.glangType(spec.Type, types.Unalias(alias))
+	return d
 }
 
 func (ctx *Ctx) namedTypeSemanticsDecl(spec *ast.TypeSpec) []glang.Decl {
@@ -246,7 +252,7 @@ func (ctx *Ctx) nameableSignature(n locatable, t *types.Signature) glang.Expr {
 // (whose methods are already in the list): unions, other types, and interfaces
 // with type terms (constraints, as `comparable`). A method whose signature
 // mentions a type this translation cannot name (typeNameable: a type of a
-// package it does not import, an alias it does not translate) is written
+// package it does not import) is written
 // with those types spelled out (nameableSignature). An interface type thus has the same elements in every
 // package that writes it, up to the definitions of descriptors (`T.ty`) and
 // aliases, as Go's type identity requires of the interface types compared at
@@ -345,7 +351,7 @@ func (ctx *Ctx) glangType(n locatable, t types.Type) glang.Expr {
 			ctx.nope(n, "unexpected built-in type %v", t.Obj())
 		}
 		if ctx.spellOut && !ctx.typeNameable(t, map[types.Type]bool{}) ||
-			ctx.inAnonStructFields && t.Obj().Pkg().Path() == ctx.pkgPath {
+			ctx.beforeAliases && t.Obj().Pkg().Path() == ctx.pkgPath {
 			// the type it denotes
 			return ctx.glangType(n, types.Unalias(t))
 		}

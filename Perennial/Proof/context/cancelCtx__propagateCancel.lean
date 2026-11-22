@@ -61,6 +61,18 @@ theorem context.cancelCtx.propagateCancel.wp_proof
       wp_auto
       wp_apply wp_background_Done
       iapply HΦ $$ Hf
+  have wp_propagateCancel_todo : ∀ (c : Loc) (k : GoInterface),
+      {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗
+          ctxField c ↦ (interface.nil : GoInterface) }}
+        (App (App (Val (c @!! go.GoType.PointerType context.cancelCtx.ty @!! go!"propagateCancel"))
+          (Val #(interface.ok todoCtxVal)))
+          (Val #k))
+      {{ RET #(); ctxField c ↦ (interface.ok todoCtxVal : GoInterface) }} :=
+    fun c k => by
+      wp_start as Hf
+      wp_auto
+      wp_apply wp_todo_Done
+      iapply HΦ $$ Hf
 
   have wp_propagateCancel_cancelCtx : ∀ (c : Loc) (γ : ContextNames) (P : IProp GF)
           (parent : GoInterfaceOk) (s : ContextDesc (IProp GF)),
@@ -443,8 +455,9 @@ theorem context.cancelCtx.propagateCancel.wp_proof
           iapply HΦ $$ Hf
   iintro %Φ ⟨#Hpkg, Hf, Hcase⟩ HΦ
   icases Hcase with (%h | ⟨%γ, %P, %s, %hk, #Hc, #Hctx, #Hcc, #HPP⟩ | ⟨%s, #Hctx, #Hk⟩)
-  · subst h
-    iapply wp_propagateCancel_background c k $$ [$Hpkg $Hf] HΦ
+  · rcases h with h | h <;> subst h
+    · iapply wp_propagateCancel_background c k $$ [$Hpkg $Hf] HΦ
+    · iapply wp_propagateCancel_todo c k $$ [$Hpkg $Hf] HΦ
   · subst hk
     iapply wp_propagateCancel_cancelCtx c γ P parent s $$ [$Hpkg $Hc $Hf $Hctx $Hcc $HPP] HΦ
   · iapply wp_propagateCancel_any c parent s k $$ [$Hpkg $Hf $Hctx $Hk] HΦ

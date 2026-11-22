@@ -35,10 +35,13 @@ theorem context.removeChild.wp_proof
   wp_start as #Hpar
   unfold isParentCtx
   icases Hpar with (%hbg | ⟨%s, #Hctx⟩)
-  · subst hbg
-    wp_auto
-    wp_apply wp_parentCancelCtx_background
-    iapply HΦ; itrivial
+  · rcases hbg with hbg | hbg <;> subst hbg
+    · wp_auto
+      wp_apply wp_parentCancelCtx_background
+      iapply HΦ; itrivial
+    · wp_auto
+      wp_apply wp_parentCancelCtx_todo
+      iapply HΦ; itrivial
   · ihave %hne : ⌜parent.ty ≠ context.stopCtx.ty⌝ $$ [Hctx]
     · unfold isContext isContextDef
       iNamed Hctx

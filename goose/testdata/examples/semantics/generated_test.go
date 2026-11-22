@@ -199,6 +199,10 @@ func (suite *GoTestSuite) TestUntypedRuneConst() {
 	suite.Equal(true, testUntypedRuneConst())
 }
 
+func (suite *GoTestSuite) TestNegUnderflowConstIsPosZero() {
+	suite.Equal(true, testNegUnderflowConstIsPosZero())
+}
+
 func (suite *GoTestSuite) TestCopySimple() {
 	suite.Equal(true, testCopySimple())
 }
@@ -349,6 +353,10 @@ func (suite *GoTestSuite) TestDowncastInterface() {
 
 func (suite *GoTestSuite) TestsUseLocks() {
 	suite.Equal(true, testsUseLocks())
+}
+
+func (suite *GoTestSuite) TestMutexLiteral() {
+	suite.Equal(true, testMutexLiteral())
 }
 
 func (suite *GoTestSuite) TestStandardForLoop() {

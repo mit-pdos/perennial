@@ -169,6 +169,11 @@ noncomputable def Daisy.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] Daisy.ty
 
+noncomputable def mutexHolder.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.mutexHolder" [])
+
+attribute [irreducible] mutexHolder.ty
+
 noncomputable def LoopStruct.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.LoopStruct" [])
 
@@ -514,6 +519,9 @@ noncomputable instance «equals_unfold_struct#568e4f73» [GooseExts] [GoGlobalCo
 @[reducible] noncomputable def slashRune [GooseExts] [GoGlobalContext] : val :=
   #(47 : Int)
 
+@[reducible] noncomputable def negUnderflowConst [GooseExts] [GoGlobalContext] : val :=
+  #(W64 0)
+
 noncomputable def initOrder [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.initOrder"
 
@@ -694,6 +702,9 @@ noncomputable def testByteToString [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def testUntypedRuneConst [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testUntypedRuneConst"
 
+noncomputable def testNegUnderflowConstIsPosZero [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testNegUnderflowConstIsPosZero"
+
 noncomputable def testCopySimple [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCopySimple"
 
@@ -849,6 +860,9 @@ noncomputable def testDowncastInterface [GooseExts] [GoGlobalContext] : GoString
 
 noncomputable def testsUseLocks [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testsUseLocks"
+
+noncomputable def testMutexLiteral [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testMutexLiteral"
 
 noncomputable def standardForLoop [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.standardForLoop"
@@ -3306,6 +3320,42 @@ noncomputable def testUntypedRuneConst.impl [GooseExts] [GoGlobalContext] : val 
   (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "c") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
+/-- a constant is never a negative zero: one that rounds to zero converts to +0
+
+    go: conversions.go:52:6 -/
+noncomputable def testNegUnderflowConstIsPosZero.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (let «local» := #(W64 13082374701590034463);
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (Val negUnderflowConst))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat go.float32))) (Val negUnderflowConst))
+  (Let "y" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat go.float32))) (Val «local»))
+  (Let "z" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 0))))
+  (Let "w" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (If (If (App (Val (GoInstruction (GoOp GoGt go.float64))) (Pair (App (Val (GoInstruction (GoOp GoDiv go.float64))) (Pair (Val #(W64 4607182418800017408)) (App (Val (GoInstruction (GoLoad go.float64))) (Var "x")))) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoGt go.float32))) (Pair (App (Val (GoInstruction (GoOp GoDiv go.float32))) (Pair (Val #(W32 1065353216)) (App (Val (GoInstruction (GoLoad go.float32))) (Var "y")))) (Val #(W32 0)))) (Val #false)) (App (Val (GoInstruction (GoOp GoGt go.float32))) (Pair (App (Val (GoInstruction (GoOp GoDiv go.float32))) (Pair (Val #(W32 1065353216)) (App (Val (GoInstruction (GoLoad go.float32))) (Var "z")))) (Val #(W32 0)))) (Val #false)) (App (Val (GoInstruction (GoOp GoGt go.float64))) (Pair (App (Val (GoInstruction (GoOp GoDiv go.float64))) (Pair (Val #(W64 4607182418800017408)) (App (Val (GoInstruction (GoLoad go.float64))) (Var "w")))) (Val #(W64 0)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "w") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "z") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "y") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "x") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
 /-- go: copy.go:3:6 -/
 noncomputable def testCopySimple.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -5144,6 +5194,47 @@ noncomputable def testsUseLocks.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Var "m"))) (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Pair (Var "m") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- A mutex from a composite literal is unlocked, alone or as a field of a
+    struct literal: Lock returns, and Unlock (a fatal error on an unlocked
+    mutex) does not fail.
+
+    go: lock.go:22:6 -/
+noncomputable def testMutexLiteral.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (CompositeLiteral _root_.Perennial.sync.Mutex.ty))) (LiteralValue []))
+  (Let "m" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (CompositeLiteral _root_.Perennial.sync.Mutex.ty))) (LiteralValue []))
+  (Let "$v1" (Val #(W64 1))
+  (App (Val (GoInstruction (CompositeLiteral mutexHolder.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"mu")) (ElementExpression _root_.Perennial.sync.Mutex.ty (Var "$v0"))), (KeyedElement (some (KeyField go!"x")) (ElementExpression go.uint64 (Var "$v1")))]))))
+  (Let "h" (App (Val (GoInstruction (GoAlloc mutexHolder.ty))) (App (Val (GoInstruction (GoZeroVal mutexHolder.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef mutexHolder.ty go!"mu"))) (Var "h"))) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef mutexHolder.ty go!"mu"))) (Var "h"))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore mutexHolder.ty))) (Pair (Var "h") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Unlock"))) (Var "m")) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (Var "m")) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore _root_.Perennial.sync.Mutex.ty))) (Pair (Var "m") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- helpers
@@ -12880,6 +12971,47 @@ attribute [instance] Daisy.TypeAssumptions.type_repr
   Daisy.TypeAssumptions.ptr_Genus_unfold
   Daisy.TypeAssumptions.ptr_Petals_unfold
 
+structure mutexHolder [GooseExts] where
+  mk ::
+  mu' : _root_.Perennial.sync.Mutex
+  x' : w64
+
+noncomputable instance mutexHolder.zero_val [GooseExts] : ZeroVal mutexHolder :=
+  ⟨mutexHolder.mk zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def mutexHolder.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex.ty),
+(go.field_decl.FieldDecl go!"x" go.uint64)]
+
+@[irreducible] noncomputable def mutexHolder.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  mutexHolder.fieldsUnsealed
+
+noncomputable instance equals_unfold_mutexHolder [GooseExts] [GoGlobalContext] :
+    EqualsUnfold mutexHolder.fields mutexHolder.fieldsUnsealed :=
+  ⟨by unfold mutexHolder.fields; rfl⟩
+
+@[reducible] noncomputable def mutexHolder.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType mutexHolder.fields)
+
+class mutexHolder.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying mutexHolder.underlying mutexHolder
+  underlying : go.UnderlyingDirectedEq mutexHolder.ty mutexHolder.underlying
+  get_mu : ∀ (x : mutexHolder), go.IsGoStepPureDetTagged under (StructFieldGet mutexHolder.underlying go!"mu") #x (Val #(x.mu'))
+  set_mu : ∀ (x : mutexHolder) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet mutexHolder.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : mutexHolder)))
+  get_x : ∀ (x : mutexHolder), go.IsGoStepPureDetTagged under (StructFieldGet mutexHolder.underlying go!"x") #x (Val #(x.x'))
+  set_x : ∀ (x : mutexHolder) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet mutexHolder.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : mutexHolder)))
+  method_set : go.MethodSetIs mutexHolder.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType mutexHolder.ty) []
+
+attribute [instance] mutexHolder.TypeAssumptions.type_repr
+  mutexHolder.TypeAssumptions.underlying
+  mutexHolder.TypeAssumptions.get_mu
+  mutexHolder.TypeAssumptions.set_mu
+  mutexHolder.TypeAssumptions.get_x
+  mutexHolder.TypeAssumptions.set_x
+  mutexHolder.TypeAssumptions.method_set
+  mutexHolder.TypeAssumptions.ptr_method_set
+
 structure LoopStruct [GooseExts] where
   mk ::
   loopNext' : Loc
@@ -14251,6 +14383,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Lily_instance : Lily.TypeAssumptions
   Rose_instance : Rose.TypeAssumptions
   Daisy_instance : Daisy.TypeAssumptions
+  mutexHolder_instance : mutexHolder.TypeAssumptions
   LoopStruct_instance : LoopStruct.TypeAssumptions
   loopCounter_instance : loopCounter.TypeAssumptions
   msGetter_instance : msGetter.TypeAssumptions
@@ -14356,6 +14489,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testByteSliceToString_unfold : FuncUnfold testByteSliceToString [] testByteSliceToString.impl
   testByteToString_unfold : FuncUnfold testByteToString [] testByteToString.impl
   testUntypedRuneConst_unfold : FuncUnfold testUntypedRuneConst [] testUntypedRuneConst.impl
+  testNegUnderflowConstIsPosZero_unfold : FuncUnfold testNegUnderflowConstIsPosZero [] testNegUnderflowConstIsPosZero.impl
   testCopySimple_unfold : FuncUnfold testCopySimple [] testCopySimple.impl
   testCopyShorterDst_unfold : FuncUnfold testCopyShorterDst [] testCopyShorterDst.impl
   testCopyShorterSrc_unfold : FuncUnfold testCopyShorterSrc [] testCopyShorterSrc.impl
@@ -14408,6 +14542,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testEmbeddingInterface_unfold : FuncUnfold testEmbeddingInterface [] testEmbeddingInterface.impl
   testDowncastInterface_unfold : FuncUnfold testDowncastInterface [] testDowncastInterface.impl
   testsUseLocks_unfold : FuncUnfold testsUseLocks [] testsUseLocks.impl
+  testMutexLiteral_unfold : FuncUnfold testMutexLiteral [] testMutexLiteral.impl
   standardForLoop_unfold : FuncUnfold standardForLoop [] standardForLoop.impl
   testStandardForLoop_unfold : FuncUnfold testStandardForLoop [] testStandardForLoop.impl
   testForLoopWait_unfold : FuncUnfold testForLoopWait [] testForLoopWait.impl
@@ -14636,6 +14771,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.Lily_instance
   Assumptions.Rose_instance
   Assumptions.Daisy_instance
+  Assumptions.mutexHolder_instance
   Assumptions.LoopStruct_instance
   Assumptions.loopCounter_instance
   Assumptions.msGetter_instance
@@ -14741,6 +14877,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testByteSliceToString_unfold
   Assumptions.testByteToString_unfold
   Assumptions.testUntypedRuneConst_unfold
+  Assumptions.testNegUnderflowConstIsPosZero_unfold
   Assumptions.testCopySimple_unfold
   Assumptions.testCopyShorterDst_unfold
   Assumptions.testCopyShorterSrc_unfold
@@ -14793,6 +14930,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testEmbeddingInterface_unfold
   Assumptions.testDowncastInterface_unfold
   Assumptions.testsUseLocks_unfold
+  Assumptions.testMutexLiteral_unfold
   Assumptions.standardForLoop_unfold
   Assumptions.testStandardForLoop_unfold
   Assumptions.testForLoopWait_unfold

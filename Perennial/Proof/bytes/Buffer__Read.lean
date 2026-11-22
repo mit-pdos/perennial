@@ -25,7 +25,7 @@ theorem bytes.Buffer.Read.wp_proof :
   intro l bs p xs eof
   wp_start as ⟨#Heof, Hown, Hp⟩
   unfold bytes.ownBuffer
-  icases Hown with ⟨%b, %all, Hl, Hbuf, %Hoff⟩
+  icases Hown with ⟨%b, %all, Hl, Hbuf, Hcap, %Hoff⟩
   ihave %Hlen := ownSlice_len $$ Hbuf
   ihave %Hwf := ownSlice_wf $$ Hbuf
   ihave %Hplen := ownSlice_len $$ Hp
@@ -52,7 +52,8 @@ theorem bytes.Buffer.Read.wp_proof :
         sint.Z (W64 0) ≤ sint.Z bb.cap := ⟨by decide, by decide, by word⟩
     simp only [Hb0, _root_.and_self, ↓reduceIte]
     wp_auto
-    icases (ownSlice_split_all (W64 0) bb _ _ ⟨by decide, by word⟩).1 $$ Hbuf with ⟨Hbuf, -⟩
+    icases ownSlice_slice_with_cap (W64 0) (W64 0) bb all ⟨by decide, by decide, by word⟩
+      $$ [$Hbuf $Hcap] with ⟨Hbuf, -, Hcap⟩
     wp_if_destruct
     · -- `len(p) == 0`
       iapply HΦ
@@ -64,7 +65,7 @@ theorem bytes.Buffer.Read.wp_proof :
       isplitr
       · ipureintro; exact ⟨by word, by simp⟩
       iexists ⟨slice.slice bb w8 (W64 0) (W64 0), W64 0, W8 0⟩, all.take (sint.nat (W64 0))
-      iframe Hbuf
+      iframe Hbuf Hcap
       isplitl
       · iapply typedPointsto_combine _ _ _ Hnn
         simp only [TypedPointsto.typedPointstoDef]
@@ -83,7 +84,7 @@ theorem bytes.Buffer.Read.wp_proof :
         have : p.len = W64 0 := by word
         simp [this] at Hif
       iexists ⟨slice.slice bb w8 (W64 0) (W64 0), W64 0, W8 0⟩, all.take (sint.nat (W64 0))
-      iframe Hbuf
+      iframe Hbuf Hcap
       isplitl
       · iapply typedPointsto_combine _ _ _ Hnn
         simp only [TypedPointsto.typedPointstoDef]
@@ -131,7 +132,7 @@ theorem bytes.Buffer.Read.wp_proof :
       isplitr
       · ipureintro; exact ⟨by word, by simp⟩
       iexists ⟨bb, off + n, W8 (-1)⟩, all
-      iframe Hbuf
+      iframe Hbuf Hcap
       isplitl
       · iapply typedPointsto_combine _ _ _ Hnn
         simp only [TypedPointsto.typedPointstoDef]
@@ -146,7 +147,7 @@ theorem bytes.Buffer.Read.wp_proof :
       isplitr
       · ipureintro; exact ⟨by word, by simp⟩
       iexists ⟨bb, off + n, W8 0⟩, all
-      iframe Hbuf
+      iframe Hbuf Hcap
       isplitl
       · iapply typedPointsto_combine _ _ _ Hnn
         simp only [TypedPointsto.typedPointstoDef]

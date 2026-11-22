@@ -21,8 +21,6 @@ type typeTranslatability struct {
 	pkgPath  string
 	imported map[string]bool
 	reasons  map[string]bool
-	// same-package aliases referred to
-	aliasDeps map[string]bool
 }
 
 func (c *typeTranslatability) fail(format string, args ...any) {
@@ -47,21 +45,17 @@ func (c *typeTranslatability) check(t types.Type, byValue bool, top bool) {
 			}
 		}
 	case *types.Alias:
-		if p := t.Obj().Pkg(); p != nil && p.Path() == c.pkgPath {
-			c.aliasDeps[t.Obj().Name()] = true
-		} else if p != nil {
-			// we do not know if the alias is translated in its package
-			c.fail("alias from another package %s", p.Path())
-		}
+		// the go.type is the alias's descriptor, and the Lean type that of
+		// the type it denotes
 		c.checkObj(t.Obj())
 		if args := t.TypeArgs(); args != nil {
 			for i := range args.Len() {
 				c.check(args.At(i), byValue, false)
 			}
 		}
-		// the translation unaliases the type (in Lean types) or refers to
-		// the alias (in go.types): both need to be supported
-		c.check(types.Unalias(t), byValue, false)
+		if byValue {
+			c.check(types.Unalias(t), true, false)
+		}
 	case *types.Named:
 		c.checkObj(t.Obj())
 		for i := range t.TypeArgs().Len() {
@@ -138,7 +132,7 @@ func (c *typeTranslatability) checkObj(obj types.Object) {
 // it can.
 func ValueTypeReasons(pkgPath string, imported map[string]bool, t types.Type) []string {
 	c := &typeTranslatability{pkgPath: pkgPath, imported: imported,
-		reasons: make(map[string]bool), aliasDeps: make(map[string]bool)}
+		reasons: make(map[string]bool)}
 	c.check(t, true, false)
 	var reasons []string
 	for r := range c.reasons {
@@ -204,81 +198,42 @@ func ExtendFilter(pkg *packages.Package, config declfilter.FilterConfig, df decl
 		}
 	}
 	type entry struct {
-		name      string
-		kind      string
-		reasons   map[string]bool
-		aliasDeps map[string]bool
+		name    string
+		kind    string
+		reasons map[string]bool
 	}
 	var entries []*entry
-	aliasPos := make(map[string]int) // source order of (all) aliases
 	for _, f := range pkg.Syntax {
 		for _, d := range TypeDecls(f) {
 			for _, spec := range d.Specs {
 				spec := spec.(*ast.TypeSpec)
-				isAlias := spec.Assign != token.NoPos
-				if isAlias {
-					aliasPos[spec.Name.Name] = len(aliasPos)
-				}
 				if df.GetAction(spec.Name.Name) != declfilter.Axiomatize {
 					continue
 				}
-				obj := pkg.TypesInfo.Defs[spec.Name]
+				// an alias's descriptor is always its target's (goose's typeDecl)
+				named, ok := pkg.TypesInfo.Defs[spec.Name].Type().(*types.Named)
+				if !ok {
+					continue
+				}
 				c := &typeTranslatability{pkgPath: pkg.PkgPath, imported: imported,
-					reasons: make(map[string]bool), aliasDeps: make(map[string]bool)}
+					reasons: make(map[string]bool)}
 				// the definition as written: `type T other.U` refers to other.U
 				def := pkg.TypesInfo.TypeOf(spec.Type)
 				_, isStruct := def.(*types.Struct)
-				var kind string
-				if isAlias {
-					kind = "Alias"
-					if tps := obj.Type().(*types.Alias).TypeParams(); tps != nil && tps.Len() > 0 {
-						c.fail("generic alias")
-					}
-				} else {
-					named, ok := obj.Type().(*types.Named)
-					if !ok {
-						continue
-					}
-					kind = strings.TrimPrefix(fmt.Sprintf("%T", named.Underlying()), "*types.")
-				}
-				c.check(def, !isAlias, isStruct)
+				kind := strings.TrimPrefix(fmt.Sprintf("%T", named.Underlying()), "*types.")
+				c.check(def, true, isStruct)
 				if isStruct && config.TranslateTypesExceptStructs {
 					c.fail("struct (translate_types_except_structs)")
 				}
-				if isAlias {
-					for a := range c.aliasDeps {
-						if aliasPos[a] >= aliasPos[spec.Name.Name] {
-							c.fail("refers to a later alias %s", a)
-						}
-					}
-				}
 				entries = append(entries, &entry{name: spec.Name.Name, kind: kind,
-					reasons: c.reasons, aliasDeps: c.aliasDeps})
+					reasons: c.reasons})
 			}
 		}
 	}
-	// a type that refers to a same-package alias needs that alias to be
-	// translated as well
 	names := make(map[string]bool)
 	for _, e := range entries {
 		if len(e.reasons) == 0 {
 			names[e.name] = true
-		}
-	}
-	for changed := true; changed; {
-		changed = false
-		for _, e := range entries {
-			if !names[e.name] {
-				continue
-			}
-			for a := range e.aliasDeps {
-				if !names[a] && df.GetAction(a) != declfilter.Translate {
-					e.reasons["refers to axiomatized alias "+a] = true
-					delete(names, e.name)
-					changed = true
-					break
-				}
-			}
 		}
 	}
 	// Translated types are emitted in dependency order (see

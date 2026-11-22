@@ -1271,6 +1271,9 @@ func (d TypeDecl) LeanDecl() string {
 		// the descriptor of a named type (or alias), not an underlying type
 		name = LeanTypeDesc(d.Name)
 	}
+	if d.Body == nil {
+		return fmt.Sprintf("opaque %s %s%s : go.GoType", name, leanDeclParams, typeParams)
+	}
 	return fmt.Sprintf("%snoncomputable def %s %s%s : go.GoType :=\n  %s", attr, name, leanDeclParams, typeParams,
 		indent(2, d.Body.Lean(LeanTerm)))
 }

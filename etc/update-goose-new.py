@@ -244,12 +244,14 @@ def main():
         run_goose(
             path.join(goose_dir, "testdata/examples"),
             "./filteredimport",
+            "./skipinit/...",
             "./semantics",
             "./unittest/...",
             "./channel/...",
             "./crashfs/...",
             "./netfs/...",
             "./unsafememory/...",
+            "./xpkgalias/...",
         )
 
     if args.models:
@@ -292,6 +294,7 @@ def main():
             "syscall",
             "internal/synctest",
             "internal/race",
+            "internal/sync",
             "time",
             "fmt",
             "log",

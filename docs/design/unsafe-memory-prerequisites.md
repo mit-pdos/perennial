@@ -81,6 +81,10 @@ unsoundness because floats are modeled conservatively"). The float operations ar
 uninterpreted, so a byte view of a float tells a proof nothing a proof could not
 already get from `math.Float64bits`.
 
+(Later the float operations became IEEE 754's, with an arbitrary NaN wherever IEEE 754's
+result is a NaN: `docs/design/float-semantics.md`. A NaN's bits are then arbitrary at each
+operation, which removes the cost above.)
+
 ## P1. `ArraySemantics` proves `False` (unsound)
 
 - **Witness (Lean).**

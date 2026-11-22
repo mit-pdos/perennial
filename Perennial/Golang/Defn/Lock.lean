@@ -24,8 +24,12 @@ def lock : val :=
     else
       "lock" "m"
 
+/-- Unlocks the lock; stuck if it is not locked, where Go's `Mutex.Unlock` ends the program
+with `fatal("sync: unlock of unlocked mutex")` (`internal/sync/mutex.go`, `unlockSlow`),
+which `recover` cannot catch. -/
 def unlock : val :=
-  λ: "m", exceptionDo (do: CmpXchg "m" #true #false ;;; return: #())
+  λ: "m", if: Snd (CmpXchg "m" #true #false) then #()
+    else Panic "sync: unlock of unlocked mutex"
 
 end code
 end lock

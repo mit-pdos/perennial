@@ -130,7 +130,19 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
     are discharged with `word`, `omega` and `bv_omega`. Do not use `bv_decide`/`native_decide`: they trust
     native code (`Lean.ofReduceBool`); prove bitwise facts via `toNat`.
   * `GoString` is `List w8`.
-* **64-bit platform.** The Go semantics assumes a 64-bit platform: the
+* **Platform: gc on linux/amd64 (trusted assumption).** The model assumes Go
+  programs are built by gc for linux/amd64. Every allocation address lies in
+  `(0, maxAddr]`, `maxAddr = 2^47` (`GooseLang/Lang.lean`, `IsFresh`/`IsFreshBytes`),
+  gc's user address space there, and proofs use that bound to rule out address
+  overflow (`unsafe.Slice`, `unsafe.Add`). The bound is false elsewhere, where
+  a proof may claim "no panic" for a program gc stops:
+  * aix/ppc64: gc's heap hints lie above `0xa0<<52`.
+  * linux/arm64 PIE and android: globals and `zerobase` load near
+    `0xaaaa_xxxx_xxxx`, above 2^47, and the heap's fallback reservation maps near 2^48.
+  * s390x: the user address space (`TASK_SIZE`) is 2^64.
+
+  `docs/KNOWN_LIMITATIONS.md`, "Platform", repeats this.
+  The Go semantics also assumes a 64-bit platform: the
   word-sized types `int`, `uint` and `uintptr` are 64-bit (values `w64`).
   `uintptr` (`go.UintptrSemantics`, `Perennial/Golang/Defn/Predeclared.lean`)
   is an integer type like `uint64`. Pointer/`unsafe.Pointer` to/from `uintptr`
@@ -223,7 +235,11 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `docs/PERENNIAL_PROOF_REFERENCE.md`, "Panics".
 * **Trusted package-variable initializers.** A package variable listed in a
   goose config's `trusted` gets its initializer `X.init` (allocation included)
-  from `Perennial/TrustedCode`. **Accepted for now, to remove later:** five such
+  from `Perennial/TrustedCode`. An initializer that the model skips is
+  `def X.init : val := go.skipInit` (`Golang/Defn/Pkg.lean`): its trusted claim is
+  that Go's initializer can be skipped; the variable is not allocated, so a load
+  or store of it is stuck (taking its address steps), and `grep go.skipInit` lists
+  every such variable. **Accepted for now, to remove later:** five such
   models are trusted although goose translates the real source, so the
   `review-trusted` rule R2 grades them REWORK; they were accepted (2026-10-19)
   to finish the standard library's init proofs, and later reviews and
@@ -252,6 +268,15 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   nondeterministic than gc's pools, victim cache and GC clearing. As with the
   channel and string models, the model's translation is part of `go.Semantics`
   (`pool_sem`).
+* **`sync.Mutex`.** Goose translates `sync.Mutex` (`struct { _ noCopy; mu isync.Mutex }`)
+  and its methods, which forward to `internal/sync.Mutex`. That `Mutex` and its `Lock`,
+  `TryLock` and `Unlock` are trusted (`TrustedCode/internal/sync.lean`): Go's have data races
+  (the race detector is disabled on the sync packages) and park on the runtime's semaphores.
+  The model is the spin lock of `Golang/Defn/Lock.lean` on a `bool` (`false` is unlocked),
+  more nondeterministic than Go's (no fairness or starvation mode, and `TryLock` may fail on
+  an unlocked mutex, as Go's does in starvation mode or when its CAS loses to a waiter);
+  `Unlock` of an unlocked mutex is stuck, where Go ends the program (`fatal`). `sync.Mutex{}` is a literal of the
+  translated struct, so it steps by the ordinary struct rules to a zero, unlocked mutex.
 * **Method sets.** Whether a type implements an interface (`go.typeSetContains`, used by
   type assertions and conversions) is decided by `methodSet`, an uninterpreted function of
   the semantics constrained by `go.MethodSetIs t ms` facts (`Golang/Defn/MethodSet.lean`):
@@ -271,8 +296,8 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   interface, embedded interfaces included), so that `typeSetContains` needs no recursion
   through embedded named interfaces; embedded constraint elements (unions, `comparable`) stay
   as type terms. A type a signature mentions that the translation cannot name (a named type
-  of a package it does not import, an alias it does not translate) is written as what it
-  denotes (`go.Named "<path>.<Name>" args`, the aliased type), so that an interface type has
+  or alias of a package it does not import) is written as what it denotes
+  (`go.Named "<path>.<Name>" args`, the aliased type), so that an interface type has
   the same term, up to unfolding descriptors and aliases, in every package that writes it: Go's
   type identity, which `=` on `go.GoType` must agree with wherever interface types are compared
   (in signatures, as element types). Nothing is claimed beyond what is known: a method whose

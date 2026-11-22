@@ -3,7 +3,8 @@ package glang
 // This file has the structs to represent types
 
 type TypeDecl struct {
-	Name       string
+	Name string
+	// nil: an opaque descriptor
 	Body       Expr
 	TypeParams []string
 	// a type alias (reducible, so instances for the aliased type apply)
