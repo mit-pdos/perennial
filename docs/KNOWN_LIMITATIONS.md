@@ -12,6 +12,19 @@ zero-size elements, and `strings.Join`'s total length). They are not repeated he
 
 Each entry: what goes wrong, a Go witness, and where in the model it comes from.
 
+## Platform
+
+- **The model assumes gc on linux/amd64 (trusted assumption).** Every allocation lies in
+  `(0, maxAddr]`, `maxAddr = 2^47` (`IsFresh`/`IsFreshBytes`, `GooseLang/Lang.lean`), which
+  holds for gc's user address space on linux/amd64, and proofs use it to rule out address
+  overflow (`unsafe.Slice`'s length check, `unsafe.Add`'s range). It is false on:
+  - aix/ppc64: gc's heap hints lie above `0xa0<<52`.
+  - linux/arm64 PIE and android: globals and `zerobase` load near `0xaaaa_xxxx_xxxx`.
+  - s390x: the user address space (`TASK_SIZE`) is 2^64.
+
+  There a proof can claim "no panic" for an `unsafe.Slice` that gc rejects. See
+  `README.md`, "Platform".
+
 ## Maps
 
 - **A key that `==` cannot test fully is accepted (unsound).** Go hashes every component
@@ -144,8 +157,8 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   check needs the layout table, which R1 of `docs/design/unsafe-memory.md` adds for plain
   types only.
 - **Out of memory is outside the model.** The heap is bounded: every allocation lies in
-  `(0, maxAddr]`, `maxAddr = 2^47` (gc's user address space on linux/amd64,
-  `GooseLang/Lang.lean`). When no free range is left, an allocation steps to itself forever
+  `(0, maxAddr]`, `maxAddr = 2^47` (`GooseLang/Lang.lean`; valid only for gc on
+  linux/amd64, "Platform" above). When no free range is left, an allocation steps to itself forever
   (`AllocOOMS`, `AllocBytesOOMS`), so a proof covers only the executions that do not run out
   of memory, where gc ends the program with a fatal error.
 
