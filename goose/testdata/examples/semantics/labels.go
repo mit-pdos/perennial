@@ -1,7 +1,7 @@
-// Package labels holds examples of labeled break and continue that goose must
-// translate (and Perennial verify) once labels are supported. Each feature is
-// isolated in one function; each test* function returns true in Go.
-package labels
+package semantics
+
+// labeled break and continue: `break L` and `continue L` aimed at a labeled
+// for, range, switch or select statement
 
 // labeledContinue: `continue L` from an inner for to an outer labeled for that
 // has a post statement (i++), which must run. Iteration i adds 0+1+...+i, then
@@ -114,6 +114,24 @@ L:
 	case v := <-ch:
 		for k := uint64(0); k < 5; k++ {
 			n += v
+			if n == 2 {
+				break L
+			}
+		}
+		n += 100
+	}
+	return n
+}
+
+// labeledTypeSwitch: `break L` of a labeled type switch, from a for inside a
+// case. Returns 2 for a uint64, and 0 otherwise.
+func labeledTypeSwitch(x any) uint64 {
+	var n uint64
+L:
+	switch x.(type) {
+	case uint64:
+		for k := uint64(0); k < 5; k++ {
+			n++
 			if n == 2 {
 				break L
 			}
@@ -388,12 +406,15 @@ formatLoop:
 	return string(out), flags
 }
 
-func testLabeledContinue() bool       { return labeledContinue() == 10 }
-func testLabeledBreak() bool          { return labeledBreak() == 23 }
-func testBreakLoopFromSwitch() bool   { return breakLoopFromSwitch() == 2 }
-func testContinueNestedSwitch() bool  { return continueFromNestedSwitch() == 3 }
-func testLabeledSwitch() bool         { return labeledSwitch(1) == 2 && labeledSwitch(0) == 50 }
-func testLabeledSelect() bool         { return labeledSelect() == 2 }
+func testLabeledContinue() bool      { return labeledContinue() == 10 }
+func testLabeledBreak() bool         { return labeledBreak() == 23 }
+func testBreakLoopFromSwitch() bool  { return breakLoopFromSwitch() == 2 }
+func testContinueNestedSwitch() bool { return continueFromNestedSwitch() == 3 }
+func testLabeledSwitch() bool        { return labeledSwitch(1) == 2 && labeledSwitch(0) == 50 }
+func testLabeledSelect() bool        { return labeledSelect() == 2 }
+func testLabeledTypeSwitch() bool {
+	return labeledTypeSwitch(uint64(1)) == 2 && labeledTypeSwitch("a") == 0
+}
 func testRangeSliceLabeled() bool     { return rangeSliceLabeled() == 6 }
 func testRangeMapLabeled() bool       { return rangeMapLabeled() == 4 }
 func testRangeMapBreakLabeled() bool  { return rangeMapBreakLabeled() == 1 }

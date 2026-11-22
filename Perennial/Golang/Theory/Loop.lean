@@ -1,6 +1,8 @@
 /-
 `PureWp` instances for `break:` and
-`continue:`, the loop rule `wp_for` with its sealed postcondition
+`continue:`, for `break L`/`continue L` (`doBreakTo`, `doContinueTo`, the
+outcomes `breakToVal L`/`continueToVal L`, and `catchLabel` at the statement
+labeled `L`), the loop rule `wp_for` with its sealed postcondition
 `forPostcondition`, and the tactics `wp_for_core` and `wp_for_post_core`
 (the user-facing `wp_for` and `wp_for_post` are in `Auto.lean`).
 
@@ -66,6 +68,198 @@ instance pure_do_break_val :
 
 end wps
 
+section labeled
+variable [GooseExts] [GoGlobalContext]
+
+/-- The outcome of `break l`. -/
+def breakToValDef (l : GoString) : val := glv((#"breakTo", #l))
+@[irreducible] def breakToVal : GoString → val := breakToValDef
+theorem breakToVal_unseal : breakToVal = breakToValDef := by with_unfolding_all rfl
+
+/-- The outcome of `continue l`. -/
+def continueToValDef (l : GoString) : val := glv((#"continueTo", #l))
+@[irreducible] def continueToVal : GoString → val := continueToValDef
+theorem continueToVal_unseal : continueToVal = continueToValDef := by
+  with_unfolding_all rfl
+
+/-- `bv` is the outcome of `break l` or `continue l` for some label `l`. -/
+def isLabeledOutcome (bv : val) : Prop := ∃ l, bv = breakToVal l ∨ bv = continueToVal l
+
+theorem isLabeledOutcome_breakTo (l : GoString) : isLabeledOutcome (breakToVal l) :=
+  ⟨l, .inl rfl⟩
+theorem isLabeledOutcome_continueTo (l : GoString) : isLabeledOutcome (continueToVal l) :=
+  ⟨l, .inr rfl⟩
+
+end labeled
+
+section labeled_wps
+variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
+variable [GoSemanticsFunctions] [go.PreSemantics]
+
+instance pure_do_breakTo_val (l : GoString) :
+    PureWp (G := G) (L := L) True (App (Val doBreakTo) (Val #l)) (Val (breakToVal l)) where
+  pure_wp_wp s E Φ K _ := by
+    rw [doBreakTo_unseal, breakToVal_unseal]
+    simp only [breakToValDef]
+    iintro Hwp
+    wp_call_lc Hlc
+    iapply Hwp $$ Hlc
+
+instance pure_do_continueTo_val (l : GoString) :
+    PureWp (G := G) (L := L) True (App (Val doContinueTo) (Val #l)) (Val (continueToVal l)) where
+  pure_wp_wp s E Φ K _ := by
+    rw [doContinueTo_unseal, continueToVal_unseal]
+    simp only [continueToValDef]
+    iintro Hwp
+    wp_call_lc Hlc
+    iapply Hwp $$ Hlc
+
+instance pure_breakTo_val (v1 : val) (l : GoString) :
+    PureWp (G := G) (L := L) (v1.isPanic = false)
+      (App (App (Val exceptionSeq) (Val v1)) (Val (breakToVal l))) (Val (breakToVal l)) where
+  pure_wp_wp s E Φ K hv := by
+    rw [exceptionSeq_unseal, breakToVal_unseal]
+    simp only [breakToValDef]
+    iintro Hwp
+    wp_call_lc Hlc
+    iapply Hwp $$ Hlc
+
+instance pure_continueTo_val (v1 : val) (l : GoString) :
+    PureWp (G := G) (L := L) (v1.isPanic = false)
+      (App (App (Val exceptionSeq) (Val v1)) (Val (continueToVal l))) (Val (continueToVal l)) where
+  pure_wp_wp s E Φ K hv := by
+    rw [exceptionSeq_unseal, continueToVal_unseal]
+    simp only [continueToValDef]
+    iintro Hwp
+    wp_call_lc Hlc
+    iapply Hwp $$ Hlc
+
+instance pure_catch_break_breakTo (l : GoString) :
+    PureWp (G := G) (L := L) True (App (Val catchBreak) (Val (breakToVal l)))
+      (Val (breakToVal l)) :=
+  pure_wp_val _ _ _ fun s E Φ _ => by
+    rw [catchBreak_unseal, breakToVal_unseal]
+    simp only [catchBreakDef, breakToValDef]
+    iintro HΦ
+    wp_call_lc Hlc
+    wp_pures
+    iapply HΦ $$ Hlc
+
+instance pure_catch_break_continueTo (l : GoString) :
+    PureWp (G := G) (L := L) True (App (Val catchBreak) (Val (continueToVal l)))
+      (Val (continueToVal l)) :=
+  pure_wp_val _ _ _ fun s E Φ _ => by
+    rw [catchBreak_unseal, continueToVal_unseal]
+    simp only [catchBreakDef, continueToValDef]
+    iintro HΦ
+    wp_call_lc Hlc
+    wp_pures
+    iapply HΦ $$ Hlc
+
+/-! `catchLabel l` (the body of a loop, or a `switch` or `select` statement,
+labeled `l`) on each outcome: `break l` and `continue l` become `break` and
+`continue`, and the other outcomes (including another label's) are unchanged. -/
+
+instance pure_catch_label_breakTo (l : GoString) :
+    PureWp (G := G) (L := L) True (App (App (Val catchLabel) (Val #l)) (Val (breakToVal l)))
+      (Val breakVal) :=
+  pure_wp_val _ _ _ fun s E Φ _ => by
+    rw [catchLabel_unseal, breakToVal_unseal]
+    simp only [catchLabelDef, breakToValDef]
+    iintro HΦ
+    wp_call_lc Hlc
+    wp_pures
+    rw [decide_eq_true rfl]
+    wp_pures
+    iapply HΦ $$ Hlc
+
+instance pure_catch_label_continueTo (l : GoString) :
+    PureWp (G := G) (L := L) True (App (App (Val catchLabel) (Val #l)) (Val (continueToVal l)))
+      (Val continueVal) :=
+  pure_wp_val _ _ _ fun s E Φ _ => by
+    rw [catchLabel_unseal, continueToVal_unseal]
+    simp only [catchLabelDef, continueToValDef]
+    iintro HΦ
+    wp_call_lc Hlc
+    wp_pures
+    rw [decide_eq_true rfl]
+    wp_pures
+    iapply HΦ $$ Hlc
+
+instance (priority := low) pure_catch_label_breakTo_other (l l' : GoString) :
+    PureWp (G := G) (L := L) (l' ≠ l)
+      (App (App (Val catchLabel) (Val #l)) (Val (breakToVal l'))) (Val (breakToVal l')) :=
+  pure_wp_val _ _ _ fun s E Φ h => by
+    rw [catchLabel_unseal, breakToVal_unseal]
+    simp only [catchLabelDef, breakToValDef]
+    iintro HΦ
+    wp_call_lc Hlc
+    wp_pures
+    rw [decide_eq_false h]
+    wp_pures
+    iapply HΦ $$ Hlc
+
+instance (priority := low) pure_catch_label_continueTo_other (l l' : GoString) :
+    PureWp (G := G) (L := L) (l' ≠ l)
+      (App (App (Val catchLabel) (Val #l)) (Val (continueToVal l'))) (Val (continueToVal l')) :=
+  pure_wp_val _ _ _ fun s E Φ h => by
+    rw [catchLabel_unseal, continueToVal_unseal]
+    simp only [catchLabelDef, continueToValDef]
+    iintro HΦ
+    wp_call_lc Hlc
+    wp_pures
+    rw [decide_eq_false h]
+    wp_pures
+    iapply HΦ $$ Hlc
+
+instance pure_catch_label_execute (l : GoString) :
+    PureWp (G := G) (L := L) True (App (App (Val catchLabel) (Val #l)) (Val executeVal))
+      (Val executeVal) :=
+  pure_wp_val _ _ _ fun s E Φ _ => by
+    rw [catchLabel_unseal, executeVal_unseal]
+    simp only [catchLabelDef, executeValDef]
+    iintro HΦ
+    wp_call_lc Hlc
+    wp_pures
+    iapply HΦ $$ Hlc
+
+instance pure_catch_label_break (l : GoString) :
+    PureWp (G := G) (L := L) True (App (App (Val catchLabel) (Val #l)) (Val breakVal))
+      (Val breakVal) :=
+  pure_wp_val _ _ _ fun s E Φ _ => by
+    rw [catchLabel_unseal, breakVal_unseal]
+    simp only [catchLabelDef, breakValDef]
+    iintro HΦ
+    wp_call_lc Hlc
+    wp_pures
+    iapply HΦ $$ Hlc
+
+instance pure_catch_label_continue (l : GoString) :
+    PureWp (G := G) (L := L) True (App (App (Val catchLabel) (Val #l)) (Val continueVal))
+      (Val continueVal) :=
+  pure_wp_val _ _ _ fun s E Φ _ => by
+    rw [catchLabel_unseal, continueVal_unseal]
+    simp only [catchLabelDef, continueValDef]
+    iintro HΦ
+    wp_call_lc Hlc
+    wp_pures
+    iapply HΦ $$ Hlc
+
+instance pure_catch_label_return (l : GoString) (v : val) :
+    PureWp (G := G) (L := L) True (App (App (Val catchLabel) (Val #l)) (Val (returnVal v)))
+      (Val (returnVal v)) :=
+  pure_wp_val _ _ _ fun s E Φ _ => by
+    rw [catchLabel_unseal, returnVal_unseal]
+    simp only [catchLabelDef, returnValDef]
+    iintro HΦ
+    wp_call_lc Hlc
+    wp_pures
+    iapply HΦ $$ Hlc
+
+end labeled_wps
+
 noncomputable section for_post
 variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
@@ -79,7 +273,8 @@ def forPostconditionDef (s : Stuckness) (E : CoPset) (post : val) (P : IProp GF)
     (⌜bv = executeVal⌝ ∗ WP (App (Val post) (Val #())) @ s; E {{ v, ⌜v.isPanic = false⌝ ∗ P }}) ∨
     (⌜bv = breakVal⌝ ∗ Φ executeVal) ∨
     (∃ v, ⌜bv = returnVal v⌝ ∗ Φ bv) ∨
-    (∃ p, ⌜bv = PanicV p⌝ ∗ Φ bv))
+    (∃ p, ⌜bv = PanicV p⌝ ∗ Φ bv) ∨
+    (⌜isLabeledOutcome bv⌝ ∗ Φ bv))
 
 @[irreducible] def forPostcondition (s : Stuckness) (E : CoPset) (post : val) (P : IProp GF)
     (Φ : val → IProp GF) (bv : val) : IProp GF :=
@@ -143,7 +338,8 @@ theorem wp_for (P : IProp GF) (s : Stuckness) (E : CoPset) (cond body post : val
     wp_pures
     wp_apply_core wp_wand $$ Hbody
     iintro %bc Hb
-    icases Hb with (⟨%Hbc, HP⟩ | ⟨%Hbc, HP⟩ | ⟨%Hbc, HΦ⟩ | ⟨%v, %Hbc, HΦ⟩ | ⟨%p, %Hbc, HΦ⟩)
+    icases Hb with (⟨%Hbc, HP⟩ | ⟨%Hbc, HP⟩ | ⟨%Hbc, HΦ⟩ | ⟨%v, %Hbc, HΦ⟩ | ⟨%p, %Hbc, HΦ⟩ |
+      ⟨%Hbc, HΦ⟩)
     · subst Hbc
       wp_pures
       wp_apply_core wp_wand $$ HP
@@ -183,6 +379,15 @@ theorem wp_for (P : IProp GF) (s : Stuckness) (E : CoPset) (cond body post : val
     · subst Hbc
       wp_pures
       iexact HΦ
+    · obtain ⟨l, rfl | rfl⟩ := Hbc
+      · rw [breakToVal_unseal]
+        simp only [breakToValDef]
+        wp_pures
+        iexact HΦ
+      · rw [continueToVal_unseal]
+        simp only [continueToValDef]
+        wp_pures
+        iexact HΦ
   · by_cases hc' : c = #false
     · subst hc'
       have : (#false : val) ≠ #true := fun h => absurd (GoGlobalContext.intoVal_inj_bool h) (by decide)
@@ -238,10 +443,22 @@ theorem wp_for_post_panic (s : Stuckness) (E : CoPset) (post : val) (P : IProp G
     Φ (PanicV p) ⊢ forPostcondition s E post P Φ (PanicV p) := by
   rw [forPostcondition_unseal]; unfold forPostconditionDef
   iintro H
-  iright; iright; iright; iright
+  iright; iright; iright; iright; ileft
   iexists p
   iframe H
   ipureintro; rfl
+
+/-- A loop body that ends with `break l` or `continue l` for a label `l` other
+than the loop's own (caught by `catchLabel` in the body): the loop ends with
+that outcome. -/
+theorem wp_for_post_labeled (s : Stuckness) (E : CoPset) (post : val) (P : IProp GF)
+    (Φ : val → IProp GF) (bv : val) (h : isLabeledOutcome bv) :
+    Φ bv ⊢ forPostcondition s E post P Φ bv := by
+  rw [forPostcondition_unseal]; unfold forPostconditionDef
+  iintro H
+  iright; iright; iright; iright; iright
+  iframe H
+  ipureintro; exact h
 
 end wp_for2
 
@@ -319,6 +536,9 @@ macro "wp_for_post_core" : tactic => `(tactic|
   | iapply wp_for_post_continue
   | iapply wp_for_post_break
   | iapply wp_for_post_return
-  | iapply wp_for_post_panic)
+  | iapply wp_for_post_panic
+  | (iapply wp_for_post_labeled; first
+      | exact isLabeledOutcome_breakTo _
+      | exact isLabeledOutcome_continueTo _))
 
 end Perennial
