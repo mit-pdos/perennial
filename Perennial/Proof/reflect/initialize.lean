@@ -4,6 +4,7 @@ The proof of `reflect.initialize'`.
 module
 
 public import Perennial.Spec.reflect.initialize
+public import Perennial.Spec.internal.abi.initialize
 
 @[expose] public section
 
@@ -20,7 +21,8 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : reflect.Assumptions]
 
-theorem reflect.initialize'.wp_proof :
+theorem reflect.initialize'.wp_proof
+    (wp_abi_initialize : internal.abi.initialize'.spec (GF := GF) (hG := hG)) :
     reflect.initialize'.spec (GF := GF) (hG := hG) := by
   intro get_is_pkg_init Hinit
   wp_start as Hown
@@ -32,6 +34,7 @@ theorem reflect.initialize'.wp_proof :
   wp_apply wp_GlobalAlloc (V := w64) floatRegSize go.uintptr as Hfs
   wp_apply wp_GlobalAlloc (V := w64) floatArgRegs go.int as Hfa
   wp_apply wp_GlobalAlloc (V := w64) intArgRegs go.int as Hia
+  wp_apply wp_abi_initialize _ Hinit.2.1 $$ Hown with ⟨Hown, #Habi⟩
   -- stringType, bytesType, uint8Type: their trusted initializers do nothing
   wp_call
   -- kindNames
