@@ -1335,3 +1335,34 @@ flag cells and no new definitions: context-dependent translation and more truste
 **Why.** Approved by the owner (upamanyus) directly, 2026-11-22: design A of the stage-0 plan for the
 real `fmt`, part 1, "new outcomes `breakTo`/`continueTo` plus `catchLabel` at the labeled
 statement", with no new step rules and unlabeled output unchanged.
+
+## Case 43 — ACCEPTED: every integer-to-float conversion, through one rounding per float type (branch `untyped-int-float64`, PR #682)
+
+**Symptom.** Incomplete. Goose folds binary constant expressions but not unary ones, so `g.Add(-1)`,
+`val * -1` or `var x float64 = -1` became `Convert go.untypedInt go.float64` of the constant, with no
+rule. Typed conversions to `float64` existed only from `int`, `int64`, `uint`, `uint64`, `int32` and
+`uint32`, and none to `float32`.
+
+**Witness.** `var x float64 = -1; var y float64 = -1; x == y` is stuck; so is `float32(n)` of any
+integer `n`, and `float64(n)` of an `int8`, `int16`, `uint8`, `uint16` or `uintptr`.
+
+**Taken.** Two definitions in `Defn/Float.lean`, `untypedIntToFloat64 n` and `untypedIntToFloat32 n`
+(the exact integer `n` rounded once to binary64/binary32: `(binaryK.encode (binaryK.ofInt n)).getD
+0`), which every integer-to-float rule steps through: `int64ToFloat64` and its three siblings are now
+`untypedIntToFloat64` of the word's integer (same value, definitionally), the new rules use
+`untypedIntToFloat64 (sint.Z v)`/`(uint.Z v)` and `untypedIntToFloat32` directly.
+`Float64Semantics` gains `convert_untyped_int_to_float64` and the conversions from `int16`, `int8`,
+`uint16`, `uint8`, `uintptr`; `Float32Semantics` gains the conversions from all eleven integer types
+and `convert_untyped_int_to_float32`. Out-of-range constants are compile errors in Go, so the rules'
+values for them are never reached. Semantics tests `testUntypedIntToFloat64`, `testIntToFloat32`,
+`testIntToFloat64` (`conversions.go`, Go-checked and proved), with values past 2^24 and 2^53 where the
+rounding is observable (2^k+1 rounds to even, 2^k+3 up to 2^k+4). Cost: 18 rules, 2 definitions, 0
+goose changes.
+
+**Not taken.** Folding unary constants in goose: as trusted as a rule, and a much wider translation
+diff. Only the `float64` rule (the first version of the PR): the owner preferred stating that the
+semantics supports integer-to-float conversions, of every type.
+
+**Why.** Reviewed by the owner (upamanyus), 2026-11-22 (relayed by coordinator-E): "it's simpler for
+us to be able to say 'our go semantics supports integer to float conversions' than it is to say 'our
+semantics supports conversions for float64 but not float32'."

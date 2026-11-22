@@ -296,12 +296,20 @@ never NaN, and an untyped constant is never NaN.) -/
 /-- `float32(c)` of a `float64` `x` that is not a NaN (the conversion of untyped constants). -/
 def float64ToFloat32 (x : w64) : w32 := (binary32.encode (binary64.convert binary32 x)).getD 0
 
-/-- `float64(n)` of an integer (`int64`, `uint64`, `int32`, `uint32`): its rounding. -/
-def int64ToFloat64 (n : w64) : w64 := (binary64.encode (binary64.ofInt n.toInt)).getD 0
-def uint64ToFloat64 (n : w64) : w64 := (binary64.encode (binary64.ofInt n.toNat)).getD 0
-def int32ToFloat64 (n : w32) : w64 := (binary64.encode (binary64.ofInt n.toInt)).getD 0
-def uint32ToFloat64 (n : w32) : w64 := (binary64.encode (binary64.ofInt n.toNat)).getD 0
-/-- `float64(c)` of an untyped integer constant `c`: its rounding. -/
+/-- `float64(c)` of an untyped integer constant `c`, and `float64(n)` of a typed integer `n`
+(of the integer `n` denotes): the exact integer rounded once to binary64. The one integer-to-
+`float64` rounding: every integer-to-`float64` conversion rule steps through it. -/
 def untypedIntToFloat64 (n : Int) : w64 := (binary64.encode (binary64.ofInt n)).getD 0
+/-- `float32(c)` of an untyped integer constant `c`, and `float32(n)` of a typed integer `n`:
+the exact integer rounded once to binary32 (not through binary64: Go rounds once). The one
+integer-to-`float32` rounding. -/
+def untypedIntToFloat32 (n : Int) : w32 := (binary32.encode (binary32.ofInt n)).getD 0
+
+/-- `float64(n)` of an integer (`int64`, `uint64`, `int32`, `uint32`): its rounding, by
+`untypedIntToFloat64`. -/
+def int64ToFloat64 (n : w64) : w64 := untypedIntToFloat64 n.toInt
+def uint64ToFloat64 (n : w64) : w64 := untypedIntToFloat64 n.toNat
+def int32ToFloat64 (n : w32) : w64 := untypedIntToFloat64 n.toInt
+def uint32ToFloat64 (n : w32) : w64 := untypedIntToFloat64 n.toNat
 
 end Perennial

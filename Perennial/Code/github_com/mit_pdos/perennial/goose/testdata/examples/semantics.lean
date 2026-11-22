@@ -708,6 +708,12 @@ noncomputable def testNegUnderflowConstIsPosZero [GooseExts] [GoGlobalContext] :
 noncomputable def testUntypedIntToFloat64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testUntypedIntToFloat64"
 
+noncomputable def testIntToFloat32 [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testIntToFloat32"
+
+noncomputable def testIntToFloat64 [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testIntToFloat64"
+
 noncomputable def testCopySimple [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCopySimple"
 
@@ -3491,6 +3497,169 @@ noncomputable def testUntypedIntToFloat64.impl [GooseExts] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "y") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "x") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- float32(n) of every integer type, and of an untyped integer constant: the exact integer
+    rounded once to binary32. 2^24+1 is halfway between 2^24 and 2^24+2 and rounds to even
+    (2^24); 2^24+3 rounds to 2^24+4.
+
+    go: conversions.go:70:6 -/
+noncomputable def testIntToFloat32.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int8))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(128 : Int))))
+  (Let "i8" (App (Val (GoInstruction (GoAlloc go.int8))) (App (Val (GoInstruction (GoZeroVal go.int8))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W8 255))
+  (Let "u8" (App (Val (GoInstruction (GoAlloc go.uint8))) (App (Val (GoInstruction (GoZeroVal go.uint8))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int16))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(32768 : Int))))
+  (Let "i16" (App (Val (GoInstruction (GoAlloc go.int16))) (App (Val (GoInstruction (GoZeroVal go.int16))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W16 65535))
+  (Let "u16" (App (Val (GoInstruction (GoAlloc go.uint16))) (App (Val (GoInstruction (GoZeroVal go.uint16))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W32 16777217))
+  (Let "i32" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W32 16777219))
+  (Let "u32" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(16777217 : Int))))
+  (Let "i64" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 16777217))
+  (Let "u64" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 16777217))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 16777217))
+  (Let "u" (App (Val (GoInstruction (GoAlloc go.uint))) (App (Val (GoInstruction (GoZeroVal go.uint))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 16777217))
+  (Let "p" (App (Val (GoInstruction (GoAlloc go.uintptr))) (App (Val (GoInstruction (GoZeroVal go.uintptr))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W32 1266679808))
+  (Let "c" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.float32))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(16777217 : Int))))
+  (Let "d" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (If (If (If (If (If (If (If (If (If (If (If (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (App (Val (GoInstruction (Convert go.int8 go.float32))) (App (Val (GoInstruction (GoLoad go.int8))) (Var "i8"))) (App (Val (GoInstruction (Convert go.untypedInt go.float32))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(128 : Int)))))) (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (App (Val (GoInstruction (Convert go.uint8 go.float32))) (App (Val (GoInstruction (GoLoad go.uint8))) (Var "u8"))) (Val #(W32 1132396544)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (App (Val (GoInstruction (Convert go.int16 go.float32))) (App (Val (GoInstruction (GoLoad go.int16))) (Var "i16"))) (App (Val (GoInstruction (Convert go.untypedInt go.float32))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(32768 : Int)))))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (App (Val (GoInstruction (Convert go.uint16 go.float32))) (App (Val (GoInstruction (GoLoad go.uint16))) (Var "u16"))) (Val #(W32 1199570688)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (App (Val (GoInstruction (Convert go.int32 go.float32))) (App (Val (GoInstruction (GoLoad go.int32))) (Var "i32"))) (App (Val (GoInstruction (Convert go.int32 go.float32))) (App (Val (GoInstruction (GoOp GoSub go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "i32")) (Val #(W32 1))))))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (App (Val (GoInstruction (Convert go.uint32 go.float32))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "u32"))) (App (Val (GoInstruction (Convert go.uint32 go.float32))) (App (Val (GoInstruction (GoOp GoPlus go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "u32")) (Val #(W32 1))))))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (App (Val (GoInstruction (Convert go.int64 go.float32))) (App (Val (GoInstruction (GoLoad go.int64))) (Var "i64"))) (App (Val (GoInstruction (Convert go.untypedInt go.float32))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(16777216 : Int)))))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (App (Val (GoInstruction (Convert go.uint64 go.float32))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "u64"))) (Val #(W32 1266679808)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (App (Val (GoInstruction (Convert go.int go.float32))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))) (Val #(W32 1266679808)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (App (Val (GoInstruction (Convert go.uint go.float32))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "u"))) (Val #(W32 1266679808)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (App (Val (GoInstruction (Convert go.uintptr go.float32))) (App (Val (GoInstruction (GoLoad go.uintptr))) (Var "p"))) (Val #(W32 1266679808)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (App (Val (GoInstruction (GoLoad go.float32))) (Var "c")) (Val #(W32 1266679808)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (App (Val (GoInstruction (GoLoad go.float32))) (Var "d")) (App (Val (GoInstruction (Convert go.untypedInt go.float32))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(16777216 : Int)))))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "d") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "c") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uintptr))) (Pair (Var "p") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint))) (Pair (Var "u") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "u64") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "i64") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "u32") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "i32") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint16))) (Pair (Var "u16") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int16))) (Pair (Var "i16") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint8))) (Pair (Var "u8") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int8))) (Pair (Var "i8") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- float64(n) of every integer type, and of an untyped integer constant: the exact integer
+    rounded once to binary64. 2^53+1 rounds to 2^53; 2^53+3 to 2^53+4.
+
+    go: conversions.go:94:6 -/
+noncomputable def testIntToFloat64.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int8))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(128 : Int))))
+  (Let "i8" (App (Val (GoInstruction (GoAlloc go.int8))) (App (Val (GoInstruction (GoZeroVal go.int8))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W8 255))
+  (Let "u8" (App (Val (GoInstruction (GoAlloc go.uint8))) (App (Val (GoInstruction (GoZeroVal go.uint8))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int16))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(32768 : Int))))
+  (Let "i16" (App (Val (GoInstruction (GoAlloc go.int16))) (App (Val (GoInstruction (GoZeroVal go.int16))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W16 65535))
+  (Let "u16" (App (Val (GoInstruction (GoAlloc go.uint16))) (App (Val (GoInstruction (GoZeroVal go.uint16))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int32))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2147483648 : Int))))
+  (Let "i32" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W32 4294967295))
+  (Let "u32" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 9007199254740993))
+  (Let "i64" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 9007199254740995))
+  (Let "u64" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(9007199254740993 : Int))))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 9007199254740993))
+  (Let "u" (App (Val (GoInstruction (GoAlloc go.uint))) (App (Val (GoInstruction (GoZeroVal go.uint))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 9007199254740993))
+  (Let "p" (App (Val (GoInstruction (GoAlloc go.uintptr))) (App (Val (GoInstruction (GoZeroVal go.uintptr))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 4845873199050653696))
+  (Let "c" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(9007199254740993 : Int))))
+  (Let "d" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (If (If (If (If (If (If (If (If (If (If (If (App (Val (GoInstruction (GoOp GoEquals go.float64))) (Pair (App (Val (GoInstruction (Convert go.int8 go.float64))) (App (Val (GoInstruction (GoLoad go.int8))) (Var "i8"))) (App (Val (GoInstruction (Convert go.untypedInt go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(128 : Int)))))) (App (Val (GoInstruction (GoOp GoEquals go.float64))) (Pair (App (Val (GoInstruction (Convert go.uint8 go.float64))) (App (Val (GoInstruction (GoLoad go.uint8))) (Var "u8"))) (Val #(W64 4643176031446892544)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float64))) (Pair (App (Val (GoInstruction (Convert go.int16 go.float64))) (App (Val (GoInstruction (GoLoad go.int16))) (Var "i16"))) (App (Val (GoInstruction (Convert go.untypedInt go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(32768 : Int)))))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float64))) (Pair (App (Val (GoInstruction (Convert go.uint16 go.float64))) (App (Val (GoInstruction (GoLoad go.uint16))) (Var "u16"))) (Val #(W64 4679239875398991872)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float64))) (Pair (App (Val (GoInstruction (Convert go.int32 go.float64))) (App (Val (GoInstruction (GoLoad go.int32))) (Var "i32"))) (App (Val (GoInstruction (Convert go.untypedInt go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2147483648 : Int)))))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float64))) (Pair (App (Val (GoInstruction (Convert go.uint32 go.float64))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "u32"))) (Val #(W64 4751297606873776128)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float64))) (Pair (App (Val (GoInstruction (Convert go.int64 go.float64))) (App (Val (GoInstruction (GoLoad go.int64))) (Var "i64"))) (App (Val (GoInstruction (Convert go.int64 go.float64))) (App (Val (GoInstruction (GoOp GoSub go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "i64")) (Val #(W64 1))))))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float64))) (Pair (App (Val (GoInstruction (Convert go.uint64 go.float64))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "u64"))) (App (Val (GoInstruction (Convert go.uint64 go.float64))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "u64")) (Val #(W64 1))))))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float64))) (Pair (App (Val (GoInstruction (Convert go.int go.float64))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))) (App (Val (GoInstruction (Convert go.untypedInt go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(9007199254740992 : Int)))))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float64))) (Pair (App (Val (GoInstruction (Convert go.uint go.float64))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "u"))) (Val #(W64 4845873199050653696)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float64))) (Pair (App (Val (GoInstruction (Convert go.uintptr go.float64))) (App (Val (GoInstruction (GoLoad go.uintptr))) (Var "p"))) (Val #(W64 4845873199050653696)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float64))) (Pair (App (Val (GoInstruction (GoLoad go.float64))) (Var "c")) (Val #(W64 4845873199050653696)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float64))) (Pair (App (Val (GoInstruction (GoLoad go.float64))) (Var "d")) (App (Val (GoInstruction (Convert go.untypedInt go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(9007199254740992 : Int)))))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "d") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "c") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uintptr))) (Pair (Var "p") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint))) (Pair (Var "u") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "u64") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "i64") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "u32") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "i32") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint16))) (Pair (Var "u16") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int16))) (Pair (Var "i16") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint8))) (Pair (Var "u8") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int8))) (Pair (Var "i8") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- go: copy.go:3:6 -/
@@ -15930,6 +16099,8 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testUntypedRuneConst_unfold : FuncUnfold testUntypedRuneConst [] testUntypedRuneConst.impl
   testNegUnderflowConstIsPosZero_unfold : FuncUnfold testNegUnderflowConstIsPosZero [] testNegUnderflowConstIsPosZero.impl
   testUntypedIntToFloat64_unfold : FuncUnfold testUntypedIntToFloat64 [] testUntypedIntToFloat64.impl
+  testIntToFloat32_unfold : FuncUnfold testIntToFloat32 [] testIntToFloat32.impl
+  testIntToFloat64_unfold : FuncUnfold testIntToFloat64 [] testIntToFloat64.impl
   testCopySimple_unfold : FuncUnfold testCopySimple [] testCopySimple.impl
   testCopyShorterDst_unfold : FuncUnfold testCopyShorterDst [] testCopyShorterDst.impl
   testCopyShorterSrc_unfold : FuncUnfold testCopyShorterSrc [] testCopyShorterSrc.impl
@@ -16356,6 +16527,8 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testUntypedRuneConst_unfold
   Assumptions.testNegUnderflowConstIsPosZero_unfold
   Assumptions.testUntypedIntToFloat64_unfold
+  Assumptions.testIntToFloat32_unfold
+  Assumptions.testIntToFloat64_unfold
   Assumptions.testCopySimple_unfold
   Assumptions.testCopyShorterDst_unfold
   Assumptions.testCopyShorterSrc_unfold

@@ -88,7 +88,10 @@ on amd64 flip the sign bit of a NaN, but the Go spec does not promise it, and no
 has a non-arithmetic negation). Comparisons (`==`, `<`, ...) and integer-to-float conversions
 never produce a NaN and stay deterministic `⤳[under]` rules, so automation steps them; the
 conversions return bits, `(encode (ofInt n)).getD 0` (a rounding is never NaN, so the default
-is never used). `float32(c)` of an untyped constant is deterministic too, `float64ToFloat32`
+is never used). Every integer type (and an untyped integer constant) converts to `float64`
+through `untypedIntToFloat64` and to `float32` through `untypedIntToFloat32`, which round the
+exact integer once to binary64 or binary32. `float32(c)` of an untyped float constant is
+deterministic too, `float64ToFloat32`
 (a constant is never NaN). There is no rule for `float32(x)` of a `float64` variable.
 Float-to-integer conversion is unchanged (`ArbitraryInt`, implementation-defined in Go).
 
@@ -105,8 +108,7 @@ instances of `wp_go_step_rel`, the spec of any instruction with a relational pur
   expression is about the unfused evaluation only (`docs/KNOWN_LIMITATIONS.md`, "Floats").
 - `float32(c)` of an untyped constant rounds the constant's `float64` rounding (goose's
   representation), not the constant: double rounding (`docs/KNOWN_LIMITATIONS.md`).
-- Not modelled (stuck, hence sound): `float64` ↔ `float32` conversions of variables, integer to
-  `float32` conversions, integer types narrower than 32 bits to floats.
+- Not modelled (stuck, hence sound): `float64` ↔ `float32` conversions of variables.
 
 ## Lemmas (`Theory/Float.lean`)
 
