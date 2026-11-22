@@ -3,6 +3,9 @@
 # `MaxLen`, which the package's initializer (`init.0`) sets
 translate = ["MaxLen"]
 imports = ["!*"]
-# `init.0` sets `MaxLen` from `cpu.X86.HasAVX2`, which the runtime finds with `cpuid` (assembly):
-# trusted, as one of the two values (TrustedCode/internal/bytealg.lean)
+# `init.0` sets `MaxLen` from `cpu.X86.HasAVX2`: trusted, as one of the two values
+# (TrustedCode/internal/bytealg.lean). Goose translates `init.0` itself, to a read of the global
+# `internal/cpu.X86`, which no package initializer sets: the runtime does (`cpu.Initialize`, from
+# `schedinit`, with `cpuid` in assembly). The irreducible unit is that variable's value; trusting
+# it instead would add internal/cpu (its `x86` struct of feature flags) for one bit.
 trusted = ["MakeNoZero", "init.0"]
