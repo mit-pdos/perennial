@@ -7,6 +7,9 @@ module
 
 public import Perennial.Proof.cmp.Link
 public import Perennial.Proof.math.bits.Link
+public import Perennial.Proof.slices.Clone
+public import Perennial.Proof.slices.Concat
+public import Perennial.Proof.slices.Grow
 public import Perennial.Proof.slices.Sort
 public import Perennial.Proof.slices.SortFunc
 public import Perennial.Proof.slices.breakPatternsCmpFunc
@@ -51,6 +54,15 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : slices.Assumptions]
+
+theorem slices.wp_Clone : slices.Clone.spec (GF := GF) (hG := hG) :=
+  slices.Clone.wp_proof
+
+theorem slices.wp_Grow : slices.Grow.spec (GF := GF) (hG := hG) :=
+  slices.Grow.wp_proof
+
+theorem slices.wp_Concat : slices.Concat.spec (GF := GF) (hG := hG) :=
+  slices.Concat.wp_proof slices.wp_Grow
 
 theorem slices.wp_insertionSortOrdered : slices.insertionSortOrdered.spec (GF := GF) (hG := hG) :=
   slices.insertionSortOrdered.wp_proof
