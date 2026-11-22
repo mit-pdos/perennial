@@ -301,5 +301,7 @@ def int64ToFloat64 (n : w64) : w64 := (binary64.encode (binary64.ofInt n.toInt))
 def uint64ToFloat64 (n : w64) : w64 := (binary64.encode (binary64.ofInt n.toNat)).getD 0
 def int32ToFloat64 (n : w32) : w64 := (binary64.encode (binary64.ofInt n.toInt)).getD 0
 def uint32ToFloat64 (n : w32) : w64 := (binary64.encode (binary64.ofInt n.toNat)).getD 0
+/-- `float64(c)` of an untyped integer constant `c`: its rounding. -/
+def untypedIntToFloat64 (n : Int) : w64 := (binary64.encode (binary64.ofInt n)).getD 0
 
 end Perennial

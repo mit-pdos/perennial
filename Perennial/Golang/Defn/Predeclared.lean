@@ -1066,6 +1066,8 @@ class Float64Semantics [GoSemanticsFunctions] : Prop where
     ⟦Convert go.int32 go.float64, #v⟧ ⤳[under] #(int32ToFloat64 v)
   convert_uint32_to_float64 (v : w32) :
     ⟦Convert go.uint32 go.float64, #v⟧ ⤳[under] #(uint32ToFloat64 v)
+  convert_untyped_int_to_float64 (v : Int) :
+    ⟦Convert go.untypedInt go.float64, #v⟧ ⤳[under] #(untypedIntToFloat64 v)
 
 attribute [instance] Float64Semantics.go_zero_val_float64 Float64Semantics.comparable_float64
   Float64Semantics.underlying_float64 Float64Semantics.eq_float64 Float64Semantics.le_float64
@@ -1073,13 +1075,14 @@ attribute [instance] Float64Semantics.go_zero_val_float64 Float64Semantics.compa
   Float64Semantics.convert_float64_to_integer Float64Semantics.convert_int_to_float64
   Float64Semantics.convert_int64_to_float64 Float64Semantics.convert_uint_to_float64
   Float64Semantics.convert_uint64_to_float64 Float64Semantics.convert_int32_to_float64
-  Float64Semantics.convert_uint32_to_float64
+  Float64Semantics.convert_uint32_to_float64 Float64Semantics.convert_untyped_int_to_float64
 export Float64Semantics (go_zero_val_float64 comparable_float64 underlying_float64 eq_float64
   le_float64 lt_float64 ge_float64 gt_float64 plus_float64 sub_float64 mul_float64 div_float64
   neg_float64
   convert_float64_to_integer
   convert_int_to_float64 convert_int64_to_float64 convert_uint_to_float64
-  convert_uint64_to_float64 convert_int32_to_float64 convert_uint32_to_float64)
+  convert_uint64_to_float64 convert_int32_to_float64 convert_uint32_to_float64
+  convert_untyped_int_to_float64)
 
 class Float32Semantics [GoSemanticsFunctions] : Prop where
   go_zero_val_float32 : TypeReprUnderlying go.float32 w32

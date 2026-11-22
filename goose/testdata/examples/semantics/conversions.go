@@ -57,3 +57,9 @@ func testNegUnderflowConstIsPosZero() bool {
 	w := -1e-400
 	return 1/x > 0 && 1/y > 0 && 1/z > 0 && 1/w > 0
 }
+
+func testUntypedIntToFloat64() bool {
+	var x float64 = -1
+	var y float64 = -1
+	return x == y
+}

@@ -114,6 +114,7 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testU64ToU32
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUint32Untyped
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedRuneConst
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedIntToFloat64
 
 @[expose] public section
 
@@ -457,6 +458,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testU
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testUntypedRuneConst : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedRuneConst.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedRuneConst.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testUntypedIntToFloat64 : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedIntToFloat64.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedIntToFloat64.wp_proof
 
 end link
 

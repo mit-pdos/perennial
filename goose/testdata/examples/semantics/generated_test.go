@@ -195,6 +195,10 @@ func (suite *GoTestSuite) TestNegUnderflowConstIsPosZero() {
 	suite.Equal(true, testNegUnderflowConstIsPosZero())
 }
 
+func (suite *GoTestSuite) TestUntypedIntToFloat64() {
+	suite.Equal(true, testUntypedIntToFloat64())
+}
+
 func (suite *GoTestSuite) TestCopySimple() {
 	suite.Equal(true, testCopySimple())
 }
