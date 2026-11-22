@@ -97,11 +97,11 @@ theorem goose_crash_adequacy_init [hPre : GooseGpreS GF] (Hcompat : GooseInitCom
       receiptBound GF = N →
       threadBound GF = T →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ P hG.goose_localGS -∗ threadTok ={⊤}=∗
+      ⊢ P hG.goose_localGS -∗ threadTok -∗ ∀ w, extsLocalCtx w ={⊤}=∗ extsLocalCtx w ∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }} ∗
         ∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
           extsCrashStart hG.goose_localGS L' -∗
-          ownGoState (hG := L'.goose_go_stateGS) ∅ ={⊤}=∗ P L')
+          ownGoState (hG := L'.goose_go_stateGS) ∅ -∗ £ 1 ={⊤}=∗ P L')
     (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState) (b : Bool)
     (Hsteps : RealCrashNsteps e n ([e], ((σ, g) : CfgState)) κs (t2, σ2) b)
     (Hbound : n < N) (Hthreads : σ.threads = 1)
@@ -171,11 +171,11 @@ theorem goose_dist_crash_adequacy_init [hPre : GooseGpreS GF] (Hcompat : GooseIn
       threadBound GF = T →
       ∀ (i : Nat) (e : Expr) (σ : state), es[i]? = some (e, σ) →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ P i hG.goose_localGS -∗ threadTok ={⊤}=∗
+      ⊢ P i hG.goose_localGS -∗ threadTok -∗ ∀ w, extsLocalCtx w ={⊤}=∗ extsLocalCtx w ∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ i v⌝ }} ∗
         ∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
           extsCrashStart hG.goose_localGS L' -∗
-          ownGoState (hG := L'.goose_go_stateGS) ∅ ={⊤}=∗ P i L')
+          ownGoState (hG := L'.goose_go_stateGS) ∅ -∗ £ 1 ={⊤}=∗ P i L')
     (n : Nat) (κs : List Observation) (c : DistCfg)
     (Hsteps : DistCrashNsteps (es.map Prod.fst) n (distInit es g) κs c)
     (Hbound : n < N) (Hthreads : ∀ n, n ∈ es → n.2.threads = 1)
@@ -210,11 +210,11 @@ theorem goose_dist_mixed_crash_adequacy_init [hPre : GooseGpreS GF]
       threadBound GF = T →
       ∀ (i : Nat) (e : Expr) (σ : state), crashing[i]? = some (e, σ) →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ P i hG.goose_localGS -∗ threadTok ={⊤}=∗
+      ⊢ P i hG.goose_localGS -∗ threadTok -∗ ∀ w, extsLocalCtx w ={⊤}=∗ extsLocalCtx w ∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ i v⌝ }} ∗
         ∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
           extsCrashStart hG.goose_localGS L' -∗
-          ownGoState (hG := L'.goose_go_stateGS) ∅ ={⊤}=∗ P i L')
+          ownGoState (hG := L'.goose_go_stateGS) ∅ -∗ £ 1 ={⊤}=∗ P i L')
     (n : Nat) (κs : List Observation) (c : DistCfg)
     (Hsteps : DistCrashNsteps (crashing.map Prod.fst) n (distInit (crashing ++ stable) g) κs c)
     (Hbound : n < N) (Hthreads : ∀ n, n ∈ crashing ++ stable → n.2.threads = 1)

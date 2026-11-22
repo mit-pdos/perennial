@@ -104,8 +104,9 @@ theorem crash_safety_bounded [lctx : GoLocalContext] [sem : go.Semantics] [packa
     have wp_Main' := fun N γ =>
       (FuncUnfold.func_unfold (f := Main) (type_args := [])) ▸ wp_Main (GF := GF) N γ
     unfold bootPre
-    iintro ⟨⟨%γ, #Hinv⟩, Hgs⟩ _
+    iintro ⟨⟨%γ, #Hinv⟩, Hgs⟩ _ %w Hl
     imodintro
+    iframe Hl
     isplitl [Hgs]
     · -- the boot program
       unfold boot
@@ -124,7 +125,7 @@ theorem crash_safety_bounded [lctx : GoLocalContext] [sem : go.Semantics] [packa
       · iexact Hinv
       ipureintro; rfl
     · -- after a crash, the files' ghost state is the generation's, and so is the invariant
-      iintro %L' _ %Hfs Hgs'
+      iintro %L' _ %Hfs Hgs' _
       imodintro
       iframe Hgs'
       iexists γ

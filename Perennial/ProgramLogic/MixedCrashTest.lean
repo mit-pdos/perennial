@@ -137,8 +137,9 @@ theorem mixed_safety_bounded [hPre : GooseGpreS GF] (N T : Nat) (p : GoString)
       iexact Hgs
     · iapply BigSepL.bigSepL_singleton.2
       unfold nodeWp nodeWpBody
-      iintro %L %_ %_ _ Hgs _
+      iintro %L %_ %_ _ Hgs _ %w Hl
       imodintro
+      iframe Hl
       letI : HeapGS .hasLC GF := ⟨G, L⟩
       iapply wp_checkInit p _ _ $$ Hgs
       iintro _
@@ -149,14 +150,15 @@ theorem mixed_safety_bounded [hPre : GooseGpreS GF] (N T : Nat) (p : GoString)
     obtain ⟨rfl, rfl, rfl⟩ : i = 0 ∧ e = checkInit p ∧ σ = σ₀ := by
       match i, Hes with
       | 0, Hes => cases Hes; exact ⟨rfl, rfl, rfl⟩
-    iintro Hgs _
+    iintro Hgs _ %w Hl
     imodintro
+    iframe Hl
     isplitl [Hgs]
     · iapply wp_checkInit p _ _ $$ Hgs
       iintro _
       ipureintro
       simp only [post, GMap.lookup_empty, Option.getD_none, Nat.zero_ne_one, decide_false]
-    · iintro %L' _ _ Hgs'
+    · iintro %L' _ _ Hgs' _
       imodintro
       iexact Hgs'
 
@@ -251,11 +253,11 @@ theorem allCrash_obligation_false [hPre : GooseGpreS GF] (N T : Nat) (hN : 2 < N
       threadBound GF = T →
       ∀ (i : Nat) (e : Expr) (σ : state), (crashing p σ₀ ++ stable p σ₁)[i]? = some (e, σ) →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ P i hG.goose_localGS -∗ threadTok ={⊤}=∗
+      ⊢ P i hG.goose_localGS -∗ threadTok -∗ ∀ w, extsLocalCtx w ={⊤}=∗ extsLocalCtx w ∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜post i v⌝ }} ∗
         ∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
           extsCrashStart hG.goose_localGS L' -∗
-          ownGoState (hG := L'.goose_go_stateGS) ∅ ={⊤}=∗ P i L') :
+          ownGoState (hG := L'.goose_go_stateGS) ∅ -∗ £ 1 ={⊤}=∗ P i L') :
     False := by
   have Hmem : ∀ x, x ∈ crashing p σ₀ ++ stable p σ₁ →
       x = (checkInit p, σ₀) ∨ x = (checkInit p, σ₁) := by

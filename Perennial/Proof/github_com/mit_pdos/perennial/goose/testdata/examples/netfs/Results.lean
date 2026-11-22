@@ -278,8 +278,9 @@ theorem netfs_crash_safety_bounded [lctx : GoLocalContext] [sem : go.Semantics]
     subst Hlctx
     letI hG : HeapGS .hasLC GF := ⟨G, ⟨Lexts, Llctx, Lheap, Lgs, Lthr, Lcr⟩⟩
     unfold nodePre
-    iintro ⟨#Hinv, Hgs, %Haddr, #Hf⟩ _
+    iintro ⟨#Hinv, Hgs, %Haddr, #Hf⟩ _ %w Hl
     imodintro
+    iframe Hl
     isplitl [Hgs]
     · rcases Hnode with ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩
       · iapply wp_boot NodeA _ (wp_NodeA (GF := GF) c0 Haddr) $$ [] Hgs
@@ -295,7 +296,7 @@ theorem netfs_crash_safety_bounded [lctx : GoLocalContext] [sem : go.Semantics]
       · iapply wp_boot NodeC _ (wp_NodeC (GF := GF) c0 Haddr) $$ [] Hgs
         iexact Hinv
     · -- after a crash: the files' and the address's ghost state are kept
-      iintro %L' _ Hcs Hgs'
+      iintro %L' _ Hcs Hgs' _
       icases fsNet_crashStart _ L' $$ Hcs with ⟨%Hfs, %Hnet⟩
       imodintro
       iframe Hinv Hgs'
