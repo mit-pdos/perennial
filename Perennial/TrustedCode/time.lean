@@ -349,8 +349,8 @@ reading of the clock (only `After` reads it, which no initializer of `time` call
 package's initialization can call into `time` before it. -/
 def asynctimerchan.init : val :=
   -- Allocates the `time` package's model-only clock state, which belongs to `time`, not to
-  -- `asynctimerchan`: it is here because `time`'s initializer is goose's translation, with no trusted
-  -- code of its own, and this variable initializer is the only trusted step in it.
+  -- `asynctimerchan`: it is here because `time`'s initializer is goose's translation, and this
+  -- variable initializer is the only trusted step it runs.
   λ: <>, runtimeClockInit #()
 
 end code
