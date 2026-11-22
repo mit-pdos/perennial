@@ -214,28 +214,26 @@ func LeanQuote(s string) string {
 // the translator emits, to their full names in
 // Perennial/Golang/Defn/PreLang.lean.
 var leanConstructors = map[string]string{
-	"go.Named":               "go.GoType.Named",
-	"go.ArrayType":           "go.GoType.ArrayType",
-	"go.StructType":          "go.GoType.StructType",
-	"go.PointerType":         "go.GoType.PointerType",
-	"go.FunctionType":        "go.GoType.FunctionType",
-	"go.InterfaceType":       "go.GoType.InterfaceType",
-	"go.SliceType":           "go.GoType.SliceType",
-	"go.MapType":             "go.GoType.MapType",
-	"go.ChannelType":         "go.GoType.ChannelType",
-	"go.UntypedType":         "go.GoType.UntypedType",
-	"go.sendrecv":            "go.ChanDir.sendrecv",
-	"go.sendonly":            "go.ChanDir.sendonly",
-	"go.recvonly":            "go.ChanDir.recvonly",
-	"go.FieldDecl":           "go.field_decl.FieldDecl",
-	"go.EmbeddedField":       "go.field_decl.EmbeddedField",
-	"go.TaggedField":         "go.field_decl.TaggedField",
-	"go.TaggedEmbeddedField": "go.field_decl.TaggedEmbeddedField",
-	"go.Signature":           "go.signature.Signature",
-	"go.MethodElem":          "go.InterfaceElem.MethodElem",
-	"go.TypeElem":            "go.InterfaceElem.TypeElem",
-	"go.TypeTerm":            "go.type_term.TypeTerm",
-	"go.TypeTermUnderlying":  "go.type_term.TypeTermUnderlying",
+	"go.Named":              "go.GoType.Named",
+	"go.ArrayType":          "go.GoType.ArrayType",
+	"go.StructType":         "go.GoType.StructType",
+	"go.PointerType":        "go.GoType.PointerType",
+	"go.FunctionType":       "go.GoType.FunctionType",
+	"go.InterfaceType":      "go.GoType.InterfaceType",
+	"go.SliceType":          "go.GoType.SliceType",
+	"go.MapType":            "go.GoType.MapType",
+	"go.ChannelType":        "go.GoType.ChannelType",
+	"go.UntypedType":        "go.GoType.UntypedType",
+	"go.sendrecv":           "go.ChanDir.sendrecv",
+	"go.sendonly":           "go.ChanDir.sendonly",
+	"go.recvonly":           "go.ChanDir.recvonly",
+	"go.FieldDecl":          "go.field_decl.FieldDecl",
+	"go.EmbeddedField":      "go.field_decl.EmbeddedField",
+	"go.Signature":          "go.signature.Signature",
+	"go.MethodElem":         "go.InterfaceElem.MethodElem",
+	"go.TypeElem":           "go.InterfaceElem.TypeElem",
+	"go.TypeTerm":           "go.type_term.TypeTerm",
+	"go.TypeTermUnderlying": "go.type_term.TypeTermUnderlying",
 }
 
 // leanVerbatims maps verbatim snippets used by the translator to Lean.
@@ -1174,10 +1172,12 @@ func (s SelectStmtClauses) Lean(m LeanMode) string {
 func (d StructType) LeanFields() string {
 	var comps []string
 	for _, fd := range d.Fields {
+		// a field with a tag is go.field_decl.Field/Embedded with it; one without
+		// is written with the shorthand for the empty tag, FieldDecl/EmbeddedField
 		if fd.Tag != "" {
-			fdcons := "go.field_decl.TaggedField"
+			fdcons := "go.field_decl.Field"
 			if fd.Embedded {
-				fdcons = "go.field_decl.TaggedEmbeddedField"
+				fdcons = "go.field_decl.Embedded"
 			}
 			comps = append(comps, lapp(fdcons, LeanStringLit(fd.Name), fd.Type.Lean(LeanTerm),
 				LeanStringLit(fd.Tag)))

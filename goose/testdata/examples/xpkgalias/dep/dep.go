@@ -34,8 +34,8 @@ type PtrLater = *Later
 
 type Later = A
 
-// axiomatized, and goose cannot translate what it denotes (a struct tag on an
-// unnamed struct type): its descriptor is opaque
+// axiomatized, and what it denotes is an unnamed struct type with a tag, which
+// is part of its type (go.field_decl.Field with the tag)
 type Tagged = struct {
 	f uint64 `json:"f"`
 }

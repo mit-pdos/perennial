@@ -413,7 +413,7 @@ noncomputable instance «equals_unfold_struct#6b601a4b» [GooseExts] [GoGlobalCo
   (go.GoType.StructType «struct#6b601a4b».fields)
 
 @[reducible] noncomputable def «struct#2cd0f2f3».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.TaggedField go!"Name" go.string go!"json:\"name\""),
+  [(go.field_decl.Field go!"Name" go.string go!"json:\"name\""),
 (go.field_decl.FieldDecl go!"n" go.int)]
 
 @[irreducible] noncomputable def «struct#2cd0f2f3».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
@@ -427,7 +427,7 @@ noncomputable instance «equals_unfold_struct#2cd0f2f3» [GooseExts] [GoGlobalCo
   (go.GoType.StructType «struct#2cd0f2f3».fields)
 
 @[reducible] noncomputable def «struct#fdd642b7».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.TaggedField go!"A" go.int go!"json:\"a\"")]
+  [(go.field_decl.Field go!"A" go.int go!"json:\"a\"")]
 
 @[irreducible] noncomputable def «struct#fdd642b7».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   «struct#fdd642b7».fieldsUnsealed
@@ -440,7 +440,7 @@ noncomputable instance «equals_unfold_struct#fdd642b7» [GooseExts] [GoGlobalCo
   (go.GoType.StructType «struct#fdd642b7».fields)
 
 @[reducible] noncomputable def «struct#45c926a9».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.TaggedField go!"A" go.int go!"json:\"b\"")]
+  [(go.field_decl.Field go!"A" go.int go!"json:\"b\"")]
 
 @[irreducible] noncomputable def «struct#45c926a9».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   «struct#45c926a9».fieldsUnsealed

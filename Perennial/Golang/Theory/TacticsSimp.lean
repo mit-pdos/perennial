@@ -80,13 +80,10 @@ def typesFingerprint : List go.GoType → List Nat
   | t :: ts => [1] ++ typeFingerprint t ++ typesFingerprint ts
 def fieldsFingerprint : List go.field_decl → List Nat
   | [] => [0]
-  | .FieldDecl n t :: fds => [1] ++ strFingerprint n ++ typeFingerprint t ++ fieldsFingerprint fds
-  | .EmbeddedField n t :: fds =>
-    [2] ++ strFingerprint n ++ typeFingerprint t ++ fieldsFingerprint fds
-  | .TaggedField n t tag :: fds =>
-    [3] ++ strFingerprint n ++ typeFingerprint t ++ strFingerprint tag ++ fieldsFingerprint fds
-  | .TaggedEmbeddedField n t tag :: fds =>
-    [4] ++ strFingerprint n ++ typeFingerprint t ++ strFingerprint tag ++ fieldsFingerprint fds
+  | .Field n t tag :: fds =>
+    [1] ++ strFingerprint n ++ typeFingerprint t ++ strFingerprint tag ++ fieldsFingerprint fds
+  | .Embedded n t tag :: fds =>
+    [2] ++ strFingerprint n ++ typeFingerprint t ++ strFingerprint tag ++ fieldsFingerprint fds
 def sigFingerprint : go.signature → List Nat
   | .Signature args variadic results =>
     typesFingerprint args ++ [if variadic then 1 else 0] ++ typesFingerprint results

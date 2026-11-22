@@ -304,8 +304,14 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   signature has a type goose does not support is an entry without a signature (`(id, none)`:
   it exists), and the method set of any other type (a struct type literal with
   embedded fields, a type declared in a function, a type of an untranslated package) is
-  unconstrained. Two limits of the model's type identity (`=` on `go.GoType`) apply here as
-  to type assertions: struct tags are not part of `go.StructType`, and the unexported field
+  unconstrained. Struct tags are part of `go.StructType`: every field declaration
+  (`go.field_decl.Field`/`Embedded name type tag`, the tag empty when there is none; the
+  shorthands `go.FieldDecl`/`go.EmbeddedField name type` for the usual untagged field) carries
+  its tag, which goose writes for the fields of unnamed struct types, so that `=` is Go's type
+  identity for them. A defined struct type's underlying type is written without its tags (its
+  identity is its name), so a conversion that Go allows only by ignoring tags, or between a
+  tagged unnamed struct type and a defined type, is stuck (`docs/KNOWN_LIMITATIONS.md`). One
+  limit of the model's type identity applies here as to type assertions: the unexported field
   names of struct type literals are not qualified by package. goose loads code with the build
   tag `goose`: a method declared only in files excluded by it (or included only by it) would
   make the emitted method set differ from the real build's.

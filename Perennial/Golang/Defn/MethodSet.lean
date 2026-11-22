@@ -91,11 +91,9 @@ attribute [instance] PredeclaredNoMethods.bool PredeclaredNoMethods.string
 
 /-- A struct field that is not embedded (it promotes no method). -/
 class inductive NotEmbedded : go.field_decl → Prop
-  | field (n : GoString) (t : go.GoType) : NotEmbedded (go.FieldDecl n t)
-  | tagged_field (n : GoString) (t : go.GoType) (tag : GoString) :
-      NotEmbedded (go.TaggedField n t tag)
+  | field (n : GoString) (t : go.GoType) (tag : GoString) : NotEmbedded (go.field_decl.Field n t tag)
 
-attribute [instance] NotEmbedded.field NotEmbedded.tagged_field
+attribute [instance] NotEmbedded.field
 
 /-- The types whose method set is empty in Go (spec, "Method sets": "The method set of
 a defined type T consists of all methods declared with receiver type T. The method set
