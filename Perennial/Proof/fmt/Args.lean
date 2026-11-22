@@ -66,6 +66,17 @@ instance stringMethodSpec_persistent (ii : GoInterfaceOk) (m : GoString) :
     Persistent (stringMethodSpec (GF := GF) ii m) := by
   unfold stringMethodSpec; infer_instance
 
+/-- The method `Write` of the interface value `ii` (an `io.Writer`), called once, with `P` and a
+slice of the bytes `bs` that it owns entirely: it returns `(n, err)` with `Q bs n err` and gives
+the slice back, as `io.Writer`'s contract asks ("Write must not modify the slice data, even
+temporarily. Implementations must not retain p."). What `fmt.Fprintf` needs of its writer. -/
+def writeSpec (ii : GoInterfaceOk) (P : IProp GF) (Q : GoString → w64 → GoInterface → IProp GF) :
+    IProp GF :=
+  iprop(∀ (sl : GoSlice) (bs : GoString) (Φ : val → IProp GF),
+    P -∗ sl ↦* bs -∗
+    ▷ (∀ (n : w64) (err : GoInterface), sl ↦* bs -∗ Q bs n err -∗ Φ (PairV #n #err)) -∗
+    WP (App (Val #(methods ii.ty go!"Write" ii.v)) (Val #sl)) {{ Φ }})
+
 /-- One argument that Go formats under a method verb (`v s x X q`, and `w` in `Errorf`), without
 `#`, by calling its `Error()` or `String()`, which return some string needing nothing: a value
 without a `Format` method whose `Error() string` has `stringMethodSpec`; or a value with neither a
