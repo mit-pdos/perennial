@@ -2,7 +2,6 @@
 module
 
 public import Perennial.Proof.ProofPrelude
-public import Perennial.ManualProof.strconv
 public import Perennial.GeneratedProof.errors
 public import Perennial.GeneratedProof.internal.strconv
 public import Perennial.GeneratedProof.internal.stringslite

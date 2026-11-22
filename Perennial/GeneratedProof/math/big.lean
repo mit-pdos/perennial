@@ -2,7 +2,6 @@
 module
 
 public import Perennial.Proof.ProofPrelude
-public import Perennial.ManualProof.math.big
 public import Perennial.GeneratedProof.errors
 public import Perennial.GeneratedProof.fmt
 public import Perennial.Golang.Theory

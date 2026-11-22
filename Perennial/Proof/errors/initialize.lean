@@ -32,8 +32,6 @@ theorem errors.initialize'.wp_proof
   wp_auto
   wp_apply wp_GlobalAlloc (V := GoInterface) ErrUnsupported go.error as _
   wp_apply wp_New as %_ _
-  -- errorType: its trusted initializer does nothing
-  wp_call
   iframe Hown
   is_pkg_init_finish
 

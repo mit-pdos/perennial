@@ -168,6 +168,23 @@ type CatchBreakExpr struct {
 	Body Expr
 }
 
+// BreakToExpr is `break Label`, ContinueToExpr is `continue Label`.
+type BreakToExpr struct {
+	Label string
+}
+
+type ContinueToExpr struct {
+	Label string
+}
+
+// CatchLabelExpr runs the body of a loop, or a switch or select statement
+// (Body), labeled Label: a `break Label` outcome becomes a break, and a
+// `continue Label` outcome a continue.
+type CatchLabelExpr struct {
+	Label string
+	Body  Expr
+}
+
 type ReturnExpr struct {
 	Value Expr
 }

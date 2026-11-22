@@ -1,0 +1,4 @@
+translate = ["*", "X"]
+[[skip]]
+names = ["X"]
+reason = "a constant"

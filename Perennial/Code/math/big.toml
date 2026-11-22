@@ -10,8 +10,13 @@ translate = [
 ]
 imports = ["!*", "errors", "fmt"]
 
-# `hasADX = cpu.X86.HasADX && cpu.X86.HasBMI2` (TrustedCode/math/big.lean)
-trusted = ["hasADX"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true
+
+[[skip]]
+names = ["hasADX"]
+reason = """
+`cpu.X86.HasADX && cpu.X86.HasBMI2` (arith_amd64.go): reads two booleans of `internal/cpu`,
+which the runtime sets before any package is initialized; cannot panic, no effect beyond the
+variable. Read only by the assembly of `addMulVVWW` (arith_amd64.s), which is not translated."""

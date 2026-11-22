@@ -1,0 +1,3 @@
+[[skip]]
+names = ["_@skip_unlisted.go:7"]
+reason = "a struct literal"

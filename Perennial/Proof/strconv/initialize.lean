@@ -42,8 +42,6 @@ theorem strconv.initialize'.wp_proof
   wp_apply wp_stringslite_initialize _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #Hsl⟩
   wp_apply wp_strconv_initialize _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hisc⟩
   wp_apply wp_errors_initialize _ Hinit.2.1 $$ Hown as ⟨Hown, #Herrors⟩
-  -- the printable-rune tables: their trusted initializers do nothing
-  repeat wp_call
   wp_apply errors.wp_New_errorString as %xR #ER
   ipersist HR
   -- the store into `ErrSyntax` ends the initializer: keep an update to make its cell
