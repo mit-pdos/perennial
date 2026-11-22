@@ -373,6 +373,15 @@ func (ctx *Ctx) conversionExpr(s *ast.CallExpr) glang.Expr {
 	}
 	toType := ctx.info.TypeOf(s.Fun)
 	fromType := ctx.info.TypeOf(s.Args[0])
+	if _, ok := toType.(*types.TypeParam); ok {
+		// T(c) of a float constant c is c's exact value represented at the type
+		// argument, not c at its default type float64 (as go/types records it)
+		if val := ctx.info.Types[s.Args[0]].Value; val != nil && val.Kind() == constant.Float {
+			if k, lit := untypedLiteral(val, true); lit != nil {
+				return ctx.handleImplicitConversion(s, types.Typ[k], toType, lit)
+			}
+		}
+	}
 	return ctx.handleImplicitConversion(s, fromType, toType, ctx.expr(s.Args[0]))
 }
 
@@ -993,32 +1002,6 @@ func (ctx *Ctx) builtinIdent(e *ast.Ident) glang.Expr {
 	return nil
 }
 
-// untypedFloatToInt converts a constant (assumed to be a float) to an integer.
-//
-// Returns ok = false if the float doesn't fit in an int64.
-func untypedFloatToInt(c constant.Value) (i int64, ok bool) {
-	switch x := constant.Val(c).(type) {
-	case *big.Rat:
-		if x.IsInt() {
-			v, exact := x.Float64()
-			if !exact {
-				return 0, false
-			}
-			return int64(v), true
-		}
-	case *big.Float:
-		if x.IsInt() {
-			var acc big.Accuracy
-			i, acc = x.Int64()
-			if acc != big.Exact {
-				return 0, false
-			}
-			return i, true
-		}
-	}
-	return 0, false
-}
-
 func (ctx *Ctx) identExpr(e *ast.Ident, multipleBindings bool) glang.Expr {
 	// XXX: special case for a manually constructed Ident from select recv clause
 	if len(e.Name) > 0 && e.Name[0] == '$' {
@@ -1037,34 +1020,6 @@ func (ctx *Ctx) identExpr(e *ast.Ident, multipleBindings bool) glang.Expr {
 	obj := ctx.info.ObjectOf(e)
 	if constObj, ok := obj.(*types.Const); ok {
 		// is a constant
-		if constTy, ok := constObj.Type().(*types.Basic); ok && constTy.Kind() == types.UntypedFloat {
-			dstTy := ctx.typeOf(e)
-			if dstTy, ok := dstTy.(*types.Basic); ok && dstTy.Info()&types.IsInteger != 0 {
-				constInt, exact := untypedFloatToInt(constObj.Val())
-				if !exact {
-					ctx.nope(e, "float constant does not fit into int64")
-				}
-				constExpr := glang.VerbatimExpr(fmt.Sprintf("%d", constInt))
-				switch dstTy.Kind() {
-				case types.Uint64, types.Int64, types.Int:
-					return glang.Int64Val{
-						Value: constExpr,
-					}
-				case types.Uint32, types.Int32:
-					return glang.Int32Val{
-						Value: constExpr,
-					}
-				case types.Uint16, types.Int16:
-					return glang.Int16Val{
-						Value: constExpr,
-					}
-				case types.Uint8, types.Int8:
-					return glang.Int8Val{
-						Value: constExpr,
-					}
-				}
-			}
-		}
 		constE := ctx.termIdent(e.Name)
 		return ctx.handleImplicitConversion(e, constObj.Type(), ctx.typeOf(e), constE)
 	}
@@ -1182,6 +1137,11 @@ func (ctx *Ctx) typeAssertExpr(e *ast.TypeAssertExpr, multipleBindings bool) gla
 }
 
 func (ctx *Ctx) exprSpecial(e ast.Expr, multipleBindings bool) glang.Expr {
+	if tv := ctx.info.Types[e]; tv.Value != nil {
+		if b, ok := tv.Type.Underlying().(*types.Basic); ok && (b.Kind() == types.Float32 || b.Kind() == types.Float64) {
+			return ctx.constantLiteral(e)
+		}
+	}
 	switch e := e.(type) {
 	case *ast.CallExpr:
 		return ctx.callExpr(e)
@@ -2776,14 +2736,11 @@ func (ctx *Ctx) constantLiteral(e ast.Expr) glang.Expr {
 			return glang.ToVal{Value: glang.StringLiteral{Value: v.(string)}}
 		case types.UntypedNil:
 			return glang.VerbatimExpr("UntypedNil")
-		case types.UntypedInt, types.UntypedRune:
-			switch v := v.(type) {
-			case *big.Int:
-				return glang.ToVal{Value: glang.ZLiteral{Value: v}}
-			case int64:
-				return glang.ToVal{Value: glang.ZLiteral{Value: big.NewInt(v)}}
+		case types.UntypedInt, types.UntypedRune, types.UntypedFloat:
+			if _, lit := untypedLiteral(val, t.Kind() == types.UntypedFloat); lit != nil {
+				return lit
 			}
-		case types.Float64, types.UntypedFloat:
+		case types.Float64:
 			f, _ := constant.Float64Val(val)
 			if f == 0 {
 				// -0 == 0 is true, so this turns -0 into +0: a Go constant is exact
@@ -2807,6 +2764,23 @@ func (ctx *Ctx) constantLiteral(e ast.Expr) glang.Expr {
 	}
 	ctx.unsupported(e, "unsupported constant val")
 	return nil
+}
+
+// untypedLiteral is the exact value of an integer or float constant, at untyped
+// float (#(mkRat n d), lowest terms) if asFloat, else at untyped int (#(n : Int)).
+// lit is nil for other constants.
+func untypedLiteral(val constant.Value, asFloat bool) (k types.BasicKind, lit glang.Expr) {
+	if asFloat {
+		num, den := constant.Num(val), constant.Denom(val)
+		if num.Kind() == constant.Int && den.Kind() == constant.Int {
+			return types.UntypedFloat, glang.ToVal{Value: glang.VerbatimExpr(
+				fmt.Sprintf("mkRat (%s : Int) %s", num.ExactString(), den.ExactString()))}
+		}
+	} else if val.Kind() == constant.Int {
+		v, _ := new(big.Int).SetString(val.ExactString(), 10)
+		return types.UntypedInt, glang.ToVal{Value: glang.ZLiteral{Value: v}}
+	}
+	return 0, nil
 }
 
 // constSpec handles one specification in a const block

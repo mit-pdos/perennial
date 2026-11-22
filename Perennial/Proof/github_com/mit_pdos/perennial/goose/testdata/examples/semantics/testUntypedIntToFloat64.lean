@@ -26,9 +26,11 @@ variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.se
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedIntToFloat64.wp_proof :
     github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedIntToFloat64.spec (GF := GF) (hG := hG) := by
   semantics_auto
-  have h : float64Eq (untypedIntToFloat64 (-1)) (untypedIntToFloat64 (-1)) = true := by
-    decide +kernel
-  rw [h]
+  -- `x == y` is a closed `float64Eq`, which the kernel evaluates to `true`
+  generalize hc : float64Eq _ _ = c
+  obtain rfl : c = true
+  · subst hc; decide +kernel
+  steps
   iexact HΦ
 
 end proof

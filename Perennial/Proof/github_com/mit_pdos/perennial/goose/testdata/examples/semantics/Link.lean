@@ -54,6 +54,7 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFallthrough
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFallthroughBreak
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFallthroughReturn
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFloat64ConstExprIsConst
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIncompleteStruct
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIntToFloat32
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIntToFloat64
@@ -117,6 +118,9 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testU32ToU64
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testU64ToU32
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUint32Untyped
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedFloatConstAtTypeParam
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedFloatConstToInt
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedFloatConvertAtTypeParam
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedIntToFloat64
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedRuneConst
 
@@ -282,6 +286,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testF
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testFallthroughReturn : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFallthroughReturn.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFallthroughReturn.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testFloat64ConstExprIsConst : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFloat64ConstExprIsConst.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFloat64ConstExprIsConst.wp_proof
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testIncompleteStruct : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIncompleteStruct.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIncompleteStruct.wp_proof
@@ -471,6 +478,15 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testU
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testUint32Untyped : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUint32Untyped.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUint32Untyped.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testUntypedFloatConstAtTypeParam : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedFloatConstAtTypeParam.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedFloatConstAtTypeParam.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testUntypedFloatConstToInt : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedFloatConstToInt.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedFloatConstToInt.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testUntypedFloatConvertAtTypeParam : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedFloatConvertAtTypeParam.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedFloatConvertAtTypeParam.wp_proof
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testUntypedIntToFloat64 : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedIntToFloat64.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedIntToFloat64.wp_proof

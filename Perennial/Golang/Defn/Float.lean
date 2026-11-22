@@ -132,11 +132,11 @@ near it).
 
 This is sound where `encode` is used, because it is only ever applied to values that are
 representable by construction: the results of the operations above (`add`, `sub`, `mul`, `div`,
-`neg`, `ofInt`, `convert` to `f`), each of which is NaN, an infinity, a signed zero, the
+`neg`, `ofInt`, `ofConst`, `convert` to `f`), each of which is NaN, an infinity, a signed zero, the
 negation of a `decode` result, or a `round` result in `f` (whose finite results are on `f`'s
 grid and below `2 ^ (emax + 1)`, by the definition of `round`). The step rules reach `encode`
 only through `encodes` (`float64Encodes`, `float32Encodes`) on those results, and the
-conversions below only on `ofInt` and `convert` results. The test vectors in
+conversions below only on `ofInt` and `ofConst` results. The test vectors in
 `docs/design/float/` check against Go that the bits are right on such results. -/
 def encode : FloatValue → Option f.Bits
   | .nan => none
@@ -228,6 +228,11 @@ def isNaNDef (x : f.Bits) : Bool := f.decode x == .nan
 /-- The conversion of an integer (§5.4.1 convertFromInt): its rounding. -/
 def ofIntDef (n : Int) : FloatValue := f.roundRat n
 
+/-- The value of a Go constant whose exact value is `q`: its rounding, except that a constant
+that rounds to zero is `+0` (a Go constant is never a negative zero). -/
+def ofConstDef (q : Rat) : FloatValue :=
+  if f.roundRat q = .finite true 0 then .finite false 0 else f.roundRat q
+
 /-- The conversion to format `g` (§5.4.1 formatOf-convertFormat): the rounding of the value. -/
 def convertDef (g : Format) (x : f.Bits) : FloatValue :=
   match f.decode x with
@@ -243,6 +248,7 @@ def convertDef (g : Format) (x : f.Bits) : FloatValue :=
 @[irreducible] def eq (x y : f.Bits) : Bool := f.eqDef x y
 @[irreducible] def isNaN (x : f.Bits) : Bool := f.isNaNDef x
 @[irreducible] def ofInt (n : Int) : FloatValue := f.ofIntDef n
+@[irreducible] def ofConst (q : Rat) : FloatValue := f.ofConstDef q
 @[irreducible] def convert (g : Format) (x : f.Bits) : FloatValue := f.convertDef g x
 
 theorem add_unseal : f.add = f.addDef := by with_unfolding_all rfl
@@ -254,6 +260,7 @@ theorem leb_unseal : f.leb = f.lebDef := by with_unfolding_all rfl
 theorem eq_unseal : f.eq = f.eqDef := by with_unfolding_all rfl
 theorem isNaN_unseal : f.isNaN = f.isNaNDef := by with_unfolding_all rfl
 theorem ofInt_unseal : f.ofInt = f.ofIntDef := by with_unfolding_all rfl
+theorem ofConst_unseal : f.ofConst = f.ofConstDef := by with_unfolding_all rfl
 theorem convert_unseal : f.convert = f.convertDef := by with_unfolding_all rfl
 
 end Format
@@ -290,26 +297,25 @@ def float32Leb (x y : w32) : Bool := binary32.leb x y
 def float32Eq (x y : w32) : Bool := binary32.eq x y
 def float32IsNaN (x : w32) : Bool := binary32.isNaN x
 
+/-- `float32(x)` of a `float64` `x`, and `float64(x)` of a `float32` `x`. -/
+def float64ToFloat32 (x : w64) : FloatValue := binary64.convert binary32 x
+def float32ToFloat64 (x : w32) : FloatValue := binary32.convert binary64 x
+
 /-! Conversions that never produce a NaN, as bits. (`getD 0` is never used: a rounding is
-never NaN, and an untyped constant is never NaN.) -/
+never NaN.) -/
 
-/-- `float32(c)` of a `float64` `x` that is not a NaN (the conversion of untyped constants). -/
-def float64ToFloat32 (x : w64) : w32 := (binary32.encode (binary64.convert binary32 x)).getD 0
+/-- `float64(c)` (`float32(c)`) of a constant `c` whose exact value is `q`: its rounding, once
+(`ofConst`). Also the one integer-to-float rounding: `float64(n)`/`float32(n)` of an integer `n`
+of any type, or of an untyped integer constant, is `ratToFloat64 n`/`ratToFloat32 n` (for an
+integer, `ofConst` is `ofInt`: an integer never rounds to `-0`). -/
+def ratToFloat64 (q : Rat) : w64 := (binary64.encode (binary64.ofConst q)).getD 0
+def ratToFloat32 (q : Rat) : w32 := (binary32.encode (binary32.ofConst q)).getD 0
 
-/-- `float64(c)` of an untyped integer constant `c`, and `float64(n)` of a typed integer `n`
-(of the integer `n` denotes): the exact integer rounded once to binary64. The one integer-to-
-`float64` rounding: every integer-to-`float64` conversion rule steps through it. -/
-def untypedIntToFloat64 (n : Int) : w64 := (binary64.encode (binary64.ofInt n)).getD 0
-/-- `float32(c)` of an untyped integer constant `c`, and `float32(n)` of a typed integer `n`:
-the exact integer rounded once to binary32 (not through binary64: Go rounds once). The one
-integer-to-`float32` rounding. -/
-def untypedIntToFloat32 (n : Int) : w32 := (binary32.encode (binary32.ofInt n)).getD 0
-
-/-- `float64(n)` of an integer (`int64`, `uint64`, `int32`, `uint32`): its rounding, by
-`untypedIntToFloat64`. -/
-def int64ToFloat64 (n : w64) : w64 := untypedIntToFloat64 n.toInt
-def uint64ToFloat64 (n : w64) : w64 := untypedIntToFloat64 n.toNat
-def int32ToFloat64 (n : w32) : w64 := untypedIntToFloat64 n.toInt
-def uint32ToFloat64 (n : w32) : w64 := untypedIntToFloat64 n.toNat
+/-- `float64(n)` of an integer (`int64`, `uint64`, `int32`, `uint32`): its rounding,
+`ratToFloat64`. -/
+def int64ToFloat64 (n : w64) : w64 := ratToFloat64 n.toInt
+def uint64ToFloat64 (n : w64) : w64 := ratToFloat64 n.toNat
+def int32ToFloat64 (n : w32) : w64 := ratToFloat64 n.toInt
+def uint32ToFloat64 (n : w32) : w64 := ratToFloat64 n.toNat
 
 end Perennial

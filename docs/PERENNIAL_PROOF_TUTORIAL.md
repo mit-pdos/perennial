@@ -611,7 +611,10 @@ example (get_is_pkg_init : GoString → IProp GF)
 
 * `define_is_pkg_init P` builds `IsPkgInit` with user part `P` (usually
   `iprop(True)`; Go globals and their invariants go here); the dependency part is
-  computed from the package's imports, so their instances must exist.
+  computed from the package's imports, so their instances must exist (or, for
+  an import whose fact takes a parameter, its `IsPkgInitParam` instance: the
+  dependency part then holds `isPkgInitSome dep`; see the reference's "Package
+  initialization").
 * `wp_initialize'` initializes the imports in the order of `initialize'` in
   `Perennial/Code/<pkg>.lean`; `Hinit.2.1`, `Hinit.2.2.1`, ... are the
   imports' `GetIsPkgInitProp` facts.
