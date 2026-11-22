@@ -664,6 +664,10 @@ that is not translated, or an entry whose signature has a type goose does not su
 method that is not translated may: `("Equal", none)`); then the entry still says that the
 method exists. A type that the translation cannot name (of a package it does not import) is
 written out in signatures as its descriptor's definition, `go.Named "<path>.<Name>" []`.
+A type alias `A` always has a reducible descriptor `A.ty`, defined as the descriptor of the
+type it denotes, whether its package's configuration translates, axiomatizes or trusts it
+(`example : dep.A.ty = dep.X.ty := rfl` for `type A = X`); only when goose cannot translate
+that type (an unnamed struct type with tags) is an untranslated alias's `A.ty` opaque.
 
 ---
 

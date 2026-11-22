@@ -284,8 +284,8 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   interface, embedded interfaces included), so that `typeSetContains` needs no recursion
   through embedded named interfaces; embedded constraint elements (unions, `comparable`) stay
   as type terms. A type a signature mentions that the translation cannot name (a named type
-  of a package it does not import, an alias it does not translate) is written as what it
-  denotes (`go.Named "<path>.<Name>" args`, the aliased type), so that an interface type has
+  or alias of a package it does not import) is written as what it denotes
+  (`go.Named "<path>.<Name>" args`, the aliased type), so that an interface type has
   the same term, up to unfolding descriptors and aliases, in every package that writes it: Go's
   type identity, which `=` on `go.GoType` must agree with wherever interface types are compared
   (in signatures, as element types). Nothing is claimed beyond what is known: a method whose
