@@ -1184,6 +1184,17 @@ func (s SelectStmtClauses) Lean(m LeanMode) string {
 func (d StructType) LeanFields() string {
 	var comps []string
 	for _, fd := range d.Fields {
+		// a field with a tag is go.field_decl.Field/Embedded with it; one without
+		// is written with the shorthand for the empty tag, FieldDecl/EmbeddedField
+		if fd.Tag != "" {
+			fdcons := "go.field_decl.Field"
+			if fd.Embedded {
+				fdcons = "go.field_decl.Embedded"
+			}
+			comps = append(comps, lapp(fdcons, LeanStringLit(fd.Name), fd.Type.Lean(LeanTerm),
+				LeanStringLit(fd.Tag)))
+			continue
+		}
 		fdcons := "go.field_decl.FieldDecl"
 		if fd.Embedded {
 			fdcons = "go.field_decl.EmbeddedField"

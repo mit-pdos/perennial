@@ -100,13 +100,6 @@ func (c *typeTranslatability) check(t types.Type, byValue bool, top bool) {
 			}
 		}
 	case *types.Struct:
-		if !top {
-			for i := range t.NumFields() {
-				if t.Tag(i) != "" {
-					c.fail("struct tag on an unnamed struct type")
-				}
-			}
-		}
 		for i := range t.NumFields() {
 			c.check(t.Field(i).Type(), true, false)
 		}

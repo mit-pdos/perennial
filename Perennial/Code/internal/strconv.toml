@@ -14,11 +14,16 @@ translate = [
   "float64Bias",
 ]
 imports = ["!*", "math/bits"]
-# `pow10Tab`, a 696-entry table of 128-bit powers of ten read only by the float conversions,
-# which are not translated (TrustedCode/internal/strconv.lean)
-trusted = ["pow10Tab", "lower"]
+trusted = ["lower"]
 # `lower`: `c | ('x' - 'X')`, whose constant `'x' - 'X'` goose emits as an untyped subtraction
 # the semantics does not step (TrustedCode/internal/strconv.lean)
 
 # translate the definitions of all type declarations goose supports
 translate_types = true
+
+[[skip]]
+names = ["pow10Tab"]
+reason = """
+A 696-entry array literal of 128-bit powers of ten (pow10tab.go, generated): stores constants,
+cannot panic and has no effect beyond the variable. Read only by `pow10` (math.go), which only
+the float conversions (`ParseFloat`, `FormatFloat` and their helpers) call; none is translated."""

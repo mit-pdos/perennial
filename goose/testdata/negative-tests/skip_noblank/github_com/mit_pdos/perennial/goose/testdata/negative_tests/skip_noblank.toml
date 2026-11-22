@@ -1,0 +1,4 @@
+# the blank variable is at line 7, not 8 (as if it moved)
+[[skip]]
+names = ["_@skip_noblank.go:8"]
+reason = "an interface check"

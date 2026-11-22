@@ -43,6 +43,14 @@ func (suite *GoTestSuite) TestAnonStructArray() {
 	suite.Equal(true, testAnonStructArray())
 }
 
+func (suite *GoTestSuite) TestAnonStructTagged() {
+	suite.Equal(true, testAnonStructTagged())
+}
+
+func (suite *GoTestSuite) TestAnonStructTagTypesEqual() {
+	suite.Equal(true, testAnonStructTagTypesEqual())
+}
+
 func (suite *GoTestSuite) TestRangeArray() {
 	suite.Equal(true, testRangeArray())
 }

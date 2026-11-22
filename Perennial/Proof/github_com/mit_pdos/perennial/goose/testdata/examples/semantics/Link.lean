@@ -32,6 +32,8 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructNested
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructPointer
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructSameType
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructTagTypesEqual
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructTagged
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testBreakLoopFromSwitch
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testBreakSwitch
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testByteSliceToString
@@ -212,6 +214,12 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testA
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testAnonStructSameType : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructSameType.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructSameType.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testAnonStructTagTypesEqual : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructTagTypesEqual.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructTagTypesEqual.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testAnonStructTagged : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructTagged.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructTagged.wp_proof
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testBreakLoopFromSwitch : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testBreakLoopFromSwitch.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testBreakLoopFromSwitch.wp_proof github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_breakLoopFromSwitch

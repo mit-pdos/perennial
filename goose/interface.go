@@ -83,14 +83,18 @@ func pkgErrors(errors []packages.Error) error {
 // alphabetical order; this must be a topological sort of the definitions or the
 // Lean code will be out-of-order. Sorting ensures the results are stable
 // and not dependent on map or directory iteration order.
-func translatePackage(pkg *packages.Package, config declfilter.FilterConfig) (glang.File, error) {
+func translatePackage(pkg *packages.Package, config declfilter.FilterConfig, configDir string) (glang.File, error) {
 	if len(pkg.Errors) > 0 {
 		return glang.File{}, errors.Errorf(
 			"could not load package %v:\n%v", pkg.PkgPath,
 			pkgErrors(pkg.Errors))
 	}
 	ctx := NewPkgCtx(pkg, util.ExtendFilter(pkg, config, declfilter.New(config)))
+	ctx.configDir = configDir
 	f := ctx.initFile(pkg, config)
+	if errs := ctx.checkSkipConfig(pkg, config); len(errs) != 0 {
+		return f, errors.Wrap(MultipleErrors(errs), "conversion failed")
+	}
 	preDecls, decls, errs := ctx.files(pkg.Syntax)
 
 	f.PreHeaderDecls = preDecls
@@ -238,7 +242,7 @@ func TranslatePackages(configDir string, modDir string, tags []string,
 				errs[i] = err
 				return
 			}
-			files[i], errs[i] = translatePackage(pkg, config)
+			files[i], errs[i] = translatePackage(pkg, config, configDir)
 		}()
 	}
 	wg.Wait()

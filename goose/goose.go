@@ -120,6 +120,18 @@ type Ctx struct {
 
 	filter declfilter.DeclFilter
 	out    outputDecls
+
+	// The goose config directory, to read the skip entries of the packages
+	// this one imports (see skip.go).
+	configDir string
+	// imported package path -> its skipped variables -> reason
+	depSkips map[string]map[string]string
+	// the package's skipped variables, in source order
+	skipped []skippedVar
+	// whether the package skips blank variables (then it skips all of them)
+	skipsBlank bool
+	// the translated declaration being translated, for error messages
+	curDecl string
 }
 
 // NewPkgCtx initializes a context based on a properly loaded package
@@ -468,6 +480,7 @@ func (ctx *Ctx) selectorExprAddr(e *ast.SelectorExpr) glang.Expr {
 	selection := ctx.info.Selections[e]
 	if selection == nil {
 		if v, ok := ctx.info.ObjectOf(e.Sel).(*types.Var); ok {
+			ctx.checkNotSkipped(e, v)
 			return glang.NewCallExpr(glang.VerbatimExpr("GlobalVarAddr"),
 				ctx.termIdent(ctx.pkgRef(v.Pkg())+"."+v.Name()),
 				glang.Tt,
@@ -1711,8 +1724,9 @@ func (ctx *Ctx) exprAddr(e ast.Expr) glang.Expr {
 		return ctx.exprAddr(e.X)
 	case *ast.Ident:
 		obj := ctx.info.ObjectOf(e)
-		if _, ok := obj.(*types.Var); ok {
+		if v, ok := obj.(*types.Var); ok {
 			if obj.Pkg().Scope() == obj.Parent() {
+				ctx.checkNotSkipped(e, v)
 				return glang.NewCallExpr(glang.VerbatimExpr("GlobalVarAddr"),
 					ctx.termIdent(e.Name),
 					glang.Tt,
@@ -2581,6 +2595,8 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 	if funcName == "_" {
 		return
 	}
+	ctx.curDecl = funcName
+	defer func() { ctx.curDecl = "" }()
 
 	if d.Recv == nil {
 		funcName = ctx.funcDeclName(d)
@@ -2859,6 +2875,11 @@ func (ctx *Ctx) globalVarDecl(d *ast.GenDecl) {
 	for _, spec := range d.Specs {
 		s := spec.(*ast.ValueSpec)
 		for _, name := range s.Names {
+			if ctx.varAction(name.Name, name.Pos()) == declfilter.Skip {
+				// no name, X.init, allocation or init step (skip.go)
+				ctx.recordSkipped(s, name)
+				continue
+			}
 			if name.Name == "_" {
 				continue
 			}
@@ -3131,6 +3152,7 @@ func (ctx *Ctx) packagePropClass() []glang.Decl {
 func (ctx *Ctx) finalExtraDecls() {
 	var decls = []glang.Decl{}
 
+	decls = append(decls, ctx.skippedDecls()...)
 	decls = append(decls, glang.VerbatimDecl{Content: ctx.leanInfoInstance()})
 
 	initFunc := glang.FuncDecl{Name: "initialize'"}
@@ -3145,7 +3167,8 @@ func (ctx *Ctx) finalExtraDecls() {
 			glang.Tt), e)
 	}
 
-	if ctx.filter.GetAction("_") == declfilter.Axiomatize {
+	// (a package that skips blank variables lists all of them: checkSkipConfig)
+	if ctx.filter.GetAction("_") == declfilter.Axiomatize && !ctx.skipsBlank {
 		decls = append(decls, glang.AxiomDecl{
 			DeclName: "_'init",
 			Type:     glang.VerbatimExpr("val"),
@@ -3153,20 +3176,25 @@ func (ctx *Ctx) finalExtraDecls() {
 	}
 
 	// initialize all global vars
-InitLoop:
 	for i := range ctx.info.InitOrder {
 		init := ctx.info.InitOrder[len(ctx.info.InitOrder)-i-1]
 
-		// Check if any of the LHS variables should be treated as axiomatized
-		for i := 0; i < len(init.Lhs); i++ {
-			varName := init.Lhs[i].Name()
-			if ctx.filter.GetAction(varName) != declfilter.Translate {
+		switch ctx.initAction(init) {
+		case declfilter.Skip:
+			// A skipped initializer has no step; the others keep Go's
+			// relative order.
+			continue
+		case declfilter.Axiomatize, declfilter.Trust:
+			// Not translated: the X.init of each of its variables, left to
+			// right (a blank variable's is the package's _.init).
+			for i := len(init.Lhs) - 1; i >= 0; i-- {
 				e = glang.NewDoSeq(
-					glang.NewCallExpr(ctx.termIdent(varName+"'init"), glang.Tt),
+					glang.NewCallExpr(ctx.termIdent(init.Lhs[i].Name()+"'init"), glang.Tt),
 					e)
-				continue InitLoop
 			}
+			continue
 		}
+		ctx.curDecl = "the initializer of " + varNames(init.Lhs)
 		if n, msg, bad := modelcheck.PackageVar(ctx.info, init); bad {
 			ctx.unsupported(n, "%s", msg)
 		}
@@ -3234,6 +3262,8 @@ InitLoop:
 			}
 		}
 	}
+
+	ctx.curDecl = ""
 
 	for _, importName := range ctx.importNamesOrdered {
 		pkg := importName.Imported()

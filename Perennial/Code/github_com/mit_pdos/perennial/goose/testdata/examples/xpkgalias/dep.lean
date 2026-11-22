@@ -27,6 +27,19 @@ noncomputable def X.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] X.ty
 
+@[reducible] noncomputable def «struct#d5167f74».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.Field go!"f" go.uint64 go!"json:\"f\"")]
+
+@[irreducible] noncomputable def «struct#d5167f74».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  «struct#d5167f74».fieldsUnsealed
+
+noncomputable instance «equals_unfold_struct#d5167f74» [GooseExts] [GoGlobalContext] :
+    EqualsUnfold «struct#d5167f74».fields «struct#d5167f74».fieldsUnsealed :=
+  ⟨by unfold «struct#d5167f74».fields; rfl⟩
+
+@[reducible] noncomputable def «struct#d5167f74».underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType «struct#d5167f74».fields)
+
 @[reducible] noncomputable def A.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   X.ty
 
@@ -48,7 +61,8 @@ attribute [irreducible] X.ty
 @[reducible] noncomputable def Later.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   X.ty
 
-opaque Tagged.ty [GooseExts] [GoGlobalContext] : go.GoType
+@[reducible] noncomputable def Tagged.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  «struct#d5167f74».underlying
 
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep where
   pkgImportedPkgs := [pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep2]
@@ -97,11 +111,29 @@ attribute [instance] X.TypeAssumptions.type_repr
   X.TypeAssumptions.method_set
   X.TypeAssumptions.ptr_method_set
 
+structure «struct#d5167f74» [GooseExts] where
+  mk ::
+  f' : w64
+
+noncomputable instance «struct#d5167f74».zero_val [GooseExts] : ZeroVal «struct#d5167f74» :=
+  ⟨«struct#d5167f74».mk zeroValDef⟩
+
+class «struct#d5167f74».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying «struct#d5167f74».underlying «struct#d5167f74»
+  get_f : ∀ (x : «struct#d5167f74»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#d5167f74».underlying go!"f") #x (Val #(x.f'))
+  set_f : ∀ (x : «struct#d5167f74») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#d5167f74».underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : «struct#d5167f74»)))
+
+attribute [instance] «struct#d5167f74».TypeAssumptions.type_repr
+  «struct#d5167f74».TypeAssumptions.get_f
+  «struct#d5167f74».TypeAssumptions.set_f
+
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   X_instance : X.TypeAssumptions
+  «struct#d5167f74_instance» : «struct#d5167f74».TypeAssumptions
   import_dep2_Assumption : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep2.Assumptions
 
 attribute [instance] Assumptions.X_instance
+  Assumptions.«struct#d5167f74_instance»
   Assumptions.import_dep2_Assumption
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep

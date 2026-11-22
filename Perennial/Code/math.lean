@@ -21,7 +21,8 @@ end pkg_id
 
 namespace math
 
-opaque uvnan [GooseExts] [GoGlobalContext] : val
+@[reducible] noncomputable def uvnan [GooseExts] [GoGlobalContext] : val :=
+  #(9221120237041090561 : Int)
 
 opaque uvinf [GooseExts] [GoGlobalContext] : val
 
@@ -29,11 +30,14 @@ opaque uvneginf [GooseExts] [GoGlobalContext] : val
 
 opaque uvone [GooseExts] [GoGlobalContext] : val
 
-opaque mask [GooseExts] [GoGlobalContext] : val
+@[reducible] noncomputable def mask [GooseExts] [GoGlobalContext] : val :=
+  #(2047 : Int)
 
-opaque shift [GooseExts] [GoGlobalContext] : val
+@[reducible] noncomputable def shift [GooseExts] [GoGlobalContext] : val :=
+  #(52 : Int)
 
-opaque bias [GooseExts] [GoGlobalContext] : val
+@[reducible] noncomputable def bias [GooseExts] [GoGlobalContext] : val :=
+  #(1023 : Int)
 
 opaque signMask [GooseExts] [GoGlobalContext] : val
 
@@ -65,7 +69,9 @@ opaque MaxFloat32 [GooseExts] [GoGlobalContext] : val
 
 opaque SmallestNonzeroFloat32 [GooseExts] [GoGlobalContext] : val
 
-opaque MaxFloat64 [GooseExts] [GoGlobalContext] : val
+/-- 1.79769313486231570814527423731704356798070e+308 -/
+@[reducible] noncomputable def MaxFloat64 [GooseExts] [GoGlobalContext] : val :=
+  #(W64 9218868437227405311)
 
 opaque SmallestNonzeroFloat64 [GooseExts] [GoGlobalContext] : val
 
@@ -1017,6 +1023,156 @@ noncomputable def Float64bits [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def Float64frombits [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Float64frombits"
 
+/-- Abs returns the absolute value of x.
+
+    Special cases are:
+
+    	Abs(±Inf) = +Inf
+    	Abs(NaN) = NaN
+
+    go: abs.go:13:6 -/
+noncomputable def Abs.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "x"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.float64))) (Var "x"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoBitClear go.uint64))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.float64))) (Var "x"))
+  (App (App (Val (GoInstruction (FuncResolve Float64bits []))) (Val #())) (Var "$a0"))) (Val #(W64 9223372036854775808))))
+  (App (App (Val (GoInstruction (FuncResolve Float64frombits []))) (Val #())) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.float64))) (Var "$res0")))))
+
+/-- NaN returns an IEEE 754 “not-a-number” value.
+
+    go: bits.go:31:6 -/
+noncomputable def NaN.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val uvnan))
+  (App (App (Val (GoInstruction (FuncResolve Float64frombits []))) (Val #())) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.float64))) (Var "$res0")))))
+
+/-- IsNaN reports whether f is an IEEE 754 “not-a-number” value.
+
+    go: bits.go:34:6 -/
+noncomputable def IsNaN.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "f"
+  (Let "is" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "$res0" (Var "is")
+  (Seq (App (Val exceptionDo)
+  (Let "f" (App (Val (GoInstruction (GoAlloc go.float64))) (Var "f"))
+  (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.float64))) (Pair (App (Val (GoInstruction (GoLoad go.float64))) (Var "f")) (App (Val (GoInstruction (GoLoad go.float64))) (Var "f")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))
+
+/-- IsInf reports whether f is an infinity, according to sign.
+    If sign > 0, IsInf reports whether f is positive infinity.
+    If sign < 0, IsInf reports whether f is negative infinity.
+    If sign == 0, IsInf reports whether f is either infinity.
+
+    go: bits.go:46:6 -/
+noncomputable def IsInf.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "f"
+  (Lam "sign"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "sign" (App (Val (GoInstruction (GoAlloc go.int))) (Var "sign"))
+  (Let "f" (App (Val (GoInstruction (GoAlloc go.float64))) (Var "f"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoGt go.float64))) (Pair (App (Val (GoInstruction (GoLoad go.float64))) (Var "f")) (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (Val MaxFloat64))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "sign")) (Val #(W64 0)))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.float64))) (Var "f"))
+  (App (App (Val (GoInstruction (FuncResolve Abs []))) (Val #())) (Var "$a0")))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "f") (Var "$r0")))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "sign")) (Val #(W64 0)))))
+  (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNeg go.float64))) (App (Val (GoInstruction (GoLoad go.float64))) (Var "f")))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "f") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #()))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))
+
+/-- Sqrt returns the square root of x.
+
+    Special cases are:
+
+    	Sqrt(+Inf) = +Inf
+    	Sqrt(±0) = ±0
+    	Sqrt(x < 0) = NaN
+    	Sqrt(NaN) = NaN
+
+    go: sqrt.go:93:6 -/
+noncomputable def Sqrt.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "x"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.float64))) (Var "x"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.float64))) (Var "x"))
+  (App (App (Val (GoInstruction (FuncResolve sqrt []))) (Val #())) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.float64))) (Var "$res0")))))
+
+/-- Float64bits returns the IEEE 754 binary representation of f,
+    with the sign bit of f and the result in the same bit position,
+    and Float64bits(Float64frombits(x)) == x.
+
+    go: unsafe.go:35:6 -/
+noncomputable def Float64bits.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "f"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "f" (App (Val (GoInstruction (GoAlloc go.float64))) (Var "f"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (Convert (go.GoType.PointerType go.float64) «unsafe».Pointer))) (Var "f"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0")))))
+
+/-- Float64frombits returns the floating-point number corresponding
+    to the IEEE 754 binary representation b, with the sign bit of b
+    and the result in the same bit position.
+    Float64frombits(Float64bits(x)) == x.
+
+    go: unsafe.go:41:6 -/
+noncomputable def Float64frombits.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "b"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "b"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.float64))) (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType go.float64)))) (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint64) «unsafe».Pointer))) (Var "b"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.float64))) (Var "$res0")))))
+
 noncomputable instance info' : PkgInfo pkg_id.math where
   pkgImportedPkgs := []
 
@@ -1756,7 +1912,24 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc mPi4 (go.GoType.ArrayType 20 go.uint64))) (Val #()))))))))
 
-class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  Abs_unfold : FuncUnfold Abs [] Abs.impl
+  NaN_unfold : FuncUnfold NaN [] NaN.impl
+  IsNaN_unfold : FuncUnfold IsNaN [] IsNaN.impl
+  IsInf_unfold : FuncUnfold IsInf [] IsInf.impl
+  Sqrt_unfold : FuncUnfold Sqrt [] Sqrt.impl
+  sqrt_unfold : FuncUnfold sqrt [] sqrt.impl
+  Float64bits_unfold : FuncUnfold Float64bits [] Float64bits.impl
+  Float64frombits_unfold : FuncUnfold Float64frombits [] Float64frombits.impl
+
+attribute [instance] Assumptions.Abs_unfold
+  Assumptions.NaN_unfold
+  Assumptions.IsNaN_unfold
+  Assumptions.IsInf_unfold
+  Assumptions.Sqrt_unfold
+  Assumptions.sqrt_unfold
+  Assumptions.Float64bits_unfold
+  Assumptions.Float64frombits_unfold
 
 end math
 

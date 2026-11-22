@@ -97,38 +97,20 @@ theorem sync.Mutex.wp_Unlock : sync.Mutex.Unlock.spec (GF := GF) (hG := hG) :=
 theorem sync.wp_NewCond : sync.NewCond.spec (GF := GF) (hG := hG) :=
   sync.NewCond.wp_proof
 
-end link
-
-section link
-variable [GooseExts] [GooseSemantics] [GooseInterp]
-variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
-variable [sem : go.Semantics]
-variable [package_sem : sync.Assumptions]
-
 theorem sync.Once.wp_doSlow : sync.Once.doSlow.spec (GF := GF) (hG := hG) :=
   sync.Once.doSlow.wp_proof sync.Mutex.wp_Lock sync.atomic.Bool.wp_Load sync.atomic.Bool.wp_Store sync.Mutex.wp_Unlock
 
 theorem sync.Once.wp_Do : sync.Once.Do.spec (GF := GF) (hG := hG) :=
   sync.Once.Do.wp_proof sync.atomic.Bool.wp_Load sync.Once.wp_doSlow
 
-end link
-
-section link
-variable [GooseExts] [GooseSemantics] [GooseInterp]
-variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem : sync.Assumptions]
-
 theorem sync.wp_OnceFunc : sync.OnceFunc.spec (GF := GF) (hG := hG) :=
-  sync.OnceFunc.wp_proof
+  sync.OnceFunc.wp_proof sync.Once.wp_Do
 
 theorem sync.wp_OnceValue : sync.OnceValue.spec (GF := GF) (hG := hG) :=
-  sync.OnceValue.wp_proof
+  sync.OnceValue.wp_proof sync.Once.wp_Do
 
 theorem sync.wp_OnceValues : sync.OnceValues.spec (GF := GF) (hG := hG) :=
-  sync.OnceValues.wp_proof
+  sync.OnceValues.wp_proof sync.Once.wp_Do
 
 theorem sync.Pool.wp_Get : sync.Pool.Get.spec (GF := GF) (hG := hG) :=
   sync.Pool.Get.wp_proof github_com.mit_pdos.perennial.goose.model.pool.Pool.wp_Get
