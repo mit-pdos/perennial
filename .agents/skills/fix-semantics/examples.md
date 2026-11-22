@@ -1367,14 +1367,15 @@ q)`, `ofConst` being #654's `roundRat` with a zero result made `+0`),
 (4) Goose's untyped-float-at-int special case in `identExpr` and `untypedFloatToInt` deleted
 (-56 lines): a named untyped float constant is `Convert go.untypedFloat T c`, like every other
 untyped constant. (5) Explicit `T(c)` of a constant at a type parameter: goose emits
-`Convert go.untypedFloat T` (or `go.untypedInt`) of the exact value, as for the implicit form,
+`Convert go.untypedFloat T` of a float constant's exact value, as for the implicit form (an
+integer constant keeps its default type `int`: exact, and `T(0)` at a float type stays runnable),
 not what go/types records (`c` at its default type `float64`, then `Convert go.float64 T`).
 This follows the spec's Conversions section ("with the value represented as a value of the
 type argument"): rounded once. gc rounds through `float64` there (`T(H)` at `float32`:
 `0x3f800000`; `T(-1e-50)`: `-0`; `T(1e18 + 1)` at `int64`: 1e18), a divergence recorded neutrally
 in `KNOWN_LIMITATIONS.md` ("Floats"); whether gc's behaviour is intended is unresolved.
 `convert_float64_to_float32` and `convert_float32_to_float64` (relational like the arithmetic,
-#654's `convert`, any NaN of a NaN) are added as ordinary typed conversions. Cost: 3 rules changed, 3 added, 4 definitions; goose +13/-55 lines against `lean`.
+#654's `convert`, any NaN of a NaN) are added as ordinary typed conversions. Cost: 3 rules changed, 3 added, 4 definitions; goose +35/-61 lines against `lean`.
 Regenerated: `math` (85 untyped constant declarations become rationals, 85 call sites become
 `float64` bits) and the goose examples. Tests: semantics
 `testUntypedFloatConstAtTypeParam`, `testUntypedFloatConvertAtTypeParam`,

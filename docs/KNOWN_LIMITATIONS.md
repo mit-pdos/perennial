@@ -258,7 +258,8 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   model follows our reading of the spec's Conversions section ("converting a constant to a
   type parameter yields a non-constant value of that type, with the value represented as a
   value of the type argument"): the exact constant is rounded once to the instantiated type
-  (goose emits `Convert go.untypedFloat T` of the exact value, `convert_untyped_float32`).
+  (goose emits `Convert go.untypedFloat T` of the exact value, `convert_untyped_float32`; an
+  integer constant goes through its default type `int`, which is exact).
   Whether gc's behaviour is intended is unresolved. The implicit form (`return c`, `var x T
   = c`) rounds once in gc too.
 

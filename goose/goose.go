@@ -374,10 +374,10 @@ func (ctx *Ctx) conversionExpr(s *ast.CallExpr) glang.Expr {
 	toType := ctx.info.TypeOf(s.Fun)
 	fromType := ctx.info.TypeOf(s.Args[0])
 	if _, ok := toType.(*types.TypeParam); ok {
-		// T(c) of a constant c is c's exact value represented at the type argument
-		// (go/types records c at its default type)
-		if val := ctx.info.Types[s.Args[0]].Value; val != nil {
-			if k, lit := untypedLiteral(val, val.Kind() == constant.Float); lit != nil {
+		// T(c) of a float constant c is c's exact value represented at the type
+		// argument, not c at its default type float64 (as go/types records it)
+		if val := ctx.info.Types[s.Args[0]].Value; val != nil && val.Kind() == constant.Float {
+			if k, lit := untypedLiteral(val, true); lit != nil {
 				return ctx.handleImplicitConversion(s, types.Typ[k], toType, lit)
 			}
 		}
