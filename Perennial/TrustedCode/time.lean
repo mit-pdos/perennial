@@ -131,7 +131,8 @@ def runtimeClock : GoString := go!"time.runtimeClock"
 type describes; only this file reads or writes it). -/
 def runtimeClockType : go.GoType := go.GoType.PointerType go.int64
 
-/-- Allocates the runtime clock (called by the initializer of `asynctimerchan`, below): the global
+/-- Allocates the runtime clock (called only by `asynctimerchan.init`, at the end of this file: see
+there why the allocation sits in that initializer): the global
 `time.runtimeClock`, holding the address of a fresh cell holding an arbitrary `int64`, the clock's
 reading when the program starts. -/
 def runtimeClockInit : val :=
@@ -152,7 +153,12 @@ def runtimeClockRead : val :=
       (if: CAS "l" "c" "n" then "n" else "loop" "l")
     else "loop" "l"
 
-/-- A reading of the runtime clock (`runtimeClockRead` of its cell). -/
+/-- A reading of the runtime clock (`runtimeClockRead` of its cell).
+
+Trusted assumption: a run's readings of the runtime's monotonic clock form a non-decreasing
+sequence of `int64` values; the model allows exactly those sequences. Downstream real-time specs
+read `time.clockLb n` as "the clock has reached `n`", i.e. at least `n` has elapsed on the runtime's
+monotonic clock; that reading rests on this assumption. -/
 def runtimeClockNow : val :=
   λ: <>, runtimeClockRead (![runtimeClockType] (GlobalVarAddr runtimeClock #()))
 
@@ -342,6 +348,9 @@ program's start: it is the only trusted code of `time`'s initialization, which r
 reading of the clock (only `After` reads it, which no initializer of `time` calls), and no other
 package's initialization can call into `time` before it. -/
 def asynctimerchan.init : val :=
+  -- Allocates the `time` package's model-only clock state, which belongs to `time`, not to
+  -- `asynctimerchan`: it is here because `time`'s initializer is goose's translation, with no trusted
+  -- code of its own, and this variable initializer is the only trusted step in it.
   λ: <>, runtimeClockInit #()
 
 end code
