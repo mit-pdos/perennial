@@ -99,6 +99,124 @@ theorem readerOk_mono (ri : GoInterfaceOk) (Pre Pre' : List w8 → Nat → Prop)
   iframe HS Hp
   ipureintro; exact h _ _ hpre
 
+/-- **What a `Read` leaves in its buffer**, a relation `Out xs ys c` between the buffer's
+contents `xs` before the call, the bytes `ys` delivered and its contents `c` after. A law of it
+(`io.OutLaw`) is what passing the buffer on to another reader needs (`io.MultiReader`). -/
+abbrev ReadOut := List w8 → List w8 → List w8 → Prop
+
+/-- The bytes past those delivered are unchanged (`io.readerOk`'s promise). -/
+def keepOut : ReadOut := fun xs ys c => c = ys ++ xs.drop ys.length
+
+/-- The bytes past those delivered are arbitrary, the length unchanged: all `io.Reader`
+promises ("Even if Read returns n < len(p), it may use all of p as scratch space during the
+call", `io/io.go`). -/
+def scratchOut : ReadOut := fun xs ys c => ys <+: c ∧ c.length = xs.length
+
+/-- The laws of a `ReadOut` that `MultiReader` needs: an empty read may change the buffer (and
+a reader may then be followed by another, reading into the changed buffer), but not its length,
+and a call that does nothing is allowed. -/
+structure OutLaw (Out : ReadOut) : Prop where
+  refl : ∀ (xs : List w8), Out xs [] xs
+  len : ∀ (xs c : List w8), Out xs [] c → c.length = xs.length
+  comp : ∀ (xs c ys c' : List w8), Out xs [] c → Out c ys c' → Out xs ys c'
+
+theorem keepOut_law : OutLaw keepOut where
+  refl xs := by simp [keepOut]
+  len xs c h := by simp [keepOut] at h; rw [h]
+  comp xs c ys c' h1 h2 := by simp [keepOut] at h1; subst h1; exact h2
+
+theorem scratchOut_law : OutLaw scratchOut where
+  refl _ := ⟨List.nil_prefix, rfl⟩
+  len _ _ h := h.2
+  comp _ _ _ _ h1 h2 := ⟨h2.1, h2.2.trans h1.2⟩
+
+theorem keepOut_scratchOut (xs ys c : List w8) (hl : ys.length ≤ xs.length) (h : keepOut xs ys c) :
+    scratchOut xs ys c := by
+  unfold keepOut at h; subst h
+  refine ⟨List.prefix_append _ _, ?_⟩
+  simp only [List.length_append, List.length_drop]; omega
+
+/-- **`ri` reads by the contract `S`, `E`, leaving its buffer as `Out` says**: as
+`io.readerOk` with no condition on the calls, but with `Out` in place of "the bytes of `p` past
+`n` are unchanged" (`keepOut`). -/
+def readerOkOut (Out : ReadOut) (ri : GoInterfaceOk) (S : List w8 → IProp GF)
+    (E : List w8 → GoInterface → IProp GF) : IProp GF :=
+  iprop(□ ∀ (r : List w8) (p : GoSlice) (xs : List w8),
+    {{ S r ∗ p ↦* xs }}
+      (App (Val #(methods ri.ty go!"Read" ri.v)) (Val #p))
+    {{ (n : w64) (err : GoInterface), RET (PairV #n #err);
+        ∃ ys c : List w8, ⌜sint.Z n = ys.length ∧ ys.length ≤ xs.length ∧ Out xs ys c⌝ ∗
+          p ↦* c ∗ S (r ++ ys) ∗ errAt E (r ++ ys) err ∗ ⌜ptrTyped err⌝ }})
+
+instance readerOkOut_persistent (Out : ReadOut) (ri : GoInterfaceOk) (S : List w8 → IProp GF)
+    (E : List w8 → GoInterface → IProp GF) : Persistent (readerOkOut Out ri S E) := by
+  unfold readerOkOut; infer_instance
+
+/-- A contract that allows more of the buffer: a reader meets it. -/
+theorem readerOkOut_mono (Out Out' : ReadOut) (ri : GoInterfaceOk) (S : List w8 → IProp GF)
+    (E : List w8 → GoInterface → IProp GF)
+    (h : ∀ xs ys c, ys.length ≤ xs.length → Out xs ys c → Out' xs ys c) :
+    readerOkOut Out ri S E ⊢ readerOkOut Out' ri S E := by
+  iintro #Hr
+  unfold readerOkOut
+  imodintro
+  iintro %r %p %xs %Φ
+  imodintro
+  iintro ⟨HS, Hp⟩ HΦ
+  iapply Hr $$ %r %p %xs [HS Hp]
+  · iframe
+  inext
+  iintro %n %err ⟨%ys, %c, %H, Hp, HS, #He, %Ht⟩
+  iapply HΦ
+  iexists ys, c
+  iframe Hp HS He
+  ipureintro
+  exact ⟨⟨H.1, H.2.1, h _ _ _ H.2.1 H.2.2⟩, Ht⟩
+
+/-- An `io.readerOk` reader with no condition on its calls keeps its buffer's tail. -/
+theorem readerOkOut_of_readerOk (ri : GoInterfaceOk) (S : List w8 → IProp GF)
+    (E : List w8 → GoInterface → IProp GF) :
+    readerOk ri (fun _ _ => True) S E ⊢ readerOkOut keepOut ri S E := by
+  iintro #Hr
+  unfold readerOkOut
+  imodintro
+  iintro %r %p %xs %Φ
+  imodintro
+  iintro ⟨HS, Hp⟩ HΦ
+  iapply wp_reader_Read ri (fun _ _ => True) S E r p xs trivial $$ [HS Hp]
+  · iframe Hr HS Hp
+  inext
+  iintro %n %err ⟨%ys, %H, Hp, HS, #He, %Ht⟩
+  iapply HΦ
+  iexists ys, _
+  iframe Hp HS He
+  ipureintro
+  exact ⟨⟨H.1, H.2, rfl⟩, Ht⟩
+
+/-- A reader keeping its buffer's tail is an `io.readerOk` reader, for any condition on its
+calls. -/
+theorem readerOk_of_readerOkOut (ri : GoInterfaceOk) (Pre : List w8 → Nat → Prop)
+    (S : List w8 → IProp GF) (E : List w8 → GoInterface → IProp GF) :
+    readerOkOut keepOut ri S E ⊢ readerOk ri Pre S E := by
+  iintro #Hr
+  unfold readerOk
+  imodintro
+  iintro %r %p %xs %Φ
+  imodintro
+  iintro ⟨-, HS, Hp⟩ HΦ
+  unfold readerOkOut
+  iapply Hr $$ %r %p %xs [HS Hp]
+  · iframe
+  inext
+  iintro %n %err ⟨%ys, %c, %H, Hp, HS, #He, %Ht⟩
+  iapply HΦ
+  iexists ys
+  have hc : c = ys ++ xs.drop ys.length := H.2.2
+  subst hc
+  iframe Hp HS He
+  ipureintro
+  exact ⟨⟨H.1, H.2.1⟩, Ht⟩
+
 /-- What `io.ReadAtLeast(r, buf, min)` returns after delivering `ys` from `r` on, `buf` having
 `m` bytes: with `m < min`, nothing and `ErrShortBuffer` (`sb`); else at least `min` bytes and
 `nil`, or fewer and the reader's last error `e` (with its evidence `E (r ++ ys) e`), but
