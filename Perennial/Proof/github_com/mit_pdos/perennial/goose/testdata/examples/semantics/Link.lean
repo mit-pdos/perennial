@@ -130,7 +130,6 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
-variable [GooseExts] [GoGlobalContext]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_breakLoopFromSwitch : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.breakLoopFromSwitch.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.breakLoopFromSwitch.wp_proof

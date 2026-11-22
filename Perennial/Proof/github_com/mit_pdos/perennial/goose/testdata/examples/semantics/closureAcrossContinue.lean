@@ -16,17 +16,12 @@ namespace Perennial
 
 open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 
-section defs
-variable [GooseExts] [GoGlobalContext]
-
 /-- The closure `func() uint64 { return i }` over the iteration variable at `q`. -/
 def github_com.mit_pdos.perennial.goose.testdata.examples.semantics.closureAcrossContinue.clo
-    (q : Loc) : GoFunc :=
+    [GooseExts] [GoGlobalContext] (q : Loc) : GoFunc :=
   func.mk BAnon BAnon gl(let: "$res0" := (GoAlloc go.uint64) ((GoZeroVal go.uint64) #()) in
     exceptionDo (let: "$r0" := ![go.uint64] #q in do: "$res0" <-[go.uint64] "$r0" ;;; return: #()) ;;
     ![go.uint64] "$res0")
-
-end defs
 
 
 section proof
