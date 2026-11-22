@@ -223,6 +223,18 @@ func (suite *GoTestSuite) TestFloat64ConstExprIsConst() {
 	suite.Equal(true, testFloat64ConstExprIsConst())
 }
 
+func (suite *GoTestSuite) TestUntypedIntToFloat64() {
+	suite.Equal(true, testUntypedIntToFloat64())
+}
+
+func (suite *GoTestSuite) TestIntToFloat32() {
+	suite.Equal(true, testIntToFloat32())
+}
+
+func (suite *GoTestSuite) TestIntToFloat64() {
+	suite.Equal(true, testIntToFloat64())
+}
+
 func (suite *GoTestSuite) TestCopySimple() {
 	suite.Equal(true, testCopySimple())
 }

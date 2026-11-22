@@ -305,14 +305,17 @@ def float32ToFloat64 (x : w32) : FloatValue := binary32.convert binary64 x
 never NaN.) -/
 
 /-- `float64(c)` (`float32(c)`) of a constant `c` whose exact value is `q`: its rounding, once
-(`ofConst`). -/
+(`ofConst`). Also the one integer-to-float rounding: `float64(n)`/`float32(n)` of an integer `n`
+of any type, or of an untyped integer constant, is `ratToFloat64 n`/`ratToFloat32 n` (for an
+integer, `ofConst` is `ofInt`: an integer never rounds to `-0`). -/
 def ratToFloat64 (q : Rat) : w64 := (binary64.encode (binary64.ofConst q)).getD 0
 def ratToFloat32 (q : Rat) : w32 := (binary32.encode (binary32.ofConst q)).getD 0
 
-/-- `float64(n)` of an integer (`int64`, `uint64`, `int32`, `uint32`): its rounding. -/
-def int64ToFloat64 (n : w64) : w64 := (binary64.encode (binary64.ofInt n.toInt)).getD 0
-def uint64ToFloat64 (n : w64) : w64 := (binary64.encode (binary64.ofInt n.toNat)).getD 0
-def int32ToFloat64 (n : w32) : w64 := (binary64.encode (binary64.ofInt n.toInt)).getD 0
-def uint32ToFloat64 (n : w32) : w64 := (binary64.encode (binary64.ofInt n.toNat)).getD 0
+/-- `float64(n)` of an integer (`int64`, `uint64`, `int32`, `uint32`): its rounding,
+`ratToFloat64`. -/
+def int64ToFloat64 (n : w64) : w64 := ratToFloat64 n.toInt
+def uint64ToFloat64 (n : w64) : w64 := ratToFloat64 n.toNat
+def int32ToFloat64 (n : w32) : w64 := ratToFloat64 n.toInt
+def uint32ToFloat64 (n : w32) : w64 := ratToFloat64 n.toNat
 
 end Perennial

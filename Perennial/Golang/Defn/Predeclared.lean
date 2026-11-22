@@ -1001,8 +1001,9 @@ model:
   result may differ from the model, which rounds every operation separately. Here the model is
   more defined than Go: a proof about such an expression covers the unfused evaluation only.
 
-Not modelled (stuck): integer to `float32` conversions, and the integer types narrower than
-32 bits to floats.
+Every integer-to-float conversion, typed or of an untyped integer constant, rounds the exact
+integer once, through `ratToFloat64` (`float64`) or `ratToFloat32` (`float32`), the rounding of
+constants (for an integer, `ofConst` is `ofInt`: an integer never rounds to `-0`).
 
 An untyped float constant is its exact value, a rational `mkRat n d` (goose emits it in lowest
 terms). Converting it rounds that value once (`ratToFloat64`, `ratToFloat32`); converting it to
@@ -1074,6 +1075,20 @@ class Float64Semantics [GoSemanticsFunctions] : Prop where
     ⟦Convert go.int32 go.float64, #v⟧ ⤳[under] #(int32ToFloat64 v)
   convert_uint32_to_float64 (v : w32) :
     ⟦Convert go.uint32 go.float64, #v⟧ ⤳[under] #(uint32ToFloat64 v)
+  convert_int16_to_float64 (v : w16) :
+    ⟦Convert go.int16 go.float64, #v⟧ ⤳[under] #(ratToFloat64 (sint.Z v))
+  convert_int8_to_float64 (v : w8) :
+    ⟦Convert go.int8 go.float64, #v⟧ ⤳[under] #(ratToFloat64 (sint.Z v))
+  convert_uint16_to_float64 (v : w16) :
+    ⟦Convert go.uint16 go.float64, #v⟧ ⤳[under] #(ratToFloat64 (uint.Z v))
+  convert_uint8_to_float64 (v : w8) :
+    ⟦Convert go.uint8 go.float64, #v⟧ ⤳[under] #(ratToFloat64 (uint.Z v))
+  convert_uintptr_to_float64 (v : w64) :
+    ⟦Convert go.uintptr go.float64, #v⟧ ⤳[under] #(ratToFloat64 (uint.Z v))
+  -- `float64(c)` of an untyped integer constant `c`: its rounding (Go requires `c` to be
+  -- representable, so the rule's value for an out-of-range `c` is never reached)
+  convert_untyped_int_to_float64 (v : Int) :
+    ⟦Convert go.untypedInt go.float64, #v⟧ ⤳[under] #(ratToFloat64 v)
   convert_float32_to_float64 {s t : go.GoType} [s ↓u go.float32] [t ↓u go.float64] (v : w32) :
     is_go_step_pure (Convert s t) #v =
       fun (e : Expr) => ∃ f, e = #f ∧ float64Encodes (float32ToFloat64 v) f
@@ -1084,13 +1099,18 @@ attribute [instance] Float64Semantics.go_zero_val_float64 Float64Semantics.compa
   Float64Semantics.convert_float64_to_integer Float64Semantics.convert_int_to_float64
   Float64Semantics.convert_int64_to_float64 Float64Semantics.convert_uint_to_float64
   Float64Semantics.convert_uint64_to_float64 Float64Semantics.convert_int32_to_float64
-  Float64Semantics.convert_uint32_to_float64
+  Float64Semantics.convert_uint32_to_float64 Float64Semantics.convert_int16_to_float64
+  Float64Semantics.convert_int8_to_float64 Float64Semantics.convert_uint16_to_float64
+  Float64Semantics.convert_uint8_to_float64 Float64Semantics.convert_uintptr_to_float64
+  Float64Semantics.convert_untyped_int_to_float64
 export Float64Semantics (go_zero_val_float64 comparable_float64 underlying_float64 eq_float64
   le_float64 lt_float64 ge_float64 gt_float64 plus_float64 sub_float64 mul_float64 div_float64
   neg_float64
   convert_float64_to_integer convert_float32_to_float64
   convert_int_to_float64 convert_int64_to_float64 convert_uint_to_float64
-  convert_uint64_to_float64 convert_int32_to_float64 convert_uint32_to_float64)
+  convert_uint64_to_float64 convert_int32_to_float64 convert_uint32_to_float64
+  convert_int16_to_float64 convert_int8_to_float64 convert_uint16_to_float64
+  convert_uint8_to_float64 convert_uintptr_to_float64 convert_untyped_int_to_float64)
 
 class Float32Semantics [GoSemanticsFunctions] : Prop where
   go_zero_val_float32 : TypeReprUnderlying go.float32 w32
@@ -1122,6 +1142,32 @@ class Float32Semantics [GoSemanticsFunctions] : Prop where
   -- result of an out-of-range conversion to the implementation)
   convert_float32_to_integer (t : go.GoType) [IsInteger t] (v : w32) :
     ⟦Convert go.float32 t, #v⟧ ⤳[under] App (Val (GoInstruction (Convert go.uint64 t))) ArbitraryInt
+  -- `float32(n)` of an integer: its rounding to binary32, once (never a NaN)
+  convert_int_to_float32 (v : w64) :
+    ⟦Convert go.int go.float32, #v⟧ ⤳[under] #(ratToFloat32 (sint.Z v))
+  convert_int64_to_float32 (v : w64) :
+    ⟦Convert go.int64 go.float32, #v⟧ ⤳[under] #(ratToFloat32 (sint.Z v))
+  convert_int32_to_float32 (v : w32) :
+    ⟦Convert go.int32 go.float32, #v⟧ ⤳[under] #(ratToFloat32 (sint.Z v))
+  convert_int16_to_float32 (v : w16) :
+    ⟦Convert go.int16 go.float32, #v⟧ ⤳[under] #(ratToFloat32 (sint.Z v))
+  convert_int8_to_float32 (v : w8) :
+    ⟦Convert go.int8 go.float32, #v⟧ ⤳[under] #(ratToFloat32 (sint.Z v))
+  convert_uint_to_float32 (v : w64) :
+    ⟦Convert go.uint go.float32, #v⟧ ⤳[under] #(ratToFloat32 (uint.Z v))
+  convert_uint64_to_float32 (v : w64) :
+    ⟦Convert go.uint64 go.float32, #v⟧ ⤳[under] #(ratToFloat32 (uint.Z v))
+  convert_uint32_to_float32 (v : w32) :
+    ⟦Convert go.uint32 go.float32, #v⟧ ⤳[under] #(ratToFloat32 (uint.Z v))
+  convert_uint16_to_float32 (v : w16) :
+    ⟦Convert go.uint16 go.float32, #v⟧ ⤳[under] #(ratToFloat32 (uint.Z v))
+  convert_uint8_to_float32 (v : w8) :
+    ⟦Convert go.uint8 go.float32, #v⟧ ⤳[under] #(ratToFloat32 (uint.Z v))
+  convert_uintptr_to_float32 (v : w64) :
+    ⟦Convert go.uintptr go.float32, #v⟧ ⤳[under] #(ratToFloat32 (uint.Z v))
+  -- `float32(c)` of an untyped integer constant `c`: its rounding to binary32, once
+  convert_untyped_int_to_float32 (v : Int) :
+    ⟦Convert go.untypedInt go.float32, #v⟧ ⤳[under] #(ratToFloat32 v)
   convert_float64_to_float32 {s t : go.GoType} [s ↓u go.float64] [t ↓u go.float32] (v : w64) :
     is_go_step_pure (Convert s t) #v =
       fun (e : Expr) => ∃ f, e = #f ∧ float32Encodes (float64ToFloat32 v) f
@@ -1130,9 +1176,19 @@ attribute [instance] Float32Semantics.go_zero_val_float32 Float32Semantics.compa
   Float32Semantics.underlying_float32 Float32Semantics.eq_float32 Float32Semantics.le_float32
   Float32Semantics.lt_float32 Float32Semantics.ge_float32 Float32Semantics.gt_float32
   Float32Semantics.convert_float32_to_integer
+  Float32Semantics.convert_int_to_float32 Float32Semantics.convert_int64_to_float32
+  Float32Semantics.convert_int32_to_float32 Float32Semantics.convert_int16_to_float32
+  Float32Semantics.convert_int8_to_float32 Float32Semantics.convert_uint_to_float32
+  Float32Semantics.convert_uint64_to_float32 Float32Semantics.convert_uint32_to_float32
+  Float32Semantics.convert_uint16_to_float32 Float32Semantics.convert_uint8_to_float32
+  Float32Semantics.convert_uintptr_to_float32 Float32Semantics.convert_untyped_int_to_float32
 export Float32Semantics (go_zero_val_float32 comparable_float32 underlying_float32 eq_float32
   le_float32 lt_float32 ge_float32 gt_float32 plus_float32 sub_float32 mul_float32 div_float32
-  neg_float32 convert_float32_to_integer convert_float64_to_float32)
+  neg_float32 convert_float32_to_integer
+  convert_int_to_float32 convert_int64_to_float32 convert_int32_to_float32 convert_int16_to_float32
+  convert_int8_to_float32 convert_uint_to_float32 convert_uint64_to_float32 convert_uint32_to_float32
+  convert_uint16_to_float32 convert_uint8_to_float32 convert_uintptr_to_float32 convert_untyped_int_to_float32
+  convert_float64_to_float32)
 
 class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
   alloc_predeclared (u : go.GoType) [H : IsPredeclared u] (v : val) :

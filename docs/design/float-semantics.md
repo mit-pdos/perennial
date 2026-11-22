@@ -89,8 +89,10 @@ has a non-arithmetic negation), and the conversions `float32(x)` of a `float64` 
 of a `float32` (`float64ToFloat32`, `float32ToFloat64`: the rounding, or any NaN of a NaN).
 Comparisons (`==`, `<`, ...) and integer-to-float conversions
 never produce a NaN and stay deterministic `⤳[under]` rules, so automation steps them; the
-conversions return bits, `(encode (ofInt n)).getD 0` (a rounding is never NaN, so the default
-is never used).
+conversions return bits, `(encode (ofConst n)).getD 0` (a rounding is never NaN, so the default
+is never used). Every integer type (and an untyped integer constant) converts to `float64`
+through `ratToFloat64` and to `float32` through `ratToFloat32` of the integer, which round the
+exact integer once to binary64 or binary32 (for an integer, `ofConst` is `ofInt`).
 
 **Constants.** An untyped float constant is its exact value at run time, the rational
 `#(mkRat n d)` (goose emits it in lowest terms from go/types' exact `constant.Value`), as an
@@ -122,8 +124,6 @@ instances of `wp_go_step_rel`, the spec of any instruction with a relational pur
   operations, computing `x*y + z` with one rounding (gc emits `FMADDD` for it on arm64). The
   model rounds every operation, so it is *more* defined than Go here: a proof about such an
   expression is about the unfused evaluation only (`docs/KNOWN_LIMITATIONS.md`, "Floats").
-- Not modelled (stuck, hence sound): integer to `float32` conversions, integer types narrower
-  than 32 bits to floats.
 
 ## Lemmas (`Theory/Float.lean`)
 

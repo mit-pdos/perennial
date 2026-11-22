@@ -46,6 +46,24 @@ theorem msb_encode_ofInt_of_nonneg (n : Int) (h : 0 ≤ n) :
   | none => simp
   | some b => exact f.msb_encode_round false _ b hb
 
+/-- The rounding of a non-negative constant has a clear sign bit (it is `+0`, positive or
+`+∞`). -/
+theorem msb_encode_ofConst_of_nonneg (q : Rat) (h : 0 ≤ q) :
+    ((f.encode (f.ofConst q)).getD 0).msb = false := by
+  have hq : ¬ q < 0 := Rat.not_lt.mpr h
+  rw [ofConst_unseal, ofConstDef]
+  split
+  · cases hb : f.encode (.finite false 0) with
+    | none => simp
+    | some b =>
+      simp only [encode] at hb
+      split at hb <;> (cases hb; exact f.msb_pack ..)
+  · rw [roundRat]
+    simp only [hq, decide_false, if_false]
+    cases hb : f.encode (f.round false q) with
+    | none => simp
+    | some b => exact f.msb_encode_round false _ b hb
+
 theorem pow2_nonneg (k : Int) : 0 ≤ pow2 k := by
   unfold pow2
   split
@@ -84,13 +102,13 @@ non-negative integer has a clear sign bit (it is `+0` or positive), and a `float
 clear sign bit (`+0`, a positive number, `+∞` or a NaN) is not below `+0`. -/
 
 theorem int64ToFloat64_sign_clear (n : w64) (h : 0 ≤ sint.Z n) : 0 ≤ sint.Z (int64ToFloat64 n) :=
-  BitVec.toInt_nonneg_of_msb_false (binary64.msb_encode_ofInt_of_nonneg _ h)
+  BitVec.toInt_nonneg_of_msb_false (binary64.msb_encode_ofConst_of_nonneg _ (by exact_mod_cast h))
 theorem uint64ToFloat64_sign_clear (n : w64) : 0 ≤ sint.Z (uint64ToFloat64 n) :=
-  BitVec.toInt_nonneg_of_msb_false (binary64.msb_encode_ofInt_of_nonneg _ (by omega))
+  BitVec.toInt_nonneg_of_msb_false (binary64.msb_encode_ofConst_of_nonneg _ (by exact_mod_cast Nat.zero_le _))
 theorem int32ToFloat64_sign_clear (n : w32) (h : 0 ≤ sint.Z n) : 0 ≤ sint.Z (int32ToFloat64 n) :=
-  BitVec.toInt_nonneg_of_msb_false (binary64.msb_encode_ofInt_of_nonneg _ h)
+  BitVec.toInt_nonneg_of_msb_false (binary64.msb_encode_ofConst_of_nonneg _ (by exact_mod_cast h))
 theorem uint32ToFloat64_sign_clear (n : w32) : 0 ≤ sint.Z (uint32ToFloat64 n) :=
-  BitVec.toInt_nonneg_of_msb_false (binary64.msb_encode_ofInt_of_nonneg _ (by omega))
+  BitVec.toInt_nonneg_of_msb_false (binary64.msb_encode_ofConst_of_nonneg _ (by exact_mod_cast Nat.zero_le _))
 
 private theorem decode_zero64 : binary64.decode (W64 0) = .finite false 0 := by
   simp [Format.decode, binary64]

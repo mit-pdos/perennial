@@ -1396,3 +1396,36 @@ constants", which generic code needs, so the conversions must be correct, not de
 float constants carry their exact value at run time, and each conversion rounds once. On
 explicit `T(c)`: "the semantics follows the Go spec, not gc"; document the divergence neutrally,
 not as a gc bug.
+
+## Case 44 — ACCEPTED: every integer-to-float conversion, through one rounding per float type (branch `untyped-int-float64`, PR #682)
+
+**Symptom.** Incomplete. Goose folds binary constant expressions but not unary ones, so `g.Add(-1)`,
+`val * -1` or `var x float64 = -1` became `Convert go.untypedInt go.float64` of the constant, with no
+rule. Typed conversions to `float64` existed only from `int`, `int64`, `uint`, `uint64`, `int32` and
+`uint32`, and none to `float32`.
+
+**Witness.** `var x float64 = -1; var y float64 = -1; x == y` is stuck; so is `float32(n)` of any
+integer `n`, and `float64(n)` of an `int8`, `int16`, `uint8`, `uint16` or `uintptr`.
+
+**Taken.** No new rounding definition: every integer-to-float rule steps through Case 43's
+`ratToFloat64`/`ratToFloat32` (`encode (ofConst q)`) of the integer, so there is one rounding
+definition per float type, for constants and integers alike (for an integer `ofConst` is `ofInt`,
+an integer never rounds to `-0`). `int64ToFloat64` and its three siblings are now `ratToFloat64` of
+the word's integer (the names kept for their clients; `Theory/Float.lean`'s sign lemmas restated
+on `ofConst`, `msb_encode_ofConst_of_nonneg`); the new rules use `ratToFloat64 (sint.Z v)`/`(uint.Z
+v)` and `ratToFloat32` directly. `Float64Semantics` gains `convert_untyped_int_to_float64` and the
+conversions from `int16`, `int8`, `uint16`, `uint8`, `uintptr`; `Float32Semantics` gains the
+conversions from all eleven integer types and `convert_untyped_int_to_float32` (Case 43 covers
+`go.untypedFloat` only; the two families do not overlap). Out-of-range constants are compile errors
+in Go, so the rules' values for them are never reached. Semantics tests `testUntypedIntToFloat64`,
+`testIntToFloat32`, `testIntToFloat64` (`conversions.go`, Go-checked and proved), with values past
+2^24 and 2^53 where the rounding is observable (2^k+1 rounds to even, 2^k+3 up to 2^k+4). Cost: 18
+rules, 0 new definitions, 0 goose changes.
+
+**Not taken.** Folding unary constants in goose: as trusted as a rule, and a much wider translation
+diff. Only the `float64` rule (the first version of the PR): the owner preferred stating that the
+semantics supports integer-to-float conversions, of every type.
+
+**Why.** Reviewed by the owner (upamanyus), 2026-11-22 (relayed by coordinator-E): "it's simpler for
+us to be able to say 'our go semantics supports integer to float conversions' than it is to say 'our
+semantics supports conversions for float64 but not float32'."
