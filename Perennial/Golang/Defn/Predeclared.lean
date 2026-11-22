@@ -1001,17 +1001,14 @@ model:
   more defined than Go: a proof about such an expression covers the unfused evaluation only.
 
 Not modelled (stuck): conversions between `float64` and `float32` of variables, integer to
-`float32` conversions, and the integer types narrower than 32 bits to floats. -/
+`float32` conversions, the integer types narrower than 32 bits to floats, and untyped float
+constants to `float32` (goose emits a constant of type `float32` as its `float32` value; an
+untyped float is the `float64` rounding of the constant, and rounding it again to `float32`
+can differ from Go's single rounding). -/
 
 class UntypedFloatSemantics [GoSemanticsFunctions] : Prop where
   underlying_untyped_float : go.untypedFloat ↓u go.untypedFloat
   convert_untyped_float64 (v : w64) : ⟦Convert go.untypedFloat go.float64, #v⟧ ⤳[under] #v
-  -- `float32(c)` of an untyped float constant `c`: the binary32 rounding of `v`, the
-  -- binary64 rounding of `c`. Deterministic: a constant is never a NaN (`float64ToFloat32`).
-  -- (Go rounds `c` directly; the two roundings can differ when `v` is halfway between two
-  -- float32s.)
-  convert_untyped_float32 (v : w64) : ⟦Convert go.untypedFloat go.float32, #v⟧
-    ⤳[under] #(float64ToFloat32 v)
   -- `-c` of an untyped float constant `c`, represented by the bits of its `float64` rounding:
   -- rounding is symmetric, so the rounding of `-c` is that of `c` with the sign bit flipped,
   -- except for zero: a constant is never a negative zero (`float64(-0.0)` is `+0`), unlike a
@@ -1020,10 +1017,9 @@ class UntypedFloatSemantics [GoSemanticsFunctions] : Prop where
     #(if v = 0 then v else v ^^^ W64 (2 ^ 63))
 
 attribute [instance] UntypedFloatSemantics.underlying_untyped_float
-  UntypedFloatSemantics.convert_untyped_float64 UntypedFloatSemantics.convert_untyped_float32
-  UntypedFloatSemantics.neg_untyped_float
+  UntypedFloatSemantics.convert_untyped_float64 UntypedFloatSemantics.neg_untyped_float
 export UntypedFloatSemantics (underlying_untyped_float convert_untyped_float64
-  convert_untyped_float32 neg_untyped_float)
+  neg_untyped_float)
 
 class Float64Semantics [GoSemanticsFunctions] : Prop where
   go_zero_val_float64 : TypeReprUnderlying go.float64 w64

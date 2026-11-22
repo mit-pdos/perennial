@@ -195,6 +195,10 @@ func (suite *GoTestSuite) TestNegUnderflowConstIsPosZero() {
 	suite.Equal(true, testNegUnderflowConstIsPosZero())
 }
 
+func (suite *GoTestSuite) TestFloat32ConstRoundsOnce() {
+	suite.Equal(true, testFloat32ConstRoundsOnce())
+}
+
 func (suite *GoTestSuite) TestCopySimple() {
 	suite.Equal(true, testCopySimple())
 }

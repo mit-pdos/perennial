@@ -88,8 +88,10 @@ on amd64 flip the sign bit of a NaN, but the Go spec does not promise it, and no
 has a non-arithmetic negation). Comparisons (`==`, `<`, ...) and integer-to-float conversions
 never produce a NaN and stay deterministic `⤳[under]` rules, so automation steps them; the
 conversions return bits, `(encode (ofInt n)).getD 0` (a rounding is never NaN, so the default
-is never used). `float32(c)` of an untyped constant is deterministic too, `float64ToFloat32`
-(a constant is never NaN). There is no rule for `float32(x)` of a `float64` variable.
+is never used). A constant of type `float32` is emitted by goose as its `float32` value, rounded
+once from the exact constant; there is no rule for converting an untyped float (the `float64`
+rounding of a constant) to `float32`, which would round twice (reachable only in generic code,
+`T(c)` with `T` a type parameter), nor for `float32(x)` of a `float64` variable.
 Float-to-integer conversion is unchanged (`ArbitraryInt`, implementation-defined in Go).
 
 In proofs, each arithmetic operation takes one `wp_apply`: `wp_apply wp_float64_add as %f Hf`
@@ -103,10 +105,9 @@ instances of `wp_go_step_rel`, the spec of any instruction with a relational pur
   operations, computing `x*y + z` with one rounding (gc emits `FMADDD` for it on arm64). The
   model rounds every operation, so it is *more* defined than Go here: a proof about such an
   expression is about the unfused evaluation only (`docs/KNOWN_LIMITATIONS.md`, "Floats").
-- `float32(c)` of an untyped constant rounds the constant's `float64` rounding (goose's
-  representation), not the constant: double rounding (`docs/KNOWN_LIMITATIONS.md`).
 - Not modelled (stuck, hence sound): `float64` ↔ `float32` conversions of variables, integer to
-  `float32` conversions, integer types narrower than 32 bits to floats.
+  `float32` conversions, integer types narrower than 32 bits to floats, untyped float constants
+  to a type parameter instantiated with `float32` (goose cannot round them at the right type).
 
 ## Lemmas (`Theory/Float.lean`)
 

@@ -59,6 +59,11 @@ noncomputable def minMaxDur.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] minMaxDur.ty
 
+noncomputable def float32Box.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.float32Box" [])
+
+attribute [irreducible] float32Box.ty
+
 noncomputable def evalCounter.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.evalCounter" [])
 
@@ -469,6 +474,9 @@ noncomputable instance «equals_unfold_struct#568e4f73» [GooseExts] [GoGlobalCo
 @[reducible] noncomputable def negUnderflowConst [GooseExts] [GoGlobalContext] : val :=
   #(W64 0)
 
+@[reducible] noncomputable def offTieConst [GooseExts] [GoGlobalContext] : val :=
+  #(W64 4607182419068452864)
+
 noncomputable def initOrder [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.initOrder"
 
@@ -645,6 +653,12 @@ noncomputable def testUntypedRuneConst [GooseExts] [GoGlobalContext] : GoString 
 
 noncomputable def testNegUnderflowConstIsPosZero [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testNegUnderflowConstIsPosZero"
+
+noncomputable def float32Id [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.float32Id"
+
+noncomputable def testFloat32ConstRoundsOnce [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testFloat32ConstRoundsOnce"
 
 noncomputable def testCopySimple [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCopySimple"
@@ -3232,10 +3246,10 @@ noncomputable def testNegUnderflowConstIsPosZero.impl [GooseExts] [GoGlobalConte
   (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (Val negUnderflowConst))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat go.float32))) (Val negUnderflowConst))
+  (Let "$r0" (Val #(W32 0))
   (Let "y" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat go.float32))) (Val «local»))
+  (Let "$r0" (Val #(W32 0))
   (Let "z" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 0))))
@@ -3255,6 +3269,73 @@ noncomputable def testNegUnderflowConstIsPosZero.impl [GooseExts] [GoGlobalConte
   (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "y") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "x") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: conversions.go:67:6 -/
+noncomputable def float32Id.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "x"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.float32))) (Var "x"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.float32))) (Var "x"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.float32))) (Var "$res0")))))
+
+/-- a constant converted to float32 is rounded once, from its exact value: Go
+    gives 1+0x1p-23 (just above the tie between 1 and 1+0x1p-23), not the
+    float32 rounding of its float64 rounding 1+0x1p-24 (an exact tie, which
+    rounds to even, 1); -1e-50 rounds to +0
+
+    go: conversions.go:75:6 -/
+noncomputable def testFloat32ConstRoundsOnce.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (let typed := #(W32 1065353217);
+  (Let "$r0" (Val #(W32 1065353217))
+  (Let "a" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W32 1065353217))
+  (Let "b" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W32 1065353217))
+  (App (Val (GoInstruction (CompositeLiteral float32Box.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"f")) (ElementExpression go.float32 (Var "$v0")))])))
+  (Let "box" (App (Val (GoInstruction (GoAlloc float32Box.ty))) (App (Val (GoInstruction (GoZeroVal float32Box.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W32 1065353217))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 1 go.float32)))) (LiteralValue [(KeyedElement none (ElementExpression go.float32 (Var "$v0")))])))
+  (Let "arr" (App (Val (GoInstruction (GoAlloc (go.GoType.ArrayType 1 go.float32)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ArrayType 1 go.float32)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W32 0))
+  (Let "z" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W32 1065353216))
+  (Let "one" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (If (If (If (If (If (If (If (If (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (Val #(W32 1065353217)) (Val #(W32 1065353217)))) (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (App (Val (GoInstruction (GoLoad go.float32))) (Var "a")) (Val #(W32 1065353217)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (App (Val (GoInstruction (GoLoad go.float32))) (Var "b")) (Val #(W32 1065353217)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (App (Val (GoInstruction (GoLoad go.float32))) (App (Val (GoInstruction (StructFieldRef float32Box.ty go!"f"))) (Var "box"))) (Val #(W32 1065353217)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (App (Val (GoInstruction (GoLoad go.float32))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 1 go.float32)))) (Pair (Var "arr") (Val #(W64 0))))) (Val #(W32 1065353217)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (Let "$a0" (Val #(W32 1065353217))
+  (App (App (Val (GoInstruction (FuncResolve float32Id []))) (Val #())) (Var "$a0"))) (Val #(W32 1065353217)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (App (Val (GoInstruction (GoOp GoSub go.float32))) (Pair (App (Val (GoInstruction (GoLoad go.float32))) (Var "a")) (Val #(W32 1065353216)))) (Val #(W32 872415232)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.float32))) (Pair (App (Val (GoInstruction (GoLoad go.float32))) (Var "one")) (Val #(W32 864026624)))) (Val #(W32 1065353216)))) (Val #false)) (App (Val (GoInstruction (GoOp GoGt go.float32))) (Pair (App (Val (GoInstruction (GoOp GoDiv go.float32))) (Pair (Val #(W32 1065353216)) (App (Val (GoInstruction (GoLoad go.float32))) (Var "z")))) (Val #(W32 0)))) (Val #false)) (App (Val (GoInstruction (GoOp GoGt go.float32))) (Pair (App (Val (GoInstruction (GoOp GoDiv go.float32))) (Pair (Val #(W32 1065353216)) (Let "$a0" (Val #(W32 0))
+  (App (App (Val (GoInstruction (FuncResolve float32Id []))) (Val #())) (Var "$a0"))))) (Val #(W32 0)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "one") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "z") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 1 go.float32)))) (Pair (Var "arr") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore float32Box.ty))) (Pair (Var "box") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "b") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "a") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- go: copy.go:3:6 -/
@@ -12237,6 +12318,41 @@ attribute [instance] minMaxDur.TypeAssumptions.underlying
   minMaxDur.TypeAssumptions.method_set
   minMaxDur.TypeAssumptions.ptr_method_set
 
+structure float32Box [GooseExts] where
+  mk ::
+  f' : w32
+
+noncomputable instance float32Box.zero_val [GooseExts] : ZeroVal float32Box :=
+  ⟨float32Box.mk zeroValDef⟩
+
+@[reducible] noncomputable def float32Box.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"f" go.float32)]
+
+@[irreducible] noncomputable def float32Box.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  float32Box.fieldsUnsealed
+
+noncomputable instance equals_unfold_float32Box [GooseExts] [GoGlobalContext] :
+    EqualsUnfold float32Box.fields float32Box.fieldsUnsealed :=
+  ⟨by unfold float32Box.fields; rfl⟩
+
+@[reducible] noncomputable def float32Box.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType float32Box.fields)
+
+class float32Box.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying float32Box.underlying float32Box
+  underlying : go.UnderlyingDirectedEq float32Box.ty float32Box.underlying
+  get_f : ∀ (x : float32Box), go.IsGoStepPureDetTagged under (StructFieldGet float32Box.underlying go!"f") #x (Val #(x.f'))
+  set_f : ∀ (x : float32Box) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet float32Box.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : float32Box)))
+  method_set : go.MethodSetIs float32Box.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType float32Box.ty) []
+
+attribute [instance] float32Box.TypeAssumptions.type_repr
+  float32Box.TypeAssumptions.underlying
+  float32Box.TypeAssumptions.get_f
+  float32Box.TypeAssumptions.set_f
+  float32Box.TypeAssumptions.method_set
+  float32Box.TypeAssumptions.ptr_method_set
+
 structure evalCounter [GooseExts] where
   mk ::
   n' : w64
@@ -14193,6 +14309,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   pairs_instance : pairs.TypeAssumptions
   blankFieldStruct_instance : blankFieldStruct.TypeAssumptions
   minMaxDur_instance : minMaxDur.TypeAssumptions
+  float32Box_instance : float32Box.TypeAssumptions
   evalCounter_instance : evalCounter.TypeAssumptions
   Editor_instance : Editor.TypeAssumptions
   Pair_instance : Pair.TypeAssumptions
@@ -14316,6 +14433,8 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testByteToString_unfold : FuncUnfold testByteToString [] testByteToString.impl
   testUntypedRuneConst_unfold : FuncUnfold testUntypedRuneConst [] testUntypedRuneConst.impl
   testNegUnderflowConstIsPosZero_unfold : FuncUnfold testNegUnderflowConstIsPosZero [] testNegUnderflowConstIsPosZero.impl
+  float32Id_unfold : FuncUnfold float32Id [] float32Id.impl
+  testFloat32ConstRoundsOnce_unfold : FuncUnfold testFloat32ConstRoundsOnce [] testFloat32ConstRoundsOnce.impl
   testCopySimple_unfold : FuncUnfold testCopySimple [] testCopySimple.impl
   testCopyShorterDst_unfold : FuncUnfold testCopyShorterDst [] testCopyShorterDst.impl
   testCopyShorterSrc_unfold : FuncUnfold testCopyShorterSrc [] testCopyShorterSrc.impl
@@ -14575,6 +14694,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.pairs_instance
   Assumptions.blankFieldStruct_instance
   Assumptions.minMaxDur_instance
+  Assumptions.float32Box_instance
   Assumptions.evalCounter_instance
   Assumptions.Editor_instance
   Assumptions.Pair_instance
@@ -14698,6 +14818,8 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testByteToString_unfold
   Assumptions.testUntypedRuneConst_unfold
   Assumptions.testNegUnderflowConstIsPosZero_unfold
+  Assumptions.float32Id_unfold
+  Assumptions.testFloat32ConstRoundsOnce_unfold
   Assumptions.testCopySimple_unfold
   Assumptions.testCopyShorterDst_unfold
   Assumptions.testCopyShorterSrc_unfold

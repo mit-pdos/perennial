@@ -291,10 +291,7 @@ def float32Eq (x y : w32) : Bool := binary32.eq x y
 def float32IsNaN (x : w32) : Bool := binary32.isNaN x
 
 /-! Conversions that never produce a NaN, as bits. (`getD 0` is never used: a rounding is
-never NaN, and an untyped constant is never NaN.) -/
-
-/-- `float32(c)` of a `float64` `x` that is not a NaN (the conversion of untyped constants). -/
-def float64ToFloat32 (x : w64) : w32 := (binary32.encode (binary64.convert binary32 x)).getD 0
+never NaN.) -/
 
 /-- `float64(n)` of an integer (`int64`, `uint64`, `int32`, `uint32`): its rounding. -/
 def int64ToFloat64 (n : w64) : w64 := (binary64.encode (binary64.ofInt n.toInt)).getD 0

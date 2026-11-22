@@ -222,10 +222,6 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
 
   An explicit conversion (`float64(x*y) + z`) prevents the fusion in Go; the model cannot
   tell the two apart.
-- **`float32` of an untyped constant rounds twice.** Goose represents an untyped float
-  constant by its `float64` rounding, and `float32(c)` rounds that again
-  (`convert_untyped_float32`); Go rounds `c` once. The two differ for a constant just off a
-  point halfway between two `float32`s.
 
 ## The step bound of the adequacy theorems
 

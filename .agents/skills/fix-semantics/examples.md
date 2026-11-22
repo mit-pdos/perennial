@@ -1296,3 +1296,39 @@ alias (configuration coupling between packages, for a fact Go fixes).
 
 **Why.** Approved by the owner (upamanyus) directly, 2026-11-22: "every type alias always gets a
 reducible descriptor A.ty defined as its target, regardless of the package's config action".
+
+## Case 43 — ACCEPTED: a constant of type `float32` is its `float32` value, rounded once (branch `goose-float32-const`, issue #667)
+
+**Symptom.** Unsound. An untyped float constant is represented by its `float64` rounding, and goose
+translated its uses at `float32` as `Convert go.untypedFloat go.float32` of that (or of
+`GoNeg go.untypedFloat` of a literal), which `convert_untyped_float32` rounded again with
+`float64ToFloat32`. Go rounds the exact constant to `float32` once. Untyped float arithmetic at
+`float32` (`float32(1 + 0x1p-24)`, `var y float32 = a + b`) was emitted as `GoOp _ go.untypedFloat`,
+which has no rule (stuck, and the conversion to `float32` was dropped).
+
+**Witness.** `float32(c)` with `const c = 1 + 0x1p-24 + 0x1p-60`: Go (go1.26.0, go1.27.3) gives
+bits `0x3f800001`, the model `0x3f800000` (the `float64` rounding is the tie `1 + 0x1p-24`, which
+rounds to even). `var z float32 = -1e-50`: Go gives `+0`, the model `float64ToFloat32(-1e-50)`,
+`-0` under the IEEE semantics of #654, so `1/z` was `-Inf`.
+
+**Taken.** `exprSpecial`: an expression that go/types records as a constant whose type's
+underlying type is `float32` is emitted by `constantLiteral` (`constant.Float32Val` of the exact
+value, `-0` made `+0` as #666 does for `float64`): 1 goose branch, +5 lines. This covers every
+path, since go/types records the target type on the constant at each site (typed declarations,
+`float32(c)`, assignment, arguments, returns, composite-literal fields and elements, operands of
+`float32` arithmetic); a reference to a typed `float32` constant is now its value too. Goose then
+never emits `Convert go.untypedFloat go.float32` outside generic code, and there (`return c` at a
+type parameter instantiated with `float32`) the rule still rounded twice, so
+`convert_untyped_float32` and `float64ToFloat32` are removed: that conversion is stuck. Tests:
+`unittest/float.go` (`float32Consts`, both witnesses in every form), Go-checked semantics test
+`testFloat32ConstRoundsOnce`. Regenerated: only the two goose example packages; the std-lib and
+models output does not change.
+
+**Not taken.** Keeping the untyped representation and making the semantics round from an exact
+constant representation (a change of representation for every untyped float); keeping the rule
+for generic code (unsound there: gc rounds `return c` once, though `T(c)` gives `0x3f800000`).
+
+**Why.** Approved by the owner (upamanyus), relayed on #667: "compute `float32` constant bits from
+the exact `constant.Value`, rounded once, with a zero result made `+0`, on every path where a
+constant reaches `float32`". The rule removal is this agent's sibling fix for the one path goose
+cannot round (generic code), flagged for the owner in the PR.
