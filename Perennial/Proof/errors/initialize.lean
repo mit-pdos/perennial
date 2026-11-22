@@ -31,12 +31,16 @@ theorem errors.initialize'.wp_proof :
   iintro Hown
   wp_auto
   wp_apply wp_GlobalAlloc (V := GoInterface) ErrUnsupported go.error as HEU
+  -- the store into `ErrUnsupported` ends the initializer: keep an update to make its cell
+  -- persistent afterwards
+  iapply wp_fupd
   wp_apply errors.wp_New_errorString as %x #E
   ipersist HEU
   ihave #N : errors.newVar (GF := GF) ErrUnsupported _ $$ []
   · iunfold errors.newVar
     iexists _
     iframe HEU E
+  imodintro
   iframe Hown
   is_pkg_init_finish
 
