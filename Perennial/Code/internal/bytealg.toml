@@ -7,5 +7,9 @@ imports = ["!*"]
 # (TrustedCode/internal/bytealg.lean). Goose translates `init.0` itself, to a read of the global
 # `internal/cpu.X86`, which no package initializer sets: the runtime does (`cpu.Initialize`, from
 # `schedinit`, with `cpuid` in assembly). The irreducible unit is that variable's value; trusting
-# it instead would add internal/cpu (its `x86` struct of feature flags) for one bit.
+# it instead is not possible with goose as it is: a `trusted` variable with no initializer
+# expression (`var X86 struct{...}`) gets neither a `GlobalAlloc` nor an `X86.init` call in
+# `initialize'` (goose.go, the package initializer), so nothing could model the runtime filling it,
+# and translating it leaves it zero (MaxLen always 31: more defined than gc). Pending a goose
+# change that gives such a variable an `X.init` hook.
 trusted = ["MakeNoZero", "init.0"]

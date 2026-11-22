@@ -8,6 +8,7 @@ module
 public import Perennial.Proof.internal.bytealg.Link
 public import Perennial.Proof.internal.stringslite.Link
 public import Perennial.Proof.io.Link
+public import Perennial.Proof.strings.Builder__Cap
 public import Perennial.Proof.strings.Builder__Len
 public import Perennial.Proof.strings.Builder__Reset
 public import Perennial.Proof.strings.Builder__String
@@ -40,6 +41,9 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : strings.Assumptions]
+
+theorem strings.Builder.wp_Cap : strings.Builder.Cap.spec (GF := GF) (hG := hG) :=
+  strings.Builder.Cap.wp_proof
 
 theorem strings.Builder.wp_Len : strings.Builder.Len.spec (GF := GF) (hG := hG) :=
   strings.Builder.Len.wp_proof
