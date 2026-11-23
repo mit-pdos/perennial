@@ -866,6 +866,12 @@ noncomputable def testGenericToInterface [GooseExts] [GoGlobalContext] : GoStrin
 noncomputable def testGenericToInterfaceLiteralClosure [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testGenericToInterfaceLiteralClosure"
 
+noncomputable def genericConvertTP [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.genericConvertTP"
+
+noncomputable def testGenericConvertTypeParams [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testGenericConvertTypeParams"
+
 noncomputable def init.«0» [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.init.0"
 
@@ -4873,7 +4879,7 @@ noncomputable def failing_testArgumentOrder.impl [GooseExts] [GoGlobalContext] :
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
-/-- go: generic_interface.go:6:6 -/
+/-- go: generic_interface.go:7:6 -/
 noncomputable def genericAnyArg.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
@@ -4887,7 +4893,7 @@ noncomputable def genericAnyArg.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.any))) (Var "$res0")))))
 
-/-- go: generic_interface.go:10:6 -/
+/-- go: generic_interface.go:11:6 -/
 noncomputable def genericToAny.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
@@ -4917,7 +4923,7 @@ noncomputable def genericToAny.impl [GooseExts] [GoGlobalContext] (T : go.GoType
   (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "y") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad go.any))) (Var "$res0")))))
 
-/-- go: generic_interface.go:19:6 -/
+/-- go: generic_interface.go:20:6 -/
 noncomputable def genericSliceOfAny.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.any)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.any)))) (Val #())))
@@ -4932,7 +4938,7 @@ noncomputable def genericSliceOfAny.impl [GooseExts] [GoGlobalContext] (T : go.G
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.any)))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "$res0")))))
 
-/-- go: generic_interface.go:23:6 -/
+/-- go: generic_interface.go:24:6 -/
 noncomputable def genericFuncToAny.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "f"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false [go.any]))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [] false [go.any]))))) (Val #())))
@@ -4955,7 +4961,7 @@ noncomputable def genericFuncToAny.impl [GooseExts] [GoGlobalContext] (T : go.Go
   (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false [go.any]))))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [go.any]))))) (Var "$res0")))))
 
-/-- go: generic_interface.go:27:6 -/
+/-- go: generic_interface.go:28:6 -/
 noncomputable def testGenericToInterface.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -4987,7 +4993,7 @@ noncomputable def testGenericToInterface.impl [GooseExts] [GoGlobalContext] : va
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.int)))) (Pair (Var "p") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
-/-- go: generic_interface.go:35:6 -/
+/-- go: generic_interface.go:36:6 -/
 noncomputable def testGenericToInterfaceLiteralClosure.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -5014,6 +5020,38 @@ noncomputable def testGenericToInterfaceLiteralClosure.impl [GooseExts] [GoGloba
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "e") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- An explicit conversion between two type parameters with the same constraint
+    converts the value (here a float64 to an int, truncating).
+
+    go: generic_interface.go:43:6 -/
+noncomputable def genericConvertTP.impl [GooseExts] [GoGlobalContext] (T U : go.GoType) : val :=
+  (LamV "x"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc U))) (Var "x"))
+  (Let "$r0" (App (Val (GoInstruction (Convert U T))) (App (Val (GoInstruction (GoLoad U))) (Var "x")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore T))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad T))) (Var "$res0")))))
+
+/-- go: generic_interface.go:47:6 -/
+noncomputable def testGenericConvertTypeParams.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (Val #(W64 4615063718147915776))
+  (App (App (Val (GoInstruction (FuncResolve genericConvertTP [go.int, go.float64]))) (Val #())) (Var "$a0"))) (Val #(W64 3)))) (App (Val (GoInstruction (GoOp GoEquals go.float64))) (Pair (Let "$a0" (Val #(W64 2))
+  (App (App (Val (GoInstruction (FuncResolve genericConvertTP [go.float64, go.int]))) (Val #())) (Var "$a0"))) (Val #(W64 4611686018427387904)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- go: init_order.go:5:6 -/
@@ -16663,6 +16701,8 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   genericFuncToAny_unfold : ∀ (T : go.GoType), FuncUnfold genericFuncToAny [T] (genericFuncToAny.impl T)
   testGenericToInterface_unfold : FuncUnfold testGenericToInterface [] testGenericToInterface.impl
   testGenericToInterfaceLiteralClosure_unfold : FuncUnfold testGenericToInterfaceLiteralClosure [] testGenericToInterfaceLiteralClosure.impl
+  genericConvertTP_unfold : ∀ (T U : go.GoType), FuncUnfold genericConvertTP [T, U] (genericConvertTP.impl T U)
+  testGenericConvertTypeParams_unfold : FuncUnfold testGenericConvertTypeParams [] testGenericConvertTypeParams.impl
   «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
   «init.1_unfold» : FuncUnfold init.«1» [] init.«1».impl
   testInitOrder_unfold : FuncUnfold testInitOrder [] testInitOrder.impl
@@ -17111,6 +17151,8 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.genericFuncToAny_unfold
   Assumptions.testGenericToInterface_unfold
   Assumptions.testGenericToInterfaceLiteralClosure_unfold
+  Assumptions.genericConvertTP_unfold
+  Assumptions.testGenericConvertTypeParams_unfold
   Assumptions.«init.0_unfold»
   Assumptions.«init.1_unfold»
   Assumptions.testInitOrder_unfold
