@@ -1,8 +1,9 @@
 package unittest
 
 // recover() in a function or method called by defer. fmt's handleMethods and
-// catchPanic, simplified; a deferred method value and a direct call, where the
-// recovering method is the ordinary one, which is stuck.
+// catchPanic, simplified; a deferred method value, a deferred interface method
+// and a direct call, which reach the ordinary catchPanic: it has no declaration
+// (only catchPanic'deferred does), so these are unprovable.
 
 type pp struct {
 	buf       []byte
@@ -51,14 +52,14 @@ func deferValueMethod(p *valCatcher) {
 }
 
 // a deferred method value: the callee is not known statically, so this defers
-// the ordinary catchPanic, which is stuck
+// the ordinary catchPanic, which has no declaration
 func deferMethodValue(p *pp) {
 	f := p.catchPanic
 	defer f('v', "String")
 	panic("p")
 }
 
-// a deferred interface method: also the ordinary one
+// a deferred interface method: also the ordinary one (*pp satisfies catcherI)
 type catcherI interface {
 	catchPanic(verb byte, method string)
 }
@@ -68,7 +69,25 @@ func deferInterfaceMethod(c catcherI) {
 	panic("p")
 }
 
-// a direct call: the ordinary catchPanic, which is stuck
+// a direct call: the ordinary catchPanic, which has no declaration
 func directCall(p *pp) {
 	p.catchPanic('v', "String")
+}
+
+// an interface conversion of a type with a recovering method: the method set
+// still has catchPanic
+func convertToInterface(p *pp) catcherI {
+	return p
+}
+
+func topCatch() {
+	recover()
+}
+
+// a deferred function value of a recovering top-level function: the ordinary
+// topCatch, which has no declaration
+func deferFuncValue() {
+	f := topCatch
+	defer f()
+	panic("p")
 }

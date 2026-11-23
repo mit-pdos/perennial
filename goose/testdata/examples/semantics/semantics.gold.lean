@@ -12037,14 +12037,6 @@ noncomputable def testCatchTwoDeep.impl [GooseExts] [GoGlobalContext] : val :=
 /-- catch recovers a uint64 panic value into *res and counts it.
 
     go: recover_deferred.go:12:19 -/
-noncomputable def catcher.«catch».impl [GooseExts] [GoGlobalContext] : val :=
-  (LamV "c"
-  (Lam "res"
-  (_root_.Perennial.Panic "recover() not in a deferred call")))
-
-/-- catch recovers a uint64 panic value into *res and counts it.
-
-    go: recover_deferred.go:12:19 -/
 noncomputable def catcher.catch'deferred.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "$recover"
@@ -12100,13 +12092,6 @@ noncomputable def methodRecover.impl [GooseExts] [GoGlobalContext] : val :=
 /-- catchTop is a top-level function that recovers a uint64 panic value into *res.
 
     go: recover_deferred.go:27:6 -/
-noncomputable def catchTop.impl [GooseExts] [GoGlobalContext] : val :=
-  (LamV "res"
-  (_root_.Perennial.Panic "recover() not in a deferred call"))
-
-/-- catchTop is a top-level function that recovers a uint64 panic value into *res.
-
-    go: recover_deferred.go:27:6 -/
 noncomputable def catchTop'deferred.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "$recover"
   (Lam "res"
@@ -12148,14 +12133,6 @@ noncomputable def topRecover.impl [GooseExts] [GoGlobalContext] : val :=
   (Seq (App (App (Var "$f") (Var "$panic")) (Var "$a0"))
   (App (Var "$oldf") (Val #()))))))))))))))
   (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0"))))))
-
-/-- catchAndRepanic recovers, counts, and panics again with the value plus one.
-
-    go: recover_deferred.go:40:19 -/
-noncomputable def catcher.catchAndRepanic.impl [GooseExts] [GoGlobalContext] : val :=
-  (LamV "c"
-  (Lam BAnon
-  (_root_.Perennial.Panic "recover() not in a deferred call")))
 
 /-- catchAndRepanic recovers, counts, and panics again with the value plus one.
 
@@ -12245,16 +12222,6 @@ noncomputable def repanic.impl [GooseExts] [GoGlobalContext] : val :=
     (through its own cell).
 
     go: recover_deferred.go:65:19 -/
-noncomputable def catcher.catchTwice.impl [GooseExts] [GoGlobalContext] : val :=
-  (LamV "c"
-  (Lam "res"
-  (_root_.Perennial.Panic "recover() not in a deferred call")))
-
-/-- catchTwice recovers the panic it is deferred for (through its parameter),
-    panics with the value plus one, and recovers that in its own deferred literal
-    (through its own cell).
-
-    go: recover_deferred.go:65:19 -/
 noncomputable def catcher.catchTwice'deferred.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "$recover"
@@ -12315,11 +12282,6 @@ noncomputable def twoCells.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType catcher.ty)))) (Pair (Var "c") (Var "$r0"))))))))))
   (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0"))))))
-
-/-- go: recover_deferred.go:80:6 -/
-noncomputable def catchNil.impl [GooseExts] [GoGlobalContext] : val :=
-  (LamV "isNil"
-  (_root_.Perennial.Panic "recover() not in a deferred call"))
 
 /-- go: recover_deferred.go:80:6 -/
 noncomputable def catchNil'deferred.impl [GooseExts] [GoGlobalContext] : val :=
@@ -16264,11 +16226,8 @@ class catcher.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   set_seen : ∀ (x : catcher) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet catcher.underlying go!"seen") (PairV #x #y) (Val #(({ x with seen' := y } : catcher)))
   method_set : go.MethodSetIs catcher.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType catcher.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.catch", (some (go.signature.Signature [(go.GoType.PointerType go.uint64)] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.catchAndRepanic", (some (go.signature.Signature [] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.catchTwice", (some (go.signature.Signature [(go.GoType.PointerType go.uint64)] false [])))]
-  ptr_catch_unfold : MethodUnfold (go.GoType.PointerType catcher.ty) go!"catch" catcher.«catch».impl
   ptr_catch'deferred_unfold : MethodUnfold (go.GoType.PointerType catcher.ty) go!"catch'deferred" catcher.catch'deferred.impl
-  ptr_catchAndRepanic_unfold : MethodUnfold (go.GoType.PointerType catcher.ty) go!"catchAndRepanic" catcher.catchAndRepanic.impl
   ptr_catchAndRepanic'deferred_unfold : MethodUnfold (go.GoType.PointerType catcher.ty) go!"catchAndRepanic'deferred" catcher.catchAndRepanic'deferred.impl
-  ptr_catchTwice_unfold : MethodUnfold (go.GoType.PointerType catcher.ty) go!"catchTwice" catcher.catchTwice.impl
   ptr_catchTwice'deferred_unfold : MethodUnfold (go.GoType.PointerType catcher.ty) go!"catchTwice'deferred" catcher.catchTwice'deferred.impl
 
 attribute [instance] catcher.TypeAssumptions.type_repr
@@ -16277,11 +16236,8 @@ attribute [instance] catcher.TypeAssumptions.type_repr
   catcher.TypeAssumptions.set_seen
   catcher.TypeAssumptions.method_set
   catcher.TypeAssumptions.ptr_method_set
-  catcher.TypeAssumptions.ptr_catch_unfold
   catcher.TypeAssumptions.ptr_catch'deferred_unfold
-  catcher.TypeAssumptions.ptr_catchAndRepanic_unfold
   catcher.TypeAssumptions.ptr_catchAndRepanic'deferred_unfold
-  catcher.TypeAssumptions.ptr_catchTwice_unfold
   catcher.TypeAssumptions.ptr_catchTwice'deferred_unfold
 
 structure BoolTest [GooseExts] where
@@ -17317,13 +17273,11 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testRecoverNamed_unfold : FuncUnfold testRecoverNamed [] testRecoverNamed.impl
   testCatchTwoDeep_unfold : FuncUnfold testCatchTwoDeep [] testCatchTwoDeep.impl
   methodRecover_unfold : FuncUnfold methodRecover [] methodRecover.impl
-  catchTop_unfold : FuncUnfold catchTop [] catchTop.impl
   catchTop'deferred_unfold : FuncUnfold catchTop'deferred [] catchTop'deferred.impl
   topRecover_unfold : FuncUnfold topRecover [] topRecover.impl
   repanicInner_unfold : FuncUnfold repanicInner [] repanicInner.impl
   repanic_unfold : FuncUnfold repanic [] repanic.impl
   twoCells_unfold : FuncUnfold twoCells [] twoCells.impl
-  catchNil_unfold : FuncUnfold catchNil [] catchNil.impl
   catchNil'deferred_unfold : FuncUnfold catchNil'deferred [] catchNil'deferred.impl
   recoverNotPanicking_unfold : FuncUnfold recoverNotPanicking [] recoverNotPanicking.impl
   testMethodRecover_unfold : FuncUnfold testMethodRecover [] testMethodRecover.impl
@@ -17779,13 +17733,11 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testRecoverNamed_unfold
   Assumptions.testCatchTwoDeep_unfold
   Assumptions.methodRecover_unfold
-  Assumptions.catchTop_unfold
   Assumptions.catchTop'deferred_unfold
   Assumptions.topRecover_unfold
   Assumptions.repanicInner_unfold
   Assumptions.repanic_unfold
   Assumptions.twoCells_unfold
-  Assumptions.catchNil_unfold
   Assumptions.catchNil'deferred_unfold
   Assumptions.recoverNotPanicking_unfold
   Assumptions.testMethodRecover_unfold

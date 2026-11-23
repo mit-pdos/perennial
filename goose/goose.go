@@ -158,10 +158,13 @@ func NewPkgCtx(pkg *packages.Package, filter declfilter.DeclFilter) Ctx {
 }
 
 // recoveringFuncs returns the translated functions and methods of pkg whose own
-// body calls recover(). Each such F is translated as `F'deferred`, which takes
-// the cell recover() reads as an extra parameter `$recover` and is what
-// `defer F(...)` calls, and as an ordinary F that is stuck, since Go's
-// recover() only stops a panic when called directly by a deferred function.
+// body calls recover(). Each such F is translated only as `F'deferred`, which
+// takes the cell recover() reads as an extra parameter `$recover` and is what
+// `defer F(...)` calls. The ordinary F keeps its name (its `GoString`, and its
+// entry in the method sets) but has no declaration and no `FuncUnfold` or
+// `MethodUnfold`: Go's recover() stops a panic only when called directly by a
+// deferred function, and goose knows which function that is only for
+// `defer F(...)`.
 func recoveringFuncs(pkg *packages.Package, filter declfilter.DeclFilter) map[*types.Func]bool {
 	recovering := make(map[*types.Func]bool)
 	for _, f := range pkg.Syntax {
@@ -2815,11 +2818,9 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 	fd.Body = ctx.wrapFuncBody(fd.Body, d.Type)
 
 	if recovering {
-		// the function called other than by `defer F(...)`, whose recover() is
-		// stuck
-		stuck := fd
-		stuck.Body = glang.PanicExpr{Msg: "recover() not in a deferred call"}
-		ctx.out.funcImplDecls = append(ctx.out.funcImplDecls, stuck)
+		// only F'deferred: the ordinary F (called directly, or deferred as a
+		// function value, a method value or an interface method) has no
+		// definition, so a program that reaches it is unprovable
 		fd.Name = deferredName
 		fd.RecoverArg = true
 	}

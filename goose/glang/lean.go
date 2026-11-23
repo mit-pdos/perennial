@@ -839,10 +839,6 @@ func (e CatchLabelExpr) Lean(m LeanMode) string {
 	return eApp(eVal("catchLabel"), NewStringVal(e.Label).Lean(LeanExpr), e.Body.Lean(LeanExpr))
 }
 
-func (e PanicExpr) Lean(m LeanMode) string {
-	return "(_root_.Perennial.Panic " + strconv.Quote(e.Msg) + ")"
-}
-
 func (e ReturnExpr) Lean(m LeanMode) string {
 	return eLetLike("App", []string{eVal("doReturn")}, e.Value.Lean(LeanExpr))
 }

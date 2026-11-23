@@ -185,11 +185,6 @@ type CatchLabelExpr struct {
 	Body  Expr
 }
 
-// PanicExpr is stuck, with the message Msg.
-type PanicExpr struct {
-	Msg string
-}
-
 type ReturnExpr struct {
 	Value Expr
 }

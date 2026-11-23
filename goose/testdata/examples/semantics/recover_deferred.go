@@ -1,8 +1,8 @@
 package semantics
 
 // recover() called directly by a deferred function or method (not a function
-// literal): Goose translates such a function F as F'deferred, which takes the
-// cell recover() reads as a parameter, and `defer F(...)` calls it.
+// literal): Goose translates such a function F only as F'deferred, which takes
+// the cell recover() reads as a parameter, and `defer F(...)` calls it.
 
 type catcher struct {
 	seen uint64

@@ -100,19 +100,27 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   panicking. Fix: run `$oldf` also when `$f` panics, with `$f`'s panic replacing the
   current one. Found 2026-10-26 by the trusted-base review of the range-over-func change.
 
-- **`recover()` in a function deferred dynamically, or called directly, is stuck
-  (incomplete).** A function or method `F` whose body calls `recover()` recovers only
-  as `F'deferred`, which `defer F(...)` calls when `F` is a function or a method of a
-  concrete type (`deferStmt`, `goose/goose.go`); the ordinary `F` is stuck (`Panic
-  "recover() not in a deferred call"`). Go also recovers when `F` is deferred as a
-  function value, a method value or an interface method, and its `recover()` returns
-  `nil` in a direct call:
+- **A function that calls `recover()`, deferred dynamically or called directly, is
+  unprovable (incomplete).** A function or method `F` whose own body calls `recover()`
+  is translated only as `F'deferred`, which takes the cell `recover()` reads; `defer
+  F(...)` calls it when `F` is a function or a method of a concrete type (`deferStmt`,
+  `goose/goose.go`). The ordinary `F` keeps its name and its method-set entries, but
+  has no declaration and no `FuncUnfold` or `MethodUnfold`, so a direct call, or a
+  `defer` of `F` as a function value, a method value or an interface method, reaches a
+  function the proof knows nothing about. Go recovers in such a `defer`, and its
+  `recover()` returns `nil` in a direct call:
 
   ```go
   func (c *T) catch(x *int) { if r := recover(); r != nil { *x = 1 } }
-  func F() (x int) { f := c.catch; defer f(&x); panic("p") } // Go: 1; the model: stuck
-  func G() { c.catch(new(int)) }                             // Go: returns; the model: stuck
+  func F() (x int) { f := c.catch; defer f(&x); panic("p") } // Go: 1; the model: unprovable
+  func G() { c.catch(new(int)) }                             // Go: returns; the model: unprovable
   ```
+
+  Goose translates these programs instead of refusing them. A refusal would also reject
+  a package that only mentions `F` as a value or a method-set entry, for example a type
+  with a recovering method that satisfies an interface. The proof then cannot use such a
+  call, so the translation is sound. The unittest gold `recover_deferred.go`
+  (`deferMethodValue`, `deferInterfaceMethod`, `directCall`) shows the shapes.
 
   Fix, if a program needs it: model the goroutine's panic state and the deferred call
   that is running in the semantics, instead of passing the cell.

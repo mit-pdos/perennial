@@ -813,12 +813,13 @@ theorem wp_recoverNamed :
   itrivial
 ```
 
-A function or method `F` whose own body calls `recover()` is translated twice:
-`F'deferred` takes the cell as an extra parameter `$recover` (after the receiver),
-and is what `defer F(args)` (with `F` a function, or a method of a concrete
-type) calls, as `F'deferred $panic args`; the ordinary `F` (called directly, or
-deferred as a function value or an interface method) is stuck (`Panic`), since
-Go's `recover()` recovers only when called directly by the deferred function. The
+A function or method `F` whose own body calls `recover()` is translated only as
+`F'deferred`, which takes the cell as an extra parameter `$recover` (after the
+receiver), and is what `defer F(args)` (with `F` a function, or a method of a
+concrete type) calls, as `F'deferred $panic args`. The ordinary `F` (called
+directly, or deferred as a function value or an interface method) keeps its name
+and method-set entries but has no `FuncUnfold`/`MethodUnfold`, so a proof cannot
+use such a call (`KNOWN_LIMITATIONS.md`). The
 spec of `F'deferred` takes the cell's points-to, which its proof reads with
 `wp_recoverPanic`, and the deferring function's proof passes it `pnc`
 (`recover_deferred.go`'s proofs, e.g. `methodRecover.lean`):

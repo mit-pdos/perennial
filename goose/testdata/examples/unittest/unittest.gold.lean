@@ -959,6 +959,18 @@ noncomputable def deferInterfaceMethod [GooseExts] [GoGlobalContext] : GoString 
 noncomputable def directCall [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.directCall"
 
+noncomputable def convertToInterface [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.convertToInterface"
+
+noncomputable def topCatch [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.topCatch"
+
+noncomputable def topCatch'deferred [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.topCatch'deferred"
+
+noncomputable def deferFuncValue [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.deferFuncValue"
+
 noncomputable def recur [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.recur"
 
@@ -4900,14 +4912,7 @@ noncomputable def ReassignVars.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y") (Var "$r0")))))))))
   (Val #())))
 
-/-- go: recover_deferred.go:12:14 -/
-noncomputable def pp.catchPanic.impl [GooseExts] [GoGlobalContext] : val :=
-  (LamV "p"
-  (Lam "verb"
-  (Lam "method"
-  (_root_.Perennial.Panic "recover() not in a deferred call"))))
-
-/-- go: recover_deferred.go:12:14 -/
+/-- go: recover_deferred.go:13:14 -/
 noncomputable def pp.catchPanic'deferred.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam "$recover"
@@ -4965,7 +4970,7 @@ noncomputable def pp.catchPanic'deferred.impl [GooseExts] [GoGlobalContext] : va
   (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "err") (Var "$r0")))))))))))
   (Val #()))))))
 
-/-- go: recover_deferred.go:29:14 -/
+/-- go: recover_deferred.go:30:14 -/
 noncomputable def pp.handleMethods.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam "arg"
@@ -5024,13 +5029,7 @@ noncomputable def pp.handleMethods.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore stringer.ty))) (Pair (Var "s") (Var "$r0")))))))))))))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))))
 
-/-- go: recover_deferred.go:42:19 -/
-noncomputable def valCatcher.«catch».impl [GooseExts] [GoGlobalContext] : val :=
-  (LamV BAnon
-  (Lam BAnon
-  (_root_.Perennial.Panic "recover() not in a deferred call")))
-
-/-- go: recover_deferred.go:42:19 -/
+/-- go: recover_deferred.go:43:19 -/
 noncomputable def valCatcher.catch'deferred.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "$recover"
@@ -5041,7 +5040,7 @@ noncomputable def valCatcher.catch'deferred.impl [GooseExts] [GoGlobalContext] :
   (Var "$recover"))))
   (Val #())))))
 
-/-- go: recover_deferred.go:46:6 -/
+/-- go: recover_deferred.go:47:6 -/
 noncomputable def deferValueMethod.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
   (Seq (App (Val wrapDeferRecover)
@@ -5069,9 +5068,9 @@ noncomputable def deferValueMethod.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))
 
 /-- a deferred method value: the callee is not known statically, so this defers
-    the ordinary catchPanic, which is stuck
+    the ordinary catchPanic, which has no declaration
 
-    go: recover_deferred.go:55:6 -/
+    go: recover_deferred.go:56:6 -/
 noncomputable def deferMethodValue.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
   (Seq (App (Val wrapDefer)
@@ -5096,7 +5095,7 @@ noncomputable def deferMethodValue.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [go.byte, go.string] false []))))) (Pair (Var "f") (Var "$r0"))))))))))
   (Val #())))
 
-/-- go: recover_deferred.go:66:6 -/
+/-- go: recover_deferred.go:67:6 -/
 noncomputable def deferInterfaceMethod.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "c"
   (Seq (App (Val wrapDefer)
@@ -5116,9 +5115,9 @@ noncomputable def deferInterfaceMethod.impl [GooseExts] [GoGlobalContext] : val 
   (App (Var "$oldf") (Val #())))))))))))))))
   (Val #())))
 
-/-- a direct call: the ordinary catchPanic, which is stuck
+/-- a direct call: the ordinary catchPanic, which has no declaration
 
-    go: recover_deferred.go:72:6 -/
+    go: recover_deferred.go:73:6 -/
 noncomputable def directCall.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
   (Seq (App (Val exceptionDo)
@@ -5127,6 +5126,58 @@ noncomputable def directCall.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$a0" (Val #(W8 118))
   (Let "$a1" (Val #(go!"String"))
   (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType pp.ty) go!"catchPanic"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType pp.ty)))) (Var "p"))) (Var "$a0")) (Var "$a1")))))))
+  (Val #())))
+
+/-- an interface conversion of a type with a recovering method: the method set
+    still has catchPanic
+
+    go: recover_deferred.go:79:6 -/
+noncomputable def convertToInterface.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc catcherI.ty))) (App (Val (GoInstruction (GoZeroVal catcherI.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType pp.ty)))) (Var "p"))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType pp.ty) catcherI.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType pp.ty)))) (Var "p")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore catcherI.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad catcherI.ty))) (Var "$res0")))))
+
+/-- go: recover_deferred.go:83:6 -/
+noncomputable def topCatch'deferred.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "$recover"
+  (Lam BAnon
+  (Seq (App (Val exceptionDo)
+  (App (Val doExecute)
+  (App (Val recoverPanic)
+  (Var "$recover"))))
+  (Val #()))))
+
+/-- a deferred function value of a recovering top-level function: the ordinary
+    topCatch, which has no declaration
+
+    go: recover_deferred.go:89:6 -/
+noncomputable def deferFuncValue.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Seq (App (Val wrapDefer)
+  (Lam "$defer"
+  (Let "$r0" (App (Val (GoInstruction (FuncResolve topCatch []))) (Val #()))
+  (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"p")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))
+  (App (Val doExecute)
+  (Let "$f" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f"))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Val #()))
+  (App (Var "$oldf") (Val #()))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Pair (Var "f") (Var "$r0")))))))))
   (Val #())))
 
 /-- go: recursive.go:3:6 -/
@@ -7612,7 +7663,6 @@ class pp.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSeman
   set_panicking : ∀ (x : pp) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet pp.underlying go!"panicking") (PairV #x #y) (Val #(({ x with panicking' := y } : pp)))
   method_set : go.MethodSetIs pp.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType pp.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.catchPanic", (some (go.signature.Signature [go.byte, go.string] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.handleMethods", (some (go.signature.Signature [go.any, go.byte] false [go.bool])))]
-  ptr_catchPanic_unfold : MethodUnfold (go.GoType.PointerType pp.ty) go!"catchPanic" pp.catchPanic.impl
   ptr_catchPanic'deferred_unfold : MethodUnfold (go.GoType.PointerType pp.ty) go!"catchPanic'deferred" pp.catchPanic'deferred.impl
   ptr_handleMethods_unfold : MethodUnfold (go.GoType.PointerType pp.ty) go!"handleMethods" pp.handleMethods.impl
 
@@ -7624,7 +7674,6 @@ attribute [instance] pp.TypeAssumptions.type_repr
   pp.TypeAssumptions.set_panicking
   pp.TypeAssumptions.method_set
   pp.TypeAssumptions.ptr_method_set
-  pp.TypeAssumptions.ptr_catchPanic_unfold
   pp.TypeAssumptions.ptr_catchPanic'deferred_unfold
   pp.TypeAssumptions.ptr_handleMethods_unfold
 
@@ -7666,10 +7715,7 @@ class valCatcher.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] 
   underlying : go.UnderlyingDirectedEq valCatcher.ty valCatcher.underlying
   method_set : go.MethodSetIs valCatcher.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.catch", (some (go.signature.Signature [] false [])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType valCatcher.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.catch", (some (go.signature.Signature [] false [])))]
-  catch_unfold : MethodUnfold valCatcher.ty go!"catch" valCatcher.«catch».impl
   catch'deferred_unfold : MethodUnfold valCatcher.ty go!"catch'deferred" valCatcher.catch'deferred.impl
-  ptr_catch_unfold : MethodUnfold (go.GoType.PointerType valCatcher.ty) go!"catch" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve valCatcher.ty go!"catch"))) (App (Val (GoInstruction (GoLoad valCatcher.ty))) (Var "$r"))))
   ptr_catch'deferred_unfold : MethodUnfold (go.GoType.PointerType valCatcher.ty) go!"catch'deferred" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve valCatcher.ty go!"catch'deferred"))) (App (Val (GoInstruction (GoLoad valCatcher.ty))) (Var "$r"))))
 
@@ -7677,9 +7723,7 @@ attribute [instance] valCatcher.TypeAssumptions.type_repr
   valCatcher.TypeAssumptions.underlying
   valCatcher.TypeAssumptions.method_set
   valCatcher.TypeAssumptions.ptr_method_set
-  valCatcher.TypeAssumptions.catch_unfold
   valCatcher.TypeAssumptions.catch'deferred_unfold
-  valCatcher.TypeAssumptions.ptr_catch_unfold
   valCatcher.TypeAssumptions.ptr_catch'deferred_unfold
 
 abbrev catcherI [GooseExts] : Type := GoInterface
@@ -8460,6 +8504,9 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   deferMethodValue_unfold : FuncUnfold deferMethodValue [] deferMethodValue.impl
   deferInterfaceMethod_unfold : FuncUnfold deferInterfaceMethod [] deferInterfaceMethod.impl
   directCall_unfold : FuncUnfold directCall [] directCall.impl
+  convertToInterface_unfold : FuncUnfold convertToInterface [] convertToInterface.impl
+  topCatch'deferred_unfold : FuncUnfold topCatch'deferred [] topCatch'deferred.impl
+  deferFuncValue_unfold : FuncUnfold deferFuncValue [] deferFuncValue.impl
   recur_unfold : FuncUnfold recur [] recur.impl
   useRenamedImport_unfold : FuncUnfold useRenamedImport [] useRenamedImport.impl
   ifJoinDemo_unfold : FuncUnfold ifJoinDemo [] ifJoinDemo.impl
@@ -8741,6 +8788,9 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.deferMethodValue_unfold
   Assumptions.deferInterfaceMethod_unfold
   Assumptions.directCall_unfold
+  Assumptions.convertToInterface_unfold
+  Assumptions.topCatch'deferred_unfold
+  Assumptions.deferFuncValue_unfold
   Assumptions.recur_unfold
   Assumptions.useRenamedImport_unfold
   Assumptions.ifJoinDemo_unfold

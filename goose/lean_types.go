@@ -392,16 +392,17 @@ type methodDecl struct {
 }
 
 // methodDecls returns the methods of mset with the names of their
-// declarations: the method's name, and also its `'deferred` variant for a
-// method in `recovering` (see funcDecl).
+// declarations: the method's name, or only its `'deferred` variant for a
+// method in `recovering` (see recoveringFuncs).
 func (ctx *Ctx) methodDecls(mset *types.MethodSet) []methodDecl {
 	var ms []methodDecl
 	for i := range mset.Len() {
 		sel := mset.At(i)
-		ms = append(ms, methodDecl{sel, sel.Obj().Name()})
+		name := sel.Obj().Name()
 		if ctx.recovering[sel.Obj().(*types.Func).Origin()] {
-			ms = append(ms, methodDecl{sel, sel.Obj().Name() + "'deferred"})
+			name += "'deferred"
 		}
+		ms = append(ms, methodDecl{sel, name})
 	}
 	return ms
 }
@@ -650,17 +651,15 @@ func (ctx *Ctx) leanPackagePropClass(typeSpecs []*ast.TypeSpec) string {
 		for _, p := range params {
 			typeArgs = append(typeArgs, glang.LeanIdent(p))
 		}
-		names := []string{name}
 		if ctx.recovering[ctx.info.Defs[f.Name].(*types.Func)] {
-			names = append(names, name+"'deferred")
+			// only F'deferred is declared (see recoveringFuncs)
+			name += "'deferred"
 		}
-		for _, name := range names {
-			impl := leanApplied(glang.LeanIdent(glang.FuncImpl(name)), params)
-			fields = append(fields, leanClassField{name: name + "_unfold",
-				ty: leanForall(leanTypeParamBinders(params, "go.GoType"),
-					fmt.Sprintf("FuncUnfold %s [%s] %s", glang.LeanIdent(name),
-						strings.Join(typeArgs, ", "), impl))})
-		}
+		impl := leanApplied(glang.LeanIdent(glang.FuncImpl(name)), params)
+		fields = append(fields, leanClassField{name: name + "_unfold",
+			ty: leanForall(leanTypeParamBinders(params, "go.GoType"),
+				fmt.Sprintf("FuncUnfold %s [%s] %s", glang.LeanIdent(name),
+					strings.Join(typeArgs, ", "), impl))})
 	}
 	for _, impName := range ctx.importNamesOrdered {
 		pkg := impName.Imported()
