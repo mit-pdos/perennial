@@ -1241,6 +1241,13 @@ gives the new hypothesis from the old one (so `goose_adequacy` follows,
 raises `T`, `.nsteps` forgets it. `goose_invariance_below` is the same for
 `goose_invariance`.
 
+With crashes (same file): `RealCrashNstepsBelow boot T n ρ κs ρ' b` is `RealCrashNsteps`
+whose every generation is a `RealNstepsBelow T` (the restarted configuration `[boot]` is
+the first of the next generation, so it is bounded too), and `goose_crash_adequacy_below`
+is `goose_crash_adequacy` with `Hsteps : RealCrashNstepsBelow e T n ([e], (σ, g)) κs
+(t2, σ2) b` in place of `Hsteps`/`Hlive`; the same `of_threadsBelow`, `of_single`, `mono`,
+`nsteps`, and the check `goose_crash_adequacy_of_below`. The distributed forms are below.
+
 ### Initial states of extensions
 
 Files: `Perennial/GooseLang/Lang.lean` (`ExtSemantics.initLocal`/`initGlobal`,
@@ -1459,9 +1466,17 @@ and the last included, having fewer than `T` live threads on every node
 (`DistCfgThreadsBelow`); it is `RealNstepsBelow` for several nodes, with crashes.
 A statement whose thread bound is a premise about the execution it is about (a
 robustness statement: "fewer than `T` goroutines alive at once on any machine")
-quantifies over these, and its step bound need not be below its thread bound. No
-adequacy theorem takes it yet: `of_threadsBelow` turns `goose_dist_crash_adequacy`'s
-premise into it, `of_single` gives `n + 2` from one thread per node, `nsteps`
+quantifies over these, and its step bound need not be below its thread bound.
+`goose_dist_crash_adequacy_below` and `goose_dist_mixed_crash_adequacy_below`
+(`DistAdequacy.lean`) are the crash adequacy theorems over it, with no `Hlive`
+(`Hsteps : DistCrashNstepsBelow (es.map Prod.fst) T n (distInit es g) κs c`; the mixed
+one's `DistCrashNstepsBelow (crashing.map Prod.fst) T n (distInit (crashing ++ stable) g)
+κs c`), and `goose_dist_adequacy_below` the one without crashes, over
+`DistCrashNstepsBelow []` (with no boot programs, no node crashes;
+`DistCrashNstepsBelow.of_distThreadsBelow` gives it from `goose_dist_adequacy`'s premises). Their proofs are the old ones with the simulations `bdist_crash_nsteps_of_real_below`
+/ `bdist_nsteps_of_real_below` (`DistLang.lean`), which read the thread bound off the
+execution; each old theorem follows (`goose_dist_*_of_below`). `of_threadsBelow` turns the
+old premise into the new one, `of_single` gives `n + 2` from one thread per node, `nsteps`
 forgets it, and `mono` raises `T`.
 
 The network (`netExt`): a node's local state is its address; the network maps
