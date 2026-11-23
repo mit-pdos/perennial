@@ -156,6 +156,10 @@ inductive GoInstruction where
   value of any type by its kind (`Value.Int`, `Value.Uint`, `Value.String`); it has no semantics at other `t`. Not a Go expression: goose never emits it;
   trusted models use it (the model of `fmt.Sprintf`). -/
   | TypeAssertUnderlying2 (t : go.GoType)
+  /-- `reflect.TypeOf(x) == reflect.TypeOf(y)` for interface values `x` and `y`: whether they have
+  the same dynamic type (both `nil` counts as the same). Not a Go expression: goose never emits it;
+  trusted models use it (the model of `sync/atomic.Value`). -/
+  | TypeOfEq
   | PackageInitCheck (pkg_name : GoString)
   | PackageInitStart (pkg_name : GoString)
   | PackageInitFinish (pkg_name : GoString)
@@ -314,7 +318,7 @@ export GoOperator (GoEquals GoLt GoLe GoGt GoGe GoPlus GoSub GoMul GoDiv GoRemai
   GoOr GoXor GoBitClear GoShiftl GoShiftr)
 export GoUnaryOperator (GoPos GoNeg GoNot GoComplement)
 export GoInstruction (AngelicExit Convert GoOp GoUnOp CheckComparable GoLoad GoStore GoAlloc
-  GoPrealloc GoZeroVal FuncResolve MethodResolve TypeAssert TypeAssert2 TypeAssertUnderlying2 PackageInitCheck
+  GoPrealloc GoZeroVal FuncResolve MethodResolve TypeAssert TypeAssert2 TypeAssertUnderlying2 TypeOfEq PackageInitCheck
   PackageInitStart PackageInitFinish GlobalVarAddr StructFieldRef StructFieldGet StructFieldSet
   InternalSliceLen InternalSliceCap InternalDynamicArrayAlloc InternalMakeSlice IndexRef Index
   Slice FullSlice ArraySet ArrayLength InternalMapCheckKey InternalMapLookup InternalMapInsert

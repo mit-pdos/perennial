@@ -167,7 +167,9 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
 
 - **Unexported field names are not qualified by package (unsound).** Go keeps apart
   `struct{ a int }` from two packages: `p.Mk() == q.Mk()` is false when each returns
-  `struct{ a int }{}` from its own package, and the model has one type. Refusing such
+  `struct{ a int }{}` from its own package, and the model has one type (so does a type
+  assertion between them, and `atomic.Value`'s check that a stored value keeps its dynamic
+  type, `TypeOfEq`). Refusing such
   types would reject common code (`struct{ mu sync.Mutex; … }`); modelling it means
   qualifying field names everywhere.
 - **Conversions that involve struct tags are stuck (incomplete, sound).** Every field

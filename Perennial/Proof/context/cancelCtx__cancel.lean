@@ -76,7 +76,10 @@ theorem context.cancelCtx.cancel.wp_proof
       by_cases he : e = interface.nil
       · subst he
         simp only [ite_true]
+        iexists interface.nil
         iframe Herr
+        isplitr
+        · ipureintro; trivial
         iintro Herr
         imod dghostVar_update_halves true _ _ _ $$ Hcg Hcg' with ⟨Hcg, Hcg'⟩
         imod dghostVar_persist _ _ _ $$ Hcg with #Hclosed
@@ -115,7 +118,10 @@ theorem context.cancelCtx.cancel.wp_proof
             ihave %h := dghostVar_agree _ _ _ _ _ $$ Hd' Hdgf
             cases h
           dsimp only [doneAny]
+          iexists interface.nil
           iframe Hdone
+          isplitr
+          · ipureintro; trivial
           iintro Hdone
           imod dghostVar_update_halves (some cch) _ _ _ $$ Hdgf Hdg with ⟨Hdgf, Hdg⟩
           imod dghostVar_persist _ _ _ $$ Hdgf with #Hdgf
