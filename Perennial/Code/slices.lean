@@ -2,6 +2,7 @@
 module
 
 public import Perennial.Code.cmp
+public import Perennial.Code.iter
 public import Perennial.Code.math.bits
 public import Perennial.Golang.Defn
 
@@ -280,6 +281,87 @@ noncomputable def symMergeOrdered [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def rotateOrdered [GooseExts] [GoGlobalContext] : GoString :=
   go!"slices.rotateOrdered"
+
+/-- AppendSeq appends the values from seq to the slice and
+    returns the extended slice.
+    If seq is empty, the result preserves the nilness of s.
+
+    go: iter.go:50:6 -/
+noncomputable def AppendSeq.impl [GooseExts] [GoGlobalContext] (Slice' E : go.GoType) : val :=
+  (LamV "s"
+  (Lam "seq"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Slice'))) (App (Val (GoInstruction (GoZeroVal Slice'))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "seq" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq'.ty E)))) (Var "seq"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc Slice'))) (Var "s"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad Slice'))) (Var "s"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Slice'))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq'.ty E)))) (Var "seq"))
+  (Let "v" (App (Val (GoInstruction (GoAlloc E))) (App (Val (GoInstruction (GoZeroVal E))) (Val #())))
+  (App (App (Val (func.forRange 1)) (Var "$range"))
+  (Lam "$key"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad Slice'))) (Var "s"))
+  (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (GoLoad E))) (Var "v"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType E)))) (LiteralValue [(KeyedElement none (ElementExpression E (Var "$sl0")))])))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [Slice']))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Slice'))) (Pair (Var "s") (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore E))) (Pair (Var "v") (Var "$key")))))))))))))
+  (App (Val (GoInstruction (GoLoad Slice'))) (Var "$res0"))))))
+
+/-- Collect collects values from seq into a new slice and returns it.
+    If seq is empty, the result is nil.
+
+    go: iter.go:59:6 -/
+noncomputable def Collect.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+  (LamV "seq"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType E)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "seq" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq'.ty E)))) (Var "seq"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType E)))) (Val UntypedNil))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq'.ty E)))) (Var "seq"))
+  (App (App (App (Val (GoInstruction (FuncResolve AppendSeq [(go.GoType.SliceType E), E]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType E)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "$res0")))))
+
+/-- Sorted collects values from seq into a new slice, sorts the slice,
+    and returns it.
+    If seq is empty, the result is nil.
+
+    go: iter.go:66:6 -/
+noncomputable def Sorted.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+  (LamV "seq"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType E)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "seq" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq'.ty E)))) (Var "seq"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq'.ty E)))) (Var "seq"))
+  (App (App (Val (GoInstruction (FuncResolve Collect [E]))) (Val #())) (Var "$a0")))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType E)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "s"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType E)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve «Sort» [(go.GoType.SliceType E), E]))) (Val #())) (Var "$a0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType E)))) (Pair (Var "s") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "$res0")))))
 
 /-- Clone returns a copy of the slice.
     The elements are copied using assignment, so this is a shallow clone.
@@ -3663,7 +3745,7 @@ noncomputable def rotateOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
   (Val #()))))))
 
 noncomputable instance info' : PkgInfo pkg_id.slices where
-  pkgImportedPkgs := [pkg_id.cmp, pkg_id.math.bits]
+  pkgImportedPkgs := [pkg_id.cmp, pkg_id.iter, pkg_id.math.bits]
 
 opaque «_».init [GooseExts] [GoGlobalContext] : val
 
@@ -3672,8 +3754,11 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val (package.init pkg_id.slices)) (Lam BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (App (Val _root_.Perennial.cmp.initialize') (Val #())))))
+  (App (Val doExecute)
+  (App (Val _root_.Perennial.iter.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.math.bits.initialize') (Val #()))))))))
 
@@ -3710,6 +3795,9 @@ attribute [instance] xorshift.TypeAssumptions.underlying
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   sortedHint_instance : sortedHint.TypeAssumptions
   xorshift_instance : xorshift.TypeAssumptions
+  AppendSeq_unfold : ∀ (Slice' E : go.GoType), FuncUnfold AppendSeq [Slice', E] (AppendSeq.impl Slice' E)
+  Collect_unfold : ∀ (E : go.GoType), FuncUnfold Collect [E] (Collect.impl E)
+  Sorted_unfold : ∀ (E : go.GoType), FuncUnfold Sorted [E] (Sorted.impl E)
   Clone_unfold : ∀ (S E : go.GoType), FuncUnfold Clone [S, E] (Clone.impl S E)
   Grow_unfold : ∀ (S E : go.GoType), FuncUnfold Grow [S, E] (Grow.impl S E)
   Concat_unfold : ∀ (S E : go.GoType), FuncUnfold Concat [S, E] (Concat.impl S E)
@@ -3751,10 +3839,14 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   symMergeOrdered_unfold : ∀ (E : go.GoType), FuncUnfold symMergeOrdered [E] (symMergeOrdered.impl E)
   rotateOrdered_unfold : ∀ (E : go.GoType), FuncUnfold rotateOrdered [E] (rotateOrdered.impl E)
   import_cmp_Assumption : _root_.Perennial.cmp.Assumptions
+  import_iter_Assumption : _root_.Perennial.iter.Assumptions
   import_bits_Assumption : _root_.Perennial.math.bits.Assumptions
 
 attribute [instance] Assumptions.sortedHint_instance
   Assumptions.xorshift_instance
+  Assumptions.AppendSeq_unfold
+  Assumptions.Collect_unfold
+  Assumptions.Sorted_unfold
   Assumptions.Clone_unfold
   Assumptions.Grow_unfold
   Assumptions.Concat_unfold
@@ -3796,6 +3888,7 @@ attribute [instance] Assumptions.sortedHint_instance
   Assumptions.symMergeOrdered_unfold
   Assumptions.rotateOrdered_unfold
   Assumptions.import_cmp_Assumption
+  Assumptions.import_iter_Assumption
   Assumptions.import_bits_Assumption
 
 end slices

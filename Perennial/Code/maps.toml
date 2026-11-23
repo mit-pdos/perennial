@@ -1,0 +1,9 @@
+# Everything but `clone`, a `go:linkname` to the runtime (`runtime/map.go`'s `maps_clone`) with no
+# Go body, which goose rejects ("external function"); it is trusted (TrustedCode/maps.lean: the
+# semantics' `InternalMapClone`).
+translate = ["*", "!clone"]
+trusted = ["clone"]
+imports = ["!*", "iter"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

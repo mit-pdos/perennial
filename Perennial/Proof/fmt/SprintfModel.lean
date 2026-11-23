@@ -1101,7 +1101,7 @@ theorem not_simpleDirective_nil (f : GoString) (h : f.head? ≠ some (W8 37)) :
 
 /-- The helper `fmt.formatArg` of the model of `Sprintf`: at the `%` at index `i` of `format`, the
 output of the directive for the argument `x` and the index after it, if the model formats it. -/
-theorem wp_formatArg (B : GoInterface → Option GoString) (format : GoString) (i : w64) (x : GoInterface)
+theorem wp_formatArg (B : GoInterface → Option Lent) (format : GoString) (i : w64) (x : GoInterface)
     (Hi : 0 ≤ sint.Z i ∧ sint.Z i < (format.length : Int))
     (Hx : ((format.drop (sint.nat i + 1)).head? = some (W8 115) ∨
         (format.drop (sint.nat i + 1)).head? = some (W8 118) ∨

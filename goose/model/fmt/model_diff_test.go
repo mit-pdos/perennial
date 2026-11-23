@@ -77,6 +77,10 @@ var testFormats = []string{
 // printArg's case []byte; the model does not follow it.
 type namedBytes []byte
 
+// A named type of underlying type []string: not the type []string itself, which the model
+// follows; Go formats it as a []string (it has no methods), the model is stuck on it.
+type namedStrings []string
+
 func testArgs() []any {
 	ps := &plainStruct{a: []int{1, 2}}
 	return []any{
@@ -88,11 +92,12 @@ func testArgs() []any {
 		reflect.ValueOf(&recErr{"rv"}), reflect.Value{}, reflect.ValueOf(3),
 		[]byte(nil), []byte{}, []byte("q\"b\\s\x00\x01\x1f\x7f\a\b\f\n\r\t\v ~"),
 		[]byte("é"), []byte{0x80, 'a'}, []byte{0xff}, namedBytes("nb"),
+		[]string(nil), []string{}, []string{"a", "b c", "", "é\x00\"%"}, namedStrings{"ns"},
 	}
 }
 
-// bytesOk: the admission proposed for []byte arguments: argsOk, with an argument of type
-// []byte (exactly) also admitted under every directive, where the directives parse.
+// bytesOk: the admission of lent slice arguments (fmt.argsOkB): argsOk, with an argument of type
+// []byte or []string (exactly) also admitted under every directive, where the directives parse.
 func bytesOk(mv, format string, a []any) bool {
 	ds, ok := directives(format)
 	if !ok {
@@ -104,6 +109,9 @@ func bytesOk(mv, format string, a []any) bool {
 			d = ds[k]
 		}
 		if _, isB := x.([]byte); isB {
+			continue
+		}
+		if _, isS := x.([]string); isS {
 			continue
 		}
 		if !argOkAt(mv, d, x) {
@@ -407,6 +415,28 @@ func TestModelBytesExact(t *testing.T) {
 	for _, b := range [][]byte{[]byte("é"), {0x80}, {'a', 0xff}} {
 		if out := modelSprintf("<%q>", b); out != "<"+arbitraryMark {
 			t.Errorf("Sprintf(\"<%%q>\", %q): the model's %q, not arbitrary", b, out)
+		}
+	}
+}
+
+// The model formats %s and %v of a []string exactly, whatever its strings: brackets, the strings
+// separated by spaces; its other directives (%q, %x, %d, flags, width) are arbitrary strings.
+func TestModelStringsExact(t *testing.T) {
+	cases := [][]string{nil, {}, {""}, {"", ""}, {"a"}, {"a", "b c", "é\x00\xff\"%", "[x]"},
+		{"https://127.0.0.1:2379", "https://127.0.0.2:2379"}}
+	for _, verb := range []string{"%s", "%v"} {
+		for _, ss := range cases {
+			format := "<" + verb + ">"
+			got := fmt.Sprintf(format, ss)
+			out := modelSprintf(format, ss)
+			if out != got {
+				t.Errorf("Sprintf(%q, %q) = %q, the model's %q", format, ss, got, out)
+			}
+		}
+	}
+	for _, format := range []string{"<%q>", "<%x>", "<%d>", "<%5s>", "<%+v>", "<%#v>"} {
+		if out := modelSprintf(format, []string{"a"}); out != "<"+arbitraryMark {
+			t.Errorf("Sprintf(%q, []string{\"a\"}): the model's %q, not arbitrary", format, out)
 		}
 	}
 }

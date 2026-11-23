@@ -196,7 +196,7 @@ noncomputable instance cancelCtx_access_load_mu (l : Loc) (v : context.cancelCtx
  by
   solve_pointsto_access_struct
 
-noncomputable instance cancelCtx_access_store_mu (l : Loc) (v : context.cancelCtx) (mu' : sync.Mutex) :
+noncomputable instance cancelCtx_access_store_mu (l : Loc) (v : context.cancelCtx) (mu' : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef context.cancelCtx go!"mu" l) mu' (DFrac.own 1))
@@ -212,7 +212,7 @@ noncomputable instance cancelCtx_access_load_done (l : Loc) (v : context.cancelC
  by
   solve_pointsto_access_struct
 
-noncomputable instance cancelCtx_access_store_done (l : Loc) (v : context.cancelCtx) (done' : sync.atomic.Value) :
+noncomputable instance cancelCtx_access_store_done (l : Loc) (v : context.cancelCtx) (done' : _root_.Perennial.sync.atomic.Value) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"done" l) v.done' (DFrac.own 1))
       (typedPointsto (structFieldRef context.cancelCtx go!"done" l) done' (DFrac.own 1))
@@ -244,7 +244,7 @@ noncomputable instance cancelCtx_access_load_err (l : Loc) (v : context.cancelCt
  by
   solve_pointsto_access_struct
 
-noncomputable instance cancelCtx_access_store_err (l : Loc) (v : context.cancelCtx) (err' : sync.atomic.Value) :
+noncomputable instance cancelCtx_access_store_err (l : Loc) (v : context.cancelCtx) (err' : _root_.Perennial.sync.atomic.Value) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"err" l) v.err' (DFrac.own 1))
       (typedPointsto (structFieldRef context.cancelCtx go!"err" l) err' (DFrac.own 1))
@@ -318,7 +318,7 @@ noncomputable instance afterFuncCtx_access_load_once (l : Loc) (v : context.afte
  by
   solve_pointsto_access_struct
 
-noncomputable instance afterFuncCtx_access_store_once (l : Loc) (v : context.afterFuncCtx) (once' : sync.Once) :
+noncomputable instance afterFuncCtx_access_store_once (l : Loc) (v : context.afterFuncCtx) (once' : _root_.Perennial.sync.Once) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.afterFuncCtx go!"once" l) v.once' (DFrac.own 1))
       (typedPointsto (structFieldRef context.afterFuncCtx go!"once" l) once' (DFrac.own 1))
@@ -505,7 +505,7 @@ noncomputable instance timerCtx_access_load_deadline (l : Loc) (v : context.time
  by
   solve_pointsto_access_struct
 
-noncomputable instance timerCtx_access_store_deadline (l : Loc) (v : context.timerCtx) (deadline' : time.Time) :
+noncomputable instance timerCtx_access_store_deadline (l : Loc) (v : context.timerCtx) (deadline' : _root_.Perennial.time.Time) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.timerCtx go!"deadline" l) v.deadline' (DFrac.own 1))
       (typedPointsto (structFieldRef context.timerCtx go!"deadline" l) deadline' (DFrac.own 1))

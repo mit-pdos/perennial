@@ -343,7 +343,7 @@ noncomputable instance byteReader_access_load_ScanState (l : Loc) (v : math.big.
  by
   solve_pointsto_access_struct
 
-noncomputable instance byteReader_access_store_ScanState (l : Loc) (v : math.big.byteReader) (ScanState' : fmt.ScanState) :
+noncomputable instance byteReader_access_store_ScanState (l : Loc) (v : math.big.byteReader) (ScanState' : _root_.Perennial.fmt.ScanState) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.byteReader go!"ScanState" l) v.ScanState' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.byteReader go!"ScanState" l) ScanState' (DFrac.own 1))

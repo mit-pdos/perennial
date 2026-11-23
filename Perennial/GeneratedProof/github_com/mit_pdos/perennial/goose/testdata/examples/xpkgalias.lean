@@ -51,7 +51,7 @@ noncomputable instance withAliases_access_load_a (l : Loc) (v : github_com.mit_p
  by
   solve_pointsto_access_struct
 
-noncomputable instance withAliases_access_store_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.withAliases) (a' : github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.X) :
+noncomputable instance withAliases_access_store_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.withAliases) (a' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.X) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.withAliases go!"a" l) v.a' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.withAliases go!"a" l) a' (DFrac.own 1))
@@ -67,7 +67,7 @@ noncomputable instance withAliases_access_load_c (l : Loc) (v : github_com.mit_p
  by
   solve_pointsto_access_struct
 
-noncomputable instance withAliases_access_store_c (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.withAliases) (c' : github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.X) :
+noncomputable instance withAliases_access_store_c (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.withAliases) (c' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.X) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.withAliases go!"c" l) v.c' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.withAliases go!"c" l) c' (DFrac.own 1))

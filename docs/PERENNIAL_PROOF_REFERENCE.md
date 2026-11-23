@@ -449,6 +449,18 @@ or from the body, and `f` returning while the body runs, are undefined behavior
 the values the result variables have then, as in Go. Unfold it with
 `func.forRange_unseal`.
 
+An iterator (`iter.Seq[E]`) is specified by `iter.SeqRuns f R ok`
+(`Golang/Theory/RangeFunc.lean`): run with the resource `R` and a yield function,
+`f` chooses a list `xs` with `ok xs` and calls yield on its elements in order until
+one call returns `false`, then gives `R` back; the caller's yield invariant is
+chosen once `xs` is known. `maps.Keys`/`maps.Values` return such iterators
+(`□ ∀ dq M, iter.SeqRuns f (m ↦${dq} M) ..`), and `slices.AppendSeq`, `Collect`
+and `Sorted` take one. A range over one (`n = 1`) is proved with
+`wp_func_for_range1 f R ok body Φ`: from `iter.SeqRuns f R ok` and `R`, given `xs`,
+an invariant `P i` over the elements done, with the body at `xs[i]` ending in
+`forMapPostcondition (P (i + 1)) (fun v => R -∗ Φ v)`. Example: `slices.AppendSeq`
+(`Proof/slices/AppendSeq.lean`).
+
 Each iteration of a loop has its own iteration variables. Goose shares one
 variable among the iterations unless that is observable, that is, unless the
 loop captures the variable in a function literal or takes its address (`&x`,
@@ -600,6 +612,7 @@ Specs take `isPkgInit` of their package; `wp_apply` discharges it.
 | `wp_mapInsert` | `{{ l ↦$ m }} ... {{ RET #(); l ↦$ <[k := v]> m }}` (needs `SafeMapKey`) |
 | `wp_map_lookup1`, `wp_map_lookup2` | `m[k]`, `v, ok := m[k]`; the result is `(m !! k).getD (zero_val V)` (and `decide (m !! k).isSome`) |
 | `wp_mapDelete`, `wp_map_clear`, `wp_map_for_range` | |
+| `wp_map_clone` | `InternalMapClone` (the model of `maps.clone`): a fresh `l' ↦$ m` from `l ↦${dq} m`; callers use `maps.wp_Clone` (`Proof/maps`) |
 
 Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `GMap.insert_empty`.
 

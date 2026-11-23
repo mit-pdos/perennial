@@ -189,6 +189,8 @@ inductive GoInstruction where
   | InternalMapForRange (key_type elem_type : go.GoType)
   | InternalMapMake
   | InternalMapLookupId
+  /-- a copy of the map behind an interface holding a map (`maps.clone`) -/
+  | InternalMapClone
   | CompositeLiteral (t : go.GoType)
   | SelectStmt
   | InternalStringLen
@@ -323,7 +325,7 @@ export GoInstruction (AngelicExit Convert GoOp GoUnOp CheckComparable GoLoad GoS
   InternalSliceLen InternalSliceCap InternalDynamicArrayAlloc InternalMakeSlice IndexRef Index
   Slice FullSlice ArraySet ArrayLength InternalMapCheckKey InternalMapLookup InternalMapInsert
   InternalMapDelete InternalMapLength InternalMapForRange InternalMapMake InternalMapLookupId
-  InternalBytesTo InternalUnsafeSlice
+  InternalMapClone InternalBytesTo InternalUnsafeSlice
   CompositeLiteral SelectStmt InternalStringLen)
 
 section derived

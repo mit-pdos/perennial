@@ -698,6 +698,57 @@ noncomputable def growSlice.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Var "$oldf") (Val #())))))))))))))))
   (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "$res0"))))))
 
+/-- WriteByte appends the byte c to the buffer, growing the buffer as needed.
+    The returned error is always nil, but is included to match [bufio.Writer]'s
+    WriteByte. If the buffer becomes too large, WriteByte will panic with
+    [ErrTooLarge].
+
+    go: buffer.go:303:18 -/
+noncomputable def Buffer.WriteByte.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "b"
+  (Lam "c"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Buffer.ty)))) (Var "b"))
+  (Let "c" (App (Val (GoInstruction (GoAlloc go.byte))) (Var "c"))
+  (Let "$r0" (Val opInvalid)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (Let "$a0" (Val #(W64 1))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Buffer.ty) go!"tryGrowByReslice"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Buffer.ty)))) (Var "b"))) (Var "$a0")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "m" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (Var "c"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (StructFieldRef Buffer.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Buffer.ty)))) (Var "b")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "m")))) (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))
+  (Let "$r0" (Let "$a0" (Val #(W64 1))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Buffer.ty) go!"grow"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Buffer.ty)))) (Var "b"))) (Var "$a0")))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "m") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "m") (Var "$r0"))))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore readOp.ty))) (Pair (App (Val (GoInstruction (StructFieldRef Buffer.ty go!"lastRead"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Buffer.ty)))) (Var "b"))) (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.error))) (Var "$res0"))))))
+
 /-- Read reads the next len(p) bytes from the buffer or until the buffer
     is drained. The return value n is the number of bytes read. If the
     buffer has no data to return, err is [io.EOF] (unless len(p) is zero);
@@ -961,6 +1012,7 @@ class Buffer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   ptr_Reset_unfold : MethodUnfold (go.GoType.PointerType Buffer.ty) go!"Reset" Buffer.Reset.impl
   ptr_String_unfold : MethodUnfold (go.GoType.PointerType Buffer.ty) go!"String" Buffer.String.impl
   ptr_Write_unfold : MethodUnfold (go.GoType.PointerType Buffer.ty) go!"Write" Buffer.Write.impl
+  ptr_WriteByte_unfold : MethodUnfold (go.GoType.PointerType Buffer.ty) go!"WriteByte" Buffer.WriteByte.impl
   ptr_empty_unfold : MethodUnfold (go.GoType.PointerType Buffer.ty) go!"empty" Buffer.empty.impl
   ptr_grow_unfold : MethodUnfold (go.GoType.PointerType Buffer.ty) go!"grow" Buffer.grow.impl
   ptr_tryGrowByReslice_unfold : MethodUnfold (go.GoType.PointerType Buffer.ty) go!"tryGrowByReslice" Buffer.tryGrowByReslice.impl
@@ -981,6 +1033,7 @@ attribute [instance] Buffer.TypeAssumptions.type_repr
   Buffer.TypeAssumptions.ptr_Reset_unfold
   Buffer.TypeAssumptions.ptr_String_unfold
   Buffer.TypeAssumptions.ptr_Write_unfold
+  Buffer.TypeAssumptions.ptr_WriteByte_unfold
   Buffer.TypeAssumptions.ptr_empty_unfold
   Buffer.TypeAssumptions.ptr_grow_unfold
   Buffer.TypeAssumptions.ptr_tryGrowByReslice_unfold

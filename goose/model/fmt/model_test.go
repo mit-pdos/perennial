@@ -339,16 +339,37 @@ func hexBytes(b []byte, upper bool) string {
 	return out
 }
 
-// formatBytes: at format[i], a '%': the output of the directive for the argument x, if it is of
-// type []byte, and the index after it, as Go's fmtBytes prints it, if the directive is %s, %v,
-// %d, %x, %X or %q, without flags, width or precision (%q only of ASCII bytes, quoteBytes). It
-// reads every byte of x then, as Go does, and nothing otherwise.
-func formatBytes(format string, i int, x any) (string, int, bool) {
+// joinStrings: %v and %s of ss, as printValue prints a []string: its elements (each by fmtS, the
+// string itself), separated by spaces, in brackets.
+func joinStrings(ss []string) string {
+	out := "["
+	for k, s := range ss {
+		if k > 0 {
+			out += " "
+		}
+		out += s
+	}
+	return out + "]"
+}
+
+// formatSlice: at format[i], a '%': the output of the directive for the argument x, if it is of
+// type []byte or []string, and the index after it. Of a []byte, as Go's fmtBytes prints it, if
+// the directive is %s, %v, %d, %x, %X or %q, without flags, width or precision (%q only of ASCII
+// bytes, quoteBytes). Of a []string, as printValue prints it (no method of a []string or a string
+// to call), if the directive is %s or %v without flags, width or precision (joinStrings). It reads
+// every byte or element of x then, as Go does, and nothing otherwise.
+func formatSlice(format string, i int, x any) (string, int, bool) {
 	if i+1 >= len(format) {
 		return "", 0, false
 	}
 	verb := format[i+1]
 	if verb != 's' && verb != 'v' && verb != 'd' && verb != 'x' && verb != 'X' && verb != 'q' {
+		return "", 0, false
+	}
+	if ss, ok := x.([]string); ok {
+		if verb == 's' || verb == 'v' {
+			return joinStrings(ss), i + 2, true
+		}
 		return "", 0, false
 	}
 	b, ok := x.([]byte)
@@ -550,6 +571,10 @@ func visitArg(x any, verb byte, sharpV bool, wrapErrs bool) {
 		_ = string(b) // printArg's fmtBytes: reads b, calls no method, under every verb
 		return
 	}
+	if ss, ok := x.([]string); ok {
+		_ = joinStrings(ss) // printValue: reads the elements, calls no method, under every verb
+		return
+	}
 	if verb == 'w' {
 		if _, ok := x.(error); !ok || !wrapErrs {
 			visitKind(x)
@@ -638,7 +663,7 @@ func doPrintf(format string, a []any, wrapErrs bool) (string, []int, bool) {
 			continue
 		}
 		if argNum < len(a) {
-			s, next, ok := formatBytes(format, i, a[argNum])
+			s, next, ok := formatSlice(format, i, a[argNum])
 			if ok {
 				out += s
 				argNum++

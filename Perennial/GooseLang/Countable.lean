@@ -341,6 +341,7 @@ def GoInstruction.toTree : GoInstruction → GenTree
   | .InternalUnsafeSlice x0 => node 43 [of x0]
   | .TypeAssertUnderlying2 x0 => node 44 [of x0]
   | .TypeOfEq => node 45 []
+  | .InternalMapClone => node 46 []
 def GoInstruction.ofTree : GenTree → GoInstruction
   | node 0 [] => .AngelicExit
   | node 1 [x0, x1] => .Convert (decLeaf x0) (decLeaf x1)
@@ -388,6 +389,7 @@ def GoInstruction.ofTree : GenTree → GoInstruction
   | node 43 [x0] => .InternalUnsafeSlice (decLeaf x0)
   | node 44 [x0] => .TypeAssertUnderlying2 (decLeaf x0)
   | node 45 [] => .TypeOfEq
+  | node 46 [] => .InternalMapClone
   | _ => default
 instance GoInstruction.countable : Pos.Countable GoInstruction :=
   countableOfLeftInverse GoInstruction.toTree GoInstruction.ofTree

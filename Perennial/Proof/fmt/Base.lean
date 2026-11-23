@@ -516,12 +516,29 @@ inductive SprintfOut [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] :
   | other (f : GoString) (args : List GoInterface) (junk : GoString) :
       ¬ SimpleDirective f args → SprintfOut (W8 37 :: f) args junk
 
-/-! ### `[]byte` arguments
+/-! ### `[]byte` and `[]string` arguments
 
-A caller that lends the bytes of its `[]byte` arguments names them with `B`: `B x = some bs` for an
-argument `x` of type `[]byte` holding `bs` (`fmt.bytesOwn` gives the bytes' ownership). `SprintfOutB B`
-is `SprintfOut` with the directives the model formats exactly of such an argument; with `B` always
+A caller that lends the memory of its `[]byte` and `[]string` arguments names it with `B`:
+`B x = some (.bytes bs)` for an argument `x` of type `[]byte` holding `bs`, `B x = some (.strings ss)`
+for one of type `[]string` holding `ss` (`fmt.bytesOwn` gives their ownership). `SprintfOutB B` is
+`SprintfOut` with the directives the model formats exactly of such an argument; with `B` always
 `none` it is `SprintfOut` (`SprintfOutB.toSprintfOut`). -/
+
+/-- The contents of a slice argument lent for formatting (`fmt.bytesOwn`): the bytes of a `[]byte`,
+or the elements of a `[]string`. -/
+inductive Lent where
+  | bytes (bs : GoString)
+  | strings (ss : List GoString)
+
+/-- The type of the slice whose contents are `L`: `[]byte` or `[]string`. -/
+def Lent.ty [GooseExts] : Lent → go.GoType
+  | .bytes _ => go.SliceType go.byte
+  | .strings _ => go.SliceType go.string
+
+/-- `%v` and `%s` of a `[]string` holding `ss`: its strings separated by spaces, in brackets
+(`[a b c]`; `[]` for none), as Go's `printValue` prints it. -/
+def stringsJoin (ss : List GoString) : GoString :=
+  W8 91 :: ((ss.mapIdx fun k s => (if k = 0 then [] else [W8 32]) ++ s).flatten ++ [W8 93])
 
 /-- The hexadecimal digit `d` (below 16), lowercase or uppercase (the model's `hexNibble`). -/
 def hexNibbleByte (upper : Bool) (d : Nat) : w8 :=
@@ -559,22 +576,35 @@ def quoteASCII (bs : GoString) : GoString :=
 /-- At `%` followed by `f`, with arguments `args` left: whether the model formats the directive as
 the `[]byte` the caller lends (`B`): `%s`, `%v`, `%d`, `%x` or `%X` right after the `%`, or `%q` of
 ASCII bytes. -/
-def BytesSimple [GooseExts] (B : GoInterface → Option GoString) : GoString → List GoInterface → Prop
-  | c :: _, x :: _ => ∃ ii bs, x = interface.ok ii ∧ ii.ty = go.SliceType go.byte ∧ B x = some bs ∧
+def BytesSimple [GooseExts] (B : GoInterface → Option Lent) : GoString → List GoInterface → Prop
+  | c :: _, x :: _ => ∃ ii bs, x = interface.ok ii ∧ ii.ty = go.SliceType go.byte ∧ B x = some (.bytes bs) ∧
       (c = W8 115 ∨ c = W8 118 ∨ c = W8 100 ∨ c = W8 120 ∨ c = W8 88 ∨
         (c = W8 113 ∧ ∀ b ∈ bs, uint.nat b < 128))
   | _, _ => False
 
-theorem bytesSimple_nil [GooseExts] (B : GoInterface → Option GoString) (f : GoString) :
+theorem bytesSimple_nil [GooseExts] (B : GoInterface → Option Lent) (f : GoString) :
     ¬ BytesSimple B f [] := by
   cases f <;> simp [BytesSimple]
 
+/-- At `%` followed by `f`, with arguments `args` left: whether the model formats the directive as
+the `[]string` the caller lends (`B`): `%s` or `%v` right after the `%`. -/
+def StringsSimple [GooseExts] (B : GoInterface → Option Lent) : GoString → List GoInterface → Prop
+  | c :: _, x :: _ => ∃ ii ss, x = interface.ok ii ∧ ii.ty = go.SliceType go.string ∧
+      B x = some (.strings ss) ∧ (c = W8 115 ∨ c = W8 118)
+  | _, _ => False
+
+theorem stringsSimple_nil [GooseExts] (B : GoInterface → Option Lent) (f : GoString) :
+    ¬ StringsSimple B f [] := by
+  cases f <;> simp [StringsSimple]
+
 /-- `SprintfOutB B format args out`: `SprintfOut`, and of an argument `x` of type `[]byte` whose
-bytes `bs` the caller lends (`B x = some bs`): `%s` gives `bs`, `%v` and `%d` `bytesDec bs`, `%x` and
-`%X` `bytesHex`, `%q` of ASCII bytes `quoteASCII bs`; any other directive of it (flags, width,
-precision, `%q` of a byte from `0x80`, ...) makes the rest of the output arbitrary. -/
+bytes `bs` the caller lends (`B x = some (.bytes bs)`): `%s` gives `bs`, `%v` and `%d` `bytesDec bs`,
+`%x` and `%X` `bytesHex`, `%q` of ASCII bytes `quoteASCII bs`; of an argument of type `[]string`
+whose elements `ss` the caller lends (`B x = some (.strings ss)`): `%s` and `%v` give
+`stringsJoin ss`; any other directive of either (flags, width, precision, `%q` of a byte from
+`0x80`, `%q` of a `[]string`, ...) makes the rest of the output arbitrary. -/
 inductive SprintfOutB [GooseExts] [GoGlobalContext] [GoSemanticsFunctions]
-    (B : GoInterface → Option GoString) : GoString → List GoInterface → GoString → Prop
+    (B : GoInterface → Option Lent) : GoString → List GoInterface → GoString → Prop
   | done : SprintfOutB B [] [] []
   | extra (a : GoInterface) (args : List GoInterface) (junk : GoString) :
       SprintfOutB B [] (a :: args) junk
@@ -599,27 +629,34 @@ inductive SprintfOutB [GooseExts] [GoGlobalContext] [GoSemanticsFunctions]
       SprintfOutB B (W8 37 :: W8 120 :: f) (interface.ok ii :: args) (hexadecimal z ++ out)
   /-- `%s` of a lent `[]byte` gives its bytes. -/
   | bytesS (ii : GoInterfaceOk) (bs f : GoString) (args : List GoInterface) (out : GoString) :
-      ii.ty = go.SliceType go.byte → B (interface.ok ii) = some bs → SprintfOutB B f args out →
+      ii.ty = go.SliceType go.byte → B (interface.ok ii) = some (.bytes bs) → SprintfOutB B f args out →
       SprintfOutB B (W8 37 :: W8 115 :: f) (interface.ok ii :: args) (bs ++ out)
   /-- `%v` and `%d` of a lent `[]byte` give `bytesDec`. -/
   | bytesV (c : w8) (ii : GoInterfaceOk) (bs f : GoString) (args : List GoInterface)
       (out : GoString) :
-      (c = W8 118 ∨ c = W8 100) → ii.ty = go.SliceType go.byte → B (interface.ok ii) = some bs →
+      (c = W8 118 ∨ c = W8 100) → ii.ty = go.SliceType go.byte → B (interface.ok ii) = some (.bytes bs) →
       SprintfOutB B f args out →
       SprintfOutB B (W8 37 :: c :: f) (interface.ok ii :: args) (bytesDec bs ++ out)
   /-- `%x` and `%X` of a lent `[]byte` give `bytesHex`. -/
   | bytesX (upper : Bool) (ii : GoInterfaceOk) (bs f : GoString) (args : List GoInterface)
       (out : GoString) :
-      ii.ty = go.SliceType go.byte → B (interface.ok ii) = some bs → SprintfOutB B f args out →
+      ii.ty = go.SliceType go.byte → B (interface.ok ii) = some (.bytes bs) → SprintfOutB B f args out →
       SprintfOutB B (W8 37 :: (if upper then W8 88 else W8 120) :: f) (interface.ok ii :: args)
         (bytesHex upper bs ++ out)
   /-- `%q` of a lent `[]byte` of ASCII bytes gives `quoteASCII`. -/
   | bytesQ (ii : GoInterfaceOk) (bs f : GoString) (args : List GoInterface) (out : GoString) :
-      ii.ty = go.SliceType go.byte → B (interface.ok ii) = some bs → (∀ b ∈ bs, uint.nat b < 128) →
+      ii.ty = go.SliceType go.byte → B (interface.ok ii) = some (.bytes bs) → (∀ b ∈ bs, uint.nat b < 128) →
       SprintfOutB B f args out →
       SprintfOutB B (W8 37 :: W8 113 :: f) (interface.ok ii :: args) (quoteASCII bs ++ out)
+  /-- `%s` and `%v` of a lent `[]string` give `stringsJoin`. -/
+  | strs (c : w8) (ii : GoInterfaceOk) (ss : List GoString) (f : GoString) (args : List GoInterface)
+      (out : GoString) :
+      (c = W8 115 ∨ c = W8 118) → ii.ty = go.SliceType go.string →
+      B (interface.ok ii) = some (.strings ss) → SprintfOutB B f args out →
+      SprintfOutB B (W8 37 :: c :: f) (interface.ok ii :: args) (stringsJoin ss ++ out)
   | other (f : GoString) (args : List GoInterface) (junk : GoString) :
-      ¬ SimpleDirective f args → ¬ BytesSimple B f args → SprintfOutB B (W8 37 :: f) args junk
+      ¬ SimpleDirective f args → ¬ BytesSimple B f args → ¬ StringsSimple B f args →
+      SprintfOutB B (W8 37 :: f) args junk
 
 /-- With no bytes lent, `SprintfOutB` is `SprintfOut`. -/
 theorem SprintfOutB.toSprintfOut [GooseExts] [GoGlobalContext] [GoSemanticsFunctions]
@@ -638,10 +675,11 @@ theorem SprintfOutB.toSprintfOut [GooseExts] [GoGlobalContext] [GoSemanticsFunct
   | bytesV _ _ _ _ _ _ _ _ hB => cases hB
   | bytesX _ _ _ _ _ _ _ hB => cases hB
   | bytesQ _ _ _ _ _ _ hB => cases hB
-  | other f args junk hs _ => exact .other f args junk hs
+  | strs _ _ _ _ _ _ _ _ hB => cases hB
+  | other f args junk hs _ _ => exact .other f args junk hs
 
 section bytes_inv
-variable [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] {B : GoInterface → Option GoString}
+variable [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] {B : GoInterface → Option Lent}
 
 theorem SprintfOutB.done_inv {out : GoString} (h : SprintfOutB B [] [] out) : out = [] := by
   cases h
@@ -665,7 +703,7 @@ theorem SprintfOutB.byte_inv {c : w8} {f : GoString} {args : List GoInterface} {
 and consumes the argument: the caller's way to read off the output of, e.g., `Fprintf(w, "%q",
 b)`. -/
 theorem SprintfOutB.bytesQ_inv {ii : GoInterfaceOk} {bs f : GoString} {args : List GoInterface}
-    {out : GoString} (hty : ii.ty = go.SliceType go.byte) (hB : B (interface.ok ii) = some bs)
+    {out : GoString} (hty : ii.ty = go.SliceType go.byte) (hB : B (interface.ok ii) = some (.bytes bs))
     (ha : ∀ b ∈ bs, uint.nat b < 128)
     (h : SprintfOutB B (W8 37 :: W8 113 :: f) (interface.ok ii :: args) out) :
     ∃ out', out = quoteASCII bs ++ out' ∧ SprintfOutB B f args out' := by
@@ -680,7 +718,7 @@ theorem SprintfOutB.bytesQ_inv {ii : GoInterfaceOk} {bs f : GoString} {args : Li
     rw [hB] at hB'
     cases hB'
     exact ⟨out', rfl, h'⟩
-  case other f' args' junk _ hBS =>
+  case other f' args' junk _ hBS _ =>
     exfalso
     simp only [List.cons.injEq] at hF
     obtain ⟨-, rfl⟩ := hF
@@ -705,7 +743,7 @@ theorem SprintfOutB.bytesQ_inv {ii : GoInterfaceOk} {bs f : GoString} {args : Li
 
 /-- `Sprintf("%q", b)` of a lent `[]byte` `b` of ASCII bytes is `quoteASCII bs`. -/
 theorem SprintfOutB.q_ascii {ii : GoInterfaceOk} {bs : GoString} {out : GoString}
-    (hty : ii.ty = go.SliceType go.byte) (hB : B (interface.ok ii) = some bs)
+    (hty : ii.ty = go.SliceType go.byte) (hB : B (interface.ok ii) = some (.bytes bs))
     (ha : ∀ b ∈ bs, uint.nat b < 128)
     (h : SprintfOutB B [W8 37, W8 113] [interface.ok ii] out) : out = quoteASCII bs := by
   obtain ⟨out', rfl, h'⟩ := SprintfOutB.bytesQ_inv hty hB ha h
