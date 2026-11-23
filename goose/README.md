@@ -118,8 +118,10 @@ the files of a package, and so the splice, depend on it). A model file has no
 build constraint, no GOOS/GOARCH suffix and no `//line` directive, and
 declares no predeclared identifier. Model files live in a module nothing builds
 (`goose/model/overlay/<import path>`); the standard-library models' choice and
-stuck points are `internal/gomodel`'s `Choose`, `ChooseUint64` and `Stuck`, a
-package the overlay adds (go1.26.0's `go list` does not find such a package
+stuck points are `internal/gomodel`'s `Choose`, `ChooseUint64` and `Stuck`
+(`Stuck` is the stuck `Panic "not modelled"`, which no WP rule steps; the
+shared stuck point, whose `.impl` a model outside the standard library reuses
+for its own stub), a package the overlay adds (go1.26.0's `go list` does not find such a package
 through `go/packages`; go1.26.11 and go1.27 do). The gold example is
 `testdata/examples/modeloverlay`.
 

@@ -18,9 +18,13 @@ func ChooseUint64() uint64 {
 	return 0
 }
 
-// Stuck has no behaviour (GooseLang: stuck, so a verified program never
-// calls it, and a model calls it only where it gives Go's behaviour up). In
-// Go it panics, so that a test that reaches it fails.
+// Stuck has no behaviour: a model calls it where it does not model Go's
+// behaviour (it is less defined than Go there, never more). GooseLang: the
+// stuck Panic "not modelled", which recover cannot catch and which no WP
+// rule steps, so a verified program never reaches a call. (A model that
+// blocked forever instead would be unsound for this: a select with no cases
+// has a WP with precondition True, which proves anything after it.) In Go it
+// blocks forever.
 func Stuck() {
-	panic("gomodel.Stuck: the model has no behaviour here")
+	select {}
 }

@@ -30,11 +30,16 @@ def Choose.impl : val :=
 def ChooseUint64.impl : val :=
   λ: <>, ArbitraryInt
 
-/-- `Stuck()`: no behaviour (a stuck `Panic`, which `recover` cannot catch), so a verified program
-never reaches a call; a model calls it where it gives up Go's behaviour (it is less defined than
-Go there, never more). The Go body panics. -/
+/-- `Stuck()`: no behaviour. A model calls it where it does not model Go's behaviour, so the model
+is less defined than Go there, never more. It is the stuck `Panic "not modelled"` (`PanicOp`, as a
+nil dereference is): `recover` cannot catch it and no WP rule steps it, so a verified program never
+reaches a call. A model that blocked forever instead (`select {}`, the Go body) would be unsound
+here: `chan.wp_select_blocking []` has precondition `True`, which proves anything after it. This is
+the shared stuck point of every Go model: a model outside the standard library, which cannot import
+`internal/gomodel`, declares its own primitive stub (Go body `select {}`) whose `.impl` is this
+definition. -/
 def Stuck.impl : val :=
-  λ: <>, Panic "gomodel.Stuck"
+  λ: <>, Panic "not modelled"
 
 end code
 end internal.gomodel
