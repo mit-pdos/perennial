@@ -540,6 +540,49 @@ theorem ne_SliceType_of_argWf {ii : GoInterfaceOk} (t : go.GoType) (h : ArgWf ii
       go.int32, go.int16, go.int8, go.uint, go.uint64, go.uint32, go.uint16, go.uint8, go.uintptr,
       go.float32, go.float64]
 
+/-- The helper `fmt.callError`: calls `e.Error()`, which returns (`stringMethodSpec`), so the
+deferred `recover()` finds no panic. -/
+theorem wp_callError (ii : GoInterfaceOk) :
+    {{ stringMethodSpec (GF := GF) ii go!"Error" }}
+      (App (Val callError) (Val #(interface.ok ii)))
+    {{ RET #(); True }} := by
+  iintro %Φ #HE HΦ
+  unfold callError
+  wp_auto
+  wp_apply wp_with_defer_recover
+  iintro %defer %pnc Hdefer Hpnc
+  wp_auto
+  iunfold stringMethodSpec at HE
+  wp_bind (App (Val #(methods ii.ty go!"Error" ii.v)) (Val #()))
+  iapply HE
+  inext
+  iintro %_
+  wp_auto
+  wp_apply wp_recoverPanic $$ [$Hpnc] as Hpnc
+  iapply HΦ
+  itrivial
+
+/-- The helper `fmt.callString`: calls `s.String()`, as `wp_callError`. -/
+theorem wp_callString (ii : GoInterfaceOk) :
+    {{ stringMethodSpec (GF := GF) ii go!"String" }}
+      (App (Val callString) (Val #(interface.ok ii)))
+    {{ RET #(); True }} := by
+  iintro %Φ #HS HΦ
+  unfold callString
+  wp_auto
+  wp_apply wp_with_defer_recover
+  iintro %defer %pnc Hdefer Hpnc
+  wp_auto
+  iunfold stringMethodSpec at HS
+  wp_bind (App (Val #(methods ii.ty go!"String" ii.v)) (Val #()))
+  iapply HS
+  inext
+  iintro %_
+  wp_auto
+  wp_apply wp_recoverPanic $$ [$Hpnc] as Hpnc
+  iapply HΦ
+  itrivial
+
 set_option maxHeartbeats 4000000 in
 /-- The helper `fmt.visitArg`: for an argument `argOkAt` its directive (`verb`, `sharpV`), calls
 what Go's `printArg` calls of it (its `Error()` or `String()`, or nothing), and returns. -/
@@ -624,29 +667,21 @@ theorem wp_visitArg_argOk (x : GoInterface) (verb : w8) (sharpV wrapErrs : Bool)
           | (exfalso; simp_all; done)
       · obtain ⟨hF, hE⟩ := hE
         have hnB := ne_SliceType_of_method go.byte hE
-        iunfold stringMethodSpec at HE
         cases wrapErrs <;> simp only [modeVerbs, Bool.false_eq_true, ↓reduceIte] at hmv
         all_goals
-          repeat' (first | wp_if_destruct | wp_auto | simp only [tsc_method1, tsc_error, hF, hE,
-            hnB, ↓reduceIte, noArgStringSig, reduceCtorEq, decide_false, decide_true] |
-            (wp_bind (App (Val #(methods ii.ty go!"Error" ii.v)) (Val #()))
-             iapply HE
-             inext
-             iintro %_))
+          repeat' (first | (wp_apply (wp_callError ii) $$ [$HE]) | wp_if_destruct | wp_auto |
+            simp only [tsc_method1, tsc_error, hF, hE,
+            hnB, ↓reduceIte, noArgStringSig, reduceCtorEq, decide_false, decide_true])
         all_goals first
           | (iapply HΦ; itrivial)
           | (exfalso; simp_all [methodVerbs, errorfVerbs]; done)
       · obtain ⟨hF, hE, hS, hR⟩ := hS
         have hnB := ne_SliceType_of_method go.byte hS
-        iunfold stringMethodSpec at HS
         cases wrapErrs <;> simp only [modeVerbs, Bool.false_eq_true, ↓reduceIte] at hmv
         all_goals
-          repeat' (first | wp_if_destruct | wp_auto | simp only [tsc_method1, tsc_error, hF, hE, hS,
-            hR, hnB, ↓reduceIte, noArgStringSig, reduceCtorEq, decide_false, decide_true] |
-            (wp_bind (App (Val #(methods ii.ty go!"String" ii.v)) (Val #()))
-             iapply HS
-             inext
-             iintro %_))
+          repeat' (first | (wp_apply (wp_callString ii) $$ [$HS]) | wp_if_destruct | wp_auto |
+            simp only [tsc_method1, tsc_error, hF, hE, hS,
+            hR, hnB, ↓reduceIte, noArgStringSig, reduceCtorEq, decide_false, decide_true])
         all_goals first
           | (iapply HΦ; itrivial)
           | (exfalso; simp_all [methodVerbs, errorfVerbs]; done)

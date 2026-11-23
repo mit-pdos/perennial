@@ -86,8 +86,8 @@ in place of either when the type has one (with Go's signature: none at all is as
 signature (`noArgStringSig`). In the `String()` case, no method `CanInterface`: not a
 `reflect.Value`, which Go's `printArg` unwraps (`case reflect.Value:`, calling the methods of the
 value it holds or printing that by reflection), and which the model tells by that method and is
-stuck on. A panic of the method would be recovered by Go's `catchPanic`; the model does not recover
-it, and the WP rules it out. `nil` and the predeclared basic types (`ArgWf`)
+stuck on. A panic of the method would be recovered by Go's `catchPanic`; the model is stuck there
+(`callError`, `callString`), and the WP rules it out. `nil` and the predeclared basic types (`ArgWf`)
 are admitted too. -/
 def argOk : GoInterface → IProp GF
   | .nil => iprop(True)

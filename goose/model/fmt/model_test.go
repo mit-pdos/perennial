@@ -514,6 +514,28 @@ func visitKind(x any) {
 
 // visitArg calls the methods of x that Go's printArg calls under the directive (verb, sharpV),
 // and nothing else; the output is not modelled.
+// callError calls e.Error() as printArg's handleMethods does. Go calls it under catchPanic, which
+// recovers a panic of the method and prints it ("%!v(PANIC=Error method: ...)"), then goes on; the
+// model does not follow that: it is stuck there (notModelled), never panicking where Go recovers.
+func callError(e error) {
+	defer func() {
+		if recover() != nil {
+			notModelled()
+		}
+	}()
+	e.Error()
+}
+
+// callString calls s.String(), as callError calls Error().
+func callString(s interface{ String() string }) {
+	defer func() {
+		if recover() != nil {
+			notModelled()
+		}
+	}()
+	s.String()
+}
+
 func visitArg(x any, verb byte, sharpV bool, wrapErrs bool) {
 	if x == nil {
 		return
@@ -544,14 +566,14 @@ func visitArg(x any, verb byte, sharpV bool, wrapErrs bool) {
 		}
 	} else if verb == 'v' || verb == 's' || verb == 'x' || verb == 'X' || verb == 'q' {
 		if e, ok := x.(error); ok {
-			e.Error()
+			callError(e)
 			return
 		}
 		if s, ok := x.(interface{ String() string }); ok {
 			if _, ok := x.(interface{ CanInterface() bool }); ok {
 				notModelled() // a reflect.Value, which printArg unwraps
 			}
-			s.String()
+			callString(s)
 			return
 		}
 	}

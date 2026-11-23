@@ -2676,6 +2676,92 @@ noncomputable def visitKind : val :=
   (Val #()))))))
   (Val #())))
 
+/-- The helper `callError` of the model (not a function of package `fmt`) calls `e.Error()`, as Go's
+`handleMethods` does. Go calls it under `catchPanic`, which recovers a panic of the method, prints it
+(`%!v(PANIC=Error method: ...)`) and goes on, so that a program catching panics around the print
+does not see it; the model does not follow that and is stuck there (`notModelled`), rather than
+letting the panic reach the caller: less defined than Go, never different
+(`goose/model/fmt/fprintf_alias_test.go`, `TestMethodPanicRecovered`). Goose's translation (by the
+goose of this revision) of
+
+```go
+func callError(e error) {
+	defer func() {
+		if recover() != nil {
+			notModelled()
+		}
+	}()
+	e.Error()
+}
+```
+
+with these edits: goose's `FuncResolve f [] #()` of a helper of this file replaced by `f`. -/
+noncomputable def callError : val :=
+  (LamV "e"
+  (Seq (App (Val wrapDeferRecover)
+  (Lam "$defer"
+  (Lam "$panic"
+  (Let "e" (App (Val (GoInstruction (GoAlloc go.error))) (Var "e"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve go.error go!"Error"))) (App (Val (GoInstruction (GoLoad go.error))) (Var "e"))) (Val #())))))
+  (App (Val doExecute)
+  (Let "$f" (Lam BAnon
+  (Seq (App (Val exceptionDo)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.InterfaceType [])))) (Pair (App (Val recoverPanic)
+  (Var "$panic")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.InterfaceType [])))) (Val UntypedNil))))))
+  (App (Val doExecute)
+  (App (Val notModelled) (Val #())))
+  (App (Val doExecute)
+  (Val #()))))
+  (Val #())))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Val #()))
+  (App (Var "$oldf") (Val #()))))))))))))))
+  (Val #())))
+
+/-- The helper `callString` of the model (not a function of package `fmt`): `s.String()`, as
+`callError` calls `Error()` (stuck where Go's `catchPanic` recovers a panic of the method). Goose's
+translation (by the goose of this revision) of
+
+```go
+func callString(s interface{ String() string }) {
+	defer func() {
+		if recover() != nil {
+			notModelled()
+		}
+	}()
+	s.String()
+}
+```
+
+with these edits: goose's `FuncResolve f [] #()` of a helper of this file replaced by `f`. -/
+noncomputable def callString : val :=
+  (LamV "s"
+  (Seq (App (Val wrapDeferRecover)
+  (Lam "$defer"
+  (Lam "$panic"
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])))) (Var "s"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))]) go!"String"))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])))) (Var "s"))) (Val #())))))
+  (App (Val doExecute)
+  (Let "$f" (Lam BAnon
+  (Seq (App (Val exceptionDo)
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.InterfaceType [])))) (Pair (App (Val recoverPanic)
+  (Var "$panic")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.InterfaceType [])))) (Val UntypedNil))))))
+  (App (Val doExecute)
+  (App (Val notModelled) (Val #())))
+  (App (Val doExecute)
+  (Val #()))))
+  (Val #())))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Val #()))
+  (App (Var "$oldf") (Val #()))))))))))))))
+  (Val #())))
+
 /-- The helper `visitArg` of the model (not a function of package `fmt`) calls the methods of x that Go's printArg calls under the directive (verb, sharpV), and nothing else, and reads the bytes of a `[]byte` (Go's `fmtBytes`, under every verb but `%T` and `%p`, as printArg's type switch takes it before handleMethods); the output is not modelled. Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
 
 ```go
@@ -2709,14 +2795,14 @@ func visitArg(x any, verb byte, sharpV bool, wrapErrs bool) {
 		}
 	} else if verb == 'v' || verb == 's' || verb == 'x' || verb == 'X' || verb == 'q' {
 		if e, ok := x.(error); ok {
-			e.Error()
+			callError(e)
 			return
 		}
 		if s, ok := x.(interface{ String() string }); ok {
 			if _, ok := x.(interface{ CanInterface() bool }); ok {
 				notModelled() // a reflect.Value, which printArg unwraps
 			}
-			s.String()
+			callString(s)
 			return
 		}
 	}
@@ -2780,7 +2866,8 @@ noncomputable def visitArg : val :=
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))]) go!"String"))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])))) (Var "s"))) (Val #()))))))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])))) (Var "s"))
+  (App (Val callString) (Var "$a0")))))))
   (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"CanInterface" (go.signature.Signature [] false [go.bool]))])))) (App (Val (GoInstruction (GoLoad go.any))) (Var "x")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
@@ -2818,7 +2905,8 @@ noncomputable def visitArg : val :=
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve go.error go!"Error"))) (App (Val (GoInstruction (GoLoad go.error))) (Var "e"))) (Val #()))))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.error))) (Var "e"))
+  (App (Val callError) (Var "$a0")))))
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
@@ -3361,7 +3449,7 @@ under a method verb (Go's `printArg` unwraps it), reflection into a
 value of another kind than an integer or a string (a struct, a pointer under `%v`, a slice other than
 a `[]byte`, a map),
 `%w` of an error under `Sprintf`. Where Go recovers a panic of an argument's method (`catchPanic`),
-the model panics with it (less defined). `%p` of a pointer, func, map, chan or slice is an arbitrary
+the model is stuck (`callError`, `callString`: less defined). `%p` of a pointer, func, map, chan or slice is an arbitrary
 string, without reading memory, as Go's `fmtPointer` prints the address; `%p` of a value of another
 kind is an arbitrary string too, where Go prints it by reflection (`badVerb`) with no method call
 but reading the memory it reaches: the specs admit under `%p` only arguments of those kinds and
