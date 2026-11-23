@@ -37,7 +37,8 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   state (`GooseLocalGS`), from a client-chosen precondition `P L` of the
   generation's local ghost state `L`, which each generation's proof guarantees
   for the next generation after its crash, from its persistent `crashed` token (exclusive with the `notCrashed` that its state interpretation owns,
-  `GooseLang/CrashToken.lean`). There are no crash reasoning principles yet
+  `GooseLang/CrashToken.lean`) and a later credit `£ 1` (example:
+  `ProgramLogic/GenStartTest.lean`). There are no crash reasoning principles yet
   (no `crash_own`) beyond the crash-token update (`ncfupd`,
   `GooseLang/NotCrashed.lean`), by which a ghost step may use `notCrashed`
   (to open an invariant `inv N (P ∨ crashed ∗ tok)` shared with later

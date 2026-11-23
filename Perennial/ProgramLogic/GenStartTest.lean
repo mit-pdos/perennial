@@ -269,12 +269,9 @@ theorem wp_gen [GoGlobalContext] [hG : HeapGS .hasLC GF] :
   · -- the program: the second call returns the epoch of the first one's witness
     unfold boot
     wp_apply wp_Epoch_wit $$ []
-    · itrivial
     iintro %n #Hw
     wp_apply wp_Epoch n $$ [Hw]
     · iexact Hw
-    iintro _
-    wp_auto
     ipureintro
     exact ⟨_, rfl⟩
   · -- the crash obligation: `token γt` rules out the crash side, and the credit strips the
