@@ -115,6 +115,7 @@ public import Perennial.Proof.github_com.goose_lang.primitive.Link
 public import Perennial.Proof.github_com.goose_lang.primitive.Mutex__Lock
 public import Perennial.Proof.github_com.goose_lang.primitive.Mutex__Unlock
 public import Perennial.Proof.github_com.goose_lang.primitive.NewProph
+public import Perennial.Proof.github_com.goose_lang.primitive.ProphId__Resolve
 public import Perennial.Proof.github_com.goose_lang.primitive.ProphId__ResolveBool
 public import Perennial.Proof.github_com.goose_lang.primitive.ProphId__ResolveU64
 public import Perennial.Proof.github_com.goose_lang.primitive.RandomUint64
@@ -131,6 +132,7 @@ public import Perennial.Spec.github_com.goose_lang.primitive.Assume
 public import Perennial.Spec.github_com.goose_lang.primitive.Mutex__Lock
 public import Perennial.Spec.github_com.goose_lang.primitive.Mutex__Unlock
 public import Perennial.Spec.github_com.goose_lang.primitive.NewProph
+public import Perennial.Spec.github_com.goose_lang.primitive.ProphId__Resolve
 public import Perennial.Spec.github_com.goose_lang.primitive.ProphId__ResolveBool
 public import Perennial.Spec.github_com.goose_lang.primitive.ProphId__ResolveU64
 public import Perennial.Spec.github_com.goose_lang.primitive.RandomUint64
