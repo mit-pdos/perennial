@@ -144,7 +144,11 @@ with `arbitrary()` replaced by `ArbitraryInt`, `arbitraryString()` by `fmt.arbit
 (every string), and `arbitraryFuncPtr()` by `GoPrealloc` (some non-null address, owning nothing:
 code that dereferences `frame.Func` cannot be proved). The load and store of `ci.callers` make
 it panic (stuck) on a nil `ci` and race with a concurrent access to `*ci`, as Go's; it leaves
-`*ci` unchanged, where Go advances it, which no caller observes (the fields are unexported).
+`*ci` unchanged, where Go advances it, which no caller observes (the fields are unexported). It never reads the
+program counters `ci.callers` points to, which Go's reads (`ci.callers[0]`): a concurrent write
+to that slice races in Go and not in the model. The race is on words Go reads only to look them
+up (any value gives some frames, a garbage one is skipped, and the model's frames are arbitrary),
+so no outcome of it is missing from the model.
 Every exported field of the frame (`PC`, `Func`, nil or not, `Function`, `File`, `Line`,
 `Entry`) and `more` is arbitrary, a superset of what Go returns (`goose/model/runtime/callers_test.go`:
 a nil `Func` for a frame of a function inlined into its caller, `Function`/`File`/`Line` of the
