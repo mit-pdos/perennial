@@ -1115,7 +1115,7 @@ noncomputable instance moduledata_access_load_NotInHeap (l : Loc) (v : runtime.m
  by
   solve_pointsto_access_struct
 
-noncomputable instance moduledata_access_store_NotInHeap (l : Loc) (v : runtime.moduledata) (NotInHeap' : internal.runtime.sys.NotInHeap) :
+noncomputable instance moduledata_access_store_NotInHeap (l : Loc) (v : runtime.moduledata) (NotInHeap' : _root_.Perennial.internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.moduledata go!"NotInHeap" l) v.NotInHeap' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.moduledata go!"NotInHeap" l) NotInHeap' (DFrac.own 1))
@@ -1991,7 +1991,7 @@ noncomputable instance «specialBubble_access_load__#0» (l : Loc) (v : runtime.
  by
   solve_pointsto_access_struct
 
-noncomputable instance «specialBubble_access_store__#0» (l : Loc) (v : runtime.specialBubble) («_#0'» : internal.runtime.sys.NotInHeap) :
+noncomputable instance «specialBubble_access_store__#0» (l : Loc) (v : runtime.specialBubble) («_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.specialBubble go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.specialBubble go!"_#0" l) «_#0'» (DFrac.own 1))
@@ -2196,7 +2196,7 @@ noncomputable instance «traceRegionAllocBlock_access_load__#0» (l : Loc) (v : 
  by
   solve_pointsto_access_struct
 
-noncomputable instance «traceRegionAllocBlock_access_store__#0» (l : Loc) (v : runtime.traceRegionAllocBlock) («_#0'» : internal.runtime.sys.NotInHeap) :
+noncomputable instance «traceRegionAllocBlock_access_store__#0» (l : Loc) (v : runtime.traceRegionAllocBlock) («_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"_#0" l) «_#0'» (DFrac.own 1))

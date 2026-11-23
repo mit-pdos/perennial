@@ -867,7 +867,7 @@ noncomputable instance typing_access_load_proph (l : Loc) (v : github_com.mit_pd
  by
   solve_pointsto_access_struct
 
-noncomputable instance typing_access_store_proph (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing) (proph' : github_com.goose_lang.primitive.ProphId) :
+noncomputable instance typing_access_store_proph (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing) (proph' : _root_.Perennial.github_com.goose_lang.primitive.ProphId) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing go!"proph" l) v.proph' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing go!"proph" l) proph' (DFrac.own 1))

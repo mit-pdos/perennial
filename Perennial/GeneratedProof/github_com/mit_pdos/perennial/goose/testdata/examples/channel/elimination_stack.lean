@@ -48,7 +48,7 @@ noncomputable instance LockedStack_access_load_mu (l : Loc) (v : github_com.mit_
  by
   solve_pointsto_access_struct
 
-noncomputable instance LockedStack_access_store_mu (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack) (mu' : sync.Mutex) :
+noncomputable instance LockedStack_access_store_mu (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack) (mu' : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack go!"mu" l) mu' (DFrac.own 1))
