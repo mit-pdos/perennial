@@ -1993,24 +1993,12 @@ noncomputable instance «equals_unfold_struct#1768b3d4» [GooseExts] [GoGlobalCo
 @[reducible] noncomputable def «struct#1768b3d4».underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType «struct#1768b3d4».fields)
 
-opaque hchan.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
 @[reducible] noncomputable def dlogger.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   dloggerFake.ty
 
-opaque TypeAssertionError.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
 opaque boundsError.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque typeCacheBucket.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
-opaque itabTableType.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
 opaque linknameIter.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
-opaque typePointers.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
-opaque finalizer.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
 opaque workType.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
@@ -2018,27 +2006,16 @@ opaque gcControllerState.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
 opaque mheap.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque mspan.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
-opaque specialfinalizer.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
-opaque specialCheckFinalizer.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
 opaque ptabEntry.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
-opaque iface.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
-opaque eface.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
 opaque m.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
 opaque _func.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque itab [GooseExts] [GoGlobalContext] : go.GoType
+@[reducible] noncomputable def itab.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/abi.ITab" [])
 
 opaque pcHeader.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
-opaque moduledata.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
 opaque srcFunc.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
@@ -2050,35 +2027,46 @@ opaque traceWriter.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
 opaque traceMap.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque nameOff [GooseExts] [GoGlobalContext] : go.GoType
+@[reducible] noncomputable def nameOff.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/abi.NameOff" [])
 
-opaque typeOff [GooseExts] [GoGlobalContext] : go.GoType
+@[reducible] noncomputable def typeOff.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/abi.TypeOff" [])
 
-opaque textOff [GooseExts] [GoGlobalContext] : go.GoType
+@[reducible] noncomputable def textOff.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/abi.TextOff" [])
 
-opaque _type [GooseExts] [GoGlobalContext] : go.GoType
+@[reducible] noncomputable def _type.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/abi.Type" [])
 
 opaque rtype.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque uncommontype [GooseExts] [GoGlobalContext] : go.GoType
+@[reducible] noncomputable def uncommontype.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/abi.UncommonType" [])
 
-opaque interfacetype [GooseExts] [GoGlobalContext] : go.GoType
+@[reducible] noncomputable def interfacetype.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/abi.InterfaceType" [])
 
-opaque arraytype [GooseExts] [GoGlobalContext] : go.GoType
+@[reducible] noncomputable def arraytype.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/abi.ArrayType" [])
 
-opaque chantype [GooseExts] [GoGlobalContext] : go.GoType
+@[reducible] noncomputable def chantype.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/abi.ChanType" [])
 
-opaque slicetype [GooseExts] [GoGlobalContext] : go.GoType
+@[reducible] noncomputable def slicetype.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/abi.SliceType" [])
 
-opaque functype [GooseExts] [GoGlobalContext] : go.GoType
+@[reducible] noncomputable def functype.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/abi.FuncType" [])
 
-opaque ptrtype [GooseExts] [GoGlobalContext] : go.GoType
+@[reducible] noncomputable def ptrtype.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/abi.PtrType" [])
 
-opaque name [GooseExts] [GoGlobalContext] : go.GoType
+@[reducible] noncomputable def name.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/abi.Name" [])
 
-opaque structtype [GooseExts] [GoGlobalContext] : go.GoType
-
-opaque _typePair.underlying [GooseExts] [GoGlobalContext] : go.GoType
+@[reducible] noncomputable def structtype.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"internal/abi.StructType" [])
 
 opaque hashSize [GooseExts] [GoGlobalContext] : val
 
@@ -10941,12 +10929,6 @@ abbrev cgoErrorMsg [GooseExts] : Type := w64
 @[reducible] noncomputable def cgoErrorMsg.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.int
 
-opaque hchan.nonempty_type : NonemptyType.{0}
-def hchan : Type := hchan.nonempty_type.type
-instance hchan.nonempty : Nonempty hchan := hchan.nonempty_type.property
-opaque hchan.zero_val : ZeroVal hchan := ⟨Classical.ofNonempty⟩
-attribute [instance] hchan.zero_val
-
 structure waitq [GooseExts] where
   mk ::
   first' : Loc
@@ -10968,39 +10950,6 @@ noncomputable instance equals_unfold_waitq [GooseExts] [GoGlobalContext] :
 
 @[reducible] noncomputable def waitq.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType waitq.fields)
-
-abbrev guintptr [GooseExts] : Type := w64
-
-@[reducible] noncomputable def guintptr.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
-  go.uintptr
-
-structure coro [GooseExts] where
-  mk ::
-  gp' : guintptr
-  f' : GoFunc
-  mp' : Loc
-  lockedExt' : w32
-  lockedInt' : w32
-
-noncomputable instance coro.zero_val [GooseExts] : ZeroVal coro :=
-  ⟨coro.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-
-@[reducible] noncomputable def coro.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"gp" guintptr.ty),
-(go.field_decl.FieldDecl go!"f" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType coro.ty)] false []))),
-(go.field_decl.FieldDecl go!"mp" (go.GoType.PointerType m.ty)),
-(go.field_decl.FieldDecl go!"lockedExt" go.uint32),
-(go.field_decl.FieldDecl go!"lockedInt" go.uint32)]
-
-@[irreducible] noncomputable def coro.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  coro.fieldsUnsealed
-
-noncomputable instance equals_unfold_coro [GooseExts] [GoGlobalContext] :
-    EqualsUnfold coro.fields coro.fieldsUnsealed :=
-  ⟨by unfold coro.fields; rfl⟩
-
-@[reducible] noncomputable def coro.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType coro.fields)
 
 structure lockRankStruct [GooseExts] where
   mk ::
@@ -11042,6 +10991,83 @@ noncomputable instance equals_unfold_mutex [GooseExts] [GoGlobalContext] :
 
 @[reducible] noncomputable def mutex.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType mutex.fields)
+
+structure hchan [GooseExts] where
+  mk ::
+  qcount' : w64
+  dataqsiz' : w64
+  buf' : Loc
+  elemsize' : w16
+  closed' : w32
+  timer' : Loc
+  elemtype' : Loc
+  sendx' : w64
+  recvx' : w64
+  recvq' : waitq
+  sendq' : waitq
+  bubble' : Loc
+  lock' : mutex
+
+noncomputable instance hchan.zero_val [GooseExts] : ZeroVal hchan :=
+  ⟨hchan.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def hchan.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"qcount" go.uint),
+(go.field_decl.FieldDecl go!"dataqsiz" go.uint),
+(go.field_decl.FieldDecl go!"buf" «unsafe».Pointer),
+(go.field_decl.FieldDecl go!"elemsize" go.uint16),
+(go.field_decl.FieldDecl go!"closed" go.uint32),
+(go.field_decl.FieldDecl go!"timer" (go.GoType.PointerType timer.ty)),
+(go.field_decl.FieldDecl go!"elemtype" (go.GoType.PointerType _type.ty)),
+(go.field_decl.FieldDecl go!"sendx" go.uint),
+(go.field_decl.FieldDecl go!"recvx" go.uint),
+(go.field_decl.FieldDecl go!"recvq" waitq.ty),
+(go.field_decl.FieldDecl go!"sendq" waitq.ty),
+(go.field_decl.FieldDecl go!"bubble" (go.GoType.PointerType synctestBubble.ty)),
+(go.field_decl.FieldDecl go!"lock" mutex.ty)]
+
+@[irreducible] noncomputable def hchan.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  hchan.fieldsUnsealed
+
+noncomputable instance equals_unfold_hchan [GooseExts] [GoGlobalContext] :
+    EqualsUnfold hchan.fields hchan.fieldsUnsealed :=
+  ⟨by unfold hchan.fields; rfl⟩
+
+@[reducible] noncomputable def hchan.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType hchan.fields)
+
+abbrev guintptr [GooseExts] : Type := w64
+
+@[reducible] noncomputable def guintptr.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  go.uintptr
+
+structure coro [GooseExts] where
+  mk ::
+  gp' : guintptr
+  f' : GoFunc
+  mp' : Loc
+  lockedExt' : w32
+  lockedInt' : w32
+
+noncomputable instance coro.zero_val [GooseExts] : ZeroVal coro :=
+  ⟨coro.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def coro.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"gp" guintptr.ty),
+(go.field_decl.FieldDecl go!"f" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType coro.ty)] false []))),
+(go.field_decl.FieldDecl go!"mp" (go.GoType.PointerType m.ty)),
+(go.field_decl.FieldDecl go!"lockedExt" go.uint32),
+(go.field_decl.FieldDecl go!"lockedInt" go.uint32)]
+
+@[irreducible] noncomputable def coro.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  coro.fieldsUnsealed
+
+noncomputable instance equals_unfold_coro [GooseExts] [GoGlobalContext] :
+    EqualsUnfold coro.fields coro.fieldsUnsealed :=
+  ⟨by unfold coro.fields; rfl⟩
+
+@[reducible] noncomputable def coro.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType coro.fields)
 
 structure cpuProfile [GooseExts] where
   mk ::
@@ -11844,11 +11870,31 @@ abbrev Error [GooseExts] : Type := GoInterface
 @[reducible] noncomputable def Error.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Error" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"RuntimeError" (go.signature.Signature [] false []))])
 
-opaque TypeAssertionError.nonempty_type : NonemptyType.{0}
-def TypeAssertionError : Type := TypeAssertionError.nonempty_type.type
-instance TypeAssertionError.nonempty : Nonempty TypeAssertionError := TypeAssertionError.nonempty_type.property
-opaque TypeAssertionError.zero_val : ZeroVal TypeAssertionError := ⟨Classical.ofNonempty⟩
-attribute [instance] TypeAssertionError.zero_val
+structure TypeAssertionError [GooseExts] where
+  mk ::
+  _interface' : Loc
+  concrete' : Loc
+  asserted' : Loc
+  missingMethod' : GoString
+
+noncomputable instance TypeAssertionError.zero_val [GooseExts] : ZeroVal TypeAssertionError :=
+  ⟨TypeAssertionError.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def TypeAssertionError.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"_interface" (go.GoType.PointerType _type.ty)),
+(go.field_decl.FieldDecl go!"concrete" (go.GoType.PointerType _type.ty)),
+(go.field_decl.FieldDecl go!"asserted" (go.GoType.PointerType _type.ty)),
+(go.field_decl.FieldDecl go!"missingMethod" go.string)]
+
+@[irreducible] noncomputable def TypeAssertionError.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  TypeAssertionError.fieldsUnsealed
+
+noncomputable instance equals_unfold_TypeAssertionError [GooseExts] [GoGlobalContext] :
+    EqualsUnfold TypeAssertionError.fields TypeAssertionError.fieldsUnsealed :=
+  ⟨by unfold TypeAssertionError.fields; rfl⟩
+
+@[reducible] noncomputable def TypeAssertionError.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType TypeAssertionError.fields)
 
 abbrev errorString [GooseExts] : Type := GoString
 
@@ -11893,11 +11939,25 @@ abbrev stringer [GooseExts] : Type := GoInterface
 @[reducible] noncomputable def stringer.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])
 
-opaque typeCacheBucket.nonempty_type : NonemptyType.{0}
-def typeCacheBucket : Type := typeCacheBucket.nonempty_type.type
-instance typeCacheBucket.nonempty : Nonempty typeCacheBucket := typeCacheBucket.nonempty_type.property
-opaque typeCacheBucket.zero_val : ZeroVal typeCacheBucket := ⟨Classical.ofNonempty⟩
-attribute [instance] typeCacheBucket.zero_val
+structure typeCacheBucket [GooseExts] where
+  mk ::
+  t' : (GoArray Loc 4)
+
+noncomputable instance typeCacheBucket.zero_val [GooseExts] : ZeroVal typeCacheBucket :=
+  ⟨typeCacheBucket.mk zeroValDef⟩
+
+@[reducible] noncomputable def typeCacheBucket.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"t" (go.GoType.ArrayType 4 (go.GoType.PointerType _type.ty)))]
+
+@[irreducible] noncomputable def typeCacheBucket.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  typeCacheBucket.fieldsUnsealed
+
+noncomputable instance equals_unfold_typeCacheBucket [GooseExts] [GoGlobalContext] :
+    EqualsUnfold typeCacheBucket.fields typeCacheBucket.fieldsUnsealed :=
+  ⟨by unfold typeCacheBucket.fields; rfl⟩
+
+@[reducible] noncomputable def typeCacheBucket.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType typeCacheBucket.fields)
 
 structure bitvector [GooseExts] where
   mk ::
@@ -12029,11 +12089,29 @@ noncomputable instance equals_unfold_timeHistogram [GooseExts] [GoGlobalContext]
 @[reducible] noncomputable def timeHistogram.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType timeHistogram.fields)
 
-opaque itabTableType.nonempty_type : NonemptyType.{0}
-def itabTableType : Type := itabTableType.nonempty_type.type
-instance itabTableType.nonempty : Nonempty itabTableType := itabTableType.nonempty_type.property
-opaque itabTableType.zero_val : ZeroVal itabTableType := ⟨Classical.ofNonempty⟩
-attribute [instance] itabTableType.zero_val
+structure itabTableType [GooseExts] where
+  mk ::
+  size' : w64
+  count' : w64
+  entries' : (GoArray Loc 512)
+
+noncomputable instance itabTableType.zero_val [GooseExts] : ZeroVal itabTableType :=
+  ⟨itabTableType.mk zeroValDef zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def itabTableType.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"size" go.uintptr),
+(go.field_decl.FieldDecl go!"count" go.uintptr),
+(go.field_decl.FieldDecl go!"entries" (go.GoType.ArrayType 512 (go.GoType.PointerType itab.ty)))]
+
+@[irreducible] noncomputable def itabTableType.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  itabTableType.fieldsUnsealed
+
+noncomputable instance equals_unfold_itabTableType [GooseExts] [GoGlobalContext] :
+    EqualsUnfold itabTableType.fields itabTableType.fieldsUnsealed :=
+  ⟨by unfold itabTableType.fields; rfl⟩
+
+@[reducible] noncomputable def itabTableType.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType itabTableType.fields)
 
 abbrev uint16InterfacePtr [GooseExts] : Type := w16
 
@@ -12263,11 +12341,31 @@ noncomputable instance equals_unfold_notInHeap [GooseExts] [GoGlobalContext] :
 @[reducible] noncomputable def notInHeap.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType notInHeap.fields)
 
-opaque typePointers.nonempty_type : NonemptyType.{0}
-def typePointers : Type := typePointers.nonempty_type.type
-instance typePointers.nonempty : Nonempty typePointers := typePointers.nonempty_type.property
-opaque typePointers.zero_val : ZeroVal typePointers := ⟨Classical.ofNonempty⟩
-attribute [instance] typePointers.zero_val
+structure typePointers [GooseExts] where
+  mk ::
+  elem' : w64
+  addr' : w64
+  mask' : w64
+  typ' : Loc
+
+noncomputable instance typePointers.zero_val [GooseExts] : ZeroVal typePointers :=
+  ⟨typePointers.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def typePointers.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"elem" go.uintptr),
+(go.field_decl.FieldDecl go!"addr" go.uintptr),
+(go.field_decl.FieldDecl go!"mask" go.uintptr),
+(go.field_decl.FieldDecl go!"typ" (go.GoType.PointerType _type.ty))]
+
+@[irreducible] noncomputable def typePointers.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  typePointers.fieldsUnsealed
+
+noncomputable instance equals_unfold_typePointers [GooseExts] [GoGlobalContext] :
+    EqualsUnfold typePointers.fields typePointers.fieldsUnsealed :=
+  ⟨by unfold typePointers.fields; rfl⟩
+
+@[reducible] noncomputable def typePointers.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType typePointers.fields)
 
 structure markBits [GooseExts] where
   mk ::
@@ -13111,11 +13209,33 @@ noncomputable instance equals_unfold_metricName [GooseExts] [GoGlobalContext] :
 @[reducible] noncomputable def metricName.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType metricName.fields)
 
-opaque finalizer.nonempty_type : NonemptyType.{0}
-def finalizer : Type := finalizer.nonempty_type.type
-instance finalizer.nonempty : Nonempty finalizer := finalizer.nonempty_type.property
-opaque finalizer.zero_val : ZeroVal finalizer := ⟨Classical.ofNonempty⟩
-attribute [instance] finalizer.zero_val
+structure finalizer [GooseExts] where
+  mk ::
+  fn' : Loc
+  arg' : Loc
+  nret' : w64
+  fint' : Loc
+  ot' : Loc
+
+noncomputable instance finalizer.zero_val [GooseExts] : ZeroVal finalizer :=
+  ⟨finalizer.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def finalizer.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"fn" (go.GoType.PointerType funcval.ty)),
+(go.field_decl.FieldDecl go!"arg" «unsafe».Pointer),
+(go.field_decl.FieldDecl go!"nret" go.uintptr),
+(go.field_decl.FieldDecl go!"fint" (go.GoType.PointerType _type.ty)),
+(go.field_decl.FieldDecl go!"ot" (go.GoType.PointerType ptrtype.ty))]
+
+@[irreducible] noncomputable def finalizer.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  finalizer.fieldsUnsealed
+
+noncomputable instance equals_unfold_finalizer [GooseExts] [GoGlobalContext] :
+    EqualsUnfold finalizer.fields finalizer.fieldsUnsealed :=
+  ⟨by unfold finalizer.fields; rfl⟩
+
+@[reducible] noncomputable def finalizer.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType finalizer.fields)
 
 structure finBlock [GooseExts] where
   mk ::
@@ -14186,11 +14306,101 @@ noncomputable instance equals_unfold_mSpanStateBox [GooseExts] [GoGlobalContext]
 @[reducible] noncomputable def mSpanStateBox.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType mSpanStateBox.fields)
 
-opaque mspan.nonempty_type : NonemptyType.{0}
-def mspan : Type := mspan.nonempty_type.type
-instance mspan.nonempty : Nonempty mspan := mspan.nonempty_type.property
-opaque mspan.zero_val : ZeroVal mspan := ⟨Classical.ofNonempty⟩
-attribute [instance] mspan.zero_val
+structure addrRange [GooseExts] where
+  mk ::
+  base' : offAddr
+  limit' : offAddr
+
+noncomputable instance addrRange.zero_val [GooseExts] : ZeroVal addrRange :=
+  ⟨addrRange.mk zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def addrRange.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"base" offAddr.ty),
+(go.field_decl.FieldDecl go!"limit" offAddr.ty)]
+
+@[irreducible] noncomputable def addrRange.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  addrRange.fieldsUnsealed
+
+noncomputable instance equals_unfold_addrRange [GooseExts] [GoGlobalContext] :
+    EqualsUnfold addrRange.fields addrRange.fieldsUnsealed :=
+  ⟨by unfold addrRange.fields; rfl⟩
+
+@[reducible] noncomputable def addrRange.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType addrRange.fields)
+
+structure mspan [GooseExts] where
+  mk ::
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
+  next' : Loc
+  prev' : Loc
+  list' : Loc
+  startAddr' : w64
+  npages' : w64
+  manualFreeList' : gclinkptr
+  freeindex' : w16
+  nelems' : w16
+  freeIndexForScan' : w16
+  allocCache' : w64
+  allocBits' : Loc
+  gcmarkBits' : Loc
+  pinnerBits' : Loc
+  sweepgen' : w32
+  divMul' : w32
+  allocCount' : w16
+  spanclass' : spanClass
+  state' : mSpanStateBox
+  needzero' : w8
+  isUserArenaChunk' : Bool
+  allocCountBeforeCache' : w16
+  elemsize' : w64
+  limit' : w64
+  speciallock' : mutex
+  specials' : Loc
+  userArenaChunkFree' : addrRange
+  largeType' : Loc
+
+noncomputable instance mspan.zero_val [GooseExts] : ZeroVal mspan :=
+  ⟨mspan.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def mspan.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+(go.field_decl.FieldDecl go!"next" (go.GoType.PointerType mspan.ty)),
+(go.field_decl.FieldDecl go!"prev" (go.GoType.PointerType mspan.ty)),
+(go.field_decl.FieldDecl go!"list" (go.GoType.PointerType mSpanList.ty)),
+(go.field_decl.FieldDecl go!"startAddr" go.uintptr),
+(go.field_decl.FieldDecl go!"npages" go.uintptr),
+(go.field_decl.FieldDecl go!"manualFreeList" gclinkptr.ty),
+(go.field_decl.FieldDecl go!"freeindex" go.uint16),
+(go.field_decl.FieldDecl go!"nelems" go.uint16),
+(go.field_decl.FieldDecl go!"freeIndexForScan" go.uint16),
+(go.field_decl.FieldDecl go!"allocCache" go.uint64),
+(go.field_decl.FieldDecl go!"allocBits" (go.GoType.PointerType gcBits.ty)),
+(go.field_decl.FieldDecl go!"gcmarkBits" (go.GoType.PointerType gcBits.ty)),
+(go.field_decl.FieldDecl go!"pinnerBits" (go.GoType.PointerType gcBits.ty)),
+(go.field_decl.FieldDecl go!"sweepgen" go.uint32),
+(go.field_decl.FieldDecl go!"divMul" go.uint32),
+(go.field_decl.FieldDecl go!"allocCount" go.uint16),
+(go.field_decl.FieldDecl go!"spanclass" spanClass.ty),
+(go.field_decl.FieldDecl go!"state" mSpanStateBox.ty),
+(go.field_decl.FieldDecl go!"needzero" go.uint8),
+(go.field_decl.FieldDecl go!"isUserArenaChunk" go.bool),
+(go.field_decl.FieldDecl go!"allocCountBeforeCache" go.uint16),
+(go.field_decl.FieldDecl go!"elemsize" go.uintptr),
+(go.field_decl.FieldDecl go!"limit" go.uintptr),
+(go.field_decl.FieldDecl go!"speciallock" mutex.ty),
+(go.field_decl.FieldDecl go!"specials" (go.GoType.PointerType special.ty)),
+(go.field_decl.FieldDecl go!"userArenaChunkFree" addrRange.ty),
+(go.field_decl.FieldDecl go!"largeType" (go.GoType.PointerType _type.ty))]
+
+@[irreducible] noncomputable def mspan.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  mspan.fieldsUnsealed
+
+noncomputable instance equals_unfold_mspan [GooseExts] [GoGlobalContext] :
+    EqualsUnfold mspan.fields mspan.fieldsUnsealed :=
+  ⟨by unfold mspan.fields; rfl⟩
+
+@[reducible] noncomputable def mspan.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType mspan.fields)
 
 abbrev arenaIdx [GooseExts] : Type := w64
 
@@ -14252,11 +14462,35 @@ noncomputable instance equals_unfold_special [GooseExts] [GoGlobalContext] :
 @[reducible] noncomputable def special.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType special.fields)
 
-opaque specialfinalizer.nonempty_type : NonemptyType.{0}
-def specialfinalizer : Type := specialfinalizer.nonempty_type.type
-instance specialfinalizer.nonempty : Nonempty specialfinalizer := specialfinalizer.nonempty_type.property
-opaque specialfinalizer.zero_val : ZeroVal specialfinalizer := ⟨Classical.ofNonempty⟩
-attribute [instance] specialfinalizer.zero_val
+structure specialfinalizer [GooseExts] where
+  mk ::
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
+  special' : special
+  fn' : Loc
+  nret' : w64
+  fint' : Loc
+  ot' : Loc
+
+noncomputable instance specialfinalizer.zero_val [GooseExts] : ZeroVal specialfinalizer :=
+  ⟨specialfinalizer.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def specialfinalizer.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+(go.field_decl.FieldDecl go!"special" special.ty),
+(go.field_decl.FieldDecl go!"fn" (go.GoType.PointerType funcval.ty)),
+(go.field_decl.FieldDecl go!"nret" go.uintptr),
+(go.field_decl.FieldDecl go!"fint" (go.GoType.PointerType _type.ty)),
+(go.field_decl.FieldDecl go!"ot" (go.GoType.PointerType ptrtype.ty))]
+
+@[irreducible] noncomputable def specialfinalizer.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  specialfinalizer.fieldsUnsealed
+
+noncomputable instance equals_unfold_specialfinalizer [GooseExts] [GoGlobalContext] :
+    EqualsUnfold specialfinalizer.fields specialfinalizer.fieldsUnsealed :=
+  ⟨by unfold specialfinalizer.fields; rfl⟩
+
+@[reducible] noncomputable def specialfinalizer.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType specialfinalizer.fields)
 
 structure specialCleanup [GooseExts] where
   mk ::
@@ -14284,11 +14518,35 @@ noncomputable instance equals_unfold_specialCleanup [GooseExts] [GoGlobalContext
 @[reducible] noncomputable def specialCleanup.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType specialCleanup.fields)
 
-opaque specialCheckFinalizer.nonempty_type : NonemptyType.{0}
-def specialCheckFinalizer : Type := specialCheckFinalizer.nonempty_type.type
-instance specialCheckFinalizer.nonempty : Nonempty specialCheckFinalizer := specialCheckFinalizer.nonempty_type.property
-opaque specialCheckFinalizer.zero_val : ZeroVal specialCheckFinalizer := ⟨Classical.ofNonempty⟩
-attribute [instance] specialCheckFinalizer.zero_val
+structure specialCheckFinalizer [GooseExts] where
+  mk ::
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
+  special' : special
+  cleanupID' : w64
+  createPC' : w64
+  funcPC' : w64
+  ptrType' : Loc
+
+noncomputable instance specialCheckFinalizer.zero_val [GooseExts] : ZeroVal specialCheckFinalizer :=
+  ⟨specialCheckFinalizer.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def specialCheckFinalizer.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+(go.field_decl.FieldDecl go!"special" special.ty),
+(go.field_decl.FieldDecl go!"cleanupID" go.uint64),
+(go.field_decl.FieldDecl go!"createPC" go.uintptr),
+(go.field_decl.FieldDecl go!"funcPC" go.uintptr),
+(go.field_decl.FieldDecl go!"ptrType" (go.GoType.PointerType _type.ty))]
+
+@[irreducible] noncomputable def specialCheckFinalizer.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  specialCheckFinalizer.fieldsUnsealed
+
+noncomputable instance equals_unfold_specialCheckFinalizer [GooseExts] [GoGlobalContext] :
+    EqualsUnfold specialCheckFinalizer.fields specialCheckFinalizer.fieldsUnsealed :=
+  ⟨by unfold specialCheckFinalizer.fields; rfl⟩
+
+@[reducible] noncomputable def specialCheckFinalizer.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType specialCheckFinalizer.fields)
 
 structure specialTinyBlock [GooseExts] where
   mk ::
@@ -14955,28 +15213,6 @@ abbrev goroutineProfileStateHolder [GooseExts] : Type := _root_.Perennial.intern
 
 @[reducible] noncomputable def goroutineProfileStateHolder.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   _root_.Perennial.internal.runtime.atomic.Uint32.ty
-
-structure addrRange [GooseExts] where
-  mk ::
-  base' : offAddr
-  limit' : offAddr
-
-noncomputable instance addrRange.zero_val [GooseExts] : ZeroVal addrRange :=
-  ⟨addrRange.mk zeroValDef zeroValDef⟩
-
-@[reducible] noncomputable def addrRange.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"base" offAddr.ty),
-(go.field_decl.FieldDecl go!"limit" offAddr.ty)]
-
-@[irreducible] noncomputable def addrRange.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  addrRange.fieldsUnsealed
-
-noncomputable instance equals_unfold_addrRange [GooseExts] [GoGlobalContext] :
-    EqualsUnfold addrRange.fields addrRange.fieldsUnsealed :=
-  ⟨by unfold addrRange.fields; rfl⟩
-
-@[reducible] noncomputable def addrRange.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType addrRange.fields)
 
 structure spanSetBlockHeader [GooseExts] where
   mk ::
@@ -16251,17 +16487,49 @@ noncomputable instance equals_unfold_funcval [GooseExts] [GoGlobalContext] :
 @[reducible] noncomputable def funcval.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType funcval.fields)
 
-opaque iface.nonempty_type : NonemptyType.{0}
-def iface : Type := iface.nonempty_type.type
-instance iface.nonempty : Nonempty iface := iface.nonempty_type.property
-opaque iface.zero_val : ZeroVal iface := ⟨Classical.ofNonempty⟩
-attribute [instance] iface.zero_val
+structure iface [GooseExts] where
+  mk ::
+  tab' : Loc
+  data' : Loc
 
-opaque eface.nonempty_type : NonemptyType.{0}
-def eface : Type := eface.nonempty_type.type
-instance eface.nonempty : Nonempty eface := eface.nonempty_type.property
-opaque eface.zero_val : ZeroVal eface := ⟨Classical.ofNonempty⟩
-attribute [instance] eface.zero_val
+noncomputable instance iface.zero_val [GooseExts] : ZeroVal iface :=
+  ⟨iface.mk zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def iface.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"tab" (go.GoType.PointerType itab.ty)),
+(go.field_decl.FieldDecl go!"data" «unsafe».Pointer)]
+
+@[irreducible] noncomputable def iface.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  iface.fieldsUnsealed
+
+noncomputable instance equals_unfold_iface [GooseExts] [GoGlobalContext] :
+    EqualsUnfold iface.fields iface.fieldsUnsealed :=
+  ⟨by unfold iface.fields; rfl⟩
+
+@[reducible] noncomputable def iface.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType iface.fields)
+
+structure eface [GooseExts] where
+  mk ::
+  _type' : Loc
+  data' : Loc
+
+noncomputable instance eface.zero_val [GooseExts] : ZeroVal eface :=
+  ⟨eface.mk zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def eface.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"_type" (go.GoType.PointerType _type.ty)),
+(go.field_decl.FieldDecl go!"data" «unsafe».Pointer)]
+
+@[irreducible] noncomputable def eface.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  eface.fieldsUnsealed
+
+noncomputable instance equals_unfold_eface [GooseExts] [GoGlobalContext] :
+    EqualsUnfold eface.fields eface.fieldsUnsealed :=
+  ⟨by unfold eface.fields; rfl⟩
+
+@[reducible] noncomputable def eface.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType eface.fields)
 
 abbrev puintptr [GooseExts] : Type := w64
 
@@ -17763,11 +18031,115 @@ instance pcHeader.nonempty : Nonempty pcHeader := pcHeader.nonempty_type.propert
 opaque pcHeader.zero_val : ZeroVal pcHeader := ⟨Classical.ofNonempty⟩
 attribute [instance] pcHeader.zero_val
 
-opaque moduledata.nonempty_type : NonemptyType.{0}
-def moduledata : Type := moduledata.nonempty_type.type
-instance moduledata.nonempty : Nonempty moduledata := moduledata.nonempty_type.property
-opaque moduledata.zero_val : ZeroVal moduledata := ⟨Classical.ofNonempty⟩
-attribute [instance] moduledata.zero_val
+structure moduledata [GooseExts] where
+  mk ::
+  NotInHeap' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  pcHeader' : Loc
+  funcnametab' : GoSlice
+  cutab' : GoSlice
+  filetab' : GoSlice
+  pctab' : GoSlice
+  pclntable' : GoSlice
+  ftab' : GoSlice
+  findfunctab' : w64
+  minpc' : w64
+  maxpc' : w64
+  text' : w64
+  etext' : w64
+  noptrdata' : w64
+  enoptrdata' : w64
+  data' : w64
+  edata' : w64
+  bss' : w64
+  ebss' : w64
+  noptrbss' : w64
+  enoptrbss' : w64
+  covctrs' : w64
+  ecovctrs' : w64
+  end' : w64
+  gcdata' : w64
+  gcbss' : w64
+  types' : w64
+  etypes' : w64
+  rodata' : w64
+  gofunc' : w64
+  epclntab' : w64
+  textsectmap' : GoSlice
+  typelinks' : GoSlice
+  itablinks' : GoSlice
+  ptab' : GoSlice
+  pluginpath' : GoString
+  pkghashes' : GoSlice
+  inittasks' : GoSlice
+  modulename' : GoString
+  modulehashes' : GoSlice
+  hasmain' : w8
+  bad' : Bool
+  gcdatamask' : bitvector
+  gcbssmask' : bitvector
+  typemap' : GoMap
+  next' : Loc
+
+noncomputable instance moduledata.zero_val [GooseExts] : ZeroVal moduledata :=
+  ⟨moduledata.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def moduledata.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.EmbeddedField go!"NotInHeap" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+(go.field_decl.FieldDecl go!"pcHeader" (go.GoType.PointerType pcHeader.ty)),
+(go.field_decl.FieldDecl go!"funcnametab" (go.GoType.SliceType go.byte)),
+(go.field_decl.FieldDecl go!"cutab" (go.GoType.SliceType go.uint32)),
+(go.field_decl.FieldDecl go!"filetab" (go.GoType.SliceType go.byte)),
+(go.field_decl.FieldDecl go!"pctab" (go.GoType.SliceType go.byte)),
+(go.field_decl.FieldDecl go!"pclntable" (go.GoType.SliceType go.byte)),
+(go.field_decl.FieldDecl go!"ftab" (go.GoType.SliceType functab.ty)),
+(go.field_decl.FieldDecl go!"findfunctab" go.uintptr),
+(go.field_decl.FieldDecl go!"minpc" go.uintptr),
+(go.field_decl.FieldDecl go!"maxpc" go.uintptr),
+(go.field_decl.FieldDecl go!"text" go.uintptr),
+(go.field_decl.FieldDecl go!"etext" go.uintptr),
+(go.field_decl.FieldDecl go!"noptrdata" go.uintptr),
+(go.field_decl.FieldDecl go!"enoptrdata" go.uintptr),
+(go.field_decl.FieldDecl go!"data" go.uintptr),
+(go.field_decl.FieldDecl go!"edata" go.uintptr),
+(go.field_decl.FieldDecl go!"bss" go.uintptr),
+(go.field_decl.FieldDecl go!"ebss" go.uintptr),
+(go.field_decl.FieldDecl go!"noptrbss" go.uintptr),
+(go.field_decl.FieldDecl go!"enoptrbss" go.uintptr),
+(go.field_decl.FieldDecl go!"covctrs" go.uintptr),
+(go.field_decl.FieldDecl go!"ecovctrs" go.uintptr),
+(go.field_decl.FieldDecl go!"end" go.uintptr),
+(go.field_decl.FieldDecl go!"gcdata" go.uintptr),
+(go.field_decl.FieldDecl go!"gcbss" go.uintptr),
+(go.field_decl.FieldDecl go!"types" go.uintptr),
+(go.field_decl.FieldDecl go!"etypes" go.uintptr),
+(go.field_decl.FieldDecl go!"rodata" go.uintptr),
+(go.field_decl.FieldDecl go!"gofunc" go.uintptr),
+(go.field_decl.FieldDecl go!"epclntab" go.uintptr),
+(go.field_decl.FieldDecl go!"textsectmap" (go.GoType.SliceType textsect.ty)),
+(go.field_decl.FieldDecl go!"typelinks" (go.GoType.SliceType go.int32)),
+(go.field_decl.FieldDecl go!"itablinks" (go.GoType.SliceType (go.GoType.PointerType itab.ty))),
+(go.field_decl.FieldDecl go!"ptab" (go.GoType.SliceType ptabEntry.ty)),
+(go.field_decl.FieldDecl go!"pluginpath" go.string),
+(go.field_decl.FieldDecl go!"pkghashes" (go.GoType.SliceType modulehash.ty)),
+(go.field_decl.FieldDecl go!"inittasks" (go.GoType.SliceType (go.GoType.PointerType initTask.ty))),
+(go.field_decl.FieldDecl go!"modulename" go.string),
+(go.field_decl.FieldDecl go!"modulehashes" (go.GoType.SliceType modulehash.ty)),
+(go.field_decl.FieldDecl go!"hasmain" go.uint8),
+(go.field_decl.FieldDecl go!"bad" go.bool),
+(go.field_decl.FieldDecl go!"gcdatamask" bitvector.ty),
+(go.field_decl.FieldDecl go!"gcbssmask" bitvector.ty),
+(go.field_decl.FieldDecl go!"typemap" (go.GoType.MapType typeOff.ty (go.GoType.PointerType _type.ty))),
+(go.field_decl.FieldDecl go!"next" (go.GoType.PointerType moduledata.ty))]
+
+@[irreducible] noncomputable def moduledata.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  moduledata.fieldsUnsealed
+
+noncomputable instance equals_unfold_moduledata [GooseExts] [GoGlobalContext] :
+    EqualsUnfold moduledata.fields moduledata.fieldsUnsealed :=
+  ⟨by unfold moduledata.fields; rfl⟩
+
+@[reducible] noncomputable def moduledata.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType moduledata.fields)
 
 structure modulehash [GooseExts] where
   mk ::
@@ -18657,11 +19029,27 @@ noncomputable instance equals_unfold_bitCursor [GooseExts] [GoGlobalContext] :
 @[reducible] noncomputable def bitCursor.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType bitCursor.fields)
 
-opaque _typePair.nonempty_type : NonemptyType.{0}
-def _typePair : Type := _typePair.nonempty_type.type
-instance _typePair.nonempty : Nonempty _typePair := _typePair.nonempty_type.property
-opaque _typePair.zero_val : ZeroVal _typePair := ⟨Classical.ofNonempty⟩
-attribute [instance] _typePair.zero_val
+structure _typePair [GooseExts] where
+  mk ::
+  t1' : Loc
+  t2' : Loc
+
+noncomputable instance _typePair.zero_val [GooseExts] : ZeroVal _typePair :=
+  ⟨_typePair.mk zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def _typePair.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"t1" (go.GoType.PointerType _type.ty)),
+(go.field_decl.FieldDecl go!"t2" (go.GoType.PointerType _type.ty))]
+
+@[irreducible] noncomputable def _typePair.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  _typePair.fieldsUnsealed
+
+noncomputable instance equals_unfold__typePair [GooseExts] [GoGlobalContext] :
+    EqualsUnfold _typePair.fields _typePair.fieldsUnsealed :=
+  ⟨by unfold _typePair.fields; rfl⟩
+
+@[reducible] noncomputable def _typePair.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType _typePair.fields)
 
 structure elfSym [GooseExts] where
   mk ::

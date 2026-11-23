@@ -20,7 +20,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE Iris.ProofMode
 section proof
 variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
@@ -33,16 +33,15 @@ theorem sync.Once.Do.wp_proof
   wp_start as ⟨#HO, #Hf⟩
   simp only [isOnce_unseal, isOnceDef]
   iNamed HO
-  wp_auto_lc 1
+  wp_auto
   wp_apply_core wp_Bool_Load $$ [] [-]
   · iPkgInit
   iinv Qinv with Hi Hclose
-  imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi
-  unfold OnceInv
-  icases Hi with ⟨%done, done1, #HQ⟩
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
   inext
+  unfold OnceInv
+  icases Hi with ⟨%done, done1, #HQ⟩
   iexists done
   iframe done1
   iintro done1

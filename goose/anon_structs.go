@@ -41,17 +41,12 @@ func (ctx *Ctx) anonStructOf(n locatable, t *types.Struct) *anonStruct {
 		}
 		return a
 	}
-	for i := range t.NumFields() {
-		if t.Tag(i) != "" {
-			ctx.unsupported(n, "struct tag on a struct type that is not a defined type")
-		}
-	}
 	// the package's aliases are declared after the unnamed struct types (an
 	// alias may denote one), so the field types spell them out
-	saved := ctx.inAnonStructFields
-	ctx.inAnonStructFields = true
-	fields := ctx.structType(t)
-	ctx.inAnonStructFields = saved
+	saved := ctx.beforeAliases
+	ctx.beforeAliases = true
+	fields := ctx.taggedStructType(t)
+	ctx.beforeAliases = saved
 	var params []string
 	for _, p := range util.AnonStructParams(t) {
 		params = append(params, p.Obj().Name())

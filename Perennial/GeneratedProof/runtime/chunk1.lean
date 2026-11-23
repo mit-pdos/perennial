@@ -315,25 +315,6 @@ noncomputable instance argset_access_store_retval (l : Loc) (v : runtime.argset)
 end def_
 end argset
 
-namespace hchan
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-noncomputable instance hchan_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.hchan :=
-  sorry -- axiomatized type
-
-noncomputable instance hchan_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.hchan runtime.hchan.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end hchan
-
 namespace waitq
 section def_
 
@@ -2124,12 +2105,84 @@ variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
 noncomputable instance TypeAssertionError_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.TypeAssertionError :=
-  sorry -- axiomatized type
+    TypedPointsto (GF := GF) runtime.TypeAssertionError where
+  typedPointstoDef l v dq := iprop(
+    "_interface" ∷ typedPointsto (structFieldRef runtime.TypeAssertionError go!"_interface" l) v._interface' dq ∗
+    "concrete" ∷ typedPointsto (structFieldRef runtime.TypeAssertionError go!"concrete" l) v.concrete' dq ∗
+    "asserted" ∷ typedPointsto (structFieldRef runtime.TypeAssertionError go!"asserted" l) v.asserted' dq ∗
+    "missingMethod" ∷ typedPointsto (structFieldRef runtime.TypeAssertionError go!"missingMethod" l) v.missingMethod' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance TypeAssertionError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.TypeAssertionError runtime.TypeAssertionError.underlying :=
-  sorry -- axiomatized type
+    IntoValTypedUnderlying (GF := GF) runtime.TypeAssertionError runtime.TypeAssertionError.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance TypeAssertionError_access_load__interface (l : Loc) (v : runtime.TypeAssertionError) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.TypeAssertionError go!"_interface" l) v._interface' dq)
+      (typedPointsto (structFieldRef runtime.TypeAssertionError go!"_interface" l) v._interface' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance TypeAssertionError_access_store__interface (l : Loc) (v : runtime.TypeAssertionError) (_interface' : Loc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.TypeAssertionError go!"_interface" l) v._interface' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.TypeAssertionError go!"_interface" l) _interface' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with _interface' := _interface' } : runtime.TypeAssertionError) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance TypeAssertionError_access_load_concrete (l : Loc) (v : runtime.TypeAssertionError) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.TypeAssertionError go!"concrete" l) v.concrete' dq)
+      (typedPointsto (structFieldRef runtime.TypeAssertionError go!"concrete" l) v.concrete' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance TypeAssertionError_access_store_concrete (l : Loc) (v : runtime.TypeAssertionError) (concrete' : Loc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.TypeAssertionError go!"concrete" l) v.concrete' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.TypeAssertionError go!"concrete" l) concrete' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with concrete' := concrete' } : runtime.TypeAssertionError) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance TypeAssertionError_access_load_asserted (l : Loc) (v : runtime.TypeAssertionError) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.TypeAssertionError go!"asserted" l) v.asserted' dq)
+      (typedPointsto (structFieldRef runtime.TypeAssertionError go!"asserted" l) v.asserted' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance TypeAssertionError_access_store_asserted (l : Loc) (v : runtime.TypeAssertionError) (asserted' : Loc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.TypeAssertionError go!"asserted" l) v.asserted' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.TypeAssertionError go!"asserted" l) asserted' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with asserted' := asserted' } : runtime.TypeAssertionError) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance TypeAssertionError_access_load_missingMethod (l : Loc) (v : runtime.TypeAssertionError) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.TypeAssertionError go!"missingMethod" l) v.missingMethod' dq)
+      (typedPointsto (structFieldRef runtime.TypeAssertionError go!"missingMethod" l) v.missingMethod' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance TypeAssertionError_access_store_missingMethod (l : Loc) (v : runtime.TypeAssertionError) (missingMethod' : GoString) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.TypeAssertionError go!"missingMethod" l) v.missingMethod' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.TypeAssertionError go!"missingMethod" l) missingMethod' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with missingMethod' := missingMethod' } : runtime.TypeAssertionError) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end TypeAssertionError
@@ -2219,12 +2272,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
 noncomputable instance typeCacheBucket_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.typeCacheBucket :=
-  sorry -- axiomatized type
+    TypedPointsto (GF := GF) runtime.typeCacheBucket where
+  typedPointstoDef l v dq := iprop(
+    "t" ∷ typedPointsto (structFieldRef runtime.typeCacheBucket go!"t" l) v.t' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance typeCacheBucket_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.typeCacheBucket runtime.typeCacheBucket.underlying :=
-  sorry -- axiomatized type
+    IntoValTypedUnderlying (GF := GF) runtime.typeCacheBucket runtime.typeCacheBucket.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance typeCacheBucket_access_load_t (l : Loc) (v : runtime.typeCacheBucket) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.typeCacheBucket go!"t" l) v.t' dq)
+      (typedPointsto (structFieldRef runtime.typeCacheBucket go!"t" l) v.t' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance typeCacheBucket_access_store_t (l : Loc) (v : runtime.typeCacheBucket) (t' : (GoArray Loc 4)) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.typeCacheBucket go!"t" l) v.t' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.typeCacheBucket go!"t" l) t' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with t' := t' } : runtime.typeCacheBucket) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end typeCacheBucket
@@ -2575,6 +2649,80 @@ noncomputable instance timeHistogram_access_store_overflow (l : Loc) (v : runtim
 
 end def_
 end timeHistogram
+
+namespace itabTableType
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+noncomputable instance itabTableType_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.itabTableType where
+  typedPointstoDef l v dq := iprop(
+    "size" ∷ typedPointsto (structFieldRef runtime.itabTableType go!"size" l) v.size' dq ∗
+    "count" ∷ typedPointsto (structFieldRef runtime.itabTableType go!"count" l) v.count' dq ∗
+    "entries" ∷ typedPointsto (structFieldRef runtime.itabTableType go!"entries" l) v.entries' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance itabTableType_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.itabTableType runtime.itabTableType.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance itabTableType_access_load_size (l : Loc) (v : runtime.itabTableType) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.itabTableType go!"size" l) v.size' dq)
+      (typedPointsto (structFieldRef runtime.itabTableType go!"size" l) v.size' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance itabTableType_access_store_size (l : Loc) (v : runtime.itabTableType) (size' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.itabTableType go!"size" l) v.size' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.itabTableType go!"size" l) size' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with size' := size' } : runtime.itabTableType) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance itabTableType_access_load_count (l : Loc) (v : runtime.itabTableType) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.itabTableType go!"count" l) v.count' dq)
+      (typedPointsto (structFieldRef runtime.itabTableType go!"count" l) v.count' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance itabTableType_access_store_count (l : Loc) (v : runtime.itabTableType) (count' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.itabTableType go!"count" l) v.count' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.itabTableType go!"count" l) count' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with count' := count' } : runtime.itabTableType) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance itabTableType_access_load_entries (l : Loc) (v : runtime.itabTableType) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.itabTableType go!"entries" l) v.entries' dq)
+      (typedPointsto (structFieldRef runtime.itabTableType go!"entries" l) v.entries' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance itabTableType_access_store_entries (l : Loc) (v : runtime.itabTableType) (entries' : (GoArray Loc 512)) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.itabTableType go!"entries" l) v.entries' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.itabTableType go!"entries" l) entries' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with entries' := entries' } : runtime.itabTableType) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end itabTableType
 
 end runtime
 end

@@ -22,7 +22,8 @@
   with the changes of section 6.
 - **Out of scope:** the mmap'd file (`db.data`); section 8 says what its FFI
   will need.
-- **Platform:** gc for linux/amd64, built without `checkptr`, which `-race`,
+- **Platform:** gc for linux/amd64, the platform the whole model assumes
+  (`README.md`, "Platform"; `maxAddr = 2^47` fails elsewhere), built without `checkptr`, which `-race`,
   `-msan` and `-asan` turn on. checkptr panics on some conversions that R3
   allows.
 - **Out-of-memory** is outside the model, as it already is. A 2^48-byte

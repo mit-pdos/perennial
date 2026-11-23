@@ -1,0 +1,3 @@
+[[skip]]
+names = ["Err*"]
+reason = "constants"

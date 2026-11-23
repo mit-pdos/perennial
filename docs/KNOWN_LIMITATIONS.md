@@ -12,6 +12,19 @@ zero-size elements, and `strings.Join`'s total length). They are not repeated he
 
 Each entry: what goes wrong, a Go witness, and where in the model it comes from.
 
+## Platform
+
+- **The model assumes gc on linux/amd64 (trusted assumption).** Every allocation lies in
+  `(0, maxAddr]`, `maxAddr = 2^47` (`IsFresh`/`IsFreshBytes`, `GooseLang/Lang.lean`), which
+  holds for gc's user address space on linux/amd64, and proofs use it to rule out address
+  overflow (`unsafe.Slice`'s length check, `unsafe.Add`'s range). It is false on:
+  - aix/ppc64: gc's heap hints lie above `0xa0<<52`.
+  - linux/arm64 PIE and android: globals and `zerobase` load near `0xaaaa_xxxx_xxxx`.
+  - s390x: the user address space (`TASK_SIZE`) is 2^64.
+
+  There a proof can claim "no panic" for an `unsafe.Slice` that gc rejects. See
+  `README.md`, "Platform".
+
 ## Maps
 
 - **A key that `==` cannot test fully is accepted (unsound).** Go hashes every component
@@ -145,8 +158,8 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   check needs the layout table, which R1 of `docs/design/unsafe-memory.md` adds for plain
   types only.
 - **Out of memory is outside the model.** The heap is bounded: every allocation lies in
-  `(0, maxAddr]`, `maxAddr = 2^47` (gc's user address space on linux/amd64,
-  `GooseLang/Lang.lean`). When no free range is left, an allocation steps to itself forever
+  `(0, maxAddr]`, `maxAddr = 2^47` (`GooseLang/Lang.lean`; valid only for gc on
+  linux/amd64, "Platform" above). When no free range is left, an allocation steps to itself forever
   (`AllocOOMS`, `AllocBytesOOMS`), so a proof covers only the executions that do not run out
   of memory, where gc ends the program with a fatal error.
 
@@ -157,6 +170,23 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   `struct{ a int }{}` from its own package, and the model has one type. Refusing such
   types would reject common code (`struct{ mu sync.Mutex; … }`); modelling it means
   qualifying field names everywhere.
+- **Conversions that involve struct tags are stuck (incomplete, sound).** Every field
+  declaration carries its tag (`go.field_decl.Field name type tag`, empty when absent;
+  `go.FieldDecl name type` is the untagged shorthand), and goose writes the tags of an unnamed
+  struct type's fields, so ``struct{ A int `json:"a"` }``, `struct{ A int }` and
+  ``struct{ A int `json:"b"` }`` are three types, as in Go. A defined struct type's underlying
+  type is written without its tags, and there is no rule for Go's "identical underlying types
+  if tags are ignored" (spec, "Conversions"), so these conversions, legal in Go, are stuck:
+  ```go
+  type T struct{ A int }
+  x := struct{ A int `json:"a"` }{1}
+  _ = T(x)                           // Go: allowed; the model is stuck
+  type U struct{ A int `json:"a"` }
+  _ = U(x)                           // Go: allowed (identical underlying types); stuck
+  _ = struct{ A int }(x)             // Go: allowed (ignoring tags); stuck
+  ```
+  Conversions between defined types (`T(u)` for `u` of type `U`) and from untagged struct
+  values are unaffected. A rule converting modulo tags would be added when a proof needs one.
 - **A struct type literal with embedded fields has no known method set.** In Go,
   `struct{ T }` has the methods promoted from `T`:
   ```go
@@ -223,10 +253,23 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
 
   An explicit conversion (`float64(x*y) + z`) prevents the fusion in Go; the model cannot
   tell the two apart.
-- **`float32` of an untyped constant rounds twice.** Goose represents an untyped float
-  constant by its `float64` rounding, and `float32(c)` rounds that again
-  (`convert_untyped_float32`); Go rounds `c` once. The two differ for a constant just off a
-  point halfway between two `float32`s.
+- **Explicit conversion of a constant to a type parameter (differs from gc).** gc's explicit
+  conversion `T(c)` of a constant `c` to a type parameter `T` converts `c` at its default
+  type: an untyped float constant is rounded to `float64` first (as go/types records it). The
+  model follows our reading of the spec's Conversions section ("converting a constant to a
+  type parameter yields a non-constant value of that type, with the value represented as a
+  value of the type argument"): the exact constant is rounded once to the instantiated type
+  (goose emits `Convert go.untypedFloat T` of the exact value, `convert_untyped_float32`; an
+  integer constant goes through its default type `int`, which is exact).
+  Whether gc's behaviour is intended is unresolved. The implicit form (`return c`, `var x T
+  = c`) rounds once in gc too.
+
+  ```go
+  const H = 1 + 0x1p-24 + 0x1p-60
+  func f[T ~float32]() T { return T(H) } // gc (go1.26.0): 0x3f800000; model: 0x3f800001
+  func g[T ~float32]() T { return T(-1e-50) } // gc: -0; model: +0
+  func h[T ~int64]() T { return T(1e18 + 1) } // gc: 1000000000000000000; model: 1000000000000000001
+  ```
 
 ## The step bound of the adequacy theorems
 

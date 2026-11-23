@@ -1,7 +1,9 @@
 /-
 The proofs of the Go `bytes` package: the shared definitions (`Base`: `isPkgInit`,
-`compareResult`; `BufferBasics`: `ownBuffer`, a `*Buffer` and its content), the linked results
-(`Link`), `bytes.wp_<F>` for each function `F`, and `Results` (a `*Buffer` is a reader).
+`compareResult`; `BufferBasics`: `ownBuffer`, a `*Buffer` with its content and capacity,
+`ownBuffer_new` for a zero `Buffer`, and `bufferGrown`, a buffer `grow` made room in), the linked
+results (`Link`), `bytes.wp_<F>` for each function `F` (`Buffer.Write` appends, `Buffer.Bytes`
+lends the unread bytes), and `Results` (a `*Buffer` is a reader).
 -/
 module
 
