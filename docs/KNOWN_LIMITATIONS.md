@@ -100,6 +100,31 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   panicking. Fix: run `$oldf` also when `$f` panics, with `$f`'s panic replacing the
   current one. Found 2026-10-26 by the trusted-base review of the range-over-func change.
 
+- **A deferred literal that defers a recovering call does not see the outer panic
+  (unsound).** A function literal deferred by `defer` reads the deferring function's
+  `$panic` cell lexically; if the literal itself defers a function literal that calls
+  `recover()`, or a function or method that does (`F'deferred`), goose wraps the
+  literal in its own `with_defer_recover:`, whose fresh `$panic` shadows the outer one,
+  so the literal's own `recover()` reads `nil`:
+
+  ```go
+  func F() { recover() }
+  func G() (x any) {
+  	defer F()
+  	defer func() {
+  		defer F() // or: defer func() { recover() }()
+  		x = recover()
+  	}()
+  	panic(1)
+  }
+  // Go: G() == 1; the model: nil (the outer F'deferred recovers instead)
+  ```
+
+  Fix: give the literal's view of the outer cell its own name (as `F'deferred` takes
+  `$recover`), e.g. `let: "$recover" := "$panic"` around such a literal, read by its
+  `recover()`. Found 2026-11-23 by the trusted-base review of the `F'deferred` change;
+  the literal-only form predates it.
+
 - **`recover()` in a function deferred dynamically, or called directly, is stuck
   (incomplete).** A function or method `F` whose body calls `recover()` recovers only
   as `F'deferred`, which `defer F(...)` calls when `F` is a function or a method of a
