@@ -1,0 +1,15 @@
+# Only MakeNoZero (strings.Builder's grow): a `go:linkname` to the runtime with no Go body
+# ("external function"), trusted (TrustedCode/internal/bytealg.lean).
+# `MaxLen`, which the package's initializer (`init.0`) sets
+translate = ["MaxLen"]
+imports = ["!*"]
+# `init.0` sets `MaxLen` from `cpu.X86.HasAVX2`: trusted, as one of the two values
+# (TrustedCode/internal/bytealg.lean). Goose translates `init.0` itself, to a read of the global
+# `internal/cpu.X86`, which no package initializer sets: the runtime does (`cpu.Initialize`, from
+# `schedinit`, with `cpuid` in assembly). The irreducible unit is that variable's value; trusting
+# it instead is not possible with goose as it is: a `trusted` variable with no initializer
+# expression (`var X86 struct{...}`) gets neither a `GlobalAlloc` nor an `X86.init` call in
+# `initialize'` (goose.go, the package initializer), so nothing could model the runtime filling it,
+# and translating it leaves it zero (MaxLen always 31: more defined than gc). Pending a goose
+# change that gives such a variable an `X.init` hook.
+trusted = ["MakeNoZero", "init.0"]

@@ -183,10 +183,10 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   elements' lengths and panics before allocating anything, so a few gigabytes
   of aliased elements (`make([]string, 1<<30+1)` with a long separator) reach
   the panic. **Known, not yet fixed:** `Join` is still a trusted model that
-  omits that panic, and `strings.wp_Join` has no premise excluding it (a fix
-  that translates the real `Join` is on branch `join-translation`; its model of
-  `strings.Builder.String` must first be made stuck where Go's `String`
-  aliases the builder's buffer). `sync.WaitGroup`'s
+  omits that panic, and `strings.wp_Join` has no premise excluding it. The fix
+  is to translate the real `Join` over `strings.Builder`, whose methods are now
+  goose's translation but for `String`, a model that is stuck where Go's
+  `String` aliases the builder's buffer (`TrustedCode/strings.lean`). `sync.WaitGroup`'s
   `int32` counter is another (two `Add(1 << 30)` calls panic in Go): `WaitGroup.Add`
   is Goose's translation, and `WaitGroup.wp_Add` asks its caller to bound the
   new counter by `2^31`. A caller whose counter is backed by one goroutine per

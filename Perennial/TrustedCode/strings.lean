@@ -267,6 +267,146 @@ noncomputable def Split.impl : val :=
   (App (Val doExecute)
   (Var "$r0")))))))))
 
+/-- `(*Builder).copyCheck()`: panics if `b` is a copy by value of a Builder that has been
+written to; on first use, records `b` in `b.addr`. Go's (`strings/builder.go`)
+
+```go
+func (b *Builder) copyCheck() {
+	if b.addr == nil {
+		// This hack works around a failing of Go's escape analysis
+		// that was causing b to escape and be heap allocated.
+		// See issue 23382.
+		// TODO: once issue 7921 is fixed, this should be reverted to
+		// just "b.addr = b".
+		b.addr = (*Builder)(abi.NoEscape(unsafe.Pointer(b)))
+	} else if b.addr != b {
+		panic("strings: illegal use of non-zero Builder copied by value")
+	}
+}
+```
+
+Goose translates it, but the translation is stuck at the conversion of an `unsafe.Pointer` back to
+`*Builder`: the semantics converts an `unsafe.Pointer` only to a pointer to a plain type
+(`Golang/Defn/Plain.lean`, `convert_unsafe_to_pointer`), and `Builder` (a pointer and a slice) is
+not one. The model is goose's translation of that code with
+`(*Builder)(abi.NoEscape(unsafe.Pointer(b)))` replaced by `b`, and one addition: after setting
+`b.addr`, it leaves a reader on the field `b.addr` for good (`StartRead` with no `FinishRead`), so
+that any later store to `b.addr` is stuck (loads still step). (`(go.GoType.Named go!"strings.Builder"
+[])` is written out: `Code/strings.lean` imports this file.)
+
+**Why the reader.** `abi.NoEscape` hides `b` from escape analysis, so a `Builder` that does not
+otherwise escape lives on its goroutine's stack, and `b.addr` points into that stack. When the
+stack grows, gc moves it and rewrites the pointers in the stack's own frames (`b.addr` among them,
+together with `b`), but not pointers into the stack held elsewhere. A copy by value of a used
+Builder kept outside the stack therefore holds a stale `addr`, and storing it back over `b` makes
+the next `copyCheck` panic (`goose/model/strings/builder_alias_test.go`,
+`TestBuilderStaleCopyPanics`):
+```go
+var saved strings.Builder // a package variable: on the heap
+b.WriteString("a"); saved = b; deep(10000); b = saved; b.WriteString("c") // panics
+```
+With `b.addr = b` alone the model would let that `WriteString` succeed: it would be more defined
+than Go. With the reader, the store `b = saved` is stuck instead. In the model, `copyCheck` at `b`
+passes with a non-nil `b.addr` only if `copyCheck` at `b` set it and nothing has stored to `b.addr`
+since (every store after the first is stuck, and before it no value with `addr = b` exists: only
+`copyCheck` at `b` makes one, and `addr` is unexported). In gc that `b.addr` is `b`'s own field,
+set to `&b` and moved with `b` if the stack moves, so gc's check passes too. Everywhere else the
+model is less defined than Go, never more:
+- storing a copy back over a used Builder (`b = saved`, `b = strings.Builder{}`) is stuck, though
+  gc does not panic when the stack has not moved;
+- a copy stored into a Builder at another address keeps `addr` pointing to the original, so the
+  model's `copyCheck` panics there; gc's may not, when that address is where the original was (a
+  stack slot reused, as by a `var b strings.Builder` inside a loop: the model allocates a fresh
+  location each time and never reuses one);
+- `Reset` (`Builder.Reset.impl`) leaves `b.addr` set, where Go clears it, so that a copy of a
+  Builder reset after use panics in the model, not in Go. -/
+noncomputable def Builder.copyCheck.impl : val :=
+  (LamV "b"
+  (Lam BAnon
+  (Seq (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b"))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (App (Val (GoInstruction (StructFieldRef (go.GoType.Named go!"strings.Builder" []) go!"addr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b")))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Val UntypedNil)))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b"))
+  (App (Val doExecute)
+  (Seq (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Pair (App (Val (GoInstruction (StructFieldRef (go.GoType.Named go!"strings.Builder" []) go!"addr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b"))) (Var "$r0")))
+  (Seq (StartRead (App (Val (GoInstruction (StructFieldRef (go.GoType.Named go!"strings.Builder" []) go!"addr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b"))))
+  (Val #())))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (App (Val (GoInstruction (StructFieldRef (go.GoType.Named go!"strings.Builder" []) go!"addr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b")))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b"))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"strings: illegal use of non-zero Builder copied by value")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (Val #()))))
+
+/-- `(*Builder).Reset()`: the Builder is empty again. Go's (`strings/builder.go`)
+
+```go
+func (b *Builder) Reset() {
+	b.addr = nil
+	b.buf = nil
+}
+```
+
+The model is goose's translation of that code without `b.addr = nil`: `copyCheck`'s model leaves a
+reader on `b.addr` once it is set, so that store would be stuck (`Builder.copyCheck.impl` says
+why). Keeping `addr` only makes the model less defined: `addr` is unexported and only `copyCheck`
+reads it, which at `b` passes alike for `addr = b` and nil, and panics for a copy whose `addr` is
+`b` where Go's, whose `addr` is nil, would not. -/
+noncomputable def Builder.Reset.impl : val :=
+  (LamV "b"
+  (Lam BAnon
+  (Seq (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b"))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType go.byte)))) (Val UntypedNil))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (StructFieldRef (go.GoType.Named go!"strings.Builder" []) go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b"))) (Var "$r0")))))))
+  (Val #()))))
+
+/-- Leaves a reader on each element of `s[i:len(s)]`, for good (a helper of `Builder.String.impl`,
+not a function of package `strings`): `StartRead` with no `FinishRead`, so that loads of those
+bytes still step and stores to them are stuck. -/
+noncomputable def Builder.readLock : val :=
+  rec: "loop" "s" "i" :=
+    if: "i" <⟨go.int⟩ FuncResolve go.len [go.SliceType go.byte] #() "s" then
+      StartRead (IndexRef (go.SliceType go.byte) ("s", "i")) ;;
+      "loop" "s" ("i" +⟨go.int⟩ #(W64 1))
+    else #()
+
+/-- `(*Builder).String()`: the accumulated string. Go's (`strings/builder.go`)
+
+```go
+func (b *Builder) String() string {
+	return unsafe.String(unsafe.SliceData(b.buf), len(b.buf))
+}
+```
+
+returns a string that shares the buffer's bytes; goose rejects `unsafe.String` (an `unsafe`
+reinterpretation of a byte array as a string). The rest of `Builder` is goose's translation of
+the real source.
+
+The model returns `string(b.buf)`, a copy, and then leaves a reader on each byte of `b.buf`
+(`Builder.readLock`), so that any later store to one of those bytes is stuck. Go strings are
+immutable only while nothing writes the bytes they share: after
+```go
+b.WriteString("a"); saved := b; b.WriteString("b"); s := b.String()
+b = saved; b.WriteString("c")   // copyCheck passes: b.addr == &b
+```
+gc's `s` is `"ac"`, where a copy would stay `"ab"`. `Builder` itself only appends past `len(b.buf)`;
+the bytes the string shares are written again only through a Builder restored from a copy by
+value (as above), and in the model that write is stuck: the model is less defined than Go there,
+never different. Loads of the bytes (more `String` calls, `grow`'s copy) still step. (Since
+`copyCheck`'s model leaves a reader on `b.addr`, the restore `b = saved` above is itself stuck in
+the model; the readers on the bytes keep `String`'s model correct on its own, whatever the
+model of `copyCheck`.) -/
+noncomputable def Builder.String.impl : val :=
+  λ: "b" <>,
+    let: "buf" := ![go.SliceType go.byte]
+      (StructFieldRef (go.Named go!"strings.Builder" []) go!"buf" "b") in
+    let: "s" := Convert (go.SliceType go.byte) go.string "buf" in
+    Builder.readLock "buf" #(W64 0) ;;
+    "s"
+
 end code
 end strings
 

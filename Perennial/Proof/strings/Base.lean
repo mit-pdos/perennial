@@ -11,6 +11,8 @@ public import Perennial.GeneratedProof.strings
 public import Perennial.Proof.internal.stringslite.Base
 public import Perennial.Proof.sync.Base
 public import Perennial.Proof.io.Base
+public import Perennial.Proof.internal.bytealg.Base
+public import Perennial.Proof.unicode.utf8.Base
 
 @[expose] public section
 

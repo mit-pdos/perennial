@@ -165,7 +165,8 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
 ## Allocation
 
 - **No limit on allocation size (unsound).** gc refuses an allocation above `maxAlloc`
-  (2^48 bytes). A `make` or `append` panics (`makeslice`, `growslice`). A `new`, an
+  (2^48 bytes). A `make`, an `append` or `internal/bytealg.MakeNoZero` (`strings.Builder`'s
+  growth) panics (`makeslice`, `growslice`, `panicmakeslicelen`). A `new`, an
   escaping variable or a composite literal of a larger array type ends the program with
   a fatal, unrecoverable "out of memory": `p := new([1<<46]int64)` gives `runtime: out of
   memory: cannot allocate 562949953421312-byte block`. The model lets all of these
