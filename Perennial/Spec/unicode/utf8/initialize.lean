@@ -20,9 +20,10 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : unicode.utf8.Assumptions]
 
+/-- The package's `initialize'`. -/
 abbrev unicode.utf8.initialize'.spec : Prop :=
-  ∀ (get_is_pkg_init : GoString → IProp GF)
-    (Hinit : GetIsPkgInitProp pkg_id.unicode.utf8 get_is_pkg_init),
+  ∀ (get_is_pkg_init : GoString → IProp GF),
+  GetIsPkgInitProp pkg_id.unicode.utf8 get_is_pkg_init →
     {{ ownInitializing get_is_pkg_init }}
       (App (Val initialize') (Val #()))
     {{ RET #(); ownInitializing get_is_pkg_init ∗

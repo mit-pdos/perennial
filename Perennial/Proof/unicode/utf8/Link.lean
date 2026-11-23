@@ -11,7 +11,7 @@ public import Perennial.Proof.unicode.utf8.initialize
 
 namespace Perennial
 
-open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
+open Iris Iris.BI Iris.ProgramLogic Iris.Std
 
 section link
 variable [GooseExts] [GooseSemantics] [GooseInterp]

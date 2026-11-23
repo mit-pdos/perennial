@@ -1,5 +1,6 @@
 /-
-The proofs of the Go `unicode/utf8` package: the shared definitions (`Base`) and the linked results (`Link`), `unicode.utf8.wp_<F>` for each function `F`.
+The proofs of the Go `unicode/utf8` package: the shared definitions (`Base`) and the linked
+results (`Link`), `unicode.utf8.wp_<F>` for each function `F`.
 -/
 module
 

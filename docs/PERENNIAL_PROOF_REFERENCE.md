@@ -1319,8 +1319,13 @@ on the proof:
 * `Hwp`: in every generation, the WP of `e` from `P` and the main thread's
   token, together with `P L'` of whatever next local ghost state `L'` the
   crash allocates, from the generation's `crashed`, the extensions'
-  `crashStart` resources and `L'`'s empty package state. Since a thread's
-  resources are lost at a crash, what `P L'` needs must live in invariants.
+  `crashStart` resources, `L'`'s empty package state and a later credit `£ 1`.
+  Since a thread's resources are lost at a crash, what `P L'` needs must live
+  in invariants; the credit strips the later off what the crash obligation
+  takes out of one (`lc_fupd_elim_later`). Shape: `P L -∗ threadTok ={⊤}=∗
+  WP e {{ φ }} ∗ ∀ L', crashed -∗ extsCrashStart L L' -∗ ownGoState ∅ -∗ £ 1
+  ={⊤}=∗ P L'`; a proof that does not need the credit ignores it with `_`.
+  Example: `Perennial/ProgramLogic/GenStartTest.lean`.
 
 Each extension provides `ExtCrashInterp` (how its ghost state survives a
 crash); the filesystem keeps its ghost state (`crashStart old new := ⌜new = old⌝`).
@@ -1428,7 +1433,8 @@ a generation `L`; `Hstart` is the global setup followed by every node's first
 `P i` (`nodeStart`, from the node's start resources); `Hwp` is, for every
 generation of every node, the WP of its boot program from `P i` and the main
 thread's token, together with `P i L'` of the next generation, from `crashed`,
-`extsCrashStart` and the empty package state. What `P i L'` needs from the old
+`extsCrashStart`, the empty package state and a later credit, as for
+`goose_crash_adequacy`. What `P i L'` needs from the old
 generation must be persistent (invariants, discarded points-to) or come back
 through `extsCrashStart` (`fsNet_crashStart`: a crash keeps the files' and the
 address's ghost state). The bounds are as without crashes

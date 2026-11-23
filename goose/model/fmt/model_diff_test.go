@@ -69,7 +69,13 @@ var testFormats = []string{
 	"%d %s", "%v%", "%.3s", "%5.2v", "%*d", "%[1]v", "%[2]v %[1]v", "%01234567d", "%012345678d",
 	"%.d", "%x.", "x%.", "%é", "%\xff", "%#x", "% d", "%+d", "%e", "%c", "%t", "%.5.d", "%v %d %s",
 	"%-w", "%+w", "%v %v %v",
+	// []byte: fmtBytes's verbs, with flags, width and precision the model does not follow
+	"%#q", "%+q", "% x", "%#X", "%5s", "%.1s", "%#v", "%q %q", "%x %s",
 }
+
+// A named type of underlying type []byte: Go formats it by reflection (printValue), not by
+// printArg's case []byte; the model does not follow it.
+type namedBytes []byte
 
 func testArgs() []any {
 	ps := &plainStruct{a: []int{1, 2}}
@@ -80,7 +86,31 @@ func testArgs() []any {
 		stringerName("sn"), errorName("en"),
 		fmter{}, &goStr{"g"}, ps, []byte("by"), []string{"x"},
 		reflect.ValueOf(&recErr{"rv"}), reflect.Value{}, reflect.ValueOf(3),
+		[]byte(nil), []byte{}, []byte("q\"b\\s\x00\x01\x1f\x7f\a\b\f\n\r\t\v ~"),
+		[]byte("é"), []byte{0x80, 'a'}, []byte{0xff}, namedBytes("nb"),
 	}
+}
+
+// bytesOk: the admission proposed for []byte arguments: argsOk, with an argument of type
+// []byte (exactly) also admitted under every directive, where the directives parse.
+func bytesOk(mv, format string, a []any) bool {
+	ds, ok := directives(format)
+	if !ok {
+		return argsOk(mv, format, a)
+	}
+	for k, x := range a {
+		d := directive{'v', false}
+		if k < len(ds) {
+			d = ds[k]
+		}
+		if _, isB := x.([]byte); isB {
+			continue
+		}
+		if !argOkAt(mv, d, x) {
+			return false
+		}
+	}
+	return true
 }
 
 // matches: whether got is one of the strings the pattern stands for, arbitraryMark standing for
@@ -313,7 +343,7 @@ func TestModelSprintf(t *testing.T) {
 			var out string
 			stuck := runModel(func() { out = modelSprintf(format, a...) })
 			modelCalls := calls
-			ok := argsOk("vsxXq", format, a)
+			ok := bytesOk("vsxXq", format, a)
 			if ok {
 				admitted++
 			}
@@ -355,6 +385,92 @@ func TestModelPrintf(t *testing.T) {
 	}
 }
 
+// The model formats %s, %v, %d, %x, %X of a []byte exactly, and %q of one whose bytes are ASCII
+// (every byte below 0x80 included, so every escape strconv.Quote prints of one); %q of a
+// non-ASCII byte is an arbitrary string.
+func TestModelBytesExact(t *testing.T) {
+	var all []byte
+	for c := 0; c < 0x80; c++ {
+		all = append(all, byte(c))
+	}
+	ascii := [][]byte{nil, {}, []byte("plain"), all, []byte("q\"b\\s\x00\x7f\a\b\f\n\r\t\v")}
+	for _, verb := range []string{"%s", "%v", "%d", "%x", "%X", "%q"} {
+		for _, b := range ascii {
+			format := "<" + verb + ">"
+			got := fmt.Sprintf(format, b)
+			out := modelSprintf(format, b)
+			if out != got {
+				t.Errorf("Sprintf(%q, %q) = %q, the model's %q", format, b, got, out)
+			}
+		}
+	}
+	for _, b := range [][]byte{[]byte("é"), {0x80}, {'a', 0xff}} {
+		if out := modelSprintf("<%q>", b); out != "<"+arbitraryMark {
+			t.Errorf("Sprintf(\"<%%q>\", %q): the model's %q, not arbitrary", b, out)
+		}
+	}
+}
+
+// recWriter records each Write: its bytes, as a call, then returns its fixed results.
+type recWriter struct {
+	writes [][]byte
+	n      int
+	err    error
+}
+
+func (w *recWriter) Write(p []byte) (int, error) {
+	calls = append(calls, "Write")
+	w.writes = append(w.writes, append([]byte(nil), p...))
+	return w.n, w.err
+}
+
+// Fprintf: the same calls as Sprintf's formatting, then one Write of the formatted bytes (also
+// when they are empty), returning what Write returns.
+func TestModelFprintf(t *testing.T) {
+	werr := errors.New("w")
+	for _, format := range testFormats {
+		for _, a := range argTuples() {
+			for _, res := range []struct {
+				n   int
+				err error
+			}{{3, nil}, {0, werr}} {
+				calls = nil
+				gw := &recWriter{n: res.n, err: res.err}
+				gn, gerr := fmt.Fprintf(gw, format, a...)
+				goCalls := calls
+				calls = nil
+				mw := &recWriter{n: res.n, err: res.err}
+				var mn int
+				var merr error
+				stuck := runModel(func() { mn, merr = modelFprintf(mw, format, a...) })
+				if stuck {
+					if bytesOk("vsxXq", format, a) {
+						t.Errorf("Fprintf(%s): admitted, but the model is stuck", describe(format, a))
+					}
+					continue
+				}
+				if !reflect.DeepEqual(goCalls, calls) {
+					t.Errorf("Fprintf(%s): Go calls %v, the model %v", describe(format, a), goCalls,
+						calls)
+				}
+				if len(gw.writes) != 1 || len(mw.writes) != 1 {
+					t.Errorf("Fprintf(%s): Go writes %d times, the model %d", describe(format, a),
+						len(gw.writes), len(mw.writes))
+					continue
+				}
+				if !matches(string(mw.writes[0]), string(gw.writes[0])) {
+					t.Errorf("Fprintf(%s) writes %q, the model %q", describe(format, a),
+						gw.writes[0], mw.writes[0])
+				}
+				if gn != mn || gerr != merr {
+					t.Errorf("Fprintf(%s) = %d, %v; the model's %d, %v", describe(format, a), gn,
+						gerr, mn, merr)
+				}
+			}
+		}
+	}
+}
+
 // errKind: 0 for an *errors.errorString, 1 for a *fmt.wrapError, 2 for a *fmt.wrapErrors, and
 // what it wraps.
 func errKind(err error) (int, []error) {
@@ -382,7 +498,7 @@ func TestModelErrorf(t *testing.T) {
 			gerr := fmt.Errorf(format, a...)
 			goCalls := calls
 			gk, gw := errKind(gerr)
-			ok := argsOk("vsxXqw", format, a)
+			ok := bytesOk("vsxXqw", format, a)
 			var found bool
 			for choice := uint64(0); choice < 3; choice++ {
 				arbitraryChoice = choice

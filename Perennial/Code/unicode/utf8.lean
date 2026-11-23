@@ -29,13 +29,17 @@ attribute [irreducible] acceptRange.ty
 @[reducible] noncomputable def RuneError [GooseExts] [GoGlobalContext] : val :=
   #(65533 : Int)
 
-opaque RuneSelf [GooseExts] [GoGlobalContext] : val
+/-- characters below RuneSelf are represented as themselves in a single byte. -/
+@[reducible] noncomputable def RuneSelf [GooseExts] [GoGlobalContext] : val :=
+  #(128 : Int)
 
 /-- Maximum valid Unicode code point. -/
 @[reducible] noncomputable def MaxRune [GooseExts] [GoGlobalContext] : val :=
   #(1114111 : Int)
 
-opaque UTFMax [GooseExts] [GoGlobalContext] : val
+/-- maximum number of bytes of a UTF-8 encoded Unicode character. -/
+@[reducible] noncomputable def UTFMax [GooseExts] [GoGlobalContext] : val :=
+  #(4 : Int)
 
 @[reducible] noncomputable def surrogateMin [GooseExts] [GoGlobalContext] : val :=
   #(55296 : Int)
@@ -43,7 +47,8 @@ opaque UTFMax [GooseExts] [GoGlobalContext] : val
 @[reducible] noncomputable def surrogateMax [GooseExts] [GoGlobalContext] : val :=
   #(57343 : Int)
 
-opaque t1 [GooseExts] [GoGlobalContext] : val
+@[reducible] noncomputable def t1 [GooseExts] [GoGlobalContext] : val :=
+  #(0 : Int)
 
 @[reducible] noncomputable def tx [GooseExts] [GoGlobalContext] : val :=
   #(128 : Int)
@@ -57,16 +62,20 @@ opaque t1 [GooseExts] [GoGlobalContext] : val
 @[reducible] noncomputable def t4 [GooseExts] [GoGlobalContext] : val :=
   #(240 : Int)
 
-opaque t5 [GooseExts] [GoGlobalContext] : val
+@[reducible] noncomputable def t5 [GooseExts] [GoGlobalContext] : val :=
+  #(248 : Int)
 
 @[reducible] noncomputable def maskx [GooseExts] [GoGlobalContext] : val :=
   #(63 : Int)
 
-opaque mask2 [GooseExts] [GoGlobalContext] : val
+@[reducible] noncomputable def mask2 [GooseExts] [GoGlobalContext] : val :=
+  #(31 : Int)
 
-opaque mask3 [GooseExts] [GoGlobalContext] : val
+@[reducible] noncomputable def mask3 [GooseExts] [GoGlobalContext] : val :=
+  #(15 : Int)
 
-opaque mask4 [GooseExts] [GoGlobalContext] : val
+@[reducible] noncomputable def mask4 [GooseExts] [GoGlobalContext] : val :=
+  #(7 : Int)
 
 @[reducible] noncomputable def rune1Max [GooseExts] [GoGlobalContext] : val :=
   #(127 : Int)
@@ -128,9 +137,11 @@ opaque mask4 [GooseExts] [GoGlobalContext] : val
 @[reducible] noncomputable def runeErrorByte2 [GooseExts] [GoGlobalContext] : val :=
   #(189 : Int)
 
-opaque ptrSize [GooseExts] [GoGlobalContext] : val
+@[reducible] noncomputable def ptrSize [GooseExts] [GoGlobalContext] : val :=
+  #(8 : Int)
 
-opaque hiBits [GooseExts] [GoGlobalContext] : val
+@[reducible] noncomputable def hiBits [GooseExts] [GoGlobalContext] : val :=
+  #(9259542123273814144 : Int)
 
 noncomputable def first [GooseExts] [GoGlobalContext] : GoString :=
   go!"unicode/utf8.first"
@@ -197,6 +208,1069 @@ noncomputable def ValidString [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def ValidRune [GooseExts] [GoGlobalContext] : GoString :=
   go!"unicode/utf8.ValidRune"
+
+/-- FullRune reports whether the bytes in p begin with a full UTF-8 encoding of a rune.
+    An invalid encoding is considered a full Rune since it will convert as a width-1 error rune.
+
+    go: utf8.go:110:6 -/
+noncomputable def FullRune.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "p"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 256 go.uint8)))) (Pair (App (Val (GoInstruction (GlobalVarAddr first))) (Val #())) (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 0)))))))))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (App (Val (GoInstruction (GoZeroVal go.uint8))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad acceptRange.ty))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 16 acceptRange.ty)))) (Pair (App (Val (GoInstruction (GlobalVarAddr acceptRanges))) (Val #())) (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(4 : Int)))))))))
+  (Let "accept" (App (Val (GoInstruction (GoAlloc acceptRange.ty))) (App (Val (GoInstruction (GoZeroVal acceptRange.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1)))) (If (App (Val (GoInstruction (GoOp GoLt go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 1))))) (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (StructFieldRef acceptRange.ty go!"lo"))) (Var "accept"))))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (StructFieldRef acceptRange.ty go!"hi"))) (Var "accept"))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 1)))))))) (Val #false)))
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 2)))) (If (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 2))))) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val locb)))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val hicb)) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 2)))))))) (Val #false)))
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore acceptRange.ty))) (Pair (Var "accept") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (GoOp GoAnd go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x")) (Val #(W8 7))))))))
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint8))) (Pair (Var "x") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 0)))))
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- FullRuneInString is like FullRune but its input is a string.
+
+    go: utf8.go:130:6 -/
+noncomputable def FullRuneInString.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 256 go.uint8)))) (Pair (App (Val (GoInstruction (GlobalVarAddr first))) (Val #())) (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 0))))))))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (App (Val (GoInstruction (GoZeroVal go.uint8))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad acceptRange.ty))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 16 acceptRange.ty)))) (Pair (App (Val (GoInstruction (GlobalVarAddr acceptRanges))) (Val #())) (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(4 : Int)))))))))
+  (Let "accept" (App (Val (GoInstruction (GoAlloc acceptRange.ty))) (App (Val (GoInstruction (GoZeroVal acceptRange.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1)))) (If (App (Val (GoInstruction (GoOp GoLt go.uint8))) (Pair (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 1)))) (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (StructFieldRef acceptRange.ty go!"lo"))) (Var "accept"))))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (StructFieldRef acceptRange.ty go!"hi"))) (Var "accept"))) (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 1))))))) (Val #false)))
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 2)))) (If (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 2)))) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val locb)))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val hicb)) (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 2))))))) (Val #false)))
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore acceptRange.ty))) (Pair (Var "accept") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (GoOp GoAnd go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x")) (Val #(W8 7))))))))
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint8))) (Pair (Var "x") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 0)))))
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- DecodeRune unpacks the first UTF-8 encoding in p and returns the rune and
+    its width in bytes. If p is empty it returns ([RuneError], 0). Otherwise, if
+    the encoding is invalid, it returns (RuneError, 1). Both are impossible
+    results for correct, non-empty UTF-8.
+
+    An encoding is invalid if it is incorrect UTF-8, encodes a rune that is
+    out of range, or is not the shortest possible UTF-8 encoding for the
+    value. No other validation is performed.
+
+    go: utf8.go:157:6 -/
+noncomputable def DecodeRune.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (Let "$res0" (Var "r")
+  (Let "size" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Let "$res1" (Var "size")
+  (Seq (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve decodeRuneSlow []))) (Val #())) (Var "$a0")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "r") (Var "$r0"))))))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (Let "b" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
+  (App (App (Val (slice.forRange go.byte)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doBreak) (Val #()))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "b")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val RuneSelf)))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (GoLoad go.byte))) (Var "b")))
+  (Let "$r1" (Val #(W64 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (Var "$key")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "b") (Var "$value")))))))))))))
+  (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.int))) (Var "$res1")))))))))
+
+/-- go: utf8.go:171:6 -/
+noncomputable def decodeRuneSlow.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (Let "$res0" (Var "r")
+  (Let "size" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Let "$res1" (Var "size")
+  (Seq (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "p"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 0)))))
+  (Let "p0" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 256 go.uint8)))) (Pair (App (Val (GoInstruction (GlobalVarAddr first))) (Val #())) (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (GoLoad go.byte))) (Var "p0"))))))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (App (Val (GoInstruction (GoZeroVal go.uint8))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (GoOp GoAnd go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x")) (Val #(W8 7)))))
+  (Let "sz" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad acceptRange.ty))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 16 acceptRange.ty)))) (Pair (App (Val (GoInstruction (GlobalVarAddr acceptRanges))) (Val #())) (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(4 : Int)))))))))
+  (Let "accept" (App (Val (GoInstruction (GoAlloc acceptRange.ty))) (App (Val (GoInstruction (GoZeroVal acceptRange.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 1)))))
+  (Let "b1" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 2)))))
+  (Let "b2" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 3)))))
+  (Let "b3" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.rune))) (Pair (App (Val (GoInstruction (GoOp GoOr go.rune))) (Pair (App (Val (GoInstruction (GoOp GoOr go.rune))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.rune))) (Pair (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "p0")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val mask4))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(18 : Int))))) (App (Val (GoInstruction (GoOp GoShiftl go.rune))) (Pair (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "b1")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val maskx))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(12 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.rune))) (Pair (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "b2")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val maskx))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(6 : Int))))))) (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "b3")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val maskx)))))))
+  (Let "$r1" (Val #(W64 4))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "b3")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val locb)))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val hicb)) (App (Val (GoInstruction (GoLoad go.byte))) (Var "b3"))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedRune go.rune))) (Val RuneError))
+  (Let "$r1" (Val #(W64 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "b3") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "sz")) (Val #(W64 3)))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.rune))) (Pair (App (Val (GoInstruction (GoOp GoOr go.rune))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.rune))) (Pair (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "p0")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val mask3))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(12 : Int))))) (App (Val (GoInstruction (GoOp GoShiftl go.rune))) (Pair (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "b1")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val maskx))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(6 : Int))))))) (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "b2")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val maskx)))))))
+  (Let "$r1" (Val #(W64 3))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "b2")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val locb)))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val hicb)) (App (Val (GoInstruction (GoLoad go.byte))) (Var "b2"))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedRune go.rune))) (Val RuneError))
+  (Let "$r1" (Val #(W64 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "b2") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "sz")) (Val #(W64 2)))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.rune))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.rune))) (Pair (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "p0")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val mask2))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(6 : Int))))) (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "b1")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val maskx)))))))
+  (Let "$r1" (Val #(W64 2))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "b1")) (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (StructFieldRef acceptRange.ty go!"lo"))) (Var "accept"))))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (StructFieldRef acceptRange.ty go!"hi"))) (Var "accept"))) (App (Val (GoInstruction (GoLoad go.byte))) (Var "b1"))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedRune go.rune))) (Val RuneError))
+  (Let "$r1" (Val #(W64 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "b1") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (App (Val (GoInstruction (GoLoad go.int))) (Var "sz")))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedRune go.rune))) (Val RuneError))
+  (Let "$r1" (Val #(W64 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore acceptRange.ty))) (Pair (Var "accept") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "sz") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint8))) (Val as')))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftr go.rune))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.rune))) (Pair (App (Val (GoInstruction (Convert go.uint8 go.rune))) (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(31 : Int))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(31 : Int)))))
+  (Let "mask" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.rune))) (Pair (App (Val (GoInstruction (GoOp GoBitClear go.rune))) (Pair (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 0)))))) (App (Val (GoInstruction (GoLoad go.rune))) (Var "mask")))) (App (Val (GoInstruction (GoOp GoAnd go.rune))) (Pair (App (Val (GoInstruction (Convert go.untypedRune go.rune))) (Val RuneError)) (App (Val (GoInstruction (GoLoad go.rune))) (Var "mask"))))))
+  (Let "$r1" (Val #(W64 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "mask") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint8))) (Pair (Var "x") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "p0") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1)))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedRune go.rune))) (Val RuneError))
+  (Let "$r1" (Val #(W64 0))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))))
+  (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.int))) (Var "$res1")))))))))
+
+/-- DecodeRuneInString is like [DecodeRune] but its input is a string. If s is
+    empty it returns ([RuneError], 0). Otherwise, if the encoding is invalid, it
+    returns (RuneError, 1). Both are impossible results for correct, non-empty
+    UTF-8.
+
+    An encoding is invalid if it is incorrect UTF-8, encodes a rune that is
+    out of range, or is not the shortest possible UTF-8 encoding for the
+    value. No other validation is performed.
+
+    go: utf8.go:219:6 -/
+noncomputable def DecodeRuneInString.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (Let "$res0" (Var "r")
+  (Let "size" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Let "$res1" (Var "size")
+  (Seq (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(go!""))))) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 0)))) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val RuneSelf)))) (Val #false)))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 0)))))
+  (Let "$r1" (Val #(W64 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve decodeRuneInStringSlow []))) (Val #())) (Var "$a0")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (Var "$r1"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "r") (Var "$r0"))))))))))))))
+  (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.int))) (Var "$res1")))))))))
+
+/-- go: utf8.go:231:6 -/
+noncomputable def decodeRuneInStringSlow.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 0))))
+  (Let "s0" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 256 go.uint8)))) (Pair (App (Val (GoInstruction (GlobalVarAddr first))) (Val #())) (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (GoLoad go.byte))) (Var "s0"))))))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (App (Val (GoInstruction (GoZeroVal go.uint8))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (GoOp GoAnd go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x")) (Val #(W8 7)))))
+  (Let "sz" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad acceptRange.ty))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 16 acceptRange.ty)))) (Pair (App (Val (GoInstruction (GlobalVarAddr acceptRanges))) (Val #())) (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(4 : Int)))))))))
+  (Let "accept" (App (Val (GoInstruction (GoAlloc acceptRange.ty))) (App (Val (GoInstruction (GoZeroVal acceptRange.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 1))))
+  (Let "s1" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 2))))
+  (Let "s2" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 3))))
+  (Let "s3" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.rune))) (Pair (App (Val (GoInstruction (GoOp GoOr go.rune))) (Pair (App (Val (GoInstruction (GoOp GoOr go.rune))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.rune))) (Pair (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "s0")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val mask4))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(18 : Int))))) (App (Val (GoInstruction (GoOp GoShiftl go.rune))) (Pair (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "s1")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val maskx))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(12 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.rune))) (Pair (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "s2")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val maskx))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(6 : Int))))))) (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "s3")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val maskx)))))))
+  (Let "$r1" (Val #(W64 4))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "s3")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val locb)))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val hicb)) (App (Val (GoInstruction (GoLoad go.byte))) (Var "s3"))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedRune go.rune))) (Val RuneError))
+  (Let "$r1" (Val #(W64 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "s3") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "sz")) (Val #(W64 3)))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.rune))) (Pair (App (Val (GoInstruction (GoOp GoOr go.rune))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.rune))) (Pair (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "s0")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val mask3))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(12 : Int))))) (App (Val (GoInstruction (GoOp GoShiftl go.rune))) (Pair (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "s1")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val maskx))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(6 : Int))))))) (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "s2")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val maskx)))))))
+  (Let "$r1" (Val #(W64 3))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "s2")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val locb)))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val hicb)) (App (Val (GoInstruction (GoLoad go.byte))) (Var "s2"))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedRune go.rune))) (Val RuneError))
+  (Let "$r1" (Val #(W64 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "s2") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "sz")) (Val #(W64 2)))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.rune))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.rune))) (Pair (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "s0")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val mask2))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(6 : Int))))) (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "s1")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val maskx)))))))
+  (Let "$r1" (Val #(W64 2))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "s1")) (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (StructFieldRef acceptRange.ty go!"lo"))) (Var "accept"))))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (StructFieldRef acceptRange.ty go!"hi"))) (Var "accept"))) (App (Val (GoInstruction (GoLoad go.byte))) (Var "s1"))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedRune go.rune))) (Val RuneError))
+  (Let "$r1" (Val #(W64 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "s1") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (App (Val (GoInstruction (GoLoad go.int))) (Var "sz")))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedRune go.rune))) (Val RuneError))
+  (Let "$r1" (Val #(W64 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore acceptRange.ty))) (Pair (Var "accept") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "sz") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint8))) (Val as')))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftr go.rune))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.rune))) (Pair (App (Val (GoInstruction (Convert go.uint8 go.rune))) (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(31 : Int))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(31 : Int)))))
+  (Let "mask" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.rune))) (Pair (App (Val (GoInstruction (GoOp GoBitClear go.rune))) (Pair (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 0))))) (App (Val (GoInstruction (GoLoad go.rune))) (Var "mask")))) (App (Val (GoInstruction (GoOp GoAnd go.rune))) (Pair (App (Val (GoInstruction (Convert go.untypedRune go.rune))) (Val RuneError)) (App (Val (GoInstruction (GoLoad go.rune))) (Var "mask"))))))
+  (Let "$r1" (Val #(W64 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "mask") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint8))) (Pair (Var "x") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "s0") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1)))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedRune go.rune))) (Val RuneError))
+  (Let "$r1" (Val #(W64 0))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))))
+  (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.int))) (Var "$res1")))))))
+
+/-- DecodeLastRune unpacks the last UTF-8 encoding in p and returns the rune and
+    its width in bytes. If p is empty it returns ([RuneError], 0). Otherwise, if
+    the encoding is invalid, it returns (RuneError, 1). Both are impossible
+    results for correct, non-empty UTF-8.
+
+    An encoding is invalid if it is incorrect UTF-8, encodes a rune that is
+    out of range, or is not the shortest possible UTF-8 encoding for the
+    value. No other validation is performed.
+
+    go: utf8.go:279:6 -/
+noncomputable def DecodeLastRune.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (Let "$res0" (Var "r")
+  (Let "size" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Let "$res1" (Var "size")
+  (Seq (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "p"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")))
+  (Let "end" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "end")) (Val #(W64 1))))
+  (Let "start" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (App (Val (GoInstruction (GoLoad go.int))) (Var "start"))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "end")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val UTFMax))))
+  (Let "$a1" (Val #(W64 0))
+  (App (App (App (Val (GoInstruction (FuncResolve go.max [go.int, go.int]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (Let "lim" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (Let "$a0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (Var "start"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "end")))))
+  (App (App (Val (GoInstruction (FuncResolve DecodeRune []))) (Val #())) (Var "$a0")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.rune))) (Var "r"))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad go.int))) (Var "size"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "start")) (App (Val (GoInstruction (GoLoad go.int))) (Var "size")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "end"))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedRune go.rune))) (Val RuneError))
+  (Let "$r1" (Val #(W64 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "r") (Var "$r0"))))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "start")) (Val #(W64 0)))))
+  (Let "$r0" (Val #(W64 0))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "start") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "start")) (App (Val (GoInstruction (GoLoad go.int))) (Var "lim")))))) (Lam BAnon
+  (If (Let "$a0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (App (Val (GoInstruction (GoLoad go.int))) (Var "start")))))
+  (App (App (Val (GoInstruction (FuncResolve RuneStart []))) (Val #())) (Var "$a0")))
+  (App (Val doBreak) (Val #()))
+  (App (Val doExecute)
+  (Val #())))))
+  (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "start") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "start")) (Val #(W64 1)))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "start") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "start")) (Val #(W64 1)))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "lim") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (App (Val (GoInstruction (Convert go.untypedInt go.rune))) (Val RuneSelf)))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.rune))) (Var "r"))
+  (Let "$r1" (Val #(W64 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "r") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "start") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "end")) (Val #(W64 0)))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedRune go.rune))) (Val RuneError))
+  (Let "$r1" (Val #(W64 0))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "end") (Var "$r0")))))))))
+  (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.int))) (Var "$res1")))))))))
+
+/-- DecodeLastRuneInString is like [DecodeLastRune] but its input is a string. If
+    s is empty it returns ([RuneError], 0). Otherwise, if the encoding is invalid,
+    it returns (RuneError, 1). Both are impossible results for correct,
+    non-empty UTF-8.
+
+    An encoding is invalid if it is incorrect UTF-8, encodes a rune that is
+    out of range, or is not the shortest possible UTF-8 encoding for the
+    value. No other validation is performed.
+
+    go: utf8.go:316:6 -/
+noncomputable def DecodeLastRuneInString.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (Let "$res0" (Var "r")
+  (Let "size" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Let "$res1" (Var "size")
+  (Seq (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))
+  (Let "end" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "end")) (Val #(W64 1))))
+  (Let "start" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (App (Val (GoInstruction (GoLoad go.int))) (Var "start")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "end")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val UTFMax))))
+  (Let "$a1" (Val #(W64 0))
+  (App (App (App (Val (GoInstruction (FuncResolve go.max [go.int, go.int]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (Let "lim" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (Let "$a0" (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (Var "start"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "end")))))
+  (App (App (Val (GoInstruction (FuncResolve DecodeRuneInString []))) (Val #())) (Var "$a0")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.rune))) (Var "r"))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad go.int))) (Var "size"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "start")) (App (Val (GoInstruction (GoLoad go.int))) (Var "size")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "end"))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedRune go.rune))) (Val RuneError))
+  (Let "$r1" (Val #(W64 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "r") (Var "$r0"))))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "start")) (Val #(W64 0)))))
+  (Let "$r0" (Val #(W64 0))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "start") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "start")) (App (Val (GoInstruction (GoLoad go.int))) (Var "lim")))))) (Lam BAnon
+  (If (Let "$a0" (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (App (Val (GoInstruction (GoLoad go.int))) (Var "start"))))
+  (App (App (Val (GoInstruction (FuncResolve RuneStart []))) (Val #())) (Var "$a0")))
+  (App (Val doBreak) (Val #()))
+  (App (Val doExecute)
+  (Val #())))))
+  (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "start") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "start")) (Val #(W64 1)))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "start") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "start")) (Val #(W64 1)))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "lim") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (App (Val (GoInstruction (Convert go.untypedInt go.rune))) (Val RuneSelf)))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.rune))) (Var "r"))
+  (Let "$r1" (Val #(W64 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "r") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "start") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "end")) (Val #(W64 0)))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedRune go.rune))) (Val RuneError))
+  (Let "$r1" (Val #(W64 0))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "end") (Var "$r0")))))))))
+  (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.int))) (Var "$res1")))))))))
+
+/-- RuneLen returns the number of bytes in the UTF-8 encoding of the rune.
+    It returns -1 if the rune is not a valid value to encode in UTF-8.
+
+    go: utf8.go:347:6 -/
+noncomputable def RuneLen.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "r"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.rune))) (Var "r"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$sw" (Val #true)
+  (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (App (Val (GoInstruction (GoOp GoLt go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (Val #(W32 0))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (App (Val (GoInstruction (GoOp GoLe go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (App (Val (GoInstruction (Convert go.untypedInt go.rune))) (Val rune1Max))))))
+  (Let "$r0" (Val #(W64 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (App (Val (GoInstruction (GoOp GoLe go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (App (Val (GoInstruction (Convert go.untypedInt go.rune))) (Val rune2Max))))))
+  (Let "$r0" (Val #(W64 2))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (If (App (Val (GoInstruction (GoOp GoLe go.rune))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.rune))) (Val surrogateMin)) (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")))) (App (Val (GoInstruction (GoOp GoLe go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (App (Val (GoInstruction (Convert go.untypedInt go.rune))) (Val surrogateMax)))) (Val #false))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (App (Val (GoInstruction (GoOp GoLe go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (App (Val (GoInstruction (Convert go.untypedInt go.rune))) (Val rune3Max))))))
+  (Let "$r0" (Val #(W64 3))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (App (Val (GoInstruction (GoOp GoLe go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (App (Val (GoInstruction (Convert go.untypedRune go.rune))) (Val MaxRune))))))
+  (Let "$r0" (Val #(W64 4))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
+
+/-- EncodeRune writes into p (which must be large enough) the UTF-8 encoding of the rune.
+    If the rune is out of range, it writes the encoding of [RuneError].
+    It returns the number of bytes written.
+
+    go: utf8.go:368:6 -/
+noncomputable def EncodeRune.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Lam "r"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.rune))) (Var "r"))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.rune))) (Var "r"))
+  (App (App (App (Val (GoInstruction (FuncResolve encodeRuneNonASCII []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.uint32))) (Pair (App (Val (GoInstruction (Convert go.rune go.uint32))) (App (Val (GoInstruction (GoLoad go.rune))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val rune1Max)))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.rune go.byte))) (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 0)))) (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
+
+/-- go: utf8.go:377:6 -/
+noncomputable def encodeRuneNonASCII.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Lam "r"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.rune))) (Var "r"))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "p"))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.rune go.uint32))) (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$sw" (Val #true)
+  (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (App (Val (GoInstruction (GoOp GoLe go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "i")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val rune2Max))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 1)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.byte))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val t2)) (App (Val (GoInstruction (Convert go.rune go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(6 : Int))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.byte))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val tx)) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (Convert go.rune go.byte))) (App (Val (GoInstruction (GoLoad go.rune))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val maskx))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 2))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 1)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 0)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Var "$r0"))))
+  (If (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (If (App (Val (GoInstruction (GoOp GoLt go.uint32))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val surrogateMax)) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "i")))) (App (Val (GoInstruction (GoOp GoLe go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "i")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val rune3Max)))) (Val #false)))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (App (Val (GoInstruction (GoOp GoLt go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "i")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val surrogateMin)))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 2)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.byte))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val t3)) (App (Val (GoInstruction (Convert go.rune go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(12 : Int))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.byte))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val tx)) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (Convert go.rune go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(6 : Int)))))) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val maskx))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.byte))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val tx)) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (Convert go.rune go.byte))) (App (Val (GoInstruction (GoLoad go.rune))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val maskx))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 3))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 2)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 1)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 0)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Var "$r0"))))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (If (App (Val (GoInstruction (GoOp GoGt go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "i")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val rune3Max)))) (App (Val (GoInstruction (GoOp GoLe go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "i")) (App (Val (GoInstruction (Convert go.untypedRune go.uint32))) (Val MaxRune)))) (Val #false))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 3)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.byte))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val t4)) (App (Val (GoInstruction (Convert go.rune go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(18 : Int))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.byte))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val tx)) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (Convert go.rune go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(12 : Int)))))) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val maskx))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.byte))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val tx)) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (Convert go.rune go.byte))) (App (Val (GoInstruction (GoOp GoShiftr go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(6 : Int)))))) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val maskx))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.byte))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val tx)) (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (Convert go.rune go.byte))) (App (Val (GoInstruction (GoLoad go.rune))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val maskx))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 4))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 3)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 2)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 1)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 0)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Var "$r0"))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 2)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedRune go.byte))) (Val runeErrorByte0))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedRune go.byte))) (Val runeErrorByte1))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedRune go.byte))) (Val runeErrorByte2))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 3))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 2)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 1)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 0)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Var "$r0"))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "i") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
 /-- AppendRune appends the UTF-8 encoding of r to the end of p and
     returns the extended buffer. If the rune is out of range,
@@ -296,10 +1370,454 @@ noncomputable def appendRuneNonASCII.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "i") (Var "$r0"))))))))))
   (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "$res0"))))))
 
+/-- RuneCount returns the number of runes in p. Erroneous and short
+    encodings are treated as single runes of width 1 byte.
+
+    go: utf8.go:434:6 -/
+noncomputable def RuneCount.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "p"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")))
+  (Let "np" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (App (Val (GoInstruction (GoLoad go.int))) (Var "np")))))) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))))
+  (Let "c" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val RuneSelf)))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$s"))))))
+  (App (App (Val (GoInstruction (FuncResolve RuneCountInString []))) (Val #())) (Var "$a0")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "c") (Var "$r0")))))))))
+  (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1)))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "np") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
+
+/-- RuneCountInString is like [RuneCount] but its input is a string.
+
+    go: utf8.go:447:6 -/
+noncomputable def RuneCountInString.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Let "$res0" (Var "n")
+  (Seq (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val string.forRange) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1))))))))))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
+
+/-- RuneStart reports whether the byte could be the first byte of an encoded,
+    possibly invalid rune. Second and subsequent bytes always have the top two
+    bits set to 10.
+
+    go: utf8.go:457:6 -/
+noncomputable def RuneStart.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "b"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc go.byte))) (Var "b"))
+  (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "b")) (Val #(W8 192)))) (Val #(W8 128)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: utf8.go:462:6 -/
+noncomputable def word.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
+  (LamV "s"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uintptr))) (App (Val (GoInstruction (GoZeroVal go.uintptr))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc T))) (Var "s"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.uintptr))) (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 0))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 1))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(8 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 2))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(16 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 3))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(24 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 4))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 5))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(40 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 6))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(48 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 7))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(56 : Int))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uintptr))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uintptr))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uintptr))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uintptr))) (Pair (App (Val (GoInstruction (Convert go.byte go.uintptr))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 0))))) (App (Val (GoInstruction (GoOp GoShiftl go.uintptr))) (Pair (App (Val (GoInstruction (Convert go.byte go.uintptr))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 1))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(8 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uintptr))) (Pair (App (Val (GoInstruction (Convert go.byte go.uintptr))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 2))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(16 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uintptr))) (Pair (App (Val (GoInstruction (Convert go.byte go.uintptr))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 3))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(24 : Int)))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uintptr))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val (GoInstruction (GoLoad go.uintptr))) (Var "$res0")))))
+
+/-- Valid reports whether p consists entirely of valid UTF-8-encoded runes.
+
+    go: utf8.go:470:6 -/
+noncomputable def Valid.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "p"))
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (Val (GoInstruction (FullSlice (go.GoType.SliceType go.byte)))) (Pair (Pair (Pair (Var "$s") (Val #(W64 0))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 0)))))
+  (Let "p0" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 256 go.uint8)))) (Pair (App (Val (GoInstruction (GlobalVarAddr first))) (Val #())) (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (GoLoad go.byte))) (Var "p0"))))))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (App (Val (GoInstruction (GoZeroVal go.uint8))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (GoOp GoAnd go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x")) (Val #(W8 7)))))
+  (Let "size" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad acceptRange.ty))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 16 acceptRange.ty)))) (Pair (App (Val (GoInstruction (GlobalVarAddr acceptRanges))) (Val #())) (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(4 : Int)))))))))
+  (Let "accept" (App (Val (GoInstruction (GoAlloc acceptRange.ty))) (App (Val (GoInstruction (GoZeroVal acceptRange.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$sw" (App (Val (GoInstruction (GoLoad go.int))) (Var "size"))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Var "$sw") (Val #(W64 2))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (Val #(W64 2))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$s")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "p") (Var "$r0")))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))) (Val #(W64 2)))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 1))))) (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (StructFieldRef acceptRange.ty go!"lo"))) (Var "accept")))))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (StructFieldRef acceptRange.ty go!"hi"))) (Var "accept"))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 1)))))))))
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Var "$sw") (Val #(W64 3))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (Val #(W64 3))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$s")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "p") (Var "$r0")))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (If (If (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))) (Val #(W64 3)))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 1))))) (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (StructFieldRef acceptRange.ty go!"lo"))) (Var "accept")))))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (StructFieldRef acceptRange.ty go!"hi"))) (Var "accept"))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 1)))))))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 2))))) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val locb))))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val hicb)) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 2)))))))))
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Var "$sw") (Val #(W64 4))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (Val #(W64 4))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$s")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "p") (Var "$r0")))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (If (If (If (If (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))) (Val #(W64 4)))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 1))))) (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (StructFieldRef acceptRange.ty go!"lo"))) (Var "accept")))))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (StructFieldRef acceptRange.ty go!"hi"))) (Var "accept"))) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 1)))))))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 2))))) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val locb))))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val hicb)) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 2)))))))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 3))))) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val locb))))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val hicb)) (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #(W64 3)))))))))
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore acceptRange.ty))) (Pair (Var "accept") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint8))) (Pair (Var "x") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "p0")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val RuneSelf)))))
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$s")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doContinue) (Val #()))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val ptrSize)))) (App (Val (GoInstruction (GoOp GoEquals go.uintptr))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uintptr))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve word [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (Convert go.untypedInt go.uintptr))) (Val hiBits)))) (Val #(W64 0)))) (Val #false)))
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val ptrSize))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$s")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))) (Val #(W64 16)))) (App (Val (GoInstruction (GoOp GoEquals go.uintptr))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uintptr))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uintptr))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve word [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))) (Let "$a0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val ptrSize))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$s")))))
+  (App (App (Val (GoInstruction (FuncResolve word [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uintptr))) (Val hiBits)))) (Val #(W64 0)))) (Val #false)))
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (Val #(W64 16))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$s")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
+  (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))) (Val #(W64 32)))) (App (Val (GoInstruction (GoOp GoEquals go.uintptr))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uintptr))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uintptr))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uintptr))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve word [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))) (Let "$a0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val ptrSize))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$s")))))
+  (App (App (Val (GoInstruction (FuncResolve word [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))))) (App (Val (GoInstruction (GoOp GoOr go.uintptr))) (Pair (Let "$a0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (Val #(W64 16))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$s")))))
+  (App (App (Val (GoInstruction (FuncResolve word [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))) (Let "$a0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (Val #(W64 24))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$s")))))
+  (App (App (Val (GoInstruction (FuncResolve word [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))))))) (App (Val (GoInstruction (Convert go.untypedInt go.uintptr))) (Val hiBits)))) (Val #(W64 0)))) (Val #false)))) (Lam BAnon
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (Val #(W64 32))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$s")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "p") (Var "$r0")))))))
+  (Lam BAnon
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "p") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "p") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "p") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "p0") (Var "$r0")))))))))
+  (Lam BAnon
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "p") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- ValidString reports whether s consists entirely of valid UTF-8-encoded runes.
+
+    go: utf8.go:522:6 -/
+noncomputable def ValidString.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 0))))
+  (Let "s0" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 256 go.uint8)))) (Pair (App (Val (GoInstruction (GlobalVarAddr first))) (Val #())) (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (GoLoad go.byte))) (Var "s0"))))))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (App (Val (GoInstruction (GoZeroVal go.uint8))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (GoOp GoAnd go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x")) (Val #(W8 7)))))
+  (Let "size" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad acceptRange.ty))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 16 acceptRange.ty)))) (Pair (App (Val (GoInstruction (GlobalVarAddr acceptRanges))) (Val #())) (App (Val (GoInstruction (Convert go.uint8 go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint8))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(4 : Int)))))))))
+  (Let "accept" (App (Val (GoInstruction (GoAlloc acceptRange.ty))) (App (Val (GoInstruction (GoZeroVal acceptRange.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$sw" (App (Val (GoInstruction (GoLoad go.int))) (Var "size"))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Var "$sw") (Val #(W64 2))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (Val #(W64 2))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0")))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (Val #(W64 2)))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.uint8))) (Pair (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 1)))) (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (StructFieldRef acceptRange.ty go!"lo"))) (Var "accept")))))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (StructFieldRef acceptRange.ty go!"hi"))) (Var "accept"))) (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 1))))))))
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Var "$sw") (Val #(W64 3))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (Val #(W64 3))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0")))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (If (If (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (Val #(W64 3)))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.uint8))) (Pair (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 1)))) (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (StructFieldRef acceptRange.ty go!"lo"))) (Var "accept")))))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (StructFieldRef acceptRange.ty go!"hi"))) (Var "accept"))) (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 1))))))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 2)))) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val locb))))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val hicb)) (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 2))))))))
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Var "$sw") (Val #(W64 4))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (Val #(W64 4))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0")))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (If (If (If (If (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (Val #(W64 4)))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.uint8))) (Pair (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 1)))) (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (StructFieldRef acceptRange.ty go!"lo"))) (Var "accept")))))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.uint8))) (App (Val (GoInstruction (StructFieldRef acceptRange.ty go!"hi"))) (Var "accept"))) (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 1))))))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 2)))) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val locb))))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val hicb)) (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 2))))))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 3)))) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val locb))))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val hicb)) (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(W64 3))))))))
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore acceptRange.ty))) (Pair (Var "accept") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint8))) (Pair (Var "x") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "s0")) (App (Val (GoInstruction (Convert go.untypedInt go.byte))) (Val RuneSelf)))))
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doContinue) (Val #()))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val ptrSize)))) (App (Val (GoInstruction (GoOp GoEquals go.uintptr))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uintptr))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve word [go.string]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (Convert go.untypedInt go.uintptr))) (Val hiBits)))) (Val #(W64 0)))) (Val #false)))
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val ptrSize))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (Val #(W64 16)))) (App (Val (GoInstruction (GoOp GoEquals go.uintptr))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uintptr))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uintptr))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve word [go.string]))) (Val #())) (Var "$a0"))) (Let "$a0" (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val ptrSize))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s")))))
+  (App (App (Val (GoInstruction (FuncResolve word [go.string]))) (Val #())) (Var "$a0"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uintptr))) (Val hiBits)))) (Val #(W64 0)))) (Val #false)))
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (Val #(W64 16))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
+  (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (Val #(W64 32)))) (App (Val (GoInstruction (GoOp GoEquals go.uintptr))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uintptr))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uintptr))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uintptr))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve word [go.string]))) (Val #())) (Var "$a0"))) (Let "$a0" (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val ptrSize))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s")))))
+  (App (App (Val (GoInstruction (FuncResolve word [go.string]))) (Val #())) (Var "$a0"))))) (App (Val (GoInstruction (GoOp GoOr go.uintptr))) (Pair (Let "$a0" (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (Val #(W64 16))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s")))))
+  (App (App (Val (GoInstruction (FuncResolve word [go.string]))) (Val #())) (Var "$a0"))) (Let "$a0" (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (Val #(W64 24))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s")))))
+  (App (App (Val (GoInstruction (FuncResolve word [go.string]))) (Val #())) (Var "$a0"))))))) (App (Val (GoInstruction (Convert go.untypedInt go.uintptr))) (Val hiBits)))) (Val #(W64 0)))) (Val #false)))) (Lam BAnon
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (Val #(W64 32))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0")))))))
+  (Lam BAnon
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "s0") (Var "$r0")))))))))
+  (Lam BAnon
+  (Val #()))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- ValidRune reports whether r can be legally encoded as UTF-8.
+    Code points that are out of range or a surrogate half are illegal.
+
+    go: utf8.go:570:6 -/
+noncomputable def ValidRune.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "r"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.rune))) (Var "r"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$sw" (Val #true)
+  (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (If (App (Val (GoInstruction (GoOp GoLe go.rune))) (Pair (Val #(W32 0)) (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")))) (App (Val (GoInstruction (GoOp GoLt go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (App (Val (GoInstruction (Convert go.untypedInt go.rune))) (Val surrogateMin)))) (Val #false))))
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (If (App (Val (GoInstruction (GoOp GoLt go.rune))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.rune))) (Val surrogateMax)) (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")))) (App (Val (GoInstruction (GoOp GoLe go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (App (Val (GoInstruction (Convert go.untypedRune go.rune))) (Val MaxRune)))) (Val #false))))
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
 noncomputable instance info' : PkgInfo pkg_id.unicode.utf8 where
   pkgImportedPkgs := []
-
-opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -628,12 +2146,48 @@ attribute [instance] acceptRange.TypeAssumptions.type_repr
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   acceptRange_instance : acceptRange.TypeAssumptions
+  FullRune_unfold : FuncUnfold FullRune [] FullRune.impl
+  FullRuneInString_unfold : FuncUnfold FullRuneInString [] FullRuneInString.impl
+  DecodeRune_unfold : FuncUnfold DecodeRune [] DecodeRune.impl
+  decodeRuneSlow_unfold : FuncUnfold decodeRuneSlow [] decodeRuneSlow.impl
+  DecodeRuneInString_unfold : FuncUnfold DecodeRuneInString [] DecodeRuneInString.impl
+  decodeRuneInStringSlow_unfold : FuncUnfold decodeRuneInStringSlow [] decodeRuneInStringSlow.impl
+  DecodeLastRune_unfold : FuncUnfold DecodeLastRune [] DecodeLastRune.impl
+  DecodeLastRuneInString_unfold : FuncUnfold DecodeLastRuneInString [] DecodeLastRuneInString.impl
+  RuneLen_unfold : FuncUnfold RuneLen [] RuneLen.impl
+  EncodeRune_unfold : FuncUnfold EncodeRune [] EncodeRune.impl
+  encodeRuneNonASCII_unfold : FuncUnfold encodeRuneNonASCII [] encodeRuneNonASCII.impl
   AppendRune_unfold : FuncUnfold AppendRune [] AppendRune.impl
   appendRuneNonASCII_unfold : FuncUnfold appendRuneNonASCII [] appendRuneNonASCII.impl
+  RuneCount_unfold : FuncUnfold RuneCount [] RuneCount.impl
+  RuneCountInString_unfold : FuncUnfold RuneCountInString [] RuneCountInString.impl
+  RuneStart_unfold : FuncUnfold RuneStart [] RuneStart.impl
+  word_unfold : ∀ (T : go.GoType), FuncUnfold word [T] (word.impl T)
+  Valid_unfold : FuncUnfold Valid [] Valid.impl
+  ValidString_unfold : FuncUnfold ValidString [] ValidString.impl
+  ValidRune_unfold : FuncUnfold ValidRune [] ValidRune.impl
 
 attribute [instance] Assumptions.acceptRange_instance
+  Assumptions.FullRune_unfold
+  Assumptions.FullRuneInString_unfold
+  Assumptions.DecodeRune_unfold
+  Assumptions.decodeRuneSlow_unfold
+  Assumptions.DecodeRuneInString_unfold
+  Assumptions.decodeRuneInStringSlow_unfold
+  Assumptions.DecodeLastRune_unfold
+  Assumptions.DecodeLastRuneInString_unfold
+  Assumptions.RuneLen_unfold
+  Assumptions.EncodeRune_unfold
+  Assumptions.encodeRuneNonASCII_unfold
   Assumptions.AppendRune_unfold
   Assumptions.appendRuneNonASCII_unfold
+  Assumptions.RuneCount_unfold
+  Assumptions.RuneCountInString_unfold
+  Assumptions.RuneStart_unfold
+  Assumptions.word_unfold
+  Assumptions.Valid_unfold
+  Assumptions.ValidString_unfold
+  Assumptions.ValidRune_unfold
 
 end unicode.utf8
 

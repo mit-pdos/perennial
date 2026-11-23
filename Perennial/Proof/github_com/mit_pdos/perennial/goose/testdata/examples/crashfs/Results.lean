@@ -124,7 +124,7 @@ theorem crash_safety_bounded [lctx : GoLocalContext] [sem : go.Semantics] [packa
       · iexact Hinv
       ipureintro; rfl
     · -- after a crash, the files' ghost state is the generation's, and so is the invariant
-      iintro %L' _ %Hfs Hgs'
+      iintro %L' _ %Hfs Hgs' _
       imodintro
       iframe Hgs'
       iexists γ

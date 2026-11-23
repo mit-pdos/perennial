@@ -1,10 +1,1 @@
-translate = [
-  # AppendRune (strings.Builder.WriteRune) and what it needs
-  "AppendRune", "appendRuneNonASCII",
-  "RuneError", "MaxRune", "rune1Max", "rune2Max", "rune3Max", "surrogateMin", "surrogateMax",
-  "t2", "t3", "t4", "tx", "maskx", "runeErrorByte0", "runeErrorByte1", "runeErrorByte2",
-  # the package's initializer: the tables `first` and `acceptRanges`, and what they name
-  "first", "acceptRanges", "acceptRange", "xx", "as", "s1", "s2", "s3", "s4", "s5", "s6", "s7",
-  "locb", "hicb",
-]
-imports = ["!*"]
+# every declaration of the package is translated

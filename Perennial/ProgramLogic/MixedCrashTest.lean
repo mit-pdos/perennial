@@ -156,7 +156,7 @@ theorem mixed_safety_bounded [hPre : GooseGpreS GF] (N T : Nat) (p : GoString)
       iintro _
       ipureintro
       simp only [post, GMap.lookup_empty, Option.getD_none, Nat.zero_ne_one, decide_false]
-    · iintro %L' _ _ Hgs'
+    · iintro %L' _ _ Hgs' _
       imodintro
       iexact Hgs'
 
@@ -255,7 +255,7 @@ theorem allCrash_obligation_false [hPre : GooseGpreS GF] (N T : Nat) (hN : 2 < N
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜post i v⌝ }} ∗
         ∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
           extsCrashStart hG.goose_localGS L' -∗
-          ownGoState (hG := L'.goose_go_stateGS) ∅ ={⊤}=∗ P i L') :
+          ownGoState (hG := L'.goose_go_stateGS) ∅ -∗ £ 1 ={⊤}=∗ P i L') :
     False := by
   have Hmem : ∀ x, x ∈ crashing p σ₀ ++ stable p σ₁ →
       x = (checkInit p, σ₀) ∨ x = (checkInit p, σ₁) := by

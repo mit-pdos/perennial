@@ -7,7 +7,7 @@ module
 public import Perennial.Spec.syscall.initialize
 public import Perennial.Spec.sync.initialize
 public import Perennial.Spec.sync.OnceFunc
-public import Perennial.Proof.fmt.SprintfModel
+public import Perennial.Proof.arbitraryString
 
 @[expose] public section
 

@@ -8,6 +8,7 @@ package fmt_test
 import (
 	"errors"
 	"fmt"
+	"io"
 	"reflect"
 )
 
@@ -26,6 +27,16 @@ func arbitrary() uint64 { return arbitraryChoice }
 type notModelledPanic struct{}
 
 func notModelled() { panic(notModelledPanic{}) }
+
+// printerBuf(s) stands for the printer's buffer Fprintf hands Write (the model's primitive
+// printerBuf): the bytes of s in a slice of arbitrary capacity whose spare capacity holds arbitrary
+// bytes (gc's pooled buffer holds earlier output there), or, for an empty s, possibly nil (gc's
+// fresh printer's buffer, or one after a buffer above 64 KiB was dropped): fprintf_alias_test.go.
+func printerBuf(s string) []byte { return []byte(s) }
+
+// retire(b) stands for the model's primitive retire: every cell of b up to its capacity is left
+// unusable (a write begun and never finished), as gc reuses the buffer for later prints.
+func retire(b []byte) {}
 
 // underlyingAs[T](x): reflect.ValueOf(x) read at T's kind, if x's dynamic type has T's underlying
 // type (TypeAssertUnderlying2 T).
@@ -246,6 +257,122 @@ func formatArg(format string, i int, x any) (string, int, bool) {
 	return formatInt(neg, mag, width), next, true
 }
 
+// hexNibble: the hexadecimal digit of d (below 16), lowercase or uppercase.
+func hexNibble(d byte, upper bool) byte {
+	if d < 10 {
+		return '0' + d
+	}
+	if upper {
+		return 'A' + (d - 10)
+	}
+	return 'a' + (d - 10)
+}
+
+// quoteByte: the byte c as strconv.Quote writes it inside the quotes, for c below 0x80: \" and
+// \\, the bytes from 0x20 to 0x7E themselves, the escapes \a \b \f \n \r \t \v, and \xNN for the
+// other control bytes and 0x7F. (Of a byte from 0x80 it gives \xNN too; quoteBytes never asks.)
+func quoteByte(c byte) string {
+	if c == '"' || c == '\\' {
+		return string([]byte{'\\', c})
+	}
+	if 0x20 <= c && c <= 0x7e {
+		return string([]byte{c})
+	}
+	if c == '\a' {
+		return `\a`
+	}
+	if c == '\b' {
+		return `\b`
+	}
+	if c == '\f' {
+		return `\f`
+	}
+	if c == '\n' {
+		return `\n`
+	}
+	if c == '\r' {
+		return `\r`
+	}
+	if c == '\t' {
+		return `\t`
+	}
+	if c == '\v' {
+		return `\v`
+	}
+	return string([]byte{'\\', 'x', hexNibble(c/16, false), hexNibble(c%16, false)})
+}
+
+// quoteBytes: strconv.Quote(string(b)), as fmtQ prints %q of b without flags, width or
+// precision, when every byte of b is ASCII (below 0x80): there strconv's escaping depends on no
+// table (IsPrint is true exactly from 0x20 to 0x7E). ok is false when a byte is not ASCII, where
+// strconv decodes UTF-8 and consults its printable-rune tables.
+func quoteBytes(b []byte) (string, bool) {
+	out := "\""
+	for _, c := range b {
+		if c >= 0x80 {
+			return "", false
+		}
+		out += quoteByte(c)
+	}
+	return out + "\"", true
+}
+
+// decBytes: %v and %d of b, as fmtBytes prints them: its bytes in decimal, separated by spaces,
+// in brackets.
+func decBytes(b []byte) string {
+	out := "["
+	for k, c := range b {
+		if k > 0 {
+			out += " "
+		}
+		out += formatInt(false, uint64(c), 0)
+	}
+	return out + "]"
+}
+
+// hexBytes: %x (upper false) and %X of b, as fmtBytes prints them: two hexadecimal digits a byte.
+func hexBytes(b []byte, upper bool) string {
+	var out string
+	for _, c := range b {
+		out += string([]byte{hexNibble(c/16, upper), hexNibble(c%16, upper)})
+	}
+	return out
+}
+
+// formatBytes: at format[i], a '%': the output of the directive for the argument x, if it is of
+// type []byte, and the index after it, as Go's fmtBytes prints it, if the directive is %s, %v,
+// %d, %x, %X or %q, without flags, width or precision (%q only of ASCII bytes, quoteBytes). It
+// reads every byte of x then, as Go does, and nothing otherwise.
+func formatBytes(format string, i int, x any) (string, int, bool) {
+	if i+1 >= len(format) {
+		return "", 0, false
+	}
+	verb := format[i+1]
+	if verb != 's' && verb != 'v' && verb != 'd' && verb != 'x' && verb != 'X' && verb != 'q' {
+		return "", 0, false
+	}
+	b, ok := x.([]byte)
+	if !ok {
+		return "", 0, false
+	}
+	if verb == 's' {
+		return string(b), i + 2, true
+	}
+	if verb == 'v' || verb == 'd' {
+		return decBytes(b), i + 2, true
+	}
+	if verb == 'x' || verb == 'X' {
+		return hexBytes(b, verb == 'X'), i + 2, true
+	}
+	if verb == 'q' {
+		s, ok := quoteBytes(b)
+		if !ok {
+			return "", 0, false
+		}
+		return s, i + 2, true
+	}
+	return "", 0, false
+}
 
 // The new parts of the model of fmt (Perennial/TrustedCode/fmt.lean). In the scratch package these
 // sit next to the old helpers (oldmodel.go), with stubs for arbitrary, arbitraryString,
@@ -387,6 +514,28 @@ func visitKind(x any) {
 
 // visitArg calls the methods of x that Go's printArg calls under the directive (verb, sharpV),
 // and nothing else; the output is not modelled.
+// callError calls e.Error() as printArg's handleMethods does. Go calls it under catchPanic, which
+// recovers a panic of the method and prints it ("%!v(PANIC=Error method: ...)"), then goes on; the
+// model does not follow that: it is stuck there (notModelled), never panicking where Go recovers.
+func callError(e error) {
+	defer func() {
+		if recover() != nil {
+			notModelled()
+		}
+	}()
+	e.Error()
+}
+
+// callString calls s.String(), as callError calls Error().
+func callString(s interface{ String() string }) {
+	defer func() {
+		if recover() != nil {
+			notModelled()
+		}
+	}()
+	s.String()
+}
+
 func visitArg(x any, verb byte, sharpV bool, wrapErrs bool) {
 	if x == nil {
 		return
@@ -395,6 +544,10 @@ func visitArg(x any, verb byte, sharpV bool, wrapErrs bool) {
 		return
 	}
 	if isBasic(x) {
+		return
+	}
+	if b, ok := x.([]byte); ok {
+		_ = string(b) // printArg's fmtBytes: reads b, calls no method, under every verb
 		return
 	}
 	if verb == 'w' {
@@ -413,14 +566,14 @@ func visitArg(x any, verb byte, sharpV bool, wrapErrs bool) {
 		}
 	} else if verb == 'v' || verb == 's' || verb == 'x' || verb == 'X' || verb == 'q' {
 		if e, ok := x.(error); ok {
-			e.Error()
+			callError(e)
 			return
 		}
 		if s, ok := x.(interface{ String() string }); ok {
 			if _, ok := x.(interface{ CanInterface() bool }); ok {
 				notModelled() // a reflect.Value, which printArg unwraps
 			}
-			s.String()
+			callString(s)
 			return
 		}
 	}
@@ -484,6 +637,15 @@ func doPrintf(format string, a []any, wrapErrs bool) (string, []int, bool) {
 			i += 2
 			continue
 		}
+		if argNum < len(a) {
+			s, next, ok := formatBytes(format, i, a[argNum])
+			if ok {
+				out += s
+				argNum++
+				i = next
+				continue
+			}
+		}
 		if argNum < len(a) && inert(a[argNum]) {
 			s, next, ok := formatArg(format, i, a[argNum])
 			if ok {
@@ -515,6 +677,14 @@ func modelPrintf(format string, a ...any) (int, error) {
 		return n, nil
 	}
 	return n, errors.New(arbitraryString())
+}
+
+func modelFprintf(w io.Writer, format string, a ...any) (int, error) {
+	s, _, _ := doPrintf(format, a, false)
+	b := printerBuf(s)
+	n, err := w.Write(b)
+	retire(b)
+	return n, err
 }
 
 func modelErrorf(format string, a ...any) error {
