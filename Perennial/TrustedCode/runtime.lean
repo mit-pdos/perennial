@@ -36,7 +36,9 @@ The Go declaration has no initializer: the linker writes the value into the bina
 release, plus `-X:<experiments>` when `GOEXPERIMENT` differs from the default), and `schedinit`
 replaces an empty value by `"unknown"` before any package is initialized (`proc.go`). The linker's
 `-X runtime.buildVersion=<s>` sets it to any string `s`, invalid UTF-8 included (Go evidence:
-`goose/model/runtime/version_test.go`). Nothing writes it after that.
+`goose/model/runtime/version_test.go`). Nothing writes it after that: `runtime` itself does not,
+and a `//go:linkname` pull of it from another package is refused by the default linker (since Go
+1.23; only `-ldflags=-checklinkname=0` allows it, and goose does not model `go:linkname`).
 
 The model allocates the variable and stores an arbitrary string (`fmt.arbitraryString`, which can
 be every string), so it is less defined than Go: every value Go can have is one of its results. It
