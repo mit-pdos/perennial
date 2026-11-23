@@ -188,8 +188,8 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
   /-- `maps.clone` (`runtime/map.go`'s `maps_clone`), on an interface holding a map: a new map
   with the same entries, in an interface of the same dynamic type. A map is the cell holding its
   entries, so the copy is a new cell holding the value read. Stuck on anything else (`maps.Clone`
-  passes only a non-nil map). Like the other map operations, the model does not detect a
-  concurrent write (Go may throw "concurrent map clone and map write"). -/
+  passes only a non-nil map). A clone racing a write is stuck (`Read` is non-atomic), where Go
+  may throw "concurrent map clone and map write". -/
   internal_map_clone_step {t key_type elem_type : go.GoType} [t ↓u go.MapType key_type elem_type]
     (l : Loc) :
     ⟦InternalMapClone, #(interface.mkOk t #l)⟧ ⤳ (Convert t go.any (Alloc (Read #l)))
