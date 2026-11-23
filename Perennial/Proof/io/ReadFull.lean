@@ -37,8 +37,7 @@ theorem io.ReadFull.wp_proof
   · iframe Hr Heof Hueof HSB HS Hp
     ipureintro
     intro ys hys
-    have hm : sint.Z p.len = ((xs.length : Nat) : Int) := by word
-    exact Hpre ys (by omega)
+    exact Hpre ys hys.2
   wp_auto
   iapply HΦ
   iexists ys
