@@ -10499,6 +10499,23 @@ noncomputable def vgetrandom [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def writeErr [GooseExts] [GoGlobalContext] : GoString :=
   go!"runtime.writeErr"
 
+/-- Version returns the Go tree's version string.
+    It is either the commit hash and date at the time of the build or,
+    when possible, a release tag like "go1.3".
+
+    go: extern.go:373:6 -/
+noncomputable def Version.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (GlobalVarAddr buildVersion))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")))))
+
 noncomputable instance info' : PkgInfo pkg_id.runtime where
   pkgImportedPkgs := [pkg_id.internal.runtime.sys, pkg_id.internal.runtime.atomic]
 
@@ -10508,6 +10525,7 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.runtime)) (Lam BAnon
   (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -10821,7 +10839,9 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.internal.runtime.sys.initialize') (Val #()))))))
   (App (Val doExecute)
-  (App (Val _root_.Perennial.internal.runtime.atomic.initialize') (Val #()))))))))
+  (App (Val _root_.Perennial.internal.runtime.atomic.initialize') (Val #()))))))
+  (App (Val doExecute)
+  (App (Val buildVersion.init) (Val #()))))))))
 
 structure userArena [GooseExts] where
   mk ::

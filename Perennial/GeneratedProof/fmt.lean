@@ -635,7 +635,7 @@ noncomputable instance ss_access_load_rs (l : Loc) (v : fmt.ss) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-noncomputable instance ss_access_store_rs (l : Loc) (v : fmt.ss) (rs' : io.RuneScanner) :
+noncomputable instance ss_access_store_rs (l : Loc) (v : fmt.ss) (rs' : _root_.Perennial.io.RuneScanner) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef fmt.ss go!"rs" l) v.rs' (DFrac.own 1))
       (typedPointsto (structFieldRef fmt.ss go!"rs" l) rs' (DFrac.own 1))
@@ -743,7 +743,7 @@ noncomputable instance readRune_access_load_reader (l : Loc) (v : fmt.readRune) 
  by
   solve_pointsto_access_struct
 
-noncomputable instance readRune_access_store_reader (l : Loc) (v : fmt.readRune) (reader' : io.Reader) :
+noncomputable instance readRune_access_store_reader (l : Loc) (v : fmt.readRune) (reader' : _root_.Perennial.io.Reader) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef fmt.readRune go!"reader" l) v.reader' (DFrac.own 1))
       (typedPointsto (structFieldRef fmt.readRune go!"reader" l) reader' (DFrac.own 1))

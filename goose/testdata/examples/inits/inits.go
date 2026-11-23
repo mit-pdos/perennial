@@ -14,6 +14,11 @@ func init() {
 // z's initializer is trusted: z'init is defined in TrustedCode.
 var z = computeZ()
 
+// w has no initializer and is trusted (as runtime.buildVersion, which the
+// linker sets): initialize' runs w'init, defined in TrustedCode, in place of
+// allocating it.
+var w uint64
+
 func computeZ() uint64 {
 	return 3
 }

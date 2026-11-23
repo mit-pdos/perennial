@@ -90,10 +90,13 @@ type Ctx struct {
 	// the next function literal translated is the operand of a `defer`
 	nextFuncLitDeferred bool
 
-	globalVars     []*ast.Ident
-	functions      []*ast.FuncDecl
-	namedTypeSpecs []*ast.TypeSpec
-	localTypes     map[string]bool // names of the types declared in functions
+	globalVars []*ast.Ident
+	// trusted variables with no initializer (`var X T`): their X'init, defined
+	// in TrustedCode, is their whole initialization (in place of an allocation)
+	trustedNoInitVars []*ast.Ident
+	functions         []*ast.FuncDecl
+	namedTypeSpecs    []*ast.TypeSpec
+	localTypes        map[string]bool // names of the types declared in functions
 	// the unnamed struct types (with fields) the translation mentions, by
 	// name, in the order they were met (a struct after those its fields
 	// mention; see anonStructOf)
@@ -2886,6 +2889,13 @@ func (ctx *Ctx) globalVarDecl(d *ast.GenDecl) {
 			switch ctx.filter.GetAction(name.Name) {
 			case declfilter.Translate:
 				ctx.globalVars = append(ctx.globalVars, name)
+			case declfilter.Trust:
+				// A trusted variable with no initializer (one the linker
+				// sets, as runtime.buildVersion) gets an X'init too, run
+				// where a translated one is allocated.
+				if s.Values == nil {
+					ctx.trustedNoInitVars = append(ctx.trustedNoInitVars, name)
+				}
 			case declfilter.Axiomatize:
 				if s.Values != nil {
 					ctx.out.varDecls = append(ctx.out.varDecls, glang.AxiomDecl{
@@ -3267,6 +3277,12 @@ func (ctx *Ctx) finalExtraDecls() {
 
 	if e == nil {
 		e = glang.DoExpr{Expr: glang.Tt}
+	}
+
+	for i := len(ctx.trustedNoInitVars) - 1; i >= 0; i-- {
+		e = glang.NewDoSeq(
+			glang.NewCallExpr(ctx.termIdent(ctx.trustedNoInitVars[i].Name+"'init"), glang.Tt),
+			e)
 	}
 
 	for _, varIdent := range ctx.globalVars {
