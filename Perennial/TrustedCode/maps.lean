@@ -18,10 +18,17 @@ variable [GooseExts] [GoGlobalContext]
 /-- `Clone(m)` (maps/maps.go): `nil` if `m` is `nil`, else `clone(m).(M)`, where `clone(m any) any`
 is a `go:linkname` to the runtime (`runtime/map.go`'s `maps_clone`, which calls
 `internal/runtime/maps`'s `clone`): a new map holding `m`'s entries, of `m`'s dynamic type, so the
-assertion `.(M)` always succeeds. Goose rejects `clone` (an external function, no Go body), and a
-model of `clone` alone cannot be written: it takes an `any`, while the semantics' map operations
-(`map.forRange`, `map.insert`, `make`) take the map's type statically. So `Clone`, whose type
-parameters give that type, is the trusted unit. The model is goose's translation of
+assertion `.(M)` always succeeds. Goose rejects `clone` (an external function, no Go body) and
+translates the rest of `Clone`, so `clone` is the innermost untranslatable unit. It is not the
+trusted unit here because no existing GooseLang operation can model it: `clone` receives an `any`,
+and the map operations the language has (`make`, `map.insert`, `map.forRange`) are instructions
+that take the map type statically, chosen by goose. Modelling `clone` would take a new semantics
+instruction (a step rule that, given `interface.mkOk t #l` with `t` a map type, allocates a copy of
+the cell at `l`: a map is one cell holding its entries, whatever its type). That is a change to the
+language, which this change does not make; it is the better rung (it would also copy the entries
+as they are, and be defined at named map types, where this model is stuck at `make`), and is left
+as a follow-up. Until then `Clone`, whose type parameters give the map type statically, is the
+trusted unit. The model is goose's translation of
 
 ```go
 func Clone[M ~map[K]V, K comparable, V any](m M) M {

@@ -1,8 +1,8 @@
 # Everything but `clone`, a `go:linkname` to the runtime (`runtime/map.go`'s `maps_clone`) with no
-# Go body, which goose rejects ("external function"). Its caller `Clone` is trusted instead
-# (TrustedCode/maps.lean): `clone` takes and returns `any`, so a model of it alone would have to
-# range over a map whose type is known only at run time, while the semantics' map operations
-# (`map.forRange`, `IndexRef`) take a static type; `Clone`'s type parameters give it one.
+# Go body, which goose rejects ("external function"). With only `clone` left out, goose translates
+# `Clone` (`clone(m).(M)`), so `clone` is the innermost untranslatable unit; its caller `Clone` is
+# trusted instead (TrustedCode/maps.lean, which says why: a model of `clone` itself needs a new
+# semantics instruction, rejected for now).
 translate = ["*", "!clone", "!Clone"]
 trusted = ["Clone"]
 imports = ["!*", "iter"]

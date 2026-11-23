@@ -1419,6 +1419,18 @@ func (ctx *Ctx) forStmt(s *ast.ForStmt, label *ast.Ident, cont glang.Expr) glang
 	return glang.SeqExpr{Expr: e, Cont: cont}
 }
 
+// staticArrayLen reports whether the type t of a range expression is an array
+// or a pointer to one, so that its length is constant (Go spec, "Length and
+// capacity"). A type parameter whose core type is an array is not: Go evaluates
+// the expression (`range *q` with `q *A`, `A ~[3]int`, panics if `q` is nil).
+func staticArrayLen(t types.Type) bool {
+	if p, ok := t.Underlying().(*types.Pointer); ok {
+		t = p.Elem()
+	}
+	_, ok := t.Underlying().(*types.Array)
+	return ok
+}
+
 // rangeStmt translates a range statement with the label label (nil if none).
 func (ctx *Ctx) rangeStmt(s *ast.RangeStmt, label *ast.Ident) glang.Expr {
 	if n, msg, bad := modelcheck.Range(ctx.info, s); bad {
@@ -1458,7 +1470,9 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt, label *ast.Ident) glang.Expr {
 	// Go evaluates the range expression, except when the loop has no value
 	// variable and its length is constant: an array, or pointer to one, with no
 	// calls or receives. Evaluating it could then only panic (`range *p` with
-	// `p` nil), so goose does not either; nor is it read.
+	// `p` nil), so goose does not either; nor is it read. The length is constant
+	// only if the expression's own type is an array or a pointer to one
+	// (staticArrayLen), not a type parameter whose core type is.
 	evalRange := true
 	var e glang.Expr
 	// underlyingType: a type parameter whose constraint has a single (core)
@@ -1505,7 +1519,7 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt, label *ast.Ident) glang.Expr {
 		}
 		if s.Value != nil {
 			arr.Array = glang.IdentExpr("$range")
-		} else {
+		} else if staticArrayLen(ctx.typeOf(s.X)) {
 			evalRange = false
 			ast.Inspect(s.X, func(n ast.Node) bool {
 				_, isCall := n.(*ast.CallExpr)
@@ -1525,8 +1539,9 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt, label *ast.Ident) glang.Expr {
 		// iterations bind `$key` to `0`, `1`, ..., `n - 1` (none if `n <= 0`),
 		// counted in a cell `$range_i` of that type: the three-clause loop
 		// `for $range_i := 0; $range_i < $range; $range_i++`.
-		if isPtr || t.Info()&types.IsInteger == 0 {
-			ctx.unsupported(s, "range over %v (only integers, strings, functions, maps, slices, channels and arrays are supported)", t)
+		_, isTypeParam := ctx.typeOf(s.X).(*types.TypeParam)
+		if isPtr || t.Info()&types.IsInteger == 0 || isTypeParam {
+			ctx.unsupported(s, "range over %v (only integers, strings, functions, maps, slices, channels and arrays are supported; not a type parameter of integer core type)", t)
 			return nil
 		}
 		nT := ctx.typeOf(s.X)
