@@ -164,6 +164,17 @@ theorem fmtDirectivesAux_simple {c : w8} (f : GoString)
       (⟨c, false⟩ :: ·) <$> fmtDirectivesAux none f := by
   rcases hc with rfl | rfl | rfl | rfl <;> simp [fmtDirectivesAux]
 
+/-- The verbs under which the model formats a `[]byte` (`formatBytes`): `s v d x X q`. -/
+def byteVerbs : List w8 := [W8 115, W8 118, W8 100, W8 120, W8 88, W8 113]
+
+/-- A directive `%c` without flags, width or precision, `c` one of `byteVerbs`: one directive of
+verb `c`, then the rest. -/
+theorem fmtDirectivesAux_byteVerb {c : w8} (f : GoString) (hc : c ∈ byteVerbs) :
+    fmtDirectivesAux none (W8 37 :: c :: f) =
+      (⟨c, false⟩ :: ·) <$> fmtDirectivesAux none f := by
+  simp only [byteVerbs, List.mem_cons, List.not_mem_nil, or_false] at hc
+  rcases hc with rfl | rfl | rfl | rfl | rfl | rfl <;> simp [fmtDirectivesAux]
+
 /-- The digits after a `%0`, then `d` (`parseIntVerb`'s `%0Nd`): one directive of verb `d`, or
 `none` (a run of more than `maxNumDigits` digits). In flags phase or in a width phase. -/
 theorem fmtDirectivesAux_digits_d (ds f : GoString) (hds : ∀ c ∈ ds, 48 ≤ c.toNat ∧ c.toNat ≤ 57)
@@ -243,6 +254,24 @@ theorem auxStep_simple (format : GoString) (i next : Nat) (c : w8)
     (hc : c = W8 115 ∨ c = W8 118 ∨ c = W8 120 ∨ c = W8 100)
     (h : format.drop (i + 1) = c :: format.drop next) : AuxStep format i next := by
   unfold AuxStep; rw [h]; exact auxStepF_simple _ c hc
+
+theorem auxStepF_byteVerb (rest : GoString) (c : w8) (hc : c ∈ byteVerbs) :
+    AuxStepF (c :: rest) rest := by
+  intro L hL
+  rw [fmtDirectivesAux_byteVerb _ hc] at hL
+  cases hL' : fmtDirectivesAux none rest with
+  | none => rw [hL'] at hL; cases hL
+  | some L' =>
+    rw [hL'] at hL
+    simp only [Option.map_eq_map, Option.map_some, Option.some.injEq] at hL
+    subst hL
+    simp only [byteVerbs, List.mem_cons, List.not_mem_nil, or_false] at hc
+    refine ⟨_, L', rfl, ?_, ?_, rfl⟩ <;>
+      (rcases hc with rfl | rfl | rfl | rfl | rfl | rfl <;> decide)
+
+theorem auxStep_byteVerb (format : GoString) (i next : Nat) (c : w8) (hc : c ∈ byteVerbs)
+    (h : format.drop (i + 1) = c :: format.drop next) : AuxStep format i next := by
+  unfold AuxStep; rw [h]; exact auxStepF_byteVerb _ c hc
 
 theorem auxStepF_int (g tail : GoString) (w : Nat)
     (h : parseIntVerb g = some (w, tail)) : AuxStepF g tail := by

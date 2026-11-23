@@ -203,6 +203,38 @@ func (suite *GoTestSuite) TestNegUnderflowConstIsPosZero() {
 	suite.Equal(true, testNegUnderflowConstIsPosZero())
 }
 
+func (suite *GoTestSuite) TestFloat32ConstRoundsOnce() {
+	suite.Equal(true, testFloat32ConstRoundsOnce())
+}
+
+func (suite *GoTestSuite) TestUntypedFloatConstAtTypeParam() {
+	suite.Equal(true, testUntypedFloatConstAtTypeParam())
+}
+
+func (suite *GoTestSuite) TestUntypedFloatConvertAtTypeParam() {
+	suite.Equal(true, testUntypedFloatConvertAtTypeParam())
+}
+
+func (suite *GoTestSuite) TestUntypedFloatConstToInt() {
+	suite.Equal(true, testUntypedFloatConstToInt())
+}
+
+func (suite *GoTestSuite) TestFloat64ConstExprIsConst() {
+	suite.Equal(true, testFloat64ConstExprIsConst())
+}
+
+func (suite *GoTestSuite) TestUntypedIntToFloat64() {
+	suite.Equal(true, testUntypedIntToFloat64())
+}
+
+func (suite *GoTestSuite) TestIntToFloat32() {
+	suite.Equal(true, testIntToFloat32())
+}
+
+func (suite *GoTestSuite) TestIntToFloat64() {
+	suite.Equal(true, testIntToFloat64())
+}
+
 func (suite *GoTestSuite) TestCopySimple() {
 	suite.Equal(true, testCopySimple())
 }

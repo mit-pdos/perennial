@@ -28,6 +28,24 @@ the type's method set (its package's `Assumptions`). -/
 def AsTarget [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType) : Prop :=
   (∃ elems, underlying T = go.InterfaceType elems) ∨ go.typeSetContains T go.error = true
 
+/-- A non-nil target that Go's `err == target` compares, without panicking, with the errors of the
+tree `S`: its dynamic type's `==` is defined (`CheckComparable` steps) and is the equality of the
+values of some Lean type `V` (with an injective `#`), of which its value, and the values of the
+errors of `S` of its type, are (Go's typing). Pointer errors (`comparableErr_pointer`, `V := Loc`)
+and errors of a named integer type such as `syscall.Errno` (`comparableErr_uintptr`, `V := w64`).
+(`Is` asks `reflectlite` whether `target`'s type is comparable, and the model takes it to be:
+`TrustedCode/errors.lean`; for these types Go's answer is `true` as well.) -/
+def ComparableErr [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] (S : GoError → Prop) (tii : GoInterfaceOk) : Prop :=
+  ∃ (V : Type) (_ : DecidableEq V), Function.Injective (intoVal (V := V)) ∧
+    (⟦CheckComparable tii.ty, #()⟧ ⤳ #()) ∧
+    (∀ v1 v2 : V, ⟦GoOp GoEquals tii.ty, (#v1, #v2)⟧ ⤳ #(decide (v1 = v2))) ∧
+    (∃ vt : V, tii.v = #vt) ∧
+    ∀ ii, S (interface.ok ii) → ii.ty = tii.ty → ∃ v : V, ii.v = #v
+
+/-- `target` is `nil` or a `ComparableErr` for the tree `S`: what `Is` needs of it. -/
+def ComparableTarget [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] (S : GoError → Prop) (target : GoError) : Prop :=
+  ∀ tii, target = interface.ok tii → ComparableErr S tii
+
 section wps
 variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
@@ -35,10 +53,79 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : errors.Assumptions]
 
+/-! ### Package variables made by `errors.New`
+
+`var X = errors.New(msg)` allocates a fresh `errorString{s: msg}` and stores the pointer in `X`,
+which Go never writes after initialization. `newVar X msg` keeps both cells, for good: `X`'s,
+and the `errorString`'s field `s`, so that two such variables whose messages differ hold
+different pointers (`newVar_ne`: `io.EOF` is not `io.ErrUnexpectedEOF`, nor `errors.ErrUnsupported`
+`oserror.ErrNotExist`), and `Error()` returns `msg`. (Variables with the same message are distinct
+pointers too in Go, as each `New` allocates; the field does not tell them apart.) -/
+
+/-- **The global `X` holds `errors.New(msg)`** (persistent): a fixed `*errorString` whose field
+`s` holds `msg` for good, and whose `Error()` returns `msg`. -/
+def newVar (X msg : GoString) : IProp GF :=
+  iprop(∃ x : Loc,
+    globalAddr X ↦□ interface.mkOk (go.GoType.PointerType errorString.ty) #x ∗
+    x.[errors.errorString, go!"s"] ↦□ msg ∗
+    □ ∀ Φ : val → IProp GF, ▷ Φ #msg -∗
+      WP (App (Val #(methods (go.GoType.PointerType errorString.ty) go!"Error" #x)) (Val #()))
+        {{ Φ }})
+
+instance newVar_persistent (X msg : GoString) : Persistent (newVar (GF := GF) X msg) := by
+  unfold newVar; infer_instance
+
+/-- Two `errorString`s whose fields hold different messages are different pointers. -/
+theorem errorString_ne (x y : Loc) (m1 m2 : GoString) (h : m1 ≠ m2) :
+    (x.[errors.errorString, go!"s"] ↦□ m1 : IProp GF) ⊢
+      y.[errors.errorString, go!"s"] ↦□ m2 -∗ ⌜x ≠ y⌝ := by
+  iintro #H1 #H2
+  by_cases hxy : x = y
+  · subst hxy
+    icombine H1 H2 gives %he
+    exact absurd he h
+  · ipureintro; exact hxy
+
+/-- **Two `errors.New` variables with different messages hold different errors**: the values
+of `X` and `Y` (loaded through any persistent points-to of the globals) differ. -/
+theorem newVar_ne (X Y m1 m2 : GoString) (h : m1 ≠ m2) (v1 v2 : GoInterface) :
+    newVar (GF := GF) X m1 ⊢ newVar (GF := GF) Y m2 -∗ globalAddr X ↦□ v1 -∗
+      globalAddr Y ↦□ v2 -∗ ⌜v1 ≠ v2⌝ := by
+  iintro #HX #HY #Hv1 #Hv2
+  iunfold newVar at HX HY
+  icases HX with ⟨%x, #HXg, #HXs, -⟩
+  icases HY with ⟨%y, #HYg, #HYs, -⟩
+  icombine Hv1 HXg gives %h1
+  icombine Hv2 HYg gives %h2
+  ihave %hxy := errorString_ne x y m1 m2 h $$ HXs HYs
+  ipureintro
+  subst h1 h2
+  intro he
+  apply hxy
+  unfold interface.mkOk at he
+  injection he with he
+  injection he with _ he
+  exact go.intoVal_inj he
+
+/-- The package-initialized state (persistent): `ErrUnsupported` holds its `errors.New` error
+(`errorType`, a runtime type descriptor, is skipped: `Code/errors.toml`). -/
+abbrev isInit : IProp GF :=
+  iprop("#HErrUnsupported" ∷ newVar ErrUnsupported go!"unsupported operation")
+
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.errors :=
-  define_is_pkg_init iprop(True)
+  define_is_pkg_init isInit
 instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.errors :=
   build_get_is_pkg_init_wf
+
+theorem isInit_access :
+    isPkgInit (PROP := IProp GF) pkg_id.errors ⊢ isInit (GF := GF) := by
+  with_unfolding_all exact isPkgInit_access (PROP := IProp GF) pkg_id.errors
+
+/-- `errors.ErrUnsupported` holds `errors.New("unsupported operation")`. -/
+theorem errUnsupported_of_init :
+    isPkgInit (PROP := IProp GF) pkg_id.errors ⊢
+      newVar (GF := GF) ErrUnsupported go!"unsupported operation" :=
+  isInit_access
 
 def isUnwrappable (err : GoError) : IProp GF :=
   match err with
@@ -328,6 +415,37 @@ theorem treeTyped_pointer (ii : GoInterfaceOk) (target : GoError) (h : IsPointer
   cases hii'
   obtain ⟨_, l, -, hl⟩ := h
   exact ⟨l, hl⟩
+
+omit package_sem in
+/-- A pointer target, whose type's errors in the tree are pointers, is comparable. -/
+theorem comparableErr_pointer (S : GoError → Prop) (tii : GoInterfaceOk) (h : IsPointerError tii)
+    (htyped : TreeTyped S (interface.ok tii)) : ComparableErr S tii := by
+  obtain ⟨T, l, hT, hl⟩ := h
+  refine ⟨Loc, inferInstance, GoGlobalContext.intoVal_inj_loc, ?_, ?_, ⟨l, hl⟩,
+    fun ii hS hty => htyped ii tii hS rfl hty⟩
+  · rw [hT]; infer_instance
+  · intro v1 v2; rw [hT]; infer_instance
+
+omit package_sem in
+/-- `nil` and pointer targets, whose type's errors in the tree are pointers, are comparable (`Is`'s
+premises before comparable targets). -/
+theorem comparableTarget_pointer (S : GoError → Prop) (target : GoError)
+    (htarget : ∀ tii, target = interface.ok tii → IsPointerError tii)
+    (htyped : TreeTyped S target) : ComparableTarget S target := by
+  unfold ComparableTarget
+  intro tii ht
+  subst ht
+  exact comparableErr_pointer S tii (htarget tii rfl) htyped
+
+omit package_sem in
+/-- A target of a type whose underlying type is `uintptr` (`syscall.Errno`), whose type's errors
+in the tree hold `w64`s, is comparable. -/
+theorem comparableErr_uintptr (S : GoError → Prop) (tii : GoInterfaceOk) [tii.ty ↓u go.uintptr]
+    (vt : w64) (hvt : tii.v = #vt)
+    (htyped : ∀ ii, S (interface.ok ii) → ii.ty = tii.ty → ∃ v : w64, ii.v = #v) :
+    ComparableErr S tii :=
+  ⟨w64, inferInstance, GoGlobalContext.intoVal_inj_w64, inferInstance, fun _ _ => inferInstance,
+    ⟨vt, hvt⟩, htyped⟩
 
 /-! ### The answers of the walk -/
 

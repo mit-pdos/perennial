@@ -1052,6 +1052,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   ssave_instance : ssave.TypeAssumptions
   readRune_instance : readRune.TypeAssumptions
   Errorf_unfold : FuncUnfold Errorf [] Errorf.impl
+  Fprintf_unfold : FuncUnfold Fprintf [] Fprintf.impl
   Printf_unfold : FuncUnfold Printf [] Printf.impl
   Sprintf_unfold : FuncUnfold Sprintf [] Sprintf.impl
   Print_unfold : FuncUnfold Print [] Print.impl
@@ -1077,6 +1078,7 @@ attribute [instance] Assumptions.wrapError_instance
   Assumptions.ssave_instance
   Assumptions.readRune_instance
   Assumptions.Errorf_unfold
+  Assumptions.Fprintf_unfold
   Assumptions.Printf_unfold
   Assumptions.Sprintf_unfold
   Assumptions.Print_unfold

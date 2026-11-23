@@ -518,8 +518,8 @@ the old behaviour).
 | `iStructNamed H` | split `H : l ↦{dq} (v : S)` into field points-tos named after the fields | `Golang/Theory/PostLifting.lean` |
 | `iStructNamedPrefix H "p"`, `iStructNamedSuffix H "s"` | with renaming | same |
 | `ipersist H` | turn `H : l ↦ v` (or anything with `UpdateIntoPersistently`) into persistent `H : l ↦□ v`; needs an update in the goal (a WP is fine) | `GooseLang/IPersist.lean` |
-| `iPkgInit` | solve an `isPkgInit` goal or the `isPkgInit` conjuncts at the front of a `∗` goal from the intuitionistic context | `Golang/Theory/Pkg.lean` |
-| `solve_pkg_init` | solve one `isPkgInit pkg` goal (also through the dependencies of other packages' `isPkgInit`) | same |
+| `iPkgInit` | solve an `isPkgInit` (or `isPkgInitSome`) goal or such conjuncts at the front of a `∗` goal from the intuitionistic context | `Golang/Theory/Pkg.lean` |
+| `solve_pkg_init` | solve one `isPkgInit pkg` or `isPkgInitSome pkg` goal (also through the dependencies of other packages' `isPkgInit` and `isPkgInitSome`) | same |
 | `isPkgInit_unfold`, `is_pkg_init_finish` | unfold `isPkgInit` in the goal; finish a `wp_initialize'` proof | `Golang/Theory/Auto.lean` |
 | `cleanup_bool_decide` | simplify `if decide (#(decide P) = #true)` and friends | `Golang/Theory/Auto.lean` |
 | `solve_ndisj` | prove namespace mask conditions (`↑(N.@"a") ⊆ ⊤ ∖ ↑(N.@"b")`, `⊤ ∖ ↑N ⊆ ⊤ ∖ ↑(N.@x)`, `↑(N.@"a") ## ↑(N.@"b")`, using mask hypotheses); `iinv` discharges its mask side condition with it | `Golang/Theory/IrisTactics.lean` |
@@ -1509,3 +1509,21 @@ initializer meeting the standard spec above. So a package's `wp_initialize'` nee
 not be restated to show that it initializes nothing away. The price is that
 `wp_PackageInitStart` takes the premise that the package is not initialized (an
 autoParam `by assumption`: `package.init` checks first).
+
+**A fact that takes a parameter.** A package whose fact names something the
+program's proof chooses (per-run ghost state its initializer fills, allocated by
+the proof before the program starts) declares a family of facts instead of one:
+`IsPkgInitParam PROP pkg`, with `Param : Type` and `inst : Param → IsPkgInit PROP
+pkg`. Code proved at a known parameter uses the fact there (`IsPkgInitParam.inst x`,
+usually through a local instance taking the parameter's class as an argument). An
+importer's fact holds `isPkgInitSome pkg` (`∃ x, isPkgInit (inst x) pkg`, persistent):
+`define_is_pkg_init` writes it for every dependency with an `IsPkgInitParam`
+instance, so the importer's `IsPkgInit` instance takes no parameter. Its
+`GetIsPkgInitWf` instance does (give it an explicit binder, `instance [MyGS] :
+GetIsPkgInitWf …`, not a section variable): the well-formedness fixes the fact the
+package's initializer establishes, at the parameter the importer's initializer
+relies on. `is_pkg_init_finish` proves an `isPkgInitSome` conjunct from the fact at
+a parameter (the `Frame` instance `isPkgInitSome_frame`), and `solve_pkg_init`
+proves `isPkgInitSome` goals and searches through `isPkgInitSome` hypotheses (for
+facts that do not depend on the parameter). Worked example:
+`Perennial/Golang/Theory/PkgParamTest.lean`.

@@ -11,6 +11,7 @@ translate = [
   "Buffer.Reset",
   "Buffer.Write",
   "Buffer.Bytes",
+  "Buffer.String",
   "Buffer.Len",
   "Buffer.grow",
   "Buffer.tryGrowByReslice",

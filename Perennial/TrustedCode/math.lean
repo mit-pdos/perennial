@@ -33,6 +33,19 @@ cannot panic and has no effect beyond the variable. Its only reader is the assem
 def useFMA.init : val :=
   λ: <>, #()
 
+/-- `sqrt(x)` (`math/sqrt.go`), which `Sqrt` calls: some `float64`. gc compiles a call of `sqrt`
+(and of `Sqrt`, whose body it inlines) to the square-root instruction (`SQRTSD` on amd64), not to
+`sqrt`'s Go body: `math.sqrt` is an intrinsic (`cmd/compile/internal/ssagen/intrinsics.go`,
+`addF("math", "sqrt", ... OpSqrt ...)`, for amd64 among others). The body, a bit-by-bit square
+root that goose translates, would be unfaithful: it computes the same correctly rounded square
+root but not the same NaNs. Under gc on linux/amd64 `Sqrt(-1)` is `0xfff8000000000000` (the
+instruction's default NaN) where the body returns `NaN()`, `0x7ff8000000000001`, and the
+instruction quiets a signaling NaN (`Sqrt(0x7ff0000000000001)` is `0x7ff8000000000001`) where the
+body returns it unchanged. The model returns an arbitrary 64-bit pattern: less defined than the
+instruction (every result of it is one), and it cannot panic, as neither can. -/
+def sqrt.impl : val :=
+  λ: "x", ArbitraryInt
+
 end code
 end math
 
