@@ -310,6 +310,7 @@ def main():
             "internal/poll",
             "internal/syscall/unix",
             "iter",
+            "maps",
             "math",
             "math/big",
             "math/rand",

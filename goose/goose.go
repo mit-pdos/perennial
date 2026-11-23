@@ -1035,7 +1035,7 @@ func (ctx *Ctx) identExpr(e *ast.Ident, multipleBindings bool) glang.Expr {
 }
 
 func (ctx *Ctx) indexExpr(e *ast.IndexExpr, multipleBindings bool) glang.Expr {
-	xTy := ctx.typeOf(e.X).Underlying()
+	xTy := underlyingType(ctx.typeOf(e.X))
 	switch xTy := xTy.(type) {
 	case *types.Map:
 		if multipleBindings {
@@ -1461,10 +1461,12 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt, label *ast.Ident) glang.Expr {
 	// `p` nil), so goose does not either; nor is it read.
 	evalRange := true
 	var e glang.Expr
-	t := ctx.typeOf(s.X).Underlying()
+	// underlyingType: a type parameter whose constraint has a single (core)
+	// type ranges over that type (`for k, v := range m` with `M ~map[K]V`)
+	t := underlyingType(ctx.typeOf(s.X))
 	ptr, isPtr := t.(*types.Pointer)
 	if isPtr {
-		t = ptr.Elem().Underlying()
+		t = underlyingType(ptr.Elem())
 	}
 	switch t := t.(type) {
 	case *types.Map:
@@ -1664,7 +1666,7 @@ func (ctx *Ctx) varDeclStmt(s *ast.DeclStmt, cont glang.Expr) glang.Expr {
 }
 
 func (ctx *Ctx) getIndexType(n locatable, t types.Type) types.Type {
-	switch t := t.Underlying().(type) {
+	switch t := underlyingType(t).(type) {
 	case *types.Slice:
 		return types.Typ[types.Int]
 	case *types.Map:
@@ -1741,7 +1743,7 @@ func (ctx *Ctx) assignFromTo(lhs ast.Expr, rhs glang.Expr, cont glang.Expr) glan
 		}
 	case *ast.IndexExpr:
 		targetTy := ctx.typeOf(lhs.X)
-		switch t := targetTy.Underlying().(type) {
+		switch t := underlyingType(targetTy).(type) {
 		case *types.Map:
 			return glang.NewDoSeq(glang.NewCallExpr(glang.VerbatimExpr("map.insert"),
 				ctx.glangType(lhs.Index, t.Key()),
@@ -1800,7 +1802,7 @@ func (ctx *Ctx) assignStmtWith(s *ast.AssignStmt, scope func(glang.Expr) glang.E
 		ix, isIx := ast.Unparen(lhs).(*ast.IndexExpr)
 		var mapTy *types.Map
 		if isIx {
-			mapTy, _ = ctx.typeOf(ix.X).Underlying().(*types.Map)
+			mapTy, _ = underlyingType(ctx.typeOf(ix.X)).(*types.Map)
 		}
 		if _, ok := lhs.(*ast.Ident); ok || !multi {
 			e = ctx.assignFromTo(lhs, rhs, e)
