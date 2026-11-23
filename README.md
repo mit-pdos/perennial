@@ -217,8 +217,8 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
 * **Environment premise (GODEBUG `fips140`), opt-in.** `crypto/fips140`'s
   `enabled` (`godebug.New("fips140").Value() == "only"`) is a trusted
   initializer (`TrustedCode/crypto/fips140.lean`) over `godebugFips140`, an
-  opaque string standing for the run's `fips140` GODEBUG setting, of which
-  nothing is proved. In mode `only`, `crypto/sha1.Sum` panics. A theorem whose
+  opaque string standing for the text of the run's `fips140` GODEBUG setting,
+  of which nothing is proved. In mode `only`, `crypto/sha1.Sum` panics. A theorem whose
   proof needs the mode off names `GodebugFips140Off` (the setting is unset or
   `off`) as a hypothesis, and then covers only the runs with that setting; it is
   the condition under which the untranslated initializers of
