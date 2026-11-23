@@ -7,6 +7,7 @@ module
 
 public import Perennial.Proof.iter.Link
 public import Perennial.Proof.maps.Clone
+public import Perennial.Proof.maps.Copy
 public import Perennial.Proof.maps.Equal
 public import Perennial.Proof.maps.initialize
 
@@ -26,6 +27,9 @@ variable [package_sem : maps.Assumptions]
 
 theorem maps.wp_Clone : maps.Clone.spec (GF := GF) (hG := hG) :=
   maps.Clone.wp_proof
+
+theorem maps.wp_Copy : maps.Copy.spec (GF := GF) (hG := hG) :=
+  maps.Copy.wp_proof
 
 theorem maps.wp_Equal : maps.Equal.spec (GF := GF) (hG := hG) :=
   maps.Equal.wp_proof
