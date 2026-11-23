@@ -1,5 +1,7 @@
-translate = ["!*", "HasPrefix", "HasSuffix", "TrimSuffix"]
-imports = ["!*"]
+# `IndexByte`, `Index`, `Cut`: strings.IndexByte and strings.Cut; they call internal/bytealg's
+# `IndexByteString` and `IndexString`, translated from their Go models (Code/internal/bytealg.toml)
+translate = ["!*", "HasPrefix", "HasSuffix", "TrimSuffix", "IndexByte", "Index", "Cut"]
+imports = ["!*", "internal/bytealg"]
 # `Clone` ends in `unsafe.String`, which goose does not translate (TrustedCode/internal/stringslite.lean)
 trusted = ["Clone"]
 

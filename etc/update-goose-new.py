@@ -208,10 +208,10 @@ def main():
             check=True,
         )
 
-    def run_skiplint(src_path, pkgs):
+    def run_skiplint(src_path, pkgs, extra_args):
         if skiplint_bin is None:
             return
-        cmd = [skiplint_bin, "-configdir", code_dir, "-dir", src_path] + pkgs
+        cmd = [skiplint_bin, "-configdir", code_dir, "-dir", src_path] + extra_args + pkgs
         if args.verbose:
             print(" ".join(cmd))
         r = subprocess.run(cmd, capture_output=True, text=True)
@@ -228,9 +228,10 @@ def main():
             pkgs = ["."]
         else:
             pkgs = list(pkgs)
+        extra_args = list(extra_args or [])
 
         if args.modelcheck:
-            cmd = [modelcheck_bin, "-configdir", code_dir, "-dir", src_path] + pkgs
+            cmd = [modelcheck_bin, "-configdir", code_dir, "-dir", src_path] + extra_args + pkgs
             if args.dry_run or args.verbose:
                 print(" ".join(cmd))
             if not args.dry_run and subprocess.run(cmd).returncode != 0:
@@ -252,9 +253,10 @@ def main():
                 "-dir",
                 src_path,
             ]
+            + extra_args
             + pkgs
         )
-        run_skiplint(src_path, pkgs)
+        run_skiplint(src_path, pkgs, extra_args)
 
         proofgen_bin = path.join(gopath, "bin", "proofgen")
 
@@ -268,8 +270,27 @@ def main():
                 "-dir",
                 src_path,
             ]
+            + extra_args
             + pkgs
         )
+
+    # the Go models of standard-library files (goose/model/overlay/overlay.toml), given to every
+    # translation of the standard library
+    std_overlay_args = []
+    if args.std_lib:
+        overlay_dir = tempfile.mkdtemp(prefix="model-overlay-")
+        atexit.register(shutil.rmtree, overlay_dir, ignore_errors=True)
+        overlay_file = path.join(overlay_dir, "overlay.json")
+        subprocess.run(
+            [sys.executable, path.join(perennial_dir, "etc", "model-overlay.py"), "check"],
+            check=True,
+        )
+        subprocess.run(
+            [sys.executable, path.join(perennial_dir, "etc", "model-overlay.py"),
+             "json", "-o", overlay_file],
+            check=True,
+        )
+        std_overlay_args = ["-overlay", overlay_file]
 
     if args.compile:
         compile_goose()
@@ -338,6 +359,7 @@ def main():
             "fmt",
             "log",
             "encoding/binary",
+            extra_args=std_overlay_args,
         )
 
     for proj in projs:
@@ -348,7 +370,8 @@ def main():
     # packages whose types (only) are translated, so that the types of the
     # packages above that refer to them can be translated
     if args.std_lib:
-        run_goose(goose_dir, "internal/runtime/atomic", "internal/runtime/sys")
+        run_goose(goose_dir, "internal/runtime/atomic", "internal/runtime/sys",
+                  extra_args=std_overlay_args)
     pm.wait_all()
     if skiplint_warnings:
         print("skiplint (best-effort; every skip reason is still reviewed):", file=sys.stderr)
