@@ -210,15 +210,15 @@ func leanChunks(f *glang.File) {
 // TranslatePackages loads packages by a list of patterns and translates them
 // all, producing one file per matched package.
 //
-// tags are the Go build tags the packages are loaded with, in addition to goose
-// (see util.NewPackageConfig).
+// opts are the build tags and overlay the packages are loaded with (see
+// util.NewPackageConfig).
 //
 // The errs list contains errors corresponding to each package (in parallel with
 // the files list). patternErr is only non-nil if the patterns themselves have
 // a syntax error.
-func TranslatePackages(configDir string, modDir string, tags []string,
+func TranslatePackages(configDir string, modDir string, opts util.LoadOptions,
 	pkgPattern ...string) (files []glang.File, errs []error, patternErr error) {
-	pkgs, patternErr := packages.Load(util.NewPackageConfig(modDir, true, tags), pkgPattern...)
+	pkgs, patternErr := packages.Load(util.NewPackageConfig(modDir, true, opts), pkgPattern...)
 
 	if patternErr != nil {
 		return

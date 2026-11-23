@@ -28,11 +28,11 @@ func main() {
 	flag.StringVar(&modDir, "dir", ".", "directory containing necessary go.mod")
 	var configDir string
 	flag.StringVar(&configDir, "configdir", ".", "directory containing Goose config files")
-	var tagList string
-	flag.StringVar(&tagList, "tags", "", util.TagsUsage)
+	var load util.LoadFlags
+	load.Register(flag.CommandLine, "")
 	flag.Parse()
 
-	pkgs, err := packages.Load(util.NewPackageConfig(modDir, false, util.ParseTags(tagList)), flag.Args()...)
+	pkgs, err := packages.Load(util.NewPackageConfig(modDir, false, load.Options()), flag.Args()...)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(2)
