@@ -24,7 +24,7 @@ variable [package_sem : sync.atomic.Assumptions]
 
 theorem sync.atomic.Value.CompareAndSwap.wp_proof :
     sync.atomic.Value.CompareAndSwap.spec (GF := GF) (hG := hG) := by
-  intro u new hnew
+  intro u x new hnew Hx
   wp_start as Hown
   cases new with
   | nil => exact absurd rfl hnew
@@ -36,15 +36,10 @@ theorem sync.atomic.Value.CompareAndSwap.wp_proof :
   ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
   wp_bind (Load _)
-  wp_apply_core wp_atomic_load _ _ _ (DFrac.own 1) (interface.nil : GoInterface) $$ v
+  wp_apply_core wp_atomic_load _ _ _ (DFrac.own 1) x $$ v
   iintro Hv
-  wp_auto
-  wp_bind ArbitraryInt
-  wp_apply_core wp_ArbitraryInt
-  iintro %x _
-  wp_auto
-  by_cases hx : x = W64 0
-  · subst hx
+  cases x with
+  | nil =>
     wp_auto
     wp_bind (CmpXchg _ _ _)
     wp_apply_core wp_cmpxchg_suc _ (interface.nil : GoInterface) interface.nil (interface.ok ii) _ _ rfl $$ Hv
@@ -52,13 +47,20 @@ theorem sync.atomic.Value.CompareAndSwap.wp_proof :
     wp_auto
     iapply HΦ
     simp only [↓reduceIte]
+    isplitr
+    · ipureintro; simp
     iapply typedPointsto_combine _ _ _ Hnn
     simp only [TypedPointsto.typedPointstoDef]
     iframe
-  · simp only [hx, decide_false]
+  | ok a =>
+    simp only [sameTypeOrNil_ok] at Hx
+    wp_auto
+    simp only [Hx, decide_true]
     wp_auto
     iapply HΦ
-    simp only [↓reduceIte, Bool.false_eq_true]
+    simp only [Bool.false_eq_true, ↓reduceIte]
+    isplitr
+    · ipureintro; simp
     iapply typedPointsto_combine _ _ _ Hnn
     simp only [TypedPointsto.typedPointstoDef]
     iframe

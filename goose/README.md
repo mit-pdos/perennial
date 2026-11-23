@@ -64,12 +64,28 @@ of the packages under Go path `PKG` under the Lean module root `ROOT` instead
 of `Perennial`, for projects that translate their own Go packages.
 `-tags TAG,...` (as `go build -tags`) loads the packages with those Go build
 tags in addition to `goose`, which is always set: it selects the files under
-build constraints (`//go:build with_tla`). `goose`, `proofgen` and `modelcheck`
-take it, and must be given the same tags for a package. Build tags are those
+build constraints (`//go:build with_tla`). `goose`, `proofgen`, `modelcheck`
+and `skiplint` take it, and must be given the same tags for a package. Build tags are those
 of a whole Go build: translate every package of a program with the same tags
 (a package translated with a tag and a dependency translated without it are
 not the code of any one build), and state results about the program built
 with `-tags goose,TAG,...`. The translation does not record the tags.
+`-overlay FILE` takes a JSON file in the format of `go build -overlay`,
+`{"Replace": {"<path>": "<replacement>", ...}}`: the packages are loaded as if
+each path had the contents of its replacement, so a file added to a package
+(a path that does not exist) or replaced in it is type-checked and translated
+as part of that package, under the same build constraints as the package's own
+files (an overlay file `//go:build goose || TAG` is translated, one
+`//go:build !goose` is not). This translates code generated for verification
+(say, extra methods of a package's types) along with a package pinned at a
+fixed revision, without changing its source. Relative paths are relative to
+the current directory, as for the go command; deleting a file (an empty
+replacement) is not supported. `goose`, `proofgen`, `modelcheck` and
+`skiplint` take it, and must be given the same overlay for a package, as for
+`-tags`; what is verified is then the program built with that overlay (`go
+build -overlay FILE -tags goose,...`). The translation does not record the
+overlay, but the `go:` positions of an overlay file's declarations name the
+file at its overlay path.
 
 The output for a large package is split into modules `<pkg>/chunkN` that lake
 checks in parallel, re-exported by the package's module, which downstream code

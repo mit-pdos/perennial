@@ -164,7 +164,7 @@ theorem fmtDirectivesAux_simple {c : w8} (f : GoString)
       (⟨c, false⟩ :: ·) <$> fmtDirectivesAux none f := by
   rcases hc with rfl | rfl | rfl | rfl <;> simp [fmtDirectivesAux]
 
-/-- The verbs under which the model formats a `[]byte` (`formatBytes`): `s v d x X q`. -/
+/-- The verbs under which the model formats a `[]byte` (`formatSlice`): `s v d x X q`. -/
 def byteVerbs : List w8 := [W8 115, W8 118, W8 100, W8 120, W8 88, W8 113]
 
 /-- A directive `%c` without flags, width or precision, `c` one of `byteVerbs`: one directive of

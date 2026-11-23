@@ -1,0 +1,7 @@
+{
+	"Replace": {
+		"testdata/overlay/pkg/added.go": "testdata/overlay/replacements/added.go",
+		"testdata/overlay/pkg/replaced.go": "testdata/overlay/replacements/replaced.go",
+		"testdata/overlay/pkg/excluded.go": "testdata/overlay/replacements/excluded.go"
+	}
+}

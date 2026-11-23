@@ -67,6 +67,12 @@ noncomputable def UnderlyingSlice [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def Clone [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.Clone"
 
+noncomputable def MapEqualCopy [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.MapEqualCopy"
+
+noncomputable def RangeDerefArray [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.RangeDerefArray"
+
 noncomputable def BoxGet [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.BoxGet"
 
@@ -134,6 +140,101 @@ noncomputable def Clone.impl [GooseExts] [GoGlobalContext] (S E : go.GoType) : v
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore S))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad S))) (Var "$res0")))))
+
+/-- A map type parameter is ranged over, indexed and assigned to as its core
+    type (from [maps.Equal] and [maps.Copy]).
+
+    go: constraints.go:16:6 -/
+noncomputable def MapEqualCopy.impl [GooseExts] [GoGlobalContext] (M K V : go.GoType) : val :=
+  (LamV "m1"
+  (Lam "m2"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "m2" (App (Val (GoInstruction (GoAlloc M))) (Var "m2"))
+  (Let "m1" (App (Val (GoInstruction (GoAlloc M))) (Var "m1"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad M))) (Var "m1"))
+  (Let "v1" (App (Val (GoInstruction (GoAlloc V))) (App (Val (GoInstruction (GoZeroVal V))) (Val #())))
+  (Let "k" (App (Val (GoInstruction (GoAlloc K))) (App (Val (GoInstruction (GoZeroVal K))) (Val #())))
+  (App (App (Val (map.forRange K V)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (map.lookup1 K V)) (App (Val (GoInstruction (GoLoad M))) (Var "m1"))) (App (Val (GoInstruction (GoLoad K))) (Var "k")))
+  (Let "v" (App (Val (GoInstruction (GoAlloc V))) (App (Val (GoInstruction (GoZeroVal V))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad V))) (Var "v"))
+  (App (Val doExecute)
+  (App (App (App (Val (map.insert K)) (App (Val (GoInstruction (GoLoad M))) (Var "m2"))) (App (Val (GoInstruction (GoLoad K))) (Var "k"))) (Var "$r0"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore V))) (Pair (Var "v") (Var "$r0")))))))))
+  (Let "__p" (App (App (Val (map.lookup2 K V)) (App (Val (GoInstruction (GoLoad M))) (Var "m2"))) (App (Val (GoInstruction (GoLoad K))) (Var "k")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "v2" (App (Val (GoInstruction (GoAlloc V))) (App (Val (GoInstruction (GoZeroVal V))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))) (Val #true) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals V))) (Pair (App (Val (GoInstruction (GoLoad V))) (Var "v1")) (App (Val (GoInstruction (GoLoad V))) (Var "v2"))))))
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore V))) (Pair (Var "v2") (Var "$r0")))))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore K))) (Pair (Var "k") (Var "$key")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore V))) (Pair (Var "v1") (Var "$value")))))))))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))
+
+/-- A type parameter of array core type: the length of `*q` is not constant (its
+    type is not an array type), so Go evaluates `*q` and panics if q is nil.
+
+    go: constraints.go:29:6 -/
+noncomputable def RangeDerefArray.impl [GooseExts] [GoGlobalContext] (A : go.GoType) : val :=
+  (LamV "q"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "q" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType A)))) (Var "q"))
+  (Let "$r0" (Val #(W64 0))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad A))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType A)))) (Var "q")))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (Val (array.forRangeIndex 3))
+  (Lam "$key"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$key"))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
 
 /-- BoxGet is a function getter (rather than a method)
 
@@ -656,6 +757,8 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   useNonStructGeneric_instance : useNonStructGeneric.TypeAssumptions
   UnderlyingSlice_unfold : ∀ (T : go.GoType), FuncUnfold UnderlyingSlice [T] (UnderlyingSlice.impl T)
   Clone_unfold : ∀ (S E : go.GoType), FuncUnfold Clone [S, E] (Clone.impl S E)
+  MapEqualCopy_unfold : ∀ (M K V : go.GoType), FuncUnfold MapEqualCopy [M, K, V] (MapEqualCopy.impl M K V)
+  RangeDerefArray_unfold : ∀ (A : go.GoType), FuncUnfold RangeDerefArray [A] (RangeDerefArray.impl A)
   BoxGet_unfold : ∀ (T : go.GoType), FuncUnfold BoxGet [T] (BoxGet.impl T)
   BoxGet2_unfold : FuncUnfold BoxGet2 [] BoxGet2.impl
   makeGenericBox_unfold : ∀ (T : go.GoType), FuncUnfold makeGenericBox [T] (makeGenericBox.impl T)
@@ -679,6 +782,8 @@ attribute [instance] Assumptions.Box_instance
   Assumptions.useNonStructGeneric_instance
   Assumptions.UnderlyingSlice_unfold
   Assumptions.Clone_unfold
+  Assumptions.MapEqualCopy_unfold
+  Assumptions.RangeDerefArray_unfold
   Assumptions.BoxGet_unfold
   Assumptions.BoxGet2_unfold
   Assumptions.makeGenericBox_unfold

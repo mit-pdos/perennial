@@ -2951,7 +2951,7 @@ noncomputable def maybeConvertToInterface.impl [GooseExts] [GoGlobalContext] (A 
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "a" (App (Val (GoInstruction (GoAlloc A))) (Var "a"))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad A))) (Var "a"))
+  (Let "$r0" (App (Val (GoInstruction (Convert A go.any))) (App (Val (GoInstruction (GoLoad A))) (Var "a")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))

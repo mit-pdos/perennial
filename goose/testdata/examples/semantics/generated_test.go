@@ -295,6 +295,18 @@ func (suite *GoTestSuite) TestArgumentOrder() {
 	suite.Equal(true, failing_testArgumentOrder())
 }
 
+func (suite *GoTestSuite) TestGenericToInterface() {
+	suite.Equal(true, testGenericToInterface())
+}
+
+func (suite *GoTestSuite) TestGenericToInterfaceLiteralClosure() {
+	suite.Equal(true, testGenericToInterfaceLiteralClosure())
+}
+
+func (suite *GoTestSuite) TestGenericConvertTypeParams() {
+	suite.Equal(true, testGenericConvertTypeParams())
+}
+
 func (suite *GoTestSuite) TestInitOrder() {
 	suite.Equal(true, testInitOrder())
 }

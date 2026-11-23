@@ -10499,6 +10499,95 @@ noncomputable def vgetrandom [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def writeErr [GooseExts] [GoGlobalContext] : GoString :=
   go!"runtime.writeErr"
 
+/-- Callers fills the slice pc with the return program counters of function invocations
+    on the calling goroutine's stack. The argument skip is the number of stack frames
+    to skip before recording in pc, with 0 identifying the frame for Callers itself and
+    1 identifying the caller of Callers.
+    It returns the number of entries written to pc.
+
+    To translate these PCs into symbolic information such as function
+    names and line numbers, use [CallersFrames]. CallersFrames accounts
+    for inlined functions and adjusts the return program counters into
+    call program counters. Iterating over the returned slice of PCs
+    directly is discouraged, as is using [FuncForPC] on any of the
+    returned PCs, since these cannot account for inlining or return
+    program counter adjustment.
+
+    go: extern.go:332:6 -/
+noncomputable def Callers.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "skip"
+  (Lam "pc"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "pc" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uintptr)))) (Var "pc"))
+  (Let "skip" (App (Val (GoInstruction (GoAlloc go.int))) (Var "skip"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "skip"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uintptr)))) (Var "pc"))
+  (App (App (App (Val (GoInstruction (FuncResolve callers []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uintptr)))) (Var "pc"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uintptr)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (Let "$r0" (Val #(W64 0))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
+
+/-- Version returns the Go tree's version string.
+    It is either the commit hash and date at the time of the build or,
+    when possible, a release tag like "go1.3".
+
+    go: extern.go:373:6 -/
+noncomputable def Version.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (GlobalVarAddr buildVersion))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")))))
+
+/-- CallersFrames takes a slice of PC values returned by [Callers] and
+    prepares to return function/file/line information.
+    Do not change the slice until you are done with the [Frames].
+
+    go: symtab.go:80:6 -/
+noncomputable def CallersFrames.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "callers"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Frames.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType Frames.ty)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "callers" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uintptr)))) (Var "callers"))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc Frames.ty))) (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uintptr)))) (Var "callers"))
+  (App (Val (GoInstruction (CompositeLiteral Frames.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"callers")) (ElementExpression (go.GoType.SliceType go.uintptr) (Var "$v0")))]))))
+  (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Frames.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType Frames.ty)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (StructFieldRef Frames.ty go!"frameStore"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Frames.ty)))) (Var "f")))
+  (App (Val (GoInstruction (Slice (go.GoType.ArrayType 2 Frame.ty)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Val #(W64 0)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Frames.ty)))) (Var "f"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType Frames.ty)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType Frame.ty)))) (Pair (App (Val (GoInstruction (StructFieldRef Frames.ty go!"frames"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Frames.ty)))) (Var "f"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType Frames.ty)))) (Pair (Var "f") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Frames.ty)))) (Var "$res0")))))
+
 noncomputable instance info' : PkgInfo pkg_id.runtime where
   pkgImportedPkgs := [pkg_id.internal.runtime.sys, pkg_id.internal.runtime.atomic]
 
@@ -10508,6 +10597,7 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.runtime)) (Lam BAnon
   (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -10821,7 +10911,9 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.internal.runtime.sys.initialize') (Val #()))))))
   (App (Val doExecute)
-  (App (Val _root_.Perennial.internal.runtime.atomic.initialize') (Val #()))))))))
+  (App (Val _root_.Perennial.internal.runtime.atomic.initialize') (Val #()))))))
+  (App (Val doExecute)
+  (App (Val buildVersion.init) (Val #()))))))))
 
 structure userArena [GooseExts] where
   mk ::

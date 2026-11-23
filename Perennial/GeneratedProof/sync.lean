@@ -289,7 +289,7 @@ noncomputable instance Map_access_load_m (l : Loc) (v : sync.Map) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-noncomputable instance Map_access_store_m (l : Loc) (v : sync.Map) (m' : (internal.sync.HashTrieMap GoInterface GoInterface)) :
+noncomputable instance Map_access_store_m (l : Loc) (v : sync.Map) (m' : (_root_.Perennial.internal.sync.HashTrieMap GoInterface GoInterface)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Map go!"m" l) v.m' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Map go!"m" l) m' (DFrac.own 1))
@@ -346,7 +346,7 @@ noncomputable instance Mutex_access_load_mu (l : Loc) (v : sync.Mutex) (dq : DFr
  by
   solve_pointsto_access_struct
 
-noncomputable instance Mutex_access_store_mu (l : Loc) (v : sync.Mutex) (mu' : internal.sync.Mutex) :
+noncomputable instance Mutex_access_store_mu (l : Loc) (v : sync.Mutex) (mu' : _root_.Perennial.internal.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Mutex go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Mutex go!"mu" l) mu' (DFrac.own 1))
@@ -404,7 +404,7 @@ noncomputable instance Once_access_load_done (l : Loc) (v : sync.Once) (dq : DFr
  by
   solve_pointsto_access_struct
 
-noncomputable instance Once_access_store_done (l : Loc) (v : sync.Once) (done' : sync.atomic.Bool') :
+noncomputable instance Once_access_store_done (l : Loc) (v : sync.Once) (done' : _root_.Perennial.sync.atomic.Bool') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Once go!"done" l) v.done' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Once go!"done" l) done' (DFrac.own 1))
@@ -621,7 +621,7 @@ noncomputable instance poolChain_access_load_tail (l : Loc) (v : sync.poolChain)
  by
   solve_pointsto_access_struct
 
-noncomputable instance poolChain_access_store_tail (l : Loc) (v : sync.poolChain) (tail' : (sync.atomic.Pointer sync.poolChainElt)) :
+noncomputable instance poolChain_access_store_tail (l : Loc) (v : sync.poolChain) (tail' : (_root_.Perennial.sync.atomic.Pointer sync.poolChainElt)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolChain go!"tail" l) v.tail' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.poolChain go!"tail" l) tail' (DFrac.own 1))
@@ -776,7 +776,7 @@ noncomputable instance poolDequeue_access_load_headTail (l : Loc) (v : sync.pool
  by
   solve_pointsto_access_struct
 
-noncomputable instance poolDequeue_access_store_headTail (l : Loc) (v : sync.poolDequeue) (headTail' : sync.atomic.Uint64) :
+noncomputable instance poolDequeue_access_store_headTail (l : Loc) (v : sync.poolDequeue) (headTail' : _root_.Perennial.sync.atomic.Uint64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolDequeue go!"headTail" l) v.headTail' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.poolDequeue go!"headTail" l) headTail' (DFrac.own 1))
@@ -941,7 +941,7 @@ noncomputable instance RWMutex_access_load_readerCount (l : Loc) (v : sync.RWMut
  by
   solve_pointsto_access_struct
 
-noncomputable instance RWMutex_access_store_readerCount (l : Loc) (v : sync.RWMutex) (readerCount' : sync.atomic.Int32) :
+noncomputable instance RWMutex_access_store_readerCount (l : Loc) (v : sync.RWMutex) (readerCount' : _root_.Perennial.sync.atomic.Int32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.RWMutex go!"readerCount" l) v.readerCount' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.RWMutex go!"readerCount" l) readerCount' (DFrac.own 1))
@@ -957,7 +957,7 @@ noncomputable instance RWMutex_access_load_readerWait (l : Loc) (v : sync.RWMute
  by
   solve_pointsto_access_struct
 
-noncomputable instance RWMutex_access_store_readerWait (l : Loc) (v : sync.RWMutex) (readerWait' : sync.atomic.Int32) :
+noncomputable instance RWMutex_access_store_readerWait (l : Loc) (v : sync.RWMutex) (readerWait' : _root_.Perennial.sync.atomic.Int32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.RWMutex go!"readerWait" l) v.readerWait' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.RWMutex go!"readerWait" l) readerWait' (DFrac.own 1))
@@ -1015,7 +1015,7 @@ noncomputable instance WaitGroup_access_load_state (l : Loc) (v : sync.WaitGroup
  by
   solve_pointsto_access_struct
 
-noncomputable instance WaitGroup_access_store_state (l : Loc) (v : sync.WaitGroup) (state' : sync.atomic.Uint64) :
+noncomputable instance WaitGroup_access_store_state (l : Loc) (v : sync.WaitGroup) (state' : _root_.Perennial.sync.atomic.Uint64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.WaitGroup go!"state" l) v.state' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.WaitGroup go!"state" l) state' (DFrac.own 1))

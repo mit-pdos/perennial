@@ -550,7 +550,7 @@ noncomputable instance onceError_access_load_Mutex (l : Loc) (v : io.onceError) 
  by
   solve_pointsto_access_struct
 
-noncomputable instance onceError_access_store_Mutex (l : Loc) (v : io.onceError) (Mutex' : sync.Mutex) :
+noncomputable instance onceError_access_store_Mutex (l : Loc) (v : io.onceError) (Mutex' : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.onceError go!"Mutex" l) v.Mutex' (DFrac.own 1))
       (typedPointsto (structFieldRef io.onceError go!"Mutex" l) Mutex' (DFrac.own 1))
@@ -612,7 +612,7 @@ noncomputable instance pipe_access_load_wrMu (l : Loc) (v : io.pipe) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-noncomputable instance pipe_access_store_wrMu (l : Loc) (v : io.pipe) (wrMu' : sync.Mutex) :
+noncomputable instance pipe_access_store_wrMu (l : Loc) (v : io.pipe) (wrMu' : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"wrMu" l) v.wrMu' (DFrac.own 1))
       (typedPointsto (structFieldRef io.pipe go!"wrMu" l) wrMu' (DFrac.own 1))
@@ -660,7 +660,7 @@ noncomputable instance pipe_access_load_once (l : Loc) (v : io.pipe) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-noncomputable instance pipe_access_store_once (l : Loc) (v : io.pipe) (once' : sync.Once) :
+noncomputable instance pipe_access_store_once (l : Loc) (v : io.pipe) (once' : _root_.Perennial.sync.Once) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"once" l) v.once' (DFrac.own 1))
       (typedPointsto (structFieldRef io.pipe go!"once" l) once' (DFrac.own 1))

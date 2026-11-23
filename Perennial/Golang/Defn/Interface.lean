@@ -118,6 +118,13 @@ class InterfaceSemantics : Prop where
          | interface.nil => false
          | interface.ok ii => decide (underlying ii.ty = t_under))))
 
+  type_of_eq_step (i1 i2 : GoInterface) :
+    ⟦TypeOfEq, (#i1, #i2)⟧ ⤳
+    #(match i1, i2 with
+      | interface.nil, interface.nil => true
+      | interface.ok ii1, interface.ok ii2 => decide (ii1.ty = ii2.ty)
+      | _, _ => false)
+
   method_interface_ok (m : GoString) {t : go.GoType} {elems : List go.InterfaceElem}
     [t ≤u go.InterfaceType elems] (i : GoInterface) :
     ⟦MethodResolve t m, #i⟧ ⤳
@@ -133,10 +140,11 @@ class InterfaceSemantics : Prop where
 attribute [instance] InterfaceSemantics.is_comparable_interface InterfaceSemantics.go_eq_interface
   InterfaceSemantics.convert_to_interface InterfaceSemantics.type_assert_step
   InterfaceSemantics.type_assert2_interface_step InterfaceSemantics.type_assert_underlying2_step
-  InterfaceSemantics.method_interface_ok
+  InterfaceSemantics.type_of_eq_step InterfaceSemantics.method_interface_ok
   InterfaceSemantics.method_set_no_methods
 export InterfaceSemantics (is_comparable_interface go_eq_interface convert_to_interface
-  type_assert_step type_assert2_interface_step type_assert_underlying2_step method_interface_ok
+  type_assert_step type_assert2_interface_step type_assert_underlying2_step type_of_eq_step
+  method_interface_ok
   method_set_no_methods)
 
 end defs

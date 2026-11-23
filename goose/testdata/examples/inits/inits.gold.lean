@@ -30,6 +30,9 @@ noncomputable def y [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def z [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/inits.z"
 
+noncomputable def w [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/inits.w"
+
 noncomputable def c [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/inits.c"
 
@@ -61,7 +64,7 @@ noncomputable def init.«0».impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GlobalVarAddr x))) (Val #())) (Var "$r0"))))))
   (Val #())))
 
-/-- go: inits.go:17:6 -/
+/-- go: inits.go:22:6 -/
 noncomputable def computeZ.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -74,7 +77,7 @@ noncomputable def computeZ.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0")))))
 
-/-- go: inits.go:25:6 -/
+/-- go: inits.go:30:6 -/
 noncomputable def pair.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -105,6 +108,7 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve init.«1» []))) (Val #())) (Val #())))))
   (App (Val doExecute)
@@ -115,6 +119,8 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val c.init) (Val #()))))))
   (App (Val doExecute)
   (App (Val z.init) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val w.init) (Val #()))))))
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc x go.uint64)) (Val #()))))))
   (App (Val doExecute)

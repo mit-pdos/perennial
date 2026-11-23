@@ -207,10 +207,10 @@ instance ownBool_combines_gives (u : Loc) (v v' : Bool) (dq dq' : DFrac) :
 
 `Value` is goose's translation of `struct { v any }`; its methods are trusted
 models (`Perennial/TrustedCode/sync/atomic.lean`): atomic operations on the
-field `v`. `Store`/`Swap`/`CompareAndSwap` may panic (in the model) when the
-cell is non-empty, since the model cannot check Go's "consistently typed"
-requirement; so their specs require the cell to be empty (`nil`) at the
-linearization point. -/
+field `v`. `Store`/`Swap`/`CompareAndSwap` panic, as in Go, when the new value is
+`nil` or the cell holds a value of another dynamic type; so their specs require the
+cell to be empty or to hold a value of the new value's dynamic type
+(`sameTypeOrNil`) at the linearization point. -/
 
 instance : Inhabited GoInterface := ⟨interface.nil⟩
 
@@ -245,6 +245,18 @@ instance ownValue_combines_gives (u : Loc) (x x' : GoInterface) (dq dq' : DFrac)
     icombine H1 H2 gives %Heq
     imodintro; ipureintro
     cases Heq; rfl
+
+/-- Storing `v` into a `Value` that holds `x` does not panic for the type: `x` is empty or
+holds a value of `v`'s dynamic type. -/
+def sameTypeOrNil : GoInterface → GoInterface → Prop
+  | interface.nil, _ => True
+  | interface.ok a, interface.ok b => a.ty = b.ty
+  | interface.ok _, interface.nil => False
+
+@[simp] theorem sameTypeOrNil_nil (v : GoInterface) : sameTypeOrNil interface.nil v := trivial
+
+@[simp] theorem sameTypeOrNil_ok (a b : GoInterfaceOk) :
+    sameTypeOrNil (interface.ok a) (interface.ok b) ↔ a.ty = b.ty := .rfl
 
 /-- A zero `Value` (as in a freshly allocated struct) is an empty cell. -/
 theorem ownValue_zero (u : Loc) (dq : DFrac) :

@@ -1430,7 +1430,39 @@ semantics supports integer-to-float conversions, of every type.
 us to be able to say 'our go semantics supports integer to float conversions' than it is to say 'our
 semantics supports conversions for float64 but not float32'."
 
-## Case 45 — ACCEPTED: `recover()` in a function or method called by `defer`: `F'deferred` takes the cell (branch `goose-deferred-recover`)
+## Case 45 — ACCEPTED: the implicit conversion of a type-parameter value to an interface (branch `goose-tparam`)
+
+**Symptom.** Incomplete. `handleImplicitConversion` emitted no `Convert` when the source's and the
+target's underlying types were identical, and a type parameter's underlying type is its constraint
+interface: for `T any` assigned to `any` both are `interface{}`, so the raw `T` value was stored,
+passed or returned at type `any`. Instantiated with a non-interface type, the model compared a
+`Loc` (or an `int`) at `go.any` and was stuck. Found in zap's `pool.Pool[T].Put(x T)
+{ p.pool.Put(x) }` (etcd-grove claim #40).
+
+The same condition dropped an explicit conversion between two type parameters with identical
+constraints, which was unsound: `func f[T, U ~int | ~float64](x U) T { return T(x) }` at
+`f[int](3.5)` returned the float's bits as an `int`, where Go truncates to 3.
+
+**Witness.** `func f[T any](x T) any { return x }; f(3) == any(3)` is stuck.
+
+**Taken.** In goose only: an identical source and target emit nothing; otherwise a source that is a
+type parameter always gets `Convert T <target>`, as every other source with a different underlying
+type does; the semantics already has the rule (`convert_to_interface`: the identity when `T` is
+instantiated with an interface type, `interface.mkOk T v` otherwise). One condition in
+`handleImplicitConversion`, which every implicit-conversion site (arguments, results,
+assignments, composite-literal elements, explicit conversions) goes through. Semantics tests
+`testGenericToInterface` (Go-checked and proved; stuck before the change) and
+`testGenericToInterfaceLiteralClosure` and `testGenericConvertTypeParams` (Go-checked; the latter
+is now `Convert U T`, whose float-to-int case the semantics leaves arbitrary). Cost: 0 rules, 1 changed goose condition.
+Perennial's own translations (std, models, examples but the test packages) regenerate unchanged.
+
+**Not taken.** A goose branch on the target being an interface: the type parameter's own
+instantiation decides what the conversion does, which is the semantics' job.
+
+**Why.** Proposed in etcd-grove's `notes/perennial-changes.md` (zap pool entry); the change asked
+for by the owner's coordinator, 2026-11-23.
+
+## Case 46 — ACCEPTED: `recover()` in a function or method called by `defer`: `F'deferred` takes the cell (branch `goose-deferred-recover`)
 
 **Symptom.** Incomplete. Goose translated `recover()` only directly in a function literal that is
 the operand of `defer` (it reads the deferring function's `$panic` cell lexically) and refused it in

@@ -96,10 +96,13 @@ type Ctx struct {
 	// the next function literal translated is the operand of a `defer`
 	nextFuncLitDeferred bool
 
-	globalVars     []*ast.Ident
-	functions      []*ast.FuncDecl
-	namedTypeSpecs []*ast.TypeSpec
-	localTypes     map[string]bool // names of the types declared in functions
+	globalVars []*ast.Ident
+	// trusted variables with no initializer (`var X T`): their X'init, defined
+	// in TrustedCode, is their whole initialization (in place of an allocation)
+	trustedNoInitVars []*ast.Ident
+	functions         []*ast.FuncDecl
+	namedTypeSpecs    []*ast.TypeSpec
+	localTypes        map[string]bool // names of the types declared in functions
 	// the unnamed struct types (with fields) the translation mentions, by
 	// name, in the order they were met (a struct after those its fields
 	// mention; see anonStructOf)
@@ -1078,7 +1081,7 @@ func (ctx *Ctx) identExpr(e *ast.Ident, multipleBindings bool) glang.Expr {
 }
 
 func (ctx *Ctx) indexExpr(e *ast.IndexExpr, multipleBindings bool) glang.Expr {
-	xTy := ctx.typeOf(e.X).Underlying()
+	xTy := underlyingType(ctx.typeOf(e.X))
 	switch xTy := xTy.(type) {
 	case *types.Map:
 		if multipleBindings {
@@ -1474,6 +1477,18 @@ func (ctx *Ctx) forStmt(s *ast.ForStmt, label *ast.Ident, cont glang.Expr) glang
 	return glang.SeqExpr{Expr: e, Cont: cont}
 }
 
+// staticArrayLen reports whether the type t of a range expression is an array
+// or a pointer to one, so that its length is constant (Go spec, "Length and
+// capacity"). A type parameter whose core type is an array is not: Go evaluates
+// the expression (`range *q` with `q *A`, `A ~[3]int`, panics if `q` is nil).
+func staticArrayLen(t types.Type) bool {
+	if p, ok := t.Underlying().(*types.Pointer); ok {
+		t = p.Elem()
+	}
+	_, ok := t.Underlying().(*types.Array)
+	return ok
+}
+
 // rangeStmt translates a range statement with the label label (nil if none).
 func (ctx *Ctx) rangeStmt(s *ast.RangeStmt, label *ast.Ident) glang.Expr {
 	if n, msg, bad := modelcheck.Range(ctx.info, s); bad {
@@ -1513,13 +1528,17 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt, label *ast.Ident) glang.Expr {
 	// Go evaluates the range expression, except when the loop has no value
 	// variable and its length is constant: an array, or pointer to one, with no
 	// calls or receives. Evaluating it could then only panic (`range *p` with
-	// `p` nil), so goose does not either; nor is it read.
+	// `p` nil), so goose does not either; nor is it read. The length is constant
+	// only if the expression's own type is an array or a pointer to one
+	// (staticArrayLen), not a type parameter whose core type is.
 	evalRange := true
 	var e glang.Expr
-	t := ctx.typeOf(s.X).Underlying()
+	// underlyingType: a type parameter whose constraint has a single (core)
+	// type ranges over that type (`for k, v := range m` with `M ~map[K]V`)
+	t := underlyingType(ctx.typeOf(s.X))
 	ptr, isPtr := t.(*types.Pointer)
 	if isPtr {
-		t = ptr.Elem().Underlying()
+		t = underlyingType(ptr.Elem())
 	}
 	switch t := t.(type) {
 	case *types.Map:
@@ -1558,7 +1577,7 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt, label *ast.Ident) glang.Expr {
 		}
 		if s.Value != nil {
 			arr.Array = glang.IdentExpr("$range")
-		} else {
+		} else if staticArrayLen(ctx.typeOf(s.X)) {
 			evalRange = false
 			ast.Inspect(s.X, func(n ast.Node) bool {
 				_, isCall := n.(*ast.CallExpr)
@@ -1578,8 +1597,9 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt, label *ast.Ident) glang.Expr {
 		// iterations bind `$key` to `0`, `1`, ..., `n - 1` (none if `n <= 0`),
 		// counted in a cell `$range_i` of that type: the three-clause loop
 		// `for $range_i := 0; $range_i < $range; $range_i++`.
-		if isPtr || t.Info()&types.IsInteger == 0 {
-			ctx.unsupported(s, "range over %v (only integers, strings, functions, maps, slices, channels and arrays are supported)", t)
+		_, isTypeParam := ctx.typeOf(s.X).(*types.TypeParam)
+		if isPtr || t.Info()&types.IsInteger == 0 || isTypeParam {
+			ctx.unsupported(s, "range over %v (only integers, strings, functions, maps, slices, channels and arrays are supported; not a type parameter of integer core type)", t)
 			return nil
 		}
 		nT := ctx.typeOf(s.X)
@@ -1719,7 +1739,7 @@ func (ctx *Ctx) varDeclStmt(s *ast.DeclStmt, cont glang.Expr) glang.Expr {
 }
 
 func (ctx *Ctx) getIndexType(n locatable, t types.Type) types.Type {
-	switch t := t.Underlying().(type) {
+	switch t := underlyingType(t).(type) {
 	case *types.Slice:
 		return types.Typ[types.Int]
 	case *types.Map:
@@ -1796,7 +1816,7 @@ func (ctx *Ctx) assignFromTo(lhs ast.Expr, rhs glang.Expr, cont glang.Expr) glan
 		}
 	case *ast.IndexExpr:
 		targetTy := ctx.typeOf(lhs.X)
-		switch t := targetTy.Underlying().(type) {
+		switch t := underlyingType(targetTy).(type) {
 		case *types.Map:
 			return glang.NewDoSeq(glang.NewCallExpr(glang.VerbatimExpr("map.insert"),
 				ctx.glangType(lhs.Index, t.Key()),
@@ -1822,7 +1842,8 @@ func (ctx *Ctx) handleImplicitConversion(n locatable, from, to types.Type, e gla
 	if from == nil {
 		ctx.unsupported(n, "implicit conversion: don't know from type")
 	}
-	if types.Identical(from.Underlying(), to.Underlying()) {
+	_, fromTypeParam := types.Unalias(from).(*types.TypeParam)
+	if types.Identical(from, to) || !fromTypeParam && types.Identical(from.Underlying(), to.Underlying()) {
 		return e
 	} else {
 		return glang.NewCallExpr(glang.VerbatimExpr("Convert"),
@@ -1855,7 +1876,7 @@ func (ctx *Ctx) assignStmtWith(s *ast.AssignStmt, scope func(glang.Expr) glang.E
 		ix, isIx := ast.Unparen(lhs).(*ast.IndexExpr)
 		var mapTy *types.Map
 		if isIx {
-			mapTy, _ = ctx.typeOf(ix.X).Underlying().(*types.Map)
+			mapTy, _ = underlyingType(ctx.typeOf(ix.X)).(*types.Map)
 		}
 		if _, ok := lhs.(*ast.Ident); ok || !multi {
 			e = ctx.assignFromTo(lhs, rhs, e)
@@ -3003,6 +3024,13 @@ func (ctx *Ctx) globalVarDecl(d *ast.GenDecl) {
 			switch ctx.filter.GetAction(name.Name) {
 			case declfilter.Translate:
 				ctx.globalVars = append(ctx.globalVars, name)
+			case declfilter.Trust:
+				// A trusted variable with no initializer (one the linker
+				// sets, as runtime.buildVersion) gets an X'init too, run
+				// where a translated one is allocated.
+				if s.Values == nil {
+					ctx.trustedNoInitVars = append(ctx.trustedNoInitVars, name)
+				}
 			case declfilter.Axiomatize:
 				if s.Values != nil {
 					ctx.out.varDecls = append(ctx.out.varDecls, glang.AxiomDecl{
@@ -3384,6 +3412,12 @@ func (ctx *Ctx) finalExtraDecls() {
 
 	if e == nil {
 		e = glang.DoExpr{Expr: glang.Tt}
+	}
+
+	for i := len(ctx.trustedNoInitVars) - 1; i >= 0; i-- {
+		e = glang.NewDoSeq(
+			glang.NewCallExpr(ctx.termIdent(ctx.trustedNoInitVars[i].Name+"'init"), glang.Tt),
+			e)
 	}
 
 	for _, varIdent := range ctx.globalVars {
