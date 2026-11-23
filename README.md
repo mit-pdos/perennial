@@ -37,7 +37,8 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   state (`GooseLocalGS`), from a client-chosen precondition `P L` of the
   generation's local ghost state `L`, which each generation's proof guarantees
   for the next generation after its crash, from its persistent `crashed` token (exclusive with the `notCrashed` that its state interpretation owns,
-  `GooseLang/CrashToken.lean`). There are no crash reasoning principles yet
+  `GooseLang/CrashToken.lean`) and a later credit `£ 1` (example:
+  `ProgramLogic/GenStartTest.lean`). There are no crash reasoning principles yet
   (no `crash_own`) beyond the crash-token update (`ncfupd`,
   `GooseLang/NotCrashed.lean`), by which a ghost step may use `notCrashed`
   (to open an invariant `inv N (P ∨ crashed ∗ tok)` shared with later
@@ -182,10 +183,10 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   elements' lengths and panics before allocating anything, so a few gigabytes
   of aliased elements (`make([]string, 1<<30+1)` with a long separator) reach
   the panic. **Known, not yet fixed:** `Join` is still a trusted model that
-  omits that panic, and `strings.wp_Join` has no premise excluding it (a fix
-  that translates the real `Join` is on branch `join-translation`; its model of
-  `strings.Builder.String` must first be made stuck where Go's `String`
-  aliases the builder's buffer). `sync.WaitGroup`'s
+  omits that panic, and `strings.wp_Join` has no premise excluding it. The fix
+  is to translate the real `Join` over `strings.Builder`, whose methods are now
+  goose's translation but for `String`, a model that is stuck where Go's
+  `String` aliases the builder's buffer (`TrustedCode/strings.lean`). `sync.WaitGroup`'s
   `int32` counter is another (two `Add(1 << 30)` calls panic in Go): `WaitGroup.Add`
   is Goose's translation, and `WaitGroup.wp_Add` asks its caller to bound the
   new counter by `2^31`. A caller whose counter is backed by one goroutine per

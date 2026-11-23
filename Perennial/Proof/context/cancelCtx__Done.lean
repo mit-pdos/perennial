@@ -98,7 +98,10 @@ theorem context.cancelCtx.Done.wp_proof
         cases h
       | none =>
         dsimp only [doneAny]
+        iexists interface.nil
         iframe Hdone
+        isplitr
+        · ipureintro; trivial
         iintro Hdone
         imod dghostVar_update_halves (some ch) _ _ _ $$ Hdg Hdg' with ⟨Hdg, Hdg'⟩
         imod dghostVar_persist _ _ _ $$ Hdg with #Hdg

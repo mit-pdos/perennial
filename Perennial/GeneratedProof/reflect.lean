@@ -2,6 +2,7 @@
 module
 
 public import Perennial.Proof.ProofPrelude
+public import Perennial.GeneratedProof.internal.abi
 public import Perennial.Golang.Theory
 public import Perennial.Code.reflect
 
@@ -186,25 +187,6 @@ noncomputable instance MapIter_into_val_typed :
 
 end def_
 end MapIter
-
-namespace Kind
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance Kind_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.Kind :=
-  sorry -- axiomatized type
-
-noncomputable instance Kind_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.Kind reflect.Kind.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end Kind
 
 namespace common
 section def_
@@ -519,34 +501,70 @@ variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
 noncomputable instance Value_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.Value :=
-  sorry -- axiomatized type
+    TypedPointsto (GF := GF) reflect.Value where
+  typedPointstoDef l v dq := iprop(
+    "typ_" ∷ typedPointsto (structFieldRef reflect.Value go!"typ_" l) v.typ_' dq ∗
+    "ptr" ∷ typedPointsto (structFieldRef reflect.Value go!"ptr" l) v.ptr' dq ∗
+    "flag" ∷ typedPointsto (structFieldRef reflect.Value go!"flag" l) v.flag' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance Value_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.Value reflect.Value.underlying :=
-  sorry -- axiomatized type
+    IntoValTypedUnderlying (GF := GF) reflect.Value reflect.Value.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance Value_access_load_typ_ (l : Loc) (v : reflect.Value) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef reflect.Value go!"typ_" l) v.typ_' dq)
+      (typedPointsto (structFieldRef reflect.Value go!"typ_" l) v.typ_' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance Value_access_store_typ_ (l : Loc) (v : reflect.Value) (typ_' : Loc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef reflect.Value go!"typ_" l) v.typ_' (DFrac.own 1))
+      (typedPointsto (structFieldRef reflect.Value go!"typ_" l) typ_' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with typ_' := typ_' } : reflect.Value) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance Value_access_load_ptr (l : Loc) (v : reflect.Value) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef reflect.Value go!"ptr" l) v.ptr' dq)
+      (typedPointsto (structFieldRef reflect.Value go!"ptr" l) v.ptr' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance Value_access_store_ptr (l : Loc) (v : reflect.Value) (ptr' : Loc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef reflect.Value go!"ptr" l) v.ptr' (DFrac.own 1))
+      (typedPointsto (structFieldRef reflect.Value go!"ptr" l) ptr' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ptr' := ptr' } : reflect.Value) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance Value_access_load_flag (l : Loc) (v : reflect.Value) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef reflect.Value go!"flag" l) v.flag' dq)
+      (typedPointsto (structFieldRef reflect.Value go!"flag" l) v.flag' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance Value_access_store_flag (l : Loc) (v : reflect.Value) (flag' : reflect.flag) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef reflect.Value go!"flag" l) v.flag' (DFrac.own 1))
+      (typedPointsto (structFieldRef reflect.Value go!"flag" l) flag' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with flag' := flag' } : reflect.Value) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end Value
-
-namespace flag
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance flag_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.flag :=
-  sorry -- axiomatized type
-
-noncomputable instance flag_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.flag reflect.flag.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end flag
 
 namespace ValueError
 section def_

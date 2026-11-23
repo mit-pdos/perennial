@@ -329,6 +329,37 @@ noncomputable def Buffer.Bytes.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "$res0"))))))
 
+/-- String returns the contents of the unread portion of the buffer
+    as a string. If the [Buffer] is a nil pointer, it returns "<nil>".
+
+    To build strings more efficiently, see the [strings.Builder] type.
+
+    go: buffer.go:72:18 -/
+noncomputable def Buffer.String.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "b"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Buffer.ty)))) (Var "b"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (StructFieldRef Buffer.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Buffer.ty)))) (Var "b"))))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef Buffer.ty go!"off"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Buffer.ty)))) (Var "b"))))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$s"))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType Buffer.ty)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Buffer.ty)))) (Var "b")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType Buffer.ty)))) (Val UntypedNil)))))
+  (Let "$r0" (Val #(go!"<nil>"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
+
 /-- empty reports whether the unread portion of the buffer is empty.
 
     go: buffer.go:93:18 -/
@@ -928,6 +959,7 @@ class Buffer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   ptr_Len_unfold : MethodUnfold (go.GoType.PointerType Buffer.ty) go!"Len" Buffer.Len.impl
   ptr_Read_unfold : MethodUnfold (go.GoType.PointerType Buffer.ty) go!"Read" Buffer.Read.impl
   ptr_Reset_unfold : MethodUnfold (go.GoType.PointerType Buffer.ty) go!"Reset" Buffer.Reset.impl
+  ptr_String_unfold : MethodUnfold (go.GoType.PointerType Buffer.ty) go!"String" Buffer.String.impl
   ptr_Write_unfold : MethodUnfold (go.GoType.PointerType Buffer.ty) go!"Write" Buffer.Write.impl
   ptr_empty_unfold : MethodUnfold (go.GoType.PointerType Buffer.ty) go!"empty" Buffer.empty.impl
   ptr_grow_unfold : MethodUnfold (go.GoType.PointerType Buffer.ty) go!"grow" Buffer.grow.impl
@@ -947,6 +979,7 @@ attribute [instance] Buffer.TypeAssumptions.type_repr
   Buffer.TypeAssumptions.ptr_Len_unfold
   Buffer.TypeAssumptions.ptr_Read_unfold
   Buffer.TypeAssumptions.ptr_Reset_unfold
+  Buffer.TypeAssumptions.ptr_String_unfold
   Buffer.TypeAssumptions.ptr_Write_unfold
   Buffer.TypeAssumptions.ptr_empty_unfold
   Buffer.TypeAssumptions.ptr_grow_unfold

@@ -1,5 +1,5 @@
-translate = ["!*", "Type", "kindNames", "intArgRegs", "floatArgRegs", "floatRegSize"]
-imports = ["!*"]
+translate = ["!*", "Type", "Kind", "Value", "flag", "kindNames", "intArgRegs", "floatArgRegs", "floatRegSize"]
+imports = ["!*", "internal/abi"]
 
 [[skip]]
 names = ["stringType", "bytesType", "uint8Type"]

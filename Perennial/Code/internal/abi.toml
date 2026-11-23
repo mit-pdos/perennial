@@ -1,0 +1,4 @@
+# the types of `reflect.Value`'s fields, for `reflect`, and `kindNames`, which the initializer
+# defines
+translate = ["!*", "Type", "TFlag", "Kind", "NameOff", "TypeOff", "kindNames"]
+imports = ["!*"]

@@ -148,7 +148,8 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
 ## Allocation
 
 - **No limit on allocation size (unsound).** gc refuses an allocation above `maxAlloc`
-  (2^48 bytes). A `make` or `append` panics (`makeslice`, `growslice`). A `new`, an
+  (2^48 bytes). A `make`, an `append` or `internal/bytealg.MakeNoZero` (`strings.Builder`'s
+  growth) panics (`makeslice`, `growslice`, `panicmakeslicelen`). A `new`, an
   escaping variable or a composite literal of a larger array type ends the program with
   a fatal, unrecoverable "out of memory": `p := new([1<<46]int64)` gives `runtime: out of
   memory: cannot allocate 562949953421312-byte block`. The model lets all of these
@@ -166,7 +167,9 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
 
 - **Unexported field names are not qualified by package (unsound).** Go keeps apart
   `struct{ a int }` from two packages: `p.Mk() == q.Mk()` is false when each returns
-  `struct{ a int }{}` from its own package, and the model has one type. Refusing such
+  `struct{ a int }{}` from its own package, and the model has one type (so does a type
+  assertion between them, and `atomic.Value`'s check that a stored value keeps its dynamic
+  type, `TypeOfEq`). Refusing such
   types would reject common code (`struct{ mu sync.Mutex; … }`); modelling it means
   qualifying field names everywhere.
 - **Conversions that involve struct tags are stuck (incomplete, sound).** Every field

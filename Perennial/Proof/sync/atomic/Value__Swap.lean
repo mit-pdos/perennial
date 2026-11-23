@@ -33,19 +33,25 @@ theorem sync.atomic.Value.Swap.wp_proof :
   rw [Value_ty_eq]
   wp_auto
   wp_bind (AtomicSwap _ _)
-  imod HΦ with ⟨>Hown, HΦ⟩
+  imod HΦ with ⟨%x, >Hown, >%Hx, HΦ⟩
   simp only [ownValue_unseal, ownValueDef]
   ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
-  wp_apply_core wp_atomic_swap _ _ _ (interface.nil : GoInterface) (interface.ok ii) $$ v
+  wp_apply_core wp_atomic_swap _ _ _ x (interface.ok ii) $$ v
   iintro Hv
   imod HΦ $$ [Hv] with HΦ
   · iapply typedPointsto_combine _ _ _ Hnn
     simp only [TypedPointsto.typedPointstoDef]
     iframe
   imodintro
-  wp_auto
-  iexact HΦ
+  cases x with
+  | nil => wp_auto; iexact HΦ
+  | ok a =>
+    simp only [sameTypeOrNil_ok] at Hx
+    wp_auto
+    simp only [Hx, decide_true]
+    wp_auto
+    iexact HΦ
 
 end proof
 

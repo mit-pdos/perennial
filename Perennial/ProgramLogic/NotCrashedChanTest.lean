@@ -310,7 +310,7 @@ theorem crash_safety_bounded [lctx : GoLocalContext] [sem : go.Semantics] [hPre 
     imod wp_boot γ k $$ Hγ with ⟨Hwp, Hcr⟩
     imodintro
     iframe Hwp
-    iintro %L' #Hc _ _
+    iintro %L' #Hc _ _ _
     imod Hcr $$ Hc with ⟨%m, Hγ⟩
     imodintro
     iexists γ, m
