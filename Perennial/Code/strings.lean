@@ -371,23 +371,6 @@ noncomputable def Builder.Cap.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
-/-- Reset resets the [Builder] to be empty.
-
-    go: builder.go:59:19 -/
-noncomputable def Builder.Reset.impl [GooseExts] [GoGlobalContext] : val :=
-  (LamV "b"
-  (Lam BAnon
-  (Seq (App (Val exceptionDo)
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Builder.ty)))) (Var "b"))
-  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType Builder.ty)))) (Val UntypedNil))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType go.byte)))) (Val UntypedNil))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (StructFieldRef Builder.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Builder.ty)))) (Var "b"))) (Var "$r0")))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType Builder.ty)))) (Pair (App (Val (GoInstruction (StructFieldRef Builder.ty go!"addr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Builder.ty)))) (Var "b"))) (Var "$r0"))))))))
-  (Val #()))))
-
 /-- grow copies the buffer to a new, larger buffer so that there are at least n
     bytes of capacity beyond len(b.buf).
 

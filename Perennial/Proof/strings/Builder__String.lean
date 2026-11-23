@@ -65,13 +65,9 @@ theorem strings.Builder.String.wp_proof :
   intro l s
   wp_start as Hown
   unfold strings.ownBuilder
-  icases Hown with ⟨%b, %dq, Hl, Hbuf, Hcap, %Hinv⟩
+  icases Hown with ⟨%used, %buf, %dq, %Hnn, Haddr, Hbf, Hbuf, Hcap, %Hdq⟩
   imod ownSlice_persist $$ Hbuf with #Hbuf
-  ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hl
-  obtain ⟨addr, buf⟩ := b
-  simp only at Hinv ⊢
   rw [show go.GoType.Named go!"strings.Builder" [] = strings.Builder.ty by with_unfolding_all rfl]
-  iStructNamed Hl
   wp_auto
   wp_apply wp_bytes_to_string buf s DFrac.discard $$ Hbuf as -
   -- leave a reader on each byte of `buf` (the model's `readLock`)
@@ -81,13 +77,9 @@ theorem strings.Builder.String.wp_proof :
   · ipureintro; decide
   wp_pures
   iapply HΦ
-  iexists ⟨addr, buf⟩, DFrac.discard
-  iframe Hbuf Hcap
-  isplitl [addr buf]
-  · iapply typedPointsto_combine _ _ _ Hnn
-    simp only [TypedPointsto.typedPointstoDef]
-    iframe
-  ipureintro; exact ⟨DFrac.valid_discard, Hinv.2⟩
+  iexists used, buf, DFrac.discard
+  iframe Haddr Hbf Hbuf Hcap
+  ipureintro; exact ⟨Hnn, DFrac.valid_discard⟩
 
 end proof
 

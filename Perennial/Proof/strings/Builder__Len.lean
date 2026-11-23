@@ -25,22 +25,14 @@ theorem strings.Builder.Len.wp_proof :
   intro l s
   wp_start as Hown
   unfold strings.ownBuilder
-  icases Hown with ⟨%b, %dq, Hl, Hbuf, Hcap, %Hinv⟩
+  icases Hown with ⟨%used, %buf, %dq, %Hnn, Haddr, Hbf, Hbuf, Hcap, %Hdq⟩
   ihave %Hlen := ownSlice_len $$ Hbuf
-  ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hl
-  obtain ⟨addr, buf⟩ := b
-  simp only at Hinv Hlen ⊢
-  iStructNamed Hl
   wp_auto
   rw [show buf.len = W64 (s.length : Int) by word]
   iapply HΦ
-  iexists ⟨addr, buf⟩, dq
-  iframe Hbuf Hcap
-  isplitl [addr buf]
-  · iapply typedPointsto_combine _ _ _ Hnn
-    simp only [TypedPointsto.typedPointstoDef]
-    iframe
-  ipureintro; exact Hinv
+  iexists used, buf, dq
+  iframe Haddr Hbf Hbuf Hcap
+  ipureintro; exact ⟨Hnn, Hdq⟩
 
 end proof
 

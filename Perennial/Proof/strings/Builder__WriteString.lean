@@ -27,28 +27,19 @@ theorem strings.Builder.WriteString.wp_proof
   intro l s x
   wp_start as Hown
   unfold strings.ownBuilder
-  icases Hown with ⟨%b, %dq, Hl, Hbuf, Hcap, %Hinv⟩
+  icases Hown with ⟨%used, %buf, %dq, %Hnn, Haddr, Hbf, Hbuf, Hcap, %Hdq⟩
   wp_auto
-  wp_apply wp_copyCheck $$ [Hl] as Hl
-  · iframe Hl; ipureintro
-    rcases Hinv.2 with h | ⟨h, -⟩ <;> simp [h]
-  ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hl
-  obtain ⟨addr, buf⟩ := b
-  simp only at Hinv ⊢
-  iStructNamed Hl
+  wp_apply wp_copyCheck $$ [Haddr] as Haddr
+  · iframe Haddr; ipureintro; exact Hnn
   wp_apply wp_string_to_bytes as %sl ⟨Hsl, -⟩
   wp_apply wp_slice_append_dfrac (V := w8) buf s dq sl x (DFrac.own 1) $$ [Hbuf Hcap Hsl]
     as %buf' ⟨Hbuf, Hcap, -⟩
-  · iframe; ipureintro; exact Hinv.1
+  · iframe; ipureintro; exact Hdq
   wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %-
   iapply HΦ
-  iexists ⟨l, buf'⟩, dq
-  iframe Hbuf Hcap
-  isplitl [addr buf]
-  · iapply typedPointsto_combine _ _ _ Hnn
-    simp only [TypedPointsto.typedPointstoDef]
-    iframe
-  ipureintro; exact ⟨Hinv.1, Or.inl rfl⟩
+  iexists true, buf', dq
+  iframe Haddr Hbf Hbuf Hcap
+  ipureintro; exact ⟨Hnn, Hdq⟩
 
 end proof
 

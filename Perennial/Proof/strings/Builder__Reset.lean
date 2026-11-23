@@ -25,22 +25,19 @@ theorem strings.Builder.Reset.wp_proof :
   intro l s
   wp_start as Hown
   unfold strings.ownBuilder
-  icases Hown with ⟨%b, %dq, Hl, -, -, %Hinv⟩
-  ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hl
-  obtain ⟨addr, buf⟩ := b
-  iStructNamed Hl
+  icases Hown with ⟨%used, %buf, %dq, %Hnn, Haddr, Hbf, Hbuf, Hcap, %Hdq⟩
+  rw [show go.GoType.Named go!"strings.Builder" [] = strings.Builder.ty by with_unfolding_all rfl]
   wp_auto
   iapply HΦ
-  iexists ⟨null, slice.nil⟩, DFrac.own 1
-  isplitl [addr buf]
-  · iapply typedPointsto_combine _ _ _ Hnn
-    simp only [TypedPointsto.typedPointstoDef]
-    iframe
+  iexists used, slice.nil, DFrac.own 1
+  isplitr
+  · ipureintro; exact Hnn
+  iframe Haddr Hbf
   isplitr
   · iapply ownSlice_nil
   isplitr
   · iapply ownSliceCap_nil
-  ipureintro; exact ⟨DFrac.valid_own_one, Or.inr ⟨rfl, rfl⟩⟩
+  ipureintro; exact DFrac.valid_own_one
 
 end proof
 

@@ -20,30 +20,40 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : strings.Assumptions]
 
+omit [GooseSemantics] package_sem in
+/-- A pointer's typed points-to is its heap points-to (`typedPointsto_loc`). -/
+theorem strings.loc_typedPointsto_heap (l v : Loc) (dq : DFrac) :
+    typedPointsto (GF := GF) l v dq ⊢ heapPointsto l dq #v := by
+  rw [typedPointsto_unseal_eq]
+  change iprop(heapPointsto l dq #v ∗ ⌜l ≠ null⌝) ⊢ _
+  iintro ⟨H, -⟩
+  iexact H
+
 theorem strings.Builder.copyCheck.wp_proof :
     strings.Builder.copyCheck.spec (GF := GF) (hG := hG) := by
-  intro l b
-  wp_start as ⟨Hl, %Haddr⟩
+  intro l used
+  wp_start as ⟨%Hnn, Haddr⟩
   rw [show go.GoType.Named go!"strings.Builder" [] = strings.Builder.ty by with_unfolding_all rfl]
-  ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hl
-  obtain ⟨addr, buf⟩ := b
-  simp only at Haddr ⊢
-  iStructNamed Hl
-  wp_auto
-  wp_if_destruct
-  · -- nil: `b.addr = b` (the model's `copyCheck`)
+  unfold strings.ownBuilderAddr
+  cases used
+  · -- nil: `b.addr = b`, then a reader on `b.addr` for good
+    simp only [Bool.false_eq_true, ↓reduceIte]
+    wp_auto
+    ipersist Haddr
+    ihave Hh := strings.loc_typedPointsto_heap _ _ _ $$ Haddr
+    wp_bind (StartRead _)
+    wp_apply_core (wp_start_read _ DFrac.discard _) $$ Hh
+    iintro -
+    wp_pures
     iapply HΦ
-    iapply typedPointsto_combine _ _ _ Hnn
-    simp only [TypedPointsto.typedPointstoDef]
-    iframe
+    iexact Haddr
   · -- `b.addr == b`: no panic
-    have Hl : addr = l := Haddr.resolve_right Hif
-    subst Hl
+    simp only [↓reduceIte]
+    wp_auto
+    rw [decide_eq_false Hnn]
     wp_auto
     iapply HΦ
-    iapply typedPointsto_combine _ _ _ Hnn
-    simp only [TypedPointsto.typedPointstoDef]
-    iframe
+    iexact Haddr
 
 end proof
 

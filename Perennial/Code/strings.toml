@@ -1,11 +1,13 @@
-# Builder's methods are translated but two, trusted (TrustedCode/strings.lean): `String`, whose
-# `unsafe.String(unsafe.SliceData(b.buf), len(b.buf))` returns a string that aliases the buffer, and
+# Builder's methods are translated but three, trusted (TrustedCode/strings.lean): `String`, whose
+# `unsafe.String(unsafe.SliceData(b.buf), len(b.buf))` returns a string that aliases the buffer;
 # `copyCheck`, whose `(*Builder)(abi.NoEscape(unsafe.Pointer(b)))` converts an `unsafe.Pointer` to a
-# pointer to a non-plain type (no rule: Golang/Defn/Plain.lean). `grow`'s `bytealg.MakeNoZero` is
+# pointer to a non-plain type (no rule: Golang/Defn/Plain.lean), and whose model leaves a reader on
+# `b.addr` once set, so that a copy by value stored back over a used Builder is stuck; and `Reset`,
+# whose model therefore leaves `b.addr` as it is. `grow`'s `bytealg.MakeNoZero` is
 # trusted in its package.
-translate = ["Builder", "Builder.*", "!Builder.String", "!Builder.copyCheck", "asciiSpace", "HasSuffix", "TrimSuffix", "NewReplacer"]
+translate = ["Builder", "Builder.*", "!Builder.String", "!Builder.copyCheck", "!Builder.Reset", "asciiSpace", "HasSuffix", "TrimSuffix", "NewReplacer"]
 imports = ["!*", "internal/stringslite", "sync", "io", "internal/bytealg", "unicode/utf8"]
-trusted = ["Builder.String", "Builder.copyCheck", "Join", "HasPrefix", "Compare", "TrimPrefix", "Split"]
+trusted = ["Builder.String", "Builder.copyCheck", "Builder.Reset", "Join", "HasPrefix", "Compare", "TrimPrefix", "Split"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true
