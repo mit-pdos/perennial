@@ -286,6 +286,7 @@ def main():
             "./netfs/...",
             "./unsafememory/...",
             "./xpkgalias/...",
+            "./modeloverlay",
         )
 
     if args.models:
@@ -345,6 +346,12 @@ def main():
             proj_dir(proj.name),
             *proj.pkgs,
         )
+    # internal/gomodel, a standard-library package that only its Go model
+    # overlay adds (Perennial/Code/internal/gomodel.toml), on its own: go1.26.0's
+    # go list does not find such a package through go/packages (go1.26.11 and
+    # go1.27 do), and its failure must not stop the packages above
+    if args.std_lib:
+        run_goose(goose_dir, "internal/gomodel")
     # packages whose types (only) are translated, so that the types of the
     # packages above that refer to them can be translated
     if args.std_lib:

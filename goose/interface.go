@@ -83,13 +83,14 @@ func pkgErrors(errors []packages.Error) error {
 // alphabetical order; this must be a topological sort of the definitions or the
 // Lean code will be out-of-order. Sorting ensures the results are stable
 // and not dependent on map or directory iteration order.
-func translatePackage(pkg *packages.Package, config declfilter.FilterConfig, configDir string) (glang.File, error) {
+func translatePackage(pkg *packages.Package, config declfilter.FilterConfig, configDir string,
+	models *util.Models) (glang.File, error) {
 	if len(pkg.Errors) > 0 {
 		return glang.File{}, errors.Errorf(
 			"could not load package %v:\n%v", pkg.PkgPath,
 			pkgErrors(pkg.Errors))
 	}
-	ctx := NewPkgCtx(pkg, util.ExtendFilter(pkg, config, declfilter.New(config)))
+	ctx := NewPkgCtx(pkg, util.ExtendFilter(pkg, config, models.Filter(pkg, declfilter.New(config))))
 	ctx.configDir = configDir
 	f := ctx.initFile(pkg, config)
 	if errs := ctx.checkSkipConfig(pkg, config); len(errs) != 0 {
@@ -211,14 +212,15 @@ func leanChunks(f *glang.File) {
 // all, producing one file per matched package.
 //
 // opts are the build tags and overlay the packages are loaded with (see
-// util.NewPackageConfig).
+// util.NewPackageConfig), and the Go models of the goose configs' [model]
+// tables are applied (util.LoadPackages).
 //
 // The errs list contains errors corresponding to each package (in parallel with
 // the files list). patternErr is only non-nil if the patterns themselves have
-// a syntax error.
+// a syntax error, or the Go models have a config error.
 func TranslatePackages(configDir string, modDir string, opts util.LoadOptions,
 	pkgPattern ...string) (files []glang.File, errs []error, patternErr error) {
-	pkgs, patternErr := packages.Load(util.NewPackageConfig(modDir, true, opts), pkgPattern...)
+	pkgs, models, patternErr := util.LoadPackages(modDir, configDir, true, opts, pkgPattern...)
 
 	if patternErr != nil {
 		return
@@ -242,7 +244,7 @@ func TranslatePackages(configDir string, modDir string, opts util.LoadOptions,
 				errs[i] = err
 				return
 			}
-			files[i], errs[i] = translatePackage(pkg, config, configDir)
+			files[i], errs[i] = translatePackage(pkg, config, configDir, models)
 		}()
 	}
 	wg.Wait()

@@ -12,8 +12,6 @@ import (
 	"fmt"
 	"os"
 
-	"golang.org/x/tools/go/packages"
-
 	"github.com/mit-pdos/perennial/goose/declfilter"
 	"github.com/mit-pdos/perennial/goose/skiplint"
 	"github.com/mit-pdos/perennial/goose/util"
@@ -32,7 +30,7 @@ func main() {
 	load.Register(flag.CommandLine, "")
 	flag.Parse()
 
-	pkgs, err := packages.Load(util.NewPackageConfig(modDir, false, load.Options()), flag.Args()...)
+	pkgs, models, err := util.LoadPackages(modDir, configDir, false, load.Options(), flag.Args()...)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(2)
@@ -55,7 +53,7 @@ func main() {
 			status = 2
 			continue
 		}
-		for _, w := range skiplint.Check(pkg, declfilter.New(config)) {
+		for _, w := range skiplint.Check(pkg, models.Filter(pkg, declfilter.New(config))) {
 			fmt.Printf("skiplint: warning: %s: %s\n", pkg.PkgPath, w)
 		}
 	}

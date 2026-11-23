@@ -22,8 +22,19 @@ generated `skipped'` list (`Perennial/Code/<pkg>.lean`: a Go upgrade that adds,
 moves or changes a skipped variable, or a changed reason) is a change to the
 trusted base too: it is listed in its own section, and counts for `--check`.
 
+Go model overlays: for every changed goose config with a `[model]` table, and every
+config whose `[model].dir` holds a changed model file (configs are found at both
+revisions, in Perennial/Code and goose/testdata; a non-test `.go` file of such a
+dir is tier 0, `go-model-overlay`, wherever it sits), it prints the table before
+and after; for every replaced declaration that is new or whose model changed, the
+model's Go source (with its doc comment, and a NOTE if that does not start with
+`MODEL:`) next to the real one (`go doc -u -src`; not for `init.N`, which go doc
+cannot name); the unchanged replaced names; and every addition, marking the
+primitive stubs (additions in `trusted`) and whether an added method matches
+`added_methods`.
+
 Tiers (see the skill): 0 = trusted (semantics, translator, trusted models,
-goose configuration); 1 = generated (trusted through goose; hand edits are
+goose configuration, Go model overlays); 1 = generated (trusted through goose; hand edits are
 suspect); 2 = program logic and libraries (proved, but can hide trust in an
 axiom/sorry/opaque); 3 = proofs, docs, tooling.
 
@@ -40,7 +51,7 @@ declaration it belongs to. For a new or changed
 trusted model whose docstring quotes Go code, it prints the real Go source of
 the function (`go doc -src`) next to it, when the Go toolchain can find it.
 """
-import os, re, subprocess, sys, tomllib
+import os, re, shutil, subprocess, sys, tomllib
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
@@ -55,7 +66,11 @@ TIER0 = [
     ("go-model", r"^goose/model/"),
     ("trusted-model", r"^Perennial/TrustedCode/"),
     ("goose-config", r"^Perennial/Code/.*\.toml$"),
+    # the configs of goose's tests: their `[model]` tables and trust lists shape the gold files
+    ("test-config", r"^goose/testdata/.*\.toml$"),
 ]
+# Besides these, every non-test `.go` file of a goose config's `[model].dir` is tier 0
+# (`go-model-overlay`), wherever it sits: see `model_owners`.
 TIER1 = [
     ("generated-code", r"^Perennial/Code/.*\.lean$"),
     ("generated-proof", r"^Perennial/GeneratedProof/"),
@@ -111,6 +126,12 @@ SIGNALS = [
     ("extension", r"\bExtSemantics\b|\bGooseSemantics\b|\bextStep\w*|\bGooseExt\b", "an extension's semantics (new primitive operations)"),
     ("set_option", r"^\s*set_option\b", "an option change (linters off, max heartbeats, ...)"),
     ("verbatim", r"VerbatimExpr|Verbatim", "goose emits Lean text verbatim"),
+    ("model-table", r"^\s*\[model\]", "goose configuration: a Go model overlay (model Go replaces or adds to the real package; R12)"),
+    ("model-replaces", r"^\s*(replaces|added_methods)\s*=\s*\[",
+     "goose configuration: which real declarations a Go model replaces, or which methods it may add to real types (R12)"),
+    ("gomodel-replace", r"//gomodel:replace\b", "a Go model `init` that replaces a real `init.N` (R12)"),
+    ("gomodel-choice", r"\bgomodel\.(Choose|ChooseUint64|Stuck)\s*\(",
+     "a choice or stuck point in a Go model: needs a reason (review-trusted)"),
 ]
 
 # Outside tier 0, at most this many lines of each signal are listed per file.
@@ -121,6 +142,9 @@ def is_prose(path, text):
     if path.endswith(".md"):
         return True
     t = text.lstrip()
+    if t.startswith("//gomodel:"):
+        return False  # a Go model directive: code, whatever counts as prose
+
     return t.startswith(("--", "/-", "-/", "#", "* ", "| ")) or (path.endswith(".toml") and t.startswith("#"))
 
 def signals_in(line):
@@ -274,13 +298,15 @@ def step_rule_context_hits(path, f, rev_old, rev_new):
     return [h for k, h in ctx.items() if k not in direct]
 
 # --------------------------------------------------------------- Go source lookup
-def go_source(symbol, unexported=False):
-    """`go doc -src strings.Split` (`-u` also for unexported names); '' if the
-    toolchain cannot find it."""
+GO = shutil.which("go") or "/usr/local/go/bin/go"
+
+def go_source(symbol, unexported=False, cwd=ROOT):
+    """`go doc -src strings.Split` (`-u` also for unexported names), run in `cwd` (whose
+    module must provide the package); '' if the toolchain cannot find it."""
     # read-only: never let `go doc` rewrite go.sum / go.work.sum
     env = dict(os.environ, GOFLAGS="-mod=readonly", GOWORK="off")
     try:
-        r = subprocess.run(["go", "doc"] + (["-u"] if unexported else []) + ["-src", symbol], cwd=ROOT, capture_output=True,
+        r = subprocess.run([GO, "doc"] + (["-u"] if unexported else []) + ["-src", symbol], cwd=cwd, capture_output=True,
                            text=True, timeout=60, env=env)
     except (OSError, subprocess.TimeoutExpired):
         return ""
@@ -366,6 +392,8 @@ def config_pkg(path, rev=None):
     is no guide: goose maps both `.` and `-` to `_` (github_com/mit_pdos/...). Without a
     translation, the file name with `_` read as `/`-separated path components (right for the
     standard library)."""
+    if path.startswith("goose/testdata/"):
+        return testdata_pkg(path)[0]
     lean = path[: -len(".toml")] + ".lean"
     for r in ([rev] if rev is not None else []) + ["HEAD"]:
         m = PKG_ID.search(file_at(r, lean))
@@ -373,6 +401,335 @@ def config_pkg(path, rev=None):
             return m.group(1)
     m = PKG_ID.search(file_at(None, lean))
     return m.group(1) if m else os.path.relpath(path, "Perennial/Code")[: -len(".toml")]
+
+def testdata_pkg(path):
+    """(import path, directory) of the package of a goose test config
+    goose/testdata/<group>/<pkg>/<encoded import path>.toml: the directory is the nearest
+    ancestor of the config holding a `.go` file, its import path the enclosing module's path
+    plus the directory (read in the working tree). (None, None) if not found."""
+    d = os.path.dirname(path)
+    while d.startswith("goose/testdata/"):
+        try:
+            if any(n.endswith(".go") for n in os.listdir(os.path.join(ROOT, d))):
+                break
+        except OSError:
+            pass
+        d = os.path.dirname(d)
+    else:
+        return None, None
+    m = d
+    while m.startswith("goose/"):
+        mod = re.search(r"^module\s+(\S+)", file_at(None, m + "/go.mod"), re.M)
+        if mod:
+            rel = os.path.relpath(d, m)
+            return (mod.group(1) + ("" if rel == "." else "/" + rel)), d
+        m = os.path.dirname(m)
+    return None, d
+
+def config_go_dir(path):
+    """Where `go doc` finds the package of a goose config: the repository root, or for a
+    test config the test package's own module."""
+    if path.startswith("goose/testdata/"):
+        d = testdata_pkg(path)[1]
+        return os.path.join(ROOT, d) if d else ROOT
+    return ROOT
+
+# --------------------------------------------------------------- Go model overlays
+def model_table(text):
+    """The `[model]` table of a goose config: {"dir", "replaces", "added_methods"}, or None."""
+    m = parse_config(text).get("model") if text else None
+    if not isinstance(m, dict):
+        return None
+    return {"dir": str(m.get("dir", "")).strip("/"),
+            "replaces": [str(x) for x in m.get("replaces", [])] if "replaces" in m else None,
+            "added_methods": [str(x) for x in m.get("added_methods", [])]}
+
+def pattern_contains(patterns, name):
+    """goose's pattern sets (declfilter): `*` matches anything, `!p` removes, the last
+    matching pattern decides."""
+    b = False
+    for p in patterns:
+        neg = p.startswith("!")
+        rx = "^" + ".*".join(re.escape(x) for x in p[1 if neg else 0:].split("*")) + "$"
+        if re.match(rx, name):
+            b = not neg
+    return b
+
+def model_owners(rev):
+    """{config path: its `[model]` table} for every goose config at `rev` (None: the
+    working tree) that has one: Perennial/Code/**.toml and goose/testdata/**.toml."""
+    args = ["grep", "-l", "-E", r"^\s*\[model\]"] + (["--untracked"] if rev is None else [rev])
+    out = git(*args, "--", "Perennial/Code/*.toml", "goose/testdata/*.toml", check=False)
+    res = {}
+    for line in out.split("\n"):
+        if not line:
+            continue
+        p = line.split(":", 1)[1] if rev is not None else line
+        t = model_table(file_at(rev, p))
+        if t:
+            res[p] = t
+    return res
+
+def model_files(rev, d):
+    """The model files of a `[model].dir` at `rev`: its non-test `.go` files."""
+    if not d:
+        return []
+    if rev is None:
+        try:
+            names = sorted(os.listdir(os.path.join(ROOT, d)))
+        except OSError:
+            return []
+        paths = [f"{d}/{n}" for n in names]
+    else:
+        paths = git("ls-tree", "--name-only", rev, "--", d + "/", check=False).split()
+    return [p for p in paths if p.endswith(".go") and not p.endswith("_test.go")]
+
+def go_code_lines(src):
+    """Per line of Go source: (code, bracket depth at its start, at its end), where code is
+    the line without comments and with string and rune contents blanked out."""
+    out, state, depth = [], None, 0
+    for line in src.split("\n"):
+        d0, code, i, n = depth, [], 0, len(line)
+        while i < n:
+            if state == "block":
+                j = line.find("*/", i)
+                if j < 0:
+                    break
+                state, i = None, j + 2
+                code.append(" ")
+                continue
+            if state == "raw":
+                j = line.find("`", i)
+                if j < 0:
+                    break
+                state, i = None, j + 1
+                code.append("`")
+                continue
+            c = line[i]
+            if line.startswith("//", i):
+                break
+            if line.startswith("/*", i):
+                state, i = "block", i + 2
+                continue
+            if c == "`":
+                state, i = "raw", i + 1
+                code.append("`")
+                continue
+            if c in "\"'":
+                j = i + 1
+                while j < n and line[j] != c:
+                    j += 2 if line[j] == "\\" else 1
+                code.append(c + c)
+                i = j + 1
+                continue
+            if c in "({[":
+                depth += 1
+            elif c in ")}]":
+                depth -= 1
+            code.append(c)
+            i += 1
+        out.append(("".join(code).rstrip(), d0, depth))
+    return out
+
+GO_REPLACE = re.compile(r'^\s*//gomodel:replace\s+(init\.\d+)\s*(.*)$')
+
+def go_decls(src):
+    """The top-level declarations of a Go file, one per function, method, and type, var or
+    const spec (a spec of a `var (...)` group is its own declaration), each with its doc
+    comment: [{"names", "kind", "line" (1-based, of the doc comment if any), "text",
+    "marker" (an `init`'s `//gomodel:replace` quote)}]. A method is named `T.m`; an
+    `init` marked `//gomodel:replace init.N` is named `init.N`, an unmarked one `init#K`
+    (the K-th unmarked one of the file). Brace matching on the source with comments and
+    strings blanked out: enough for gofmt-formatted files."""
+    lines, cl = src.split("\n"), go_code_lines(src)
+    decls, unmarked = [], 0
+
+    def doc_start(i):
+        while i > 0 and lines[i - 1].strip() and not cl[i - 1][0].strip():
+            i -= 1
+        return i
+
+    def add(kind, names, i, k):
+        nonlocal unmarked
+        ds = doc_start(i)
+        text = "\n".join(lines[ds:k + 1])
+        marker = None
+        if names == ["init"] and kind == "func":
+            for l in lines[ds:i]:
+                m = GO_REPLACE.match(l)
+                if m:
+                    names, marker = [m.group(1)], m.group(2)
+            if marker is None:
+                unmarked += 1
+                names = [f"init#{unmarked}"]
+        decls.append({"names": names, "kind": kind, "line": ds + 1, "text": text, "marker": marker})
+
+    def end_of(k, level):
+        while k < len(lines) - 1 and cl[k][2] > level:
+            k += 1
+        return k
+
+    i = 0
+    while i < len(lines):
+        code, d0, _ = cl[i]
+        m = re.match(r"(func|type|var|const|import)\b", code) if d0 == 0 else None
+        if not m:
+            i += 1
+            continue
+        kw = m.group(1)
+        if kw != "func" and re.match(kw + r"\s*\($", code):  # a group: one declaration per spec
+            j = i + 1
+            while j < len(lines):
+                c, e0, _ = cl[j]
+                if e0 <= 1 and c.strip().startswith(")"):
+                    break
+                if e0 == 1 and c.strip():
+                    k = end_of(j, 1)
+                    nm = re.match(r"\s*(\w+(?:\s*,\s*\w+)*)", c)
+                    if kw != "import" and nm:
+                        add(kw, [x.strip() for x in nm.group(1).split(",")], j, k)
+                    j = k + 1
+                else:
+                    j += 1
+            i = j + 1
+            continue
+        k = end_of(i, 0)
+        if kw == "func":
+            mm = re.match(r"func\s*\(([^)]*)\)\s*(\w+)", code)
+            if mm:
+                recv = re.search(r"(\w+)\s*(\[.*\])?\s*$", mm.group(1))
+                add("method", [f"{recv.group(1) if recv else '?'}.{mm.group(2)}"], i, k)
+            else:
+                mf = re.match(r"func\s+(\w+)", code)
+                add("func", [mf.group(1) if mf else "?"], i, k)
+        elif kw != "import":
+            nm = re.match(kw + r"\s+(\w+(?:\s*,\s*\w+)*)", code)
+            if nm:
+                add(kw, [x.strip() for x in nm.group(1).split(",")], i, k)
+        i = k + 1
+    return decls
+
+def model_decls(rev, d):
+    """{name: (model file, declaration)} of the model files of `d` at `rev`."""
+    out = {}
+    for p in model_files(rev, d):
+        for dc in go_decls(file_at(rev, p)):
+            for n in dc["names"]:
+                if n != "_":
+                    out[n] = (p, dc)
+    return out
+
+def doc_starts_with_model(text):
+    """Whether a declaration's doc comment (directives aside) starts with `MODEL:`."""
+    for l in text.split("\n"):
+        t = l.strip()
+        if re.match(r"//(go|gomodel|line)\b", t):
+            continue
+        return bool(re.match(r"//\s*MODEL:", t))
+    return False
+
+def clip(text, n):
+    lines = text.rstrip().split("\n")
+    return "\n".join(lines[:n] + ([f"... ({len(lines) - n} more lines)"] if len(lines) > n else []))
+
+def fmt_model(t):
+    if t is None:
+        return "none"
+    r = "(missing: a config error)" if t["replaces"] is None else t["replaces"]
+    return f"dir = {t['dir']!r}, replaces = {r}, added_methods = {t['added_methods']}"
+
+def report_model(cpath, rev_old, rev_new, changed_paths):
+    """The `[model]` section of one goose config: the table before and after; for every
+    replaced declaration that is new or changed, the model's Go source next to the real
+    one; every addition, and which ones are primitive stubs (also in `trusted`)."""
+    old_txt, new_txt = file_at(rev_old, cpath), file_at(rev_new, cpath)
+    old, new = model_table(old_txt), model_table(new_txt)
+    pkg, gocwd = config_pkg(cpath, rev_new), config_go_dir(cpath)
+    print(f"### {cpath}  (package `{pkg}`)\n")
+    if old == new:
+        print(f"- `[model]` (unchanged): {fmt_model(new)}")
+    else:
+        print(f"- `[model]` before: {fmt_model(old)}")
+        print(f"- `[model]` after:  {fmt_model(new)}")
+    if new is None:
+        print("- the model overlay is removed: every real declaration is goose's translation "
+              "(or trusted/axiomatized by the config) again\n")
+        return
+    trusted = goose_lists(new_txt).get("trusted", [])
+    nd = model_decls(rev_new, new["dir"])
+    od = model_decls(rev_old, old["dir"]) if old else {}
+    files = model_files(rev_new, new["dir"])
+    touched = [p for p in files if p in changed_paths]
+    print(f"- model files: {', '.join(files) or '(none: a config error)'}"
+          + (f"; changed: {', '.join(touched)}" if touched else ""))
+    whole = new["replaces"] == ["*"]
+    rep_new = set(new["replaces"] or [])
+    rep_old = set((old or {}).get("replaces") or [])
+    if whole:
+        print("- whole-package model (`replaces = [\"*\"]`): every real file is dropped; every "
+              "model declaration that is not a primitive stub carries the R12 claim against the "
+              "real declaration of the same name, if any")
+    for n in sorted(rep_old - rep_new - {"*"}):
+        print(f"- no longer replaced: `{n}` (the real declaration is back)")
+    stubs = lambda n: pattern_contains(trusted, n)
+    if whole:
+        claimed = [n for n in nd if not stubs(n)]
+    else:
+        claimed = sorted(rep_new)
+    status = lambda n: ("new" if n not in od or (not whole and n not in rep_old) else
+                        "changed" if od[n][1]["text"] != nd[n][1]["text"] else None)
+    shown, same = [], []
+    for n in claimed:
+        if n not in nd:
+            print(f"- replaced `{n}`: the model declares no `{n}` (a config error)")
+            continue
+        (shown if status(n) else same).append(n)
+    print()
+    for n in shown:
+        p, dc = nd[n]
+        print(f"#### `{pkg}.{n}` ({status(n)})\n")
+        print(f"Model ({p}:{dc['line']}):\n")
+        print("```go\n" + clip(dc["text"], 80) + "\n```\n")
+        if not doc_starts_with_model(dc["text"]):
+            print("NOTE: the doc comment does not start with `MODEL:` (R12).\n")
+        if n.startswith("init#"):
+            print("(an unmarked model `init`: it runs after the real package's inits)\n")
+            continue
+        if n.startswith("init."):
+            print(f"(`go doc` cannot show `{n}`, the real package's init of that number in goose's "
+                  f"numbering: read it in the real source. The marker quotes its first body "
+                  f"line: {dc['marker'] or '(none)'})\n")
+            continue
+        real = go_source(f"{pkg}.{n}", unexported=True, cwd=gocwd)
+        if real:
+            print(f"Real (`go doc -u -src {pkg}.{n}`):\n")
+            print("```go\n" + clip(real, 80) + "\n```\n")
+        elif whole:
+            print("(no real declaration found by `go doc`: a model-only helper, or an added package)\n")
+        else:
+            print(f"(`go doc -u -src {pkg}.{n}` found nothing: fetch the real source yourself)\n")
+    if same:
+        print("Replaced, unchanged: " + ", ".join(f"`{n}`" for n in same) + "\n")
+    adds = [n for n in nd if n not in rep_new and not (whole and not stubs(n))]
+    if adds:
+        print("Additions (no claim of their own; a primitive stub carries the TrustedCode claim, "
+              "R2; an added method must match `added_methods`):\n")
+        for n in adds:
+            p, dc = nd[n]
+            tags = []
+            if stubs(n):
+                tags.append("PRIMITIVE STUB (in `trusted`: its Lean `.impl` in Perennial/TrustedCode is the model)")
+            if dc["kind"] == "method":
+                tags.append("matches `added_methods`" if pattern_contains(new["added_methods"], n)
+                            else "a method: of a model-only type, or a config error")
+            if n.startswith("init#"):
+                tags.append("unmarked `init`: runs after the real ones")
+            st = "new" if n not in od else ("changed" if od[n][1]["text"] != dc["text"] else "unchanged")
+            print(f"- `{n}` ({dc['kind']}, {p}:{dc['line']}, {st})" + ("".join(f"; {t}" for t in tags)))
+        print()
+    gone = [n for n in od if n not in nd]
+    if gone:
+        print("Model declarations removed: " + ", ".join(f"`{n}`" for n in sorted(gone)) + "\n")
 
 # --------------------------------------------------------------- skipped' entries
 LEAN_STR = re.compile(r'"((?:[^"\\]|\\.)*)"')
@@ -466,6 +823,12 @@ def self_test():
         "semantics-class": ["class FooSemantics [GoSemanticsFunctions] : Prop where",
                             "noncomputable instance : GoLocalContext := ⟨f⟩",
                             "instance foo [GooseExts] : go.Float64Semantics := ⟨⟩"],
+        "model-table": ["[model]", "  [model]  # the overlay"],
+        "model-replaces": ['replaces = ["Mutex.Lock", "init.0"]', "replaces = []", 'replaces = ["*"]',
+                           'added_methods = ["*.PbModel*"]', "  replaces = ["],
+        "gomodel-replace": ['//gomodel:replace init.0 "x := 1"', '  //gomodel:replace init.12 "f()"'],
+        "gomodel-choice": ["\tif gomodel.Choose() {", "\tn := gomodel.ChooseUint64()",
+                           "\t\tgomodel.Stuck()", "return gomodel.Choose ()"],
     }
     must_not = {
         "step-rule": ["  intro _ _ _ h; exact h.isGoStep_det_internal",
@@ -473,6 +836,12 @@ def self_test():
         "axiom": ["  -- the axiom of choice", "#print axioms foo"],
         "semantics-class": ["noncomputable instance runeStruct.zero_val [GooseExts] : ZeroVal runeStruct :=",
                             "instance [GoSemanticsFunctions] (T : go.GoType) : Foo T := ⟨⟩"],
+        "model-table": ["[[model]]", "[models]", 'dir = "[model]"'],
+        "model-replaces": ["\treplaces := m.Replaces", "\treplaces = m.Replaces", "# replaces = [\"x\"]",
+                           "my_replaces = []"],
+        "gomodel-replace": ["// gomodel replaces init.0", "//gomodel:replacement"],
+        "gomodel-choice": ['import "internal/gomodel"', "gomodel.ChooseN()", "x.Choose()",
+                           "notgomodel.Stuck()"],
     }
     bad = []
     for name, lines in must.items():
@@ -515,6 +884,95 @@ def self_test():
             "p._@a.go:3": ("an interface check\nover two lines", "var _ I = (*T)(nil)")}
     if skipped_entries(gen) != want:
         bad.append(f"skipped_entries: {skipped_entries(gen)!r}")
+    # a Go model directive is code, not prose; the rest of is_prose is unchanged
+    if is_prose("m.go", '//gomodel:replace init.0 "x := 1"') or not is_prose("a.lean", "-- c") \
+            or not is_prose("c.toml", "# [model]") or is_prose("m.go", "\tgomodel.Stuck()"):
+        bad.append("is_prose: a `//gomodel:` directive, or another line, misclassified")
+    # the Go declaration extractor
+    gosrc = "\n".join([
+        "package p",                                              # 1
+        "",
+        'import "internal/gomodel"',
+        "",
+        "// MODEL: Lock may block forever; Go's",                 # 5
+        "// mutex too. A brace in a comment: {",
+        "func (m *Mutex) Lock() {",
+        '\ts := "}{" + `raw }',
+        "still raw {`",
+        "\tif gomodel.Choose() { /* } */",                        # 10
+        "\t}",
+        "}",
+        "",
+        "func (s *Set[K, V]) Len() int { return 0 }",
+        "",                                                        # 15
+        "func helper(",
+        "\ta int,",
+        ") int {",
+        "\treturn a",
+        "}",                                                       # 20
+        "",
+        "var (",
+        "\t// x and y",
+        "\tx, y = f(), '}'",
+        "\tz = map[int]int{",                                     # 25
+        "\t\t1: 2,",
+        "\t}",
+        ")",
+        "",
+        "type T struct {",                                         # 30
+        "\tf int",
+        "}",
+        "",
+        '//gomodel:replace init.0 "registry = map[string]int{}"',
+        "// MODEL: the same table.",                               # 35
+        "func init() {",
+        "}",
+        "",
+        "func init() {}",
+        "",                                                        # 40
+        "type (",
+        "\tA int",
+        "\tB = A",
+        ")",
+        "",
+        "const C = 1",
+        "",
+        "func stub() bool { return false }",
+    ])
+    got = {n: (d["kind"], d["line"], d["text"].count("\n") + 1) for d in go_decls(gosrc) for n in d["names"]}
+    want = {"Mutex.Lock": ("method", 5, 8), "Set.Len": ("method", 14, 1), "helper": ("func", 16, 5),
+            "x": ("var", 23, 2), "y": ("var", 23, 2), "z": ("var", 25, 3), "T": ("type", 30, 3),
+            "init.0": ("func", 34, 4), "init#1": ("func", 39, 1), "A": ("type", 42, 1),
+            "B": ("type", 43, 1), "C": ("const", 46, 1), "stub": ("func", 48, 1)}
+    if got != want:
+        bad.append(f"go_decls: {got!r}")
+    init0 = [d for d in go_decls(gosrc) if d["names"] == ["init.0"]]
+    if not init0 or init0[0]["marker"] != '"registry = map[string]int{}"' \
+            or not doc_starts_with_model(init0[0]["text"]):
+        bad.append("go_decls: the `//gomodel:replace` marker or the `MODEL:` doc of init.0")
+    if doc_starts_with_model("// Lock locks m.\nfunc (m *Mutex) Lock() {}"):
+        bad.append("doc_starts_with_model: a plain doc comment accepted")
+    # the [model] table and goose's pattern sets
+    cfg_txt = "\n".join([
+        'translate = ["*"]',
+        'trusted = ["stub"]',
+        "",
+        "[model]",
+        'dir = "goose/model/overlay/internal/sync/"',
+        'replaces = ["Mutex.Lock", "init.0"]',
+        'added_methods = ["*.PbModel*"]',
+    ])
+    if model_table(cfg_txt) != {"dir": "goose/model/overlay/internal/sync",
+                                "replaces": ["Mutex.Lock", "init.0"], "added_methods": ["*.PbModel*"]}:
+        bad.append(f"model_table: {model_table(cfg_txt)!r}")
+    if model_table('translate = ["*"]') is not None or \
+            model_table('[model]\ndir = "d"')["replaces"] is not None or \
+            model_table('[model]\ndir = "d"\nreplaces = []')["replaces"] != []:
+        bad.append("model_table: no table, a missing replaces, or an empty one")
+    if not (pattern_contains(["*.PbModel*"], "T.PbModelMarshal") and not pattern_contains(["*.PbModel*"], "T.Marshal")
+            and not pattern_contains(["*", "!x"], "x") and pattern_contains(["*", "!x"], "y")
+            and pattern_contains(["stub"], "stub") and not pattern_contains(["stub"], "stubs")):
+        bad.append("pattern_contains: goose's pattern-set semantics")
     for b in bad:
         print("FAIL " + b)
     print(f"trusted-delta self-test: {'FAILED' if bad else 'ok'}")
@@ -534,9 +992,24 @@ def main(argv):
         print(f"trusted-delta: {desc}: no changes")
         return 0
 
+    # Go model overlays: every config with a `[model]` table, at either revision
+    owners_new, owners_old = model_owners(rev_new), model_owners(rev_old)
+    model_dirs = {}
+    for owners in (owners_old, owners_new):
+        for c, t in owners.items():
+            if t["dir"]:
+                model_dirs.setdefault(t["dir"], set()).add(c)
+
+    def model_owner_of(p):
+        if p.endswith(".go") and not p.endswith("_test.go"):
+            return model_dirs.get(os.path.dirname(p), set())
+        return set()
+
     tiered = {0: [], 1: [], 2: [], 3: []}
     for p in sorted(files):
         t, kind = tier_of(p)
+        if model_owner_of(p):
+            t, kind = 0, "go-model-overlay"
         tiered[t].append((p, kind))
 
     print(f"# Trust delta: {desc}\n")
@@ -596,10 +1069,10 @@ def main(argv):
     print()
 
     # goose configuration deltas
-    cfg = [(p, kind) for p, kind in tiered[0] if kind == "goose-config"]
+    cfg = [(p, kind) for p, kind in tiered[0] if kind in ("goose-config", "test-config")]
     if cfg:
         print("## goose configuration (trusted / translated / axiomatized / skipped)\n")
-        for p, _ in cfg:
+        for p, kind in cfg:
             lists, reasons, old_reasons = toml_lists(p, rev_old, rev_new)
             for key, added, removed in lists:
                 print(f"- {p} `{key}`: added {added or '[]'}, removed {removed or '[]'}")
@@ -614,7 +1087,7 @@ def main(argv):
                             print("    (a blank `var _`, named by its position: its declaration is "
                                   "in the translation's `skipped'`, below)")
                             continue
-                        src = go_source(f"{pkg}.{name}", unexported=True)
+                        src = go_source(f"{pkg}.{name}", unexported=True, cwd=config_go_dir(p))
                         if src:
                             lines = src.rstrip().split("\n")
                             if len(lines) > 40:
@@ -625,7 +1098,7 @@ def main(argv):
                             print(f"    (`go doc -u -src {pkg}.{name}` found nothing: read the initializer yourself)")
                     for name in removed:
                         print(f"  - no longer skipped `{name}` (was: \"{old_reasons.get(name, '')}\")")
-                if key == "trusted":
+                if key == "trusted" and kind == "goose-config":
                     pkg = os.path.relpath(p, "Perennial/Code")[: -len(".toml")]
                     for name in added:
                         print(f"  - R2: `{name}` must be justified by a goose run on the real "
@@ -664,6 +1137,19 @@ def main(argv):
                     elif sign == "~" and o != n:
                         print(f"  - {f}: {o!r} -> {n!r}")
             print()
+
+    # Go model overlays: changed configs with a `[model]` table, and owners of changed model files
+    mcfg = {p for p, kind in cfg if model_table(file_at(rev_new, p)) or model_table(file_at(rev_old, p))}
+    for p in files:
+        mcfg |= model_owner_of(p)
+    if mcfg:
+        print("## Go model overlays (TRUSTED: model Go is reviewed as Go, rule R12)\n")
+        print("For each replaced declaration: every behaviour of the real one (gc, linux/amd64, "
+              "the pinned Go), under every use by the program and the real package, must be a "
+              "behaviour of the model's translation. Compare the two sources line by line; every "
+              "`gomodel.Choose`/`ChooseUint64`/`Stuck` needs a reason in the doc comment.\n")
+        for c in sorted(mcfg):
+            report_model(c, rev_old, rev_new, files)
 
     # trusted models vs Go source
     tm = [p for p, kind in tiered[0] if kind == "trusted-model"]

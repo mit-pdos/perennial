@@ -1461,3 +1461,34 @@ instantiation decides what the conversion does, which is the semantics' job.
 
 **Why.** Proposed in etcd-grove's `notes/perennial-changes.md` (zap pool entry); the change asked
 for by the owner's coordinator, 2026-11-23.
+
+## Case 46 — ACCEPTED: Go model overlays, the mechanism (branch `goose-model-overlay-s0`, issue #692, stage S0)
+
+**Symptom.** Trust in the wrong place. A package's trusted parts were hand-written GooseLang
+(`TrustedCode/*.lean`, much of it pasted goose output of Go quoted in a docstring), a separate Go
+model package called from Lean glue (`goose/model/pool`), or a whole file added by `-overlay`.
+Nothing replaced one declaration of a real package by Go, and nothing tied a model to the real
+package's API.
+
+**Witness.** `internal/sync.Mutex.Lock` is a hand-written `.impl` over `lock.lock`, and its type's
+layout `Mutex.underlying := go.bool` is trusted too, although Go's own `state int32` and a CAS loop
+express it.
+
+**Taken.** One mechanism (D1): a `[model]` table in the package's config, with `dir` and an explicit
+`replaces` list checked both ways (D2). One builder in `goose/util` that every command loads
+through: it splices each model declaration in the place of the real one between `//line`
+directives (keeping initialization order), adds the model's other declarations in
+`zz_gomodel_<file>.go`, and refuses a model that changes the real package's API (D5). Whole-package
+models (`["*"]`) and additions only (`[]`) are the same table. The standard-library models' choice
+and stuck points are calls of `internal/gomodel` (D3), a package only the overlay adds; its three
+functions are primitive stubs. Cost: a builder of about 1500 lines (`goose/util/model.go`) and its tests, 0 semantics rules,
+0 changed translations; the trusted text of a model becomes its Go, reviewed side by side with the
+real source (`review-trusted` R12).
+
+**Not taken.** Keeping Lean models plus #692's `[layouts]` table for layouts (more hand-written Lean,
+a second mechanism); detecting replacements by shared names (a model could shadow a real
+declaration silently).
+
+**Why.** The plan "Go model overlays" (#692), decisions D1–D7 approved by the owner as recommended,
+2026-11-23. The toolchain check found that go1.26.0's `go list` does not find a standard-library
+package added by an overlay through `go/packages`; go1.26.11 and go1.27 do.

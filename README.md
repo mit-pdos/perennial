@@ -364,6 +364,15 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   tag `goose`: a method declared only in files excluded by it (or included only by it) would
   make the emitted method set differ from the real build's.
   `go_type_set` (`Golang/Theory/TypeSet.lean`) decides `typeSetContains` goals.
+* **Go model overlays.** A package's trusted parts may be Go model code in the
+  package itself: its goose config's `[model]` table names a directory of model
+  files and the real declarations they replace (`goose/README.md`). Goose
+  splices the model into the real package in place (so initialization order is
+  kept), refuses a model that changes the real package's API, and translates
+  the model like any other code; only the primitive stubs it calls have a
+  hand-written `.impl`. The trusted claim, for each replaced declaration, is
+  that every behaviour of the real one under every use is a behaviour of the
+  model's translation (`review-trusted`, R12).
 * **Generated code comes from goose.** The translator in `goose/` emits
   `Perennial/Code/**` and `Perennial/GeneratedProof/**`; regenerate with
   `etc/update-goose-new.py` rather than editing them by hand.

@@ -87,6 +87,37 @@ build -overlay FILE -tags goose,...`). The translation does not record the
 overlay, but the `go:` positions of an overlay file's declarations name the
 file at its overlay path.
 
+**Go model overlays.** A package's config may have a `[model]` table
+(`declfilter.ModelConfig`): `dir`, a directory of Go model files in the
+package's own package clause, relative to the repository root (the nearest
+ancestor of `-configdir` with a lakefile, or `-model-root DIR`), and
+`replaces`, the real declarations they replace (`f`, `T.m`, `T`, `X`, or
+`init.N`, whose model `init` is marked `//gomodel:replace init.N "<first line
+of the real body>"`; `["*"]` replaces every real file, and may add a
+standard-library package; `[]` only adds). `added_methods` lists the methods
+the model may add to the real types. The builder (`util.BuildModels`, used by
+`goose`, `proofgen`, `modelcheck` and `skiplint` through `util.LoadPackages`)
+covers every package of the import graph with a `[model]` table: it deletes
+each replaced declaration (with its doc comment and `//go:linkname`) and puts
+the model's in its place between `//line` directives, so the real file order,
+`init` order and variable-initialization order are kept and the `go:`
+positions name the model file; an import the model needs is added, one only
+the deleted code used becomes `_`; the model's other declarations (additions)
+go in `zz_gomodel_<file>.go`. It refuses a model whose `replaces` does not
+match both ways, that shadows a real declaration, or that changes the real
+package's API (a replaced function's, method's or variable's type; a replaced
+type's exported fields, kind or comparability; a real type's method set
+beyond `added_methods`). The model's declarations are translated, except
+those the config trusts (primitive stubs, with a `.impl` in TrustedCode).
+`goose model-overlay -o DIR <packages>` writes the same overlay for `go
+build/test -overlay DIR/overlay.json`; what is verified is the program built
+with it. Model files live in a module nothing builds
+(`goose/model/overlay/<import path>`); the standard-library models' choice and
+stuck points are `internal/gomodel`'s `Choose`, `ChooseUint64` and `Stuck`, a
+package the overlay adds (go1.26.0's `go list` does not find such a package
+through `go/packages`; go1.26.11 and go1.27 do). The gold example is
+`testdata/examples/modeloverlay`.
+
 The output for a large package is split into modules `<pkg>/chunkN` that lake
 checks in parallel, re-exported by the package's module, which downstream code
 imports as usual: goose puts the `TypeAssumptions` classes in chunks of their
