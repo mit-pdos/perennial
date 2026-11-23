@@ -1,6 +1,6 @@
 /-
 Specs of the helpers of the model of `fmt` (`Perennial/TrustedCode/fmt.lean`) that format a `[]byte`
-argument: `hexNibble`, `quoteByte`, `quoteBytes` and `formatBytes`.
+argument: `hexNibble`, `quoteByte`, `quoteBytes` and `formatSlice`.
 -/
 module
 
@@ -365,17 +365,92 @@ theorem wp_decBytes (sl : GoSlice) (bs : GoString) (dq : DFrac) :
     ipureintro
     rw [Ho]; simp [bytesDec]
 
+set_option maxHeartbeats 2000000 in
+/-- The helper `fmt.joinStrings`: `stringsJoin ss`; it reads the strings and gives them back. -/
+theorem wp_joinStrings (sl : GoSlice) (ss : List GoString) (dq : DFrac) :
+    {{ (sl ↦*{dq} ss : IProp GF) }}
+      (App (Val joinStrings) (Val #sl))
+    {{ (s : GoString), RET #s; sl ↦*{dq} ss ∗ ⌜s = stringsJoin ss⌝ }} := by
+  iintro %Φ Hsl HΦ
+  unfold joinStrings
+  wp_auto
+  ihave %Hlen := ownSlice_len $$ Hsl
+  ihave IH : iprop(∃ (i : w64) (o : GoString) (kv : w64) (sv : GoString),
+      "i" ∷ i_ptr ↦ i ∗ "out" ∷ out_ptr ↦ o ∗ "k" ∷ k_ptr ↦ kv ∗ "s" ∷ s_ptr ↦ sv ∗
+      "%Hi" ∷ ⌜0 ≤ sint.Z i ∧ sint.Z i ≤ (ss.length : Int)⌝ ∗
+      "%Ho" ∷ ⌜o = W8 91 :: ((ss.take (sint.nat i)).mapIdx fun k s =>
+        (if k = 0 then [] else [W8 32]) ++ s).flatten⌝) $$ [i out k s]
+  · iexists _, _, _, _
+    iframe
+    ipureintro
+    rw [show sint.nat (W64 0) = 0 from rfl]
+    exact ⟨⟨by word, by word⟩, by simp⟩
+  wp_for IH
+  split
+  · rename_i Hif
+    replace Hif := of_decide_eq_true Hif
+    have Hlt : sint.nat i < ss.length := by word
+    obtain ⟨c, Hc⟩ : ∃ c, ss[sint.nat i]? = some c := ⟨_, List.getElem?_eq_getElem Hlt⟩
+    have Hsucc : sint.nat (i + W64 1) = sint.nat i + 1 := by word
+    have Htk : (ss.take (sint.nat i)).length = sint.nat i := by simp; omega
+    have Hstep : ∀ sep : GoString, (sep = if sint.nat i = 0 then [] else [W8 32]) →
+        (W8 91 :: ((ss.take (sint.nat i)).mapIdx fun k s =>
+          (if k = 0 then [] else [W8 32]) ++ s).flatten) ++ sep ++ c =
+        W8 91 :: ((ss.take (sint.nat (i + W64 1))).mapIdx fun k s =>
+          (if k = 0 then [] else [W8 32]) ++ s).flatten := by
+      intro sep hsep
+      rw [Hsucc, List.take_add_one, Hc, Option.toList_some, List.mapIdx_append, Htk]
+      simp [hsep]
+    wp_auto
+    rw [ite_eq_left ⟨Hi.1, Hif⟩]
+    wp_apply wp_load_slice_index sl (sint.Z i) ss dq c Hi.1 $$ [Hsl] as Hsl
+    · iframe; ipureintro; exact Hc
+    try wp_auto
+    wp_if_destruct
+    · -- not the first string: a space
+      try wp_auto
+      wp_for_post
+      iframe
+      iexists _, _, _, _
+      iframe
+      ipureintro
+      refine ⟨⟨by word, by word⟩, ?_⟩
+      have hs : ([W8 32] : GoString) = if sint.nat i = 0 then [] else [W8 32] := by
+        rw [if_neg (by word)]
+      rw [← Hstep [W8 32] hs, Ho]
+      rfl
+    · try wp_auto
+      wp_for_post
+      iframe
+      iexists _, _, _, _
+      iframe
+      ipureintro
+      refine ⟨⟨by word, by word⟩, ?_⟩
+      have hs : ([] : GoString) = if sint.nat i = 0 then [] else [W8 32] := by
+        rw [if_pos (by word)]
+      rw [← Hstep [] hs, Ho, List.append_nil]
+  · rename_i Hif
+    have Hnot : ¬ (sint.Z i < sint.Z sl.len) := by simpa using Hif
+    have Hend : sint.nat i = ss.length := by word
+    rw [Hend, List.take_length] at Ho
+    wp_auto
+    iapply HΦ
+    iframe
+    ipureintro
+    rw [Ho]; simp [stringsJoin]
+
 set_option maxHeartbeats 8000000 in
-/-- The helper `fmt.formatBytes`, at an argument whose bytes are lent (`B`) when it is a `[]byte`
-under a verb of `byteVerbs`: it formats the directive (`SprintfOutB`'s `bytes*`) when the model does,
-reading the lent bytes and giving them back; otherwise it formats nothing, and the directive is not
-`BytesSimple`. -/
-theorem wp_formatBytesB (B : GoInterface → Option GoString) (dqb : DFrac) (format : GoString)
+/-- The helper `fmt.formatSlice`, at an argument whose contents are lent (`B`) when it is a `[]byte`
+or a `[]string` under a verb of `byteVerbs`: it formats the directive (`SprintfOutB`'s `bytes*` and
+`strs`) when the model does, reading the lent bytes or strings and giving them back; otherwise it
+formats nothing, and the directive is neither `BytesSimple` nor `StringsSimple`. -/
+theorem wp_formatSliceB (B : GoInterface → Option Lent) (dqb : DFrac) (format : GoString)
     (i : w64) (x : GoInterface) (Hi : 0 ≤ sint.Z i ∧ sint.Z i < (format.length : Int))
     (Hx : ∀ c, (format.drop (sint.nat i + 1)).head? = some c → c ∈ byteVerbs →
-      ∀ ii, x = interface.ok ii → ii.ty = go.SliceType go.byte → (B x).isSome) :
+      ∀ ii, x = interface.ok ii → (ii.ty = go.SliceType go.byte ∨ ii.ty = go.SliceType go.string) →
+        (B x).isSome) :
     {{ bytesArgOwn (GF := GF) dqb B x }}
-      (App (App (App (Val formatBytes) (Val #format)) (Val #i)) (Val #x))
+      (App (App (App (Val formatSlice) (Val #format)) (Val #i)) (Val #x))
     {{ (s : GoString) (next : w64) (ok : Bool), RET (PairV (PairV #s #next) #ok);
         bytesArgOwn dqb B x ∗
         ⌜ok = true → sint.Z next = sint.Z i + 2 ∧ sint.Z i < sint.Z next ∧
@@ -383,9 +458,10 @@ theorem wp_formatBytesB (B : GoInterface → Option GoString) (dqb : DFrac) (for
           (∀ args r, SprintfOutB B (format.drop (sint.nat next)) args r →
             SprintfOutB B (W8 37 :: format.drop (sint.nat i + 1)) (x :: args) (s ++ r)) ∧
           AuxStep format (sint.nat i) (sint.nat next)⌝ ∗
-        ⌜ok = false → ∀ args, ¬ BytesSimple B (format.drop (sint.nat i + 1)) (x :: args)⌝ }} := by
+        ⌜ok = false → ∀ args, ¬ BytesSimple B (format.drop (sint.nat i + 1)) (x :: args) ∧
+          ¬ StringsSimple B (format.drop (sint.nat i + 1)) (x :: args)⌝ }} := by
   iintro %Φ Hown HΦ
-  unfold formatBytes
+  unfold formatSlice
   wp_auto
   wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %Hflen
   wp_if_destruct
@@ -395,7 +471,7 @@ theorem wp_formatBytesB (B : GoInterface → Option GoString) (dqb : DFrac) (for
     isplitl []
     · ipureintro; intro h; cases h
     · ipureintro; intro _ args
-      rw [hdn]; simp [BytesSimple]
+      rw [hdn]; simp [BytesSimple, StringsSimple]
   have Hlt : sint.nat i + 1 < format.length := by word
   obtain ⟨c, Hc, Hdrop⟩ : ∃ c, format[sint.nat i + 1]? = some c ∧
       format.drop (sint.nat i + 1) = c :: format.drop (sint.nat i + 2) :=
@@ -419,10 +495,15 @@ theorem wp_formatBytesB (B : GoInterface → Option GoString) (dqb : DFrac) (for
          · ipureintro; intro h; cases h
          ipureintro; intro _ args
          rw [Hdrop]
-         rintro ⟨ii, bs, -, -, -, hcs⟩
-         apply hc
-         simp only [byteVerbs, List.mem_cons, List.not_mem_nil, or_false]
-         rcases hcs with h | h | h | h | h | ⟨h, -⟩ <;> simp [h])
+         constructor
+         · rintro ⟨ii, bs, -, -, -, hcs⟩
+           apply hc
+           simp only [byteVerbs, List.mem_cons, List.not_mem_nil, or_false]
+           rcases hcs with h | h | h | h | h | ⟨h, -⟩ <;> simp [h]
+         · rintro ⟨ii, ss, -, -, -, hcs⟩
+           apply hc
+           simp only [byteVerbs, List.mem_cons, List.not_mem_nil, or_false]
+           rcases hcs with h | h <;> simp [h])
   cases x with
   | nil =>
     repeat' (first | wp_if_destruct | wp_auto)
@@ -433,12 +514,73 @@ theorem wp_formatBytesB (B : GoInterface → Option GoString) (dqb : DFrac) (for
          · ipureintro; intro h; cases h
          ipureintro; intro _ args
          rw [Hdrop]
-         rintro ⟨ii, bs, h, -⟩
-         cases h)
+         constructor
+         · rintro ⟨ii, bs, h, -⟩
+           cases h
+         · rintro ⟨ii, ss, h, -⟩
+           cases h)
   | ok ii =>
+    have hbs_ne : go.SliceType go.byte ≠ go.SliceType go.string := by
+      simp [go.byte, go.string, go.uint8]
+    by_cases hts : ii.ty = go.SliceType go.string
+    · -- a `[]string`: lent
+      have hty : ii.ty ≠ go.SliceType go.byte := fun h => hbs_ne (h ▸ hts)
+      obtain ⟨L, hL⟩ := Option.isSome_iff_exists.mp (Hxc hc ii rfl (.inr hts))
+      cases L with
+      | bytes bs =>
+        icases (bytesArgOwn_some (dq := dqb) hL).1 $$ Hown with ⟨%ii', %sl, %Hp, -⟩
+        obtain ⟨hii, hty', -⟩ := Hp
+        cases hii
+        exact absurd hty' hty
+      | strings ss =>
+      icases (bytesArgOwn_strings (dq := dqb) hL).1 $$ Hown with ⟨%ii', %sl, %Hp, Hsl⟩
+      obtain ⟨hii, -, hv⟩ := Hp
+      cases hii
+      ihave Hback : iprop(sl ↦*{dqb} ss -∗ bytesArgOwn dqb B (interface.ok ii)) $$ []
+      · iintro Hsl
+        iapply (bytesArgOwn_strings (dq := dqb) hL).2
+        iexists ii, sl
+        iframe
+        ipureintro; exact ⟨rfl, hts, hv⟩
+      by_cases hsv : c = W8 115 ∨ c = W8 118
+      · rcases hsv with rfl | rfl
+        all_goals
+          repeat' (first | wp_if_destruct | wp_auto | simp only [hts, hv, ↓reduceIte, _root_.decide_true])
+        all_goals first
+          | (exfalso; simp_all; done)
+          | skip
+        all_goals
+          wp_apply (wp_joinStrings sl ss dqb) $$ Hsl as %s ⟨Hsl, %Hs⟩
+          try wp_auto
+          iapply HΦ
+          isplitl [Hback Hsl]
+          · iapply Hback; iexact Hsl
+          ipureintro
+          refine ⟨fun _ => ⟨by word, by word, by word, fun args r hr => ?_,
+            auxStep_byteVerb format _ _ _ hc Hnext⟩, fun h => nomatch h⟩
+          rw [Hdrop]
+          rw [Hdrop2] at hr
+          rw [Hs]
+          exact SprintfOutB.strs _ ii ss _ args r (by decide) hts hL hr
+      · repeat' (first | wp_if_destruct | wp_auto | simp only [hts, hv, ↓reduceIte, _root_.decide_true])
+        all_goals first
+          | (exfalso; simp_all; done)
+          | (iapply HΦ
+             isplitl [Hback Hsl]
+             · iapply Hback; iexact Hsl
+             isplitl []
+             · ipureintro; intro h; cases h
+             ipureintro; intro _ args
+             rw [Hdrop]
+             constructor
+             · rintro ⟨ii', bs, h, h2, -⟩
+               cases h
+               exact hty h2
+             · rintro ⟨ii', ss', h, -, -, h4⟩
+               exact hsv h4)
     by_cases hty : ii.ty = go.SliceType go.byte
     rotate_left
-    · repeat' (first | wp_if_destruct | wp_auto | simp only [hty, ↓reduceIte, decide_false])
+    · repeat' (first | wp_if_destruct | wp_auto | simp only [hty, hts, ↓reduceIte, decide_false])
       all_goals first
         | (exfalso; simp_all [byteVerbs]; done)
         | (iapply HΦ; iframe
@@ -446,10 +588,22 @@ theorem wp_formatBytesB (B : GoInterface → Option GoString) (dqb : DFrac) (for
            · ipureintro; intro h; cases h
            ipureintro; intro _ args
            rw [Hdrop]
-           rintro ⟨ii', bs, h, h2, -⟩
-           cases h
-           exact hty h2)
-    obtain ⟨bs, hbs⟩ := Option.isSome_iff_exists.mp (Hxc hc ii rfl hty)
+           constructor
+           · rintro ⟨ii', bs, h, h2, -⟩
+             cases h
+             exact hty h2
+           · rintro ⟨ii', ss, h, h2, -⟩
+             cases h
+             exact hts h2)
+    obtain ⟨L, hL⟩ := Option.isSome_iff_exists.mp (Hxc hc ii rfl (.inl hty))
+    cases L with
+    | strings ss =>
+      icases (bytesArgOwn_strings (dq := dqb) hL).1 $$ Hown with ⟨%ii', %sl, %Hp, -⟩
+      obtain ⟨hii, hty', -⟩ := Hp
+      cases hii
+      exact absurd hty' hts
+    | bytes bs =>
+    have hbs := hL
     icases (bytesArgOwn_some (dq := dqb) hbs).1 $$ Hown with ⟨%ii', %sl, %Hp, Hsl⟩
     obtain ⟨hii, -, hv⟩ := Hp
     cases hii
@@ -460,10 +614,10 @@ theorem wp_formatBytesB (B : GoInterface → Option GoString) (dqb : DFrac) (for
       iframe
       ipureintro; exact ⟨rfl, hty, hv⟩
     have hc' := hc
-    simp only [byteVerbs, List.mem_cons, List.not_mem_nil, or_false] at hc'
+    simp only [byteVerbs, List.mem_cons, List.not_mem_nil, _root_.or_false] at hc'
     rcases hc' with rfl | rfl | rfl | rfl | rfl | rfl
     · -- `%s`
-      repeat' (first | wp_if_destruct | wp_auto | simp only [hty, hv, ↓reduceIte, _root_.decide_true])
+      repeat' (first | wp_if_destruct | wp_auto | simp only [hty, hts, hv, ↓reduceIte, _root_.decide_true, decide_false])
       all_goals first
         | (exfalso; simp_all; done)
         | skip
@@ -479,7 +633,7 @@ theorem wp_formatBytesB (B : GoInterface → Option GoString) (dqb : DFrac) (for
       rw [Hdrop2] at hr
       exact SprintfOutB.bytesS ii bs _ args r hty hbs hr
     · -- `%v`
-      repeat' (first | wp_if_destruct | wp_auto | simp only [hty, hv, ↓reduceIte, _root_.decide_true])
+      repeat' (first | wp_if_destruct | wp_auto | simp only [hty, hts, hv, ↓reduceIte, _root_.decide_true, decide_false])
       all_goals first
         | (exfalso; simp_all; done)
         | skip
@@ -496,7 +650,7 @@ theorem wp_formatBytesB (B : GoInterface → Option GoString) (dqb : DFrac) (for
       rw [Hs]
       exact SprintfOutB.bytesV (W8 118) ii bs _ args r (.inl rfl) hty hbs hr
     · -- `%d`
-      repeat' (first | wp_if_destruct | wp_auto | simp only [hty, hv, ↓reduceIte, _root_.decide_true])
+      repeat' (first | wp_if_destruct | wp_auto | simp only [hty, hts, hv, ↓reduceIte, _root_.decide_true, decide_false])
       all_goals first
         | (exfalso; simp_all; done)
         | skip
@@ -513,7 +667,7 @@ theorem wp_formatBytesB (B : GoInterface → Option GoString) (dqb : DFrac) (for
       rw [Hs]
       exact SprintfOutB.bytesV (W8 100) ii bs _ args r (.inr rfl) hty hbs hr
     · -- `%x`
-      repeat' (first | wp_if_destruct | wp_auto | simp only [hty, hv, ↓reduceIte, _root_.decide_true])
+      repeat' (first | wp_if_destruct | wp_auto | simp only [hty, hts, hv, ↓reduceIte, _root_.decide_true, decide_false])
       all_goals first
         | (exfalso; simp_all; done)
         | skip
@@ -530,7 +684,7 @@ theorem wp_formatBytesB (B : GoInterface → Option GoString) (dqb : DFrac) (for
       rw [Hs]
       exact SprintfOutB.bytesX false ii bs _ args r hty hbs hr
     · -- `%X`
-      repeat' (first | wp_if_destruct | wp_auto | simp only [hty, hv, ↓reduceIte, _root_.decide_true])
+      repeat' (first | wp_if_destruct | wp_auto | simp only [hty, hts, hv, ↓reduceIte, _root_.decide_true, decide_false])
       all_goals first
         | (exfalso; simp_all; done)
         | skip
@@ -547,7 +701,7 @@ theorem wp_formatBytesB (B : GoInterface → Option GoString) (dqb : DFrac) (for
       rw [Hs]
       exact SprintfOutB.bytesX true ii bs _ args r hty hbs hr
     · -- `%q`
-      repeat' (first | wp_if_destruct | wp_auto | simp only [hty, hv, ↓reduceIte, _root_.decide_true])
+      repeat' (first | wp_if_destruct | wp_auto | simp only [hty, hts, hv, ↓reduceIte, _root_.decide_true, decide_false])
       all_goals first
         | (exfalso; simp_all; done)
         | skip
@@ -562,14 +716,18 @@ theorem wp_formatBytesB (B : GoInterface → Option GoString) (dqb : DFrac) (for
         · ipureintro; intro h; cases h
         ipureintro; intro _ args
         rw [Hdrop]
-        rintro ⟨ii', bs', h1, -, h3, hcs⟩
-        cases h1
-        rw [hbs] at h3
-        cases h3
-        rcases hcs with h | h | h | h | h | ⟨-, hasc⟩
-        all_goals first
-          | (revert h; decide)
-          | exact absurd (Hq.1.2 hasc) (by simp)
+        constructor
+        · rintro ⟨ii', bs', h1, -, h3, hcs⟩
+          cases h1
+          rw [hbs] at h3
+          cases h3
+          rcases hcs with h | h | h | h | h | ⟨-, hasc⟩
+          all_goals first
+            | (revert h; decide)
+            | exact absurd (Hq.1.2 hasc) (by simp)
+        · rintro ⟨ii', ss, h1, h2, -⟩
+          cases h1
+          exact hts h2
       repeat' (first | wp_if_destruct | wp_auto)
       iapply HΦ
       isplitl [Hback Hsl]

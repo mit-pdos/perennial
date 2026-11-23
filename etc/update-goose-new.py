@@ -331,6 +331,7 @@ def main():
             "sync/atomic",
             "syscall",
             "internal/synctest",
+            "internal/testlog",
             "internal/race",
             "internal/sync",
             "time",

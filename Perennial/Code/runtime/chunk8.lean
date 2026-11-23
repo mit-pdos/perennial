@@ -196,6 +196,7 @@ class Frames.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   set_frameStore : ∀ (x : Frames) (y : (GoArray Frame 2)), go.IsGoStepPureDetTagged under (StructFieldSet Frames.underlying go!"frameStore") (PairV #x #y) (Val #(({ x with frameStore' := y } : Frames)))
   method_set : go.MethodSetIs Frames.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Frames.ty) [(go!"Next", (some (go.signature.Signature [] false [Frame.ty, go.bool])))]
+  ptr_Next_unfold : MethodUnfold (go.GoType.PointerType Frames.ty) go!"Next" Frames.Next.impl
 
 attribute [instance] Frames.TypeAssumptions.type_repr
   Frames.TypeAssumptions.underlying
@@ -209,6 +210,7 @@ attribute [instance] Frames.TypeAssumptions.type_repr
   Frames.TypeAssumptions.set_frameStore
   Frames.TypeAssumptions.method_set
   Frames.TypeAssumptions.ptr_method_set
+  Frames.TypeAssumptions.ptr_Next_unfold
 
 class Func.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Func.underlying Func
@@ -1151,25 +1153,6 @@ attribute [instance] traceRegionAlloc.TypeAssumptions.type_repr
   traceRegionAlloc.TypeAssumptions.set_full
   traceRegionAlloc.TypeAssumptions.method_set
   traceRegionAlloc.TypeAssumptions.ptr_method_set
-
-class traceRegionAllocBlockHeader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying traceRegionAllocBlockHeader.underlying traceRegionAllocBlockHeader
-  underlying : go.UnderlyingDirectedEq traceRegionAllocBlockHeader.ty traceRegionAllocBlockHeader.underlying
-  get_next : ∀ (x : traceRegionAllocBlockHeader), go.IsGoStepPureDetTagged under (StructFieldGet traceRegionAllocBlockHeader.underlying go!"next") #x (Val #(x.next'))
-  set_next : ∀ (x : traceRegionAllocBlockHeader) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet traceRegionAllocBlockHeader.underlying go!"next") (PairV #x #y) (Val #(({ x with next' := y } : traceRegionAllocBlockHeader)))
-  get_off : ∀ (x : traceRegionAllocBlockHeader), go.IsGoStepPureDetTagged under (StructFieldGet traceRegionAllocBlockHeader.underlying go!"off") #x (Val #(x.off'))
-  set_off : ∀ (x : traceRegionAllocBlockHeader) (y : _root_.Perennial.internal.runtime.atomic.Uintptr), go.IsGoStepPureDetTagged under (StructFieldSet traceRegionAllocBlockHeader.underlying go!"off") (PairV #x #y) (Val #(({ x with off' := y } : traceRegionAllocBlockHeader)))
-  method_set : go.MethodSetIs traceRegionAllocBlockHeader.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceRegionAllocBlockHeader.ty) []
-
-attribute [instance] traceRegionAllocBlockHeader.TypeAssumptions.type_repr
-  traceRegionAllocBlockHeader.TypeAssumptions.underlying
-  traceRegionAllocBlockHeader.TypeAssumptions.get_next
-  traceRegionAllocBlockHeader.TypeAssumptions.set_next
-  traceRegionAllocBlockHeader.TypeAssumptions.get_off
-  traceRegionAllocBlockHeader.TypeAssumptions.set_off
-  traceRegionAllocBlockHeader.TypeAssumptions.method_set
-  traceRegionAllocBlockHeader.TypeAssumptions.ptr_method_set
 
 end runtime
 

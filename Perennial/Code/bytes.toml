@@ -10,6 +10,7 @@ translate = [
   "Buffer.empty",
   "Buffer.Reset",
   "Buffer.Write",
+  "Buffer.WriteByte",
   "Buffer.Bytes",
   "Buffer.String",
   "Buffer.Len",

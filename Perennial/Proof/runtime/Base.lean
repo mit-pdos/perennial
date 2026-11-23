@@ -1,6 +1,6 @@
 /-
 Shared definitions of the proofs of `runtime`: its `isPkgInit` (the variable `buildVersion`, which
-`Version` returns, holds some string), and the spec of the trusted model of `buildVersion`'s
+`Version` returns, holds some string), `ownFrames` (a `*Frames` of `CallersFrames`), and the spec of the trusted model of `buildVersion`'s
 initialization (`Perennial/TrustedCode/runtime.lean`). `runtime`'s initializer is proved by its
 clients (its other variable initializers are names-only here).
 -/
@@ -39,6 +39,11 @@ instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.runtime :=
   define_is_pkg_init isInit
 instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.runtime :=
   build_get_is_pkg_init_wf
+
+/-- `f` is a `*Frames` its owner may call `Next` on (`CallersFrames`'s result): its cell, of
+some value. -/
+def ownFrames (f : Loc) : IProp GF :=
+  iprop(∃ v : runtime.Frames, f ↦ v)
 
 theorem isInit_access :
     isPkgInit (PROP := IProp GF) pkg_id.runtime ⊢ isInit (GF := GF) := by

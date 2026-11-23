@@ -238,6 +238,17 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `Catch`, so a verified program does not die of a panic within the step bound.
   Run-time panics of builtins (`Panic "msg"`) are stuck. See
   `docs/PERENNIAL_PROOF_REFERENCE.md`, "Panics".
+* **Program exit.** `os.Exit` is translated over `syscall.Exit`, whose trusted
+  model is `AngelicExit` (`TrustedCode/syscall.lean`): the calling goroutine
+  steps forever, so its deferred functions never run and its code after the call
+  is unreachable (`syscall.Exit.spec` has postcondition `False`). The other
+  goroutines keep running in the model, where Go stops them, as after `main`
+  returns: every Go execution is a prefix of the model's, so the adequacy
+  theorems' conclusions (no stuck thread, no unrecovered panic) cover Go up to the
+  exit, and a proof must also show the other goroutines safe after it. An exit is
+  not a failure: `os.Exit(1)` (and a logger's `Fatal`) ends a run that the
+  theorems count as safe; a program that reports a violation by exiting is not
+  checked by them.
 * **Skipped package variables.** A package variable listed in a `[[skip]]`
   entry of its goose config (`names`, and a required `reason`) is not
   translated at all: goose emits no Lean name, no `X.init`, no allocation and

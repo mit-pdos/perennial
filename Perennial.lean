@@ -32,6 +32,7 @@ public import Perennial.Golang.Theory
 public import Perennial.Golang.Theory.Chan
 public import Perennial.Golang.Theory.ChanAuto
 public import Perennial.Golang.Theory.IfJoin
+public import Perennial.Golang.Theory.RangeFunc
 public import Perennial.Golang.Theory.Chan.Idioms.Idioms
 
 @[expose] public section

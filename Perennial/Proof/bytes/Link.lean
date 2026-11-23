@@ -10,6 +10,7 @@ public import Perennial.Proof.bytes.Buffer__Len
 public import Perennial.Proof.bytes.Buffer__Read
 public import Perennial.Proof.bytes.Buffer__String
 public import Perennial.Proof.bytes.Buffer__Write
+public import Perennial.Proof.bytes.Buffer__WriteByte
 public import Perennial.Proof.bytes.Buffer__grow
 public import Perennial.Proof.bytes.Buffer__tryGrowByReslice
 public import Perennial.Proof.bytes.Clone
@@ -57,6 +58,9 @@ theorem bytes.Buffer.wp_grow : bytes.Buffer.grow.spec (GF := GF) (hG := hG) :=
 
 theorem bytes.Buffer.wp_Write : bytes.Buffer.Write.spec (GF := GF) (hG := hG) :=
   bytes.Buffer.Write.wp_proof bytes.Buffer.wp_tryGrowByReslice bytes.Buffer.wp_grow
+
+theorem bytes.Buffer.wp_WriteByte : bytes.Buffer.WriteByte.spec (GF := GF) (hG := hG) :=
+  bytes.Buffer.WriteByte.wp_proof bytes.Buffer.wp_tryGrowByReslice bytes.Buffer.wp_grow
 
 theorem bytes.wp_Clone : bytes.Clone.spec (GF := GF) (hG := hG) :=
   bytes.Clone.wp_proof
