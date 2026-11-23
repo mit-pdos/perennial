@@ -6,6 +6,7 @@ module
 public import Perennial.Spec.slices.initialize
 public import Perennial.Spec.math.bits.initialize
 public import Perennial.Spec.cmp.initialize
+public import Perennial.Spec.iter.initialize
 public import Perennial.Proof.slices.Base
 
 @[expose] public section
@@ -25,7 +26,8 @@ variable [package_sem : slices.Assumptions]
 
 theorem slices.initialize'.wp_proof
     (wp_bits_initialize : math.bits.initialize'.spec (GF := GF) (hG := hG))
-    (wp_cmp_initialize : cmp.initialize'.spec (GF := GF) (hG := hG)) :
+    (wp_cmp_initialize : cmp.initialize'.spec (GF := GF) (hG := hG))
+    (wp_iter_initialize : iter.initialize'.spec (GF := GF) (hG := hG)) :
     slices.initialize'.spec (GF := GF) (hG := hG) := by
   intro get_is_pkg_init Hinit
   wp_start as Hown
@@ -33,7 +35,8 @@ theorem slices.initialize'.wp_proof
   iframe Hown
   iintro Hown
   wp_auto
-  wp_apply wp_bits_initialize _ Hinit.2.2.1 $$ Hown with ⟨Hown, #Hbits⟩
+  wp_apply wp_bits_initialize _ Hinit.2.2.2.1 $$ Hown with ⟨Hown, #Hbits⟩
+  wp_apply wp_iter_initialize _ Hinit.2.2.1 $$ Hown with ⟨Hown, #Hiter⟩
   wp_apply wp_cmp_initialize _ Hinit.2.1 $$ Hown with ⟨Hown, #Hcmp⟩
   iframe Hown
   is_pkg_init_finish

@@ -9,6 +9,8 @@ public import Perennial.Proof.iter.Link
 public import Perennial.Proof.maps.Clone
 public import Perennial.Proof.maps.Copy
 public import Perennial.Proof.maps.Equal
+public import Perennial.Proof.maps.Keys
+public import Perennial.Proof.maps.Values
 public import Perennial.Proof.maps.initialize
 
 @[expose] public section
@@ -33,6 +35,12 @@ theorem maps.wp_Copy : maps.Copy.spec (GF := GF) (hG := hG) :=
 
 theorem maps.wp_Equal : maps.Equal.spec (GF := GF) (hG := hG) :=
   maps.Equal.wp_proof
+
+theorem maps.wp_Keys : maps.Keys.spec (GF := GF) (hG := hG) :=
+  maps.Keys.wp_proof
+
+theorem maps.wp_Values : maps.Values.spec (GF := GF) (hG := hG) :=
+  maps.Values.wp_proof
 
 theorem maps.wp_initialize' : maps.initialize'.spec (GF := GF) (hG := hG) :=
   maps.initialize'.wp_proof iter.wp_initialize'

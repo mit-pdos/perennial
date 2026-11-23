@@ -8,6 +8,7 @@ public import Perennial.Code.slices
 public import Perennial.GeneratedProof.slices
 public import Perennial.Proof.math.bits.Base
 public import Perennial.Proof.cmp.Base
+public import Perennial.Proof.iter.Base
 
 @[expose] public section
 
