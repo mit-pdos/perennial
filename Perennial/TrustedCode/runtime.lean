@@ -42,8 +42,12 @@ The model allocates the variable and stores an arbitrary string (`fmt.arbitraryS
 be every string), so it is less defined than Go: every value Go can have is one of its results. It
 cannot panic, nor can Go's (the value is in the binary). Goose runs it where it would allocate
 a translated variable (before the imported packages' initializers), as for every trusted variable
-without an initializer. -/
-def buildVersion.init : val :=
+without an initializer.
+
+Why trusted: goose translates the declaration (a variable without an initializer is allocated
+with its zero value), but that model would be unfaithful: `Version` would return `""`, where Go
+returns the linker's string. The linker's write is not Go code. `Version` itself is translated. -/
+noncomputable def buildVersion.init : val :=
   λ: <>,
     go.GlobalAlloc go!"runtime.buildVersion" go.string #() ;;
     GlobalVarAddr go!"runtime.buildVersion" #() <-[go.string] (fmt.arbitraryString #())

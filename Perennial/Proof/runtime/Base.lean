@@ -61,7 +61,6 @@ theorem wp_buildVersion_init :
   wp_start
   wp_apply wp_GlobalAlloc (V := GoString) go!"runtime.buildVersion" go.string as Hv
   wp_apply fmt.wp_arbitraryString as %s -
-  wp_auto
   iapply HΦ
   iexists _
   unfold buildVersion

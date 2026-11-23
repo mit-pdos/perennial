@@ -22,9 +22,9 @@ variable [package_sem : runtime.Assumptions]
 
 theorem runtime.Version.wp_proof :
     runtime.Version.spec (GF := GF) (hG := hG) := by
-  wp_start as ⟨#Hinit, -⟩
-  iapply runtime.isInit_access $$ Hinit
-  iintro ⟨%v, #Hv⟩
+  wp_start
+  ihave Hi := runtime.isInit_access $$ Hpkg
+  icases Hi with ⟨%v, #Hv⟩
   wp_auto
   iapply HΦ
   itrivial
