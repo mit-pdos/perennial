@@ -1065,6 +1065,12 @@ theorem IntArgValue.uniq_int [go.IntoValInj w64] (n : w64) :
   obtain ⟨n', hv, rfl⟩ := IntArgValue.of_int h
   rw [go.intoVal_inj hv]
 
+theorem IntArgValue.uniq_uint64 [go.IntoValInj w64] (n : w64) :
+    ∀ z', IntArgValue (interface.mk go.uint64 #n) z' → z' = uint.Z n := by
+  intro z' h
+  obtain ⟨n', hv, rfl⟩ := IntArgValue.of_uint64 h
+  rw [go.intoVal_inj hv]
+
 theorem IntArgValue.uniq_uint16 [go.IntoValInj w16] (n : w16) :
     ∀ z', IntArgValue (interface.mk go.uint16 #n) z' → z' = uint.Z n := by
   intro z' h
