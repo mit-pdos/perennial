@@ -172,65 +172,76 @@ theorem argsOk_of_argsWf {mv : List w8} {format : GoString} {xs : List GoInterfa
   ipureintro
   exact h
 
-/-! ### `[]byte` arguments
+/-! ### `[]byte` and `[]string` arguments
 
-The bytes of `[]byte` arguments are memory Go reads while formatting, so they are not part of the
-persistent `argOkAt`: a caller lends them separately, as a list of resources over the arguments
-(`bytesOwn`), naming their contents with `B` (`B x = some bs`), and gets them back. `argsOkB B`
-admits a lent `[]byte` argument under any directive; with `B` always `none` it is `argsOk`. -/
+The bytes of `[]byte` arguments and the elements of `[]string` arguments are memory Go reads while
+formatting, so they are not part of the persistent `argOkAt`: a caller lends them separately, as a
+list of resources over the arguments (`bytesOwn`), naming their contents with `B` (`B x = some
+(.bytes bs)`, `B x = some (.strings ss)`), and gets them back. `argsOkB B` admits a lent argument
+under any directive; with `B` always `none` it is `argsOk`. -/
 
-/-- The bytes `bs` of the argument `x` lent for formatting, when `B x = some bs`: `x` holds a
-`[]byte` whose elements are `bs`, at fraction `dq`; nothing when `B x = none`. -/
-def bytesArgOwn (dq : DFrac) (B : GoInterface → Option GoString) (x : GoInterface) : IProp GF :=
+/-- The contents of the argument `x` lent for formatting, when `B x = some L`: `x` holds a `[]byte`
+whose elements are the bytes `bs` (`L = .bytes bs`), or a `[]string` whose elements are the strings
+`ss` (`L = .strings ss`), at fraction `dq`; nothing when `B x = none`. -/
+def bytesArgOwn (dq : DFrac) (B : GoInterface → Option Lent) (x : GoInterface) : IProp GF :=
   match B x with
   | none => iprop(emp)
-  | some bs => iprop(∃ (ii : GoInterfaceOk) (sl : GoSlice),
+  | some (.bytes bs) => iprop(∃ (ii : GoInterfaceOk) (sl : GoSlice),
       ⌜x = interface.ok ii ∧ ii.ty = go.SliceType go.byte ∧ ii.v = #sl⌝ ∗ sl ↦*{dq} bs)
+  | some (.strings ss) => iprop(∃ (ii : GoInterfaceOk) (sl : GoSlice),
+      ⌜x = interface.ok ii ∧ ii.ty = go.SliceType go.string ∧ ii.v = #sl⌝ ∗ sl ↦*{dq} ss)
 
-/-- `bytesArgOwn` of a lent argument: a `[]byte` holding the lent bytes. -/
-theorem bytesArgOwn_some {dq : DFrac} {B : GoInterface → Option GoString} {x : GoInterface}
-    {bs : GoString} (h : B x = some bs) :
+/-- `bytesArgOwn` of a lent `[]byte`: a `[]byte` holding the lent bytes. -/
+theorem bytesArgOwn_some {dq : DFrac} {B : GoInterface → Option Lent} {x : GoInterface}
+    {bs : GoString} (h : B x = some (.bytes bs)) :
     bytesArgOwn (GF := GF) dq B x ⊣⊢ ∃ (ii : GoInterfaceOk) (sl : GoSlice),
       ⌜x = interface.ok ii ∧ ii.ty = go.SliceType go.byte ∧ ii.v = #sl⌝ ∗ sl ↦*{dq} bs := by
   unfold bytesArgOwn; rw [h]; exact .rfl
 
-/-- The bytes of every argument `x` with `B x = some _`, lent for formatting (`bytesArgOwn`). -/
-def bytesOwn (dq : DFrac) (B : GoInterface → Option GoString) (xs : List GoInterface) : IProp GF :=
+/-- `bytesArgOwn` of a lent `[]string`: a `[]string` holding the lent strings. -/
+theorem bytesArgOwn_strings {dq : DFrac} {B : GoInterface → Option Lent} {x : GoInterface}
+    {ss : List GoString} (h : B x = some (.strings ss)) :
+    bytesArgOwn (GF := GF) dq B x ⊣⊢ ∃ (ii : GoInterfaceOk) (sl : GoSlice),
+      ⌜x = interface.ok ii ∧ ii.ty = go.SliceType go.string ∧ ii.v = #sl⌝ ∗ sl ↦*{dq} ss := by
+  unfold bytesArgOwn; rw [h]; exact .rfl
+
+/-- The contents of every argument `x` with `B x = some _`, lent for formatting (`bytesArgOwn`). -/
+def bytesOwn (dq : DFrac) (B : GoInterface → Option Lent) (xs : List GoInterface) : IProp GF :=
   iprop([∗list] x ∈ xs, bytesArgOwn dq B x)
 
-/-- `argOkAt`, or a `[]byte` whose bytes are lent (`B x ≠ none`, under any directive: Go calls no
-method of a `[]byte`). -/
-def argOkAtB (B : GoInterface → Option GoString) (mv : List w8) (d : Directive) (x : GoInterface) :
+/-- `argOkAt`, or a `[]byte` or `[]string` whose contents are lent (`B x ≠ none`, under any
+directive: Go calls no method of a `[]byte`, a `[]string` or a `string`). -/
+def argOkAtB (B : GoInterface → Option Lent) (mv : List w8) (d : Directive) (x : GoInterface) :
     IProp GF :=
   iprop(argOkAt mv d x ∨ ⌜(B x).isSome⌝)
 
 /-- `argsOkAt` with `argOkAtB`. -/
-def argsOkAtB (B : GoInterface → Option GoString) (mv : List w8) :
+def argsOkAtB (B : GoInterface → Option Lent) (mv : List w8) :
     List Directive → List GoInterface → IProp GF
   | _, [] => iprop(True)
   | d :: ds, a :: xs => iprop(argOkAtB B mv d a ∗ argsOkAtB B mv ds xs)
   | [], a :: xs => iprop(argOkAtB B mv ⟨W8 118, false⟩ a ∗ argsOkAtB B mv [] xs)
 
-/-- `argsOk` with `argOkAtB`: the arguments of `format` when the bytes named by `B` are lent. -/
-def argsOkB (B : GoInterface → Option GoString) (mv : List w8) (format : GoString)
+/-- `argsOk` with `argOkAtB`: the arguments of `format` when the contents named by `B` are lent. -/
+def argsOkB (B : GoInterface → Option Lent) (mv : List w8) (format : GoString)
     (xs : List GoInterface) : IProp GF :=
   iprop(⌜ArgsWf xs⌝ ∨ ∃ ds : List Directive, ⌜fmtDirectives format = some ds⌝ ∗ argsOkAtB B mv ds xs)
 
-instance argOkAtB_persistent (B : GoInterface → Option GoString) (mv : List w8) (d : Directive)
+instance argOkAtB_persistent (B : GoInterface → Option Lent) (mv : List w8) (d : Directive)
     (x : GoInterface) : Persistent (argOkAtB (GF := GF) B mv d x) := by
   unfold argOkAtB; infer_instance
 
-instance argsOkAtB_persistent (B : GoInterface → Option GoString) (mv : List w8)
+instance argsOkAtB_persistent (B : GoInterface → Option Lent) (mv : List w8)
     (ds : List Directive) (xs : List GoInterface) : Persistent (argsOkAtB (GF := GF) B mv ds xs) := by
   induction xs generalizing ds with
   | nil => cases ds <;> unfold argsOkAtB <;> infer_instance
   | cons x xs ih => cases ds <;> unfold argsOkAtB <;> infer_instance
 
-instance argsOkB_persistent (B : GoInterface → Option GoString) (mv : List w8) (format : GoString)
+instance argsOkB_persistent (B : GoInterface → Option Lent) (mv : List w8) (format : GoString)
     (xs : List GoInterface) : Persistent (argsOkB (GF := GF) B mv format xs) := by
   unfold argsOkB; infer_instance
 
-theorem argsOkAtB_of_argsOkAt (B : GoInterface → Option GoString) (mv : List w8)
+theorem argsOkAtB_of_argsOkAt (B : GoInterface → Option Lent) (mv : List w8)
     (ds : List Directive) (xs : List GoInterface) :
     argsOkAt (GF := GF) mv ds xs ⊢ argsOkAtB B mv ds xs := by
   induction xs generalizing ds with
@@ -251,7 +262,7 @@ theorem argsOkAtB_of_argsOkAt (B : GoInterface → Option GoString) (mv : List w
       · iapply ih; iexact Hs
 
 /-- `argsOk` admits what `argsOkB` does, whatever bytes are lent. -/
-theorem argsOkB_of_argsOk (B : GoInterface → Option GoString) (mv : List w8) (format : GoString)
+theorem argsOkB_of_argsOk (B : GoInterface → Option Lent) (mv : List w8) (format : GoString)
     (xs : List GoInterface) : argsOk (GF := GF) mv format xs ⊢ argsOkB B mv format xs := by
   unfold argsOk argsOkB
   iintro (%Hwf | ⟨%ds, %Hds, Hds⟩)
@@ -274,7 +285,7 @@ theorem bytesOwn_none (dq : DFrac) (xs : List GoInterface) :
     · iapply ih
 
 /-- The bytes of the argument at index `k`, out of `bytesOwn`, to be put back. -/
-theorem bytesOwn_lookup_acc {dq : DFrac} {B : GoInterface → Option GoString}
+theorem bytesOwn_lookup_acc {dq : DFrac} {B : GoInterface → Option Lent}
     {xs : List GoInterface} {k : Nat} {x : GoInterface} (h : xs[k]? = some x) :
     bytesOwn (GF := GF) dq B xs ⊢ bytesArgOwn dq B x ∗ (bytesArgOwn dq B x -∗ bytesOwn dq B xs) := by
   unfold bytesOwn
@@ -296,10 +307,11 @@ theorem bytesOwn_lookup_acc {dq : DFrac} {B : GoInterface → Option GoString}
   rw [hset]
   iexact H2
 
-/-- A lent argument is a `[]byte` (`bytesArgOwn`), as a pure fact, keeping the bytes. -/
-theorem bytesOwn_ty (dq : DFrac) (B : GoInterface → Option GoString) (xs : List GoInterface) :
+/-- A lent argument is a slice of the type of its contents (`bytesArgOwn`: `[]byte` or `[]string`),
+as a pure fact, keeping the contents. -/
+theorem bytesOwn_ty (dq : DFrac) (B : GoInterface → Option Lent) (xs : List GoInterface) :
     bytesOwn (GF := GF) dq B xs ⊢ bytesOwn dq B xs ∗
-      ⌜∀ x ∈ xs, (B x).isSome → ∃ ii, x = interface.ok ii ∧ ii.ty = go.SliceType go.byte⌝ := by
+      ⌜∀ x ∈ xs, ∀ L, B x = some L → ∃ ii, x = interface.ok ii ∧ ii.ty = L.ty⌝ := by
   unfold bytesOwn
   induction xs with
   | nil => iintro H; iframe; ipureintro; intro x hx; cases hx
@@ -312,25 +324,42 @@ theorem bytesOwn_ty (dq : DFrac) (B : GoInterface → Option GoString) (xs : Lis
       isplitl [Hx Hxs]
       · iapply BigSepL.bigSepL_cons.2; iframe
       ipureintro
-      intro y hy hs
+      intro y hy L hs
       rcases List.mem_cons.mp hy with rfl | hy
       · rw [hB] at hs; cases hs
-      · exact hxs y hy hs
-    | some bs =>
-      icases (bytesArgOwn_some (dq := dq) hB).1 $$ Hx with ⟨%ii, %sl, %Hp, Hsl⟩
-      obtain ⟨hx, hty, hv⟩ := Hp
-      isplitl [Hsl Hxs]
-      · iapply BigSepL.bigSepL_cons.2
-        iframe
-        iapply (bytesArgOwn_some (dq := dq) hB).2
-        iexists ii, sl
-        iframe
-        ipureintro; exact ⟨hx, hty, hv⟩
-      ipureintro
-      intro y hy hs
-      rcases List.mem_cons.mp hy with rfl | hy
-      · exact ⟨ii, hx, hty⟩
-      · exact hxs y hy hs
+      · exact hxs y hy L hs
+    | some L0 =>
+      cases L0 with
+      | bytes bs =>
+        icases (bytesArgOwn_some (dq := dq) hB).1 $$ Hx with ⟨%ii, %sl, %Hp, Hsl⟩
+        obtain ⟨hx, hty, hv⟩ := Hp
+        isplitl [Hsl Hxs]
+        · iapply BigSepL.bigSepL_cons.2
+          iframe
+          iapply (bytesArgOwn_some (dq := dq) hB).2
+          iexists ii, sl
+          iframe
+          ipureintro; exact ⟨hx, hty, hv⟩
+        ipureintro
+        intro y hy L hs
+        rcases List.mem_cons.mp hy with rfl | hy
+        · rw [hB] at hs; cases hs; exact ⟨ii, hx, hty⟩
+        · exact hxs y hy L hs
+      | strings ss =>
+        icases (bytesArgOwn_strings (dq := dq) hB).1 $$ Hx with ⟨%ii, %sl, %Hp, Hsl⟩
+        obtain ⟨hx, hty, hv⟩ := Hp
+        isplitl [Hsl Hxs]
+        · iapply BigSepL.bigSepL_cons.2
+          iframe
+          iapply (bytesArgOwn_strings (dq := dq) hB).2
+          iexists ii, sl
+          iframe
+          ipureintro; exact ⟨hx, hty, hv⟩
+        ipureintro
+        intro y hy L hs
+        rcases List.mem_cons.mp hy with rfl | hy
+        · rw [hB] at hs; cases hs; exact ⟨ii, hx, hty⟩
+        · exact hxs y hy L hs
 
 /-- With no bytes lent, `argsOkB` is `argsOk`. -/
 theorem argsOk_of_argsOkB_none (mv : List w8) (format : GoString) (xs : List GoInterface) :

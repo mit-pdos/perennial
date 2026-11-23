@@ -8,6 +8,8 @@ for each proved function `F`. By Go source file:
 * `control_flow.go`: `fallthrough`, and `break` in a `switch`.
 * `conversions.go`, `int_conversions.go`: conversions (the `[]byte -> string`
   conversion is handled with `wp_bytes_to_string`) and integer conversions.
+* `generic_interface.go`: a type-parameter value converted to an interface (an argument,
+  an assignment, a result).
 * `interfaces_complex.go`, `type_equality.go`, `structs.go`, `new.go`, `slices.go`.
 * `labels.go`: labeled `break` and `continue` (`catchLabel` at the labeled statement): out
   of inner loops and `switch`es (`doPrintf`'s shape), of a labeled `switch`, and of labeled
