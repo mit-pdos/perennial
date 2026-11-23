@@ -93,7 +93,10 @@ arbitrary, and `runtimeSource.Int63` masks it to `[0, 2^63)`). The functions tha
 two sources apart (`Seed`, which re-seeds a `lockedSource` and switches a `runtimeSource` to one,
 and `Read`, `Float64`, ... on the generator's state) are not translated: a call of one is stuck.
 `Seed` is also the only writer of `globalRandGenerator` other than `globalRand`; with `Seed`
-stuck, the model's `CompareAndSwap(nil, r)` races only with other `globalRand`s, as in Go. -/
+stuck, the model's `CompareAndSwap(nil, r)` races only with other `globalRand`s, as in Go. (An
+unverified `Seed` with `GODEBUG=randseednop=0` in the same program would make the generator a
+`lockedSource`, whose methods are not translated: the model is then stuck where Go runs, less
+defined, never more.) -/
 def globalRand.impl : val :=
   λ: <>,
     let: "g" := GlobalVarAddr go!"math/rand.globalRandGenerator" #() in
