@@ -1,7 +1,9 @@
 # Only MakeNoZero (strings.Builder's grow): a `go:linkname` to the runtime with no Go body
 # ("external function"), trusted (TrustedCode/internal/bytealg.lean).
-# `MaxLen`, which the package's initializer (`init.0`) sets
-translate = ["MaxLen"]
+# `MaxLen`, which the package's initializer (`init.0`) sets; `LastIndexByteString` (path.Split,
+# path.Base), whose only body is the generic Go loop in lastindexbyte_generic.go (no build tag, no
+# assembly on any architecture)
+translate = ["MaxLen", "LastIndexByteString"]
 imports = ["!*"]
 # `init.0` sets `MaxLen` from `cpu.X86.HasAVX2`: trusted, as one of the two values
 # (TrustedCode/internal/bytealg.lean). Goose translates `init.0` itself, to a read of the global
