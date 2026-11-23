@@ -1,6 +1,6 @@
 /-
-Shared definitions of the proofs of the Go `crypto/sha1` package: its `isPkgInit` (the package's
-`init` only registers `New` with `crypto`, whose table nothing proved reads), the five state words
+Shared definitions of the proofs of the Go `crypto/sha1` package: its `isPkgInit` (the package has
+no variables; its `init` is a trusted no-op, TrustedCode/crypto/sha1.lean), the five state words
 as the array `digest.h` holds them (`stArr`), and the state of a `digest` that has absorbed a
 message (`absorbed`).
 -/
@@ -9,7 +9,6 @@ module
 public import Perennial.Proof.ProofPrelude
 public import Perennial.Code.crypto.sha1
 public import Perennial.GeneratedProof.crypto.sha1
-public import Perennial.Proof.crypto.Base
 public import Perennial.Proof.crypto.internal.boring.Base
 public import Perennial.Proof.crypto.internal.fips140only.Base
 public import Perennial.Proof.errors.Base

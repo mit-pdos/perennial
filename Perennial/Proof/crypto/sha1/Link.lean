@@ -13,6 +13,9 @@ public import Perennial.Proof.crypto.sha1.blockGeneric
 public import Perennial.Proof.crypto.sha1.digest__Reset
 public import Perennial.Proof.crypto.sha1.digest__Write
 public import Perennial.Proof.crypto.sha1.digest__checkSum
+public import Perennial.Proof.crypto.sha1.initialize
+public import Perennial.Proof.errors.Link
+public import Perennial.Proof.hash.Link
 public import Perennial.Proof.internal.byteorder.Link
 public import Perennial.Proof.math.bits.Link
 
@@ -46,6 +49,9 @@ theorem crypto.sha1.digest.wp_checkSum : crypto.sha1.digest.checkSum.spec (GF :=
 
 theorem crypto.sha1.wp_Sum : crypto.sha1.Sum.spec (GF := GF) (hG := hG) :=
   crypto.sha1.Sum.wp_proof crypto.internal.fips140only.wp_Enforced crypto.sha1.digest.wp_Reset crypto.sha1.digest.wp_Write crypto.sha1.digest.wp_checkSum
+
+theorem crypto.sha1.wp_initialize' : crypto.sha1.initialize'.spec (GF := GF) (hG := hG) :=
+  crypto.sha1.initialize'.wp_proof crypto.internal.boring.wp_initialize' crypto.internal.fips140only.wp_initialize' errors.wp_initialize' hash.wp_initialize' internal.byteorder.wp_initialize' math.bits.wp_initialize'
 
 end link
 
