@@ -31,6 +31,7 @@ projs = [
     create_proj(repo="tchajed/marshal"),
     create_proj(repo="goose-lang/primitive", pkgs=["."]),
     create_proj(repo="mit-pdos/go-liveness"),
+    create_proj(repo="mit-pdos/gokv", pkgs=["./grove_ffi"]),
 ]
 
 

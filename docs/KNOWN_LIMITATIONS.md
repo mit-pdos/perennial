@@ -273,6 +273,27 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   func h[T ~int64]() T { return T(1e18 + 1) } // gc: 1000000000000000000; model: 1000000000000000001
   ```
 
+## Grove (`grove_ffi`)
+
+- **`FileRead` of an existing file is assumed not to fail (environment assumption).**
+  Go's `grove_ffi.FileRead` ignores the error of `ioutil.ReadFile`, so an I/O error while
+  reading an existing file returns partial or no data. The model returns the file's whole
+  contents (`IsGroveStep` "FileRead", `Ext/Grove/Impl.lean`; `FileRead.impl`,
+  `TrustedCode/github_com/mit_pdos/gokv/grove_ffi.lean`): it assumes such reads do not
+  fail. (A read of a missing file is stuck, so a proof shows the file exists.)
+
+  ```go
+  // "f" exists, but reading durable/f fails (EIO, or a permission change)
+  d := grove_ffi.FileRead("f") // Go: nil or a prefix; the model: the file's contents
+  ```
+
+- **A crash leaves a Grove node's state arbitrary; files are not durable.** The extension's
+  crash relation is `True` (`ExtSemantics.crash`, `Ext/Grove/Impl.lean`): after a crash a
+  node's files and TSC may be anything, so nothing a node wrote is known to survive. There
+  is no crash adequacy theorem for Grove: `grove_single_node_adequacy`
+  (`Ext/Grove/Adequacy.lean`) is fail-stop, and a verified Grove program is verified only
+  for executions without crashes.
+
 ## The step bound of the adequacy theorems
 
 Not unsound, but hard to read. Every adequacy theorem (`goose_adequacy`,

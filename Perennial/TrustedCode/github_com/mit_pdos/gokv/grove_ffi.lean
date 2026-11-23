@@ -1,8 +1,12 @@
 /-
-Trusted Go model of `github.com/mit-pdos/gokv/grove_ffi` (namespace
-`github_com.mit_pdos.gokv.grove_ffi`, as the generated package), in terms of
-the Grove extension of `Perennial.GooseLang.Ext.Grove.Impl` (`groveExt` and
-its operations, `ExternalOp groveExt.name "Listen"`, ...), for any program whose extensions include it.
+Trusted Go model of the functions of `github.com/mit-pdos/gokv/grove_ffi` (namespace
+`github_com.mit_pdos.gokv.grove_ffi`, as the generated package), in terms of the operations of
+the Grove extension of `Perennial.GooseLang.Ext.Grove.Impl` (`ExternalOp groveExt.name "Listen"`,
+...), for any program whose extensions include it. The package's types are translated.
+
+The extension's operations take and return byte strings as Go string values (`#data`); the
+model converts between them and `[]byte`. A `Listener` or `Connection` is a fresh cell holding
+the extension's socket value.
 -/
 module
 
@@ -16,79 +20,68 @@ set_option linter.iris.style.nameCheck false
 namespace Perennial
 
 namespace github_com.mit_pdos.gokv.grove_ffi
-/-! Grove user-facing operations. -/
 section grove
 variable [GooseExts] [GoGlobalContext]
 
--- These are pointers in Go.
-def Listener.ty : go.GoType := «unsafe».Pointer
-def Connection.ty : go.GoType := «unsafe».Pointer
-def Address.ty : go.GoType := go.uint64
-
-/-- Type: func(uint64) Listener -/
+/-- Type: func(Address) Listener -/
 def Listen.impl : val :=
-  λ: "e", Alloc (ExternalOp groveExt.name "Listen" "e")
+  λ: "host", Alloc (ExternalOp groveExt.name "Listen" "host")
 
-/-- Type: func(uint64) (bool, Connection) -/
+/-- Type: func(Address) ConnectRet -/
 def Connect.impl : val :=
-  λ: "e",
-    let: "c" := ExternalOp groveExt.name "Connect" "e" in
-    let: "err" := Fst "c" in
-    let: "socket" := Alloc (Snd "c") in
-    ("err", "socket")
+  λ: "host",
+    let: "r" := ExternalOp groveExt.name "Connect" "host" in
+    if: Fst "r" then
+      CompositeLiteral (go.Named go!"github.com/mit-pdos/gokv/grove_ffi.ConnectRet" [])
+        (LiteralValue [KeyedElement (some (KeyField go!"Err")) (ElementExpression go.bool #true)])
+    else
+      CompositeLiteral (go.Named go!"github.com/mit-pdos/gokv/grove_ffi.ConnectRet" [])
+        (LiteralValue [
+          KeyedElement (some (KeyField go!"Err")) (ElementExpression go.bool #false),
+          KeyedElement (some (KeyField go!"Connection"))
+            (ElementExpression (go.Named go!"github.com/mit-pdos/gokv/grove_ffi.Connection" [])
+              (Alloc (Snd "r")))])
 
 /-- Type: func(Listener) Connection -/
 def Accept.impl : val :=
-  λ: "e", Alloc (ExternalOp groveExt.name "Accept" (Load "e"))
+  λ: "l", Alloc (ExternalOp groveExt.name "Accept" (Load "l"))
 
-/-- Type: func(Connection, []byte) -/
+/-- Type: func(Connection, []byte) bool -/
 def Send.impl : val :=
-  λ: "e" "m", ExternalOp groveExt.name "Send" (Load "e", (IndexRef (go.SliceType go.byte) ("m", #(W64 0)),
-                                          FuncResolve go.len [go.SliceType go.byte] "m"))
+  λ: "c" "data",
+    ExternalOp groveExt.name "Send" (Load "c", Convert (go.SliceType go.byte) go.string "data")
 
-/-- Type: func(Connection) (bool, []byte) -/
+/-- Type: func(Connection) ReceiveRet -/
 def Receive.impl : val :=
-  λ: "e",
-    let: "r" := ExternalOp groveExt.name "Receive" (Load "e") in
-    let: "err" := Fst "r" in
-    let: "slice" := Snd "r" in
-    let: "ptr" := Fst "slice" in
-    let: "len" := Snd "slice" in
+  λ: "c",
+    let: "r" := ExternalOp groveExt.name "Receive" (Load "c") in
+    if: Fst "r" then
+      CompositeLiteral (go.Named go!"github.com/mit-pdos/gokv/grove_ffi.ReceiveRet" [])
+        (LiteralValue [KeyedElement (some (KeyField go!"Err")) (ElementExpression go.bool #true)])
+    else
+      CompositeLiteral (go.Named go!"github.com/mit-pdos/gokv/grove_ffi.ReceiveRet" [])
+        (LiteralValue [
+          KeyedElement (some (KeyField go!"Err")) (ElementExpression go.bool #false),
+          KeyedElement (some (KeyField go!"Data"))
+            (ElementExpression (go.SliceType go.byte)
+              (Convert go.string (go.SliceType go.byte) (Snd "r")))])
 
-    ("err", (InternalMakeSlice ("ptr", "len", "len")))
-
-/-- FileRead pretends that the operation can never fail.
-The Go implementation will accordingly abort the program if an I/O error
-occurs. -/
+/-- Type: func(string) []byte -/
 def FileRead.impl : val :=
-  λ: "f",
-    let: "ret" := ExternalOp groveExt.name "FileRead" "f" in
-    let: "err" := Fst "ret" in
-    let: "slice" := Snd "ret" in
-    if: "err" then AngelicExit #() else
-    let: "ptr" := Fst "slice" in
-    let: "len" := Snd "slice" in
-    InternalMakeSlice ("ptr", "len", "len")
+  λ: "filename",
+    Convert go.string (go.SliceType go.byte) (ExternalOp groveExt.name "FileRead" "filename")
 
-/-- FileWrite pretends that the operation can never fail.
-The Go implementation will accordingly abort the program if an I/O error
-occurs. -/
+/-- Type: func(string, []byte) -/
 def FileWrite.impl : val :=
-  λ: "f" "c",
-    let: "err" := ExternalOp groveExt.name "FileWrite" ("f", (IndexRef (go.SliceType go.byte) ("c", #(W64 0)),
-                                               FuncResolve go.len [go.SliceType go.byte] "c")) in
-    if: "err" then AngelicExit #() else
-    #()
+  λ: "filename" "content",
+    ExternalOp groveExt.name "FileWrite"
+      ("filename", Convert (go.SliceType go.byte) go.string "content")
 
-/-- FileAppend pretends that the operation can never fail.
-The Go implementation will accordingly abort the program if an I/O error
-occurs. -/
+/-- Type: func(string, []byte) -/
 def FileAppend.impl : val :=
-  λ: "f" "c",
-    let: "err" := ExternalOp groveExt.name "FileAppend" ("f", (IndexRef (go.SliceType go.byte) ("c", #(W64 0)),
-                                               FuncResolve go.len [go.SliceType go.byte] "c")) in
-    if: "err" then AngelicExit #() else
-    #()
+  λ: "filename" "data",
+    ExternalOp groveExt.name "FileAppend"
+      ("filename", Convert (go.SliceType go.byte) go.string "data")
 
 /-- Type: func() uint64 -/
 def GetTSC.impl : val :=
@@ -99,11 +92,6 @@ def GetTimeRange.impl : val :=
   λ: <>, ExternalOp groveExt.name "GetTimeRange" #()
 
 end grove
-
-abbrev Connection := Loc
-
-abbrev Listener := Loc
-
 end github_com.mit_pdos.gokv.grove_ffi
 
 end Perennial
