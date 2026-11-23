@@ -88,10 +88,13 @@ attribute [instance] Mutex.TypeAssumptions.type_repr
 class ProphId.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying ProphId.underlying ProphId
   underlying : go.UnderlyingDirectedEq ProphId.ty ProphId.underlying
-  method_set : go.MethodSetIs ProphId.ty [(go!"ResolveBool", (some (go.signature.Signature [go.bool] false []))), (go!"ResolveU64", (some (go.signature.Signature [go.uint64] false [])))]
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType ProphId.ty) [(go!"ResolveBool", (some (go.signature.Signature [go.bool] false []))), (go!"ResolveU64", (some (go.signature.Signature [go.uint64] false [])))]
+  method_set : go.MethodSetIs ProphId.ty [(go!"Resolve", (some (go.signature.Signature [go.any] false []))), (go!"ResolveBool", (some (go.signature.Signature [go.bool] false []))), (go!"ResolveU64", (some (go.signature.Signature [go.uint64] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType ProphId.ty) [(go!"Resolve", (some (go.signature.Signature [go.any] false []))), (go!"ResolveBool", (some (go.signature.Signature [go.bool] false []))), (go!"ResolveU64", (some (go.signature.Signature [go.uint64] false [])))]
+  Resolve_unfold : MethodUnfold ProphId.ty go!"Resolve" ProphId.Resolve.impl
   ResolveBool_unfold : MethodUnfold ProphId.ty go!"ResolveBool" ProphId.ResolveBool.impl
   ResolveU64_unfold : MethodUnfold ProphId.ty go!"ResolveU64" ProphId.ResolveU64.impl
+  ptr_Resolve_unfold : MethodUnfold (go.GoType.PointerType ProphId.ty) go!"Resolve" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve ProphId.ty go!"Resolve"))) (App (Val (GoInstruction (GoLoad ProphId.ty))) (Var "$r"))))
   ptr_ResolveBool_unfold : MethodUnfold (go.GoType.PointerType ProphId.ty) go!"ResolveBool" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve ProphId.ty go!"ResolveBool"))) (App (Val (GoInstruction (GoLoad ProphId.ty))) (Var "$r"))))
   ptr_ResolveU64_unfold : MethodUnfold (go.GoType.PointerType ProphId.ty) go!"ResolveU64" (LamV "$r"
@@ -101,8 +104,10 @@ attribute [instance] ProphId.TypeAssumptions.type_repr
   ProphId.TypeAssumptions.underlying
   ProphId.TypeAssumptions.method_set
   ProphId.TypeAssumptions.ptr_method_set
+  ProphId.TypeAssumptions.Resolve_unfold
   ProphId.TypeAssumptions.ResolveBool_unfold
   ProphId.TypeAssumptions.ResolveU64_unfold
+  ProphId.TypeAssumptions.ptr_Resolve_unfold
   ProphId.TypeAssumptions.ptr_ResolveBool_unfold
   ProphId.TypeAssumptions.ptr_ResolveU64_unfold
 

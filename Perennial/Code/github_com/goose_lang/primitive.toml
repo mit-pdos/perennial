@@ -8,6 +8,7 @@ trusted = [
   "NewProph",
   "ProphId.ResolveBool",
   "ProphId.ResolveU64",
+  "ProphId.Resolve",
   # FIXME: add remaining functions
 ]
 [bootstrap]

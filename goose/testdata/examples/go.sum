@@ -2,6 +2,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/goose-lang/primitive v0.2.2-0.20260212023729-cb7f52217e65 h1:iIxG6zAiFGcVGx0hVeQxNZypucNcRhFUoUzTEHTBbp0=
 github.com/goose-lang/primitive v0.2.2-0.20260212023729-cb7f52217e65/go.mod h1:sDE72zVH81ASwPXc1m9OgSfaaY0aZHu4Ty19FgONpOc=
+github.com/goose-lang/primitive v0.2.2-0.20261123232922-5d8e69df2f96 h1:sTnMeQanwgmJpgMK44a2RDdSEcpfa94BTtqd3esn/jk=
+github.com/goose-lang/primitive v0.2.2-0.20261123232922-5d8e69df2f96/go.mod h1:sDE72zVH81ASwPXc1m9OgSfaaY0aZHu4Ty19FgONpOc=
 github.com/goose-lang/std v0.7.0 h1:kJ3LRXtSm9I/T6QH0pB7P+sfUNpsYCZEBGTSsruuv2c=
 github.com/goose-lang/std v0.7.0/go.mod h1:bnKHDHwU0lHf99eMI5PVM77UweRyu6qgM/h43qGBRto=
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
