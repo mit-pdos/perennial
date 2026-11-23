@@ -1,15 +1,13 @@
 /-
-A generation's start with its extensions' interpretation, and a crash obligation with a later
-credit (regression test of the crash obligations of `goose_crash_adequacy`,
-`GooseLang/CrashAdequacy.lean`).
+A crash obligation with a later credit (regression test of the crash obligations of
+`goose_crash_adequacy`, `GooseLang/CrashAdequacy.lean`).
 
 A toy extension, `epochExt`, keeps the node's epoch: its local state counts the node's crashes
 (`crash s s' := s' = s + 1`), and its operation `Epoch` returns it. Its ghost state is per
 generation: a crash hands the restart nothing (`crashStart := True`), and the interpretation of
-epoch `s` is a ghost variable `γ` at `s`, owned (`epochOwn`) when a generation starts, which a
-ghost-mode switch makes persistent (`epochWit`, the witness that the epoch is `s`). `Epoch`'s
-spec needs the witness. So a generation can call `Epoch` only after it has switched the mode,
-which takes the interpretation: in its obligation's update, before its program runs.
+epoch `s` is the persistent witness (`epochWit`) of a ghost variable `γ` at `s`, determined by
+the state. `Epoch` hands out the witness of the epoch it returns, and returns the epoch of any
+witness.
 
 The node runs `boot`, `(Epoch(), Epoch())`, at the start and after every crash: it returns a pair
 of equal epochs, which the witness proves. Besides, the node keeps a value that is not timeless
@@ -19,7 +17,7 @@ with the generation's threads, `NotCrashedChanTest`; here no thread uses it). Th
 obligation opens the invariant, gets the value under a later, and strips it with the crash's
 later credit to hand it to the next generation.
 
-* `wp_Epoch`: the spec of `Epoch`.
+* `wp_Epoch_wit`, `wp_Epoch`: the specs of `Epoch`.
 * `gen_safety`: `goose_crash_adequacy` for `boot`, for every execution with crashes.
 -/
 module
@@ -77,10 +75,6 @@ structure EpochGS (GF : BundledGFunctors) where
 section ghost
 variable {GF : BundledGFunctors}
 
-/-- The epoch's ghost variable, owned: the mode in which a generation starts. -/
-def epochOwn (hL : EpochGS GF) (n : Nat) : IProp GF :=
-  @dghostVar GF hL.allG Nat _ hL.γ (.own 1) n
-
 /-- The epoch's ghost variable, persistent: the witness that the epoch is `n`. -/
 def epochWit (hL : EpochGS GF) (n : Nat) : IProp GF :=
   @dghostVar GF hL.allG Nat _ hL.γ .discard n
@@ -88,24 +82,16 @@ def epochWit (hL : EpochGS GF) (n : Nat) : IProp GF :=
 instance epochWit_persistent (hL : EpochGS GF) (n : Nat) : Persistent (epochWit hL n) := by
   unfold epochWit; letI := hL.allG; infer_instance
 
-/-- A new generation's epoch, owned. -/
+/-- A new generation's epoch. -/
 theorem epoch_alloc (hPre : AllG GF) (n : Nat) :
-    ⊢@{IProp GF} |==> ∃ hL : EpochGS GF, epochOwn hL n := by
+    ⊢@{IProp GF} |==> ∃ hL : EpochGS GF, epochWit hL n := by
   letI := hPre
   imod (dghostVar_alloc (GF := GF) n) with ⟨%γ, H⟩
+  imod dghostVar_persist γ 1 n $$ H with H
   imodintro
   iexists (⟨hPre, γ⟩ : EpochGS GF)
-  unfold epochOwn
+  unfold epochWit
   iexact H
-
-/-- The ghost-mode switch: the owned variable becomes the witness. -/
-theorem epoch_switch (hL : EpochGS GF) (n : Nat) :
-    ⊢ (epochOwn hL n ∨ epochWit hL n) ==∗ epochWit hL n := by
-  letI := hL.allG
-  unfold epochOwn epochWit
-  iintro (Ho | Hw)
-  · iapply dghostVar_persist $$ Ho
-  · imodintro; iexact Hw
 
 /-- A witness of `n` agrees with the interpretation of `m`. -/
 theorem epoch_agree (hL : EpochGS GF) (m n : Nat) :
@@ -117,12 +103,12 @@ theorem epoch_agree (hL : EpochGS GF) (m n : Nat) :
 
 end ghost
 
-/-- The interpretation of epoch `s`: its ghost variable, owned or persistent. A generation
-starts with it owned, and the restart is handed nothing. -/
+/-- The interpretation of epoch `s`: the witness of its ghost variable. The restart is handed
+nothing. -/
 instance epoch_interp : ExtInterp epochExt where
   LocalGS := EpochGS
   GlobalGS _ := Unit
-  localCtx hL s := iprop(epochOwn hL s ∨ epochWit hL s)
+  localCtx hL s := epochWit hL s
   globalCtx _ _ := iprop(True)
   PreG := AllG
   initgP _ := True
@@ -136,13 +122,13 @@ instance epoch_interp : ExtInterp epochExt where
     imodintro
     iexists hL
     isplitl [H]
-    · ileft; iexact H
+    · iexact H
     · itrivial
 
 theorem epoch_ctx {GF : BundledGFunctors} (hL : EpochGS GF) (s : Nat) :
-    ExtInterp.localCtx (E := epochExt) hL s ⊣⊢ iprop(epochOwn hL s ∨ epochWit hL s) := .rfl
+    ExtInterp.localCtx (E := epochExt) hL s ⊣⊢ epochWit hL s := .rfl
 
-/-- At a crash, the epoch's ghost variable is allocated anew, owned, at the new epoch. -/
+/-- At a crash, the epoch's ghost variable is allocated anew, at the new epoch. -/
 instance epoch_crash_interp : ExtCrashInterp epochExt where
   crashStart _ _ := iprop(True)
   local_crash GF hPre _ _ σ' _ := by
@@ -151,7 +137,7 @@ instance epoch_crash_interp : ExtCrashInterp epochExt where
     imodintro
     iexists hL
     isplitl [H]
-    · iapply (epoch_ctx _ _).2; ileft; iexact H
+    · iapply (epoch_ctx _ _).2; iexact H
     · itrivial
 
 /-! ## The spec of `Epoch` -/
@@ -164,14 +150,38 @@ variable {s : Stuckness} {E : CoPset}
 /-- The witness that the generation's epoch is `n`. -/
 abbrev epochIs (n : Nat) : IProp GF := epochWit (extLocalGS epochExt (L := L)) n
 
+/-- `Epoch` returns the epoch, and its witness. -/
+theorem wp_Epoch_wit :
+    {{ True }} (ExternalOp epochExt.name "Epoch" (Val #())) @ s; E
+    {{ (n : Nat), RET #(BitVec.ofNat 64 n); epochIs (L := L) n }} := by
+  iintro %Φ _ HΦ
+  iapply wp_extStep "Epoch" #() Φ (by simp)
+  iintro %h %m %g Hh Hl Hg
+  icases (epoch_ctx _ _).1 $$ Hl with #Hm
+  iapply fupd_mask_intro Std.LawfulSet.empty_subset
+  iintro Hclose
+  isplitr
+  · ipureintro; exact ⟨_, h, m, (), EpochStep.epoch h m⟩
+  inext
+  iintro %e' %h' %m' %g' %Hst _
+  cases (show EpochStep _ _ _ _ _ _ _ _ _ from Hst)
+  imod Hclose
+  imodintro
+  iframe Hh Hg
+  isplitl []
+  · iapply (epoch_ctx _ _).2; iexact Hm
+  iapply wp_value'
+  iapply HΦ
+  iexact Hm
+
+/-- With the witness that the epoch is `n`, `Epoch` returns `n`. -/
 theorem wp_Epoch (n : Nat) :
     {{ epochIs (L := L) n }} (ExternalOp epochExt.name "Epoch" (Val #())) @ s; E
     {{ RET #(BitVec.ofNat 64 n); True }} := by
   iintro %Φ #Hw HΦ
   iapply wp_extStep "Epoch" #() Φ (by simp)
   iintro %h %m %g Hh Hl Hg
-  imod epoch_switch _ _ $$ [Hl] with #Hm
-  · iapply (epoch_ctx _ _).1; iexact Hl
+  icases (epoch_ctx _ _).1 $$ Hl with #Hm
   ihave %Heq := epoch_agree _ m n $$ Hm Hw
   subst Heq
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -185,7 +195,7 @@ theorem wp_Epoch (n : Nat) :
   imodintro
   iframe Hh Hg
   isplitl []
-  · iapply (epoch_ctx _ _).2; iright; iexact Hm
+  · iapply (epoch_ctx _ _).2; iexact Hm
   iapply wp_value'
   iapply HΦ
   itrivial
@@ -238,37 +248,30 @@ theorem bootPost_not_panic (p : val) : ¬ bootPost (PanicV p) := by
   rintro ⟨x, h⟩; cases h
 
 set_option maxHeartbeats 400000 in
-/-- **A generation**: from its precondition and the extensions' local interpretation, the
-ghost-mode switch (the epoch's witness, for the WP of `boot`), and the crash invariant, which
-the crash obligation empties with the crash's later credit. -/
-theorem wp_gen [GoGlobalContext] [hG : HeapGS .hasLC GF] (w : ExtsLocalState exts) :
-    ⊢ bootPre (GF := GF) hG.goose_localGS -∗ extsLocalCtx w ={⊤}=∗ extsLocalCtx w ∗
+/-- **A generation**: from its precondition, the WP of `boot` (whose first `Epoch` hands out
+the witness for the second) and the crash invariant, which the crash obligation empties with
+the crash's later credit. -/
+theorem wp_gen [GoGlobalContext] [hG : HeapGS .hasLC GF] :
+    ⊢ bootPre (GF := GF) hG.goose_localGS ={⊤}=∗
       WP boot @ Stuckness.NotStuck; ⊤ {{ v, ⌜bootPost v⌝ }} ∗
       ∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
         extsCrashStart hG.goose_localGS L' -∗ ownGoState (hG := L'.goose_go_stateGS) ∅ -∗
         £ 1 ={⊤}=∗ bootPre L' := by
   unfold bootPre
-  iintro ⟨%γ, Hv⟩ Hl
-  -- the ghost-mode switch, in the extension's interpretation
-  icases HasExt.localCtx_get (X := epochExt) w $$ Hl with ⟨Hl, Hlclose⟩
-  imod epoch_switch _ _ $$ [Hl] with #Hw
-  · iapply (epoch_ctx _ _).1; iexact Hl
-  ihave Hl := Hlclose $$ [Hw]
-  · iapply (epoch_ctx _ _).2; iright; iexact Hw
+  iintro ⟨%γ, Hv⟩
   -- the crash invariant
   imod token_alloc (GF := GF) with ⟨%γt, Ht⟩
   imod inv_alloc genN ⊤ iprop(savedPropOwn γ (.own 1) iprop(True) ∨
       crashed (hC := hG.goose_localGS.goose_crashGS) ∗ token γt) $$ [Hv] with #Hinv
   · inext; ileft; iexact Hv
   imodintro
-  iframe Hl
   isplitl []
-  · -- the program: both calls return the epoch of the witness
+  · -- the program: the second call returns the epoch of the first one's witness
     unfold boot
-    wp_apply wp_Epoch _ $$ [Hw]
-    · iexact Hw
-    iintro _
-    wp_apply wp_Epoch _ $$ [Hw]
+    wp_apply wp_Epoch_wit $$ []
+    · itrivial
+    iintro %n #Hw
+    wp_apply wp_Epoch n $$ [Hw]
     · iexact Hw
     iintro _
     wp_auto
@@ -315,8 +318,8 @@ theorem gen_safety_bounded [GoGlobalContext] [hPre : GooseGpreS GF]
     iexact Hv
   · -- every generation: `wp_gen`
     intro hG _ _ _
-    iintro HP _ %w Hl
-    iapply wp_gen w $$ HP Hl
+    iintro HP _
+    iapply wp_gen $$ HP
 
 /-- **Crash safety** of the boot program: in every execution with crashes of `boot`, from a
 state with the main thread only, the boot program returns a pair of equal values, no thread is

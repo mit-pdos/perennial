@@ -306,10 +306,10 @@ theorem crash_safety_bounded [lctx : GoLocalContext] [sem : go.Semantics] [hPre 
     subst Hlctx'
     letI hG : HeapGS .hasLC GF := ⟨G, ⟨Lexts, Llctx, Lheap, Lgs, Lthr, Lcr⟩⟩
     unfold bootPre
-    iintro ⟨%γ, %k, Hγ⟩ _ %w Hl
+    iintro ⟨%γ, %k, Hγ⟩ _
     imod wp_boot γ k $$ Hγ with ⟨Hwp, Hcr⟩
     imodintro
-    iframe Hl Hwp
+    iframe Hwp
     iintro %L' #Hc _ _ _
     imod Hcr $$ Hc with ⟨%m, Hγ⟩
     imodintro

@@ -97,7 +97,7 @@ theorem goose_crash_adequacy_init [hPre : GooseGpreS GF] (Hcompat : GooseInitCom
       receiptBound GF = N →
       threadBound GF = T →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ P hG.goose_localGS -∗ threadTok -∗ ∀ w, extsLocalCtx w ={⊤}=∗ extsLocalCtx w ∗
+      ⊢ P hG.goose_localGS -∗ threadTok ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }} ∗
         ∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
           extsCrashStart hG.goose_localGS L' -∗
@@ -171,7 +171,7 @@ theorem goose_dist_crash_adequacy_init [hPre : GooseGpreS GF] (Hcompat : GooseIn
       threadBound GF = T →
       ∀ (i : Nat) (e : Expr) (σ : state), es[i]? = some (e, σ) →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ P i hG.goose_localGS -∗ threadTok -∗ ∀ w, extsLocalCtx w ={⊤}=∗ extsLocalCtx w ∗
+      ⊢ P i hG.goose_localGS -∗ threadTok ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ i v⌝ }} ∗
         ∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
           extsCrashStart hG.goose_localGS L' -∗
@@ -210,7 +210,7 @@ theorem goose_dist_mixed_crash_adequacy_init [hPre : GooseGpreS GF]
       threadBound GF = T →
       ∀ (i : Nat) (e : Expr) (σ : state), crashing[i]? = some (e, σ) →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ P i hG.goose_localGS -∗ threadTok -∗ ∀ w, extsLocalCtx w ={⊤}=∗ extsLocalCtx w ∗
+      ⊢ P i hG.goose_localGS -∗ threadTok ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ i v⌝ }} ∗
         ∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
           extsCrashStart hG.goose_localGS L' -∗

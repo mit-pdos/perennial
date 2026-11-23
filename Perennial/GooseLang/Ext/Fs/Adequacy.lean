@@ -86,9 +86,7 @@ for `[fsExt]`): the precondition `P` holds of the first generation, from the
 ownership of the initial files, and every generation proves the WP of `e` from
 `P` and guarantees `P` of the next generation `L'` after it crashes, from its
 `crashed`, from the files' ghost state of `L'` being its own (so that its
-`f fs↦ c` describe the files after the crash) and a later credit, both under a
-fancy update with the extensions' local interpretation, as for
-`goose_crash_adequacy`. -/
+`f fs↦ c` describe the files after the crash) and a later credit. -/
 theorem fs_crash_adequacy [GoGlobalContext] {GF : BundledGFunctors}
     [hPre : GooseGpreS GF] (N T : Nat) (e : Expr) (σ : state) (g : GlobalState)
     (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p))
@@ -103,7 +101,7 @@ theorem fs_crash_adequacy [GoGlobalContext] {GF : BundledGFunctors}
       receiptBound GF = N →
       threadBound GF = T →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ P hG.goose_localGS -∗ threadTok -∗ ∀ w, extsLocalCtx w ={⊤}=∗ extsLocalCtx w ∗
+      ⊢ P hG.goose_localGS -∗ threadTok ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }} ∗
         ∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
           ⌜extLocalGS fsExt (L := L') = extLocalGS fsExt (L := hG.goose_localGS)⌝ -∗
@@ -126,10 +124,10 @@ theorem fs_crash_adequacy [GoGlobalContext] {GF : BundledGFunctors}
     iapply Hstart HN HT Hlctx $$ [Hfiles] Hgs
     iapply Hl $$ Hfiles
   · intro hG HN HT Hlctx
-    iintro HP Htok %w Hl
-    imod Hwp HN HT Hlctx $$ HP Htok %w Hl with ⟨Hl, Hwp, Hcrash⟩
+    iintro HP Htok
+    imod Hwp HN HT Hlctx $$ HP Htok with ⟨Hwp, Hcrash⟩
     imodintro
-    iframe Hl Hwp
+    iframe Hwp
     iintro %L' Hcr Hcs Hgs Hlc
     -- the crash resources of `[fsExt]` are the filesystem's
     have Hc : extsCrashStart (GF := GF) hG.goose_localGS L' ⊢

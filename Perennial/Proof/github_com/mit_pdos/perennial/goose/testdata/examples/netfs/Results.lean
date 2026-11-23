@@ -278,9 +278,8 @@ theorem netfs_crash_safety_bounded [lctx : GoLocalContext] [sem : go.Semantics]
     subst Hlctx
     letI hG : HeapGS .hasLC GF := ⟨G, ⟨Lexts, Llctx, Lheap, Lgs, Lthr, Lcr⟩⟩
     unfold nodePre
-    iintro ⟨#Hinv, Hgs, %Haddr, #Hf⟩ _ %w Hl
+    iintro ⟨#Hinv, Hgs, %Haddr, #Hf⟩ _
     imodintro
-    iframe Hl
     isplitl [Hgs]
     · rcases Hnode with ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩
       · iapply wp_boot NodeA _ (wp_NodeA (GF := GF) c0 Haddr) $$ [] Hgs

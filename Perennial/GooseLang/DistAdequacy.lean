@@ -20,9 +20,7 @@ Notes:
   `nodeWp T e σ φ` for the node running `e` from `σ`: for any local ghost state
   of the node (thread bound `T`, the node's Go context), from the node's start
   resources (the extensions' local start resources, e.g. its files, its package
-  state and its main thread's token), the WP of `e` with postcondition `φ`,
-  proved under a fancy update that has the node's extensions' local
-  interpretation (`extsLocalCtx w`), to give back unchanged. The
+  state and its main thread's token), the WP of `e` with postcondition `φ`. The
   fancy update lets the client allocate the invariants that the nodes share
   (e.g. a protocol over the network) before splitting the resources among the
   nodes.
@@ -45,9 +43,7 @@ Notes:
   setup and every node's first `P i`; `Hwp` proves, in every generation, the
   WP of the boot program from `P i` together with `P i L'` for the generation
   `L'` after a crash, from `crashed`, the extensions' `crashStart` and a later
-  credit (a crash is a step of the execution, and pays for it); as for a node
-  without crashes, a generation's obligation has the extensions' local
-  interpretation for a fancy update before its program runs. In the
+  credit (a crash is a step of the execution, and pays for it). In the
   invariant, each node carries that guarantee as its frame (`crashFrame`); a
   crash of node `i` (`dist_crash_node`) runs `goose_crash_step` on node `i`'s
   part of the state interpretation, which allocates `L'` for that node alone,
@@ -113,31 +109,18 @@ theorem bstateInterp_split [G : GooseGlobalGS .hasLC GF] [L : GooseLocalGS GF] (
   · iintro ⟨⟨Hh, Hl, Hgs, Hlctx, Ht, Hnc⟩, Hg, Hp, Hr⟩
     iframe
 
-/-- The extensions' local interpretation, taken out of a node's part of the
-state interpretation for a fancy update that gives it back unchanged. -/
-theorem nodeInterp_extsLocalCtx_upd [G : GooseGlobalGS .hasLC GF] [L : GooseLocalGS GF]
-    (σ : state) (t : Nat) (Q : IProp GF) :
-    ⊢ nodeInterp σ t -∗ (extsLocalCtx σ.world ={⊤}=∗ extsLocalCtx σ.world ∗ Q) ={⊤}=∗
-      nodeInterp σ t ∗ Q := by
-  unfold nodeInterp
-  iintro ⟨Hh, Hl, Hgs, Hlctx, Ht, Hnc⟩ HQ
-  imod HQ $$ Hl with ⟨Hl, HQ⟩
-  imodintro
-  iframe
-
 /-! ## The proof obligation of a node -/
 
 /-- The proof obligation of a node, under its ghost state `hG`: with thread
 bound `T` and the node's Go context, the WP of its program `e` from its start
 resources (the extensions' local start resources, the package state and the
-main thread's token), with postcondition `φ`, under a fancy update that has the
-extensions' local interpretation at their local state `w`, to give back. -/
+main thread's token), with postcondition `φ`. -/
 def nodeWpBody [hG : HeapGS .hasLC GF] (T : Nat) (e : Expr) (σ : state) (φ : val → Prop) :
     IProp GF :=
   iprop(⌜threadBound GF = T⌝ -∗
     ⌜hG.goose_localGS.goose_go_local_context = σ.goState.goLctx⌝ -∗
-    extsLocalStart (GF := GF) σ.world -∗ ownGoState σ.goState.packageState -∗ threadTok -∗
-    ∀ w, extsLocalCtx w ={⊤}=∗ extsLocalCtx w ∗ WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
+    extsLocalStart (GF := GF) σ.world -∗ ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗
+    WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
 
 /-- The proof obligation of the node running `e` from `σ`, under the global
 ghost state `G`: `nodeWpBody` for every local ghost state of the node. -/
@@ -285,8 +268,7 @@ theorem goose_nodes_init_gen [hPre : GooseGpreS GF] [G : GooseGlobalGS .hasLC GF
       L.goose_go_local_context = σ.goState.goLctx →
       ⊢ O i (e, σ) -∗ extsLocalStart (L := L) σ.world -∗
         ownGoState (hG := L.goose_go_stateGS) σ.goState.packageState -∗
-        threadTok (hT := L.goose_threadGS) -∗ extsLocalCtx (L := L) σ.world ={⊤}=∗
-        extsLocalCtx (L := L) σ.world ∗
+        threadTok (hT := L.goose_threadGS) ={⊤}=∗
         gooseWptp (L := L) [e] [fun v => iprop(⌜φ i v⌝)] ∗ R i L) :
     ⊢ ([∗list] i ↦ n ∈ es, O i n) ={⊤}=∗
       [∗list] i ↦ n ∈ es.map (fun n => ([n.1], n.2, T - 2)), nodeInv (R i) (φ i) n := by
@@ -298,10 +280,7 @@ theorem goose_nodes_init_gen [hPre : GooseGpreS GF] [G : GooseGlobalGS .hasLC GF
   iintro Ho
   imod goose_local_init T hT σ g (Hinit (e, σ) (List.mem_of_getElem? hi))
     with ⟨%L, %HT, %Hlctx, Hσ, Hstart, Hgs, Htok⟩
-  imod nodeInterp_extsLocalCtx_upd (L := L) σ (T - 2)
-    iprop(gooseWptp (L := L) [e] [fun v => iprop(⌜φ i v⌝)] ∗ R i L) $$ Hσ [Ho Hstart Hgs Htok]
-    with ⟨Hσ, Hwp, HR⟩
-  · iapply HO i e σ L hi HT Hlctx $$ Ho Hstart Hgs Htok
+  imod HO i e σ L hi HT Hlctx $$ Ho Hstart Hgs Htok with ⟨Hwp, HR⟩
   imodintro
   unfold nodeInv
   iexists L
@@ -434,11 +413,10 @@ theorem goose_dist_adequacy_blang [hPre : GooseGpreS GF] (N T : Nat) (hN : 0 < N
   imod goose_nodes_init_gen (G := G) T hT g es φ Hinit (fun i n => nodeWp T n.1 n.2 (φ i))
     (fun _ _ => iprop(emp)) ?_ $$ Hnodes with Hnodes
   · intro i e σ L _ HT Hlctx
-    iintro Hn Hstart Hgs Htok Hl
+    iintro Hn Hstart Hgs Htok
     unfold nodeWp nodeWpBody
-    imod Hn $$ %L %HT %Hlctx Hstart Hgs Htok %σ.world Hl with ⟨Hl, Hwp⟩
+    imod Hn $$ %L %HT %Hlctx Hstart Hgs Htok with Hwp
     imodintro
-    iframe Hl
     isplitl [Hwp]
     · try simp only [gooseWptp]
       iapply BigSepL2.bigSepL2_singleton.2
@@ -585,15 +563,13 @@ abbrev BootWp [G : GooseGlobalGS .hasLC GF] (T : Nat) (es : List (Expr × state)
   ∀ (L : GooseLocalGS GF) (i : Nat) (e : Expr) (σ : state), es[i]? = some (e, σ) →
     @ThreadGS.threadBound GF L.goose_threadGS = T →
     L.goose_go_local_context = σ.goState.goLctx →
-    ⊢ P i L -∗ threadTok (hT := L.goose_threadGS) -∗
-      ∀ w, extsLocalCtx (L := L) w ={⊤}=∗ extsLocalCtx (L := L) w ∗
+    ⊢ P i L -∗ threadTok (hT := L.goose_threadGS) ={⊤}=∗
       gooseWptp (L := L) [e] [fun v => iprop(⌜φ i v⌝)] ∗ crashFrame T es P i L
 
 /-- A crash of a node, in the ghost state: the node's part of the state
 interpretation gives way to that of a new local ghost state `L'`
 (`goose_crash_step`), whose boot program the node's crash frame (with the
-crash's later credit) and `Hwp` (with the new generation's extensions' local
-interpretation) prove. -/
+crash's later credit) and `Hwp` prove. -/
 theorem dist_crash_node [hPre : GooseGpreS GF] [G : GooseGlobalGS .hasLC GF] (T : Nat)
     (es : List (Expr × state)) (φ : Nat → val → Prop) (P : Nat → GooseLocalGS GF → IProp GF)
     (Hwp : BootWp T es φ P) {c : BDistCfg} {i : Nat} {tp : List Expr} {σ : state} {t : Nat}
@@ -620,10 +596,7 @@ theorem dist_crash_node [hPre : GooseGpreS GF] [G : GooseGlobalGS .hasLC GF] (T 
   imod goose_crash_step (L := L) T hT hc c.global ⟨c.steps, t⟩ κs $$ Hσ
     with ⟨%L', %HL'lctx, %HL'T, Hσ, Hcr, Hcs, Hgs, Htok⟩
   imod HΨ $$ %L' Hcr Hcs Hgs Hc with HP
-  imod gooseBstateInterp_extsLocalCtx_upd (L := L') σ' c.global ⟨c.steps, T - 2⟩ κs
-    iprop(gooseWptp (L := L') [e₀] [fun v => iprop(⌜φ i v⌝)] ∗ crashFrame T es P i L')
-    $$ Hσ [HP Htok] with ⟨Hσ, Hwp, HR⟩
-  · iapply Hwp L' i e₀ σ₀ Hes HL'T (by rw [HL'lctx, Hlctx]) $$ HP Htok
+  imod Hwp L' i e₀ σ₀ Hes HL'T (by rw [HL'lctx, Hlctx]) $$ HP Htok with ⟨Hwp, HR⟩
   icases (bstateInterp_split (L := L') σ' c.global c.steps (T - 2) κs).1 $$ Hσ with ⟨Hl, Hg⟩
   imodintro
   iframe Hg
@@ -712,7 +685,7 @@ theorem goose_dist_mixed_crash_adequacy_blang [hPre : GooseGpreS GF] (N T : Nat)
       threadBound GF = T →
       ∀ (i : Nat) (e : Expr) (σ : state), crashing[i]? = some (e, σ) →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ P i hG.goose_localGS -∗ threadTok -∗ ∀ w, extsLocalCtx w ={⊤}=∗ extsLocalCtx w ∗
+      ⊢ P i hG.goose_localGS -∗ threadTok ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ i v⌝ }} ∗
         ∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
           extsCrashStart hG.goose_localGS L' -∗
@@ -729,10 +702,9 @@ theorem goose_dist_mixed_crash_adequacy_blang [hPre : GooseGpreS GF] (N T : Nat)
   -- the boot obligation of every generation of a crashing node, as `BootWp`
   have Hboot : BootWp (G := G) T crashing φ P := by
     intro L i e σ Hes HT Hlctx
-    iintro HP Htok %w Hl
-    imod (@Hwp ⟨G, L⟩ HN HT i e σ Hes Hlctx) $$ HP Htok %w Hl with ⟨Hl, Hwp, HΨ⟩
+    iintro HP Htok
+    imod (@Hwp ⟨G, L⟩ HN HT i e σ Hes Hlctx) $$ HP Htok with ⟨Hwp, HΨ⟩
     imodintro
-    iframe Hl
     isplitl [Hwp]
     · simp only [gooseWptp]
       iapply BigSepL2.bigSepL2_singleton.2
@@ -756,17 +728,16 @@ theorem goose_dist_mixed_crash_adequacy_blang [hPre : GooseGpreS GF] (N T : Nat)
       have Hes' : crashing[i]? = some (e, σ) := by
         rwa [List.getElem?_append_left hi] at Hes
       simp only [O, hi, ↓reduceIte]
-      iintro Hn Hstart Hgs Htok Hl
+      iintro Hn Hstart Hgs Htok
       unfold nodeStart
       imod Hn $$ %L %HT %Hlctx Hstart Hgs with HP
-      iapply Hboot L i e σ Hes' HT Hlctx $$ HP Htok %σ.world Hl
+      iapply Hboot L i e σ Hes' HT Hlctx $$ HP Htok
     · -- a stable node: its WP, and no crash frame
       simp only [O, hi, ↓reduceIte]
-      iintro Hn Hstart Hgs Htok Hl
+      iintro Hn Hstart Hgs Htok
       unfold nodeWp nodeWpBody
-      imod Hn $$ %L %HT %Hlctx Hstart Hgs Htok %σ.world Hl with ⟨Hl, Hwp⟩
+      imod Hn $$ %L %HT %Hlctx Hstart Hgs Htok with Hwp
       imodintro
-      iframe Hl
       isplitl [Hwp]
       · simp only [gooseWptp]
         iapply BigSepL2.bigSepL2_singleton.2
@@ -820,7 +791,7 @@ theorem goose_dist_crash_adequacy_blang [hPre : GooseGpreS GF] (N T : Nat) (hN :
       threadBound GF = T →
       ∀ (i : Nat) (e : Expr) (σ : state), es[i]? = some (e, σ) →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ P i hG.goose_localGS -∗ threadTok -∗ ∀ w, extsLocalCtx w ={⊤}=∗ extsLocalCtx w ∗
+      ⊢ P i hG.goose_localGS -∗ threadTok ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ i v⌝ }} ∗
         ∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
           extsCrashStart hG.goose_localGS L' -∗
@@ -864,9 +835,7 @@ from the crashed local state, and the stable nodes never crash, if
   program with postcondition `φ i` from `P i` and the main thread's token,
   together with `P i L'` of whatever next local ghost state `L'` its crash
   allocates, from the generation's `crashed`, the extensions' `crashStart`
-  resources, `L'`'s empty package state and a later credit; both under a fancy
-  update that has the extensions' local interpretation (`extsLocalCtx w`), to
-  give back unchanged;
+  resources, `L'`'s empty package state and a later credit;
 
 with postconditions that exclude panics (`hφ`), then in every real execution
 of the system in which the crashing nodes crash (`DistCrashNsteps` with the
@@ -897,7 +866,7 @@ theorem goose_dist_mixed_crash_adequacy [hPre : GooseGpreS GF] (N T : Nat)
       threadBound GF = T →
       ∀ (i : Nat) (e : Expr) (σ : state), crashing[i]? = some (e, σ) →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ P i hG.goose_localGS -∗ threadTok -∗ ∀ w, extsLocalCtx w ={⊤}=∗ extsLocalCtx w ∗
+      ⊢ P i hG.goose_localGS -∗ threadTok ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ i v⌝ }} ∗
         ∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
           extsCrashStart hG.goose_localGS L' -∗
@@ -961,9 +930,7 @@ start and after every crash, all nodes sharing the global state `g`, if
   with postcondition `φ i` from `P i` and the main thread's token, together
   with `P i L'` of whatever next local ghost state `L'` its crash allocates,
   from the generation's `crashed`, the extensions' `crashStart` resources,
-  `L'`'s empty package state and a later credit; both under a fancy update that
-  has the extensions' local interpretation (`extsLocalCtx w`), to give back
-  unchanged;
+  `L'`'s empty package state and a later credit;
 
 with postconditions that exclude panics (`hφ`), then in every real execution
 with crashes of the system (`DistCrashNsteps`, the boot programs
@@ -991,7 +958,7 @@ theorem goose_dist_crash_adequacy [hPre : GooseGpreS GF] (N T : Nat)
       threadBound GF = T →
       ∀ (i : Nat) (e : Expr) (σ : state), es[i]? = some (e, σ) →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ P i hG.goose_localGS -∗ threadTok -∗ ∀ w, extsLocalCtx w ={⊤}=∗ extsLocalCtx w ∗
+      ⊢ P i hG.goose_localGS -∗ threadTok ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ i v⌝ }} ∗
         ∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
           extsCrashStart hG.goose_localGS L' -∗
