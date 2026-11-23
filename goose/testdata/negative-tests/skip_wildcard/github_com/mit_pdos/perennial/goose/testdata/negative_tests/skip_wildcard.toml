@@ -1,0 +1,3 @@
+[[skip]]
+names = ["_"]
+reason = "a struct literal"

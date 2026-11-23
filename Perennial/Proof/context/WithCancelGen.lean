@@ -2,8 +2,10 @@
 The other triples of `WithCancel`: `wp_WithCancel_gen_of`, for any spec of the new context's
 `propagateCancel` (a second triple of `WithCancel`, proved from its code: `context.WithCancel.spec`
 keeps the statement of `wp_WithCancel`, a `*cancelCtx` parent, which clients use, and the general
-form cannot share its name), and from it `wp_WithCancel_any_of` (any `isContext` parent; used by
-`WithDeadlineCause`) and `wp_WithCancel_Background_of` (`WithCancel(Background())`). The specs they
+form cannot share its name), and from it `wp_WithCancel_ctx_of` (any `isContext` parent, the new
+context's Done proposition `parent.PDone ∨ PDone'`), its corollary `wp_WithCancel_any_of` (Done
+proposition `True`; used by `WithDeadlineCause`), `wp_WithCancel_Background_of` (`WithCancel(Background())`)
+and `wp_WithCancel_TODO_of` (`WithCancel(TODO())`). The specs they
 use are hypotheses; `Results.lean` has them under their old names, without them.
 -/
 module
@@ -80,9 +82,68 @@ theorem wp_WithCancel_gen_of
     iframe #
   iapply HΦ' $$ Hclosed
 
-/-- `WithCancel(parent)` for any context `parent` (`isContext`): the new context is a
-`*cancelCtx` with the parent's deadline whose cancel function needs nothing (so its Done
-proposition is `True`). -/
+/-- `WithCancel(parent)` for any context `parent` (`isContext`, described by `s`) and any
+proposition `PDone'`: the new context is a `*cancelCtx` with the parent's deadline, whose Done
+proposition is `s.PDone ∨ PDone'` (it is done because its parent is, or because its cancel function
+ran, which needs `□ PDone'`). -/
+theorem wp_WithCancel_ctx_of
+    (wp_withCancel : context.withCancel.spec (GF := GF) (hG := hG))
+    (wp_cancelCtx_cancel : context.cancelCtx.cancel.spec (GF := GF) (hG := hG))
+    (wp_propagateCancel : context.cancelCtx.propagateCancel.spec (GF := GF) (hG := hG))
+    (wp_cancelCtx_Done : context.cancelCtx.Done.spec (GF := GF) (hG := hG))
+    (wp_cancelCtx_Err : context.cancelCtx.Err.spec (GF := GF) (hG := hG))
+    (wp_cancelCtx_Value : context.cancelCtx.Value.spec (GF := GF) (hG := hG))
+    (wp_VLoad : sync.atomic.Value.Load.spec (GF := GF) (hG := hG))
+    (parent : GoInterfaceOk) (s : ContextDesc (IProp GF)) (PDone' : IProp GF) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isContext parent s }}
+      (App (Val (@! context.WithCancel)) (Val #(interface.ok parent)))
+    {{ (ctx' : GoInterfaceOk) (γ' : ContextNames) (cancel : GoFunc),
+        RET (PairV #(interface.ok ctx') #cancel);
+        cancelSpec cancel γ' PDone' ∗
+        isContext ctx' { s with PDone := iprop(s.PDone ∨ PDone'), Done_gn := γ' } ∗
+        isCancelCtxCtx ctx' { s with PDone := iprop(s.PDone ∨ PDone'), Done_gn := γ' } ∗
+        ctxValueFrom parent ctx' }} := by
+  have childCancelSpec_cancelCtx := childCancelSpec_cancelCtx_of wp_cancelCtx_cancel
+  have isContext_cancelCtx := isContext_cancelCtx_of wp_cancelCtx_Done wp_cancelCtx_Err
+      wp_cancelCtx_Value wp_VLoad
+  have wp_WithCancel_gen := wp_WithCancel_gen_of wp_withCancel wp_cancelCtx_cancel
+  have wp_propagateCancel_ctx := wp_propagateCancel_ctx_of wp_propagateCancel
+  iintro %Φ ⟨#Hpkg, #Hctx⟩ HΦ
+  ihave #Hctx2 := Hctx
+  iunfold isContext at Hctx2
+  iunfold isContextDef at Hctx2
+  icases Hctx2 with ⟨-, -, -, -, -, -, -, #Hcci⟩
+  iapply wp_WithCancel_gen parent iprop(s.PDone ∨ PDone') iprop(isContext parent s)
+      (fun c γ => by
+        iintro %Φ ⟨#Hpkg, #Hc, Hf, #Hctx⟩ HΦ
+        ihave #Hl : □ (s.PDone -∗ iprop(s.PDone ∨ PDone')) $$ []
+        · imodintro; iintro Hp; ileft; iexact Hp
+        ihave #Hk := childCancelSpec_cancelCtx c γ iprop(s.PDone ∨ PDone') s.PDone $$
+          [$Hpkg $Hc $Hl]
+        iapply wp_propagateCancel_ctx c parent s _ $$ [$Hpkg $Hf $Hctx $Hk] HΦ)
+  · iframe #
+    unfold isParentCtx; iright; iexists s; iframe #
+  inext
+  iintro %c %γ %cancel ⟨#Hcancel, #Hc, #Hf⟩
+  ihave #Hdl := deadlineSpec_isContext _ _ $$ Hctx
+  iapply HΦ $$ %(interface.mk (go.GoType.PointerType context.cancelCtx.ty) #c)
+  isplitl []
+  · unfold cancelSpec
+    imodintro
+    iintro %Φ' #Hp HΦ'
+    iapply Hcancel
+    · imodintro; iright; iexact Hp
+    iexact HΦ'
+  isplitl []
+  · iapply isContext_cancelCtx c γ _ parent _ rfl rfl
+    iframe #
+  isplitl []
+  · unfold isCancelCtxCtx; iexists c; iframe #; ipureintro; rfl
+  · iapply ctxValueFrom_cancel c parent; iexact Hf
+
+/-- `WithCancel(parent)` for any context `parent` (`isContext`): `wp_WithCancel_ctx_of` with
+`PDone' := True`, the new context's Done proposition weakened to `True` (its cancel function
+needs nothing). -/
 theorem wp_WithCancel_any_of
     (wp_withCancel : context.withCancel.spec (GF := GF) (hG := hG))
     (wp_cancelCtx_cancel : context.cancelCtx.cancel.spec (GF := GF) (hG := hG))
@@ -99,35 +160,17 @@ theorem wp_WithCancel_any_of
         cancelSpec cancel γ' iprop(True) ∗
         isContext ctx' { s with PDone := iprop(True), Done_gn := γ' } ∗
         ctxValueFrom parent ctx' }} := by
-  have childCancelSpec_cancelCtx := childCancelSpec_cancelCtx_of wp_cancelCtx_cancel
-  have isContext_cancelCtx := isContext_cancelCtx_of wp_cancelCtx_Done wp_cancelCtx_Err
-      wp_cancelCtx_Value wp_VLoad
-  have wp_WithCancel_gen := wp_WithCancel_gen_of wp_withCancel wp_cancelCtx_cancel
-  have wp_propagateCancel_any := wp_propagateCancel_any_of wp_propagateCancel
   iintro %Φ ⟨#Hpkg, #Hctx⟩ HΦ
-  ihave #Hctx2 := Hctx
-  iunfold isContext at Hctx2
-  iunfold isContextDef at Hctx2
-  icases Hctx2 with ⟨-, -, -, -, -, -, -, #Hcci⟩
-  iapply wp_WithCancel_gen parent iprop(True) iprop(isContext parent s)
-      (fun c γ => by
-        iintro %Φ ⟨#Hpkg, #Hc, Hf, #Hctx⟩ HΦ
-        ihave #Htt : □ (iprop(True) -∗ iprop(True)) $$ []
-        · imodintro; iintro -; itrivial
-        ihave #Hk := childCancelSpec_cancelCtx c γ iprop(True) iprop(True) $$ [$Hpkg $Hc $Htt]
-        iapply wp_propagateCancel_any c parent s _ $$ [$Hpkg $Hf $Hctx $Hk] HΦ)
-  · iframe #
-    unfold isParentCtx; iright; iexists s; iframe #
+  iapply wp_WithCancel_ctx_of wp_withCancel wp_cancelCtx_cancel wp_propagateCancel
+    wp_cancelCtx_Done wp_cancelCtx_Err wp_cancelCtx_Value wp_VLoad parent s iprop(True)
+    $$ [$Hpkg $Hctx]
   inext
-  iintro %c %γ %cancel ⟨#Hcancel, #Hc, #Hf⟩
-  ihave #Hdl := deadlineSpec_isContext _ _ $$ Hctx
-  iapply HΦ $$ %(interface.mk (go.GoType.PointerType context.cancelCtx.ty) #c)
-  isplitl []
-  · iexact Hcancel
-  isplitl []
-  · iapply isContext_cancelCtx c γ _ parent _ rfl rfl
-    iframe #
-  · iapply ctxValueFrom_cancel c parent; iexact Hf
+  iintro %ctx' %γ' %cancel ⟨#Hcancel, #Hc, -, #Hv⟩
+  iapply HΦ
+  iframe #
+  iapply isContext_weaken ctx' { s with PDone := iprop(s.PDone ∨ True), Done_gn := γ' }
+    iprop(True) $$ [] Hc
+  imodintro; iintro -; itrivial
 
 /-- `WithCancel(Background())`: as `wp_WithCancel`, for a parent that is never done, with no
 values and no deadline (so the new context's `PDone` is just `PDone'`, which the cancel function
@@ -162,7 +205,7 @@ theorem wp_WithCancel_Background_of
   · iframe #
     isplitl []
     · itrivial
-    unfold isParentCtx; ileft; ipureintro; rfl
+    unfold isParentCtx; ileft; ipureintro; exact Or.inl rfl
   inext
   iintro %c %γ %cancel ⟨#Hcancel, #Hc, #Hf⟩
   ihave #Hdl := deadlineSpec_background (GF := GF)
@@ -175,6 +218,53 @@ theorem wp_WithCancel_Background_of
   isplitl []
   · unfold isCancelCtxCtx; iexists c; iframe #; ipureintro; rfl
   · iapply ctxValueFrom_cancel c backgroundCtxVal; iexact Hf
+
+/-- `WithCancel(TODO())`: as `wp_WithCancel_Background_of` (`TODO()`, like `Background()`, is
+never done and has no values and no deadline) (so the new context's `PDone` is just `PDone'`, which the cancel function
+needs). -/
+theorem wp_WithCancel_TODO_of
+    (wp_withCancel : context.withCancel.spec (GF := GF) (hG := hG))
+    (wp_cancelCtx_cancel : context.cancelCtx.cancel.spec (GF := GF) (hG := hG))
+    (wp_propagateCancel : context.cancelCtx.propagateCancel.spec (GF := GF) (hG := hG))
+    (wp_cancelCtx_Done : context.cancelCtx.Done.spec (GF := GF) (hG := hG))
+    (wp_cancelCtx_Err : context.cancelCtx.Err.spec (GF := GF) (hG := hG))
+    (wp_cancelCtx_Value : context.cancelCtx.Value.spec (GF := GF) (hG := hG))
+    (wp_VLoad : sync.atomic.Value.Load.spec (GF := GF) (hG := hG))
+    (PDone' : IProp GF) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isClosedchanInit }}
+      (App (Val (@! context.WithCancel)) (Val #(interface.ok todoCtxVal)))
+    {{ (ctx' : GoInterfaceOk) (γ' : ContextNames) (cancel : GoFunc),
+        RET (PairV #(interface.ok ctx') #cancel);
+        □ (∀ Φ : val → IProp GF, □ PDone' -∗ ▷ (ContextClosed γ' -∗ Φ #()) -∗
+          WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
+        isContext ctx' { Values := ∅, Deadline := none, Done_gn := γ', PDone := PDone' } ∗
+        isCancelCtxCtx ctx' { Values := ∅, Deadline := none, Done_gn := γ', PDone := PDone' } ∗
+        ctxValueFrom todoCtxVal ctx' }} := by
+  have isContext_cancelCtx := isContext_cancelCtx_of wp_cancelCtx_Done wp_cancelCtx_Err
+      wp_cancelCtx_Value wp_VLoad
+  have wp_WithCancel_gen := wp_WithCancel_gen_of wp_withCancel wp_cancelCtx_cancel
+  have wp_propagateCancel_todo := wp_propagateCancel_todo_of wp_propagateCancel
+  iintro %Φ ⟨#Hpkg, #Hcci⟩ HΦ
+  iapply wp_WithCancel_gen todoCtxVal PDone' iprop(True)
+      (fun c γ => by
+        iintro %Φ ⟨#Hpkg, -, Hf, -⟩ HΦ
+        iapply wp_propagateCancel_todo c $$ [$Hpkg $Hf] HΦ)
+  · iframe #
+    isplitl []
+    · itrivial
+    unfold isParentCtx; ileft; ipureintro; exact Or.inr rfl
+  inext
+  iintro %c %γ %cancel ⟨#Hcancel, #Hc, #Hf⟩
+  ihave #Hdl := deadlineSpec_todo (GF := GF)
+  iapply HΦ $$ %(interface.mk (go.GoType.PointerType context.cancelCtx.ty) #c)
+  isplitl []
+  · unfold cancelSpec; iexact Hcancel
+  isplitl []
+  · iapply isContext_cancelCtx c γ PDone' todoCtxVal _ rfl rfl
+    iframe #
+  isplitl []
+  · unfold isCancelCtxCtx; iexists c; iframe #; ipureintro; rfl
+  · iapply ctxValueFrom_cancel c todoCtxVal; iexact Hf
 
 end wps
 

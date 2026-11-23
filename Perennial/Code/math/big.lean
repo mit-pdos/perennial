@@ -4,7 +4,6 @@ module
 public import Perennial.Code.fmt
 public import Perennial.Code.errors
 public import Perennial.Golang.Defn
-public import Perennial.TrustedCode.math.big
 
 @[expose] public section
 
@@ -88,69 +87,66 @@ noncomputable def Rat.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] Rat.ty
 
-axiom _Accuracy_name [GooseExts] [GoGlobalContext] : val
+opaque _Accuracy_name [GooseExts] [GoGlobalContext] : val
 
-axiom _S [GooseExts] [GoGlobalContext] : val
+opaque _S [GooseExts] [GoGlobalContext] : val
 
-axiom _W [GooseExts] [GoGlobalContext] : val
+opaque _W [GooseExts] [GoGlobalContext] : val
 
-axiom _B [GooseExts] [GoGlobalContext] : val
+opaque _B [GooseExts] [GoGlobalContext] : val
 
-axiom _M [GooseExts] [GoGlobalContext] : val
+opaque _M [GooseExts] [GoGlobalContext] : val
 
-axiom maxShift [GooseExts] [GoGlobalContext] : val
+opaque maxShift [GooseExts] [GoGlobalContext] : val
 
-axiom debugFloat [GooseExts] [GoGlobalContext] : val
+opaque debugFloat [GooseExts] [GoGlobalContext] : val
 
-axiom MaxExp [GooseExts] [GoGlobalContext] : val
+opaque MaxExp [GooseExts] [GoGlobalContext] : val
 
-axiom MinExp [GooseExts] [GoGlobalContext] : val
+opaque MinExp [GooseExts] [GoGlobalContext] : val
 
-axiom MaxPrec [GooseExts] [GoGlobalContext] : val
+opaque MaxPrec [GooseExts] [GoGlobalContext] : val
 
-axiom zero [GooseExts] [GoGlobalContext] : val
+opaque zero [GooseExts] [GoGlobalContext] : val
 
-axiom finite [GooseExts] [GoGlobalContext] : val
+opaque finite [GooseExts] [GoGlobalContext] : val
 
-axiom inf [GooseExts] [GoGlobalContext] : val
+opaque inf [GooseExts] [GoGlobalContext] : val
 
-axiom ToNearestEven [GooseExts] [GoGlobalContext] : val
+opaque ToNearestEven [GooseExts] [GoGlobalContext] : val
 
-axiom ToNearestAway [GooseExts] [GoGlobalContext] : val
+opaque ToNearestAway [GooseExts] [GoGlobalContext] : val
 
-axiom ToZero [GooseExts] [GoGlobalContext] : val
+opaque ToZero [GooseExts] [GoGlobalContext] : val
 
-axiom AwayFromZero [GooseExts] [GoGlobalContext] : val
+opaque AwayFromZero [GooseExts] [GoGlobalContext] : val
 
-axiom ToNegativeInf [GooseExts] [GoGlobalContext] : val
+opaque ToNegativeInf [GooseExts] [GoGlobalContext] : val
 
-axiom ToPositiveInf [GooseExts] [GoGlobalContext] : val
+opaque ToPositiveInf [GooseExts] [GoGlobalContext] : val
 
-axiom Below [GooseExts] [GoGlobalContext] : val
+opaque Below [GooseExts] [GoGlobalContext] : val
 
-axiom Exact [GooseExts] [GoGlobalContext] : val
+opaque Exact [GooseExts] [GoGlobalContext] : val
 
-axiom Above [GooseExts] [GoGlobalContext] : val
+opaque Above [GooseExts] [GoGlobalContext] : val
 
-axiom floatGobVersion [GooseExts] [GoGlobalContext] : val
+opaque floatGobVersion [GooseExts] [GoGlobalContext] : val
 
-axiom intGobVersion [GooseExts] [GoGlobalContext] : val
+opaque intGobVersion [GooseExts] [GoGlobalContext] : val
 
-axiom digits [GooseExts] [GoGlobalContext] : val
+opaque digits [GooseExts] [GoGlobalContext] : val
 
-axiom MaxBase [GooseExts] [GoGlobalContext] : val
+opaque MaxBase [GooseExts] [GoGlobalContext] : val
 
-axiom maxBaseSmall [GooseExts] [GoGlobalContext] : val
+opaque maxBaseSmall [GooseExts] [GoGlobalContext] : val
 
-axiom ratGobVersion [GooseExts] [GoGlobalContext] : val
+opaque ratGobVersion [GooseExts] [GoGlobalContext] : val
 
-axiom _RoundingMode_name [GooseExts] [GoGlobalContext] : val
+opaque _RoundingMode_name [GooseExts] [GoGlobalContext] : val
 
 noncomputable def _Accuracy_index [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/big._Accuracy_index"
-
-noncomputable def hasADX [GooseExts] [GoGlobalContext] : GoString :=
-  go!"math/big.hasADX"
 
 noncomputable def floatZero [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/big.floatZero"
@@ -541,6 +537,18 @@ noncomputable def Int.Int64.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "v") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0"))))))
 
+/-- The package variables goose does not translate (the `skip` entries of the package's
+goose config): no Lean name, allocation or initialization step, so no translated code names
+them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot
+panic, and has no effect beyond the variable), for the reason given.
+
+- `hasADX` (`var hasADX = cpu.X86.HasADX && cpu.X86.HasBMI2`): `cpu.X86.HasADX && cpu.X86.HasBMI2` (arith_amd64.go): reads two booleans of `internal/cpu`,
+which the runtime sets before any package is initialized; cannot panic, no effect beyond the
+variable. Read only by the assembly of `addMulVVWW` (arith_amd64.s), which is not translated.
+-/
+noncomputable def skipped' : List go.SkippedVar := [
+  ⟨"math/big.hasADX", "`cpu.X86.HasADX && cpu.X86.HasBMI2` (arith_amd64.go): reads two booleans of `internal/cpu`,\nwhich the runtime sets before any package is initialized; cannot panic, no effect beyond the\nvariable. Read only by the assembly of `addMulVVWW` (arith_amd64.s), which is not translated.", "var hasADX = cpu.X86.HasADX && cpu.X86.HasBMI2"⟩]
+
 noncomputable instance info' : PkgInfo pkg_id.math.big where
   pkgImportedPkgs := [pkg_id.fmt, pkg_id.errors]
 
@@ -570,7 +578,6 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (Let "$v2" (Val #(W8 10))
   (Let "$v3" (Val #(W8 15))
   (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 4 go.uint8)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint8 (Var "$v0"))), (KeyedElement none (ElementExpression go.uint8 (Var "$v1"))), (KeyedElement none (ElementExpression go.uint8 (Var "$v2"))), (KeyedElement none (ElementExpression go.uint8 (Var "$v3")))]))))))
-  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$v0" (Val #(W64 1))
   (Let "$v1" (Val #(W64 5))
@@ -675,8 +682,6 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore nat.ty))) (Pair (App (Val (GoInstruction (GlobalVarAddr natOne))) (Val #())) (Var "$r0"))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 28 go.uint64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr pow5tab))) (Val #())) (Var "$r0"))))))))
-  (App (Val doExecute)
-  (App (Val hasADX.init) (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 4 go.uint8)))) (Pair (App (Val (GoInstruction (GlobalVarAddr _Accuracy_index))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)

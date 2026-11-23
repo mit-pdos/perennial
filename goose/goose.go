@@ -90,17 +90,22 @@ type Ctx struct {
 	// the next function literal translated is the operand of a `defer`
 	nextFuncLitDeferred bool
 
-	globalVars     []*ast.Ident
-	functions      []*ast.FuncDecl
-	namedTypeSpecs []*ast.TypeSpec
-	localTypes     map[string]bool // names of the types declared in functions
+	globalVars []*ast.Ident
+	// trusted variables with no initializer (`var X T`): their X'init, defined
+	// in TrustedCode, is their whole initialization (in place of an allocation)
+	trustedNoInitVars []*ast.Ident
+	functions         []*ast.FuncDecl
+	namedTypeSpecs    []*ast.TypeSpec
+	localTypes        map[string]bool // names of the types declared in functions
 	// the unnamed struct types (with fields) the translation mentions, by
 	// name, in the order they were met (a struct after those its fields
 	// mention; see anonStructOf)
 	anonStructs     map[string]*anonStruct
 	anonStructOrder []*anonStruct
-	// glangType is translating the field types of an unnamed struct type
-	inAnonStructFields bool
+	// glangType is translating a type declared before the package's aliases
+	// may be (the field types of an unnamed struct type, an alias's target),
+	// and writes the package's aliases as the types they denote
+	beforeAliases bool
 
 	importNames map[string]*types.PkgName
 	// spellOut: glangType writes the types this translation cannot name
@@ -118,6 +123,18 @@ type Ctx struct {
 
 	filter declfilter.DeclFilter
 	out    outputDecls
+
+	// The goose config directory, to read the skip entries of the packages
+	// this one imports (see skip.go).
+	configDir string
+	// imported package path -> its skipped variables -> reason
+	depSkips map[string]map[string]string
+	// the package's skipped variables, in source order
+	skipped []skippedVar
+	// whether the package skips blank variables (then it skips all of them)
+	skipsBlank bool
+	// the translated declaration being translated, for error messages
+	curDecl string
 }
 
 // NewPkgCtx initializes a context based on a properly loaded package
@@ -359,6 +376,15 @@ func (ctx *Ctx) conversionExpr(s *ast.CallExpr) glang.Expr {
 	}
 	toType := ctx.info.TypeOf(s.Fun)
 	fromType := ctx.info.TypeOf(s.Args[0])
+	if _, ok := toType.(*types.TypeParam); ok {
+		// T(c) of a float constant c is c's exact value represented at the type
+		// argument, not c at its default type float64 (as go/types records it)
+		if val := ctx.info.Types[s.Args[0]].Value; val != nil && val.Kind() == constant.Float {
+			if k, lit := untypedLiteral(val, true); lit != nil {
+				return ctx.handleImplicitConversion(s, types.Typ[k], toType, lit)
+			}
+		}
+	}
 	return ctx.handleImplicitConversion(s, fromType, toType, ctx.expr(s.Args[0]))
 }
 
@@ -466,6 +492,7 @@ func (ctx *Ctx) selectorExprAddr(e *ast.SelectorExpr) glang.Expr {
 	selection := ctx.info.Selections[e]
 	if selection == nil {
 		if v, ok := ctx.info.ObjectOf(e.Sel).(*types.Var); ok {
+			ctx.checkNotSkipped(e, v)
 			return glang.NewCallExpr(glang.VerbatimExpr("GlobalVarAddr"),
 				ctx.termIdent(ctx.pkgRef(v.Pkg())+"."+v.Name()),
 				glang.Tt,
@@ -748,7 +775,7 @@ func (ctx *Ctx) binExpr(e *ast.BinaryExpr) (expr glang.Expr) {
 
 	if t, ok := compType.(*types.Basic); ok {
 		switch t.Kind() {
-		case types.UntypedInt, types.UntypedString:
+		case types.UntypedInt, types.UntypedRune, types.UntypedString:
 			return ctx.constantLiteral(e)
 		}
 	}
@@ -978,32 +1005,6 @@ func (ctx *Ctx) builtinIdent(e *ast.Ident) glang.Expr {
 	return nil
 }
 
-// untypedFloatToInt converts a constant (assumed to be a float) to an integer.
-//
-// Returns ok = false if the float doesn't fit in an int64.
-func untypedFloatToInt(c constant.Value) (i int64, ok bool) {
-	switch x := constant.Val(c).(type) {
-	case *big.Rat:
-		if x.IsInt() {
-			v, exact := x.Float64()
-			if !exact {
-				return 0, false
-			}
-			return int64(v), true
-		}
-	case *big.Float:
-		if x.IsInt() {
-			var acc big.Accuracy
-			i, acc = x.Int64()
-			if acc != big.Exact {
-				return 0, false
-			}
-			return i, true
-		}
-	}
-	return 0, false
-}
-
 func (ctx *Ctx) identExpr(e *ast.Ident, multipleBindings bool) glang.Expr {
 	// XXX: special case for a manually constructed Ident from select recv clause
 	if len(e.Name) > 0 && e.Name[0] == '$' {
@@ -1022,34 +1023,6 @@ func (ctx *Ctx) identExpr(e *ast.Ident, multipleBindings bool) glang.Expr {
 	obj := ctx.info.ObjectOf(e)
 	if constObj, ok := obj.(*types.Const); ok {
 		// is a constant
-		if constTy, ok := constObj.Type().(*types.Basic); ok && constTy.Kind() == types.UntypedFloat {
-			dstTy := ctx.typeOf(e)
-			if dstTy, ok := dstTy.(*types.Basic); ok && dstTy.Info()&types.IsInteger != 0 {
-				constInt, exact := untypedFloatToInt(constObj.Val())
-				if !exact {
-					ctx.nope(e, "float constant does not fit into int64")
-				}
-				constExpr := glang.VerbatimExpr(fmt.Sprintf("%d", constInt))
-				switch dstTy.Kind() {
-				case types.Uint64, types.Int64, types.Int:
-					return glang.Int64Val{
-						Value: constExpr,
-					}
-				case types.Uint32, types.Int32:
-					return glang.Int32Val{
-						Value: constExpr,
-					}
-				case types.Uint16, types.Int16:
-					return glang.Int16Val{
-						Value: constExpr,
-					}
-				case types.Uint8, types.Int8:
-					return glang.Int8Val{
-						Value: constExpr,
-					}
-				}
-			}
-		}
 		constE := ctx.termIdent(e.Name)
 		return ctx.handleImplicitConversion(e, constObj.Type(), ctx.typeOf(e), constE)
 	}
@@ -1065,7 +1038,7 @@ func (ctx *Ctx) identExpr(e *ast.Ident, multipleBindings bool) glang.Expr {
 }
 
 func (ctx *Ctx) indexExpr(e *ast.IndexExpr, multipleBindings bool) glang.Expr {
-	xTy := ctx.typeOf(e.X).Underlying()
+	xTy := underlyingType(ctx.typeOf(e.X))
 	switch xTy := xTy.(type) {
 	case *types.Map:
 		if multipleBindings {
@@ -1167,6 +1140,11 @@ func (ctx *Ctx) typeAssertExpr(e *ast.TypeAssertExpr, multipleBindings bool) gla
 }
 
 func (ctx *Ctx) exprSpecial(e ast.Expr, multipleBindings bool) glang.Expr {
+	if tv := ctx.info.Types[e]; tv.Value != nil {
+		if b, ok := tv.Type.Underlying().(*types.Basic); ok && (b.Kind() == types.Float32 || b.Kind() == types.Float64) {
+			return ctx.constantLiteral(e)
+		}
+	}
 	switch e := e.(type) {
 	case *ast.CallExpr:
 		return ctx.callExpr(e)
@@ -1382,7 +1360,18 @@ func (ctx *Ctx) loopVarEscapes(v types.Object, nodes ...ast.Node) bool {
 	return escapes
 }
 
-func (ctx *Ctx) forStmt(s *ast.ForStmt, cont glang.Expr) glang.Expr {
+// loopBody translates the body of a for or range statement; with a label L,
+// `break L` and `continue L` in it end the iteration as `break` and `continue`.
+func (ctx *Ctx) loopBody(body *ast.BlockStmt, label *ast.Ident) glang.Expr {
+	e := ctx.blockStmt(body, nil)
+	if label != nil {
+		e = glang.CatchLabelExpr{Label: label.Name, Body: e}
+	}
+	return e
+}
+
+// forStmt translates a for statement with the label label (nil if none).
+func (ctx *Ctx) forStmt(s *ast.ForStmt, label *ast.Ident, cont glang.Expr) glang.Expr {
 	var cond glang.Expr = glang.GooseBoolLiteral(true)
 	if s.Cond != nil {
 		cond = ctx.expr(s.Cond)
@@ -1391,7 +1380,7 @@ func (ctx *Ctx) forStmt(s *ast.ForStmt, cont glang.Expr) glang.Expr {
 	if s.Post != nil {
 		post = ctx.stmt(s.Post, nil)
 	}
-	body := ctx.blockStmt(s.Body, nil)
+	body := ctx.loopBody(s.Body, label)
 
 	// Each iteration has its own copy of each variable x the init statement
 	// declares, which matters only if the loop captures x or takes its address
@@ -1433,7 +1422,20 @@ func (ctx *Ctx) forStmt(s *ast.ForStmt, cont glang.Expr) glang.Expr {
 	return glang.SeqExpr{Expr: e, Cont: cont}
 }
 
-func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
+// staticArrayLen reports whether the type t of a range expression is an array
+// or a pointer to one, so that its length is constant (Go spec, "Length and
+// capacity"). A type parameter whose core type is an array is not: Go evaluates
+// the expression (`range *q` with `q *A`, `A ~[3]int`, panics if `q` is nil).
+func staticArrayLen(t types.Type) bool {
+	if p, ok := t.Underlying().(*types.Pointer); ok {
+		t = p.Elem()
+	}
+	_, ok := t.Underlying().(*types.Array)
+	return ok
+}
+
+// rangeStmt translates a range statement with the label label (nil if none).
+func (ctx *Ctx) rangeStmt(s *ast.RangeStmt, label *ast.Ident) glang.Expr {
 	if n, msg, bad := modelcheck.Range(ctx.info, s); bad {
 		ctx.unsupported(n, "%s", msg)
 	}
@@ -1445,7 +1447,7 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 		// recover() in the body of a range over a function returns nil in Go
 		ctx.recoverOK = false
 	}
-	body := ctx.blockStmt(s.Body, nil)
+	body := ctx.loopBody(s.Body, label)
 	ctx.recoverOK = recoverOK
 	var shared []*ast.Ident
 	for _, kv := range []struct {
@@ -1471,13 +1473,17 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 	// Go evaluates the range expression, except when the loop has no value
 	// variable and its length is constant: an array, or pointer to one, with no
 	// calls or receives. Evaluating it could then only panic (`range *p` with
-	// `p` nil), so goose does not either; nor is it read.
+	// `p` nil), so goose does not either; nor is it read. The length is constant
+	// only if the expression's own type is an array or a pointer to one
+	// (staticArrayLen), not a type parameter whose core type is.
 	evalRange := true
 	var e glang.Expr
-	t := ctx.typeOf(s.X).Underlying()
+	// underlyingType: a type parameter whose constraint has a single (core)
+	// type ranges over that type (`for k, v := range m` with `M ~map[K]V`)
+	t := underlyingType(ctx.typeOf(s.X))
 	ptr, isPtr := t.(*types.Pointer)
 	if isPtr {
-		t = ptr.Elem().Underlying()
+		t = underlyingType(ptr.Elem())
 	}
 	switch t := t.(type) {
 	case *types.Map:
@@ -1516,7 +1522,7 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 		}
 		if s.Value != nil {
 			arr.Array = glang.IdentExpr("$range")
-		} else {
+		} else if staticArrayLen(ctx.typeOf(s.X)) {
 			evalRange = false
 			ast.Inspect(s.X, func(n ast.Node) bool {
 				_, isCall := n.(*ast.CallExpr)
@@ -1536,8 +1542,9 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 		// iterations bind `$key` to `0`, `1`, ..., `n - 1` (none if `n <= 0`),
 		// counted in a cell `$range_i` of that type: the three-clause loop
 		// `for $range_i := 0; $range_i < $range; $range_i++`.
-		if isPtr || t.Info()&types.IsInteger == 0 {
-			ctx.unsupported(s, "range over %v (only integers, strings, functions, maps, slices, channels and arrays are supported)", t)
+		_, isTypeParam := ctx.typeOf(s.X).(*types.TypeParam)
+		if isPtr || t.Info()&types.IsInteger == 0 || isTypeParam {
+			ctx.unsupported(s, "range over %v (only integers, strings, functions, maps, slices, channels and arrays are supported; not a type parameter of integer core type)", t)
 			return nil
 		}
 		nT := ctx.typeOf(s.X)
@@ -1677,7 +1684,7 @@ func (ctx *Ctx) varDeclStmt(s *ast.DeclStmt, cont glang.Expr) glang.Expr {
 }
 
 func (ctx *Ctx) getIndexType(n locatable, t types.Type) types.Type {
-	switch t := t.Underlying().(type) {
+	switch t := underlyingType(t).(type) {
 	case *types.Slice:
 		return types.Typ[types.Int]
 	case *types.Map:
@@ -1697,8 +1704,9 @@ func (ctx *Ctx) exprAddr(e ast.Expr) glang.Expr {
 		return ctx.exprAddr(e.X)
 	case *ast.Ident:
 		obj := ctx.info.ObjectOf(e)
-		if _, ok := obj.(*types.Var); ok {
+		if v, ok := obj.(*types.Var); ok {
 			if obj.Pkg().Scope() == obj.Parent() {
+				ctx.checkNotSkipped(e, v)
 				return glang.NewCallExpr(glang.VerbatimExpr("GlobalVarAddr"),
 					ctx.termIdent(e.Name),
 					glang.Tt,
@@ -1753,7 +1761,7 @@ func (ctx *Ctx) assignFromTo(lhs ast.Expr, rhs glang.Expr, cont glang.Expr) glan
 		}
 	case *ast.IndexExpr:
 		targetTy := ctx.typeOf(lhs.X)
-		switch t := targetTy.Underlying().(type) {
+		switch t := underlyingType(targetTy).(type) {
 		case *types.Map:
 			return glang.NewDoSeq(glang.NewCallExpr(glang.VerbatimExpr("map.insert"),
 				ctx.glangType(lhs.Index, t.Key()),
@@ -1779,7 +1787,8 @@ func (ctx *Ctx) handleImplicitConversion(n locatable, from, to types.Type, e gla
 	if from == nil {
 		ctx.unsupported(n, "implicit conversion: don't know from type")
 	}
-	if types.Identical(from.Underlying(), to.Underlying()) {
+	_, fromTypeParam := types.Unalias(from).(*types.TypeParam)
+	if types.Identical(from, to) || !fromTypeParam && types.Identical(from.Underlying(), to.Underlying()) {
 		return e
 	} else {
 		return glang.NewCallExpr(glang.VerbatimExpr("Convert"),
@@ -1812,7 +1821,7 @@ func (ctx *Ctx) assignStmtWith(s *ast.AssignStmt, scope func(glang.Expr) glang.E
 		ix, isIx := ast.Unparen(lhs).(*ast.IndexExpr)
 		var mapTy *types.Map
 		if isIx {
-			mapTy, _ = ctx.typeOf(ix.X).Underlying().(*types.Map)
+			mapTy, _ = underlyingType(ctx.typeOf(ix.X)).(*types.Map)
 		}
 		if _, ok := lhs.(*ast.Ident); ok || !multi {
 			e = ctx.assignFromTo(lhs, rhs, e)
@@ -1959,6 +1968,17 @@ func (ctx *Ctx) incDecStmt(stmt *ast.IncDecStmt, cont glang.Expr) glang.Expr {
 }
 
 func (ctx *Ctx) branchStmt(s *ast.BranchStmt, cont glang.Expr) glang.Expr {
+	if s.Tok == token.GOTO {
+		ctx.unsupported(s, "goto")
+	}
+	if s.Label != nil {
+		if s.Tok == token.CONTINUE {
+			return glang.SeqExpr{Expr: glang.ContinueToExpr{Label: s.Label.Name}, Cont: cont}
+		}
+		if s.Tok == token.BREAK {
+			return glang.SeqExpr{Expr: glang.BreakToExpr{Label: s.Label.Name}, Cont: cont}
+		}
+	}
 	if s.Tok == token.CONTINUE {
 		return glang.SeqExpr{Expr: glang.ContinueExpr{}, Cont: cont}
 	}
@@ -1987,6 +2007,24 @@ func breaksOut(body *ast.BlockStmt) bool {
 		return !found
 	})
 	return found
+}
+
+// labeledStmt translates a for, range, switch, type switch or select statement
+// with a label L, the target of `break L` and `continue L` in it.
+func (ctx *Ctx) labeledStmt(s *ast.LabeledStmt, cont glang.Expr) glang.Expr {
+	switch stmt := s.Stmt.(type) {
+	case *ast.ForStmt:
+		return ctx.forStmt(stmt, s.Label, cont)
+	case *ast.RangeStmt:
+		return glang.SeqExpr{Expr: ctx.rangeStmt(stmt, s.Label), Cont: cont}
+	case *ast.SwitchStmt, *ast.TypeSwitchStmt, *ast.SelectStmt:
+		return glang.SeqExpr{
+			Expr: glang.CatchBreakExpr{Body: glang.CatchLabelExpr{Label: s.Label.Name, Body: ctx.stmt(stmt, nil)}},
+			Cont: cont,
+		}
+	}
+	ctx.unsupported(s, "label on a statement other than for, range, switch or select")
+	return nil
 }
 
 func (ctx *Ctx) goStmt(e *ast.GoStmt, cont glang.Expr) glang.Expr {
@@ -2490,9 +2528,11 @@ func (ctx *Ctx) stmt(s ast.Stmt, cont glang.Expr) glang.Expr {
 	case *ast.ForStmt:
 		// note that this might be a nested loop,
 		// in which case the loop var gets replaced by the inner loop.
-		return ctx.forStmt(s, cont)
+		return ctx.forStmt(s, nil, cont)
 	case *ast.RangeStmt:
-		return glang.SeqExpr{Expr: ctx.rangeStmt(s), Cont: cont}
+		return glang.SeqExpr{Expr: ctx.rangeStmt(s, nil), Cont: cont}
+	case *ast.LabeledStmt:
+		return ctx.labeledStmt(s, cont)
 	case *ast.BlockStmt:
 		return ctx.blockStmt(s, cont)
 	case *ast.SwitchStmt:
@@ -2536,6 +2576,8 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 	if funcName == "_" {
 		return
 	}
+	ctx.curDecl = funcName
+	defer func() { ctx.curDecl = "" }()
 
 	if d.Recv == nil {
 		funcName = ctx.funcDeclName(d)
@@ -2715,25 +2757,51 @@ func (ctx *Ctx) constantLiteral(e ast.Expr) glang.Expr {
 			return glang.ToVal{Value: glang.StringLiteral{Value: v.(string)}}
 		case types.UntypedNil:
 			return glang.VerbatimExpr("UntypedNil")
-		case types.UntypedInt, types.UntypedRune:
-			switch v := v.(type) {
-			case *big.Int:
-				return glang.ToVal{Value: glang.ZLiteral{Value: v}}
-			case int64:
-				return glang.ToVal{Value: glang.ZLiteral{Value: big.NewInt(v)}}
+		case types.UntypedInt, types.UntypedRune, types.UntypedFloat:
+			if _, lit := untypedLiteral(val, t.Kind() == types.UntypedFloat); lit != nil {
+				return lit
 			}
-		case types.Float64, types.UntypedFloat:
+		case types.Float64:
 			f, _ := constant.Float64Val(val)
+			if f == 0 {
+				// -0 == 0 is true, so this turns -0 into +0: a Go constant is exact
+				// and never negative zero, but Float64Val returns -0 for a negative
+				// constant that underflows.
+				f = 0
+			}
 			bits := math.Float64bits(f)
 			return glang.Int64Val{Value: glang.ZLiteral{Value: new(big.Int).SetUint64(bits)}}
 		case types.Float32:
 			f, _ := constant.Float32Val(val)
+			if f == 0 {
+				// -0 == 0 is true, so this turns -0 into +0: a Go constant is exact
+				// and never negative zero, but Float32Val returns -0 for a negative
+				// constant that underflows.
+				f = 0
+			}
 			bits := math.Float32bits(f)
 			return glang.Int32Val{Value: glang.ZLiteral{Value: new(big.Int).SetUint64(uint64(bits))}}
 		}
 	}
 	ctx.unsupported(e, "unsupported constant val")
 	return nil
+}
+
+// untypedLiteral is the exact value of an integer or float constant, at untyped
+// float (#(mkRat n d), lowest terms) if asFloat, else at untyped int (#(n : Int)).
+// lit is nil for other constants.
+func untypedLiteral(val constant.Value, asFloat bool) (k types.BasicKind, lit glang.Expr) {
+	if asFloat {
+		num, den := constant.Num(val), constant.Denom(val)
+		if num.Kind() == constant.Int && den.Kind() == constant.Int {
+			return types.UntypedFloat, glang.ToVal{Value: glang.VerbatimExpr(
+				fmt.Sprintf("mkRat (%s : Int) %s", num.ExactString(), den.ExactString()))}
+		}
+	} else if val.Kind() == constant.Int {
+		v, _ := new(big.Int).SetString(val.ExactString(), 10)
+		return types.UntypedInt, glang.ToVal{Value: glang.ZLiteral{Value: v}}
+	}
+	return 0, nil
 }
 
 // constSpec handles one specification in a const block
@@ -2802,6 +2870,11 @@ func (ctx *Ctx) globalVarDecl(d *ast.GenDecl) {
 	for _, spec := range d.Specs {
 		s := spec.(*ast.ValueSpec)
 		for _, name := range s.Names {
+			if ctx.varAction(name.Name, name.Pos()) == declfilter.Skip {
+				// no name, X.init, allocation or init step (skip.go)
+				ctx.recordSkipped(s, name)
+				continue
+			}
 			if name.Name == "_" {
 				continue
 			}
@@ -2817,6 +2890,13 @@ func (ctx *Ctx) globalVarDecl(d *ast.GenDecl) {
 			switch ctx.filter.GetAction(name.Name) {
 			case declfilter.Translate:
 				ctx.globalVars = append(ctx.globalVars, name)
+			case declfilter.Trust:
+				// A trusted variable with no initializer (one the linker
+				// sets, as runtime.buildVersion) gets an X'init too, run
+				// where a translated one is allocated.
+				if s.Values == nil {
+					ctx.trustedNoInitVars = append(ctx.trustedNoInitVars, name)
+				}
 			case declfilter.Axiomatize:
 				if s.Values != nil {
 					ctx.out.varDecls = append(ctx.out.varDecls, glang.AxiomDecl{
@@ -3074,6 +3154,7 @@ func (ctx *Ctx) packagePropClass() []glang.Decl {
 func (ctx *Ctx) finalExtraDecls() {
 	var decls = []glang.Decl{}
 
+	decls = append(decls, ctx.skippedDecls()...)
 	decls = append(decls, glang.VerbatimDecl{Content: ctx.leanInfoInstance()})
 
 	initFunc := glang.FuncDecl{Name: "initialize'"}
@@ -3088,7 +3169,8 @@ func (ctx *Ctx) finalExtraDecls() {
 			glang.Tt), e)
 	}
 
-	if ctx.filter.GetAction("_") == declfilter.Axiomatize {
+	// (a package that skips blank variables lists all of them: checkSkipConfig)
+	if ctx.filter.GetAction("_") == declfilter.Axiomatize && !ctx.skipsBlank {
 		decls = append(decls, glang.AxiomDecl{
 			DeclName: "_'init",
 			Type:     glang.VerbatimExpr("val"),
@@ -3096,20 +3178,25 @@ func (ctx *Ctx) finalExtraDecls() {
 	}
 
 	// initialize all global vars
-InitLoop:
 	for i := range ctx.info.InitOrder {
 		init := ctx.info.InitOrder[len(ctx.info.InitOrder)-i-1]
 
-		// Check if any of the LHS variables should be treated as axiomatized
-		for i := 0; i < len(init.Lhs); i++ {
-			varName := init.Lhs[i].Name()
-			if ctx.filter.GetAction(varName) != declfilter.Translate {
+		switch ctx.initAction(init) {
+		case declfilter.Skip:
+			// A skipped initializer has no step; the others keep Go's
+			// relative order.
+			continue
+		case declfilter.Axiomatize, declfilter.Trust:
+			// Not translated: the X.init of each of its variables, left to
+			// right (a blank variable's is the package's _.init).
+			for i := len(init.Lhs) - 1; i >= 0; i-- {
 				e = glang.NewDoSeq(
-					glang.NewCallExpr(ctx.termIdent(varName+"'init"), glang.Tt),
+					glang.NewCallExpr(ctx.termIdent(init.Lhs[i].Name()+"'init"), glang.Tt),
 					e)
-				continue InitLoop
 			}
+			continue
 		}
+		ctx.curDecl = "the initializer of " + varNames(init.Lhs)
 		if n, msg, bad := modelcheck.PackageVar(ctx.info, init); bad {
 			ctx.unsupported(n, "%s", msg)
 		}
@@ -3178,6 +3265,8 @@ InitLoop:
 		}
 	}
 
+	ctx.curDecl = ""
+
 	for _, importName := range ctx.importNamesOrdered {
 		pkg := importName.Imported()
 		e = glang.NewDoSeq(
@@ -3189,6 +3278,12 @@ InitLoop:
 
 	if e == nil {
 		e = glang.DoExpr{Expr: glang.Tt}
+	}
+
+	for i := len(ctx.trustedNoInitVars) - 1; i >= 0; i-- {
+		e = glang.NewDoSeq(
+			glang.NewCallExpr(ctx.termIdent(ctx.trustedNoInitVars[i].Name+"'init"), glang.Tt),
+			e)
 	}
 
 	for _, varIdent := range ctx.globalVars {

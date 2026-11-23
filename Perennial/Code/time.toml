@@ -6,6 +6,7 @@ trusted = [
   "newTimer",    # go:linkname newTimer
   "syncTimer",
   "runtimeIsBubbled", # go:linkname runtimeIsBubbled (true only inside a synctest bubble)
+  "runtimeNow",  # go:linkname runtimeNow (the wall clock and the monotonic clock)
   "stopTimer",   # go:linkname stopTimer
   "resetTimer",  # go:linkname resetTimer
   # "sendTime",
@@ -60,6 +61,23 @@ translate = [
   "nsecShift",
   "hasMonotonic",
   "internalToUnix",
+  "Now",
+  "unixToInternal",
+  "minWall",
+  "Duration.Nanoseconds",
+  "Duration.Microseconds",
+  "Duration.Milliseconds",
+  "Duration.Abs",
+  "Duration.Seconds",
+  "Duration.String",
+  "Duration.format",
+  "fmtFrac",
+  "fmtInt",
+  "Time.IsZero",
+  "Time.Location",
+  "Time.Unix",
+  "Unix",
+  "unixTime",
 
   # the package variables, all but `asynctimerchan`, and the constants `std0x` uses
   "std0x", "longDayNames", "shortDayNames", "shortMonthNames", "longMonthNames",

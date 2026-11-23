@@ -244,6 +244,46 @@ noncomputable instance embedD_access_store_embedC (l : Loc) (v : github_com.mit_
 end def_
 end embedD
 
+namespace float32Field
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions]
+
+noncomputable instance float32Field_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.float32Field where
+  typedPointstoDef l v dq := iprop(
+    "f" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.float32Field go!"f" l) v.f' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance float32Field_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.float32Field github_com.mit_pdos.perennial.goose.testdata.examples.unittest.float32Field.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance float32Field_access_load_f (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.float32Field) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.float32Field go!"f" l) v.f' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.float32Field go!"f" l) v.f' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance float32Field_access_store_f (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.float32Field) (f' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.float32Field go!"f" l) v.f' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.float32Field go!"f" l) f' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with f' := f' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.float32Field) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end float32Field
+
 namespace concreteFooer
 section def_
 
@@ -827,7 +867,7 @@ noncomputable instance typing_access_load_proph (l : Loc) (v : github_com.mit_pd
  by
   solve_pointsto_access_struct
 
-noncomputable instance typing_access_store_proph (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing) (proph' : github_com.goose_lang.primitive.ProphId) :
+noncomputable instance typing_access_store_proph (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing) (proph' : _root_.Perennial.github_com.goose_lang.primitive.ProphId) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing go!"proph" l) v.proph' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing go!"proph" l) proph' (DFrac.own 1))
@@ -997,6 +1037,63 @@ noncomputable instance RecursiveEmbedded_access_store_Other (l : Loc) (v : githu
 
 end def_
 end RecursiveEmbedded
+
+namespace runeStruct
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions]
+
+noncomputable instance runeStruct_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.runeStruct where
+  typedPointstoDef l v dq := iprop(
+    "r" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.runeStruct go!"r" l) v.r' dq ∗
+    "n" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.runeStruct go!"n" l) v.n' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance runeStruct_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.runeStruct github_com.mit_pdos.perennial.goose.testdata.examples.unittest.runeStruct.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance runeStruct_access_load_r (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.runeStruct) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.runeStruct go!"r" l) v.r' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.runeStruct go!"r" l) v.r' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance runeStruct_access_store_r (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.runeStruct) (r' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.runeStruct go!"r" l) v.r' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.runeStruct go!"r" l) r' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r' := r' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.runeStruct) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance runeStruct_access_load_n (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.runeStruct) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.runeStruct go!"n" l) v.n' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.runeStruct go!"n" l) v.n' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance runeStruct_access_store_n (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.runeStruct) (n' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.runeStruct go!"n" l) v.n' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.runeStruct go!"n" l) n' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with n' := n' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.runeStruct) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end runeStruct
 
 namespace thing
 section def_

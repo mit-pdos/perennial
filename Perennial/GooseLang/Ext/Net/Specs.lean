@@ -85,6 +85,11 @@ instance net_interp : ExtInterp netExt where
     iexists (⟨me⟩ : NetNodeGS _)
     isplitl [] <;> ipureintro <;> rfl
 
+/-- The ghost state makes no assumption on the initial states. -/
+instance net_init_compat : ExtInitCompat netExt where
+  initgP_of_init _ _ := trivial
+  initP_of_init _ _ _ := trivial
+
 /-! ## Specs -/
 
 section lifting

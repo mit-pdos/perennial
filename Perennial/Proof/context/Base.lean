@@ -11,12 +11,14 @@ The design of the specs of Go's `context` package (the triples of its functions 
 
 Proved: `wp_Background`; `wp_WithCancel_Background` (`WithCancel(Background())`),
 `wp_WithCancel` for a parent that is itself a `*cancelCtx` made by `WithCancel`
-(`isCancelCtxCtx`), and `wp_WithCancel_any` for any parent (`isContext`; the new context's Done
-proposition is then `True`); the `*cancelCtx` methods (`wp_cancelCtx_Done`, `wp_cancelCtx_Err`,
+(`isCancelCtxCtx`), `wp_WithCancel_ctx` for any parent (`isContext`; the new context's Done
+proposition is the parent's `∨ PDone'`, `PDone'` what its cancel function needs) and its corollary
+`wp_WithCancel_any` (Done proposition `True`); the `*cancelCtx` methods (`wp_cancelCtx_Done`, `wp_cancelCtx_Err`,
 `wp_cancelCtx_Value`, `wp_cancelCtx_cancel`); `Value` at the other keys (`CtxValue.lean`:
 `ctxValue`, and `ctxValueFrom` in the constructors' posts); `propagateCancel` (`wp_propagateCancel_background`,
-`wp_propagateCancel_cancelCtx`, and `wp_propagateCancel_any` for any `isContext` parent and a
-child whose `cancel` needs nothing of the parent); `wp_withCancel`, `wp_WithCancel_gen`,
+`wp_propagateCancel_cancelCtx`, and `wp_propagateCancel_ctx` for any `isContext` parent and a
+child whose `cancel` needs the parent's Done proposition, `wp_propagateCancel_any` one whose
+`cancel` needs nothing); `wp_withCancel`, `wp_WithCancel_gen`,
 `wp_removeChild`; `wp_parentCancelCtx` (any context), `wp_parentCancelCtx_background`,
 `wp_parentCancelCtx_self`, `wp_parentCancelCtx_timer`; `wp_Cause`; the `*timerCtx` methods
 (`wp_timerCtx_cancel`, `wp_timerCtx_Done`, ...) and `isContext_timerCtx`;
@@ -105,7 +107,8 @@ Design (see also the comments at each definition):
 * `isContext` also says (`"#HErrDone"`, `"#HDoneFresh"`, `"#HParentCC"`, `"#HClosedchan"`) what a
   child's `propagateCancel` needs of its parent: once done, `Err()` returns a typed error; the
   Done channel is not `closedchan` unless the context is done; `parentCancelCtx` finds a
-  `*cancelCtx` (so the branches above are not reached); and `context`'s `isClosedchanInit`.
+  `*cancelCtx` whose Done proposition gives the context's (so the branches above are not reached,
+  and a child it cancels learns why); and `context`'s `isClosedchanInit`.
 * A `*cancelCtx`'s lock invariant has an extra resource `R` (`cancelCtxLockInv`,
   `isCancelCtxOfR`; `isCancelCtxOf` hides it): the fields of an enclosing struct that the same
   `mu` protects, a `*timerCtx`'s `timer` (`timerR`: `nil` or a timer from `AfterFunc`,
@@ -587,7 +590,7 @@ def isContextDef (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) : IProp GF :=
       WP (App (Val #(methods c.ty go!"Value" c.v)) (Val #cancelCtxKeyAny)) {{ Φ }}) ∗
   "#HErrDone" ∷
     □ (∀ Φ : val → IProp GF, ContextClosed s.Done_gn -∗
-      ▷ (∀ err : GoInterface, ⌜isTypedErr err⌝ -∗ isCtxErr err -∗ Φ #err) -∗
+      ▷ (∀ err : GoInterface, ⌜isTypedErr err⌝ -∗ isCtxErr err -∗ □ s.PDone -∗ Φ #err) -∗
       WP (App (Val #(methods c.ty go!"Err" c.v)) (Val #())) {{ Φ }}) ∗
   "#HDoneFresh" ∷
     □ (∀ ch : GoChan, dghostVar s.Done_gn.doneGn .discard (some ch) ={⊤}=∗
@@ -596,7 +599,8 @@ def isContextDef (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) : IProp GF :=
     □ (∀ (ch cch : GoChan) (Φ : val → IProp GF),
       dghostVar s.Done_gn.doneGn .discard (some ch) -∗
       globalAddr context.closedchan ↦□ cch -∗ ⌜ch ≠ cch⌝ -∗
-      ▷ (∀ p : Loc, isCancelCtx p -∗ Φ (PairV #p #true)) -∗
+      ▷ (∀ (p : Loc) (γp : ContextNames) (Pp : IProp GF),
+          isCancelCtxOf p γp Pp -∗ □ (□ Pp -∗ s.PDone) -∗ Φ (PairV #p #true)) -∗
       WP (App (Val (@! context.parentCancelCtx)) (Val #(interface.ok c))) {{ Φ }})) ∗
   "#HClosedchan" ∷ isClosedchanInit)
 
@@ -611,15 +615,21 @@ def isContextDef (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) : IProp GF :=
   unused.
 * `"#HErrDone"`: once the context is done, `Err()` returns a typed error (`isTypedErr`) that is
   `Canceled`'s or `DeadlineExceeded`'s value (`isCtxErr`), which a child's `cancel` stores (and
-  its `Err()` type-asserts to `error`).
+  its `Err()` type-asserts to `error`), and `□ s.PDone` (why it is done), which a child canceled
+  at once by `propagateCancel` (its parent already done) gets.
 * `"#HDoneFresh"`: the Done channel `ch` (once known) is not `closedchan`, or the context is
   done.
-* `"#HParentCC"`: `c` is not a `stopCtx`, and `parentCancelCtx(c)` finds a `*cancelCtx` once the
-  Done channel `ch` is known (and is not `closedchan`). So `propagateCancel(c, child)` registers
-  `child` with that `*cancelCtx`, or cancels it at once, and never reaches its branches for
-  other parents (an `afterFuncer`, whose type assertion the model cannot decide, or the
-  goroutine), nor does `removeChild(c, child)` reach its `stopCtx` branch. True of the contexts
-  this file makes (`*cancelCtx`, `*timerCtx`).
+* `"#HParentCC"`: `c` is not a `stopCtx`, and `parentCancelCtx(c)` finds a `*cancelCtx` `p` once
+  the Done channel `ch` is known (and is not `closedchan`), whose Done proposition `Pp` gives
+  `c`'s once `p` is canceled (`□ (□ Pp -∗ s.PDone)`). Go's `parentCancelCtx` returns `p` only when
+  `p`'s Done channel is `c`'s (`pdone == done`), so `p`'s cancellation closes `c`'s Done channel,
+  and what `p.cancel` needs (`□ Pp`) must give what `c`'s closing promises (`□ s.PDone`); the
+  wand is how the model states that. So `propagateCancel(c, child)` registers `child` with that
+  `*cancelCtx` (where `p.cancel` cancels it with `□ s.PDone`), or cancels it at once, and never
+  reaches its branches for other parents (an `afterFuncer`, whose type assertion the model cannot
+  decide, or the goroutine), nor does `removeChild(c, child)` reach its `stopCtx` branch. True of
+  the contexts this file makes (`*cancelCtx`, with `Pp = s.PDone`; `*timerCtx`, with
+  `s.PDone = True`).
 * `"#HClosedchan"`: `context`'s `isClosedchanInit`. -/
 abbrev isContext (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) : IProp GF :=
   isContextDef c s
@@ -662,6 +672,7 @@ theorem closed_chan_receive (γ : ChanNames) (Φ : Unit → Bool → IProp GF) :
     ⊢ inv closedchanN (ownChan γ Unit (.Closed [])) -∗ Φ () false -∗ recvAu γ Unit Φ := by
   iintro #Hinv HΦ
   unfold recvAu
+  iapply ncfupd_of_fupd
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
@@ -682,6 +693,7 @@ theorem closed_chan_nonblocking_receive (γ : ChanNames) (Φ : Unit → Bool →
       nonblockingRecvAuAlt γ Unit Φ Φnotready := by
   iintro #Hinv HΦ
   unfold nonblockingRecvAuAlt
+  iapply ncfupd_of_fupd
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
@@ -723,6 +735,7 @@ theorem broadcast_chan_nonblocking_receive_Q (ch : GoChan) (γ : ChanNames) (Q :
   icases ownBroadcastChan_open _ _ _ _ $$ Hown with ⟨%γch, #Hint, -⟩
   ihave #Hinv := isBroadcastChanInternal_inv _ _ _ _ $$ Hint
   unfold nonblockingRecvAuAlt
+  iapply ncfupd_of_fupd
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
@@ -846,11 +859,31 @@ theorem isContext_weaken (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) (P' : 
   isplitl []
   · iexact HValue
   isplitl []
-  · iexact HErrDone
+  · imodintro
+    iintro %Φ #Hcl HΦ
+    iapply HErrDone $$ Hcl
+    inext
+    iintro %err %ht #Hce #Hp
+    iapply HΦ $$ %err %ht Hce
+    imodintro; iapply HP $$ Hp
   isplitl []
   · imodintro
     iintro %ch #Hd
     iapply HDoneFresh $$ Hd
+  icases HParentCC with ⟨%hstop, #HPar⟩
+  isplitl []
+  · isplitl []
+    · ipureintro; exact hstop
+    · imodintro
+      iintro %ch %cch %Φ #Hd #Hcch %hne HΦ
+      iapply HPar $$ %ch %cch Hd Hcch %hne
+      inext
+      iintro %p %γp %Pp #Hp #HPp
+      iapply HΦ $$ %p %γp %Pp Hp
+      imodintro
+      iintro #Hq
+      iapply HP
+      iapply HPp $$ Hq
   iframe #
 
 /-- The lock invariant's half of the done cell: `none` (own half) or `some ch` (discarded). -/
@@ -916,9 +949,20 @@ instance safeMapKey_timerCtx (c : Loc) :
       (interface.mkOk (go.GoType.PointerType context.timerCtx.ty) #c : GoInterface) :=
   safeMapKey_interface_pointer _ _ _
 
-/-- A parent context in the scope of these specs: `Background()`, or a context (`isContext`). -/
+/-- The context `TODO()` returns: a `todoCtx{}` as a `Context`. Like `Background()`'s, its
+`Done()` is `nil` (both embed `emptyCtx`), so it is not an `isContext`. -/
+abbrev todoCtxVal : GoInterfaceOk :=
+  interface.mk todoCtx.ty #(zero_val todoCtx)
+
+theorem todoCtx_ne_stopCtx : context.todoCtx.ty ≠ context.stopCtx.ty := by
+  unfold context.todoCtx.ty context.stopCtx.ty
+  intro h; injection h with h1; simp at h1
+
+/-- A parent context in the scope of these specs: `Background()` or `TODO()` (the two empty
+contexts, never done: Go's `parentCancelCtx` returns `false` on their `nil` `Done()`, so
+`removeChild` and `propagateCancel` return at once for them), or a context (`isContext`). -/
 def isParentCtx (parent : GoInterfaceOk) : IProp GF :=
-  iprop(⌜parent = backgroundCtxVal⌝ ∨ ∃ s, isContext parent s)
+  iprop(⌜parent = backgroundCtxVal ∨ parent = todoCtxVal⌝ ∨ ∃ s, isContext parent s)
 
 instance isParentCtx_pers (parent : GoInterfaceOk) : Persistent (isParentCtx (GF := GF) parent) := by
   unfold isParentCtx; infer_instance
@@ -1004,6 +1048,20 @@ theorem childCancelSpec_true (Q : IProp GF) (k : GoInterface) :
     iintro %err %cause %Φ %herr #Hce #- HΦ
     iapply H $$ %err %cause %Φ %herr Hce [] HΦ
     imodintro; itrivial
+
+/-- `childCancelSpec` is antitone in the proposition its `cancel` needs (which it gets
+persistently). -/
+theorem childCancelSpec_mono (P Q : IProp GF) (k : GoInterface) :
+    ⊢ □ (□ Q -∗ P) -∗ childCancelSpec P k -∗ childCancelSpec Q k := by
+  cases k with
+  | nil => simp only [childCancelSpec]; iintro - H; iexact H
+  | ok ki =>
+    simp only [childCancelSpec]
+    iintro #HQP #H
+    imodintro
+    iintro %err %cause %Φ %herr #Hce #Hq HΦ
+    iapply H $$ %err %cause %Φ %herr Hce [] HΦ
+    imodintro; iapply HQP $$ Hq
 
 /-- A new `*cancelCtx` (all fields zero) with Done proposition `P` and extra lock resource
 `R`: fresh ghost names `γ`, its invariant and the lock invariant of `c.mu`; the `Context` field

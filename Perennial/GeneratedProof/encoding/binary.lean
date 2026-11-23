@@ -5,6 +5,7 @@ public import Perennial.Proof.ProofPrelude
 public import Perennial.GeneratedProof.errors
 public import Perennial.GeneratedProof.io
 public import Perennial.GeneratedProof.math
+public import Perennial.GeneratedProof.reflect
 public import Perennial.GeneratedProof.slices
 public import Perennial.GeneratedProof.sync
 public import Perennial.Golang.Theory

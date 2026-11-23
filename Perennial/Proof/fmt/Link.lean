@@ -7,6 +7,7 @@ module
 
 public import Perennial.Proof.errors.Link
 public import Perennial.Proof.fmt.Errorf
+public import Perennial.Proof.fmt.Fprintf
 public import Perennial.Proof.fmt.Printf
 public import Perennial.Proof.fmt.Sprintf
 public import Perennial.Proof.fmt.initialize
@@ -27,7 +28,10 @@ variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
 
 theorem fmt.wp_Errorf : fmt.Errorf.spec (GF := GF) (hG := hG) :=
-  fmt.Errorf.wp_proof errors.wp_New
+  fmt.Errorf.wp_proof
+
+theorem fmt.wp_Fprintf : fmt.Fprintf.spec (GF := GF) (hG := hG) :=
+  fmt.Fprintf.wp_proof
 
 theorem fmt.wp_Printf : fmt.Printf.spec (GF := GF) (hG := hG) :=
   fmt.Printf.wp_proof

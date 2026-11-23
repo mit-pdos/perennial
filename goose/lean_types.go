@@ -99,7 +99,7 @@ func (ctx *Ctx) namedLeanTypeDecl(spec *ast.TypeSpec) string {
 
 	switch ctx.filter.GetAction(spec.Name.Name) {
 	case declfilter.Axiomatize:
-		w.WriteString(leanAxiomTypeDecl(ns, params))
+		w.WriteString(leanOpaqueTypeDecl(ns, params))
 	case declfilter.Translate:
 		switch t := ctx.typeOf(spec.Type).(type) {
 		case *types.Struct:
@@ -115,21 +115,31 @@ func (ctx *Ctx) namedLeanTypeDecl(spec *ast.TypeSpec) string {
 	return w.String()
 }
 
-// leanAxiomTypeDecl declares ns (with type parameters params), the Lean type of
-// the values of a type goose cannot translate, and its zero value, as axioms.
-func leanAxiomTypeDecl(ns string, params []string) string {
+// leanOpaqueTypeDecl declares ns (with type parameters params), the Lean type
+// of the values of a type goose cannot translate, and its zero value, as opaque
+// constants. Lean's opaque needs its type inhabited, which ZeroVal ns is not for
+// an opaque type ns: ns is the carrier of an opaque nonempty type instead, so
+// that the zero value can be an opaque choice of one of its elements.
+func leanOpaqueTypeDecl(ns string, params []string) string {
 	w := new(strings.Builder)
 	typeBinders := leanTypeParamBinders(params, "Type")
-	tApplied := leanApplied(ns, params)
-	fmt.Fprintf(w, "axiom %s : %s\n", ns, leanForall(typeBinders, "Type"))
-	zvBinders := ""
-	if len(params) > 0 {
-		zvBinders = "{" + strings.TrimSuffix(strings.TrimPrefix(typeBinders, "("), ")") + "}"
-		for _, p := range params {
-			zvBinders += " [ZeroVal " + glang.LeanIdent(p) + "]"
-		}
+	sep := ""
+	implicitBinders := ""
+	if typeBinders != "" {
+		sep = " "
+		implicitBinders = "{" + strings.TrimSuffix(strings.TrimPrefix(typeBinders, "("), ")") + "} "
 	}
-	fmt.Fprintf(w, "axiom %s.zero_val : %s\n", ns, leanForall(zvBinders, "ZeroVal "+tApplied))
+	tApplied := leanApplied(ns, params)
+	nonemptyApplied := leanApplied(ns+".nonempty_type", params)
+	fmt.Fprintf(w, "opaque %s.nonempty_type%s%s : NonemptyType.{0}\n", ns, sep, typeBinders)
+	fmt.Fprintf(w, "def %s%s%s : Type := %s.type\n", ns, sep, typeBinders, nonemptyApplied)
+	fmt.Fprintf(w, "instance %s.nonempty %s: Nonempty %s := %s.property\n",
+		ns, implicitBinders, tApplied, nonemptyApplied)
+	zvBinders := implicitBinders
+	for _, p := range params {
+		zvBinders += "[ZeroVal " + glang.LeanIdent(p) + "] "
+	}
+	fmt.Fprintf(w, "opaque %s.zero_val %s: ZeroVal %s := ⟨Classical.ofNonempty⟩\n", ns, zvBinders, tApplied)
 	fmt.Fprintf(w, "attribute [instance] %s.zero_val", ns)
 	return w.String()
 }
@@ -434,9 +444,8 @@ func (ctx *Ctx) methodSigLean(n locatable, sig *types.Signature) (s string, ok b
 	return glang.LeanTermOf(ctx.nameableSignature(n, sig)), true
 }
 
-// typeNameable reports whether every named type t mentions is predeclared, of
-// this package or of an imported package, and every alias it mentions is the
-// universe's or one this package translates.
+// typeNameable reports whether every named type and alias t mentions is
+// predeclared, of this package or of an imported package.
 func (ctx *Ctx) typeNameable(t types.Type, seen map[types.Type]bool) bool {
 	if seen[t] {
 		return true
@@ -477,13 +486,6 @@ func (ctx *Ctx) typeNameable(t types.Type, seen map[types.Type]bool) bool {
 	case *types.Named:
 		return named(t.Obj().Pkg(), t.TypeArgs())
 	case *types.Alias:
-		// an alias that is not translated is declared as an axiom without a
-		// descriptor (`axiom A : go.GoType`), which glangType cannot name: only
-		// the universe's aliases (any) and this package's translated ones
-		if pkg := t.Obj().Pkg(); pkg != nil &&
-			(pkg.Path() != ctx.pkgPath || ctx.filter.GetAction(t.Obj().Name()) != declfilter.Translate) {
-			return false
-		}
 		return named(t.Obj().Pkg(), t.TypeArgs())
 	case *types.Pointer:
 		return all(t.Elem())

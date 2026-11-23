@@ -295,7 +295,7 @@ theorem netfs_crash_safety_bounded [lctx : GoLocalContext] [sem : go.Semantics]
       · iapply wp_boot NodeC _ (wp_NodeC (GF := GF) c0 Haddr) $$ [] Hgs
         iexact Hinv
     · -- after a crash: the files' and the address's ghost state are kept
-      iintro %L' _ Hcs Hgs'
+      iintro %L' _ Hcs Hgs' _
       icases fsNet_crashStart _ L' $$ Hcs with ⟨%Hfs, %Hnet⟩
       imodintro
       iframe Hinv Hgs'

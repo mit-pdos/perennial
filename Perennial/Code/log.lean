@@ -27,7 +27,7 @@ noncomputable def Logger.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] Logger.ty
 
-axiom Logger.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque Logger.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
 /-- the date in the local time zone: 2009/01/23 -/
 @[reducible] noncomputable def Ldate [GooseExts] [GoGlobalContext] : val :=
@@ -37,15 +37,15 @@ axiom Logger.underlying [GooseExts] [GoGlobalContext] : go.GoType
 @[reducible] noncomputable def Ltime [GooseExts] [GoGlobalContext] : val :=
   #(2 : Int)
 
-axiom Lmicroseconds [GooseExts] [GoGlobalContext] : val
+opaque Lmicroseconds [GooseExts] [GoGlobalContext] : val
 
-axiom Llongfile [GooseExts] [GoGlobalContext] : val
+opaque Llongfile [GooseExts] [GoGlobalContext] : val
 
-axiom Lshortfile [GooseExts] [GoGlobalContext] : val
+opaque Lshortfile [GooseExts] [GoGlobalContext] : val
 
-axiom LUTC [GooseExts] [GoGlobalContext] : val
+opaque LUTC [GooseExts] [GoGlobalContext] : val
 
-axiom Lmsgprefix [GooseExts] [GoGlobalContext] : val
+opaque Lmsgprefix [GooseExts] [GoGlobalContext] : val
 
 /-- initial values for the standard logger -/
 @[reducible] noncomputable def LstdFlags [GooseExts] [GoGlobalContext] : val :=
@@ -129,7 +129,7 @@ noncomputable def Output [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable instance info' : PkgInfo pkg_id.log where
   pkgImportedPkgs := [pkg_id.sync]
 
-axiom «_».init [GooseExts] [GoGlobalContext] : val
+opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -161,8 +161,10 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc bufferPool _root_.Perennial.sync.Pool.ty)) (Val #()))))))))
 
-axiom Logger : Type
-axiom Logger.zero_val : ZeroVal Logger
+opaque Logger.nonempty_type : NonemptyType.{0}
+def Logger : Type := Logger.nonempty_type.type
+instance Logger.nonempty : Nonempty Logger := Logger.nonempty_type.property
+opaque Logger.zero_val : ZeroVal Logger := ⟨Classical.ofNonempty⟩
 attribute [instance] Logger.zero_val
 
 class Logger.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

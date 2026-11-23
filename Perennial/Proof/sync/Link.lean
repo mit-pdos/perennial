@@ -7,6 +7,7 @@ module
 
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.model.pool.Link
 public import Perennial.Proof.internal.race.Link
+public import Perennial.Proof.internal.sync.Link
 public import Perennial.Proof.internal.synctest.Link
 public import Perennial.Proof.sync.Cond__Broadcast
 public import Perennial.Proof.sync.Cond__Signal
@@ -85,25 +86,16 @@ theorem sync.Cond.wp_Wait : sync.Cond.Wait.spec (GF := GF) (hG := hG) :=
   sync.Cond.Wait.wp_proof sync.copyChecker.wp_check sync.wp_runtime_notifyListAdd sync.wp_runtime_notifyListWait
 
 theorem sync.Mutex.wp_Lock : sync.Mutex.Lock.spec (GF := GF) (hG := hG) :=
-  sync.Mutex.Lock.wp_proof
+  sync.Mutex.Lock.wp_proof internal.sync.Mutex.wp_Lock
 
 theorem sync.Mutex.wp_TryLock : sync.Mutex.TryLock.spec (GF := GF) (hG := hG) :=
-  sync.Mutex.TryLock.wp_proof
+  sync.Mutex.TryLock.wp_proof internal.sync.Mutex.wp_TryLock
 
 theorem sync.Mutex.wp_Unlock : sync.Mutex.Unlock.spec (GF := GF) (hG := hG) :=
-  sync.Mutex.Unlock.wp_proof
+  sync.Mutex.Unlock.wp_proof internal.sync.Mutex.wp_Unlock
 
 theorem sync.wp_NewCond : sync.NewCond.spec (GF := GF) (hG := hG) :=
   sync.NewCond.wp_proof
-
-end link
-
-section link
-variable [GooseExts] [GooseSemantics] [GooseInterp]
-variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
-variable [sem : go.Semantics]
-variable [package_sem : sync.Assumptions]
 
 theorem sync.Once.wp_doSlow : sync.Once.doSlow.spec (GF := GF) (hG := hG) :=
   sync.Once.doSlow.wp_proof sync.Mutex.wp_Lock sync.atomic.Bool.wp_Load sync.atomic.Bool.wp_Store sync.Mutex.wp_Unlock
@@ -111,23 +103,14 @@ theorem sync.Once.wp_doSlow : sync.Once.doSlow.spec (GF := GF) (hG := hG) :=
 theorem sync.Once.wp_Do : sync.Once.Do.spec (GF := GF) (hG := hG) :=
   sync.Once.Do.wp_proof sync.atomic.Bool.wp_Load sync.Once.wp_doSlow
 
-end link
-
-section link
-variable [GooseExts] [GooseSemantics] [GooseInterp]
-variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem : sync.Assumptions]
-
 theorem sync.wp_OnceFunc : sync.OnceFunc.spec (GF := GF) (hG := hG) :=
-  sync.OnceFunc.wp_proof
+  sync.OnceFunc.wp_proof sync.Once.wp_Do
 
 theorem sync.wp_OnceValue : sync.OnceValue.spec (GF := GF) (hG := hG) :=
-  sync.OnceValue.wp_proof
+  sync.OnceValue.wp_proof sync.Once.wp_Do
 
 theorem sync.wp_OnceValues : sync.OnceValues.spec (GF := GF) (hG := hG) :=
-  sync.OnceValues.wp_proof
+  sync.OnceValues.wp_proof sync.Once.wp_Do
 
 theorem sync.Pool.wp_Get : sync.Pool.Get.spec (GF := GF) (hG := hG) :=
   sync.Pool.Get.wp_proof github_com.mit_pdos.perennial.goose.model.pool.Pool.wp_Get
@@ -157,7 +140,7 @@ theorem sync.WaitGroup.wp_Wait : sync.WaitGroup.Wait.spec (GF := GF) (hG := hG) 
   sync.WaitGroup.Wait.wp_proof sync.atomic.Uint64.wp_Load sync.atomic.Uint64.wp_CompareAndSwap sync.wp_runtime_SemacquireWaitGroup
 
 theorem sync.wp_initialize' : sync.initialize'.spec (GF := GF) (hG := hG) :=
-  sync.initialize'.wp_proof internal.synctest.wp_initialize' internal.race.wp_initialize' sync.atomic.wp_initialize'
+  sync.initialize'.wp_proof internal.synctest.wp_initialize' internal.race.wp_initialize' internal.sync.wp_initialize' sync.atomic.wp_initialize'
 
 theorem sync.wp_runtime_SemacquireRWMutexR : sync.runtime_SemacquireRWMutexR.spec (GF := GF) (hG := hG) :=
   sync.runtime_SemacquireRWMutexR.wp_proof sync.wp_runtime_Semacquire

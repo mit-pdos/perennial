@@ -5,6 +5,8 @@ Consists only of a network, per-node file storage, and clocks.
 
 * Crashes (`ExtSemantics.crash`): a node's state may be anything afterwards
   (`grove_ffi` does not make its writes durable).
+* Initial states (`ExtSemantics.initLocal`/`initGlobal`): any (the default): the
+  network may hold any messages and a node any files, clocks and so on.
 * The step (`GroveStep`, the `ExtSemantics` of `groveExt`) is a relation:
   either one of Grove's operations (`groveOps`) stutters (state unchanged,
   `e' = ExternalOp groveExt.name op v`) or it

@@ -637,6 +637,73 @@ noncomputable def IsSorted.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
+/-- go: sort.go:158:22 -/
+noncomputable def StringSlice.Len.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "x"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc StringSlice.ty))) (Var "x"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad StringSlice.ty))) (Var "x"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [StringSlice.ty]))) (Val #())) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
+
+/-- go: sort.go:159:22 -/
+noncomputable def StringSlice.Less.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "x"
+  (Lam "i"
+  (Lam "j"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc StringSlice.ty))) (Var "x"))
+  (Let "j" (App (Val (GoInstruction (GoAlloc go.int))) (Var "j"))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (Var "i"))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoLt go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (IndexRef StringSlice.ty))) (Pair (App (Val (GoInstruction (GoLoad StringSlice.ty))) (Var "x")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))) (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (IndexRef StringSlice.ty))) (Pair (App (Val (GoInstruction (GoLoad StringSlice.ty))) (Var "x")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))))
+
+/-- go: sort.go:160:22 -/
+noncomputable def StringSlice.Swap.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "x"
+  (Lam "i"
+  (Lam "j"
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc StringSlice.ty))) (Var "x"))
+  (Let "j" (App (Val (GoInstruction (GoAlloc go.int))) (Var "j"))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (Var "i"))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef StringSlice.ty))) (Pair (App (Val (GoInstruction (GoLoad StringSlice.ty))) (Var "x")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef StringSlice.ty))) (Pair (App (Val (GoInstruction (GoLoad StringSlice.ty))) (Var "x")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (IndexRef StringSlice.ty))) (Pair (App (Val (GoInstruction (GoLoad StringSlice.ty))) (Var "x")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (IndexRef StringSlice.ty))) (Pair (App (Val (GoInstruction (GoLoad StringSlice.ty))) (Var "x")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$l1") (Var "$r1"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$l0") (Var "$r0")))))))))))))
+  (Val #())))))
+
+/-- Sort is a convenience method: x.Sort() calls Sort(x).
+
+    go: sort.go:163:22 -/
+noncomputable def StringSlice.«Sort».impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "x"
+  (Lam BAnon
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc StringSlice.ty))) (Var "x"))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert StringSlice.ty Interface.ty))) (App (Val (GoInstruction (GoLoad StringSlice.ty))) (Var "x")))
+  (App (App (Val (GoInstruction (FuncResolve «Sort» []))) (Val #())) (Var "$a0"))))))
+  (Val #()))))
+
 /-- Strings sorts a slice of strings in increasing order.
 
     Note: as of Go 1.22, this function simply calls [slices.Sort].
@@ -2122,7 +2189,7 @@ noncomputable def rotate.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.sort where
   pkgImportedPkgs := [pkg_id.math.bits, pkg_id.slices]
 
-axiom «_».init [GooseExts] [GoGlobalContext] : val
+opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -2308,10 +2375,30 @@ class StringSlice.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext]
   underlying : go.UnderlyingDirectedEq StringSlice.ty StringSlice.underlying
   method_set : go.MethodSetIs StringSlice.ty [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Less", (some (go.signature.Signature [go.int, go.int] false [go.bool]))), (go!"Search", (some (go.signature.Signature [go.string] false [go.int]))), (go!"Sort", (some (go.signature.Signature [] false []))), (go!"Swap", (some (go.signature.Signature [go.int, go.int] false [])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType StringSlice.ty) [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Less", (some (go.signature.Signature [go.int, go.int] false [go.bool]))), (go!"Search", (some (go.signature.Signature [go.string] false [go.int]))), (go!"Sort", (some (go.signature.Signature [] false []))), (go!"Swap", (some (go.signature.Signature [go.int, go.int] false [])))]
+  Len_unfold : MethodUnfold StringSlice.ty go!"Len" StringSlice.Len.impl
+  Less_unfold : MethodUnfold StringSlice.ty go!"Less" StringSlice.Less.impl
+  Sort_unfold : MethodUnfold StringSlice.ty go!"Sort" StringSlice.«Sort».impl
+  Swap_unfold : MethodUnfold StringSlice.ty go!"Swap" StringSlice.Swap.impl
+  ptr_Len_unfold : MethodUnfold (go.GoType.PointerType StringSlice.ty) go!"Len" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve StringSlice.ty go!"Len"))) (App (Val (GoInstruction (GoLoad StringSlice.ty))) (Var "$r"))))
+  ptr_Less_unfold : MethodUnfold (go.GoType.PointerType StringSlice.ty) go!"Less" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve StringSlice.ty go!"Less"))) (App (Val (GoInstruction (GoLoad StringSlice.ty))) (Var "$r"))))
+  ptr_Sort_unfold : MethodUnfold (go.GoType.PointerType StringSlice.ty) go!"Sort" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve StringSlice.ty go!"Sort"))) (App (Val (GoInstruction (GoLoad StringSlice.ty))) (Var "$r"))))
+  ptr_Swap_unfold : MethodUnfold (go.GoType.PointerType StringSlice.ty) go!"Swap" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve StringSlice.ty go!"Swap"))) (App (Val (GoInstruction (GoLoad StringSlice.ty))) (Var "$r"))))
 
 attribute [instance] StringSlice.TypeAssumptions.underlying
   StringSlice.TypeAssumptions.method_set
   StringSlice.TypeAssumptions.ptr_method_set
+  StringSlice.TypeAssumptions.Len_unfold
+  StringSlice.TypeAssumptions.Less_unfold
+  StringSlice.TypeAssumptions.Sort_unfold
+  StringSlice.TypeAssumptions.Swap_unfold
+  StringSlice.TypeAssumptions.ptr_Len_unfold
+  StringSlice.TypeAssumptions.ptr_Less_unfold
+  StringSlice.TypeAssumptions.ptr_Sort_unfold
+  StringSlice.TypeAssumptions.ptr_Swap_unfold
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Interface_instance : Interface.TypeAssumptions

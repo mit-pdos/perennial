@@ -29,11 +29,14 @@ func main() {
 
 	flag.Var(glang.LeanRootFlag{}, "lean-root", glang.LeanRootUsage)
 
+	var load util.LoadFlags
+	load.Register(flag.CommandLine, "give proofgen the -tags and -overlay goose was given")
+
 	flag.Parse()
 	if configDir == "" {
 		flag.Usage()
 		panic("bad")
 	}
 
-	util.Translate(proofgen.Package, flag.Args(), outRootDir, modDir, configDir)
+	util.Translate(proofgen.Package, flag.Args(), outRootDir, modDir, configDir, load.Options())
 }

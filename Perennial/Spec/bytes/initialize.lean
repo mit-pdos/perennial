@@ -21,7 +21,7 @@ variable [sem : go.Semantics]
 variable [package_sem : bytes.Assumptions]
 
 /-- The package's `initialize'`: allocate the package's variables (`asciiSpace`, the `error`s
-made with `errors.New`), after initializing `errors`. -/
+made with `errors.New`), after initializing `errors` and `io`. -/
 abbrev bytes.initialize'.spec : Prop :=
   ∀ (get_is_pkg_init : GoString → IProp GF),
   GetIsPkgInitProp pkg_id.bytes get_is_pkg_init →

@@ -120,6 +120,11 @@ instance grove_interp : ExtInterp groveExt where
   global_init _ hPre g _ := grove_global_init hPre g
   local_init _ hPre σ _ _ := grove_local_init hPre σ
 
+/-- The ghost state makes no assumption on the initial states. -/
+instance grove_init_compat : ExtInitCompat groveExt where
+  initgP_of_init _ _ := trivial
+  initP_of_init _ _ _ := trivial
+
 section grove
 variable {GF : BundledGFunctors}
 

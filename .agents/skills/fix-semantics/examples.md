@@ -1145,7 +1145,324 @@ switch indexes its cases from 1 correctly; no other loop over `X[1:]` uses its i
 **Sign-off.** The user signed off the plan as written (2026-11-08, relayed by etcd-grove-81). Found by
 etcd-grove while writing the `ctx-value` design.
 
-## Case 36 — ACCEPTED: an index read of a slice passes `IndexRef` its operands in order (branch `fix-index-slice-operands`, issue #643)
+## Case 36 — ACCEPTED: `TypeAssertUnderlying2` reads `string` underlying types too (branch `sprintf-named-string`)
+
+**Symptom.** Incomplete. `TypeAssertUnderlying2 t` (`reflect.ValueOf(x)` read at `t`'s kind, used
+only by the model of `fmt.Sprintf`) had a step rule only for an integer underlying type
+(`[IsInteger t_under]`), so the model could not read the string a value of a named string type
+holds, and `Sprintf("%v", types.UID(s))` was arbitrary where Go gives `s`.
+
+**Witness.** `type UID string; fmt.Sprintf("%v", UID("a"))` is `"a"` in Go; the model's output
+was arbitrary (no rule to read the value at `go.string`).
+
+**Taken.** The rule's premise `[IsInteger t_under]` becomes `[IsIntegerOrString t_under]`, a class
+inductive with the integer types and `string` (no new rule: the same rule at one more underlying
+type). In the model, a helper `strArg` (goose's translation of Go: no `Format`/`String`/`Error`
+method, then `underlyingAs[string]`, edited to the instruction, as `namedIntArg`), called by
+`formatArg` for `%s` and `%v`. Cost: 0 goose branches, 0 new rules, 1 widened premise, about 90
+lines of translated model. The restriction to integer types (struct field names differ between
+Lean and Go) does not apply to `string`, a predeclared type.
+
+**Not taken.** A `reflect` model (`ValueOf`, `Kind`, `String`): a larger trusted surface for the
+same fact, as in the integer case.
+
+**Why.** The user approved extending the rule to string underlying types (2026-11-17, relayed by
+etcd-grove-03), so that method-less named string types (`types.UID`) format as Go formats them; a
+type with a formatting method stays arbitrary (the model calls no methods).
+
+## Case 37 — ACCEPTED: a SHA-256 extension; collision freedom an opt-in hypothesis over the hash step (branch `sha256-ext`)
+
+**Symptom.** Incomplete. `crypto/sha256` was not translated; a client (dsverify's SwiftPaxos
+harness) axiomatized an ideal hash (`is_hash`, `is_hash_inj`, `Sum256`'s spec), an axiom that
+removed the runs with a collision without saying so in any statement.
+
+**Witness.** `sha256.Sum256(b)` is stuck (names only).
+
+**Taken.** An extension over the `Ext.lean` scheme, `sha256Ext ok` (`GooseLang/Ext/Sha256`): global
+state the inputs hashed so far with their hashes; one operation `Sum` on a string, whose hash is
+an opaque function `sha256Hash` (32 bytes); the step records and returns the hash if the run's
+filter `ok` allows it, else `AngelicExit`. `Sum256` is a trusted model (convert the slice to a
+string, call the primitive); `init.0` a trusted no-op (it only registers with the untranslated
+`crypto`). `Sha256NoCollision ok` (a pure `Prop` over the filter, one unfolding: the step never
+returns for an input a hash recorded for a different input) is a hypothesis of `is_hash_inj` only;
+with `sha256NoFilter` the model removes nothing. Cost: 0 goose branches, 1 extension (1 step
+relation, 1 operation), 2 trusted bodies, about 90 trusted lines.
+
+**Not taken.** (1) The ideal hash in the semantics unconditionally (a model assumption that is
+reachable: R3 BLOCK). (2) A boolean flag `noCollision` in the extension (or its state), with
+`Sha256NoCollision := noCollision = true` or a ghost token: the assumption's meaning would live
+in the step's code, not in the hypothesis an auditor reads.
+
+**Why.** The user wants the assumption: "I definitely want to make this assumption for the hash
+semantics. Is there a way we can set it up so non-collision requires an extra assumption?";
+"our top-level theorem for swiftpaxos should have an explicit assumption about this; I want it
+to be as easy to audit this assumption as possible; I'd even be ok with exposing more details of
+the hash transition relation so that Sha256NoCollision could *directly* constrain the transition
+relation to avoid collisions"; "(noCollision = true might be a bit annoying to audit in
+comparison)" (2026-11-19, relayed by the coordinator of the dsverify axiom audit).
+
+## Case 38 — ACCEPTED: delete and clear on nil maps
+
+**Symptom.** Incomplete. The delete builtin read the map through nil after
+checking its key. Clear tried to store the empty map through nil.
+
+**Witness.** With `var m map[any]int`, both `delete(m, 42)` and `clear(m)`
+return and leave the map nil. `delete(m, []int{1})` still panics.
+
+**Taken.** The existing builtin definitions test the map for nil using its
+underlying map type, as length and lookup already do. Delete checks the key
+before the nil test. The non-nil operations keep their existing bodies.
+Cost: two nil tests in existing definitions, zero new semantic rules, zero
+translator changes.
+
+**Decision.** “Yes, fix nil-map semantics.” (2026-11-20)
+
+## Case 39 — ACCEPTED: `string(b)` of a byte is the UTF-8 encoding of the code point `b` (branch `untyped-rune`)
+
+**Symptom.** Unsound. `convert_byte_to_string` stepped `string(c)` of a `byte` to the one byte
+`[c]`; Go gives the UTF-8 encoding of the code point `c`, two bytes from `0x80` on
+(`string(byte(200)) == "\xc3\x88"`). The rule's only user was the Go model `ByteSliceToString`
+(`s = s + string(c)` over the slice), which is not `string(a)` when run as Go, so the model was
+more defined than its own Go text.
+
+**Witness.** `var c byte = 200; len(string(c)) == 2` is true in Go; the rule proved it false.
+
+**Taken.** A pure `go.runeString (v : Int) : GoString` (Go's `string(v)` of an integer: the UTF-8
+encoding of `v` if it is a valid code point, else that of U+FFFD, through Lean's `String.utf8EncodeChar`, which the kernel evaluates);
+`convert_byte_to_string` steps to `#(go.runeString (uint.Z c))`. `ByteSliceToString` is rewritten
+as real Go that means `string(a)`: it appends `byteStrings[int(c):int(c)+1]` of a 256-byte constant
+table; `convert_test.go` checks it against `string(a)` on every byte, and the semantics test
+`testByteToString` checks `string(byte)` in Go and in the model (proved). Cost: 1 definition, 1 rule
+changed, 0 goose branches; the model's text changes. Evidence: `go.runeString` agrees with Go's
+`string(int64)` on every value in `[-16, 0x110010)` and at ±2^31, ±2^63, ±2^70 (one FNV hash of
+the encodings, compiled Lean vs Go 1.26).
+
+**Not taken.** Keeping `ByteSliceToString`'s text and the one-byte rule (a model whose Go text
+does not mean what it is trusted for).
+
+**Why.** Signed off by the user, 2026-11-21 (relayed by the coordinator etcd-grove-03), as the
+first of two items, before Case 40.
+
+## Case 40 — ACCEPTED: goose folds constant expressions of untyped runes; `string(v)` of an untyped integer constant (branch `untyped-rune`)
+
+**Symptom.** Incomplete. Goose folded binary expressions whose operands join to an untyped int or
+string constant (`constantLiteral`) but not to an untyped rune, so `sep == '/'` or `'a' + 'b'` became
+run-time `GoOp … go.untypedRune` operations with no rule; and `string(sep)` of an untyped rune
+constant (`Convert go.untypedRune go.string`, which goose emits for a conversion of a constant) had
+no rule. Go evaluates both at compile time.
+
+**Witness.** `const sep = '/'; sep == '/'` and `string(sep) == "/"` are stuck.
+
+**Taken.** `types.UntypedRune` joins `UntypedInt`/`UntypedString` in `binExpr`'s folding case (one
+token), and `UntypedIntSemantics` gains `convert_untyped_int_to_string (v : Int) : ⟦Convert
+go.untypedInt go.string, #v⟧ ⤳[under] #(go.runeString v)` (`go.untypedRune` is `go.untypedInt`),
+a sibling of the integer conversions, reusing Case 39's `go.runeString`. Semantics test
+`testUntypedRuneConst` (proved). Cost: 1 goose case label, 1 rule; three range-string tests' gold
+now holds the folded sums.
+
+**Not taken.** A hypothesis class of rune steps in the client (`UntypedRuneSemantics` of
+etcd-grove's WAL proofs: equality, and `string(c)` only for ASCII `c`), which put an unreviewed class
+into closed statements.
+
+**Why.** Signed off by the user, 2026-11-21 (relayed by the coordinator etcd-grove-03), after Case 39.
+
+## Case 41 — ACCEPTED: every type alias has a reducible descriptor (branch `goose-alias-ty`)
+
+**Symptom.** Translation incomplete, and a misnamed declaration. Only an alias the configuration
+translates got its descriptor (`@[reducible] def A.ty := <target>`); an axiomatized one was
+`opaque A : go.GoType` (a name nothing refers to: references are `A.ty`), a trusted one nothing.
+So `autotypes` refused every struct type with a field of another package's alias ("we do not know
+if the alias is translated in its package"), and `typeNameable` spelled out such aliases in
+signatures. Kubernetes' and protobuf's structs hit it (etcd-grove, closed PR #646).
+
+**Witness.** `package dep; type L = dep2.Y` axiomatized; `type S struct{ p *dep.L }` in another
+package: axiomatized by `translate_types` although Go needs nothing from dep's configuration.
+
+**Taken.** An alias denotes its target, so there is nothing to hide: `typeDecl` emits `A.ty`
+(reducible, `types.Unalias` of the alias, with its type parameters) for every alias whatever the
+action, the target written with the types the package cannot name spelled out (`go.Named
+"<path>.<Name>" args`, as in signatures) and same-package aliases as what they denote (aliases are
+declared in source order; the flag of unnamed struct fields, renamed `beforeAliases`). When goose
+cannot translate the target (a tagged unnamed struct) an untranslated alias's `A.ty` is opaque,
+as an untranslatable named type's underlying. `autotypes` drops its alias decisions, the
+cross-package refusal and the same-package alias ordering, and checks an alias's target only
+where the Lean value type is needed. Regenerated: runtime (14 `opaque` aliases become `A.ty`, and
+13 structs with fields like `*_type` are now translated), reflect (8 `opaque` aliases). Test `xpkgalias`
+(translated, axiomatized, trusted, generic, later and cross-package alias-of-alias aliases; an
+opaque one) with `rfl` checks in Perennial/Proof.
+
+**Not taken.** PR #646: read the dependency's configuration to learn whether it translates the
+alias (configuration coupling between packages, for a fact Go fixes).
+
+**Why.** Approved by the owner (upamanyus) directly, 2026-11-22: "every type alias always gets a
+reducible descriptor A.ty defined as its target, regardless of the package's config action".
+
+## Case 42 — ACCEPTED: labeled `break`/`continue`: `breakTo`/`continueTo` outcomes caught by `catchLabel` (branch `goose-labels`)
+
+**Symptom.** Incomplete. Goose refused every labeled statement (`statement *ast.LabeledStmt`), so
+`break L`/`continue L` had no translation; `fmt`'s `doPrintf` (`continue formatLoop` from a
+`switch` in a `switch` in an inner `for`, `break simpleFormat` from a `switch`) blocked the real
+`fmt` (#671).
+
+**Witness.** `L: for i { for j { switch { case j==1: continue L; case i==2: break L } } }` (Go:
+`[0 10]`); `continueFromNestedSwitch` and `miniPrintf` in `semantics/labels.go`.
+
+**Taken.** Three GooseLang definitions in `Defn/Loop.lean`, siblings of `doBreak`/`catchBreak`:
+`doBreakTo := λ: "l", (#"breakTo", "l")`, `doContinueTo := λ: "l", (#"continueTo", "l")`, and
+`catchLabel l b`, which turns `breakTo l` into `break`, `continueTo l` into `continue` and passes
+anything else on. No step rule, and `doFor`, the range helpers, `map.forRange`, `func.forRange`,
+`catchBreak` and `exceptionSeq` are unchanged: they already pass on any outcome that is not
+`execute`/`continue`/`break`, as they do `return`. Goose: `break L`/`continue L` become
+`doBreakTo #"L"`/`doContinueTo #"L"`; a labeled `for` or `range` has its body (inside the body
+thunk, so `continue L` runs the post statement and the loop-variable copy) wrapped in
+`catchLabel #"L"`; a labeled `switch`, type switch or `select` becomes `catchBreak (catchLabel
+#"L" s)`; `goto` and a label on any other statement stay refused (`unsupported`; negative tests
+`goto_stmt`, `label_block`). Unlabeled `break`/`continue` translate byte-for-byte as before (every other
+gold file and the regenerated std-lib/model output unchanged). Proof side: `forPostcondition`,
+`forRangePostcondition` and `forMapPostcondition` gain a "labeled outcome" disjunct
+(`wp_for_post_labeled`), with `PureWp` instances for `doBreakTo`/`doContinueTo`, `catchLabel` and
+the passes through `exceptionSeq`/`catchBreak`. Semantics tests `labels.go` (Go-checked), proofs in
+`Perennial/Proof/.../semantics/`. Cost: 3 definitions, 0 rules, 2 goose cases (`LabeledStmt`,
+labeled `BranchStmt`) plus a parameter on `forStmt`/`rangeStmt`, 2 negative tests.
+
+**Not taken.** (B) The label inside the existing `break`/`continue` value, with `doFor`, every range
+helper and `map.forRange` taking and comparing a label: changes existing definitions, every loop
+goose emits and `wp_for`'s statement (rejected on cost, like Case 10). (C) Goose desugaring with
+flag cells and no new definitions: context-dependent translation and more trusted goose code. A
+`doForLabeled` primitive that compares the label itself would still need `catchLabel` for
+`switch`/`select` and the range helpers.
+
+**Why.** Approved by the owner (upamanyus) directly, 2026-11-22: design A of the stage-0 plan for the
+real `fmt`, part 1, "new outcomes `breakTo`/`continueTo` plus `catchLabel` at the labeled
+statement", with no new step rules and unlabeled output unchanged.
+
+## Case 43 — ACCEPTED: an untyped float constant is its exact value; a constant of type `float32` is rounded once (branch `goose-float32-const`, issue #667)
+
+**Symptom.** Unsound. An untyped float constant was represented at run time by its `float64`
+rounding (`#(W64 bits)`), and `convert_untyped_float32` rounded that again (`float64ToFloat32`);
+Go rounds the exact constant once. The same lossy value made `return C` at `T ~int64`, with
+`C = 1e18 + 1`, the `float64` 1e18 (and goose `nope`d `var x int64 = C` outside generic code:
+`untypedFloatToInt` went through `float64`). Untyped float arithmetic at `float32`
+(`float32(1 + 0x1p-24)`) was emitted as `GoOp _ go.untypedFloat` (stuck, conversion dropped).
+
+**Witness.** `const H = 1 + 0x1p-24 + 0x1p-60`: `float32(H)` and `func f[T ~float32]() T { return
+H }` give `0x3f800001` in Go (go1.26.0), the model `0x3f800000`; `var z float32 = -1e-50` is `+0`
+in Go, `-0` in the model; `func g[T ~int64]() T { return C }` is 1000000000000000001 in Go.
+Explicit `T(H)` at `T ~float32` is `0x3f800000` in gc: go/types records `H` at its default type
+`float64`, and gc rounds through it.
+
+**Taken.** (1) Goose, `exprSpecial` (+5 lines; `float32` in the PR's first version, extended to
+`float64` after the trusted review found its sibling: `const a float64 = 0; x := -a` was a run-time
+`GoNeg go.float64`, `-0`, where Go gives `+0`; likewise `-t * 1e-10` underflowing): an expression
+go/types records as a constant of a type whose underlying type is `float32` or `float64` is
+emitted by `constantLiteral` (`Float32Val`/`Float64Val` of the exact value, `-0` made `+0`). (2) The
+representation: `constantLiteral` at an untyped float emits `#(mkRat n d)`, go/constant's exact
+numerator and denominator (lowest terms), an existing value form (`intoVal` of a Lean `Rat`, as an
+untyped integer is `#(n : Int)`); no new value kind. (3) The rules, one shape per target, all on
+`#(mkRat n d)`: `neg_untyped_float` (to `mkRat (-n) d`), `convert_untyped_float64` /
+`convert_untyped_float32` (to `ratToFloat64` / `ratToFloat32`, `Float.lean`: `encode (ofConst
+q)`, `ofConst` being #654's `roundRat` with a zero result made `+0`),
+`convert_untyped_float_to_integer` (`[IsInteger t]`, only at `mkRat n 1`, steps to
+`Convert go.untypedInt t #n`; stuck on a non-integral constant, a compile error in Go).
+(4) Goose's untyped-float-at-int special case in `identExpr` and `untypedFloatToInt` deleted
+(-56 lines): a named untyped float constant is `Convert go.untypedFloat T c`, like every other
+untyped constant. (5) Explicit `T(c)` of a constant at a type parameter: goose emits
+`Convert go.untypedFloat T` of a float constant's exact value, as for the implicit form (an
+integer constant keeps its default type `int`: exact, and `T(0)` at a float type stays runnable),
+not what go/types records (`c` at its default type `float64`, then `Convert go.float64 T`).
+This follows the spec's Conversions section ("with the value represented as a value of the
+type argument"): rounded once. gc rounds through `float64` there (`T(H)` at `float32`:
+`0x3f800000`; `T(-1e-50)`: `-0`; `T(1e18 + 1)` at `int64`: 1e18), a divergence recorded neutrally
+in `KNOWN_LIMITATIONS.md` ("Floats"); whether gc's behaviour is intended is unresolved.
+`convert_float64_to_float32` and `convert_float32_to_float64` (relational like the arithmetic,
+#654's `convert`, any NaN of a NaN) are added as ordinary typed conversions. Cost: 3 rules changed, 3 added, 4 definitions; goose +35/-61 lines against `lean`.
+Regenerated: `math` (85 untyped constant declarations become rationals, 85 call sites become
+`float64` bits) and the goose examples. Tests: semantics
+`testUntypedFloatConstAtTypeParam`, `testUntypedFloatConvertAtTypeParam`,
+`testUntypedFloatConstToInt`, `testFloat64ConstExprIsConst` (Go-checked and proved), `testFloat32ConstRoundsOnce`
+(Go-checked); unittest `float32ConstAt`, `intConstAt`, `compareIntFloat` gold.
+
+**Not taken.** The PR's first version: delete `convert_untyped_float32` (stuck in generic
+code). Goose folding every constant at every concrete type (the uniform extension of (1)): the
+untyped integer conversions would become dead outside generic code, and it rewrites about 330
+sites of generated code and the proofs that step them, for no soundness gain (an integer constant
+expression is exact, and a non-representable one is a compile error); kept to the float types,
+where run-time evaluation differs (signed zero) and untyped arithmetic needs it. For `T(c)`: following go/types and gc (the PR's second version, double rounding), or a
+nondeterministic rule allowing both results.
+
+**Why.** The owner (upamanyus), on #676: goose changes and Lean rules are equally trusted;
+prefer a simple uniform semantics, "our Go semantics supports conversions from untyped
+constants", which generic code needs, so the conversions must be correct, not deleted: untyped
+float constants carry their exact value at run time, and each conversion rounds once. On
+explicit `T(c)`: "the semantics follows the Go spec, not gc"; document the divergence neutrally,
+not as a gc bug.
+
+## Case 44 — ACCEPTED: every integer-to-float conversion, through one rounding per float type (branch `untyped-int-float64`, PR #682)
+
+**Symptom.** Incomplete. Goose folds binary constant expressions but not unary ones, so `g.Add(-1)`,
+`val * -1` or `var x float64 = -1` became `Convert go.untypedInt go.float64` of the constant, with no
+rule. Typed conversions to `float64` existed only from `int`, `int64`, `uint`, `uint64`, `int32` and
+`uint32`, and none to `float32`.
+
+**Witness.** `var x float64 = -1; var y float64 = -1; x == y` is stuck; so is `float32(n)` of any
+integer `n`, and `float64(n)` of an `int8`, `int16`, `uint8`, `uint16` or `uintptr`.
+
+**Taken.** No new rounding definition: every integer-to-float rule steps through Case 43's
+`ratToFloat64`/`ratToFloat32` (`encode (ofConst q)`) of the integer, so there is one rounding
+definition per float type, for constants and integers alike (for an integer `ofConst` is `ofInt`,
+an integer never rounds to `-0`). `int64ToFloat64` and its three siblings are now `ratToFloat64` of
+the word's integer (the names kept for their clients; `Theory/Float.lean`'s sign lemmas restated
+on `ofConst`, `msb_encode_ofConst_of_nonneg`); the new rules use `ratToFloat64 (sint.Z v)`/`(uint.Z
+v)` and `ratToFloat32` directly. `Float64Semantics` gains `convert_untyped_int_to_float64` and the
+conversions from `int16`, `int8`, `uint16`, `uint8`, `uintptr`; `Float32Semantics` gains the
+conversions from all eleven integer types and `convert_untyped_int_to_float32` (Case 43 covers
+`go.untypedFloat` only; the two families do not overlap). Out-of-range constants are compile errors
+in Go, so the rules' values for them are never reached. Semantics tests `testUntypedIntToFloat64`,
+`testIntToFloat32`, `testIntToFloat64` (`conversions.go`, Go-checked and proved), with values past
+2^24 and 2^53 where the rounding is observable (2^k+1 rounds to even, 2^k+3 up to 2^k+4). Cost: 18
+rules, 0 new definitions, 0 goose changes.
+
+**Not taken.** Folding unary constants in goose: as trusted as a rule, and a much wider translation
+diff. Only the `float64` rule (the first version of the PR): the owner preferred stating that the
+semantics supports integer-to-float conversions, of every type.
+
+**Why.** Reviewed by the owner (upamanyus), 2026-11-22 (relayed by coordinator-E): "it's simpler for
+us to be able to say 'our go semantics supports integer to float conversions' than it is to say 'our
+semantics supports conversions for float64 but not float32'."
+
+## Case 45 — ACCEPTED: the implicit conversion of a type-parameter value to an interface (branch `goose-tparam`)
+
+**Symptom.** Incomplete. `handleImplicitConversion` emitted no `Convert` when the source's and the
+target's underlying types were identical, and a type parameter's underlying type is its constraint
+interface: for `T any` assigned to `any` both are `interface{}`, so the raw `T` value was stored,
+passed or returned at type `any`. Instantiated with a non-interface type, the model compared a
+`Loc` (or an `int`) at `go.any` and was stuck. Found in zap's `pool.Pool[T].Put(x T)
+{ p.pool.Put(x) }` (etcd-grove claim #40).
+
+The same condition dropped an explicit conversion between two type parameters with identical
+constraints, which was unsound: `func f[T, U ~int | ~float64](x U) T { return T(x) }` at
+`f[int](3.5)` returned the float's bits as an `int`, where Go truncates to 3.
+
+**Witness.** `func f[T any](x T) any { return x }; f(3) == any(3)` is stuck.
+
+**Taken.** In goose only: an identical source and target emit nothing; otherwise a source that is a
+type parameter always gets `Convert T <target>`, as every other source with a different underlying
+type does; the semantics already has the rule (`convert_to_interface`: the identity when `T` is
+instantiated with an interface type, `interface.mkOk T v` otherwise). One condition in
+`handleImplicitConversion`, which every implicit-conversion site (arguments, results,
+assignments, composite-literal elements, explicit conversions) goes through. Semantics tests
+`testGenericToInterface` (Go-checked and proved; stuck before the change) and
+`testGenericToInterfaceLiteralClosure` and `testGenericConvertTypeParams` (Go-checked; the latter
+is now `Convert U T`, whose float-to-int case the semantics leaves arbitrary). Cost: 0 rules, 1 changed goose condition.
+Perennial's own translations (std, models, examples but the test packages) regenerate unchanged.
+
+**Not taken.** A goose branch on the target being an interface: the type parameter's own
+instantiation decides what the conversion does, which is the semantics' job.
+
+**Why.** Proposed in etcd-grove's `notes/perennial-changes.md` (zap pool entry); the change asked
+for by the owner's coordinator, 2026-11-23.
+
+## Case 46 — ACCEPTED: an index read of a slice passes `IndexRef` its operands in order (branch `fix-index-slice-operands`, issue #643)
 
 **Symptom.** Incomplete (stuck where Go runs). `index_slice` stepped `⟦Index (go.SliceType e), (#s, #i)⟧`
 to `GoLoad e (IndexRef (go.SliceType e) (#i, #s))`, and no rule takes `IndexRef` of a slice type with

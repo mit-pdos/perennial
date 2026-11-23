@@ -5,6 +5,9 @@ GooseLang is an adaptation of HeapLang with extensions to model Go. Its primitiv
 operations can be extended (a disk, a network, ...): a program runs against a
 closed list of extensions (`GooseExts`, see `Perennial/GooseLang/Ext.lean`).
 
+* Initial states: each extension says which of its states a machine, and the
+  machines' shared state, may start in (`ExtSemantics.initLocal`/`initGlobal`,
+  for the program `extsInitLocal`/`extsInitGlobal`, section "Initial states").
 * Crashes: `Crash σ σ'` relates the local state before a crash and restart to
   the one the restart begins with (section "Crashes").
 * The base step is an inductive relation (`base_step`). An extension's step
@@ -148,11 +151,15 @@ inductive GoInstruction where
   | MethodResolve (t : go.GoType) (m : GoString)
   | TypeAssert (t : go.GoType)
   | TypeAssert2 (t : go.GoType)
-  /-- `v, ok := x.(~t)`, for a `t` whose underlying type is an integer type: the value of the
+  /-- `v, ok := x.(~t)`, for a `t` whose underlying type is an integer type or `string`: the value of the
   interface `x` if its dynamic type's underlying type is `t`'s, as `reflect.ValueOf(x)` reads a
-  value of any type by its kind (`Value.Int`, `Value.Uint`); it has no semantics at other `t`. Not a Go expression: goose never emits it;
+  value of any type by its kind (`Value.Int`, `Value.Uint`, `Value.String`); it has no semantics at other `t`. Not a Go expression: goose never emits it;
   trusted models use it (the model of `fmt.Sprintf`). -/
   | TypeAssertUnderlying2 (t : go.GoType)
+  /-- `reflect.TypeOf(x) == reflect.TypeOf(y)` for interface values `x` and `y`: whether they have
+  the same dynamic type (both `nil` counts as the same). Not a Go expression: goose never emits it;
+  trusted models use it (the model of `sync/atomic.Value`). -/
+  | TypeOfEq
   | PackageInitCheck (pkg_name : GoString)
   | PackageInitStart (pkg_name : GoString)
   | PackageInitFinish (pkg_name : GoString)
@@ -182,6 +189,8 @@ inductive GoInstruction where
   | InternalMapForRange (key_type elem_type : go.GoType)
   | InternalMapMake
   | InternalMapLookupId
+  /-- a copy of the map behind an interface holding a map (`maps.clone`) -/
+  | InternalMapClone
   | CompositeLiteral (t : go.GoType)
   | SelectStmt
   | InternalStringLen
@@ -311,12 +320,12 @@ export GoOperator (GoEquals GoLt GoLe GoGt GoGe GoPlus GoSub GoMul GoDiv GoRemai
   GoOr GoXor GoBitClear GoShiftl GoShiftr)
 export GoUnaryOperator (GoPos GoNeg GoNot GoComplement)
 export GoInstruction (AngelicExit Convert GoOp GoUnOp CheckComparable GoLoad GoStore GoAlloc
-  GoPrealloc GoZeroVal FuncResolve MethodResolve TypeAssert TypeAssert2 TypeAssertUnderlying2 PackageInitCheck
+  GoPrealloc GoZeroVal FuncResolve MethodResolve TypeAssert TypeAssert2 TypeAssertUnderlying2 TypeOfEq PackageInitCheck
   PackageInitStart PackageInitFinish GlobalVarAddr StructFieldRef StructFieldGet StructFieldSet
   InternalSliceLen InternalSliceCap InternalDynamicArrayAlloc InternalMakeSlice IndexRef Index
   Slice FullSlice ArraySet ArrayLength InternalMapCheckKey InternalMapLookup InternalMapInsert
   InternalMapDelete InternalMapLength InternalMapForRange InternalMapMake InternalMapLookupId
-  InternalBytesTo InternalUnsafeSlice
+  InternalMapClone InternalBytesTo InternalUnsafeSlice
   CompositeLiteral SelectStmt InternalStringLen)
 
 section derived
@@ -539,12 +548,43 @@ extension does not define has no step.
 
 `crash s s'` says that a crash and restart of the node can turn `E`'s local
 state `s` into `s'` (a durable disk keeps its contents, a volatile one may be
-arbitrary); a crash does not change the global state. -/
+arbitrary); a crash does not change the global state.
+
+`initLocal` and `initGlobal` are the initial states (see their docstrings): what a
+top-level theorem assumes of the states its execution starts from (`ExtsInitLocal`,
+`ExtsInitGlobal`). They belong to the trusted semantics, not to the ghost state
+(`ExtInterp`, `Lifting.lean`), which a proof chooses. -/
 class ExtSemantics (E : GooseExt) where
   step : ∀ [GooseExts] [GoGlobalContext], String → val →
     GMap Loc (NonAtomic val) → E.LocalState → E.GlobalState →
     Expr → GMap Loc (NonAtomic val) → E.LocalState → E.GlobalState → Prop
   crash : E.LocalState → E.LocalState → Prop
+  /-- `initLocal s g`: `s` is a possible state of `E` on a machine before its process
+  has taken any step (the machine is started for the first time), when `E`'s global
+  state is `g`. A theorem about executions from such states covers every machine
+  started in any of them, so a weaker predicate is a stronger theorem: the default,
+  `True`, makes no assumption. A state that a restart produces (`crash`) is not
+  constrained by it: a durable state need not be initial after a crash.
+
+  A value other than the default is trusted, and is one of two things: an assumption
+  about the real machine, which every real start of a machine running the program must
+  satisfy (a resource not yet taken, an empty volatile buffer), or a constraint on
+  state that only the model has (sha256's global state, the inputs hashed so far by
+  the run, is empty at the start: no real state is assumed). Its docstring says which.
+  `initLocal` and `initGlobal` must be jointly satisfiable, `∃ g s, initGlobal g ∧
+  initLocal s g`: otherwise no execution starts from an initial state and every theorem
+  stated with them (the `_init` adequacy theorems, `InitAdequacy.lean`) is vacuous. An
+  extension that sets either one proves this next to its `ExtSemantics` instance (an
+  `example`, as sha256's, `Ext/Sha256/Impl.lean`). The extensions' states are
+  independent components, so one witness per extension makes the program's
+  `extsInitGlobal`/`extsInitLocal` satisfiable. -/
+  initLocal : E.LocalState → E.GlobalState → Prop := fun _ _ => True
+  /-- `initGlobal g`: `g` is a possible state of `E` shared by the machines before any
+  of them has taken a step. The default, `True`, makes no assumption. A value other than
+  the default is an assumption about the real shared state or a constraint on
+  model-only state, and must be satisfiable together with `initLocal` (see
+  `initLocal`). -/
+  initGlobal : E.GlobalState → Prop := fun _ => True
 
 /-- The semantics of the extensions of the program: one `ExtSemantics` for each. -/
 class GooseSemantics [GooseExts] where
@@ -584,6 +624,36 @@ theorem extStep_threads {ext op : String} {v : val} {σg : CfgState} {e' : Expr}
   obtain ⟨_, _, _, _, _, _, rfl⟩ := h; rfl
 
 end ext_step
+
+/-! ## Initial states
+
+The states a machine and the machines' shared state start in, before any step:
+for each extension, its `ExtSemantics.initLocal` and `initGlobal`. -/
+
+/-- The initial local states of the extensions of `l` (`ExtSemantics.initLocal`),
+componentwise, for their global states `g`. -/
+def ExtsInitLocal : (l : List GooseExt) → ExtTuple ExtSemantics l → ExtsLocalState l →
+    ExtsGlobalState l → Prop
+  | [], _, _, _ => True
+  | _ :: l, Ss, w, g => Ss.1.initLocal w.1 g.1 ∧ ExtsInitLocal l Ss.2 w.2 g.2
+
+/-- The initial global states of the extensions of `l` (`ExtSemantics.initGlobal`),
+componentwise. -/
+def ExtsInitGlobal : (l : List GooseExt) → ExtTuple ExtSemantics l → ExtsGlobalState l → Prop
+  | [], _, _ => True
+  | _ :: l, Ss, g => Ss.1.initGlobal g.1 ∧ ExtsInitGlobal l Ss.2 g.2
+
+/-- The extensions of the program are in an initial state on a machine whose local
+state is `σ`, sharing the global state `g` (`ExtSemantics.initLocal`). Only the
+extensions' states are constrained: the heap, the Go runtime and the thread count are
+each theorem's own premises. -/
+abbrev extsInitLocal [GooseExts] [GooseSemantics] (σ : state) (g : GlobalState) : Prop :=
+  ExtsInitLocal exts GooseSemantics.sems σ.world g.globalWorld
+
+/-- The extensions of the program are in an initial global state
+(`ExtSemantics.initGlobal`). -/
+abbrev extsInitGlobal [GooseExts] [GooseSemantics] (g : GlobalState) : Prop :=
+  ExtsInitGlobal exts GooseSemantics.sems g.globalWorld
 
 /-! ## Crashes
 
@@ -744,7 +814,8 @@ def stateInitHeap (l : Loc) (v : val) (σ : state) : state :=
 def IsWriting {A} (mna : Option (NonAtomic A)) : Prop := ∃ x, mna = some (Writing, x)
 
 /-- The end of the address space: every allocation lies in `(0, maxAddr]`, gc's user address
-space on linux/amd64. -/
+space on linux/amd64. This is a trusted platform assumption, false on aix/ppc64, linux/arm64
+PIE/android and s390x: see `README.md`, "Platform", and `docs/KNOWN_LIMITATIONS.md`. -/
 def maxAddr : Int := 2 ^ 47
 
 /-- `l` is an address in `(0, maxAddr)` with no cell in `σg`: where `Alloc` may put its cell.

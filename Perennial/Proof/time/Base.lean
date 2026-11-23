@@ -9,13 +9,22 @@ Notes on the package's specs:
   `Time.wp_Before`, `Time.wp_Equal`, `wp_Since`, `wp_Until`, ...); the specs only say that
   these return some value (no panics; `Sub` saturates, the others wrap or fall back to the wall
   clock). `Since` and `Until` read the global `startNano`, so they take `isPkgInit`
-  (`isInit`); they call `Now`, whose spec `wp_Now` is an axiom (`Now` reads the clock through
-  the `go:linkname` `runtimeNow`). The model of `runtimeIsBubbled` (true only inside a
+  (`isInit`); they call `Now`, translated and proved over the trusted model of the `go:linkname`
+  `runtimeNow` (arbitrary clock readings, `TrustedCode/time.lean`); `Now` reads `startNano`
+  and `Local`, so it takes `isPkgInit` too. The model of `runtimeIsBubbled` (true only inside a
   `testing/synctest` bubble) is an arbitrary boolean (`TrustedCode/time.lean`).
 * The runtime's timers are modeled in `TrustedCode/time.lean`: its `newTimer` (used by the
   translated `AfterFunc`), `stopTimer` and `resetTimer` (used by the translated `Timer.Stop`
   and `Timer.Reset`), and `NewTimer`, `NewTicker`, `Ticker.Stop` and `Ticker.Reset`. All the
   timer and ticker specs are proved over these models. `Time.After` is translated and proved.
+* `Duration.Seconds` (over the semantics' IEEE 754 operations) and
+  `Duration.String` (`format`, `fmtFrac`, `fmtInt`: a 32-byte buffer, every index in bounds) are
+  translated and proved; their specs say only that they return some value.
+* The runtime's monotonic clock is modeled as runtime state (`TrustedCode/time.lean`, "The
+  runtime's monotonic clock"), allocated by the package's initialization: `clockLb n`, the clock
+  has reached `n` (below). Only `After` reads it so far: its channel delivers only once the clock
+  is `d` past the reading at the call (`time.After.spec`). `runtimeNano`, `runtimeNow` (so `Now`)
+  and the other timers keep arbitrary readings, which give nothing about the clock.
 * `wp_After`, the timer specs, `wp_when` and `wp_AfterFunc` are stated with the channel
   theory's instances, which fix `hlc := HasLC.hasLC` (sections `chan_*`).
   `Pos.Countable time.Time.t` (for the channel ghost state) is defined here.
@@ -46,6 +55,169 @@ instance Time.countable [GooseExts] : Pos.Countable time.Time :=
   .ofInjective (fun t => Pos.Countable.encode (t.wall', t.ext', t.loc'))
     (by rintro ⟨a, b, c⟩ ⟨d, e, f⟩ h; have h := Pos.encode_inj h; simp_all)
 
+section clock
+variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+
+/-! ### The runtime clock
+
+The model of the runtime's monotonic clock (`TrustedCode/time.lean`, "The runtime's monotonic
+clock"): a cell holding the clock's value `c`, an `int64`, which only readings change, never
+decreasing it. The ghost state is a monotone counter `γ` that follows `c` (`clockInv`), and
+`clockLb n` is a lower bound of it: **the clock has reached `n`** (persistent). Values above
+`clockMax = 2^63 - 1`, which the clock never exceeds, count as `clockMax` (`clockEnc`): so `clockLb n`
+for such an `n` says that the clock has reached `clockMax`, which keeps sums `clockLb (T + d)`
+meaningful where Go's timers saturate (`when`). The counter's name is existential in `clockLb`: the
+cell has one invariant (its full points-to is in it), so every `clockLb` speaks of the one clock. -/
+
+/-- `int64`'s maximum, the runtime clock's largest value. -/
+abbrev clockMax : Int := 2 ^ 63 - 1
+
+/-- The ghost counter's value for the clock value `z`: `z + 2^63`, with values above `clockMax`
+counted as `clockMax`. -/
+def clockEnc (z : Int) : Nat := (min z clockMax + 2 ^ 63).toNat
+
+theorem clockEnc_mono {a b : Int} (h : a ≤ b) : clockEnc a ≤ clockEnc b := by
+  unfold clockEnc; omega
+
+/-- The namespace of the runtime clock's invariant. -/
+def clockN : Namespace := nroot .@ "time_runtimeClock"
+
+/-- The invariant of the runtime clock's cell `l`: it holds `c`, which the counter `γ` follows. -/
+abbrev clockInv (γ : GName) (l : Loc) : IProp GF :=
+  iprop(∃ c : w64, heapPointsto l (DFrac.own 1) #c ∗ monoNatAuthOwn γ 1 (clockEnc (sint.Z c)))
+
+/-- `γ` is the counter of the runtime clock (persistent): the global `time.runtimeClock` holds the
+address of the cell, whose invariant `γ` follows. -/
+def isRuntimeClock (γ : GName) : IProp GF :=
+  iprop(∃ l : Loc, globalAddr runtimeClock ↦□ l ∗ inv clockN (clockInv γ l))
+
+instance isRuntimeClock_persistent (γ : GName) : Persistent (isRuntimeClock (GF := GF) γ) := by
+  unfold isRuntimeClock; infer_instance
+
+/-- **The runtime clock has reached `n`** (persistent; for `n > clockMax`: it has reached
+`clockMax`). -/
+def clockLb (n : Int) : IProp GF :=
+  iprop(∃ γ : GName, isRuntimeClock γ ∗ monoNatLbOwn γ (clockEnc n))
+
+instance clockLb_persistent (n : Int) : Persistent (clockLb (GF := GF) n) := by
+  unfold clockLb; infer_instance
+
+/-- A lower bound of the clock is one of every smaller value. -/
+theorem clockLb_le {n m : Int} (h : m ≤ n) : clockLb (GF := GF) n ⊢ clockLb m := by
+  unfold clockLb
+  iintro ⟨%γ, #Hc, #Hlb⟩
+  iexists γ
+  iframe Hc
+  iapply monoNatLbOwn_le _ (clockEnc_mono h) $$ Hlb
+
+/-- The clock at `x` has reached every `n` it is at least. -/
+theorem clockLb_enc {n x : Int} (h : clockEnc n ≤ clockEnc x) :
+    clockLb (GF := GF) x ⊢ clockLb n := by
+  unfold clockLb
+  iintro ⟨%γ, #Hc, #Hlb⟩
+  iexists γ
+  iframe Hc
+  iapply monoNatLbOwn_le _ h $$ Hlb
+
+set_option maxHeartbeats 1000000 in
+/-- A reading of the runtime clock at the cell `l` (`runtimeClockRead`, a helper of the trusted
+model): some `x`, at least any bound the caller holds (`clockLb n`, `n` capped at `clockMax`). -/
+theorem wp_runtimeClockRead (γ : GName) (l : Loc) (n : Int) :
+    {{ inv clockN (clockInv (GF := GF) γ l) ∗ monoNatLbOwn γ (clockEnc n) }}
+      (App (Val time.runtimeClockRead) (Val #l))
+    {{ (x : w64), RET #x; ⌜clockEnc n ≤ clockEnc (sint.Z x)⌝ ∗ monoNatLbOwn γ (clockEnc (sint.Z x)) }} := by
+  wp_start as ⟨#Hinv, #Hlb⟩
+  unfold runtimeClockRead
+  iloeb as IH generalizing HΦ
+  -- `c`: the clock now (an atomic add of 0)
+  wp_bind (AtomicAdd _ _)
+  iinv Hinv with ⟨%c, >Hl, >Hauth⟩
+  have Hev : atomicAddEval #c #(W64 0) = some #c := by
+    have h := congrFun (go.intoVal_unfold w64) c
+    have h0 := congrFun (go.intoVal_unfold w64) (W64 0)
+    rw [h, h0]; simp only [atomicAddEval]
+    rw [show c + W64 0 = c from by simp, h]
+  wp_apply_core wp_atomic_add l #c #(W64 0) #c Hev $$ Hl
+  iintro Hl
+  ihave %Hnc := monoNatLbOwn_valid γ 1 _ _ $$ Hauth Hlb
+  imodintro
+  isplitl [Hl Hauth]
+  · inext; iexists c; iframe
+  wp_pures
+  wp_apply wp_ArbitraryInt as %x -
+  wp_pures
+  wp_if_destruct
+  · -- `c ≤ x`: advance the clock to `x`, if it is still `c`
+    wp_bind (CmpXchg _ _ _)
+    iinv Hinv with ⟨%c', >Hl, >Hauth⟩
+    by_cases hc : c' = c
+    · subst hc
+      wp_apply_core wp_cmpxchg_suc l #c' #x #c' rfl $$ Hl
+      iintro Hl
+      imod mono_nat_own_update (clockEnc (sint.Z x)) (clockEnc_mono (by word)) $$ Hauth
+        with ⟨Hauth, #Hlbx⟩
+      imodintro
+      isplitl [Hl Hauth]
+      · inext; iexists x; iframe
+      wp_pures
+      iapply HΦ
+      iframe Hlbx
+      ipureintro
+      have := clockEnc_mono (a := sint.Z c') (b := sint.Z x) (by word)
+      omega
+    · wp_apply_core _root_.Perennial.wp_cmpxchg_fail l (DFrac.own 1) #c' #c #x (fun h => hc (go.intoVal_inj h)) $$ Hl
+      iintro Hl
+      imodintro
+      isplitl [Hl Hauth]
+      · inext; iexists c'; iframe
+      wp_pures
+      iapply IH $$ HΦ
+  · iapply IH $$ HΦ
+
+/-- A reading of the runtime clock (`runtimeClockNow`, a helper of the trusted model): some `x`, at
+least any bound the caller holds. -/
+theorem wp_runtimeClockNow (n : Int) :
+    {{ clockLb (GF := GF) n }}
+      (App (Val time.runtimeClockNow) (Val #()))
+    {{ (x : w64), RET #x; ⌜clockEnc n ≤ clockEnc (sint.Z x)⌝ ∗ clockLb (sint.Z x) }} := by
+  wp_start as Hlb
+  unfold clockLb
+  icases Hlb with ⟨%γ, #Hc, #Hlb⟩
+  unfold isRuntimeClock
+  icases Hc with ⟨%l, #Hg, #Hinv⟩
+  unfold runtimeClockType
+  wp_auto
+  wp_apply wp_runtimeClockRead γ l n $$ [] as %x ⟨%Hx, #Hlbx⟩
+  · iframe #
+  iapply HΦ
+  isplitr
+  · ipureintro; exact Hx
+  iexists γ
+  iframe #
+
+/-- Waiting for the runtime clock to reach `w` (`runtimeClockWaitUntil`, a helper of the trusted
+model): a reading `x ≥ w`. -/
+theorem wp_runtimeClockWaitUntil (n : Int) (w : w64) :
+    {{ clockLb (GF := GF) n }}
+      (App (Val time.runtimeClockWaitUntil) (Val #w))
+    {{ (x : w64), RET #x; ⌜sint.Z w ≤ sint.Z x⌝ ∗ clockLb (sint.Z x) }} := by
+  wp_start as #Hlb
+  unfold runtimeClockWaitUntil
+  iloeb as IH generalizing HΦ
+  wp_apply wp_runtimeClockNow n $$ Hlb as %x ⟨%-, #Hx⟩
+  wp_pures
+  wp_if_destruct
+  · wp_pures
+    iapply HΦ
+    iframe Hx
+    ipureintro; word
+  · iapply IH $$ HΦ
+
+end clock
+
 section wps
 variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
@@ -54,10 +226,19 @@ variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
 /-- The package invariant: the global `startNano` (`runtimeNano() - 1`, set by the package's
-initialization; Go never writes it afterwards) holds a fixed value. `Since` and `Until` read
-it. -/
+initialization; Go never writes it afterwards) holds a fixed value, which `Now`, `Since` and
+`Until` read; and so does the global `Local` (`&localLoc`, set by the initialization), which `Now`
+reads. Go programs may assign `time.Local`; this invariant hands out only a persistent
+read-only points-to of it, so a program that writes it cannot be verified (its proof would need
+the full points-to), while every read gets the value the initialization stored. The same holds of
+the global `UTC` (`&utcLoc`), which `Time.Location` reads. And the runtime
+clock, allocated by the initialization (`asynctimerchan`'s trusted initializer), is in place: a first
+bound `clockLb (-2^63)` (every `int64` is at least that), which carries the clock's invariant. -/
 abbrev isInit : IProp GF :=
-  iprop(∃ v : w64, globalAddr time.startNano ↦□ v)
+  iprop((∃ v : w64, globalAddr time.startNano ↦□ v) ∗
+    (∃ l : Loc, globalAddr time.Local ↦□ l) ∗
+    (∃ l : Loc, globalAddr time.UTC ↦□ l) ∗
+    clockLb (-2 ^ 63))
 
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.time :=
   define_is_pkg_init isInit
@@ -67,6 +248,13 @@ instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.time :=
 theorem isInit_access :
     isPkgInit (PROP := IProp GF) pkg_id.time ⊢ isInit (GF := GF) := by
   with_unfolding_all exact isPkgInit_access (PROP := IProp GF) pkg_id.time
+
+/-- The runtime clock has some reading (a first bound, for a caller's chain of bounds). -/
+theorem isPkgInit_clockLb :
+    isPkgInit (PROP := IProp GF) pkg_id.time ⊢ clockLb (GF := GF) (-2 ^ 63) := by
+  iintro #H
+  ihave ⟨-, -, -, #Hlb⟩ := isInit_access $$ H
+  iexact Hlb
 
 set_option goose.wp.extras true in
 /-- `arbitraryTime` (a helper of the trusted model of the runtime's timers,

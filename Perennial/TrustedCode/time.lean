@@ -71,6 +71,13 @@ def newTimer.impl : val :=
 def runtimeNano.impl : val :=
   λ: <>, ArbitraryInt
 
+/-- `runtimeNow` (a `go:linkname` into the runtime) reads the wall clock, as seconds and
+nanoseconds since the Unix epoch, and the monotonic clock; modeled as arbitrary values of its
+result types `(int64, int32, int64)`, which include every result of the runtime (there `nsec` is
+below 1e9, and `mono` is 0 on a platform without a monotonic clock). -/
+def runtimeNow.impl : val :=
+  λ: <>, Pair (Pair ArbitraryInt (Convert go.int64 go.int32 ArbitraryInt)) ArbitraryInt
+
 /-- `runtimeIsBubbled` (a `go:linkname` into the runtime) is true only inside a
 `testing/synctest` bubble; modeled as an arbitrary boolean. -/
 def runtimeIsBubbled.impl : val :=
@@ -94,14 +101,121 @@ def arbitraryTime : val :=
         KeyedElement (some (KeyField go!"loc")) (ElementExpression «unsafe».Pointer #null)
      ])
 
-/-- `After(d)` is `NewTimer(d).C`: a channel of capacity 0 or 1 (see `NewTimer`), on which the
-model sends one arbitrary time. -/
+/-! ### The runtime's monotonic clock
+
+Go's runtime reads the machine's monotonic clock (`runtime.nanotime`, `CLOCK_MONOTONIC` on Linux:
+nanoseconds, an `int64`), which never goes back: every reading is at least every reading before it,
+in every goroutine. The model keeps it as runtime state, as it keeps the runtime's timers
+(`runtimeTimerRef`): a cell holding the clock's current value, reached from the model-only global
+`time.runtimeClock` (no Go variable has that name, so no Go program reads or writes it). A reading
+(`runtimeClockNow`) advances the clock by an arbitrary amount (zero included) and returns the new
+value; so the readings of a run are exactly the non-decreasing sequences of `int64`s, which include
+every sequence the real clock produces.
+
+A program observes the clock only through the timers that wait for it (the readings are not
+returned to Go code: `After` sends an arbitrary time), so the model removes no execution of Go's:
+any order of `After` calls and firings is one of the model's, with the clock advanced at each firing
+as far as it needs. What the model adds is a clock that the proofs can speak of (`time.clockLb`), and
+its claim that the machine's monotonic clock is one of its evolutions: Go's timers fire only once
+`nanotime() >= when`, and `nanotime` never goes back. (A `testing/synctest` bubble, whose timers
+follow a fake clock, is outside the model: `internal/synctest`'s `Run` is a stuck `Panic`.)
+
+Only `After` reads this clock so far; `runtimeNano`, `runtimeNow` and the other timers keep their
+arbitrary readings (a superset of the real ones, so still sound), so that their specs need not take
+the package's `isPkgInit`. -/
+
+/-- The name of the model-only global holding the address of the clock's cell. -/
+def runtimeClock : GoString := go!"time.runtimeClock"
+
+/-- The global's type: a pointer (the clock's cell is an untyped cell holding an `int64`, which no Go
+type describes; only this file reads or writes it). -/
+def runtimeClockType : go.GoType := go.GoType.PointerType go.int64
+
+/-- Allocates the runtime clock (called only by `asynctimerchan.init`, at the end of this file: see
+there why the allocation sits in that initializer): the global
+`time.runtimeClock`, holding the address of a fresh cell holding an arbitrary `int64`, the clock's
+reading when the program starts. -/
+def runtimeClockInit : val :=
+  λ: <>,
+    go.GlobalAlloc runtimeClock runtimeClockType #() ;;
+    GlobalVarAddr runtimeClock #() <-[runtimeClockType] (Alloc ArbitraryInt)
+
+/-- A reading of the runtime clock whose cell is at `l`: advances the clock to an arbitrary value
+`n` at least its current one `c` and returns `n`. Linearizable at the `CAS`, which fails, and the
+reading starts over, if another reading advanced the clock in between (the loop may spin forever,
+which the real clock does not: the model covers partial correctness only). `c` is read with an
+atomic add of 0. -/
+def runtimeClockRead : val :=
+  rec: "loop" "l" :=
+    let: "c" := AtomicAdd "l" #(W64 0) in
+    let: "n" := ArbitraryInt in
+    if: "c" ≤⟨go.int64⟩ "n" then
+      (if: CAS "l" "c" "n" then "n" else "loop" "l")
+    else "loop" "l"
+
+/-- A reading of the runtime clock (`runtimeClockRead` of its cell).
+
+Trusted assumption: a run's readings of the runtime's monotonic clock form a non-decreasing
+sequence of `int64` values; the model allows exactly those sequences. Downstream real-time specs
+read `time.clockLb n` as "the clock has reached `n`", i.e. at least `n` has elapsed on the runtime's
+monotonic clock; that reading rests on this assumption. -/
+def runtimeClockNow : val :=
+  λ: <>, runtimeClockRead (![runtimeClockType] (GlobalVarAddr runtimeClock #()))
+
+/-- Waits until the runtime clock reaches `w`, and returns that reading (at least `w`). The model
+spins on readings, where the runtime parks the goroutine until the clock reaches `w`: the same
+outcomes, under partial correctness (a run in which the clock never gets there spins forever). -/
+def runtimeClockWaitUntil : val :=
+  rec: "loop" "w" :=
+    let: "x" := runtimeClockNow #() in
+    if: "w" ≤⟨go.int64⟩ "x" then "x" else "loop" "w"
+
+/-- `After(d)` (`time/sleep.go`) is `NewTimer(d).C`:
+
+```go
+func NewTimer(d Duration) *Timer {
+	c := make(chan Time, 1)
+	t := newTimer(when(d), 0, sendTime, c, syncTimer(c))
+	t.C = c
+	return t
+}
+
+func when(d Duration) int64 {
+	if d <= 0 {
+		return runtimeNano()
+	}
+	t := runtimeNano() + int64(d)
+	if t < 0 {
+		// N.B. runtimeNano() and d are always positive, so addition
+		// (including overflow) will never result in t == 0.
+		t = 1<<63 - 1 // math.MaxInt64
+	}
+	return t
+}
+```
+
+The channel has capacity 0 or 1 (see `NewTimer`). The model computes `when(d)` as Go does, over a
+reading of the runtime clock (`runtimeClockNow`) in place of `runtimeNano()` (the same clock), and
+forks a goroutine that waits until the clock reaches it (the runtime fires the timer once
+`nanotime() >= when`) and then sends one arbitrary time on the channel (Go sends the current time,
+one of them). The timer is not reachable from the program, so it is never stopped or reset.
+
+The model's clock starts at an arbitrary `int64` (`runtimeClockInit`), so it may read `≤ 0`, where
+Go's `runtimeNano()` is always positive (the comment in `when`, above). So `when(d)` may be `≤ 0` in
+the model, where the runtime would throw "timer when must be positive" (`runtime/time.go`,
+`timer.modify`), a throw that no Go run reaches; the model waits instead. This only adds executions
+that Go cannot have, never removes one: a deliberate, sound over-approximation (no throw and no
+positivity assumption to add). -/
 def After.impl : val :=
   λ: "d",
     let: "ch" := FuncResolve go.make2 [go.ChannelType go.sendrecv (go.Named go!"time.Time" [])]
       #() (if: ArbitraryInt =⟨go.int64⟩ #(W64 0) then #(W64 0) else #(W64 1)) in
-    -- delay is modeled as a no-op
-    Fork (chan.send (go.Named go!"time.Time" []) "ch" (arbitraryTime #())) ;;
+    let: "now" := runtimeClockNow #() in
+    let: "when" := (if: "d" ≤⟨go.int64⟩ #(W64 0) then "now" else
+      let: "t" := "now" +⟨go.int64⟩ "d" in
+      if: "t" <⟨go.int64⟩ #(W64 0) then #(W64 (2 ^ 63 - 1)) else "t") in
+    Fork (runtimeClockWaitUntil "when" ;;
+      chan.send (go.Named go!"time.Time" []) "ch" (arbitraryTime #())) ;;
     "ch"
 
 def Sleep.impl : val :=
@@ -227,9 +341,17 @@ translated; its `New(name)` is `return &Setting{name: name}`, an allocation, so 
 initializer cannot panic and has no effect beyond the variable. Its only reader is
 `syncTimer` (`asynctimerchan.Value()`, which reads the `GODEBUG` setting the runtime hands to
 `internal/godebug`), whose model above chooses either result arbitrarily instead; a translated
-reader could not load the variable (nothing gives a points-to for it). -/
+reader could not load the variable (nothing gives a points-to for it).
+
+The model also allocates the runtime clock (`runtimeClockInit`), which Go's runtime has from the
+program's start: it is the only trusted code of `time`'s initialization, which runs before any
+reading of the clock (only `After` reads it, which no initializer of `time` calls), and no other
+package's initialization can call into `time` before it. -/
 def asynctimerchan.init : val :=
-  λ: <>, #()
+  -- Allocates the `time` package's model-only clock state, which belongs to `time`, not to
+  -- `asynctimerchan`: it is here because `time`'s initializer is goose's translation, and this
+  -- variable initializer is the only trusted step it runs.
+  λ: <>, runtimeClockInit #()
 
 end code
 end time

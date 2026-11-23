@@ -85,6 +85,11 @@ noncomputable def Enum2.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] Enum2.ty
 
+noncomputable def float32Field.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.float32Field" [])
+
+attribute [irreducible] float32Field.ty
+
 noncomputable def Fooer.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.Fooer" [])
 
@@ -214,6 +219,11 @@ noncomputable def RecursiveEmbedded.ty [GooseExts] [GoGlobalContext] : go.GoType
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.RecursiveEmbedded" [])
 
 attribute [irreducible] RecursiveEmbedded.ty
+
+noncomputable def runeStruct.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.runeStruct" [])
+
+attribute [irreducible] runeStruct.ty
 
 noncomputable def SliceAlias.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.SliceAlias" [])
@@ -369,10 +379,37 @@ attribute [irreducible] aliasedStruct.ty
   #(W64 15)
 
 @[reducible] noncomputable def a [GooseExts] [GoGlobalContext] : val :=
-  #(W64 4607182418800017408)
+  #(mkRat (1 : Int) 1)
 
 @[reducible] noncomputable def b [GooseExts] [GoGlobalContext] : val :=
-  #(W64 4696837146684686336)
+  #(mkRat (1000000 : Int) 1)
+
+@[reducible] noncomputable def negUnderflow [GooseExts] [GoGlobalContext] : val :=
+  #(mkRat (-1 : Int) 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000)
+
+@[reducible] noncomputable def negUnderflow32 [GooseExts] [GoGlobalContext] : val :=
+  #(mkRat (-1 : Int) 100000000000000000000000000000000000000000000000000)
+
+@[reducible] noncomputable def negUnderflowF64 [GooseExts] [GoGlobalContext] : val :=
+  #(W64 0)
+
+@[reducible] noncomputable def negUnderflowF32 [GooseExts] [GoGlobalContext] : val :=
+  #(W32 0)
+
+@[reducible] noncomputable def offTie [GooseExts] [GoGlobalContext] : val :=
+  #(mkRat (1152921573326323713 : Int) 1152921504606846976)
+
+@[reducible] noncomputable def offTieF32 [GooseExts] [GoGlobalContext] : val :=
+  #(W32 1065353217)
+
+@[reducible] noncomputable def underflowF32 [GooseExts] [GoGlobalContext] : val :=
+  #(W32 0)
+
+@[reducible] noncomputable def offTieUntyped [GooseExts] [GoGlobalContext] : val :=
+  #(mkRat (1152921573326323713 : Int) 1152921504606846976)
+
+@[reducible] noncomputable def bigIntegral [GooseExts] [GoGlobalContext] : val :=
+  #(mkRat (1000000000000000001 : Int) 1)
 
 @[reducible] noncomputable def MaxRune [GooseExts] [GoGlobalContext] : val :=
   #(1114111 : Int)
@@ -583,6 +620,24 @@ noncomputable def compareIntFloat [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def compareFloatInt [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.compareFloatInt"
+
+noncomputable def negUnderflowConsts [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.negUnderflowConsts"
+
+noncomputable def negUnderflowLiterals [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.negUnderflowLiterals"
+
+noncomputable def takeFloat32 [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.takeFloat32"
+
+noncomputable def float32Consts [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.float32Consts"
+
+noncomputable def float32ConstAt [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.float32ConstAt"
+
+noncomputable def intConstAt [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.intConstAt"
 
 noncomputable def forRangeNoBinding [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.forRangeNoBinding"
@@ -907,6 +962,9 @@ noncomputable def VoidImplicitReturnInBranch [GooseExts] [GoGlobalContext] : GoS
 
 noncomputable def useRuneOps [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.useRuneOps"
+
+noncomputable def useRuneStruct [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.useRuneStruct"
 
 noncomputable def sliceOps [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.sliceOps"
@@ -2494,10 +2552,10 @@ noncomputable def useFloat.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (Val a))
+  (Let "$r0" (Val #(W64 4607182418800017408))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoMul go.float64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.float64))) (Pair (App (Val (GoInstruction (GoLoad go.float64))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (Val a)))) (Val #(W64 4607182418800017408))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoMul go.float64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.float64))) (Pair (App (Val (GoInstruction (GoLoad go.float64))) (Var "x")) (Val #(W64 4607182418800017408)))) (Val #(W64 4607182418800017408))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.float64))) (Var "x"))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2517,7 +2575,7 @@ noncomputable def compareIntFloat.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.int))) (Var "x"))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (Val #(W64 1000000))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedFloat go.int))) (Val b))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -2531,13 +2589,230 @@ noncomputable def compareFloatInt.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.int))) (Var "x"))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Val #(W64 1000000)) (App (Val (GoInstruction (GoLoad go.int))) (Var "x"))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (Convert go.untypedFloat go.int))) (Val b)) (App (Val (GoInstruction (GoLoad go.int))) (Var "x"))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: float.go:29:6 -/
+noncomputable def negUnderflowConsts.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (Let "$res2" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
+  (Let "$res3" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (Let "$res4" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
+  (Let "$res5" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (let «local» := #(mkRat (-1 : Int) 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
+  (let local32 := #(W32 0);
+  (Let "$r0" (Val #(W32 0))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 0))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad go.float32))) (Var "x"))
+  (Let "$r2" (Val #(W64 0))
+  (Let "$r3" (Val #(W32 0))
+  (Let "$r4" (Val #(W64 0))
+  (Let "$r5" (Val #(W32 0))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "$res5") (Var "$r5")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "$res4") (Var "$r4")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "$res3") (Var "$r3")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "$res2") (Var "$r2")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "$res0") (Var "$r0")))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "x") (Var "$r0"))))))))))
+  (Pair (Pair (Pair (Pair (Pair (App (Val (GoInstruction (GoLoad go.float64))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.float32))) (Var "$res1"))) (App (Val (GoInstruction (GoLoad go.float64))) (Var "$res2"))) (App (Val (GoInstruction (GoLoad go.float32))) (Var "$res3"))) (App (Val (GoInstruction (GoLoad go.float64))) (Var "$res4"))) (App (Val (GoInstruction (GoLoad go.float32))) (Var "$res5")))))))))))
+
+/-- go: float.go:36:6 -/
+noncomputable def negUnderflowLiterals.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Val #(W64 0))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W32 0))
+  (Let "y" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.float64))) (Var "x"))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad go.float32))) (Var "y"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "y") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "x") (Var "$r0"))))))))
+  (Pair (App (Val (GoInstruction (GoLoad go.float64))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.float32))) (Var "$res1")))))))
+
+/-- go: float.go:53:6 -/
+noncomputable def takeFloat32.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "x"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.float32))) (Var "x"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.float32))) (Var "x"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.float32))) (Var "$res0")))))
+
+/-- go: float.go:57:6 -/
+noncomputable def float32Consts.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.float32)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.float32)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (let «local» := #(W32 1065353217);
+  (Let "$r0" (Val #(W32 1065353217))
+  (Let "a" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W32 0))
+  (Let "b" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W32 1065353217))
+  (Let "c" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W32 1065353217))
+  (Let "d" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W32 1065353217))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W32 0))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W32 1065353217))
+  (App (Val (GoInstruction (CompositeLiteral float32Field.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"f")) (ElementExpression go.float32 (Var "$v0")))])))
+  (Let "s" (App (Val (GoInstruction (GoAlloc float32Field.ty))) (App (Val (GoInstruction (GoZeroVal float32Field.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W32 0))
+  (App (Val (GoInstruction (CompositeLiteral float32Field.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"f")) (ElementExpression go.float32 (Var "$v0")))])))
+  (Let "t" (App (Val (GoInstruction (GoAlloc float32Field.ty))) (App (Val (GoInstruction (GoZeroVal float32Field.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W32 1065353217))
+  (Let "$v1" (Val #(W32 0))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 2 go.float32)))) (LiteralValue [(KeyedElement none (ElementExpression go.float32 (Var "$v0"))), (KeyedElement none (ElementExpression go.float32 (Var "$v1")))]))))
+  (Let "arr" (App (Val (GoInstruction (GoAlloc (go.GoType.ArrayType 2 go.float32)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ArrayType 2 go.float32)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.float32))) (Pair (App (Val (GoInstruction (GoLoad go.float32))) (Var "a")) (Val #(W32 864026624))))
+  (Let "e" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad go.float32))) (Var "a"))
+  (Let "$v1" (App (Val (GoInstruction (GoLoad go.float32))) (Var "b"))
+  (Let "$v2" (App (Val (GoInstruction (GoLoad go.float32))) (Var "c"))
+  (Let "$v3" (App (Val (GoInstruction (GoLoad go.float32))) (Var "d"))
+  (Let "$v4" (Val #(W32 1065353217))
+  (Let "$v5" (Val #(W32 1065353217))
+  (Let "$v6" (Val #(W32 0))
+  (Let "$v7" (App (Val (GoInstruction (GoLoad go.float32))) (App (Val (GoInstruction (StructFieldRef float32Field.ty go!"f"))) (Var "s")))
+  (Let "$v8" (App (Val (GoInstruction (GoLoad go.float32))) (App (Val (GoInstruction (StructFieldRef float32Field.ty go!"f"))) (Var "t")))
+  (Let "$v9" (App (Val (GoInstruction (GoLoad go.float32))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 2 go.float32)))) (Pair (Var "arr") (Val #(W64 0)))))
+  (Let "$v10" (App (Val (GoInstruction (GoLoad go.float32))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 2 go.float32)))) (Pair (Var "arr") (Val #(W64 1)))))
+  (Let "$v11" (App (Val (GoInstruction (GoLoad go.float32))) (Var "e"))
+  (Let "$v12" (Let "$a0" (Val #(W32 1065353217))
+  (App (App (Val (GoInstruction (FuncResolve takeFloat32 []))) (Val #())) (Var "$a0")))
+  (Let "$v13" (Let "$a0" (Val #(W32 0))
+  (App (App (Val (GoInstruction (FuncResolve takeFloat32 []))) (Val #())) (Var "$a0")))
+  (Let "$v14" (Let "$a0" (Val #(W32 1065353217))
+  (App (App (Val (GoInstruction (FuncResolve takeFloat32 []))) (Val #())) (Var "$a0")))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.float32)))) (LiteralValue [(KeyedElement none (ElementExpression go.float32 (Var "$v0"))), (KeyedElement none (ElementExpression go.float32 (Var "$v1"))), (KeyedElement none (ElementExpression go.float32 (Var "$v2"))), (KeyedElement none (ElementExpression go.float32 (Var "$v3"))), (KeyedElement none (ElementExpression go.float32 (Var "$v4"))), (KeyedElement none (ElementExpression go.float32 (Var "$v5"))), (KeyedElement none (ElementExpression go.float32 (Var "$v6"))), (KeyedElement none (ElementExpression go.float32 (Var "$v7"))), (KeyedElement none (ElementExpression go.float32 (Var "$v8"))), (KeyedElement none (ElementExpression go.float32 (Var "$v9"))), (KeyedElement none (ElementExpression go.float32 (Var "$v10"))), (KeyedElement none (ElementExpression go.float32 (Var "$v11"))), (KeyedElement none (ElementExpression go.float32 (Var "$v12"))), (KeyedElement none (ElementExpression go.float32 (Var "$v13"))), (KeyedElement none (ElementExpression go.float32 (Var "$v14")))])))))))))))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.float32)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "e") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 2 go.float32)))) (Pair (Var "arr") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore float32Field.ty))) (Pair (Var "t") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore float32Field.ty))) (Pair (Var "s") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "b") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "a") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "d") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "c") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "b") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "a") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.float32)))) (Var "$res0")))))
+
+/-- go: float.go:75:6 -/
+noncomputable def float32ConstAt.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
+  (Let "$res2" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat T))) (Val offTie))
+  (Let "$r1" (App (Val (GoInstruction (Convert go.untypedFloat T))) (Val #(mkRat (1152921573326323713 : Int) 1152921504606846976)))
+  (Let "$r2" (App (Val (GoInstruction (Convert go.untypedFloat T))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val offTie)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore T))) (Pair (Var "$res2") (Var "$r2")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore T))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore T))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (Pair (Pair (App (Val (GoInstruction (GoLoad T))) (Var "$res0")) (App (Val (GoInstruction (GoLoad T))) (Var "$res1"))) (App (Val (GoInstruction (GoLoad T))) (Var "$res2"))))))))
+
+/-- go: float.go:79:6 -/
+noncomputable def intConstAt.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat go.int64))) (Val bigIntegral))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat T))) (Val bigIntegral))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad go.int64))) (Var "x"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore T))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "x") (Var "$r0"))))))))
+  (Pair (App (Val (GoInstruction (GoLoad T))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res1")))))))
 
 /-- go: for_range.go:5:6 -/
 noncomputable def forRangeNoBinding.impl [GooseExts] [GoGlobalContext] : val :=
@@ -2632,7 +2907,7 @@ noncomputable def maybeConvertToInterface.impl [GooseExts] [GoGlobalContext] (A 
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "a" (App (Val (GoInstruction (GoAlloc A))) (Var "a"))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad A))) (Var "a"))
+  (Let "$r0" (App (Val (GoInstruction (Convert A go.any))) (App (Val (GoInstruction (GoLoad A))) (Var "a")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -4851,6 +5126,20 @@ noncomputable def useRuneOps.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "r") (App (Val (GoInstruction (GoOp GoPlus go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (Val #(W32 1))))))))))
   (App (Val (GoInstruction (GoLoad go.rune))) (Var "$res0")))))
 
+/-- go: rune.go:18:6 -/
+noncomputable def useRuneStruct.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc runeStruct.ty))) (Var "s"))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (App (Val (GoInstruction (StructFieldRef runeStruct.ty go!"r"))) (Var "s"))) (App (Val (GoInstruction (GoLoad go.int32))) (App (Val (GoInstruction (StructFieldRef runeStruct.ty go!"n"))) (Var "s")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.rune))) (Var "$res0")))))
+
 /-- go: slices.go:5:6 -/
 noncomputable def sliceOps.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -6294,6 +6583,41 @@ attribute [instance] Enum2.TypeAssumptions.underlying
   Enum2.TypeAssumptions.method_set
   Enum2.TypeAssumptions.ptr_method_set
 
+structure float32Field [GooseExts] where
+  mk ::
+  f' : w32
+
+noncomputable instance float32Field.zero_val [GooseExts] : ZeroVal float32Field :=
+  ⟨float32Field.mk zeroValDef⟩
+
+@[reducible] noncomputable def float32Field.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"f" go.float32)]
+
+@[irreducible] noncomputable def float32Field.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  float32Field.fieldsUnsealed
+
+noncomputable instance equals_unfold_float32Field [GooseExts] [GoGlobalContext] :
+    EqualsUnfold float32Field.fields float32Field.fieldsUnsealed :=
+  ⟨by unfold float32Field.fields; rfl⟩
+
+@[reducible] noncomputable def float32Field.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType float32Field.fields)
+
+class float32Field.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying float32Field.underlying float32Field
+  underlying : go.UnderlyingDirectedEq float32Field.ty float32Field.underlying
+  get_f : ∀ (x : float32Field), go.IsGoStepPureDetTagged under (StructFieldGet float32Field.underlying go!"f") #x (Val #(x.f'))
+  set_f : ∀ (x : float32Field) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet float32Field.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : float32Field)))
+  method_set : go.MethodSetIs float32Field.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType float32Field.ty) []
+
+attribute [instance] float32Field.TypeAssumptions.type_repr
+  float32Field.TypeAssumptions.underlying
+  float32Field.TypeAssumptions.get_f
+  float32Field.TypeAssumptions.set_f
+  float32Field.TypeAssumptions.method_set
+  float32Field.TypeAssumptions.ptr_method_set
+
 abbrev Fooer [GooseExts] : Type := GoInterface
 
 @[reducible] noncomputable def Fooer.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
@@ -7106,6 +7430,47 @@ attribute [instance] RecursiveEmbedded.TypeAssumptions.type_repr
   RecursiveEmbedded.TypeAssumptions.ptr_method_set
   RecursiveEmbedded.TypeAssumptions.ptr_recurEmbeddedMethod_unfold
 
+structure runeStruct [GooseExts] where
+  mk ::
+  r' : w32
+  n' : w32
+
+noncomputable instance runeStruct.zero_val [GooseExts] : ZeroVal runeStruct :=
+  ⟨runeStruct.mk zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def runeStruct.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"r" go.rune),
+(go.field_decl.FieldDecl go!"n" go.int32)]
+
+@[irreducible] noncomputable def runeStruct.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  runeStruct.fieldsUnsealed
+
+noncomputable instance equals_unfold_runeStruct [GooseExts] [GoGlobalContext] :
+    EqualsUnfold runeStruct.fields runeStruct.fieldsUnsealed :=
+  ⟨by unfold runeStruct.fields; rfl⟩
+
+@[reducible] noncomputable def runeStruct.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType runeStruct.fields)
+
+class runeStruct.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying runeStruct.underlying runeStruct
+  underlying : go.UnderlyingDirectedEq runeStruct.ty runeStruct.underlying
+  get_r : ∀ (x : runeStruct), go.IsGoStepPureDetTagged under (StructFieldGet runeStruct.underlying go!"r") #x (Val #(x.r'))
+  set_r : ∀ (x : runeStruct) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet runeStruct.underlying go!"r") (PairV #x #y) (Val #(({ x with r' := y } : runeStruct)))
+  get_n : ∀ (x : runeStruct), go.IsGoStepPureDetTagged under (StructFieldGet runeStruct.underlying go!"n") #x (Val #(x.n'))
+  set_n : ∀ (x : runeStruct) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet runeStruct.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : runeStruct)))
+  method_set : go.MethodSetIs runeStruct.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType runeStruct.ty) []
+
+attribute [instance] runeStruct.TypeAssumptions.type_repr
+  runeStruct.TypeAssumptions.underlying
+  runeStruct.TypeAssumptions.get_r
+  runeStruct.TypeAssumptions.set_r
+  runeStruct.TypeAssumptions.get_n
+  runeStruct.TypeAssumptions.set_n
+  runeStruct.TypeAssumptions.method_set
+  runeStruct.TypeAssumptions.ptr_method_set
+
 abbrev SliceAlias [GooseExts] : Type := GoSlice
 
 @[reducible] noncomputable def SliceAlias.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
@@ -7509,6 +7874,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   embedD_instance : embedD.TypeAssumptions
   Enum1_instance : Enum1.TypeAssumptions
   Enum2_instance : Enum2.TypeAssumptions
+  float32Field_instance : float32Field.TypeAssumptions
   Fooer_instance : Fooer.TypeAssumptions
   concreteFooer_instance : concreteFooer.TypeAssumptions
   FooerUser_instance : FooerUser.TypeAssumptions
@@ -7535,6 +7901,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   R_instance : R.TypeAssumptions
   Other_instance : Other.TypeAssumptions
   RecursiveEmbedded_instance : RecursiveEmbedded.TypeAssumptions
+  runeStruct_instance : runeStruct.TypeAssumptions
   SliceAlias_instance : SliceAlias.TypeAssumptions
   thing_instance : thing.TypeAssumptions
   sliceOfThings_instance : sliceOfThings.TypeAssumptions
@@ -7607,6 +7974,12 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   useFloat_unfold : FuncUnfold useFloat [] useFloat.impl
   compareIntFloat_unfold : FuncUnfold compareIntFloat [] compareIntFloat.impl
   compareFloatInt_unfold : FuncUnfold compareFloatInt [] compareFloatInt.impl
+  negUnderflowConsts_unfold : FuncUnfold negUnderflowConsts [] negUnderflowConsts.impl
+  negUnderflowLiterals_unfold : FuncUnfold negUnderflowLiterals [] negUnderflowLiterals.impl
+  takeFloat32_unfold : FuncUnfold takeFloat32 [] takeFloat32.impl
+  float32Consts_unfold : FuncUnfold float32Consts [] float32Consts.impl
+  float32ConstAt_unfold : ∀ (T : go.GoType), FuncUnfold float32ConstAt [T] (float32ConstAt.impl T)
+  intConstAt_unfold : ∀ (T : go.GoType), FuncUnfold intConstAt [T] (intConstAt.impl T)
   forRangeNoBinding_unfold : FuncUnfold forRangeNoBinding [] forRangeNoBinding.impl
   forRangeOldVars_unfold : FuncUnfold forRangeOldVars [] forRangeOldVars.impl
   forRangeString_unfold : FuncUnfold forRangeString [] forRangeString.impl
@@ -7715,6 +8088,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   VoidButEndsWithReturn_unfold : FuncUnfold VoidButEndsWithReturn [] VoidButEndsWithReturn.impl
   VoidImplicitReturnInBranch_unfold : FuncUnfold VoidImplicitReturnInBranch [] VoidImplicitReturnInBranch.impl
   useRuneOps_unfold : FuncUnfold useRuneOps [] useRuneOps.impl
+  useRuneStruct_unfold : FuncUnfold useRuneStruct [] useRuneStruct.impl
   sliceOps_unfold : FuncUnfold sliceOps [] sliceOps.impl
   makeSingletonSlice_unfold : FuncUnfold makeSingletonSlice [] makeSingletonSlice.impl
   makeAlias_unfold : FuncUnfold makeAlias [] makeAlias.impl
@@ -7773,6 +8147,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.embedD_instance
   Assumptions.Enum1_instance
   Assumptions.Enum2_instance
+  Assumptions.float32Field_instance
   Assumptions.Fooer_instance
   Assumptions.concreteFooer_instance
   Assumptions.FooerUser_instance
@@ -7799,6 +8174,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.R_instance
   Assumptions.Other_instance
   Assumptions.RecursiveEmbedded_instance
+  Assumptions.runeStruct_instance
   Assumptions.SliceAlias_instance
   Assumptions.thing_instance
   Assumptions.sliceOfThings_instance
@@ -7871,6 +8247,12 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.useFloat_unfold
   Assumptions.compareIntFloat_unfold
   Assumptions.compareFloatInt_unfold
+  Assumptions.negUnderflowConsts_unfold
+  Assumptions.negUnderflowLiterals_unfold
+  Assumptions.takeFloat32_unfold
+  Assumptions.float32Consts_unfold
+  Assumptions.float32ConstAt_unfold
+  Assumptions.intConstAt_unfold
   Assumptions.forRangeNoBinding_unfold
   Assumptions.forRangeOldVars_unfold
   Assumptions.forRangeString_unfold
@@ -7979,6 +8361,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.VoidButEndsWithReturn_unfold
   Assumptions.VoidImplicitReturnInBranch_unfold
   Assumptions.useRuneOps_unfold
+  Assumptions.useRuneStruct_unfold
   Assumptions.sliceOps_unfold
   Assumptions.makeSingletonSlice_unfold
   Assumptions.makeAlias_unfold

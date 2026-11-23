@@ -4,6 +4,7 @@ The proof of `sync.(*Mutex).Unlock`.
 module
 
 public import Perennial.Spec.sync.Mutex__Unlock
+public import Perennial.Spec.internal.sync.Mutex__Unlock
 
 @[expose] public section
 
@@ -22,12 +23,14 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
-theorem sync.Mutex.Unlock.wp_proof :
+theorem sync.Mutex.Unlock.wp_proof
+    (wp_Unlock : internal.sync.Mutex.Unlock.spec (GF := GF) (hG := hG)) :
     sync.Mutex.Unlock.spec (GF := GF) (hG := hG) := by
   intro m R
   wp_start as ⟨#His, Hlocked, HR⟩
   simp only [isMutex_unseal, isMutexDef, ownMutex_unseal, ownMutexDef]
-  wp_apply wp_lock_unlock $$ [$His $Hlocked $HR]
+  wp_auto
+  wp_apply wp_Unlock $$ [$His $Hlocked $HR]
   iapply HΦ
   itrivial
 

@@ -12,8 +12,6 @@ pre-condition only once.
 
 It is valid to call `Once.Do(f)` with different values of `f`, but they must
 all satisfy `{P} #f #() {Q}`.
-
-The proofs of `Once` use later credits, so they are stated for `HasLC.hasLC`.
 -/
 module
 
@@ -34,7 +32,7 @@ namespace sync
 section wps
 variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 

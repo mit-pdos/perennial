@@ -516,8 +516,11 @@ theorem wp_mapDelete_underlying {t key_type elem_type : go.GoType}
   wp_start as Hm
   rw [ownMap_unseal]
   iNamed Hm
+  ihave %Hnn := heapPointsto_non_null _ _ _ $$ Hown
   obtain ⟨rfl, Hnd, Hok, Hagree⟩ := Hrepr
   wp_apply (wp_go_eq_map_key (GF := GF) (key_type := key_type) (k := k) k Hsafe.key_ok)
+  rw [decide_eq_false (show ¬ l = map.nil from Hnn)]
+  wp_pures
   wp_apply (_internal_wp_untyped_read _ _ _ (map.mapV_not_panic _ _)) $$ Hown with Hown
   wp_pures
   have Hdel := wp_deleteExpr (GF := GF) (s := s) (E := E) key_type k #(zero_val V) [] ps Hok
@@ -568,6 +571,27 @@ theorem wp_map_lookup2 (key_type elem_type : go.GoType) (mref : Loc) (m : GMap K
     iframe Hown
     ipureintro
     exact ⟨rfl, Hnd, Hok, Hagree⟩
+
+instance pure_wp_map_nil_delete {t key_type elem_type : go.GoType}
+    [t ↓u go.MapType key_type elem_type] (k : K) [Hsafe : SafeMapKey (GF := GF) key_type k] :
+    PureWp (G := hG.goose_globalGS) (L := hG.goose_localGS) True
+      (App (App (Val #(functions go.delete [t])) (Val #map.nil)) (Val #k)) (Val #()) :=
+  pure_wp_val True _ #() fun s E Φ _ => by
+    rw [func_unfold]
+    iintro HΦ
+    wp_call_lc Hlc
+    wp_apply (wp_go_eq_map_key (GF := GF) (key_type := key_type) (k := k) k Hsafe.key_ok)
+    iapply HΦ $$ Hlc
+
+instance pure_wp_map_nil_clear {t key_type elem_type : go.GoType}
+    [t ↓u go.MapType key_type elem_type] :
+    PureWp (G := hG.goose_globalGS) (L := hG.goose_localGS) True
+      (App (Val #(functions go.clear [t])) (Val #map.nil)) (Val #()) :=
+  pure_wp_val True _ #() fun s E Φ _ => by
+    rw [func_unfold]
+    iintro HΦ
+    wp_auto_lc 1
+    iapply HΦ $$ Hlc1
 
 instance pure_wp_map_nil_lookup2 (key_type elem_type : go.GoType) (k : K)
     [TypedPointsto (GF := GF) V] [IntoValTyped (GF := GF) V elem_type]
@@ -627,12 +651,52 @@ theorem wp_map_make1 (key_type elem_type : go.GoType) [TypeRepr key_type K]
   wp_apply (wp_map_make2 (K := K) (V := V) (W64 0) key_type elem_type) with %mref Hm
   iapply HΦ $$ Hm
 
+/-- `InternalMapClone` (`maps.clone`, see `internal_map_clone_step`) of an interface holding the
+map `mref` (any fraction): a fresh map with the same entries, which the caller owns, in an
+interface of the same dynamic type `t`. -/
+theorem wp_map_clone {t key_type elem_type : go.GoType} [t ↓u go.MapType key_type elem_type]
+    (mref : Loc) (dq : DFrac) (m : GMap K V) :
+    {{ (mref ↦${dq} m : IProp GF) }}
+      (App (Val (GoInstruction InternalMapClone)) (Val #(interface.mkOk t #mref))) @ s; E
+    {{ (mref' : Loc), RET #(interface.mkOk t #mref'); mref ↦${dq} m ∗ mref' ↦$ m }} := by
+  rw [ownMap_unseal]
+  iintro %Φ Hm HΦ
+  iNamed Hm
+  obtain ⟨rfl, Hnd, Hok, Hagree⟩ := Hrepr
+  wp_pures
+  wp_apply (_internal_wp_untyped_read _ _ _ (map.mapV_not_panic _ _)) $$ Hown with Hown
+  wp_apply (wp_alloc_untyped _ (by simp)) with %l Hl
+  wp_pures
+  iapply HΦ
+  unfold ownMapDef
+  simp only [named]
+  isplitl [Hown]
+  · iexists _, ps
+    iframe Hown
+    ipureintro
+    exact ⟨rfl, Hnd, Hok, Hagree⟩
+  · iexists _, ps
+    iframe Hl
+    ipureintro
+    exact ⟨rfl, Hnd, Hok, Hagree⟩
+
+theorem ownMap_not_nil (mref : Loc) (m : GMap K V) (dq : DFrac) :
+    (mref ↦${dq} m : IProp GF) ⊢ ⌜mref ≠ map.nil⌝ := by
+  rw [ownMap_unseal]
+  iintro Hm
+  iNamed Hm
+  ihave %H := heapPointsto_non_null _ _ _ $$ Hown
+  ipureintro; exact H
+
 theorem wp_map_clear (mref : Loc) (m : GMap K V) (key_type elem_type : go.GoType)
     [TypeRepr key_type K] [TypedPointsto (GF := GF) V] [IntoValTyped (GF := GF) V elem_type] :
     {{ (mref ↦$ m : IProp GF) }}
       (App (Val #(functions go.clear [go.MapType key_type elem_type])) (Val #mref)) @ s; E
     {{ RET #(); mref ↦$ (∅ : GMap K V) }} := by
   wp_start as Hm
+  ihave %Hnn := ownMap_not_nil _ _ _ $$ Hm
+  rw [decide_eq_false Hnn]
+  wp_pures
   wp_apply (wp_map_make1 (K := K) (V := V) key_type elem_type) with %m' Hm'
   rw [ownMap_unseal]
   unfold ownMapDef
@@ -648,14 +712,6 @@ theorem wp_map_clear (mref : Loc) (m : GMap K V) (key_type elem_type : go.GoType
   iframe Hown
   ipureintro
   exact ⟨rfl, Hnd', Hok', Hagree'⟩
-
-theorem ownMap_not_nil (mref : Loc) (m : GMap K V) (dq : DFrac) :
-    (mref ↦${dq} m : IProp GF) ⊢ ⌜mref ≠ map.nil⌝ := by
-  rw [ownMap_unseal]
-  iintro Hm
-  iNamed Hm
-  ihave %H := heapPointsto_non_null _ _ _ $$ Hown
-  ipureintro; exact H
 
 instance ownMap_discarded_persist (mref : Loc) (m : GMap K V) :
     Persistent (ownMap (GF := GF) mref DFrac.discard m) := by
@@ -801,7 +857,8 @@ def forMapPostcondition (P : IProp GF) (Φ : val → IProp GF) (bv : val) : IPro
   iprop((⌜bv = continueVal⌝ ∗ P) ∨
     (⌜bv = executeVal⌝ ∗ P) ∨
     (⌜bv = breakVal⌝ ∗ Φ executeVal) ∨
-    (∃ v, ⌜bv = returnVal v⌝ ∗ Φ bv))
+    (∃ v, ⌜bv = returnVal v⌝ ∗ Φ bv) ∨
+    (⌜isLabeledOutcome bv⌝ ∗ Φ bv))
 
 /-- Reading the map cell: the value read is the map's entries `ps`. -/
 theorem wp_ownMap_read (mref : Loc) (dq : DFrac) (m : GMap K V) (Φ : val → IProp GF) :
@@ -924,7 +981,8 @@ theorem wp_map_for_range_gen (P : List K → Nat → GMap K V → IProp GF) (bod
       iapply wp_wand $$ Hb
       iintro %bv Hpost
       unfold forMapPostcondition
-      icases Hpost with (⟨%hbv, Hinv⟩ | ⟨%hbv, Hinv⟩ | ⟨%hbv, HΦ'⟩ | ⟨%v', %hbv, HΦ'⟩)
+      icases Hpost with (⟨%hbv, Hinv⟩ | ⟨%hbv, Hinv⟩ | ⟨%hbv, HΦ'⟩ | ⟨%v', %hbv, HΦ'⟩ |
+        ⟨%hbv, HΦ'⟩)
       · subst hbv
         rw [continueVal_unseal]; simp only [continueValDef]
         wp_auto
@@ -941,6 +999,13 @@ theorem wp_map_for_range_gen (P : List K → Nat → GMap K V → IProp GF) (bod
         rw [returnVal_unseal]; simp only [returnValDef]
         wp_auto
         iexact HΦ'
+      · obtain ⟨l, rfl | rfl⟩ := hbv
+        · rw [breakToVal_unseal]; simp only [breakToValDef]
+          wp_auto
+          iexact HΦ'
+        · rw [continueToVal_unseal]; simp only [continueToValDef]
+          wp_auto
+          iexact HΦ'
   · rw [List.drop_of_length_le (by omega)]
     simp only [List.map_nil, List.foldr_nil]
     wp_auto
@@ -954,11 +1019,13 @@ theorem forMapPostcondition_mono (P Q : IProp GF) (Φ Ψ : val → IProp GF) (bv
       forMapPostcondition Q Ψ bv := by
   iintro Hw H
   unfold forMapPostcondition
-  icases H with (⟨%hbv, HP⟩ | ⟨%hbv, HP⟩ | ⟨%hbv, HΦ⟩ | ⟨%v', %hbv, HΦ⟩)
+  icases H with (⟨%hbv, HP⟩ | ⟨%hbv, HP⟩ | ⟨%hbv, HΦ⟩ | ⟨%v', %hbv, HΦ⟩ | ⟨%hbv, HΦ⟩)
   · ileft; iframe %hbv; icases Hw with ⟨HPQ, -⟩; iapply HPQ $$ HP
   · iright; ileft; iframe %hbv; icases Hw with ⟨HPQ, -⟩; iapply HPQ $$ HP
   · iright; iright; ileft; iframe %hbv; icases Hw with ⟨-, HΦΨ⟩; iapply HΦΨ $$ HΦ
-  · iright; iright; iright; iexists v'; iframe %hbv; icases Hw with ⟨-, HΦΨ⟩; iapply HΦΨ $$ HΦ
+  · iright; iright; iright; ileft; iexists v'; iframe %hbv; icases Hw with ⟨-, HΦΨ⟩
+    iapply HΦΨ $$ HΦ
+  · iright; iright; iright; iright; iframe %hbv; icases Hw with ⟨-, HΦΨ⟩; iapply HΦΨ $$ HΦ
 
 /-- `for range` over a map the loop only reads (`mref ↦${dq} m`, any fraction): the body is
 called on each key of `m` once, in the order of `keys`, with its value. -/

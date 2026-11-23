@@ -27,7 +27,10 @@ def Println.impl : val :=
 var std = New(os.Stderr, "", LstdFlags)
 ```
 
-The model does nothing, and `std` is not allocated. `New` allocates a `Logger` and sets its
+The model does nothing, and `std` is not allocated (goose emits no allocation for a trusted
+variable: its `init` is its whole initialization), so a load or store of it is stuck, and
+taking its address steps, to the address Go would give. Sound because Go's initializer has no
+effect a proof can observe beyond the variable: `New` allocates a `Logger` and sets its
 output, prefix and flags (`SetOutput` takes the logger's own new mutex): it cannot panic, and it
 has no effect beyond the new logger and the variable. Translating it would need `os.Stderr`,
 whose initializer (`NewFile(uintptr(syscall.Stderr), "/dev/stderr")`) wraps a file

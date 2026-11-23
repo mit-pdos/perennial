@@ -32,17 +32,20 @@ func main() {
 	var configDir string
 	flag.StringVar(&configDir, "configdir", ".", "directory containing Goose config files")
 	flag.Var(glang.LeanRootFlag{}, "lean-root", glang.LeanRootUsage)
+	var load util.LoadFlags
+	load.Register(flag.CommandLine, "")
 	var all bool
 	flag.BoolVar(&all, "all", false,
 		"check every statement of every function body, translated or not, without running goose "+
 			"(for code goose cannot translate yet; goose stops at the first error in a declaration)")
 	flag.Parse()
+	opts := load.Options()
 
 	if all {
-		os.Exit(checkAll(modDir, flag.Args()))
+		os.Exit(checkAll(modDir, opts, flag.Args()))
 	}
 
-	_, errs, patternErr := goose.TranslatePackages(configDir, modDir, flag.Args()...)
+	_, errs, patternErr := goose.TranslatePackages(configDir, modDir, opts, flag.Args()...)
 	if patternErr != nil {
 		fmt.Fprintln(os.Stderr, patternErr)
 		os.Exit(2)
@@ -68,8 +71,8 @@ func main() {
 
 // checkAll checks every assignment and range statement in the packages, and
 // returns the exit status.
-func checkAll(modDir string, patterns []string) int {
-	pkgs, err := packages.Load(util.NewPackageConfig(modDir, false), patterns...)
+func checkAll(modDir string, opts util.LoadOptions, patterns []string) int {
+	pkgs, err := packages.Load(util.NewPackageConfig(modDir, false, opts), patterns...)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 2

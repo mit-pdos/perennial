@@ -442,3831 +442,3831 @@ noncomputable def Termios.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] Termios.ty
 
-axiom CLONE_VM [GooseExts] [GoGlobalContext] : val
+opaque CLONE_VM [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_FS [GooseExts] [GoGlobalContext] : val
+opaque CLONE_FS [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_FILES [GooseExts] [GoGlobalContext] : val
+opaque CLONE_FILES [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_SIGHAND [GooseExts] [GoGlobalContext] : val
+opaque CLONE_SIGHAND [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_PIDFD [GooseExts] [GoGlobalContext] : val
+opaque CLONE_PIDFD [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_PTRACE [GooseExts] [GoGlobalContext] : val
+opaque CLONE_PTRACE [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_VFORK [GooseExts] [GoGlobalContext] : val
+opaque CLONE_VFORK [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_PARENT [GooseExts] [GoGlobalContext] : val
+opaque CLONE_PARENT [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_THREAD [GooseExts] [GoGlobalContext] : val
+opaque CLONE_THREAD [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_NEWNS [GooseExts] [GoGlobalContext] : val
+opaque CLONE_NEWNS [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_SYSVSEM [GooseExts] [GoGlobalContext] : val
+opaque CLONE_SYSVSEM [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_SETTLS [GooseExts] [GoGlobalContext] : val
+opaque CLONE_SETTLS [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_PARENT_SETTID [GooseExts] [GoGlobalContext] : val
+opaque CLONE_PARENT_SETTID [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_CHILD_CLEARTID [GooseExts] [GoGlobalContext] : val
+opaque CLONE_CHILD_CLEARTID [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_DETACHED [GooseExts] [GoGlobalContext] : val
+opaque CLONE_DETACHED [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_UNTRACED [GooseExts] [GoGlobalContext] : val
+opaque CLONE_UNTRACED [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_CHILD_SETTID [GooseExts] [GoGlobalContext] : val
+opaque CLONE_CHILD_SETTID [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_NEWCGROUP [GooseExts] [GoGlobalContext] : val
+opaque CLONE_NEWCGROUP [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_NEWUTS [GooseExts] [GoGlobalContext] : val
+opaque CLONE_NEWUTS [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_NEWIPC [GooseExts] [GoGlobalContext] : val
+opaque CLONE_NEWIPC [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_NEWUSER [GooseExts] [GoGlobalContext] : val
+opaque CLONE_NEWUSER [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_NEWPID [GooseExts] [GoGlobalContext] : val
+opaque CLONE_NEWPID [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_NEWNET [GooseExts] [GoGlobalContext] : val
+opaque CLONE_NEWNET [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_IO [GooseExts] [GoGlobalContext] : val
+opaque CLONE_IO [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_CLEAR_SIGHAND [GooseExts] [GoGlobalContext] : val
+opaque CLONE_CLEAR_SIGHAND [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_INTO_CGROUP [GooseExts] [GoGlobalContext] : val
+opaque CLONE_INTO_CGROUP [GooseExts] [GoGlobalContext] : val
 
-axiom CLONE_NEWTIME [GooseExts] [GoGlobalContext] : val
+opaque CLONE_NEWTIME [GooseExts] [GoGlobalContext] : val
 
-axiom _LINUX_CAPABILITY_VERSION_3 [GooseExts] [GoGlobalContext] : val
+opaque _LINUX_CAPABILITY_VERSION_3 [GooseExts] [GoGlobalContext] : val
 
-axiom sys_GETEUID [GooseExts] [GoGlobalContext] : val
+opaque sys_GETEUID [GooseExts] [GoGlobalContext] : val
 
-axiom sys_SETGID [GooseExts] [GoGlobalContext] : val
+opaque sys_SETGID [GooseExts] [GoGlobalContext] : val
 
-axiom sys_SETUID [GooseExts] [GoGlobalContext] : val
+opaque sys_SETUID [GooseExts] [GoGlobalContext] : val
 
-axiom sys_SETREGID [GooseExts] [GoGlobalContext] : val
+opaque sys_SETREGID [GooseExts] [GoGlobalContext] : val
 
-axiom sys_SETREUID [GooseExts] [GoGlobalContext] : val
+opaque sys_SETREUID [GooseExts] [GoGlobalContext] : val
 
-axiom sys_SETRESGID [GooseExts] [GoGlobalContext] : val
+opaque sys_SETRESGID [GooseExts] [GoGlobalContext] : val
 
-axiom sys_SETRESUID [GooseExts] [GoGlobalContext] : val
+opaque sys_SETRESUID [GooseExts] [GoGlobalContext] : val
 
-axiom ImplementsGetwd [GooseExts] [GoGlobalContext] : val
+opaque ImplementsGetwd [GooseExts] [GoGlobalContext] : val
 
-axiom mask [GooseExts] [GoGlobalContext] : val
+opaque mask [GooseExts] [GoGlobalContext] : val
 
-axiom core [GooseExts] [GoGlobalContext] : val
+opaque core [GooseExts] [GoGlobalContext] : val
 
-axiom exited [GooseExts] [GoGlobalContext] : val
+opaque exited [GooseExts] [GoGlobalContext] : val
 
-axiom stopped [GooseExts] [GoGlobalContext] : val
+opaque stopped [GooseExts] [GoGlobalContext] : val
 
-axiom shift [GooseExts] [GoGlobalContext] : val
+opaque shift [GooseExts] [GoGlobalContext] : val
 
-axiom _NT_PRSTATUS [GooseExts] [GoGlobalContext] : val
+opaque _NT_PRSTATUS [GooseExts] [GoGlobalContext] : val
 
-axiom minus1 [GooseExts] [GoGlobalContext] : val
+opaque minus1 [GooseExts] [GoGlobalContext] : val
 
-axiom _SYS_setgroups [GooseExts] [GoGlobalContext] : val
+opaque _SYS_setgroups [GooseExts] [GoGlobalContext] : val
 
-axiom _SYS_clone3 [GooseExts] [GoGlobalContext] : val
+opaque _SYS_clone3 [GooseExts] [GoGlobalContext] : val
 
-axiom _SYS_faccessat2 [GooseExts] [GoGlobalContext] : val
+opaque _SYS_faccessat2 [GooseExts] [GoGlobalContext] : val
 
-axiom _SYS_fchmodat2 [GooseExts] [GoGlobalContext] : val
+opaque _SYS_fchmodat2 [GooseExts] [GoGlobalContext] : val
 
-axiom darwin64Bit [GooseExts] [GoGlobalContext] : val
+opaque darwin64Bit [GooseExts] [GoGlobalContext] : val
 
-axiom netbsd32Bit [GooseExts] [GoGlobalContext] : val
+opaque netbsd32Bit [GooseExts] [GoGlobalContext] : val
 
-axiom faketime [GooseExts] [GoGlobalContext] : val
+opaque faketime [GooseExts] [GoGlobalContext] : val
 
-axiom AF_ALG [GooseExts] [GoGlobalContext] : val
+opaque AF_ALG [GooseExts] [GoGlobalContext] : val
 
-axiom AF_APPLETALK [GooseExts] [GoGlobalContext] : val
+opaque AF_APPLETALK [GooseExts] [GoGlobalContext] : val
 
-axiom AF_ASH [GooseExts] [GoGlobalContext] : val
+opaque AF_ASH [GooseExts] [GoGlobalContext] : val
 
-axiom AF_ATMPVC [GooseExts] [GoGlobalContext] : val
+opaque AF_ATMPVC [GooseExts] [GoGlobalContext] : val
 
-axiom AF_ATMSVC [GooseExts] [GoGlobalContext] : val
+opaque AF_ATMSVC [GooseExts] [GoGlobalContext] : val
 
-axiom AF_AX25 [GooseExts] [GoGlobalContext] : val
+opaque AF_AX25 [GooseExts] [GoGlobalContext] : val
 
-axiom AF_BLUETOOTH [GooseExts] [GoGlobalContext] : val
+opaque AF_BLUETOOTH [GooseExts] [GoGlobalContext] : val
 
-axiom AF_BRIDGE [GooseExts] [GoGlobalContext] : val
+opaque AF_BRIDGE [GooseExts] [GoGlobalContext] : val
 
-axiom AF_CAIF [GooseExts] [GoGlobalContext] : val
+opaque AF_CAIF [GooseExts] [GoGlobalContext] : val
 
-axiom AF_CAN [GooseExts] [GoGlobalContext] : val
+opaque AF_CAN [GooseExts] [GoGlobalContext] : val
 
-axiom AF_DECnet [GooseExts] [GoGlobalContext] : val
+opaque AF_DECnet [GooseExts] [GoGlobalContext] : val
 
-axiom AF_ECONET [GooseExts] [GoGlobalContext] : val
+opaque AF_ECONET [GooseExts] [GoGlobalContext] : val
 
-axiom AF_FILE [GooseExts] [GoGlobalContext] : val
+opaque AF_FILE [GooseExts] [GoGlobalContext] : val
 
-axiom AF_IEEE802154 [GooseExts] [GoGlobalContext] : val
+opaque AF_IEEE802154 [GooseExts] [GoGlobalContext] : val
 
-axiom AF_INET [GooseExts] [GoGlobalContext] : val
+opaque AF_INET [GooseExts] [GoGlobalContext] : val
 
-axiom AF_INET6 [GooseExts] [GoGlobalContext] : val
+opaque AF_INET6 [GooseExts] [GoGlobalContext] : val
 
-axiom AF_IPX [GooseExts] [GoGlobalContext] : val
+opaque AF_IPX [GooseExts] [GoGlobalContext] : val
 
-axiom AF_IRDA [GooseExts] [GoGlobalContext] : val
+opaque AF_IRDA [GooseExts] [GoGlobalContext] : val
 
-axiom AF_ISDN [GooseExts] [GoGlobalContext] : val
+opaque AF_ISDN [GooseExts] [GoGlobalContext] : val
 
-axiom AF_IUCV [GooseExts] [GoGlobalContext] : val
+opaque AF_IUCV [GooseExts] [GoGlobalContext] : val
 
-axiom AF_KEY [GooseExts] [GoGlobalContext] : val
+opaque AF_KEY [GooseExts] [GoGlobalContext] : val
 
-axiom AF_LLC [GooseExts] [GoGlobalContext] : val
+opaque AF_LLC [GooseExts] [GoGlobalContext] : val
 
-axiom AF_LOCAL [GooseExts] [GoGlobalContext] : val
+opaque AF_LOCAL [GooseExts] [GoGlobalContext] : val
 
-axiom AF_MAX [GooseExts] [GoGlobalContext] : val
+opaque AF_MAX [GooseExts] [GoGlobalContext] : val
 
-axiom AF_NETBEUI [GooseExts] [GoGlobalContext] : val
+opaque AF_NETBEUI [GooseExts] [GoGlobalContext] : val
 
-axiom AF_NETLINK [GooseExts] [GoGlobalContext] : val
+opaque AF_NETLINK [GooseExts] [GoGlobalContext] : val
 
-axiom AF_NETROM [GooseExts] [GoGlobalContext] : val
+opaque AF_NETROM [GooseExts] [GoGlobalContext] : val
 
-axiom AF_PACKET [GooseExts] [GoGlobalContext] : val
+opaque AF_PACKET [GooseExts] [GoGlobalContext] : val
 
-axiom AF_PHONET [GooseExts] [GoGlobalContext] : val
+opaque AF_PHONET [GooseExts] [GoGlobalContext] : val
 
-axiom AF_PPPOX [GooseExts] [GoGlobalContext] : val
+opaque AF_PPPOX [GooseExts] [GoGlobalContext] : val
 
-axiom AF_RDS [GooseExts] [GoGlobalContext] : val
+opaque AF_RDS [GooseExts] [GoGlobalContext] : val
 
-axiom AF_ROSE [GooseExts] [GoGlobalContext] : val
+opaque AF_ROSE [GooseExts] [GoGlobalContext] : val
 
-axiom AF_ROUTE [GooseExts] [GoGlobalContext] : val
+opaque AF_ROUTE [GooseExts] [GoGlobalContext] : val
 
-axiom AF_RXRPC [GooseExts] [GoGlobalContext] : val
+opaque AF_RXRPC [GooseExts] [GoGlobalContext] : val
 
-axiom AF_SECURITY [GooseExts] [GoGlobalContext] : val
+opaque AF_SECURITY [GooseExts] [GoGlobalContext] : val
 
-axiom AF_SNA [GooseExts] [GoGlobalContext] : val
+opaque AF_SNA [GooseExts] [GoGlobalContext] : val
 
-axiom AF_TIPC [GooseExts] [GoGlobalContext] : val
+opaque AF_TIPC [GooseExts] [GoGlobalContext] : val
 
-axiom AF_UNIX [GooseExts] [GoGlobalContext] : val
+opaque AF_UNIX [GooseExts] [GoGlobalContext] : val
 
-axiom AF_UNSPEC [GooseExts] [GoGlobalContext] : val
+opaque AF_UNSPEC [GooseExts] [GoGlobalContext] : val
 
-axiom AF_WANPIPE [GooseExts] [GoGlobalContext] : val
+opaque AF_WANPIPE [GooseExts] [GoGlobalContext] : val
 
-axiom AF_X25 [GooseExts] [GoGlobalContext] : val
+opaque AF_X25 [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_ADAPT [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_ADAPT [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_APPLETLK [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_APPLETLK [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_ARCNET [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_ARCNET [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_ASH [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_ASH [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_ATM [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_ATM [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_AX25 [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_AX25 [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_BIF [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_BIF [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_CHAOS [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_CHAOS [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_CISCO [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_CISCO [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_CSLIP [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_CSLIP [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_CSLIP6 [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_CSLIP6 [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_DDCMP [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_DDCMP [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_DLCI [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_DLCI [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_ECONET [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_ECONET [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_EETHER [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_EETHER [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_ETHER [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_ETHER [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_EUI64 [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_EUI64 [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_FCAL [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_FCAL [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_FCFABRIC [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_FCFABRIC [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_FCPL [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_FCPL [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_FCPP [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_FCPP [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_FDDI [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_FDDI [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_FRAD [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_FRAD [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_HDLC [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_HDLC [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_HIPPI [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_HIPPI [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_HWX25 [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_HWX25 [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_IEEE1394 [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_IEEE1394 [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_IEEE802 [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_IEEE802 [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_IEEE80211 [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_IEEE80211 [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_IEEE80211_PRISM [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_IEEE80211_PRISM [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_IEEE80211_RADIOTAP [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_IEEE80211_RADIOTAP [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_IEEE802154 [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_IEEE802154 [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_IEEE802154_PHY [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_IEEE802154_PHY [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_IEEE802_TR [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_IEEE802_TR [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_INFINIBAND [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_INFINIBAND [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_IPDDP [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_IPDDP [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_IPGRE [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_IPGRE [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_IRDA [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_IRDA [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_LAPB [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_LAPB [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_LOCALTLK [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_LOCALTLK [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_LOOPBACK [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_LOOPBACK [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_METRICOM [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_METRICOM [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_NETROM [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_NETROM [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_NONE [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_NONE [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_PIMREG [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_PIMREG [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_PPP [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_PPP [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_PRONET [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_PRONET [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_RAWHDLC [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_RAWHDLC [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_ROSE [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_ROSE [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_RSRVD [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_RSRVD [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_SIT [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_SIT [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_SKIP [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_SKIP [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_SLIP [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_SLIP [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_SLIP6 [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_SLIP6 [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_TUNNEL [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_TUNNEL [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_TUNNEL6 [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_TUNNEL6 [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_VOID [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_VOID [GooseExts] [GoGlobalContext] : val
 
-axiom ARPHRD_X25 [GooseExts] [GoGlobalContext] : val
+opaque ARPHRD_X25 [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_A [GooseExts] [GoGlobalContext] : val
+opaque BPF_A [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_ABS [GooseExts] [GoGlobalContext] : val
+opaque BPF_ABS [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_ADD [GooseExts] [GoGlobalContext] : val
+opaque BPF_ADD [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_ALU [GooseExts] [GoGlobalContext] : val
+opaque BPF_ALU [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_AND [GooseExts] [GoGlobalContext] : val
+opaque BPF_AND [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_B [GooseExts] [GoGlobalContext] : val
+opaque BPF_B [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_DIV [GooseExts] [GoGlobalContext] : val
+opaque BPF_DIV [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_H [GooseExts] [GoGlobalContext] : val
+opaque BPF_H [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_IMM [GooseExts] [GoGlobalContext] : val
+opaque BPF_IMM [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_IND [GooseExts] [GoGlobalContext] : val
+opaque BPF_IND [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_JA [GooseExts] [GoGlobalContext] : val
+opaque BPF_JA [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_JEQ [GooseExts] [GoGlobalContext] : val
+opaque BPF_JEQ [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_JGE [GooseExts] [GoGlobalContext] : val
+opaque BPF_JGE [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_JGT [GooseExts] [GoGlobalContext] : val
+opaque BPF_JGT [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_JMP [GooseExts] [GoGlobalContext] : val
+opaque BPF_JMP [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_JSET [GooseExts] [GoGlobalContext] : val
+opaque BPF_JSET [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_K [GooseExts] [GoGlobalContext] : val
+opaque BPF_K [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_LD [GooseExts] [GoGlobalContext] : val
+opaque BPF_LD [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_LDX [GooseExts] [GoGlobalContext] : val
+opaque BPF_LDX [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_LEN [GooseExts] [GoGlobalContext] : val
+opaque BPF_LEN [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_LSH [GooseExts] [GoGlobalContext] : val
+opaque BPF_LSH [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_MAJOR_VERSION [GooseExts] [GoGlobalContext] : val
+opaque BPF_MAJOR_VERSION [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_MAXINSNS [GooseExts] [GoGlobalContext] : val
+opaque BPF_MAXINSNS [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_MEM [GooseExts] [GoGlobalContext] : val
+opaque BPF_MEM [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_MEMWORDS [GooseExts] [GoGlobalContext] : val
+opaque BPF_MEMWORDS [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_MINOR_VERSION [GooseExts] [GoGlobalContext] : val
+opaque BPF_MINOR_VERSION [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_MISC [GooseExts] [GoGlobalContext] : val
+opaque BPF_MISC [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_MSH [GooseExts] [GoGlobalContext] : val
+opaque BPF_MSH [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_MUL [GooseExts] [GoGlobalContext] : val
+opaque BPF_MUL [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_NEG [GooseExts] [GoGlobalContext] : val
+opaque BPF_NEG [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_OR [GooseExts] [GoGlobalContext] : val
+opaque BPF_OR [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_RET [GooseExts] [GoGlobalContext] : val
+opaque BPF_RET [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_RSH [GooseExts] [GoGlobalContext] : val
+opaque BPF_RSH [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_ST [GooseExts] [GoGlobalContext] : val
+opaque BPF_ST [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_STX [GooseExts] [GoGlobalContext] : val
+opaque BPF_STX [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_SUB [GooseExts] [GoGlobalContext] : val
+opaque BPF_SUB [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_TAX [GooseExts] [GoGlobalContext] : val
+opaque BPF_TAX [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_TXA [GooseExts] [GoGlobalContext] : val
+opaque BPF_TXA [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_W [GooseExts] [GoGlobalContext] : val
+opaque BPF_W [GooseExts] [GoGlobalContext] : val
 
-axiom BPF_X [GooseExts] [GoGlobalContext] : val
+opaque BPF_X [GooseExts] [GoGlobalContext] : val
 
-axiom DT_BLK [GooseExts] [GoGlobalContext] : val
+opaque DT_BLK [GooseExts] [GoGlobalContext] : val
 
-axiom DT_CHR [GooseExts] [GoGlobalContext] : val
+opaque DT_CHR [GooseExts] [GoGlobalContext] : val
 
-axiom DT_DIR [GooseExts] [GoGlobalContext] : val
+opaque DT_DIR [GooseExts] [GoGlobalContext] : val
 
-axiom DT_FIFO [GooseExts] [GoGlobalContext] : val
+opaque DT_FIFO [GooseExts] [GoGlobalContext] : val
 
-axiom DT_LNK [GooseExts] [GoGlobalContext] : val
+opaque DT_LNK [GooseExts] [GoGlobalContext] : val
 
-axiom DT_REG [GooseExts] [GoGlobalContext] : val
+opaque DT_REG [GooseExts] [GoGlobalContext] : val
 
-axiom DT_SOCK [GooseExts] [GoGlobalContext] : val
+opaque DT_SOCK [GooseExts] [GoGlobalContext] : val
 
-axiom DT_UNKNOWN [GooseExts] [GoGlobalContext] : val
+opaque DT_UNKNOWN [GooseExts] [GoGlobalContext] : val
 
-axiom DT_WHT [GooseExts] [GoGlobalContext] : val
+opaque DT_WHT [GooseExts] [GoGlobalContext] : val
 
-axiom EPOLLERR [GooseExts] [GoGlobalContext] : val
+opaque EPOLLERR [GooseExts] [GoGlobalContext] : val
 
-axiom EPOLLET [GooseExts] [GoGlobalContext] : val
+opaque EPOLLET [GooseExts] [GoGlobalContext] : val
 
-axiom EPOLLHUP [GooseExts] [GoGlobalContext] : val
+opaque EPOLLHUP [GooseExts] [GoGlobalContext] : val
 
-axiom EPOLLIN [GooseExts] [GoGlobalContext] : val
+opaque EPOLLIN [GooseExts] [GoGlobalContext] : val
 
-axiom EPOLLMSG [GooseExts] [GoGlobalContext] : val
+opaque EPOLLMSG [GooseExts] [GoGlobalContext] : val
 
-axiom EPOLLONESHOT [GooseExts] [GoGlobalContext] : val
+opaque EPOLLONESHOT [GooseExts] [GoGlobalContext] : val
 
-axiom EPOLLOUT [GooseExts] [GoGlobalContext] : val
+opaque EPOLLOUT [GooseExts] [GoGlobalContext] : val
 
-axiom EPOLLPRI [GooseExts] [GoGlobalContext] : val
+opaque EPOLLPRI [GooseExts] [GoGlobalContext] : val
 
-axiom EPOLLRDBAND [GooseExts] [GoGlobalContext] : val
+opaque EPOLLRDBAND [GooseExts] [GoGlobalContext] : val
 
-axiom EPOLLRDHUP [GooseExts] [GoGlobalContext] : val
+opaque EPOLLRDHUP [GooseExts] [GoGlobalContext] : val
 
-axiom EPOLLRDNORM [GooseExts] [GoGlobalContext] : val
+opaque EPOLLRDNORM [GooseExts] [GoGlobalContext] : val
 
-axiom EPOLLWRBAND [GooseExts] [GoGlobalContext] : val
+opaque EPOLLWRBAND [GooseExts] [GoGlobalContext] : val
 
-axiom EPOLLWRNORM [GooseExts] [GoGlobalContext] : val
+opaque EPOLLWRNORM [GooseExts] [GoGlobalContext] : val
 
-axiom EPOLL_CLOEXEC [GooseExts] [GoGlobalContext] : val
+opaque EPOLL_CLOEXEC [GooseExts] [GoGlobalContext] : val
 
-axiom EPOLL_CTL_ADD [GooseExts] [GoGlobalContext] : val
+opaque EPOLL_CTL_ADD [GooseExts] [GoGlobalContext] : val
 
-axiom EPOLL_CTL_DEL [GooseExts] [GoGlobalContext] : val
+opaque EPOLL_CTL_DEL [GooseExts] [GoGlobalContext] : val
 
-axiom EPOLL_CTL_MOD [GooseExts] [GoGlobalContext] : val
+opaque EPOLL_CTL_MOD [GooseExts] [GoGlobalContext] : val
 
-axiom EPOLL_NONBLOCK [GooseExts] [GoGlobalContext] : val
+opaque EPOLL_NONBLOCK [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_1588 [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_1588 [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_8021Q [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_8021Q [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_802_2 [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_802_2 [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_802_3 [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_802_3 [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_AARP [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_AARP [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_ALL [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_ALL [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_AOE [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_AOE [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_ARCNET [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_ARCNET [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_ARP [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_ARP [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_ATALK [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_ATALK [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_ATMFATE [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_ATMFATE [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_ATMMPOA [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_ATMMPOA [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_AX25 [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_AX25 [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_BPQ [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_BPQ [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_CAIF [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_CAIF [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_CAN [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_CAN [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_CONTROL [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_CONTROL [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_CUST [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_CUST [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_DDCMP [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_DDCMP [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_DEC [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_DEC [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_DIAG [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_DIAG [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_DNA_DL [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_DNA_DL [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_DNA_RC [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_DNA_RC [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_DNA_RT [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_DNA_RT [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_DSA [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_DSA [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_ECONET [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_ECONET [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_EDSA [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_EDSA [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_FCOE [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_FCOE [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_FIP [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_FIP [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_HDLC [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_HDLC [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_IEEE802154 [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_IEEE802154 [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_IEEEPUP [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_IEEEPUP [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_IEEEPUPAT [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_IEEEPUPAT [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_IP [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_IP [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_IPV6 [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_IPV6 [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_IPX [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_IPX [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_IRDA [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_IRDA [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_LAT [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_LAT [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_LINK_CTL [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_LINK_CTL [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_LOCALTALK [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_LOCALTALK [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_LOOP [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_LOOP [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_MOBITEX [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_MOBITEX [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_MPLS_MC [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_MPLS_MC [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_MPLS_UC [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_MPLS_UC [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_PAE [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_PAE [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_PAUSE [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_PAUSE [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_PHONET [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_PHONET [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_PPPTALK [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_PPPTALK [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_PPP_DISC [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_PPP_DISC [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_PPP_MP [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_PPP_MP [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_PPP_SES [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_PPP_SES [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_PUP [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_PUP [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_PUPAT [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_PUPAT [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_RARP [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_RARP [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_SCA [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_SCA [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_SLOW [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_SLOW [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_SNAP [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_SNAP [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_TEB [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_TEB [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_TIPC [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_TIPC [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_TRAILER [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_TRAILER [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_TR_802_2 [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_TR_802_2 [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_WAN_PPP [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_WAN_PPP [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_WCCP [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_WCCP [GooseExts] [GoGlobalContext] : val
 
-axiom ETH_P_X25 [GooseExts] [GoGlobalContext] : val
+opaque ETH_P_X25 [GooseExts] [GoGlobalContext] : val
 
-axiom FD_CLOEXEC [GooseExts] [GoGlobalContext] : val
+opaque FD_CLOEXEC [GooseExts] [GoGlobalContext] : val
 
-axiom FD_SETSIZE [GooseExts] [GoGlobalContext] : val
+opaque FD_SETSIZE [GooseExts] [GoGlobalContext] : val
 
-axiom F_DUPFD [GooseExts] [GoGlobalContext] : val
+opaque F_DUPFD [GooseExts] [GoGlobalContext] : val
 
-axiom F_DUPFD_CLOEXEC [GooseExts] [GoGlobalContext] : val
+opaque F_DUPFD_CLOEXEC [GooseExts] [GoGlobalContext] : val
 
-axiom F_EXLCK [GooseExts] [GoGlobalContext] : val
+opaque F_EXLCK [GooseExts] [GoGlobalContext] : val
 
-axiom F_GETFD [GooseExts] [GoGlobalContext] : val
+opaque F_GETFD [GooseExts] [GoGlobalContext] : val
 
-axiom F_GETFL [GooseExts] [GoGlobalContext] : val
+opaque F_GETFL [GooseExts] [GoGlobalContext] : val
 
-axiom F_GETLEASE [GooseExts] [GoGlobalContext] : val
+opaque F_GETLEASE [GooseExts] [GoGlobalContext] : val
 
-axiom F_GETLK [GooseExts] [GoGlobalContext] : val
+opaque F_GETLK [GooseExts] [GoGlobalContext] : val
 
-axiom F_GETLK64 [GooseExts] [GoGlobalContext] : val
+opaque F_GETLK64 [GooseExts] [GoGlobalContext] : val
 
-axiom F_GETOWN [GooseExts] [GoGlobalContext] : val
+opaque F_GETOWN [GooseExts] [GoGlobalContext] : val
 
-axiom F_GETOWN_EX [GooseExts] [GoGlobalContext] : val
+opaque F_GETOWN_EX [GooseExts] [GoGlobalContext] : val
 
-axiom F_GETPIPE_SZ [GooseExts] [GoGlobalContext] : val
+opaque F_GETPIPE_SZ [GooseExts] [GoGlobalContext] : val
 
-axiom F_GETSIG [GooseExts] [GoGlobalContext] : val
+opaque F_GETSIG [GooseExts] [GoGlobalContext] : val
 
-axiom F_LOCK [GooseExts] [GoGlobalContext] : val
+opaque F_LOCK [GooseExts] [GoGlobalContext] : val
 
-axiom F_NOTIFY [GooseExts] [GoGlobalContext] : val
+opaque F_NOTIFY [GooseExts] [GoGlobalContext] : val
 
-axiom F_OK [GooseExts] [GoGlobalContext] : val
+opaque F_OK [GooseExts] [GoGlobalContext] : val
 
-axiom F_RDLCK [GooseExts] [GoGlobalContext] : val
+opaque F_RDLCK [GooseExts] [GoGlobalContext] : val
 
-axiom F_SETFD [GooseExts] [GoGlobalContext] : val
+opaque F_SETFD [GooseExts] [GoGlobalContext] : val
 
-axiom F_SETFL [GooseExts] [GoGlobalContext] : val
+opaque F_SETFL [GooseExts] [GoGlobalContext] : val
 
-axiom F_SETLEASE [GooseExts] [GoGlobalContext] : val
+opaque F_SETLEASE [GooseExts] [GoGlobalContext] : val
 
-axiom F_SETLK [GooseExts] [GoGlobalContext] : val
+opaque F_SETLK [GooseExts] [GoGlobalContext] : val
 
-axiom F_SETLK64 [GooseExts] [GoGlobalContext] : val
+opaque F_SETLK64 [GooseExts] [GoGlobalContext] : val
 
-axiom F_SETLKW [GooseExts] [GoGlobalContext] : val
+opaque F_SETLKW [GooseExts] [GoGlobalContext] : val
 
-axiom F_SETLKW64 [GooseExts] [GoGlobalContext] : val
+opaque F_SETLKW64 [GooseExts] [GoGlobalContext] : val
 
-axiom F_SETOWN [GooseExts] [GoGlobalContext] : val
+opaque F_SETOWN [GooseExts] [GoGlobalContext] : val
 
-axiom F_SETOWN_EX [GooseExts] [GoGlobalContext] : val
+opaque F_SETOWN_EX [GooseExts] [GoGlobalContext] : val
 
-axiom F_SETPIPE_SZ [GooseExts] [GoGlobalContext] : val
+opaque F_SETPIPE_SZ [GooseExts] [GoGlobalContext] : val
 
-axiom F_SETSIG [GooseExts] [GoGlobalContext] : val
+opaque F_SETSIG [GooseExts] [GoGlobalContext] : val
 
-axiom F_SHLCK [GooseExts] [GoGlobalContext] : val
+opaque F_SHLCK [GooseExts] [GoGlobalContext] : val
 
-axiom F_TEST [GooseExts] [GoGlobalContext] : val
+opaque F_TEST [GooseExts] [GoGlobalContext] : val
 
-axiom F_TLOCK [GooseExts] [GoGlobalContext] : val
+opaque F_TLOCK [GooseExts] [GoGlobalContext] : val
 
-axiom F_ULOCK [GooseExts] [GoGlobalContext] : val
+opaque F_ULOCK [GooseExts] [GoGlobalContext] : val
 
-axiom F_UNLCK [GooseExts] [GoGlobalContext] : val
+opaque F_UNLCK [GooseExts] [GoGlobalContext] : val
 
-axiom F_WRLCK [GooseExts] [GoGlobalContext] : val
+opaque F_WRLCK [GooseExts] [GoGlobalContext] : val
 
-axiom ICMPV6_FILTER [GooseExts] [GoGlobalContext] : val
+opaque ICMPV6_FILTER [GooseExts] [GoGlobalContext] : val
 
-axiom IFA_F_DADFAILED [GooseExts] [GoGlobalContext] : val
+opaque IFA_F_DADFAILED [GooseExts] [GoGlobalContext] : val
 
-axiom IFA_F_DEPRECATED [GooseExts] [GoGlobalContext] : val
+opaque IFA_F_DEPRECATED [GooseExts] [GoGlobalContext] : val
 
-axiom IFA_F_HOMEADDRESS [GooseExts] [GoGlobalContext] : val
+opaque IFA_F_HOMEADDRESS [GooseExts] [GoGlobalContext] : val
 
-axiom IFA_F_NODAD [GooseExts] [GoGlobalContext] : val
+opaque IFA_F_NODAD [GooseExts] [GoGlobalContext] : val
 
-axiom IFA_F_OPTIMISTIC [GooseExts] [GoGlobalContext] : val
+opaque IFA_F_OPTIMISTIC [GooseExts] [GoGlobalContext] : val
 
-axiom IFA_F_PERMANENT [GooseExts] [GoGlobalContext] : val
+opaque IFA_F_PERMANENT [GooseExts] [GoGlobalContext] : val
 
-axiom IFA_F_SECONDARY [GooseExts] [GoGlobalContext] : val
+opaque IFA_F_SECONDARY [GooseExts] [GoGlobalContext] : val
 
-axiom IFA_F_TEMPORARY [GooseExts] [GoGlobalContext] : val
+opaque IFA_F_TEMPORARY [GooseExts] [GoGlobalContext] : val
 
-axiom IFA_F_TENTATIVE [GooseExts] [GoGlobalContext] : val
+opaque IFA_F_TENTATIVE [GooseExts] [GoGlobalContext] : val
 
-axiom IFA_MAX [GooseExts] [GoGlobalContext] : val
+opaque IFA_MAX [GooseExts] [GoGlobalContext] : val
 
-axiom IFF_ALLMULTI [GooseExts] [GoGlobalContext] : val
+opaque IFF_ALLMULTI [GooseExts] [GoGlobalContext] : val
 
-axiom IFF_AUTOMEDIA [GooseExts] [GoGlobalContext] : val
+opaque IFF_AUTOMEDIA [GooseExts] [GoGlobalContext] : val
 
-axiom IFF_BROADCAST [GooseExts] [GoGlobalContext] : val
+opaque IFF_BROADCAST [GooseExts] [GoGlobalContext] : val
 
-axiom IFF_DEBUG [GooseExts] [GoGlobalContext] : val
+opaque IFF_DEBUG [GooseExts] [GoGlobalContext] : val
 
-axiom IFF_DYNAMIC [GooseExts] [GoGlobalContext] : val
+opaque IFF_DYNAMIC [GooseExts] [GoGlobalContext] : val
 
-axiom IFF_LOOPBACK [GooseExts] [GoGlobalContext] : val
+opaque IFF_LOOPBACK [GooseExts] [GoGlobalContext] : val
 
-axiom IFF_MASTER [GooseExts] [GoGlobalContext] : val
+opaque IFF_MASTER [GooseExts] [GoGlobalContext] : val
 
-axiom IFF_MULTICAST [GooseExts] [GoGlobalContext] : val
+opaque IFF_MULTICAST [GooseExts] [GoGlobalContext] : val
 
-axiom IFF_NOARP [GooseExts] [GoGlobalContext] : val
+opaque IFF_NOARP [GooseExts] [GoGlobalContext] : val
 
-axiom IFF_NOTRAILERS [GooseExts] [GoGlobalContext] : val
+opaque IFF_NOTRAILERS [GooseExts] [GoGlobalContext] : val
 
-axiom IFF_NO_PI [GooseExts] [GoGlobalContext] : val
+opaque IFF_NO_PI [GooseExts] [GoGlobalContext] : val
 
-axiom IFF_ONE_QUEUE [GooseExts] [GoGlobalContext] : val
+opaque IFF_ONE_QUEUE [GooseExts] [GoGlobalContext] : val
 
-axiom IFF_POINTOPOINT [GooseExts] [GoGlobalContext] : val
+opaque IFF_POINTOPOINT [GooseExts] [GoGlobalContext] : val
 
-axiom IFF_PORTSEL [GooseExts] [GoGlobalContext] : val
+opaque IFF_PORTSEL [GooseExts] [GoGlobalContext] : val
 
-axiom IFF_PROMISC [GooseExts] [GoGlobalContext] : val
+opaque IFF_PROMISC [GooseExts] [GoGlobalContext] : val
 
-axiom IFF_RUNNING [GooseExts] [GoGlobalContext] : val
+opaque IFF_RUNNING [GooseExts] [GoGlobalContext] : val
 
-axiom IFF_SLAVE [GooseExts] [GoGlobalContext] : val
+opaque IFF_SLAVE [GooseExts] [GoGlobalContext] : val
 
-axiom IFF_TAP [GooseExts] [GoGlobalContext] : val
+opaque IFF_TAP [GooseExts] [GoGlobalContext] : val
 
-axiom IFF_TUN [GooseExts] [GoGlobalContext] : val
+opaque IFF_TUN [GooseExts] [GoGlobalContext] : val
 
-axiom IFF_TUN_EXCL [GooseExts] [GoGlobalContext] : val
+opaque IFF_TUN_EXCL [GooseExts] [GoGlobalContext] : val
 
-axiom IFF_UP [GooseExts] [GoGlobalContext] : val
+opaque IFF_UP [GooseExts] [GoGlobalContext] : val
 
-axiom IFF_VNET_HDR [GooseExts] [GoGlobalContext] : val
+opaque IFF_VNET_HDR [GooseExts] [GoGlobalContext] : val
 
-axiom IFNAMSIZ [GooseExts] [GoGlobalContext] : val
+opaque IFNAMSIZ [GooseExts] [GoGlobalContext] : val
 
-axiom IN_ACCESS [GooseExts] [GoGlobalContext] : val
+opaque IN_ACCESS [GooseExts] [GoGlobalContext] : val
 
-axiom IN_ALL_EVENTS [GooseExts] [GoGlobalContext] : val
+opaque IN_ALL_EVENTS [GooseExts] [GoGlobalContext] : val
 
-axiom IN_ATTRIB [GooseExts] [GoGlobalContext] : val
+opaque IN_ATTRIB [GooseExts] [GoGlobalContext] : val
 
-axiom IN_CLASSA_HOST [GooseExts] [GoGlobalContext] : val
+opaque IN_CLASSA_HOST [GooseExts] [GoGlobalContext] : val
 
-axiom IN_CLASSA_MAX [GooseExts] [GoGlobalContext] : val
+opaque IN_CLASSA_MAX [GooseExts] [GoGlobalContext] : val
 
-axiom IN_CLASSA_NET [GooseExts] [GoGlobalContext] : val
+opaque IN_CLASSA_NET [GooseExts] [GoGlobalContext] : val
 
-axiom IN_CLASSA_NSHIFT [GooseExts] [GoGlobalContext] : val
+opaque IN_CLASSA_NSHIFT [GooseExts] [GoGlobalContext] : val
 
-axiom IN_CLASSB_HOST [GooseExts] [GoGlobalContext] : val
+opaque IN_CLASSB_HOST [GooseExts] [GoGlobalContext] : val
 
-axiom IN_CLASSB_MAX [GooseExts] [GoGlobalContext] : val
+opaque IN_CLASSB_MAX [GooseExts] [GoGlobalContext] : val
 
-axiom IN_CLASSB_NET [GooseExts] [GoGlobalContext] : val
+opaque IN_CLASSB_NET [GooseExts] [GoGlobalContext] : val
 
-axiom IN_CLASSB_NSHIFT [GooseExts] [GoGlobalContext] : val
+opaque IN_CLASSB_NSHIFT [GooseExts] [GoGlobalContext] : val
 
-axiom IN_CLASSC_HOST [GooseExts] [GoGlobalContext] : val
+opaque IN_CLASSC_HOST [GooseExts] [GoGlobalContext] : val
 
-axiom IN_CLASSC_NET [GooseExts] [GoGlobalContext] : val
+opaque IN_CLASSC_NET [GooseExts] [GoGlobalContext] : val
 
-axiom IN_CLASSC_NSHIFT [GooseExts] [GoGlobalContext] : val
+opaque IN_CLASSC_NSHIFT [GooseExts] [GoGlobalContext] : val
 
-axiom IN_CLOEXEC [GooseExts] [GoGlobalContext] : val
+opaque IN_CLOEXEC [GooseExts] [GoGlobalContext] : val
 
-axiom IN_CLOSE [GooseExts] [GoGlobalContext] : val
+opaque IN_CLOSE [GooseExts] [GoGlobalContext] : val
 
-axiom IN_CLOSE_NOWRITE [GooseExts] [GoGlobalContext] : val
+opaque IN_CLOSE_NOWRITE [GooseExts] [GoGlobalContext] : val
 
-axiom IN_CLOSE_WRITE [GooseExts] [GoGlobalContext] : val
+opaque IN_CLOSE_WRITE [GooseExts] [GoGlobalContext] : val
 
-axiom IN_CREATE [GooseExts] [GoGlobalContext] : val
+opaque IN_CREATE [GooseExts] [GoGlobalContext] : val
 
-axiom IN_DELETE [GooseExts] [GoGlobalContext] : val
+opaque IN_DELETE [GooseExts] [GoGlobalContext] : val
 
-axiom IN_DELETE_SELF [GooseExts] [GoGlobalContext] : val
+opaque IN_DELETE_SELF [GooseExts] [GoGlobalContext] : val
 
-axiom IN_DONT_FOLLOW [GooseExts] [GoGlobalContext] : val
+opaque IN_DONT_FOLLOW [GooseExts] [GoGlobalContext] : val
 
-axiom IN_EXCL_UNLINK [GooseExts] [GoGlobalContext] : val
+opaque IN_EXCL_UNLINK [GooseExts] [GoGlobalContext] : val
 
-axiom IN_IGNORED [GooseExts] [GoGlobalContext] : val
+opaque IN_IGNORED [GooseExts] [GoGlobalContext] : val
 
-axiom IN_ISDIR [GooseExts] [GoGlobalContext] : val
+opaque IN_ISDIR [GooseExts] [GoGlobalContext] : val
 
-axiom IN_LOOPBACKNET [GooseExts] [GoGlobalContext] : val
+opaque IN_LOOPBACKNET [GooseExts] [GoGlobalContext] : val
 
-axiom IN_MASK_ADD [GooseExts] [GoGlobalContext] : val
+opaque IN_MASK_ADD [GooseExts] [GoGlobalContext] : val
 
-axiom IN_MODIFY [GooseExts] [GoGlobalContext] : val
+opaque IN_MODIFY [GooseExts] [GoGlobalContext] : val
 
-axiom IN_MOVE [GooseExts] [GoGlobalContext] : val
+opaque IN_MOVE [GooseExts] [GoGlobalContext] : val
 
-axiom IN_MOVED_FROM [GooseExts] [GoGlobalContext] : val
+opaque IN_MOVED_FROM [GooseExts] [GoGlobalContext] : val
 
-axiom IN_MOVED_TO [GooseExts] [GoGlobalContext] : val
+opaque IN_MOVED_TO [GooseExts] [GoGlobalContext] : val
 
-axiom IN_MOVE_SELF [GooseExts] [GoGlobalContext] : val
+opaque IN_MOVE_SELF [GooseExts] [GoGlobalContext] : val
 
-axiom IN_NONBLOCK [GooseExts] [GoGlobalContext] : val
+opaque IN_NONBLOCK [GooseExts] [GoGlobalContext] : val
 
-axiom IN_ONESHOT [GooseExts] [GoGlobalContext] : val
+opaque IN_ONESHOT [GooseExts] [GoGlobalContext] : val
 
-axiom IN_ONLYDIR [GooseExts] [GoGlobalContext] : val
+opaque IN_ONLYDIR [GooseExts] [GoGlobalContext] : val
 
-axiom IN_OPEN [GooseExts] [GoGlobalContext] : val
+opaque IN_OPEN [GooseExts] [GoGlobalContext] : val
 
-axiom IN_Q_OVERFLOW [GooseExts] [GoGlobalContext] : val
+opaque IN_Q_OVERFLOW [GooseExts] [GoGlobalContext] : val
 
-axiom IN_UNMOUNT [GooseExts] [GoGlobalContext] : val
+opaque IN_UNMOUNT [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_AH [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_AH [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_COMP [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_COMP [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_DCCP [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_DCCP [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_DSTOPTS [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_DSTOPTS [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_EGP [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_EGP [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_ENCAP [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_ENCAP [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_ESP [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_ESP [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_FRAGMENT [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_FRAGMENT [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_GRE [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_GRE [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_HOPOPTS [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_HOPOPTS [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_ICMP [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_ICMP [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_ICMPV6 [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_ICMPV6 [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_IDP [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_IDP [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_IGMP [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_IGMP [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_IP [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_IP [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_IPIP [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_IPIP [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_IPV6 [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_IPV6 [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_MTP [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_MTP [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_NONE [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_NONE [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_PIM [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_PIM [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_PUP [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_PUP [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_RAW [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_RAW [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_ROUTING [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_ROUTING [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_RSVP [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_RSVP [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_SCTP [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_SCTP [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_TCP [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_TCP [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_TP [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_TP [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_UDP [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_UDP [GooseExts] [GoGlobalContext] : val
 
-axiom IPPROTO_UDPLITE [GooseExts] [GoGlobalContext] : val
+opaque IPPROTO_UDPLITE [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_2292DSTOPTS [GooseExts] [GoGlobalContext] : val
+opaque IPV6_2292DSTOPTS [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_2292HOPLIMIT [GooseExts] [GoGlobalContext] : val
+opaque IPV6_2292HOPLIMIT [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_2292HOPOPTS [GooseExts] [GoGlobalContext] : val
+opaque IPV6_2292HOPOPTS [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_2292PKTINFO [GooseExts] [GoGlobalContext] : val
+opaque IPV6_2292PKTINFO [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_2292PKTOPTIONS [GooseExts] [GoGlobalContext] : val
+opaque IPV6_2292PKTOPTIONS [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_2292RTHDR [GooseExts] [GoGlobalContext] : val
+opaque IPV6_2292RTHDR [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_ADDRFORM [GooseExts] [GoGlobalContext] : val
+opaque IPV6_ADDRFORM [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_ADD_MEMBERSHIP [GooseExts] [GoGlobalContext] : val
+opaque IPV6_ADD_MEMBERSHIP [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_AUTHHDR [GooseExts] [GoGlobalContext] : val
+opaque IPV6_AUTHHDR [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_CHECKSUM [GooseExts] [GoGlobalContext] : val
+opaque IPV6_CHECKSUM [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_DROP_MEMBERSHIP [GooseExts] [GoGlobalContext] : val
+opaque IPV6_DROP_MEMBERSHIP [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_DSTOPTS [GooseExts] [GoGlobalContext] : val
+opaque IPV6_DSTOPTS [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_HOPLIMIT [GooseExts] [GoGlobalContext] : val
+opaque IPV6_HOPLIMIT [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_HOPOPTS [GooseExts] [GoGlobalContext] : val
+opaque IPV6_HOPOPTS [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_IPSEC_POLICY [GooseExts] [GoGlobalContext] : val
+opaque IPV6_IPSEC_POLICY [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_JOIN_ANYCAST [GooseExts] [GoGlobalContext] : val
+opaque IPV6_JOIN_ANYCAST [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_JOIN_GROUP [GooseExts] [GoGlobalContext] : val
+opaque IPV6_JOIN_GROUP [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_LEAVE_ANYCAST [GooseExts] [GoGlobalContext] : val
+opaque IPV6_LEAVE_ANYCAST [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_LEAVE_GROUP [GooseExts] [GoGlobalContext] : val
+opaque IPV6_LEAVE_GROUP [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_MTU [GooseExts] [GoGlobalContext] : val
+opaque IPV6_MTU [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_MTU_DISCOVER [GooseExts] [GoGlobalContext] : val
+opaque IPV6_MTU_DISCOVER [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_MULTICAST_HOPS [GooseExts] [GoGlobalContext] : val
+opaque IPV6_MULTICAST_HOPS [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_MULTICAST_IF [GooseExts] [GoGlobalContext] : val
+opaque IPV6_MULTICAST_IF [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_MULTICAST_LOOP [GooseExts] [GoGlobalContext] : val
+opaque IPV6_MULTICAST_LOOP [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_NEXTHOP [GooseExts] [GoGlobalContext] : val
+opaque IPV6_NEXTHOP [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_PKTINFO [GooseExts] [GoGlobalContext] : val
+opaque IPV6_PKTINFO [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_PMTUDISC_DO [GooseExts] [GoGlobalContext] : val
+opaque IPV6_PMTUDISC_DO [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_PMTUDISC_DONT [GooseExts] [GoGlobalContext] : val
+opaque IPV6_PMTUDISC_DONT [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_PMTUDISC_PROBE [GooseExts] [GoGlobalContext] : val
+opaque IPV6_PMTUDISC_PROBE [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_PMTUDISC_WANT [GooseExts] [GoGlobalContext] : val
+opaque IPV6_PMTUDISC_WANT [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_RECVDSTOPTS [GooseExts] [GoGlobalContext] : val
+opaque IPV6_RECVDSTOPTS [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_RECVERR [GooseExts] [GoGlobalContext] : val
+opaque IPV6_RECVERR [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_RECVHOPLIMIT [GooseExts] [GoGlobalContext] : val
+opaque IPV6_RECVHOPLIMIT [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_RECVHOPOPTS [GooseExts] [GoGlobalContext] : val
+opaque IPV6_RECVHOPOPTS [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_RECVPKTINFO [GooseExts] [GoGlobalContext] : val
+opaque IPV6_RECVPKTINFO [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_RECVRTHDR [GooseExts] [GoGlobalContext] : val
+opaque IPV6_RECVRTHDR [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_RECVTCLASS [GooseExts] [GoGlobalContext] : val
+opaque IPV6_RECVTCLASS [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_ROUTER_ALERT [GooseExts] [GoGlobalContext] : val
+opaque IPV6_ROUTER_ALERT [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_RTHDR [GooseExts] [GoGlobalContext] : val
+opaque IPV6_RTHDR [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_RTHDRDSTOPTS [GooseExts] [GoGlobalContext] : val
+opaque IPV6_RTHDRDSTOPTS [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_RTHDR_LOOSE [GooseExts] [GoGlobalContext] : val
+opaque IPV6_RTHDR_LOOSE [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_RTHDR_STRICT [GooseExts] [GoGlobalContext] : val
+opaque IPV6_RTHDR_STRICT [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_RTHDR_TYPE_0 [GooseExts] [GoGlobalContext] : val
+opaque IPV6_RTHDR_TYPE_0 [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_RXDSTOPTS [GooseExts] [GoGlobalContext] : val
+opaque IPV6_RXDSTOPTS [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_RXHOPOPTS [GooseExts] [GoGlobalContext] : val
+opaque IPV6_RXHOPOPTS [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_TCLASS [GooseExts] [GoGlobalContext] : val
+opaque IPV6_TCLASS [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_UNICAST_HOPS [GooseExts] [GoGlobalContext] : val
+opaque IPV6_UNICAST_HOPS [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_V6ONLY [GooseExts] [GoGlobalContext] : val
+opaque IPV6_V6ONLY [GooseExts] [GoGlobalContext] : val
 
-axiom IPV6_XFRM_POLICY [GooseExts] [GoGlobalContext] : val
+opaque IPV6_XFRM_POLICY [GooseExts] [GoGlobalContext] : val
 
-axiom IP_ADD_MEMBERSHIP [GooseExts] [GoGlobalContext] : val
+opaque IP_ADD_MEMBERSHIP [GooseExts] [GoGlobalContext] : val
 
-axiom IP_ADD_SOURCE_MEMBERSHIP [GooseExts] [GoGlobalContext] : val
+opaque IP_ADD_SOURCE_MEMBERSHIP [GooseExts] [GoGlobalContext] : val
 
-axiom IP_BLOCK_SOURCE [GooseExts] [GoGlobalContext] : val
+opaque IP_BLOCK_SOURCE [GooseExts] [GoGlobalContext] : val
 
-axiom IP_DEFAULT_MULTICAST_LOOP [GooseExts] [GoGlobalContext] : val
+opaque IP_DEFAULT_MULTICAST_LOOP [GooseExts] [GoGlobalContext] : val
 
-axiom IP_DEFAULT_MULTICAST_TTL [GooseExts] [GoGlobalContext] : val
+opaque IP_DEFAULT_MULTICAST_TTL [GooseExts] [GoGlobalContext] : val
 
-axiom IP_DF [GooseExts] [GoGlobalContext] : val
+opaque IP_DF [GooseExts] [GoGlobalContext] : val
 
-axiom IP_DROP_MEMBERSHIP [GooseExts] [GoGlobalContext] : val
+opaque IP_DROP_MEMBERSHIP [GooseExts] [GoGlobalContext] : val
 
-axiom IP_DROP_SOURCE_MEMBERSHIP [GooseExts] [GoGlobalContext] : val
+opaque IP_DROP_SOURCE_MEMBERSHIP [GooseExts] [GoGlobalContext] : val
 
-axiom IP_FREEBIND [GooseExts] [GoGlobalContext] : val
+opaque IP_FREEBIND [GooseExts] [GoGlobalContext] : val
 
-axiom IP_HDRINCL [GooseExts] [GoGlobalContext] : val
+opaque IP_HDRINCL [GooseExts] [GoGlobalContext] : val
 
-axiom IP_IPSEC_POLICY [GooseExts] [GoGlobalContext] : val
+opaque IP_IPSEC_POLICY [GooseExts] [GoGlobalContext] : val
 
-axiom IP_MAXPACKET [GooseExts] [GoGlobalContext] : val
+opaque IP_MAXPACKET [GooseExts] [GoGlobalContext] : val
 
-axiom IP_MAX_MEMBERSHIPS [GooseExts] [GoGlobalContext] : val
+opaque IP_MAX_MEMBERSHIPS [GooseExts] [GoGlobalContext] : val
 
-axiom IP_MF [GooseExts] [GoGlobalContext] : val
+opaque IP_MF [GooseExts] [GoGlobalContext] : val
 
-axiom IP_MINTTL [GooseExts] [GoGlobalContext] : val
+opaque IP_MINTTL [GooseExts] [GoGlobalContext] : val
 
-axiom IP_MSFILTER [GooseExts] [GoGlobalContext] : val
+opaque IP_MSFILTER [GooseExts] [GoGlobalContext] : val
 
-axiom IP_MSS [GooseExts] [GoGlobalContext] : val
+opaque IP_MSS [GooseExts] [GoGlobalContext] : val
 
-axiom IP_MTU [GooseExts] [GoGlobalContext] : val
+opaque IP_MTU [GooseExts] [GoGlobalContext] : val
 
-axiom IP_MTU_DISCOVER [GooseExts] [GoGlobalContext] : val
+opaque IP_MTU_DISCOVER [GooseExts] [GoGlobalContext] : val
 
-axiom IP_MULTICAST_IF [GooseExts] [GoGlobalContext] : val
+opaque IP_MULTICAST_IF [GooseExts] [GoGlobalContext] : val
 
-axiom IP_MULTICAST_LOOP [GooseExts] [GoGlobalContext] : val
+opaque IP_MULTICAST_LOOP [GooseExts] [GoGlobalContext] : val
 
-axiom IP_MULTICAST_TTL [GooseExts] [GoGlobalContext] : val
+opaque IP_MULTICAST_TTL [GooseExts] [GoGlobalContext] : val
 
-axiom IP_OFFMASK [GooseExts] [GoGlobalContext] : val
+opaque IP_OFFMASK [GooseExts] [GoGlobalContext] : val
 
-axiom IP_OPTIONS [GooseExts] [GoGlobalContext] : val
+opaque IP_OPTIONS [GooseExts] [GoGlobalContext] : val
 
-axiom IP_ORIGDSTADDR [GooseExts] [GoGlobalContext] : val
+opaque IP_ORIGDSTADDR [GooseExts] [GoGlobalContext] : val
 
-axiom IP_PASSSEC [GooseExts] [GoGlobalContext] : val
+opaque IP_PASSSEC [GooseExts] [GoGlobalContext] : val
 
-axiom IP_PKTINFO [GooseExts] [GoGlobalContext] : val
+opaque IP_PKTINFO [GooseExts] [GoGlobalContext] : val
 
-axiom IP_PKTOPTIONS [GooseExts] [GoGlobalContext] : val
+opaque IP_PKTOPTIONS [GooseExts] [GoGlobalContext] : val
 
-axiom IP_PMTUDISC [GooseExts] [GoGlobalContext] : val
+opaque IP_PMTUDISC [GooseExts] [GoGlobalContext] : val
 
-axiom IP_PMTUDISC_DO [GooseExts] [GoGlobalContext] : val
+opaque IP_PMTUDISC_DO [GooseExts] [GoGlobalContext] : val
 
-axiom IP_PMTUDISC_DONT [GooseExts] [GoGlobalContext] : val
+opaque IP_PMTUDISC_DONT [GooseExts] [GoGlobalContext] : val
 
-axiom IP_PMTUDISC_PROBE [GooseExts] [GoGlobalContext] : val
+opaque IP_PMTUDISC_PROBE [GooseExts] [GoGlobalContext] : val
 
-axiom IP_PMTUDISC_WANT [GooseExts] [GoGlobalContext] : val
+opaque IP_PMTUDISC_WANT [GooseExts] [GoGlobalContext] : val
 
-axiom IP_RECVERR [GooseExts] [GoGlobalContext] : val
+opaque IP_RECVERR [GooseExts] [GoGlobalContext] : val
 
-axiom IP_RECVOPTS [GooseExts] [GoGlobalContext] : val
+opaque IP_RECVOPTS [GooseExts] [GoGlobalContext] : val
 
-axiom IP_RECVORIGDSTADDR [GooseExts] [GoGlobalContext] : val
+opaque IP_RECVORIGDSTADDR [GooseExts] [GoGlobalContext] : val
 
-axiom IP_RECVRETOPTS [GooseExts] [GoGlobalContext] : val
+opaque IP_RECVRETOPTS [GooseExts] [GoGlobalContext] : val
 
-axiom IP_RECVTOS [GooseExts] [GoGlobalContext] : val
+opaque IP_RECVTOS [GooseExts] [GoGlobalContext] : val
 
-axiom IP_RECVTTL [GooseExts] [GoGlobalContext] : val
+opaque IP_RECVTTL [GooseExts] [GoGlobalContext] : val
 
-axiom IP_RETOPTS [GooseExts] [GoGlobalContext] : val
+opaque IP_RETOPTS [GooseExts] [GoGlobalContext] : val
 
-axiom IP_RF [GooseExts] [GoGlobalContext] : val
+opaque IP_RF [GooseExts] [GoGlobalContext] : val
 
-axiom IP_ROUTER_ALERT [GooseExts] [GoGlobalContext] : val
+opaque IP_ROUTER_ALERT [GooseExts] [GoGlobalContext] : val
 
-axiom IP_TOS [GooseExts] [GoGlobalContext] : val
+opaque IP_TOS [GooseExts] [GoGlobalContext] : val
 
-axiom IP_TRANSPARENT [GooseExts] [GoGlobalContext] : val
+opaque IP_TRANSPARENT [GooseExts] [GoGlobalContext] : val
 
-axiom IP_TTL [GooseExts] [GoGlobalContext] : val
+opaque IP_TTL [GooseExts] [GoGlobalContext] : val
 
-axiom IP_UNBLOCK_SOURCE [GooseExts] [GoGlobalContext] : val
+opaque IP_UNBLOCK_SOURCE [GooseExts] [GoGlobalContext] : val
 
-axiom IP_XFRM_POLICY [GooseExts] [GoGlobalContext] : val
+opaque IP_XFRM_POLICY [GooseExts] [GoGlobalContext] : val
 
-axiom LINUX_REBOOT_CMD_CAD_OFF [GooseExts] [GoGlobalContext] : val
+opaque LINUX_REBOOT_CMD_CAD_OFF [GooseExts] [GoGlobalContext] : val
 
-axiom LINUX_REBOOT_CMD_CAD_ON [GooseExts] [GoGlobalContext] : val
+opaque LINUX_REBOOT_CMD_CAD_ON [GooseExts] [GoGlobalContext] : val
 
-axiom LINUX_REBOOT_CMD_HALT [GooseExts] [GoGlobalContext] : val
+opaque LINUX_REBOOT_CMD_HALT [GooseExts] [GoGlobalContext] : val
 
-axiom LINUX_REBOOT_CMD_KEXEC [GooseExts] [GoGlobalContext] : val
+opaque LINUX_REBOOT_CMD_KEXEC [GooseExts] [GoGlobalContext] : val
 
-axiom LINUX_REBOOT_CMD_POWER_OFF [GooseExts] [GoGlobalContext] : val
+opaque LINUX_REBOOT_CMD_POWER_OFF [GooseExts] [GoGlobalContext] : val
 
-axiom LINUX_REBOOT_CMD_RESTART [GooseExts] [GoGlobalContext] : val
+opaque LINUX_REBOOT_CMD_RESTART [GooseExts] [GoGlobalContext] : val
 
-axiom LINUX_REBOOT_CMD_RESTART2 [GooseExts] [GoGlobalContext] : val
+opaque LINUX_REBOOT_CMD_RESTART2 [GooseExts] [GoGlobalContext] : val
 
-axiom LINUX_REBOOT_CMD_SW_SUSPEND [GooseExts] [GoGlobalContext] : val
+opaque LINUX_REBOOT_CMD_SW_SUSPEND [GooseExts] [GoGlobalContext] : val
 
-axiom LINUX_REBOOT_MAGIC1 [GooseExts] [GoGlobalContext] : val
+opaque LINUX_REBOOT_MAGIC1 [GooseExts] [GoGlobalContext] : val
 
-axiom LINUX_REBOOT_MAGIC2 [GooseExts] [GoGlobalContext] : val
+opaque LINUX_REBOOT_MAGIC2 [GooseExts] [GoGlobalContext] : val
 
-axiom LOCK_EX [GooseExts] [GoGlobalContext] : val
+opaque LOCK_EX [GooseExts] [GoGlobalContext] : val
 
-axiom LOCK_NB [GooseExts] [GoGlobalContext] : val
+opaque LOCK_NB [GooseExts] [GoGlobalContext] : val
 
-axiom LOCK_SH [GooseExts] [GoGlobalContext] : val
+opaque LOCK_SH [GooseExts] [GoGlobalContext] : val
 
-axiom LOCK_UN [GooseExts] [GoGlobalContext] : val
+opaque LOCK_UN [GooseExts] [GoGlobalContext] : val
 
-axiom MADV_DOFORK [GooseExts] [GoGlobalContext] : val
+opaque MADV_DOFORK [GooseExts] [GoGlobalContext] : val
 
-axiom MADV_DONTFORK [GooseExts] [GoGlobalContext] : val
+opaque MADV_DONTFORK [GooseExts] [GoGlobalContext] : val
 
-axiom MADV_DONTNEED [GooseExts] [GoGlobalContext] : val
+opaque MADV_DONTNEED [GooseExts] [GoGlobalContext] : val
 
-axiom MADV_HUGEPAGE [GooseExts] [GoGlobalContext] : val
+opaque MADV_HUGEPAGE [GooseExts] [GoGlobalContext] : val
 
-axiom MADV_HWPOISON [GooseExts] [GoGlobalContext] : val
+opaque MADV_HWPOISON [GooseExts] [GoGlobalContext] : val
 
-axiom MADV_MERGEABLE [GooseExts] [GoGlobalContext] : val
+opaque MADV_MERGEABLE [GooseExts] [GoGlobalContext] : val
 
-axiom MADV_NOHUGEPAGE [GooseExts] [GoGlobalContext] : val
+opaque MADV_NOHUGEPAGE [GooseExts] [GoGlobalContext] : val
 
-axiom MADV_NORMAL [GooseExts] [GoGlobalContext] : val
+opaque MADV_NORMAL [GooseExts] [GoGlobalContext] : val
 
-axiom MADV_RANDOM [GooseExts] [GoGlobalContext] : val
+opaque MADV_RANDOM [GooseExts] [GoGlobalContext] : val
 
-axiom MADV_REMOVE [GooseExts] [GoGlobalContext] : val
+opaque MADV_REMOVE [GooseExts] [GoGlobalContext] : val
 
-axiom MADV_SEQUENTIAL [GooseExts] [GoGlobalContext] : val
+opaque MADV_SEQUENTIAL [GooseExts] [GoGlobalContext] : val
 
-axiom MADV_UNMERGEABLE [GooseExts] [GoGlobalContext] : val
+opaque MADV_UNMERGEABLE [GooseExts] [GoGlobalContext] : val
 
-axiom MADV_WILLNEED [GooseExts] [GoGlobalContext] : val
+opaque MADV_WILLNEED [GooseExts] [GoGlobalContext] : val
 
-axiom MAP_32BIT [GooseExts] [GoGlobalContext] : val
+opaque MAP_32BIT [GooseExts] [GoGlobalContext] : val
 
-axiom MAP_ANON [GooseExts] [GoGlobalContext] : val
+opaque MAP_ANON [GooseExts] [GoGlobalContext] : val
 
-axiom MAP_ANONYMOUS [GooseExts] [GoGlobalContext] : val
+opaque MAP_ANONYMOUS [GooseExts] [GoGlobalContext] : val
 
-axiom MAP_DENYWRITE [GooseExts] [GoGlobalContext] : val
+opaque MAP_DENYWRITE [GooseExts] [GoGlobalContext] : val
 
-axiom MAP_EXECUTABLE [GooseExts] [GoGlobalContext] : val
+opaque MAP_EXECUTABLE [GooseExts] [GoGlobalContext] : val
 
-axiom MAP_FILE [GooseExts] [GoGlobalContext] : val
+opaque MAP_FILE [GooseExts] [GoGlobalContext] : val
 
-axiom MAP_FIXED [GooseExts] [GoGlobalContext] : val
+opaque MAP_FIXED [GooseExts] [GoGlobalContext] : val
 
-axiom MAP_GROWSDOWN [GooseExts] [GoGlobalContext] : val
+opaque MAP_GROWSDOWN [GooseExts] [GoGlobalContext] : val
 
-axiom MAP_HUGETLB [GooseExts] [GoGlobalContext] : val
+opaque MAP_HUGETLB [GooseExts] [GoGlobalContext] : val
 
-axiom MAP_LOCKED [GooseExts] [GoGlobalContext] : val
+opaque MAP_LOCKED [GooseExts] [GoGlobalContext] : val
 
-axiom MAP_NONBLOCK [GooseExts] [GoGlobalContext] : val
+opaque MAP_NONBLOCK [GooseExts] [GoGlobalContext] : val
 
-axiom MAP_NORESERVE [GooseExts] [GoGlobalContext] : val
+opaque MAP_NORESERVE [GooseExts] [GoGlobalContext] : val
 
-axiom MAP_POPULATE [GooseExts] [GoGlobalContext] : val
+opaque MAP_POPULATE [GooseExts] [GoGlobalContext] : val
 
-axiom MAP_PRIVATE [GooseExts] [GoGlobalContext] : val
+opaque MAP_PRIVATE [GooseExts] [GoGlobalContext] : val
 
-axiom MAP_SHARED [GooseExts] [GoGlobalContext] : val
+opaque MAP_SHARED [GooseExts] [GoGlobalContext] : val
 
-axiom MAP_STACK [GooseExts] [GoGlobalContext] : val
+opaque MAP_STACK [GooseExts] [GoGlobalContext] : val
 
-axiom MAP_TYPE [GooseExts] [GoGlobalContext] : val
+opaque MAP_TYPE [GooseExts] [GoGlobalContext] : val
 
-axiom MCL_CURRENT [GooseExts] [GoGlobalContext] : val
+opaque MCL_CURRENT [GooseExts] [GoGlobalContext] : val
 
-axiom MCL_FUTURE [GooseExts] [GoGlobalContext] : val
+opaque MCL_FUTURE [GooseExts] [GoGlobalContext] : val
 
-axiom MNT_DETACH [GooseExts] [GoGlobalContext] : val
+opaque MNT_DETACH [GooseExts] [GoGlobalContext] : val
 
-axiom MNT_EXPIRE [GooseExts] [GoGlobalContext] : val
+opaque MNT_EXPIRE [GooseExts] [GoGlobalContext] : val
 
-axiom MNT_FORCE [GooseExts] [GoGlobalContext] : val
+opaque MNT_FORCE [GooseExts] [GoGlobalContext] : val
 
-axiom MSG_CMSG_CLOEXEC [GooseExts] [GoGlobalContext] : val
+opaque MSG_CMSG_CLOEXEC [GooseExts] [GoGlobalContext] : val
 
-axiom MSG_CONFIRM [GooseExts] [GoGlobalContext] : val
+opaque MSG_CONFIRM [GooseExts] [GoGlobalContext] : val
 
-axiom MSG_CTRUNC [GooseExts] [GoGlobalContext] : val
+opaque MSG_CTRUNC [GooseExts] [GoGlobalContext] : val
 
-axiom MSG_DONTROUTE [GooseExts] [GoGlobalContext] : val
+opaque MSG_DONTROUTE [GooseExts] [GoGlobalContext] : val
 
-axiom MSG_DONTWAIT [GooseExts] [GoGlobalContext] : val
+opaque MSG_DONTWAIT [GooseExts] [GoGlobalContext] : val
 
-axiom MSG_EOR [GooseExts] [GoGlobalContext] : val
+opaque MSG_EOR [GooseExts] [GoGlobalContext] : val
 
-axiom MSG_ERRQUEUE [GooseExts] [GoGlobalContext] : val
+opaque MSG_ERRQUEUE [GooseExts] [GoGlobalContext] : val
 
-axiom MSG_FASTOPEN [GooseExts] [GoGlobalContext] : val
+opaque MSG_FASTOPEN [GooseExts] [GoGlobalContext] : val
 
-axiom MSG_FIN [GooseExts] [GoGlobalContext] : val
+opaque MSG_FIN [GooseExts] [GoGlobalContext] : val
 
-axiom MSG_MORE [GooseExts] [GoGlobalContext] : val
+opaque MSG_MORE [GooseExts] [GoGlobalContext] : val
 
-axiom MSG_NOSIGNAL [GooseExts] [GoGlobalContext] : val
+opaque MSG_NOSIGNAL [GooseExts] [GoGlobalContext] : val
 
-axiom MSG_OOB [GooseExts] [GoGlobalContext] : val
+opaque MSG_OOB [GooseExts] [GoGlobalContext] : val
 
-axiom MSG_PEEK [GooseExts] [GoGlobalContext] : val
+opaque MSG_PEEK [GooseExts] [GoGlobalContext] : val
 
-axiom MSG_PROXY [GooseExts] [GoGlobalContext] : val
+opaque MSG_PROXY [GooseExts] [GoGlobalContext] : val
 
-axiom MSG_RST [GooseExts] [GoGlobalContext] : val
+opaque MSG_RST [GooseExts] [GoGlobalContext] : val
 
-axiom MSG_SYN [GooseExts] [GoGlobalContext] : val
+opaque MSG_SYN [GooseExts] [GoGlobalContext] : val
 
-axiom MSG_TRUNC [GooseExts] [GoGlobalContext] : val
+opaque MSG_TRUNC [GooseExts] [GoGlobalContext] : val
 
-axiom MSG_TRYHARD [GooseExts] [GoGlobalContext] : val
+opaque MSG_TRYHARD [GooseExts] [GoGlobalContext] : val
 
-axiom MSG_WAITALL [GooseExts] [GoGlobalContext] : val
+opaque MSG_WAITALL [GooseExts] [GoGlobalContext] : val
 
-axiom MSG_WAITFORONE [GooseExts] [GoGlobalContext] : val
+opaque MSG_WAITFORONE [GooseExts] [GoGlobalContext] : val
 
-axiom MS_ACTIVE [GooseExts] [GoGlobalContext] : val
+opaque MS_ACTIVE [GooseExts] [GoGlobalContext] : val
 
-axiom MS_ASYNC [GooseExts] [GoGlobalContext] : val
+opaque MS_ASYNC [GooseExts] [GoGlobalContext] : val
 
-axiom MS_BIND [GooseExts] [GoGlobalContext] : val
+opaque MS_BIND [GooseExts] [GoGlobalContext] : val
 
-axiom MS_DIRSYNC [GooseExts] [GoGlobalContext] : val
+opaque MS_DIRSYNC [GooseExts] [GoGlobalContext] : val
 
-axiom MS_INVALIDATE [GooseExts] [GoGlobalContext] : val
+opaque MS_INVALIDATE [GooseExts] [GoGlobalContext] : val
 
-axiom MS_I_VERSION [GooseExts] [GoGlobalContext] : val
+opaque MS_I_VERSION [GooseExts] [GoGlobalContext] : val
 
-axiom MS_KERNMOUNT [GooseExts] [GoGlobalContext] : val
+opaque MS_KERNMOUNT [GooseExts] [GoGlobalContext] : val
 
-axiom MS_MANDLOCK [GooseExts] [GoGlobalContext] : val
+opaque MS_MANDLOCK [GooseExts] [GoGlobalContext] : val
 
-axiom MS_MGC_MSK [GooseExts] [GoGlobalContext] : val
+opaque MS_MGC_MSK [GooseExts] [GoGlobalContext] : val
 
-axiom MS_MGC_VAL [GooseExts] [GoGlobalContext] : val
+opaque MS_MGC_VAL [GooseExts] [GoGlobalContext] : val
 
-axiom MS_MOVE [GooseExts] [GoGlobalContext] : val
+opaque MS_MOVE [GooseExts] [GoGlobalContext] : val
 
-axiom MS_NOATIME [GooseExts] [GoGlobalContext] : val
+opaque MS_NOATIME [GooseExts] [GoGlobalContext] : val
 
-axiom MS_NODEV [GooseExts] [GoGlobalContext] : val
+opaque MS_NODEV [GooseExts] [GoGlobalContext] : val
 
-axiom MS_NODIRATIME [GooseExts] [GoGlobalContext] : val
+opaque MS_NODIRATIME [GooseExts] [GoGlobalContext] : val
 
-axiom MS_NOEXEC [GooseExts] [GoGlobalContext] : val
+opaque MS_NOEXEC [GooseExts] [GoGlobalContext] : val
 
-axiom MS_NOSUID [GooseExts] [GoGlobalContext] : val
+opaque MS_NOSUID [GooseExts] [GoGlobalContext] : val
 
-axiom MS_NOUSER [GooseExts] [GoGlobalContext] : val
+opaque MS_NOUSER [GooseExts] [GoGlobalContext] : val
 
-axiom MS_POSIXACL [GooseExts] [GoGlobalContext] : val
+opaque MS_POSIXACL [GooseExts] [GoGlobalContext] : val
 
-axiom MS_PRIVATE [GooseExts] [GoGlobalContext] : val
+opaque MS_PRIVATE [GooseExts] [GoGlobalContext] : val
 
-axiom MS_RDONLY [GooseExts] [GoGlobalContext] : val
+opaque MS_RDONLY [GooseExts] [GoGlobalContext] : val
 
-axiom MS_REC [GooseExts] [GoGlobalContext] : val
+opaque MS_REC [GooseExts] [GoGlobalContext] : val
 
-axiom MS_RELATIME [GooseExts] [GoGlobalContext] : val
+opaque MS_RELATIME [GooseExts] [GoGlobalContext] : val
 
-axiom MS_REMOUNT [GooseExts] [GoGlobalContext] : val
+opaque MS_REMOUNT [GooseExts] [GoGlobalContext] : val
 
-axiom MS_RMT_MASK [GooseExts] [GoGlobalContext] : val
+opaque MS_RMT_MASK [GooseExts] [GoGlobalContext] : val
 
-axiom MS_SHARED [GooseExts] [GoGlobalContext] : val
+opaque MS_SHARED [GooseExts] [GoGlobalContext] : val
 
-axiom MS_SILENT [GooseExts] [GoGlobalContext] : val
+opaque MS_SILENT [GooseExts] [GoGlobalContext] : val
 
-axiom MS_SLAVE [GooseExts] [GoGlobalContext] : val
+opaque MS_SLAVE [GooseExts] [GoGlobalContext] : val
 
-axiom MS_STRICTATIME [GooseExts] [GoGlobalContext] : val
+opaque MS_STRICTATIME [GooseExts] [GoGlobalContext] : val
 
-axiom MS_SYNC [GooseExts] [GoGlobalContext] : val
+opaque MS_SYNC [GooseExts] [GoGlobalContext] : val
 
-axiom MS_SYNCHRONOUS [GooseExts] [GoGlobalContext] : val
+opaque MS_SYNCHRONOUS [GooseExts] [GoGlobalContext] : val
 
-axiom MS_UNBINDABLE [GooseExts] [GoGlobalContext] : val
+opaque MS_UNBINDABLE [GooseExts] [GoGlobalContext] : val
 
-axiom NAME_MAX [GooseExts] [GoGlobalContext] : val
+opaque NAME_MAX [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_ADD_MEMBERSHIP [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_ADD_MEMBERSHIP [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_AUDIT [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_AUDIT [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_BROADCAST_ERROR [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_BROADCAST_ERROR [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_CONNECTOR [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_CONNECTOR [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_DNRTMSG [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_DNRTMSG [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_DROP_MEMBERSHIP [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_DROP_MEMBERSHIP [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_ECRYPTFS [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_ECRYPTFS [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_FIB_LOOKUP [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_FIB_LOOKUP [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_FIREWALL [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_FIREWALL [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_GENERIC [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_GENERIC [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_INET_DIAG [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_INET_DIAG [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_IP6_FW [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_IP6_FW [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_ISCSI [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_ISCSI [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_KOBJECT_UEVENT [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_KOBJECT_UEVENT [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_NETFILTER [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_NETFILTER [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_NFLOG [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_NFLOG [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_NO_ENOBUFS [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_NO_ENOBUFS [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_PKTINFO [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_PKTINFO [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_ROUTE [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_ROUTE [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_SCSITRANSPORT [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_SCSITRANSPORT [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_SELINUX [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_SELINUX [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_UNUSED [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_UNUSED [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_USERSOCK [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_USERSOCK [GooseExts] [GoGlobalContext] : val
 
-axiom NETLINK_XFRM [GooseExts] [GoGlobalContext] : val
+opaque NETLINK_XFRM [GooseExts] [GoGlobalContext] : val
 
-axiom NLA_ALIGNTO [GooseExts] [GoGlobalContext] : val
+opaque NLA_ALIGNTO [GooseExts] [GoGlobalContext] : val
 
-axiom NLA_F_NESTED [GooseExts] [GoGlobalContext] : val
+opaque NLA_F_NESTED [GooseExts] [GoGlobalContext] : val
 
-axiom NLA_F_NET_BYTEORDER [GooseExts] [GoGlobalContext] : val
+opaque NLA_F_NET_BYTEORDER [GooseExts] [GoGlobalContext] : val
 
-axiom NLA_HDRLEN [GooseExts] [GoGlobalContext] : val
+opaque NLA_HDRLEN [GooseExts] [GoGlobalContext] : val
 
-axiom NLMSG_ALIGNTO [GooseExts] [GoGlobalContext] : val
+opaque NLMSG_ALIGNTO [GooseExts] [GoGlobalContext] : val
 
-axiom NLMSG_DONE [GooseExts] [GoGlobalContext] : val
+opaque NLMSG_DONE [GooseExts] [GoGlobalContext] : val
 
-axiom NLMSG_ERROR [GooseExts] [GoGlobalContext] : val
+opaque NLMSG_ERROR [GooseExts] [GoGlobalContext] : val
 
-axiom NLMSG_HDRLEN [GooseExts] [GoGlobalContext] : val
+opaque NLMSG_HDRLEN [GooseExts] [GoGlobalContext] : val
 
-axiom NLMSG_MIN_TYPE [GooseExts] [GoGlobalContext] : val
+opaque NLMSG_MIN_TYPE [GooseExts] [GoGlobalContext] : val
 
-axiom NLMSG_NOOP [GooseExts] [GoGlobalContext] : val
+opaque NLMSG_NOOP [GooseExts] [GoGlobalContext] : val
 
-axiom NLMSG_OVERRUN [GooseExts] [GoGlobalContext] : val
+opaque NLMSG_OVERRUN [GooseExts] [GoGlobalContext] : val
 
-axiom NLM_F_ACK [GooseExts] [GoGlobalContext] : val
+opaque NLM_F_ACK [GooseExts] [GoGlobalContext] : val
 
-axiom NLM_F_APPEND [GooseExts] [GoGlobalContext] : val
+opaque NLM_F_APPEND [GooseExts] [GoGlobalContext] : val
 
-axiom NLM_F_ATOMIC [GooseExts] [GoGlobalContext] : val
+opaque NLM_F_ATOMIC [GooseExts] [GoGlobalContext] : val
 
-axiom NLM_F_CREATE [GooseExts] [GoGlobalContext] : val
+opaque NLM_F_CREATE [GooseExts] [GoGlobalContext] : val
 
-axiom NLM_F_DUMP [GooseExts] [GoGlobalContext] : val
+opaque NLM_F_DUMP [GooseExts] [GoGlobalContext] : val
 
-axiom NLM_F_ECHO [GooseExts] [GoGlobalContext] : val
+opaque NLM_F_ECHO [GooseExts] [GoGlobalContext] : val
 
-axiom NLM_F_EXCL [GooseExts] [GoGlobalContext] : val
+opaque NLM_F_EXCL [GooseExts] [GoGlobalContext] : val
 
-axiom NLM_F_MATCH [GooseExts] [GoGlobalContext] : val
+opaque NLM_F_MATCH [GooseExts] [GoGlobalContext] : val
 
-axiom NLM_F_MULTI [GooseExts] [GoGlobalContext] : val
+opaque NLM_F_MULTI [GooseExts] [GoGlobalContext] : val
 
-axiom NLM_F_REPLACE [GooseExts] [GoGlobalContext] : val
+opaque NLM_F_REPLACE [GooseExts] [GoGlobalContext] : val
 
-axiom NLM_F_REQUEST [GooseExts] [GoGlobalContext] : val
+opaque NLM_F_REQUEST [GooseExts] [GoGlobalContext] : val
 
-axiom NLM_F_ROOT [GooseExts] [GoGlobalContext] : val
+opaque NLM_F_ROOT [GooseExts] [GoGlobalContext] : val
 
-axiom O_ACCMODE [GooseExts] [GoGlobalContext] : val
+opaque O_ACCMODE [GooseExts] [GoGlobalContext] : val
 
-axiom O_APPEND [GooseExts] [GoGlobalContext] : val
+opaque O_APPEND [GooseExts] [GoGlobalContext] : val
 
-axiom O_ASYNC [GooseExts] [GoGlobalContext] : val
+opaque O_ASYNC [GooseExts] [GoGlobalContext] : val
 
-axiom O_CLOEXEC [GooseExts] [GoGlobalContext] : val
+opaque O_CLOEXEC [GooseExts] [GoGlobalContext] : val
 
-axiom O_CREAT [GooseExts] [GoGlobalContext] : val
+opaque O_CREAT [GooseExts] [GoGlobalContext] : val
 
-axiom O_DIRECT [GooseExts] [GoGlobalContext] : val
+opaque O_DIRECT [GooseExts] [GoGlobalContext] : val
 
-axiom O_DIRECTORY [GooseExts] [GoGlobalContext] : val
+opaque O_DIRECTORY [GooseExts] [GoGlobalContext] : val
 
-axiom O_DSYNC [GooseExts] [GoGlobalContext] : val
+opaque O_DSYNC [GooseExts] [GoGlobalContext] : val
 
-axiom O_EXCL [GooseExts] [GoGlobalContext] : val
+opaque O_EXCL [GooseExts] [GoGlobalContext] : val
 
-axiom O_FSYNC [GooseExts] [GoGlobalContext] : val
+opaque O_FSYNC [GooseExts] [GoGlobalContext] : val
 
-axiom O_LARGEFILE [GooseExts] [GoGlobalContext] : val
+opaque O_LARGEFILE [GooseExts] [GoGlobalContext] : val
 
-axiom O_NDELAY [GooseExts] [GoGlobalContext] : val
+opaque O_NDELAY [GooseExts] [GoGlobalContext] : val
 
-axiom O_NOATIME [GooseExts] [GoGlobalContext] : val
+opaque O_NOATIME [GooseExts] [GoGlobalContext] : val
 
-axiom O_NOCTTY [GooseExts] [GoGlobalContext] : val
+opaque O_NOCTTY [GooseExts] [GoGlobalContext] : val
 
-axiom O_NOFOLLOW [GooseExts] [GoGlobalContext] : val
+opaque O_NOFOLLOW [GooseExts] [GoGlobalContext] : val
 
-axiom O_NONBLOCK [GooseExts] [GoGlobalContext] : val
+opaque O_NONBLOCK [GooseExts] [GoGlobalContext] : val
 
-axiom O_RDONLY [GooseExts] [GoGlobalContext] : val
+opaque O_RDONLY [GooseExts] [GoGlobalContext] : val
 
-axiom O_RDWR [GooseExts] [GoGlobalContext] : val
+opaque O_RDWR [GooseExts] [GoGlobalContext] : val
 
-axiom O_RSYNC [GooseExts] [GoGlobalContext] : val
+opaque O_RSYNC [GooseExts] [GoGlobalContext] : val
 
-axiom O_SYNC [GooseExts] [GoGlobalContext] : val
+opaque O_SYNC [GooseExts] [GoGlobalContext] : val
 
-axiom O_TRUNC [GooseExts] [GoGlobalContext] : val
+opaque O_TRUNC [GooseExts] [GoGlobalContext] : val
 
-axiom O_WRONLY [GooseExts] [GoGlobalContext] : val
+opaque O_WRONLY [GooseExts] [GoGlobalContext] : val
 
-axiom PACKET_ADD_MEMBERSHIP [GooseExts] [GoGlobalContext] : val
+opaque PACKET_ADD_MEMBERSHIP [GooseExts] [GoGlobalContext] : val
 
-axiom PACKET_BROADCAST [GooseExts] [GoGlobalContext] : val
+opaque PACKET_BROADCAST [GooseExts] [GoGlobalContext] : val
 
-axiom PACKET_DROP_MEMBERSHIP [GooseExts] [GoGlobalContext] : val
+opaque PACKET_DROP_MEMBERSHIP [GooseExts] [GoGlobalContext] : val
 
-axiom PACKET_FASTROUTE [GooseExts] [GoGlobalContext] : val
+opaque PACKET_FASTROUTE [GooseExts] [GoGlobalContext] : val
 
-axiom PACKET_HOST [GooseExts] [GoGlobalContext] : val
+opaque PACKET_HOST [GooseExts] [GoGlobalContext] : val
 
-axiom PACKET_LOOPBACK [GooseExts] [GoGlobalContext] : val
+opaque PACKET_LOOPBACK [GooseExts] [GoGlobalContext] : val
 
-axiom PACKET_MR_ALLMULTI [GooseExts] [GoGlobalContext] : val
+opaque PACKET_MR_ALLMULTI [GooseExts] [GoGlobalContext] : val
 
-axiom PACKET_MR_MULTICAST [GooseExts] [GoGlobalContext] : val
+opaque PACKET_MR_MULTICAST [GooseExts] [GoGlobalContext] : val
 
-axiom PACKET_MR_PROMISC [GooseExts] [GoGlobalContext] : val
+opaque PACKET_MR_PROMISC [GooseExts] [GoGlobalContext] : val
 
-axiom PACKET_MULTICAST [GooseExts] [GoGlobalContext] : val
+opaque PACKET_MULTICAST [GooseExts] [GoGlobalContext] : val
 
-axiom PACKET_OTHERHOST [GooseExts] [GoGlobalContext] : val
+opaque PACKET_OTHERHOST [GooseExts] [GoGlobalContext] : val
 
-axiom PACKET_OUTGOING [GooseExts] [GoGlobalContext] : val
+opaque PACKET_OUTGOING [GooseExts] [GoGlobalContext] : val
 
-axiom PACKET_RECV_OUTPUT [GooseExts] [GoGlobalContext] : val
+opaque PACKET_RECV_OUTPUT [GooseExts] [GoGlobalContext] : val
 
-axiom PACKET_RX_RING [GooseExts] [GoGlobalContext] : val
+opaque PACKET_RX_RING [GooseExts] [GoGlobalContext] : val
 
-axiom PACKET_STATISTICS [GooseExts] [GoGlobalContext] : val
+opaque PACKET_STATISTICS [GooseExts] [GoGlobalContext] : val
 
-axiom PRIO_PGRP [GooseExts] [GoGlobalContext] : val
+opaque PRIO_PGRP [GooseExts] [GoGlobalContext] : val
 
-axiom PRIO_PROCESS [GooseExts] [GoGlobalContext] : val
+opaque PRIO_PROCESS [GooseExts] [GoGlobalContext] : val
 
-axiom PRIO_USER [GooseExts] [GoGlobalContext] : val
+opaque PRIO_USER [GooseExts] [GoGlobalContext] : val
 
-axiom PROT_EXEC [GooseExts] [GoGlobalContext] : val
+opaque PROT_EXEC [GooseExts] [GoGlobalContext] : val
 
-axiom PROT_GROWSDOWN [GooseExts] [GoGlobalContext] : val
+opaque PROT_GROWSDOWN [GooseExts] [GoGlobalContext] : val
 
-axiom PROT_GROWSUP [GooseExts] [GoGlobalContext] : val
+opaque PROT_GROWSUP [GooseExts] [GoGlobalContext] : val
 
-axiom PROT_NONE [GooseExts] [GoGlobalContext] : val
+opaque PROT_NONE [GooseExts] [GoGlobalContext] : val
 
-axiom PROT_READ [GooseExts] [GoGlobalContext] : val
+opaque PROT_READ [GooseExts] [GoGlobalContext] : val
 
-axiom PROT_WRITE [GooseExts] [GoGlobalContext] : val
+opaque PROT_WRITE [GooseExts] [GoGlobalContext] : val
 
-axiom PR_CAPBSET_DROP [GooseExts] [GoGlobalContext] : val
+opaque PR_CAPBSET_DROP [GooseExts] [GoGlobalContext] : val
 
-axiom PR_CAPBSET_READ [GooseExts] [GoGlobalContext] : val
+opaque PR_CAPBSET_READ [GooseExts] [GoGlobalContext] : val
 
-axiom PR_ENDIAN_BIG [GooseExts] [GoGlobalContext] : val
+opaque PR_ENDIAN_BIG [GooseExts] [GoGlobalContext] : val
 
-axiom PR_ENDIAN_LITTLE [GooseExts] [GoGlobalContext] : val
+opaque PR_ENDIAN_LITTLE [GooseExts] [GoGlobalContext] : val
 
-axiom PR_ENDIAN_PPC_LITTLE [GooseExts] [GoGlobalContext] : val
+opaque PR_ENDIAN_PPC_LITTLE [GooseExts] [GoGlobalContext] : val
 
-axiom PR_FPEMU_NOPRINT [GooseExts] [GoGlobalContext] : val
+opaque PR_FPEMU_NOPRINT [GooseExts] [GoGlobalContext] : val
 
-axiom PR_FPEMU_SIGFPE [GooseExts] [GoGlobalContext] : val
+opaque PR_FPEMU_SIGFPE [GooseExts] [GoGlobalContext] : val
 
-axiom PR_FP_EXC_ASYNC [GooseExts] [GoGlobalContext] : val
+opaque PR_FP_EXC_ASYNC [GooseExts] [GoGlobalContext] : val
 
-axiom PR_FP_EXC_DISABLED [GooseExts] [GoGlobalContext] : val
+opaque PR_FP_EXC_DISABLED [GooseExts] [GoGlobalContext] : val
 
-axiom PR_FP_EXC_DIV [GooseExts] [GoGlobalContext] : val
+opaque PR_FP_EXC_DIV [GooseExts] [GoGlobalContext] : val
 
-axiom PR_FP_EXC_INV [GooseExts] [GoGlobalContext] : val
+opaque PR_FP_EXC_INV [GooseExts] [GoGlobalContext] : val
 
-axiom PR_FP_EXC_NONRECOV [GooseExts] [GoGlobalContext] : val
+opaque PR_FP_EXC_NONRECOV [GooseExts] [GoGlobalContext] : val
 
-axiom PR_FP_EXC_OVF [GooseExts] [GoGlobalContext] : val
+opaque PR_FP_EXC_OVF [GooseExts] [GoGlobalContext] : val
 
-axiom PR_FP_EXC_PRECISE [GooseExts] [GoGlobalContext] : val
+opaque PR_FP_EXC_PRECISE [GooseExts] [GoGlobalContext] : val
 
-axiom PR_FP_EXC_RES [GooseExts] [GoGlobalContext] : val
+opaque PR_FP_EXC_RES [GooseExts] [GoGlobalContext] : val
 
-axiom PR_FP_EXC_SW_ENABLE [GooseExts] [GoGlobalContext] : val
+opaque PR_FP_EXC_SW_ENABLE [GooseExts] [GoGlobalContext] : val
 
-axiom PR_FP_EXC_UND [GooseExts] [GoGlobalContext] : val
+opaque PR_FP_EXC_UND [GooseExts] [GoGlobalContext] : val
 
-axiom PR_GET_DUMPABLE [GooseExts] [GoGlobalContext] : val
+opaque PR_GET_DUMPABLE [GooseExts] [GoGlobalContext] : val
 
-axiom PR_GET_ENDIAN [GooseExts] [GoGlobalContext] : val
+opaque PR_GET_ENDIAN [GooseExts] [GoGlobalContext] : val
 
-axiom PR_GET_FPEMU [GooseExts] [GoGlobalContext] : val
+opaque PR_GET_FPEMU [GooseExts] [GoGlobalContext] : val
 
-axiom PR_GET_FPEXC [GooseExts] [GoGlobalContext] : val
+opaque PR_GET_FPEXC [GooseExts] [GoGlobalContext] : val
 
-axiom PR_GET_KEEPCAPS [GooseExts] [GoGlobalContext] : val
+opaque PR_GET_KEEPCAPS [GooseExts] [GoGlobalContext] : val
 
-axiom PR_GET_NAME [GooseExts] [GoGlobalContext] : val
+opaque PR_GET_NAME [GooseExts] [GoGlobalContext] : val
 
-axiom PR_GET_PDEATHSIG [GooseExts] [GoGlobalContext] : val
+opaque PR_GET_PDEATHSIG [GooseExts] [GoGlobalContext] : val
 
-axiom PR_GET_SECCOMP [GooseExts] [GoGlobalContext] : val
+opaque PR_GET_SECCOMP [GooseExts] [GoGlobalContext] : val
 
-axiom PR_GET_SECUREBITS [GooseExts] [GoGlobalContext] : val
+opaque PR_GET_SECUREBITS [GooseExts] [GoGlobalContext] : val
 
-axiom PR_GET_TIMERSLACK [GooseExts] [GoGlobalContext] : val
+opaque PR_GET_TIMERSLACK [GooseExts] [GoGlobalContext] : val
 
-axiom PR_GET_TIMING [GooseExts] [GoGlobalContext] : val
+opaque PR_GET_TIMING [GooseExts] [GoGlobalContext] : val
 
-axiom PR_GET_TSC [GooseExts] [GoGlobalContext] : val
+opaque PR_GET_TSC [GooseExts] [GoGlobalContext] : val
 
-axiom PR_GET_UNALIGN [GooseExts] [GoGlobalContext] : val
+opaque PR_GET_UNALIGN [GooseExts] [GoGlobalContext] : val
 
-axiom PR_MCE_KILL [GooseExts] [GoGlobalContext] : val
+opaque PR_MCE_KILL [GooseExts] [GoGlobalContext] : val
 
-axiom PR_MCE_KILL_CLEAR [GooseExts] [GoGlobalContext] : val
+opaque PR_MCE_KILL_CLEAR [GooseExts] [GoGlobalContext] : val
 
-axiom PR_MCE_KILL_DEFAULT [GooseExts] [GoGlobalContext] : val
+opaque PR_MCE_KILL_DEFAULT [GooseExts] [GoGlobalContext] : val
 
-axiom PR_MCE_KILL_EARLY [GooseExts] [GoGlobalContext] : val
+opaque PR_MCE_KILL_EARLY [GooseExts] [GoGlobalContext] : val
 
-axiom PR_MCE_KILL_GET [GooseExts] [GoGlobalContext] : val
+opaque PR_MCE_KILL_GET [GooseExts] [GoGlobalContext] : val
 
-axiom PR_MCE_KILL_LATE [GooseExts] [GoGlobalContext] : val
+opaque PR_MCE_KILL_LATE [GooseExts] [GoGlobalContext] : val
 
-axiom PR_MCE_KILL_SET [GooseExts] [GoGlobalContext] : val
+opaque PR_MCE_KILL_SET [GooseExts] [GoGlobalContext] : val
 
-axiom PR_SET_DUMPABLE [GooseExts] [GoGlobalContext] : val
+opaque PR_SET_DUMPABLE [GooseExts] [GoGlobalContext] : val
 
-axiom PR_SET_ENDIAN [GooseExts] [GoGlobalContext] : val
+opaque PR_SET_ENDIAN [GooseExts] [GoGlobalContext] : val
 
-axiom PR_SET_FPEMU [GooseExts] [GoGlobalContext] : val
+opaque PR_SET_FPEMU [GooseExts] [GoGlobalContext] : val
 
-axiom PR_SET_FPEXC [GooseExts] [GoGlobalContext] : val
+opaque PR_SET_FPEXC [GooseExts] [GoGlobalContext] : val
 
-axiom PR_SET_KEEPCAPS [GooseExts] [GoGlobalContext] : val
+opaque PR_SET_KEEPCAPS [GooseExts] [GoGlobalContext] : val
 
-axiom PR_SET_NAME [GooseExts] [GoGlobalContext] : val
+opaque PR_SET_NAME [GooseExts] [GoGlobalContext] : val
 
-axiom PR_SET_PDEATHSIG [GooseExts] [GoGlobalContext] : val
+opaque PR_SET_PDEATHSIG [GooseExts] [GoGlobalContext] : val
 
-axiom PR_SET_PTRACER [GooseExts] [GoGlobalContext] : val
+opaque PR_SET_PTRACER [GooseExts] [GoGlobalContext] : val
 
-axiom PR_SET_SECCOMP [GooseExts] [GoGlobalContext] : val
+opaque PR_SET_SECCOMP [GooseExts] [GoGlobalContext] : val
 
-axiom PR_SET_SECUREBITS [GooseExts] [GoGlobalContext] : val
+opaque PR_SET_SECUREBITS [GooseExts] [GoGlobalContext] : val
 
-axiom PR_SET_TIMERSLACK [GooseExts] [GoGlobalContext] : val
+opaque PR_SET_TIMERSLACK [GooseExts] [GoGlobalContext] : val
 
-axiom PR_SET_TIMING [GooseExts] [GoGlobalContext] : val
+opaque PR_SET_TIMING [GooseExts] [GoGlobalContext] : val
 
-axiom PR_SET_TSC [GooseExts] [GoGlobalContext] : val
+opaque PR_SET_TSC [GooseExts] [GoGlobalContext] : val
 
-axiom PR_SET_UNALIGN [GooseExts] [GoGlobalContext] : val
+opaque PR_SET_UNALIGN [GooseExts] [GoGlobalContext] : val
 
-axiom PR_TASK_PERF_EVENTS_DISABLE [GooseExts] [GoGlobalContext] : val
+opaque PR_TASK_PERF_EVENTS_DISABLE [GooseExts] [GoGlobalContext] : val
 
-axiom PR_TASK_PERF_EVENTS_ENABLE [GooseExts] [GoGlobalContext] : val
+opaque PR_TASK_PERF_EVENTS_ENABLE [GooseExts] [GoGlobalContext] : val
 
-axiom PR_TIMING_STATISTICAL [GooseExts] [GoGlobalContext] : val
+opaque PR_TIMING_STATISTICAL [GooseExts] [GoGlobalContext] : val
 
-axiom PR_TIMING_TIMESTAMP [GooseExts] [GoGlobalContext] : val
+opaque PR_TIMING_TIMESTAMP [GooseExts] [GoGlobalContext] : val
 
-axiom PR_TSC_ENABLE [GooseExts] [GoGlobalContext] : val
+opaque PR_TSC_ENABLE [GooseExts] [GoGlobalContext] : val
 
-axiom PR_TSC_SIGSEGV [GooseExts] [GoGlobalContext] : val
+opaque PR_TSC_SIGSEGV [GooseExts] [GoGlobalContext] : val
 
-axiom PR_UNALIGN_NOPRINT [GooseExts] [GoGlobalContext] : val
+opaque PR_UNALIGN_NOPRINT [GooseExts] [GoGlobalContext] : val
 
-axiom PR_UNALIGN_SIGBUS [GooseExts] [GoGlobalContext] : val
+opaque PR_UNALIGN_SIGBUS [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_ARCH_PRCTL [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_ARCH_PRCTL [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_ATTACH [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_ATTACH [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_CONT [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_CONT [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_DETACH [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_DETACH [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_EVENT_CLONE [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_EVENT_CLONE [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_EVENT_EXEC [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_EVENT_EXEC [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_EVENT_EXIT [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_EVENT_EXIT [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_EVENT_FORK [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_EVENT_FORK [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_EVENT_VFORK [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_EVENT_VFORK [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_EVENT_VFORK_DONE [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_EVENT_VFORK_DONE [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_GETEVENTMSG [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_GETEVENTMSG [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_GETFPREGS [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_GETFPREGS [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_GETFPXREGS [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_GETFPXREGS [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_GETREGS [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_GETREGS [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_GETREGSET [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_GETREGSET [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_GETSIGINFO [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_GETSIGINFO [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_GET_THREAD_AREA [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_GET_THREAD_AREA [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_KILL [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_KILL [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_OLDSETOPTIONS [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_OLDSETOPTIONS [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_O_MASK [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_O_MASK [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_O_TRACECLONE [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_O_TRACECLONE [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_O_TRACEEXEC [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_O_TRACEEXEC [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_O_TRACEEXIT [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_O_TRACEEXIT [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_O_TRACEFORK [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_O_TRACEFORK [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_O_TRACESYSGOOD [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_O_TRACESYSGOOD [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_O_TRACEVFORK [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_O_TRACEVFORK [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_O_TRACEVFORKDONE [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_O_TRACEVFORKDONE [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_PEEKDATA [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_PEEKDATA [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_PEEKTEXT [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_PEEKTEXT [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_PEEKUSR [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_PEEKUSR [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_POKEDATA [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_POKEDATA [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_POKETEXT [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_POKETEXT [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_POKEUSR [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_POKEUSR [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_SETFPREGS [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_SETFPREGS [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_SETFPXREGS [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_SETFPXREGS [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_SETOPTIONS [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_SETOPTIONS [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_SETREGS [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_SETREGS [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_SETREGSET [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_SETREGSET [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_SETSIGINFO [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_SETSIGINFO [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_SET_THREAD_AREA [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_SET_THREAD_AREA [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_SINGLEBLOCK [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_SINGLEBLOCK [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_SINGLESTEP [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_SINGLESTEP [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_SYSCALL [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_SYSCALL [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_SYSEMU [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_SYSEMU [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_SYSEMU_SINGLESTEP [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_SYSEMU_SINGLESTEP [GooseExts] [GoGlobalContext] : val
 
-axiom PTRACE_TRACEME [GooseExts] [GoGlobalContext] : val
+opaque PTRACE_TRACEME [GooseExts] [GoGlobalContext] : val
 
-axiom RLIMIT_AS [GooseExts] [GoGlobalContext] : val
+opaque RLIMIT_AS [GooseExts] [GoGlobalContext] : val
 
-axiom RLIMIT_CORE [GooseExts] [GoGlobalContext] : val
+opaque RLIMIT_CORE [GooseExts] [GoGlobalContext] : val
 
-axiom RLIMIT_CPU [GooseExts] [GoGlobalContext] : val
+opaque RLIMIT_CPU [GooseExts] [GoGlobalContext] : val
 
-axiom RLIMIT_DATA [GooseExts] [GoGlobalContext] : val
+opaque RLIMIT_DATA [GooseExts] [GoGlobalContext] : val
 
-axiom RLIMIT_FSIZE [GooseExts] [GoGlobalContext] : val
+opaque RLIMIT_FSIZE [GooseExts] [GoGlobalContext] : val
 
-axiom RLIMIT_NOFILE [GooseExts] [GoGlobalContext] : val
+opaque RLIMIT_NOFILE [GooseExts] [GoGlobalContext] : val
 
-axiom RLIMIT_STACK [GooseExts] [GoGlobalContext] : val
+opaque RLIMIT_STACK [GooseExts] [GoGlobalContext] : val
 
-axiom RLIM_INFINITY [GooseExts] [GoGlobalContext] : val
+opaque RLIM_INFINITY [GooseExts] [GoGlobalContext] : val
 
-axiom RTAX_ADVMSS [GooseExts] [GoGlobalContext] : val
+opaque RTAX_ADVMSS [GooseExts] [GoGlobalContext] : val
 
-axiom RTAX_CWND [GooseExts] [GoGlobalContext] : val
+opaque RTAX_CWND [GooseExts] [GoGlobalContext] : val
 
-axiom RTAX_FEATURES [GooseExts] [GoGlobalContext] : val
+opaque RTAX_FEATURES [GooseExts] [GoGlobalContext] : val
 
-axiom RTAX_FEATURE_ALLFRAG [GooseExts] [GoGlobalContext] : val
+opaque RTAX_FEATURE_ALLFRAG [GooseExts] [GoGlobalContext] : val
 
-axiom RTAX_FEATURE_ECN [GooseExts] [GoGlobalContext] : val
+opaque RTAX_FEATURE_ECN [GooseExts] [GoGlobalContext] : val
 
-axiom RTAX_FEATURE_SACK [GooseExts] [GoGlobalContext] : val
+opaque RTAX_FEATURE_SACK [GooseExts] [GoGlobalContext] : val
 
-axiom RTAX_FEATURE_TIMESTAMP [GooseExts] [GoGlobalContext] : val
+opaque RTAX_FEATURE_TIMESTAMP [GooseExts] [GoGlobalContext] : val
 
-axiom RTAX_HOPLIMIT [GooseExts] [GoGlobalContext] : val
+opaque RTAX_HOPLIMIT [GooseExts] [GoGlobalContext] : val
 
-axiom RTAX_INITCWND [GooseExts] [GoGlobalContext] : val
+opaque RTAX_INITCWND [GooseExts] [GoGlobalContext] : val
 
-axiom RTAX_INITRWND [GooseExts] [GoGlobalContext] : val
+opaque RTAX_INITRWND [GooseExts] [GoGlobalContext] : val
 
-axiom RTAX_LOCK [GooseExts] [GoGlobalContext] : val
+opaque RTAX_LOCK [GooseExts] [GoGlobalContext] : val
 
-axiom RTAX_MAX [GooseExts] [GoGlobalContext] : val
+opaque RTAX_MAX [GooseExts] [GoGlobalContext] : val
 
-axiom RTAX_MTU [GooseExts] [GoGlobalContext] : val
+opaque RTAX_MTU [GooseExts] [GoGlobalContext] : val
 
-axiom RTAX_REORDERING [GooseExts] [GoGlobalContext] : val
+opaque RTAX_REORDERING [GooseExts] [GoGlobalContext] : val
 
-axiom RTAX_RTO_MIN [GooseExts] [GoGlobalContext] : val
+opaque RTAX_RTO_MIN [GooseExts] [GoGlobalContext] : val
 
-axiom RTAX_RTT [GooseExts] [GoGlobalContext] : val
+opaque RTAX_RTT [GooseExts] [GoGlobalContext] : val
 
-axiom RTAX_RTTVAR [GooseExts] [GoGlobalContext] : val
+opaque RTAX_RTTVAR [GooseExts] [GoGlobalContext] : val
 
-axiom RTAX_SSTHRESH [GooseExts] [GoGlobalContext] : val
+opaque RTAX_SSTHRESH [GooseExts] [GoGlobalContext] : val
 
-axiom RTAX_UNSPEC [GooseExts] [GoGlobalContext] : val
+opaque RTAX_UNSPEC [GooseExts] [GoGlobalContext] : val
 
-axiom RTAX_WINDOW [GooseExts] [GoGlobalContext] : val
+opaque RTAX_WINDOW [GooseExts] [GoGlobalContext] : val
 
-axiom RTA_ALIGNTO [GooseExts] [GoGlobalContext] : val
+opaque RTA_ALIGNTO [GooseExts] [GoGlobalContext] : val
 
-axiom RTA_MAX [GooseExts] [GoGlobalContext] : val
+opaque RTA_MAX [GooseExts] [GoGlobalContext] : val
 
-axiom RTCF_DIRECTSRC [GooseExts] [GoGlobalContext] : val
+opaque RTCF_DIRECTSRC [GooseExts] [GoGlobalContext] : val
 
-axiom RTCF_DOREDIRECT [GooseExts] [GoGlobalContext] : val
+opaque RTCF_DOREDIRECT [GooseExts] [GoGlobalContext] : val
 
-axiom RTCF_LOG [GooseExts] [GoGlobalContext] : val
+opaque RTCF_LOG [GooseExts] [GoGlobalContext] : val
 
-axiom RTCF_MASQ [GooseExts] [GoGlobalContext] : val
+opaque RTCF_MASQ [GooseExts] [GoGlobalContext] : val
 
-axiom RTCF_NAT [GooseExts] [GoGlobalContext] : val
+opaque RTCF_NAT [GooseExts] [GoGlobalContext] : val
 
-axiom RTCF_VALVE [GooseExts] [GoGlobalContext] : val
+opaque RTCF_VALVE [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_ADDRCLASSMASK [GooseExts] [GoGlobalContext] : val
+opaque RTF_ADDRCLASSMASK [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_ADDRCONF [GooseExts] [GoGlobalContext] : val
+opaque RTF_ADDRCONF [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_ALLONLINK [GooseExts] [GoGlobalContext] : val
+opaque RTF_ALLONLINK [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_BROADCAST [GooseExts] [GoGlobalContext] : val
+opaque RTF_BROADCAST [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_CACHE [GooseExts] [GoGlobalContext] : val
+opaque RTF_CACHE [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_DEFAULT [GooseExts] [GoGlobalContext] : val
+opaque RTF_DEFAULT [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_DYNAMIC [GooseExts] [GoGlobalContext] : val
+opaque RTF_DYNAMIC [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_FLOW [GooseExts] [GoGlobalContext] : val
+opaque RTF_FLOW [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_GATEWAY [GooseExts] [GoGlobalContext] : val
+opaque RTF_GATEWAY [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_HOST [GooseExts] [GoGlobalContext] : val
+opaque RTF_HOST [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_INTERFACE [GooseExts] [GoGlobalContext] : val
+opaque RTF_INTERFACE [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_IRTT [GooseExts] [GoGlobalContext] : val
+opaque RTF_IRTT [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_LINKRT [GooseExts] [GoGlobalContext] : val
+opaque RTF_LINKRT [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_LOCAL [GooseExts] [GoGlobalContext] : val
+opaque RTF_LOCAL [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_MODIFIED [GooseExts] [GoGlobalContext] : val
+opaque RTF_MODIFIED [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_MSS [GooseExts] [GoGlobalContext] : val
+opaque RTF_MSS [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_MTU [GooseExts] [GoGlobalContext] : val
+opaque RTF_MTU [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_MULTICAST [GooseExts] [GoGlobalContext] : val
+opaque RTF_MULTICAST [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_NAT [GooseExts] [GoGlobalContext] : val
+opaque RTF_NAT [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_NOFORWARD [GooseExts] [GoGlobalContext] : val
+opaque RTF_NOFORWARD [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_NONEXTHOP [GooseExts] [GoGlobalContext] : val
+opaque RTF_NONEXTHOP [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_NOPMTUDISC [GooseExts] [GoGlobalContext] : val
+opaque RTF_NOPMTUDISC [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_POLICY [GooseExts] [GoGlobalContext] : val
+opaque RTF_POLICY [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_REINSTATE [GooseExts] [GoGlobalContext] : val
+opaque RTF_REINSTATE [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_REJECT [GooseExts] [GoGlobalContext] : val
+opaque RTF_REJECT [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_STATIC [GooseExts] [GoGlobalContext] : val
+opaque RTF_STATIC [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_THROW [GooseExts] [GoGlobalContext] : val
+opaque RTF_THROW [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_UP [GooseExts] [GoGlobalContext] : val
+opaque RTF_UP [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_WINDOW [GooseExts] [GoGlobalContext] : val
+opaque RTF_WINDOW [GooseExts] [GoGlobalContext] : val
 
-axiom RTF_XRESOLVE [GooseExts] [GoGlobalContext] : val
+opaque RTF_XRESOLVE [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_BASE [GooseExts] [GoGlobalContext] : val
+opaque RTM_BASE [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_DELACTION [GooseExts] [GoGlobalContext] : val
+opaque RTM_DELACTION [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_DELADDR [GooseExts] [GoGlobalContext] : val
+opaque RTM_DELADDR [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_DELADDRLABEL [GooseExts] [GoGlobalContext] : val
+opaque RTM_DELADDRLABEL [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_DELLINK [GooseExts] [GoGlobalContext] : val
+opaque RTM_DELLINK [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_DELNEIGH [GooseExts] [GoGlobalContext] : val
+opaque RTM_DELNEIGH [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_DELQDISC [GooseExts] [GoGlobalContext] : val
+opaque RTM_DELQDISC [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_DELROUTE [GooseExts] [GoGlobalContext] : val
+opaque RTM_DELROUTE [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_DELRULE [GooseExts] [GoGlobalContext] : val
+opaque RTM_DELRULE [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_DELTCLASS [GooseExts] [GoGlobalContext] : val
+opaque RTM_DELTCLASS [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_DELTFILTER [GooseExts] [GoGlobalContext] : val
+opaque RTM_DELTFILTER [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_F_CLONED [GooseExts] [GoGlobalContext] : val
+opaque RTM_F_CLONED [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_F_EQUALIZE [GooseExts] [GoGlobalContext] : val
+opaque RTM_F_EQUALIZE [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_F_NOTIFY [GooseExts] [GoGlobalContext] : val
+opaque RTM_F_NOTIFY [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_F_PREFIX [GooseExts] [GoGlobalContext] : val
+opaque RTM_F_PREFIX [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_GETACTION [GooseExts] [GoGlobalContext] : val
+opaque RTM_GETACTION [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_GETADDR [GooseExts] [GoGlobalContext] : val
+opaque RTM_GETADDR [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_GETADDRLABEL [GooseExts] [GoGlobalContext] : val
+opaque RTM_GETADDRLABEL [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_GETANYCAST [GooseExts] [GoGlobalContext] : val
+opaque RTM_GETANYCAST [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_GETDCB [GooseExts] [GoGlobalContext] : val
+opaque RTM_GETDCB [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_GETLINK [GooseExts] [GoGlobalContext] : val
+opaque RTM_GETLINK [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_GETMULTICAST [GooseExts] [GoGlobalContext] : val
+opaque RTM_GETMULTICAST [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_GETNEIGH [GooseExts] [GoGlobalContext] : val
+opaque RTM_GETNEIGH [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_GETNEIGHTBL [GooseExts] [GoGlobalContext] : val
+opaque RTM_GETNEIGHTBL [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_GETQDISC [GooseExts] [GoGlobalContext] : val
+opaque RTM_GETQDISC [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_GETROUTE [GooseExts] [GoGlobalContext] : val
+opaque RTM_GETROUTE [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_GETRULE [GooseExts] [GoGlobalContext] : val
+opaque RTM_GETRULE [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_GETTCLASS [GooseExts] [GoGlobalContext] : val
+opaque RTM_GETTCLASS [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_GETTFILTER [GooseExts] [GoGlobalContext] : val
+opaque RTM_GETTFILTER [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_MAX [GooseExts] [GoGlobalContext] : val
+opaque RTM_MAX [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_NEWACTION [GooseExts] [GoGlobalContext] : val
+opaque RTM_NEWACTION [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_NEWADDR [GooseExts] [GoGlobalContext] : val
+opaque RTM_NEWADDR [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_NEWADDRLABEL [GooseExts] [GoGlobalContext] : val
+opaque RTM_NEWADDRLABEL [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_NEWLINK [GooseExts] [GoGlobalContext] : val
+opaque RTM_NEWLINK [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_NEWNDUSEROPT [GooseExts] [GoGlobalContext] : val
+opaque RTM_NEWNDUSEROPT [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_NEWNEIGH [GooseExts] [GoGlobalContext] : val
+opaque RTM_NEWNEIGH [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_NEWNEIGHTBL [GooseExts] [GoGlobalContext] : val
+opaque RTM_NEWNEIGHTBL [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_NEWPREFIX [GooseExts] [GoGlobalContext] : val
+opaque RTM_NEWPREFIX [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_NEWQDISC [GooseExts] [GoGlobalContext] : val
+opaque RTM_NEWQDISC [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_NEWROUTE [GooseExts] [GoGlobalContext] : val
+opaque RTM_NEWROUTE [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_NEWRULE [GooseExts] [GoGlobalContext] : val
+opaque RTM_NEWRULE [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_NEWTCLASS [GooseExts] [GoGlobalContext] : val
+opaque RTM_NEWTCLASS [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_NEWTFILTER [GooseExts] [GoGlobalContext] : val
+opaque RTM_NEWTFILTER [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_NR_FAMILIES [GooseExts] [GoGlobalContext] : val
+opaque RTM_NR_FAMILIES [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_NR_MSGTYPES [GooseExts] [GoGlobalContext] : val
+opaque RTM_NR_MSGTYPES [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_SETDCB [GooseExts] [GoGlobalContext] : val
+opaque RTM_SETDCB [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_SETLINK [GooseExts] [GoGlobalContext] : val
+opaque RTM_SETLINK [GooseExts] [GoGlobalContext] : val
 
-axiom RTM_SETNEIGHTBL [GooseExts] [GoGlobalContext] : val
+opaque RTM_SETNEIGHTBL [GooseExts] [GoGlobalContext] : val
 
-axiom RTNH_ALIGNTO [GooseExts] [GoGlobalContext] : val
+opaque RTNH_ALIGNTO [GooseExts] [GoGlobalContext] : val
 
-axiom RTNH_F_DEAD [GooseExts] [GoGlobalContext] : val
+opaque RTNH_F_DEAD [GooseExts] [GoGlobalContext] : val
 
-axiom RTNH_F_ONLINK [GooseExts] [GoGlobalContext] : val
+opaque RTNH_F_ONLINK [GooseExts] [GoGlobalContext] : val
 
-axiom RTNH_F_PERVASIVE [GooseExts] [GoGlobalContext] : val
+opaque RTNH_F_PERVASIVE [GooseExts] [GoGlobalContext] : val
 
-axiom RTN_MAX [GooseExts] [GoGlobalContext] : val
+opaque RTN_MAX [GooseExts] [GoGlobalContext] : val
 
-axiom RTPROT_BIRD [GooseExts] [GoGlobalContext] : val
+opaque RTPROT_BIRD [GooseExts] [GoGlobalContext] : val
 
-axiom RTPROT_BOOT [GooseExts] [GoGlobalContext] : val
+opaque RTPROT_BOOT [GooseExts] [GoGlobalContext] : val
 
-axiom RTPROT_DHCP [GooseExts] [GoGlobalContext] : val
+opaque RTPROT_DHCP [GooseExts] [GoGlobalContext] : val
 
-axiom RTPROT_DNROUTED [GooseExts] [GoGlobalContext] : val
+opaque RTPROT_DNROUTED [GooseExts] [GoGlobalContext] : val
 
-axiom RTPROT_GATED [GooseExts] [GoGlobalContext] : val
+opaque RTPROT_GATED [GooseExts] [GoGlobalContext] : val
 
-axiom RTPROT_KERNEL [GooseExts] [GoGlobalContext] : val
+opaque RTPROT_KERNEL [GooseExts] [GoGlobalContext] : val
 
-axiom RTPROT_MRT [GooseExts] [GoGlobalContext] : val
+opaque RTPROT_MRT [GooseExts] [GoGlobalContext] : val
 
-axiom RTPROT_NTK [GooseExts] [GoGlobalContext] : val
+opaque RTPROT_NTK [GooseExts] [GoGlobalContext] : val
 
-axiom RTPROT_RA [GooseExts] [GoGlobalContext] : val
+opaque RTPROT_RA [GooseExts] [GoGlobalContext] : val
 
-axiom RTPROT_REDIRECT [GooseExts] [GoGlobalContext] : val
+opaque RTPROT_REDIRECT [GooseExts] [GoGlobalContext] : val
 
-axiom RTPROT_STATIC [GooseExts] [GoGlobalContext] : val
+opaque RTPROT_STATIC [GooseExts] [GoGlobalContext] : val
 
-axiom RTPROT_UNSPEC [GooseExts] [GoGlobalContext] : val
+opaque RTPROT_UNSPEC [GooseExts] [GoGlobalContext] : val
 
-axiom RTPROT_XORP [GooseExts] [GoGlobalContext] : val
+opaque RTPROT_XORP [GooseExts] [GoGlobalContext] : val
 
-axiom RTPROT_ZEBRA [GooseExts] [GoGlobalContext] : val
+opaque RTPROT_ZEBRA [GooseExts] [GoGlobalContext] : val
 
-axiom RT_CLASS_DEFAULT [GooseExts] [GoGlobalContext] : val
+opaque RT_CLASS_DEFAULT [GooseExts] [GoGlobalContext] : val
 
-axiom RT_CLASS_LOCAL [GooseExts] [GoGlobalContext] : val
+opaque RT_CLASS_LOCAL [GooseExts] [GoGlobalContext] : val
 
-axiom RT_CLASS_MAIN [GooseExts] [GoGlobalContext] : val
+opaque RT_CLASS_MAIN [GooseExts] [GoGlobalContext] : val
 
-axiom RT_CLASS_MAX [GooseExts] [GoGlobalContext] : val
+opaque RT_CLASS_MAX [GooseExts] [GoGlobalContext] : val
 
-axiom RT_CLASS_UNSPEC [GooseExts] [GoGlobalContext] : val
+opaque RT_CLASS_UNSPEC [GooseExts] [GoGlobalContext] : val
 
-axiom RUSAGE_CHILDREN [GooseExts] [GoGlobalContext] : val
+opaque RUSAGE_CHILDREN [GooseExts] [GoGlobalContext] : val
 
-axiom RUSAGE_SELF [GooseExts] [GoGlobalContext] : val
+opaque RUSAGE_SELF [GooseExts] [GoGlobalContext] : val
 
-axiom RUSAGE_THREAD [GooseExts] [GoGlobalContext] : val
+opaque RUSAGE_THREAD [GooseExts] [GoGlobalContext] : val
 
-axiom SCM_CREDENTIALS [GooseExts] [GoGlobalContext] : val
+opaque SCM_CREDENTIALS [GooseExts] [GoGlobalContext] : val
 
-axiom SCM_RIGHTS [GooseExts] [GoGlobalContext] : val
+opaque SCM_RIGHTS [GooseExts] [GoGlobalContext] : val
 
-axiom SCM_TIMESTAMP [GooseExts] [GoGlobalContext] : val
+opaque SCM_TIMESTAMP [GooseExts] [GoGlobalContext] : val
 
-axiom SCM_TIMESTAMPING [GooseExts] [GoGlobalContext] : val
+opaque SCM_TIMESTAMPING [GooseExts] [GoGlobalContext] : val
 
-axiom SCM_TIMESTAMPNS [GooseExts] [GoGlobalContext] : val
+opaque SCM_TIMESTAMPNS [GooseExts] [GoGlobalContext] : val
 
-axiom SHUT_RD [GooseExts] [GoGlobalContext] : val
+opaque SHUT_RD [GooseExts] [GoGlobalContext] : val
 
-axiom SHUT_RDWR [GooseExts] [GoGlobalContext] : val
+opaque SHUT_RDWR [GooseExts] [GoGlobalContext] : val
 
-axiom SHUT_WR [GooseExts] [GoGlobalContext] : val
+opaque SHUT_WR [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCADDDLCI [GooseExts] [GoGlobalContext] : val
+opaque SIOCADDDLCI [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCADDMULTI [GooseExts] [GoGlobalContext] : val
+opaque SIOCADDMULTI [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCADDRT [GooseExts] [GoGlobalContext] : val
+opaque SIOCADDRT [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCATMARK [GooseExts] [GoGlobalContext] : val
+opaque SIOCATMARK [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCDARP [GooseExts] [GoGlobalContext] : val
+opaque SIOCDARP [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCDELDLCI [GooseExts] [GoGlobalContext] : val
+opaque SIOCDELDLCI [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCDELMULTI [GooseExts] [GoGlobalContext] : val
+opaque SIOCDELMULTI [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCDELRT [GooseExts] [GoGlobalContext] : val
+opaque SIOCDELRT [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCDEVPRIVATE [GooseExts] [GoGlobalContext] : val
+opaque SIOCDEVPRIVATE [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCDIFADDR [GooseExts] [GoGlobalContext] : val
+opaque SIOCDIFADDR [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCDRARP [GooseExts] [GoGlobalContext] : val
+opaque SIOCDRARP [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGARP [GooseExts] [GoGlobalContext] : val
+opaque SIOCGARP [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGIFADDR [GooseExts] [GoGlobalContext] : val
+opaque SIOCGIFADDR [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGIFBR [GooseExts] [GoGlobalContext] : val
+opaque SIOCGIFBR [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGIFBRDADDR [GooseExts] [GoGlobalContext] : val
+opaque SIOCGIFBRDADDR [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGIFCONF [GooseExts] [GoGlobalContext] : val
+opaque SIOCGIFCONF [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGIFCOUNT [GooseExts] [GoGlobalContext] : val
+opaque SIOCGIFCOUNT [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGIFDSTADDR [GooseExts] [GoGlobalContext] : val
+opaque SIOCGIFDSTADDR [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGIFENCAP [GooseExts] [GoGlobalContext] : val
+opaque SIOCGIFENCAP [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGIFFLAGS [GooseExts] [GoGlobalContext] : val
+opaque SIOCGIFFLAGS [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGIFHWADDR [GooseExts] [GoGlobalContext] : val
+opaque SIOCGIFHWADDR [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGIFINDEX [GooseExts] [GoGlobalContext] : val
+opaque SIOCGIFINDEX [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGIFMAP [GooseExts] [GoGlobalContext] : val
+opaque SIOCGIFMAP [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGIFMEM [GooseExts] [GoGlobalContext] : val
+opaque SIOCGIFMEM [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGIFMETRIC [GooseExts] [GoGlobalContext] : val
+opaque SIOCGIFMETRIC [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGIFMTU [GooseExts] [GoGlobalContext] : val
+opaque SIOCGIFMTU [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGIFNAME [GooseExts] [GoGlobalContext] : val
+opaque SIOCGIFNAME [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGIFNETMASK [GooseExts] [GoGlobalContext] : val
+opaque SIOCGIFNETMASK [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGIFPFLAGS [GooseExts] [GoGlobalContext] : val
+opaque SIOCGIFPFLAGS [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGIFSLAVE [GooseExts] [GoGlobalContext] : val
+opaque SIOCGIFSLAVE [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGIFTXQLEN [GooseExts] [GoGlobalContext] : val
+opaque SIOCGIFTXQLEN [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGPGRP [GooseExts] [GoGlobalContext] : val
+opaque SIOCGPGRP [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGRARP [GooseExts] [GoGlobalContext] : val
+opaque SIOCGRARP [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGSTAMP [GooseExts] [GoGlobalContext] : val
+opaque SIOCGSTAMP [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCGSTAMPNS [GooseExts] [GoGlobalContext] : val
+opaque SIOCGSTAMPNS [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCPROTOPRIVATE [GooseExts] [GoGlobalContext] : val
+opaque SIOCPROTOPRIVATE [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCRTMSG [GooseExts] [GoGlobalContext] : val
+opaque SIOCRTMSG [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCSARP [GooseExts] [GoGlobalContext] : val
+opaque SIOCSARP [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCSIFADDR [GooseExts] [GoGlobalContext] : val
+opaque SIOCSIFADDR [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCSIFBR [GooseExts] [GoGlobalContext] : val
+opaque SIOCSIFBR [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCSIFBRDADDR [GooseExts] [GoGlobalContext] : val
+opaque SIOCSIFBRDADDR [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCSIFDSTADDR [GooseExts] [GoGlobalContext] : val
+opaque SIOCSIFDSTADDR [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCSIFENCAP [GooseExts] [GoGlobalContext] : val
+opaque SIOCSIFENCAP [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCSIFFLAGS [GooseExts] [GoGlobalContext] : val
+opaque SIOCSIFFLAGS [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCSIFHWADDR [GooseExts] [GoGlobalContext] : val
+opaque SIOCSIFHWADDR [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCSIFHWBROADCAST [GooseExts] [GoGlobalContext] : val
+opaque SIOCSIFHWBROADCAST [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCSIFLINK [GooseExts] [GoGlobalContext] : val
+opaque SIOCSIFLINK [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCSIFMAP [GooseExts] [GoGlobalContext] : val
+opaque SIOCSIFMAP [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCSIFMEM [GooseExts] [GoGlobalContext] : val
+opaque SIOCSIFMEM [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCSIFMETRIC [GooseExts] [GoGlobalContext] : val
+opaque SIOCSIFMETRIC [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCSIFMTU [GooseExts] [GoGlobalContext] : val
+opaque SIOCSIFMTU [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCSIFNAME [GooseExts] [GoGlobalContext] : val
+opaque SIOCSIFNAME [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCSIFNETMASK [GooseExts] [GoGlobalContext] : val
+opaque SIOCSIFNETMASK [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCSIFPFLAGS [GooseExts] [GoGlobalContext] : val
+opaque SIOCSIFPFLAGS [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCSIFSLAVE [GooseExts] [GoGlobalContext] : val
+opaque SIOCSIFSLAVE [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCSIFTXQLEN [GooseExts] [GoGlobalContext] : val
+opaque SIOCSIFTXQLEN [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCSPGRP [GooseExts] [GoGlobalContext] : val
+opaque SIOCSPGRP [GooseExts] [GoGlobalContext] : val
 
-axiom SIOCSRARP [GooseExts] [GoGlobalContext] : val
+opaque SIOCSRARP [GooseExts] [GoGlobalContext] : val
 
-axiom SOCK_CLOEXEC [GooseExts] [GoGlobalContext] : val
+opaque SOCK_CLOEXEC [GooseExts] [GoGlobalContext] : val
 
-axiom SOCK_DCCP [GooseExts] [GoGlobalContext] : val
+opaque SOCK_DCCP [GooseExts] [GoGlobalContext] : val
 
-axiom SOCK_DGRAM [GooseExts] [GoGlobalContext] : val
+opaque SOCK_DGRAM [GooseExts] [GoGlobalContext] : val
 
-axiom SOCK_NONBLOCK [GooseExts] [GoGlobalContext] : val
+opaque SOCK_NONBLOCK [GooseExts] [GoGlobalContext] : val
 
-axiom SOCK_PACKET [GooseExts] [GoGlobalContext] : val
+opaque SOCK_PACKET [GooseExts] [GoGlobalContext] : val
 
-axiom SOCK_RAW [GooseExts] [GoGlobalContext] : val
+opaque SOCK_RAW [GooseExts] [GoGlobalContext] : val
 
-axiom SOCK_RDM [GooseExts] [GoGlobalContext] : val
+opaque SOCK_RDM [GooseExts] [GoGlobalContext] : val
 
-axiom SOCK_SEQPACKET [GooseExts] [GoGlobalContext] : val
+opaque SOCK_SEQPACKET [GooseExts] [GoGlobalContext] : val
 
-axiom SOCK_STREAM [GooseExts] [GoGlobalContext] : val
+opaque SOCK_STREAM [GooseExts] [GoGlobalContext] : val
 
-axiom SOL_AAL [GooseExts] [GoGlobalContext] : val
+opaque SOL_AAL [GooseExts] [GoGlobalContext] : val
 
-axiom SOL_ATM [GooseExts] [GoGlobalContext] : val
+opaque SOL_ATM [GooseExts] [GoGlobalContext] : val
 
-axiom SOL_DECNET [GooseExts] [GoGlobalContext] : val
+opaque SOL_DECNET [GooseExts] [GoGlobalContext] : val
 
-axiom SOL_ICMPV6 [GooseExts] [GoGlobalContext] : val
+opaque SOL_ICMPV6 [GooseExts] [GoGlobalContext] : val
 
-axiom SOL_IP [GooseExts] [GoGlobalContext] : val
+opaque SOL_IP [GooseExts] [GoGlobalContext] : val
 
-axiom SOL_IPV6 [GooseExts] [GoGlobalContext] : val
+opaque SOL_IPV6 [GooseExts] [GoGlobalContext] : val
 
-axiom SOL_IRDA [GooseExts] [GoGlobalContext] : val
+opaque SOL_IRDA [GooseExts] [GoGlobalContext] : val
 
-axiom SOL_PACKET [GooseExts] [GoGlobalContext] : val
+opaque SOL_PACKET [GooseExts] [GoGlobalContext] : val
 
-axiom SOL_RAW [GooseExts] [GoGlobalContext] : val
+opaque SOL_RAW [GooseExts] [GoGlobalContext] : val
 
-axiom SOL_SOCKET [GooseExts] [GoGlobalContext] : val
+opaque SOL_SOCKET [GooseExts] [GoGlobalContext] : val
 
-axiom SOL_TCP [GooseExts] [GoGlobalContext] : val
+opaque SOL_TCP [GooseExts] [GoGlobalContext] : val
 
-axiom SOL_X25 [GooseExts] [GoGlobalContext] : val
+opaque SOL_X25 [GooseExts] [GoGlobalContext] : val
 
-axiom SOMAXCONN [GooseExts] [GoGlobalContext] : val
+opaque SOMAXCONN [GooseExts] [GoGlobalContext] : val
 
-axiom SO_ACCEPTCONN [GooseExts] [GoGlobalContext] : val
+opaque SO_ACCEPTCONN [GooseExts] [GoGlobalContext] : val
 
-axiom SO_ATTACH_FILTER [GooseExts] [GoGlobalContext] : val
+opaque SO_ATTACH_FILTER [GooseExts] [GoGlobalContext] : val
 
-axiom SO_BINDTODEVICE [GooseExts] [GoGlobalContext] : val
+opaque SO_BINDTODEVICE [GooseExts] [GoGlobalContext] : val
 
-axiom SO_BROADCAST [GooseExts] [GoGlobalContext] : val
+opaque SO_BROADCAST [GooseExts] [GoGlobalContext] : val
 
-axiom SO_BSDCOMPAT [GooseExts] [GoGlobalContext] : val
+opaque SO_BSDCOMPAT [GooseExts] [GoGlobalContext] : val
 
-axiom SO_DEBUG [GooseExts] [GoGlobalContext] : val
+opaque SO_DEBUG [GooseExts] [GoGlobalContext] : val
 
-axiom SO_DETACH_FILTER [GooseExts] [GoGlobalContext] : val
+opaque SO_DETACH_FILTER [GooseExts] [GoGlobalContext] : val
 
-axiom SO_DOMAIN [GooseExts] [GoGlobalContext] : val
+opaque SO_DOMAIN [GooseExts] [GoGlobalContext] : val
 
-axiom SO_DONTROUTE [GooseExts] [GoGlobalContext] : val
+opaque SO_DONTROUTE [GooseExts] [GoGlobalContext] : val
 
-axiom SO_ERROR [GooseExts] [GoGlobalContext] : val
+opaque SO_ERROR [GooseExts] [GoGlobalContext] : val
 
-axiom SO_KEEPALIVE [GooseExts] [GoGlobalContext] : val
+opaque SO_KEEPALIVE [GooseExts] [GoGlobalContext] : val
 
-axiom SO_LINGER [GooseExts] [GoGlobalContext] : val
+opaque SO_LINGER [GooseExts] [GoGlobalContext] : val
 
-axiom SO_MARK [GooseExts] [GoGlobalContext] : val
+opaque SO_MARK [GooseExts] [GoGlobalContext] : val
 
-axiom SO_NO_CHECK [GooseExts] [GoGlobalContext] : val
+opaque SO_NO_CHECK [GooseExts] [GoGlobalContext] : val
 
-axiom SO_OOBINLINE [GooseExts] [GoGlobalContext] : val
+opaque SO_OOBINLINE [GooseExts] [GoGlobalContext] : val
 
-axiom SO_PASSCRED [GooseExts] [GoGlobalContext] : val
+opaque SO_PASSCRED [GooseExts] [GoGlobalContext] : val
 
-axiom SO_PASSSEC [GooseExts] [GoGlobalContext] : val
+opaque SO_PASSSEC [GooseExts] [GoGlobalContext] : val
 
-axiom SO_PEERCRED [GooseExts] [GoGlobalContext] : val
+opaque SO_PEERCRED [GooseExts] [GoGlobalContext] : val
 
-axiom SO_PEERNAME [GooseExts] [GoGlobalContext] : val
+opaque SO_PEERNAME [GooseExts] [GoGlobalContext] : val
 
-axiom SO_PEERSEC [GooseExts] [GoGlobalContext] : val
+opaque SO_PEERSEC [GooseExts] [GoGlobalContext] : val
 
-axiom SO_PRIORITY [GooseExts] [GoGlobalContext] : val
+opaque SO_PRIORITY [GooseExts] [GoGlobalContext] : val
 
-axiom SO_PROTOCOL [GooseExts] [GoGlobalContext] : val
+opaque SO_PROTOCOL [GooseExts] [GoGlobalContext] : val
 
-axiom SO_RCVBUF [GooseExts] [GoGlobalContext] : val
+opaque SO_RCVBUF [GooseExts] [GoGlobalContext] : val
 
-axiom SO_RCVBUFFORCE [GooseExts] [GoGlobalContext] : val
+opaque SO_RCVBUFFORCE [GooseExts] [GoGlobalContext] : val
 
-axiom SO_RCVLOWAT [GooseExts] [GoGlobalContext] : val
+opaque SO_RCVLOWAT [GooseExts] [GoGlobalContext] : val
 
-axiom SO_RCVTIMEO [GooseExts] [GoGlobalContext] : val
+opaque SO_RCVTIMEO [GooseExts] [GoGlobalContext] : val
 
-axiom SO_REUSEADDR [GooseExts] [GoGlobalContext] : val
+opaque SO_REUSEADDR [GooseExts] [GoGlobalContext] : val
 
-axiom SO_RXQ_OVFL [GooseExts] [GoGlobalContext] : val
+opaque SO_RXQ_OVFL [GooseExts] [GoGlobalContext] : val
 
-axiom SO_SECURITY_AUTHENTICATION [GooseExts] [GoGlobalContext] : val
+opaque SO_SECURITY_AUTHENTICATION [GooseExts] [GoGlobalContext] : val
 
-axiom SO_SECURITY_ENCRYPTION_NETWORK [GooseExts] [GoGlobalContext] : val
+opaque SO_SECURITY_ENCRYPTION_NETWORK [GooseExts] [GoGlobalContext] : val
 
-axiom SO_SECURITY_ENCRYPTION_TRANSPORT [GooseExts] [GoGlobalContext] : val
+opaque SO_SECURITY_ENCRYPTION_TRANSPORT [GooseExts] [GoGlobalContext] : val
 
-axiom SO_SNDBUF [GooseExts] [GoGlobalContext] : val
+opaque SO_SNDBUF [GooseExts] [GoGlobalContext] : val
 
-axiom SO_SNDBUFFORCE [GooseExts] [GoGlobalContext] : val
+opaque SO_SNDBUFFORCE [GooseExts] [GoGlobalContext] : val
 
-axiom SO_SNDLOWAT [GooseExts] [GoGlobalContext] : val
+opaque SO_SNDLOWAT [GooseExts] [GoGlobalContext] : val
 
-axiom SO_SNDTIMEO [GooseExts] [GoGlobalContext] : val
+opaque SO_SNDTIMEO [GooseExts] [GoGlobalContext] : val
 
-axiom SO_TIMESTAMP [GooseExts] [GoGlobalContext] : val
+opaque SO_TIMESTAMP [GooseExts] [GoGlobalContext] : val
 
-axiom SO_TIMESTAMPING [GooseExts] [GoGlobalContext] : val
+opaque SO_TIMESTAMPING [GooseExts] [GoGlobalContext] : val
 
-axiom SO_TIMESTAMPNS [GooseExts] [GoGlobalContext] : val
+opaque SO_TIMESTAMPNS [GooseExts] [GoGlobalContext] : val
 
-axiom SO_TYPE [GooseExts] [GoGlobalContext] : val
+opaque SO_TYPE [GooseExts] [GoGlobalContext] : val
 
-axiom S_BLKSIZE [GooseExts] [GoGlobalContext] : val
+opaque S_BLKSIZE [GooseExts] [GoGlobalContext] : val
 
-axiom S_IEXEC [GooseExts] [GoGlobalContext] : val
+opaque S_IEXEC [GooseExts] [GoGlobalContext] : val
 
-axiom S_IFBLK [GooseExts] [GoGlobalContext] : val
+opaque S_IFBLK [GooseExts] [GoGlobalContext] : val
 
-axiom S_IFCHR [GooseExts] [GoGlobalContext] : val
+opaque S_IFCHR [GooseExts] [GoGlobalContext] : val
 
-axiom S_IFDIR [GooseExts] [GoGlobalContext] : val
+opaque S_IFDIR [GooseExts] [GoGlobalContext] : val
 
-axiom S_IFIFO [GooseExts] [GoGlobalContext] : val
+opaque S_IFIFO [GooseExts] [GoGlobalContext] : val
 
-axiom S_IFLNK [GooseExts] [GoGlobalContext] : val
+opaque S_IFLNK [GooseExts] [GoGlobalContext] : val
 
-axiom S_IFMT [GooseExts] [GoGlobalContext] : val
+opaque S_IFMT [GooseExts] [GoGlobalContext] : val
 
-axiom S_IFREG [GooseExts] [GoGlobalContext] : val
+opaque S_IFREG [GooseExts] [GoGlobalContext] : val
 
-axiom S_IFSOCK [GooseExts] [GoGlobalContext] : val
+opaque S_IFSOCK [GooseExts] [GoGlobalContext] : val
 
-axiom S_IREAD [GooseExts] [GoGlobalContext] : val
+opaque S_IREAD [GooseExts] [GoGlobalContext] : val
 
-axiom S_IRGRP [GooseExts] [GoGlobalContext] : val
+opaque S_IRGRP [GooseExts] [GoGlobalContext] : val
 
-axiom S_IROTH [GooseExts] [GoGlobalContext] : val
+opaque S_IROTH [GooseExts] [GoGlobalContext] : val
 
-axiom S_IRUSR [GooseExts] [GoGlobalContext] : val
+opaque S_IRUSR [GooseExts] [GoGlobalContext] : val
 
-axiom S_IRWXG [GooseExts] [GoGlobalContext] : val
+opaque S_IRWXG [GooseExts] [GoGlobalContext] : val
 
-axiom S_IRWXO [GooseExts] [GoGlobalContext] : val
+opaque S_IRWXO [GooseExts] [GoGlobalContext] : val
 
-axiom S_IRWXU [GooseExts] [GoGlobalContext] : val
+opaque S_IRWXU [GooseExts] [GoGlobalContext] : val
 
-axiom S_ISGID [GooseExts] [GoGlobalContext] : val
+opaque S_ISGID [GooseExts] [GoGlobalContext] : val
 
-axiom S_ISUID [GooseExts] [GoGlobalContext] : val
+opaque S_ISUID [GooseExts] [GoGlobalContext] : val
 
-axiom S_ISVTX [GooseExts] [GoGlobalContext] : val
+opaque S_ISVTX [GooseExts] [GoGlobalContext] : val
 
-axiom S_IWGRP [GooseExts] [GoGlobalContext] : val
+opaque S_IWGRP [GooseExts] [GoGlobalContext] : val
 
-axiom S_IWOTH [GooseExts] [GoGlobalContext] : val
+opaque S_IWOTH [GooseExts] [GoGlobalContext] : val
 
-axiom S_IWRITE [GooseExts] [GoGlobalContext] : val
+opaque S_IWRITE [GooseExts] [GoGlobalContext] : val
 
-axiom S_IWUSR [GooseExts] [GoGlobalContext] : val
+opaque S_IWUSR [GooseExts] [GoGlobalContext] : val
 
-axiom S_IXGRP [GooseExts] [GoGlobalContext] : val
+opaque S_IXGRP [GooseExts] [GoGlobalContext] : val
 
-axiom S_IXOTH [GooseExts] [GoGlobalContext] : val
+opaque S_IXOTH [GooseExts] [GoGlobalContext] : val
 
-axiom S_IXUSR [GooseExts] [GoGlobalContext] : val
+opaque S_IXUSR [GooseExts] [GoGlobalContext] : val
 
-axiom TCIFLUSH [GooseExts] [GoGlobalContext] : val
+opaque TCIFLUSH [GooseExts] [GoGlobalContext] : val
 
-axiom TCIOFLUSH [GooseExts] [GoGlobalContext] : val
+opaque TCIOFLUSH [GooseExts] [GoGlobalContext] : val
 
-axiom TCOFLUSH [GooseExts] [GoGlobalContext] : val
+opaque TCOFLUSH [GooseExts] [GoGlobalContext] : val
 
-axiom TCP_CONGESTION [GooseExts] [GoGlobalContext] : val
+opaque TCP_CONGESTION [GooseExts] [GoGlobalContext] : val
 
-axiom TCP_CORK [GooseExts] [GoGlobalContext] : val
+opaque TCP_CORK [GooseExts] [GoGlobalContext] : val
 
-axiom TCP_DEFER_ACCEPT [GooseExts] [GoGlobalContext] : val
+opaque TCP_DEFER_ACCEPT [GooseExts] [GoGlobalContext] : val
 
-axiom TCP_INFO [GooseExts] [GoGlobalContext] : val
+opaque TCP_INFO [GooseExts] [GoGlobalContext] : val
 
-axiom TCP_KEEPCNT [GooseExts] [GoGlobalContext] : val
+opaque TCP_KEEPCNT [GooseExts] [GoGlobalContext] : val
 
-axiom TCP_KEEPIDLE [GooseExts] [GoGlobalContext] : val
+opaque TCP_KEEPIDLE [GooseExts] [GoGlobalContext] : val
 
-axiom TCP_KEEPINTVL [GooseExts] [GoGlobalContext] : val
+opaque TCP_KEEPINTVL [GooseExts] [GoGlobalContext] : val
 
-axiom TCP_LINGER2 [GooseExts] [GoGlobalContext] : val
+opaque TCP_LINGER2 [GooseExts] [GoGlobalContext] : val
 
-axiom TCP_MAXSEG [GooseExts] [GoGlobalContext] : val
+opaque TCP_MAXSEG [GooseExts] [GoGlobalContext] : val
 
-axiom TCP_MAXWIN [GooseExts] [GoGlobalContext] : val
+opaque TCP_MAXWIN [GooseExts] [GoGlobalContext] : val
 
-axiom TCP_MAX_WINSHIFT [GooseExts] [GoGlobalContext] : val
+opaque TCP_MAX_WINSHIFT [GooseExts] [GoGlobalContext] : val
 
-axiom TCP_MD5SIG [GooseExts] [GoGlobalContext] : val
+opaque TCP_MD5SIG [GooseExts] [GoGlobalContext] : val
 
-axiom TCP_MD5SIG_MAXKEYLEN [GooseExts] [GoGlobalContext] : val
+opaque TCP_MD5SIG_MAXKEYLEN [GooseExts] [GoGlobalContext] : val
 
-axiom TCP_MSS [GooseExts] [GoGlobalContext] : val
+opaque TCP_MSS [GooseExts] [GoGlobalContext] : val
 
-axiom TCP_NODELAY [GooseExts] [GoGlobalContext] : val
+opaque TCP_NODELAY [GooseExts] [GoGlobalContext] : val
 
-axiom TCP_QUICKACK [GooseExts] [GoGlobalContext] : val
+opaque TCP_QUICKACK [GooseExts] [GoGlobalContext] : val
 
-axiom TCP_SYNCNT [GooseExts] [GoGlobalContext] : val
+opaque TCP_SYNCNT [GooseExts] [GoGlobalContext] : val
 
-axiom TCP_WINDOW_CLAMP [GooseExts] [GoGlobalContext] : val
+opaque TCP_WINDOW_CLAMP [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCCBRK [GooseExts] [GoGlobalContext] : val
+opaque TIOCCBRK [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCCONS [GooseExts] [GoGlobalContext] : val
+opaque TIOCCONS [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCEXCL [GooseExts] [GoGlobalContext] : val
+opaque TIOCEXCL [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCGDEV [GooseExts] [GoGlobalContext] : val
+opaque TIOCGDEV [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCGETD [GooseExts] [GoGlobalContext] : val
+opaque TIOCGETD [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCGICOUNT [GooseExts] [GoGlobalContext] : val
+opaque TIOCGICOUNT [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCGLCKTRMIOS [GooseExts] [GoGlobalContext] : val
+opaque TIOCGLCKTRMIOS [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCGPGRP [GooseExts] [GoGlobalContext] : val
+opaque TIOCGPGRP [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCGPTN [GooseExts] [GoGlobalContext] : val
+opaque TIOCGPTN [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCGRS485 [GooseExts] [GoGlobalContext] : val
+opaque TIOCGRS485 [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCGSERIAL [GooseExts] [GoGlobalContext] : val
+opaque TIOCGSERIAL [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCGSID [GooseExts] [GoGlobalContext] : val
+opaque TIOCGSID [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCGSOFTCAR [GooseExts] [GoGlobalContext] : val
+opaque TIOCGSOFTCAR [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCGWINSZ [GooseExts] [GoGlobalContext] : val
+opaque TIOCGWINSZ [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCINQ [GooseExts] [GoGlobalContext] : val
+opaque TIOCINQ [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCLINUX [GooseExts] [GoGlobalContext] : val
+opaque TIOCLINUX [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCMBIC [GooseExts] [GoGlobalContext] : val
+opaque TIOCMBIC [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCMBIS [GooseExts] [GoGlobalContext] : val
+opaque TIOCMBIS [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCMGET [GooseExts] [GoGlobalContext] : val
+opaque TIOCMGET [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCMIWAIT [GooseExts] [GoGlobalContext] : val
+opaque TIOCMIWAIT [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCMSET [GooseExts] [GoGlobalContext] : val
+opaque TIOCMSET [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCM_CAR [GooseExts] [GoGlobalContext] : val
+opaque TIOCM_CAR [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCM_CD [GooseExts] [GoGlobalContext] : val
+opaque TIOCM_CD [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCM_CTS [GooseExts] [GoGlobalContext] : val
+opaque TIOCM_CTS [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCM_DSR [GooseExts] [GoGlobalContext] : val
+opaque TIOCM_DSR [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCM_DTR [GooseExts] [GoGlobalContext] : val
+opaque TIOCM_DTR [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCM_LE [GooseExts] [GoGlobalContext] : val
+opaque TIOCM_LE [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCM_RI [GooseExts] [GoGlobalContext] : val
+opaque TIOCM_RI [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCM_RNG [GooseExts] [GoGlobalContext] : val
+opaque TIOCM_RNG [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCM_RTS [GooseExts] [GoGlobalContext] : val
+opaque TIOCM_RTS [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCM_SR [GooseExts] [GoGlobalContext] : val
+opaque TIOCM_SR [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCM_ST [GooseExts] [GoGlobalContext] : val
+opaque TIOCM_ST [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCNOTTY [GooseExts] [GoGlobalContext] : val
+opaque TIOCNOTTY [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCNXCL [GooseExts] [GoGlobalContext] : val
+opaque TIOCNXCL [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCOUTQ [GooseExts] [GoGlobalContext] : val
+opaque TIOCOUTQ [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCPKT [GooseExts] [GoGlobalContext] : val
+opaque TIOCPKT [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCPKT_DATA [GooseExts] [GoGlobalContext] : val
+opaque TIOCPKT_DATA [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCPKT_DOSTOP [GooseExts] [GoGlobalContext] : val
+opaque TIOCPKT_DOSTOP [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCPKT_FLUSHREAD [GooseExts] [GoGlobalContext] : val
+opaque TIOCPKT_FLUSHREAD [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCPKT_FLUSHWRITE [GooseExts] [GoGlobalContext] : val
+opaque TIOCPKT_FLUSHWRITE [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCPKT_IOCTL [GooseExts] [GoGlobalContext] : val
+opaque TIOCPKT_IOCTL [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCPKT_NOSTOP [GooseExts] [GoGlobalContext] : val
+opaque TIOCPKT_NOSTOP [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCPKT_START [GooseExts] [GoGlobalContext] : val
+opaque TIOCPKT_START [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCPKT_STOP [GooseExts] [GoGlobalContext] : val
+opaque TIOCPKT_STOP [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCSBRK [GooseExts] [GoGlobalContext] : val
+opaque TIOCSBRK [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCSCTTY [GooseExts] [GoGlobalContext] : val
+opaque TIOCSCTTY [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCSERCONFIG [GooseExts] [GoGlobalContext] : val
+opaque TIOCSERCONFIG [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCSERGETLSR [GooseExts] [GoGlobalContext] : val
+opaque TIOCSERGETLSR [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCSERGETMULTI [GooseExts] [GoGlobalContext] : val
+opaque TIOCSERGETMULTI [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCSERGSTRUCT [GooseExts] [GoGlobalContext] : val
+opaque TIOCSERGSTRUCT [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCSERGWILD [GooseExts] [GoGlobalContext] : val
+opaque TIOCSERGWILD [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCSERSETMULTI [GooseExts] [GoGlobalContext] : val
+opaque TIOCSERSETMULTI [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCSERSWILD [GooseExts] [GoGlobalContext] : val
+opaque TIOCSERSWILD [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCSER_TEMT [GooseExts] [GoGlobalContext] : val
+opaque TIOCSER_TEMT [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCSETD [GooseExts] [GoGlobalContext] : val
+opaque TIOCSETD [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCSIG [GooseExts] [GoGlobalContext] : val
+opaque TIOCSIG [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCSLCKTRMIOS [GooseExts] [GoGlobalContext] : val
+opaque TIOCSLCKTRMIOS [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCSPGRP [GooseExts] [GoGlobalContext] : val
+opaque TIOCSPGRP [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCSPTLCK [GooseExts] [GoGlobalContext] : val
+opaque TIOCSPTLCK [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCSRS485 [GooseExts] [GoGlobalContext] : val
+opaque TIOCSRS485 [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCSSERIAL [GooseExts] [GoGlobalContext] : val
+opaque TIOCSSERIAL [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCSSOFTCAR [GooseExts] [GoGlobalContext] : val
+opaque TIOCSSOFTCAR [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCSTI [GooseExts] [GoGlobalContext] : val
+opaque TIOCSTI [GooseExts] [GoGlobalContext] : val
 
-axiom TIOCSWINSZ [GooseExts] [GoGlobalContext] : val
+opaque TIOCSWINSZ [GooseExts] [GoGlobalContext] : val
 
-axiom TUNATTACHFILTER [GooseExts] [GoGlobalContext] : val
+opaque TUNATTACHFILTER [GooseExts] [GoGlobalContext] : val
 
-axiom TUNDETACHFILTER [GooseExts] [GoGlobalContext] : val
+opaque TUNDETACHFILTER [GooseExts] [GoGlobalContext] : val
 
-axiom TUNGETFEATURES [GooseExts] [GoGlobalContext] : val
+opaque TUNGETFEATURES [GooseExts] [GoGlobalContext] : val
 
-axiom TUNGETIFF [GooseExts] [GoGlobalContext] : val
+opaque TUNGETIFF [GooseExts] [GoGlobalContext] : val
 
-axiom TUNGETSNDBUF [GooseExts] [GoGlobalContext] : val
+opaque TUNGETSNDBUF [GooseExts] [GoGlobalContext] : val
 
-axiom TUNGETVNETHDRSZ [GooseExts] [GoGlobalContext] : val
+opaque TUNGETVNETHDRSZ [GooseExts] [GoGlobalContext] : val
 
-axiom TUNSETDEBUG [GooseExts] [GoGlobalContext] : val
+opaque TUNSETDEBUG [GooseExts] [GoGlobalContext] : val
 
-axiom TUNSETGROUP [GooseExts] [GoGlobalContext] : val
+opaque TUNSETGROUP [GooseExts] [GoGlobalContext] : val
 
-axiom TUNSETIFF [GooseExts] [GoGlobalContext] : val
+opaque TUNSETIFF [GooseExts] [GoGlobalContext] : val
 
-axiom TUNSETLINK [GooseExts] [GoGlobalContext] : val
+opaque TUNSETLINK [GooseExts] [GoGlobalContext] : val
 
-axiom TUNSETNOCSUM [GooseExts] [GoGlobalContext] : val
+opaque TUNSETNOCSUM [GooseExts] [GoGlobalContext] : val
 
-axiom TUNSETOFFLOAD [GooseExts] [GoGlobalContext] : val
+opaque TUNSETOFFLOAD [GooseExts] [GoGlobalContext] : val
 
-axiom TUNSETOWNER [GooseExts] [GoGlobalContext] : val
+opaque TUNSETOWNER [GooseExts] [GoGlobalContext] : val
 
-axiom TUNSETPERSIST [GooseExts] [GoGlobalContext] : val
+opaque TUNSETPERSIST [GooseExts] [GoGlobalContext] : val
 
-axiom TUNSETSNDBUF [GooseExts] [GoGlobalContext] : val
+opaque TUNSETSNDBUF [GooseExts] [GoGlobalContext] : val
 
-axiom TUNSETTXFILTER [GooseExts] [GoGlobalContext] : val
+opaque TUNSETTXFILTER [GooseExts] [GoGlobalContext] : val
 
-axiom TUNSETVNETHDRSZ [GooseExts] [GoGlobalContext] : val
+opaque TUNSETVNETHDRSZ [GooseExts] [GoGlobalContext] : val
 
-axiom WALL [GooseExts] [GoGlobalContext] : val
+opaque WALL [GooseExts] [GoGlobalContext] : val
 
-axiom WCLONE [GooseExts] [GoGlobalContext] : val
+opaque WCLONE [GooseExts] [GoGlobalContext] : val
 
-axiom WCONTINUED [GooseExts] [GoGlobalContext] : val
+opaque WCONTINUED [GooseExts] [GoGlobalContext] : val
 
-axiom WEXITED [GooseExts] [GoGlobalContext] : val
+opaque WEXITED [GooseExts] [GoGlobalContext] : val
 
-axiom WNOHANG [GooseExts] [GoGlobalContext] : val
+opaque WNOHANG [GooseExts] [GoGlobalContext] : val
 
-axiom WNOTHREAD [GooseExts] [GoGlobalContext] : val
+opaque WNOTHREAD [GooseExts] [GoGlobalContext] : val
 
-axiom WNOWAIT [GooseExts] [GoGlobalContext] : val
+opaque WNOWAIT [GooseExts] [GoGlobalContext] : val
 
-axiom WORDSIZE [GooseExts] [GoGlobalContext] : val
+opaque WORDSIZE [GooseExts] [GoGlobalContext] : val
 
-axiom WSTOPPED [GooseExts] [GoGlobalContext] : val
+opaque WSTOPPED [GooseExts] [GoGlobalContext] : val
 
-axiom WUNTRACED [GooseExts] [GoGlobalContext] : val
+opaque WUNTRACED [GooseExts] [GoGlobalContext] : val
 
-axiom E2BIG [GooseExts] [GoGlobalContext] : val
+opaque E2BIG [GooseExts] [GoGlobalContext] : val
 
-axiom EACCES [GooseExts] [GoGlobalContext] : val
+opaque EACCES [GooseExts] [GoGlobalContext] : val
 
-axiom EADDRINUSE [GooseExts] [GoGlobalContext] : val
+opaque EADDRINUSE [GooseExts] [GoGlobalContext] : val
 
-axiom EADDRNOTAVAIL [GooseExts] [GoGlobalContext] : val
+opaque EADDRNOTAVAIL [GooseExts] [GoGlobalContext] : val
 
-axiom EADV [GooseExts] [GoGlobalContext] : val
+opaque EADV [GooseExts] [GoGlobalContext] : val
 
-axiom EAFNOSUPPORT [GooseExts] [GoGlobalContext] : val
+opaque EAFNOSUPPORT [GooseExts] [GoGlobalContext] : val
 
 @[reducible] noncomputable def EAGAIN [GooseExts] [GoGlobalContext] : val :=
   #(W64 11)
 
-axiom EALREADY [GooseExts] [GoGlobalContext] : val
+opaque EALREADY [GooseExts] [GoGlobalContext] : val
 
-axiom EBADE [GooseExts] [GoGlobalContext] : val
+opaque EBADE [GooseExts] [GoGlobalContext] : val
 
-axiom EBADF [GooseExts] [GoGlobalContext] : val
+opaque EBADF [GooseExts] [GoGlobalContext] : val
 
-axiom EBADFD [GooseExts] [GoGlobalContext] : val
+opaque EBADFD [GooseExts] [GoGlobalContext] : val
 
-axiom EBADMSG [GooseExts] [GoGlobalContext] : val
+opaque EBADMSG [GooseExts] [GoGlobalContext] : val
 
-axiom EBADR [GooseExts] [GoGlobalContext] : val
+opaque EBADR [GooseExts] [GoGlobalContext] : val
 
-axiom EBADRQC [GooseExts] [GoGlobalContext] : val
+opaque EBADRQC [GooseExts] [GoGlobalContext] : val
 
-axiom EBADSLT [GooseExts] [GoGlobalContext] : val
+opaque EBADSLT [GooseExts] [GoGlobalContext] : val
 
-axiom EBFONT [GooseExts] [GoGlobalContext] : val
+opaque EBFONT [GooseExts] [GoGlobalContext] : val
 
-axiom EBUSY [GooseExts] [GoGlobalContext] : val
+opaque EBUSY [GooseExts] [GoGlobalContext] : val
 
-axiom ECANCELED [GooseExts] [GoGlobalContext] : val
+opaque ECANCELED [GooseExts] [GoGlobalContext] : val
 
-axiom ECHILD [GooseExts] [GoGlobalContext] : val
+opaque ECHILD [GooseExts] [GoGlobalContext] : val
 
-axiom ECHRNG [GooseExts] [GoGlobalContext] : val
+opaque ECHRNG [GooseExts] [GoGlobalContext] : val
 
-axiom ECOMM [GooseExts] [GoGlobalContext] : val
+opaque ECOMM [GooseExts] [GoGlobalContext] : val
 
-axiom ECONNABORTED [GooseExts] [GoGlobalContext] : val
+opaque ECONNABORTED [GooseExts] [GoGlobalContext] : val
 
-axiom ECONNREFUSED [GooseExts] [GoGlobalContext] : val
+opaque ECONNREFUSED [GooseExts] [GoGlobalContext] : val
 
-axiom ECONNRESET [GooseExts] [GoGlobalContext] : val
+opaque ECONNRESET [GooseExts] [GoGlobalContext] : val
 
-axiom EDEADLK [GooseExts] [GoGlobalContext] : val
+opaque EDEADLK [GooseExts] [GoGlobalContext] : val
 
-axiom EDEADLOCK [GooseExts] [GoGlobalContext] : val
+opaque EDEADLOCK [GooseExts] [GoGlobalContext] : val
 
-axiom EDESTADDRREQ [GooseExts] [GoGlobalContext] : val
+opaque EDESTADDRREQ [GooseExts] [GoGlobalContext] : val
 
-axiom EDOM [GooseExts] [GoGlobalContext] : val
+opaque EDOM [GooseExts] [GoGlobalContext] : val
 
-axiom EDOTDOT [GooseExts] [GoGlobalContext] : val
+opaque EDOTDOT [GooseExts] [GoGlobalContext] : val
 
-axiom EDQUOT [GooseExts] [GoGlobalContext] : val
+opaque EDQUOT [GooseExts] [GoGlobalContext] : val
 
-axiom EEXIST [GooseExts] [GoGlobalContext] : val
+opaque EEXIST [GooseExts] [GoGlobalContext] : val
 
-axiom EFAULT [GooseExts] [GoGlobalContext] : val
+opaque EFAULT [GooseExts] [GoGlobalContext] : val
 
-axiom EFBIG [GooseExts] [GoGlobalContext] : val
+opaque EFBIG [GooseExts] [GoGlobalContext] : val
 
-axiom EHOSTDOWN [GooseExts] [GoGlobalContext] : val
+opaque EHOSTDOWN [GooseExts] [GoGlobalContext] : val
 
-axiom EHOSTUNREACH [GooseExts] [GoGlobalContext] : val
+opaque EHOSTUNREACH [GooseExts] [GoGlobalContext] : val
 
-axiom EIDRM [GooseExts] [GoGlobalContext] : val
+opaque EIDRM [GooseExts] [GoGlobalContext] : val
 
-axiom EILSEQ [GooseExts] [GoGlobalContext] : val
+opaque EILSEQ [GooseExts] [GoGlobalContext] : val
 
-axiom EINPROGRESS [GooseExts] [GoGlobalContext] : val
+opaque EINPROGRESS [GooseExts] [GoGlobalContext] : val
 
-axiom EINTR [GooseExts] [GoGlobalContext] : val
+opaque EINTR [GooseExts] [GoGlobalContext] : val
 
 @[reducible] noncomputable def EINVAL [GooseExts] [GoGlobalContext] : val :=
   #(W64 22)
 
-axiom EIO [GooseExts] [GoGlobalContext] : val
+opaque EIO [GooseExts] [GoGlobalContext] : val
 
-axiom EISCONN [GooseExts] [GoGlobalContext] : val
+opaque EISCONN [GooseExts] [GoGlobalContext] : val
 
-axiom EISDIR [GooseExts] [GoGlobalContext] : val
+opaque EISDIR [GooseExts] [GoGlobalContext] : val
 
-axiom EISNAM [GooseExts] [GoGlobalContext] : val
+opaque EISNAM [GooseExts] [GoGlobalContext] : val
 
-axiom EKEYEXPIRED [GooseExts] [GoGlobalContext] : val
+opaque EKEYEXPIRED [GooseExts] [GoGlobalContext] : val
 
-axiom EKEYREJECTED [GooseExts] [GoGlobalContext] : val
+opaque EKEYREJECTED [GooseExts] [GoGlobalContext] : val
 
-axiom EKEYREVOKED [GooseExts] [GoGlobalContext] : val
+opaque EKEYREVOKED [GooseExts] [GoGlobalContext] : val
 
-axiom EL2HLT [GooseExts] [GoGlobalContext] : val
+opaque EL2HLT [GooseExts] [GoGlobalContext] : val
 
-axiom EL2NSYNC [GooseExts] [GoGlobalContext] : val
+opaque EL2NSYNC [GooseExts] [GoGlobalContext] : val
 
-axiom EL3HLT [GooseExts] [GoGlobalContext] : val
+opaque EL3HLT [GooseExts] [GoGlobalContext] : val
 
-axiom EL3RST [GooseExts] [GoGlobalContext] : val
+opaque EL3RST [GooseExts] [GoGlobalContext] : val
 
-axiom ELIBACC [GooseExts] [GoGlobalContext] : val
+opaque ELIBACC [GooseExts] [GoGlobalContext] : val
 
-axiom ELIBBAD [GooseExts] [GoGlobalContext] : val
+opaque ELIBBAD [GooseExts] [GoGlobalContext] : val
 
-axiom ELIBEXEC [GooseExts] [GoGlobalContext] : val
+opaque ELIBEXEC [GooseExts] [GoGlobalContext] : val
 
-axiom ELIBMAX [GooseExts] [GoGlobalContext] : val
+opaque ELIBMAX [GooseExts] [GoGlobalContext] : val
 
-axiom ELIBSCN [GooseExts] [GoGlobalContext] : val
+opaque ELIBSCN [GooseExts] [GoGlobalContext] : val
 
-axiom ELNRNG [GooseExts] [GoGlobalContext] : val
+opaque ELNRNG [GooseExts] [GoGlobalContext] : val
 
-axiom ELOOP [GooseExts] [GoGlobalContext] : val
+opaque ELOOP [GooseExts] [GoGlobalContext] : val
 
-axiom EMEDIUMTYPE [GooseExts] [GoGlobalContext] : val
+opaque EMEDIUMTYPE [GooseExts] [GoGlobalContext] : val
 
-axiom EMFILE [GooseExts] [GoGlobalContext] : val
+opaque EMFILE [GooseExts] [GoGlobalContext] : val
 
-axiom EMLINK [GooseExts] [GoGlobalContext] : val
+opaque EMLINK [GooseExts] [GoGlobalContext] : val
 
-axiom EMSGSIZE [GooseExts] [GoGlobalContext] : val
+opaque EMSGSIZE [GooseExts] [GoGlobalContext] : val
 
-axiom EMULTIHOP [GooseExts] [GoGlobalContext] : val
+opaque EMULTIHOP [GooseExts] [GoGlobalContext] : val
 
-axiom ENAMETOOLONG [GooseExts] [GoGlobalContext] : val
+opaque ENAMETOOLONG [GooseExts] [GoGlobalContext] : val
 
-axiom ENAVAIL [GooseExts] [GoGlobalContext] : val
+opaque ENAVAIL [GooseExts] [GoGlobalContext] : val
 
-axiom ENETDOWN [GooseExts] [GoGlobalContext] : val
+opaque ENETDOWN [GooseExts] [GoGlobalContext] : val
 
-axiom ENETRESET [GooseExts] [GoGlobalContext] : val
+opaque ENETRESET [GooseExts] [GoGlobalContext] : val
 
-axiom ENETUNREACH [GooseExts] [GoGlobalContext] : val
+opaque ENETUNREACH [GooseExts] [GoGlobalContext] : val
 
-axiom ENFILE [GooseExts] [GoGlobalContext] : val
+opaque ENFILE [GooseExts] [GoGlobalContext] : val
 
-axiom ENOANO [GooseExts] [GoGlobalContext] : val
+opaque ENOANO [GooseExts] [GoGlobalContext] : val
 
-axiom ENOBUFS [GooseExts] [GoGlobalContext] : val
+opaque ENOBUFS [GooseExts] [GoGlobalContext] : val
 
-axiom ENOCSI [GooseExts] [GoGlobalContext] : val
+opaque ENOCSI [GooseExts] [GoGlobalContext] : val
 
-axiom ENODATA [GooseExts] [GoGlobalContext] : val
+opaque ENODATA [GooseExts] [GoGlobalContext] : val
 
-axiom ENODEV [GooseExts] [GoGlobalContext] : val
+opaque ENODEV [GooseExts] [GoGlobalContext] : val
 
 @[reducible] noncomputable def ENOENT [GooseExts] [GoGlobalContext] : val :=
   #(W64 2)
 
-axiom ENOEXEC [GooseExts] [GoGlobalContext] : val
+opaque ENOEXEC [GooseExts] [GoGlobalContext] : val
 
-axiom ENOKEY [GooseExts] [GoGlobalContext] : val
+opaque ENOKEY [GooseExts] [GoGlobalContext] : val
 
-axiom ENOLCK [GooseExts] [GoGlobalContext] : val
+opaque ENOLCK [GooseExts] [GoGlobalContext] : val
 
-axiom ENOLINK [GooseExts] [GoGlobalContext] : val
+opaque ENOLINK [GooseExts] [GoGlobalContext] : val
 
-axiom ENOMEDIUM [GooseExts] [GoGlobalContext] : val
+opaque ENOMEDIUM [GooseExts] [GoGlobalContext] : val
 
-axiom ENOMEM [GooseExts] [GoGlobalContext] : val
+opaque ENOMEM [GooseExts] [GoGlobalContext] : val
 
-axiom ENOMSG [GooseExts] [GoGlobalContext] : val
+opaque ENOMSG [GooseExts] [GoGlobalContext] : val
 
-axiom ENONET [GooseExts] [GoGlobalContext] : val
+opaque ENONET [GooseExts] [GoGlobalContext] : val
 
-axiom ENOPKG [GooseExts] [GoGlobalContext] : val
+opaque ENOPKG [GooseExts] [GoGlobalContext] : val
 
-axiom ENOPROTOOPT [GooseExts] [GoGlobalContext] : val
+opaque ENOPROTOOPT [GooseExts] [GoGlobalContext] : val
 
-axiom ENOSPC [GooseExts] [GoGlobalContext] : val
+opaque ENOSPC [GooseExts] [GoGlobalContext] : val
 
-axiom ENOSR [GooseExts] [GoGlobalContext] : val
+opaque ENOSR [GooseExts] [GoGlobalContext] : val
 
-axiom ENOSTR [GooseExts] [GoGlobalContext] : val
+opaque ENOSTR [GooseExts] [GoGlobalContext] : val
 
-axiom ENOSYS [GooseExts] [GoGlobalContext] : val
+opaque ENOSYS [GooseExts] [GoGlobalContext] : val
 
-axiom ENOTBLK [GooseExts] [GoGlobalContext] : val
+opaque ENOTBLK [GooseExts] [GoGlobalContext] : val
 
-axiom ENOTCONN [GooseExts] [GoGlobalContext] : val
+opaque ENOTCONN [GooseExts] [GoGlobalContext] : val
 
-axiom ENOTDIR [GooseExts] [GoGlobalContext] : val
+opaque ENOTDIR [GooseExts] [GoGlobalContext] : val
 
-axiom ENOTEMPTY [GooseExts] [GoGlobalContext] : val
+opaque ENOTEMPTY [GooseExts] [GoGlobalContext] : val
 
-axiom ENOTNAM [GooseExts] [GoGlobalContext] : val
+opaque ENOTNAM [GooseExts] [GoGlobalContext] : val
 
-axiom ENOTRECOVERABLE [GooseExts] [GoGlobalContext] : val
+opaque ENOTRECOVERABLE [GooseExts] [GoGlobalContext] : val
 
-axiom ENOTSOCK [GooseExts] [GoGlobalContext] : val
+opaque ENOTSOCK [GooseExts] [GoGlobalContext] : val
 
-axiom ENOTSUP [GooseExts] [GoGlobalContext] : val
+opaque ENOTSUP [GooseExts] [GoGlobalContext] : val
 
-axiom ENOTTY [GooseExts] [GoGlobalContext] : val
+opaque ENOTTY [GooseExts] [GoGlobalContext] : val
 
-axiom ENOTUNIQ [GooseExts] [GoGlobalContext] : val
+opaque ENOTUNIQ [GooseExts] [GoGlobalContext] : val
 
-axiom ENXIO [GooseExts] [GoGlobalContext] : val
+opaque ENXIO [GooseExts] [GoGlobalContext] : val
 
-axiom EOPNOTSUPP [GooseExts] [GoGlobalContext] : val
+opaque EOPNOTSUPP [GooseExts] [GoGlobalContext] : val
 
-axiom EOVERFLOW [GooseExts] [GoGlobalContext] : val
+opaque EOVERFLOW [GooseExts] [GoGlobalContext] : val
 
-axiom EOWNERDEAD [GooseExts] [GoGlobalContext] : val
+opaque EOWNERDEAD [GooseExts] [GoGlobalContext] : val
 
-axiom EPERM [GooseExts] [GoGlobalContext] : val
+opaque EPERM [GooseExts] [GoGlobalContext] : val
 
-axiom EPFNOSUPPORT [GooseExts] [GoGlobalContext] : val
+opaque EPFNOSUPPORT [GooseExts] [GoGlobalContext] : val
 
-axiom EPIPE [GooseExts] [GoGlobalContext] : val
+opaque EPIPE [GooseExts] [GoGlobalContext] : val
 
-axiom EPROTO [GooseExts] [GoGlobalContext] : val
+opaque EPROTO [GooseExts] [GoGlobalContext] : val
 
-axiom EPROTONOSUPPORT [GooseExts] [GoGlobalContext] : val
+opaque EPROTONOSUPPORT [GooseExts] [GoGlobalContext] : val
 
-axiom EPROTOTYPE [GooseExts] [GoGlobalContext] : val
+opaque EPROTOTYPE [GooseExts] [GoGlobalContext] : val
 
-axiom ERANGE [GooseExts] [GoGlobalContext] : val
+opaque ERANGE [GooseExts] [GoGlobalContext] : val
 
-axiom EREMCHG [GooseExts] [GoGlobalContext] : val
+opaque EREMCHG [GooseExts] [GoGlobalContext] : val
 
-axiom EREMOTE [GooseExts] [GoGlobalContext] : val
+opaque EREMOTE [GooseExts] [GoGlobalContext] : val
 
-axiom EREMOTEIO [GooseExts] [GoGlobalContext] : val
+opaque EREMOTEIO [GooseExts] [GoGlobalContext] : val
 
-axiom ERESTART [GooseExts] [GoGlobalContext] : val
+opaque ERESTART [GooseExts] [GoGlobalContext] : val
 
-axiom ERFKILL [GooseExts] [GoGlobalContext] : val
+opaque ERFKILL [GooseExts] [GoGlobalContext] : val
 
-axiom EROFS [GooseExts] [GoGlobalContext] : val
+opaque EROFS [GooseExts] [GoGlobalContext] : val
 
-axiom ESHUTDOWN [GooseExts] [GoGlobalContext] : val
+opaque ESHUTDOWN [GooseExts] [GoGlobalContext] : val
 
-axiom ESOCKTNOSUPPORT [GooseExts] [GoGlobalContext] : val
+opaque ESOCKTNOSUPPORT [GooseExts] [GoGlobalContext] : val
 
-axiom ESPIPE [GooseExts] [GoGlobalContext] : val
+opaque ESPIPE [GooseExts] [GoGlobalContext] : val
 
-axiom ESRCH [GooseExts] [GoGlobalContext] : val
+opaque ESRCH [GooseExts] [GoGlobalContext] : val
 
-axiom ESRMNT [GooseExts] [GoGlobalContext] : val
+opaque ESRMNT [GooseExts] [GoGlobalContext] : val
 
-axiom ESTALE [GooseExts] [GoGlobalContext] : val
+opaque ESTALE [GooseExts] [GoGlobalContext] : val
 
-axiom ESTRPIPE [GooseExts] [GoGlobalContext] : val
+opaque ESTRPIPE [GooseExts] [GoGlobalContext] : val
 
-axiom ETIME [GooseExts] [GoGlobalContext] : val
+opaque ETIME [GooseExts] [GoGlobalContext] : val
 
-axiom ETIMEDOUT [GooseExts] [GoGlobalContext] : val
+opaque ETIMEDOUT [GooseExts] [GoGlobalContext] : val
 
-axiom ETOOMANYREFS [GooseExts] [GoGlobalContext] : val
+opaque ETOOMANYREFS [GooseExts] [GoGlobalContext] : val
 
-axiom ETXTBSY [GooseExts] [GoGlobalContext] : val
+opaque ETXTBSY [GooseExts] [GoGlobalContext] : val
 
-axiom EUCLEAN [GooseExts] [GoGlobalContext] : val
+opaque EUCLEAN [GooseExts] [GoGlobalContext] : val
 
-axiom EUNATCH [GooseExts] [GoGlobalContext] : val
+opaque EUNATCH [GooseExts] [GoGlobalContext] : val
 
-axiom EUSERS [GooseExts] [GoGlobalContext] : val
+opaque EUSERS [GooseExts] [GoGlobalContext] : val
 
-axiom EWOULDBLOCK [GooseExts] [GoGlobalContext] : val
+opaque EWOULDBLOCK [GooseExts] [GoGlobalContext] : val
 
-axiom EXDEV [GooseExts] [GoGlobalContext] : val
+opaque EXDEV [GooseExts] [GoGlobalContext] : val
 
-axiom EXFULL [GooseExts] [GoGlobalContext] : val
+opaque EXFULL [GooseExts] [GoGlobalContext] : val
 
-axiom SIGABRT [GooseExts] [GoGlobalContext] : val
+opaque SIGABRT [GooseExts] [GoGlobalContext] : val
 
-axiom SIGALRM [GooseExts] [GoGlobalContext] : val
+opaque SIGALRM [GooseExts] [GoGlobalContext] : val
 
-axiom SIGBUS [GooseExts] [GoGlobalContext] : val
+opaque SIGBUS [GooseExts] [GoGlobalContext] : val
 
-axiom SIGCHLD [GooseExts] [GoGlobalContext] : val
+opaque SIGCHLD [GooseExts] [GoGlobalContext] : val
 
-axiom SIGCLD [GooseExts] [GoGlobalContext] : val
+opaque SIGCLD [GooseExts] [GoGlobalContext] : val
 
-axiom SIGCONT [GooseExts] [GoGlobalContext] : val
+opaque SIGCONT [GooseExts] [GoGlobalContext] : val
 
-axiom SIGFPE [GooseExts] [GoGlobalContext] : val
+opaque SIGFPE [GooseExts] [GoGlobalContext] : val
 
-axiom SIGHUP [GooseExts] [GoGlobalContext] : val
+opaque SIGHUP [GooseExts] [GoGlobalContext] : val
 
-axiom SIGILL [GooseExts] [GoGlobalContext] : val
+opaque SIGILL [GooseExts] [GoGlobalContext] : val
 
-axiom SIGINT [GooseExts] [GoGlobalContext] : val
+opaque SIGINT [GooseExts] [GoGlobalContext] : val
 
-axiom SIGIO [GooseExts] [GoGlobalContext] : val
+opaque SIGIO [GooseExts] [GoGlobalContext] : val
 
-axiom SIGIOT [GooseExts] [GoGlobalContext] : val
+opaque SIGIOT [GooseExts] [GoGlobalContext] : val
 
-axiom SIGKILL [GooseExts] [GoGlobalContext] : val
+opaque SIGKILL [GooseExts] [GoGlobalContext] : val
 
-axiom SIGPIPE [GooseExts] [GoGlobalContext] : val
+opaque SIGPIPE [GooseExts] [GoGlobalContext] : val
 
-axiom SIGPOLL [GooseExts] [GoGlobalContext] : val
+opaque SIGPOLL [GooseExts] [GoGlobalContext] : val
 
-axiom SIGPROF [GooseExts] [GoGlobalContext] : val
+opaque SIGPROF [GooseExts] [GoGlobalContext] : val
 
-axiom SIGPWR [GooseExts] [GoGlobalContext] : val
+opaque SIGPWR [GooseExts] [GoGlobalContext] : val
 
-axiom SIGQUIT [GooseExts] [GoGlobalContext] : val
+opaque SIGQUIT [GooseExts] [GoGlobalContext] : val
 
-axiom SIGSEGV [GooseExts] [GoGlobalContext] : val
+opaque SIGSEGV [GooseExts] [GoGlobalContext] : val
 
-axiom SIGSTKFLT [GooseExts] [GoGlobalContext] : val
+opaque SIGSTKFLT [GooseExts] [GoGlobalContext] : val
 
-axiom SIGSTOP [GooseExts] [GoGlobalContext] : val
+opaque SIGSTOP [GooseExts] [GoGlobalContext] : val
 
-axiom SIGSYS [GooseExts] [GoGlobalContext] : val
+opaque SIGSYS [GooseExts] [GoGlobalContext] : val
 
-axiom SIGTERM [GooseExts] [GoGlobalContext] : val
+opaque SIGTERM [GooseExts] [GoGlobalContext] : val
 
-axiom SIGTRAP [GooseExts] [GoGlobalContext] : val
+opaque SIGTRAP [GooseExts] [GoGlobalContext] : val
 
-axiom SIGTSTP [GooseExts] [GoGlobalContext] : val
+opaque SIGTSTP [GooseExts] [GoGlobalContext] : val
 
-axiom SIGTTIN [GooseExts] [GoGlobalContext] : val
+opaque SIGTTIN [GooseExts] [GoGlobalContext] : val
 
-axiom SIGTTOU [GooseExts] [GoGlobalContext] : val
+opaque SIGTTOU [GooseExts] [GoGlobalContext] : val
 
-axiom SIGUNUSED [GooseExts] [GoGlobalContext] : val
+opaque SIGUNUSED [GooseExts] [GoGlobalContext] : val
 
-axiom SIGURG [GooseExts] [GoGlobalContext] : val
+opaque SIGURG [GooseExts] [GoGlobalContext] : val
 
-axiom SIGUSR1 [GooseExts] [GoGlobalContext] : val
+opaque SIGUSR1 [GooseExts] [GoGlobalContext] : val
 
-axiom SIGUSR2 [GooseExts] [GoGlobalContext] : val
+opaque SIGUSR2 [GooseExts] [GoGlobalContext] : val
 
-axiom SIGVTALRM [GooseExts] [GoGlobalContext] : val
+opaque SIGVTALRM [GooseExts] [GoGlobalContext] : val
 
-axiom SIGWINCH [GooseExts] [GoGlobalContext] : val
+opaque SIGWINCH [GooseExts] [GoGlobalContext] : val
 
-axiom SIGXCPU [GooseExts] [GoGlobalContext] : val
+opaque SIGXCPU [GooseExts] [GoGlobalContext] : val
 
-axiom SIGXFSZ [GooseExts] [GoGlobalContext] : val
+opaque SIGXFSZ [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_READ [GooseExts] [GoGlobalContext] : val
+opaque SYS_READ [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_WRITE [GooseExts] [GoGlobalContext] : val
+opaque SYS_WRITE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_OPEN [GooseExts] [GoGlobalContext] : val
+opaque SYS_OPEN [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_CLOSE [GooseExts] [GoGlobalContext] : val
+opaque SYS_CLOSE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_STAT [GooseExts] [GoGlobalContext] : val
+opaque SYS_STAT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_FSTAT [GooseExts] [GoGlobalContext] : val
+opaque SYS_FSTAT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_LSTAT [GooseExts] [GoGlobalContext] : val
+opaque SYS_LSTAT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_POLL [GooseExts] [GoGlobalContext] : val
+opaque SYS_POLL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_LSEEK [GooseExts] [GoGlobalContext] : val
+opaque SYS_LSEEK [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MMAP [GooseExts] [GoGlobalContext] : val
+opaque SYS_MMAP [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MPROTECT [GooseExts] [GoGlobalContext] : val
+opaque SYS_MPROTECT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MUNMAP [GooseExts] [GoGlobalContext] : val
+opaque SYS_MUNMAP [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_BRK [GooseExts] [GoGlobalContext] : val
+opaque SYS_BRK [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_RT_SIGACTION [GooseExts] [GoGlobalContext] : val
+opaque SYS_RT_SIGACTION [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_RT_SIGPROCMASK [GooseExts] [GoGlobalContext] : val
+opaque SYS_RT_SIGPROCMASK [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_RT_SIGRETURN [GooseExts] [GoGlobalContext] : val
+opaque SYS_RT_SIGRETURN [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_IOCTL [GooseExts] [GoGlobalContext] : val
+opaque SYS_IOCTL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_PREAD64 [GooseExts] [GoGlobalContext] : val
+opaque SYS_PREAD64 [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_PWRITE64 [GooseExts] [GoGlobalContext] : val
+opaque SYS_PWRITE64 [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_READV [GooseExts] [GoGlobalContext] : val
+opaque SYS_READV [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_WRITEV [GooseExts] [GoGlobalContext] : val
+opaque SYS_WRITEV [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_ACCESS [GooseExts] [GoGlobalContext] : val
+opaque SYS_ACCESS [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_PIPE [GooseExts] [GoGlobalContext] : val
+opaque SYS_PIPE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SELECT [GooseExts] [GoGlobalContext] : val
+opaque SYS_SELECT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SCHED_YIELD [GooseExts] [GoGlobalContext] : val
+opaque SYS_SCHED_YIELD [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MREMAP [GooseExts] [GoGlobalContext] : val
+opaque SYS_MREMAP [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MSYNC [GooseExts] [GoGlobalContext] : val
+opaque SYS_MSYNC [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MINCORE [GooseExts] [GoGlobalContext] : val
+opaque SYS_MINCORE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MADVISE [GooseExts] [GoGlobalContext] : val
+opaque SYS_MADVISE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SHMGET [GooseExts] [GoGlobalContext] : val
+opaque SYS_SHMGET [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SHMAT [GooseExts] [GoGlobalContext] : val
+opaque SYS_SHMAT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SHMCTL [GooseExts] [GoGlobalContext] : val
+opaque SYS_SHMCTL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_DUP [GooseExts] [GoGlobalContext] : val
+opaque SYS_DUP [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_DUP2 [GooseExts] [GoGlobalContext] : val
+opaque SYS_DUP2 [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_PAUSE [GooseExts] [GoGlobalContext] : val
+opaque SYS_PAUSE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_NANOSLEEP [GooseExts] [GoGlobalContext] : val
+opaque SYS_NANOSLEEP [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETITIMER [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETITIMER [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_ALARM [GooseExts] [GoGlobalContext] : val
+opaque SYS_ALARM [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SETITIMER [GooseExts] [GoGlobalContext] : val
+opaque SYS_SETITIMER [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETPID [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETPID [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SENDFILE [GooseExts] [GoGlobalContext] : val
+opaque SYS_SENDFILE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SOCKET [GooseExts] [GoGlobalContext] : val
+opaque SYS_SOCKET [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_CONNECT [GooseExts] [GoGlobalContext] : val
+opaque SYS_CONNECT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_ACCEPT [GooseExts] [GoGlobalContext] : val
+opaque SYS_ACCEPT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SENDTO [GooseExts] [GoGlobalContext] : val
+opaque SYS_SENDTO [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_RECVFROM [GooseExts] [GoGlobalContext] : val
+opaque SYS_RECVFROM [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SENDMSG [GooseExts] [GoGlobalContext] : val
+opaque SYS_SENDMSG [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_RECVMSG [GooseExts] [GoGlobalContext] : val
+opaque SYS_RECVMSG [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SHUTDOWN [GooseExts] [GoGlobalContext] : val
+opaque SYS_SHUTDOWN [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_BIND [GooseExts] [GoGlobalContext] : val
+opaque SYS_BIND [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_LISTEN [GooseExts] [GoGlobalContext] : val
+opaque SYS_LISTEN [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETSOCKNAME [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETSOCKNAME [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETPEERNAME [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETPEERNAME [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SOCKETPAIR [GooseExts] [GoGlobalContext] : val
+opaque SYS_SOCKETPAIR [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SETSOCKOPT [GooseExts] [GoGlobalContext] : val
+opaque SYS_SETSOCKOPT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETSOCKOPT [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETSOCKOPT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_CLONE [GooseExts] [GoGlobalContext] : val
+opaque SYS_CLONE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_FORK [GooseExts] [GoGlobalContext] : val
+opaque SYS_FORK [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_VFORK [GooseExts] [GoGlobalContext] : val
+opaque SYS_VFORK [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_EXECVE [GooseExts] [GoGlobalContext] : val
+opaque SYS_EXECVE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_EXIT [GooseExts] [GoGlobalContext] : val
+opaque SYS_EXIT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_WAIT4 [GooseExts] [GoGlobalContext] : val
+opaque SYS_WAIT4 [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_KILL [GooseExts] [GoGlobalContext] : val
+opaque SYS_KILL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_UNAME [GooseExts] [GoGlobalContext] : val
+opaque SYS_UNAME [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SEMGET [GooseExts] [GoGlobalContext] : val
+opaque SYS_SEMGET [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SEMOP [GooseExts] [GoGlobalContext] : val
+opaque SYS_SEMOP [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SEMCTL [GooseExts] [GoGlobalContext] : val
+opaque SYS_SEMCTL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SHMDT [GooseExts] [GoGlobalContext] : val
+opaque SYS_SHMDT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MSGGET [GooseExts] [GoGlobalContext] : val
+opaque SYS_MSGGET [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MSGSND [GooseExts] [GoGlobalContext] : val
+opaque SYS_MSGSND [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MSGRCV [GooseExts] [GoGlobalContext] : val
+opaque SYS_MSGRCV [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MSGCTL [GooseExts] [GoGlobalContext] : val
+opaque SYS_MSGCTL [GooseExts] [GoGlobalContext] : val
 
 @[reducible] noncomputable def SYS_FCNTL [GooseExts] [GoGlobalContext] : val :=
   #(72 : Int)
 
-axiom SYS_FLOCK [GooseExts] [GoGlobalContext] : val
+opaque SYS_FLOCK [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_FSYNC [GooseExts] [GoGlobalContext] : val
+opaque SYS_FSYNC [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_FDATASYNC [GooseExts] [GoGlobalContext] : val
+opaque SYS_FDATASYNC [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_TRUNCATE [GooseExts] [GoGlobalContext] : val
+opaque SYS_TRUNCATE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_FTRUNCATE [GooseExts] [GoGlobalContext] : val
+opaque SYS_FTRUNCATE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETDENTS [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETDENTS [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETCWD [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETCWD [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_CHDIR [GooseExts] [GoGlobalContext] : val
+opaque SYS_CHDIR [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_FCHDIR [GooseExts] [GoGlobalContext] : val
+opaque SYS_FCHDIR [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_RENAME [GooseExts] [GoGlobalContext] : val
+opaque SYS_RENAME [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MKDIR [GooseExts] [GoGlobalContext] : val
+opaque SYS_MKDIR [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_RMDIR [GooseExts] [GoGlobalContext] : val
+opaque SYS_RMDIR [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_CREAT [GooseExts] [GoGlobalContext] : val
+opaque SYS_CREAT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_LINK [GooseExts] [GoGlobalContext] : val
+opaque SYS_LINK [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_UNLINK [GooseExts] [GoGlobalContext] : val
+opaque SYS_UNLINK [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SYMLINK [GooseExts] [GoGlobalContext] : val
+opaque SYS_SYMLINK [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_READLINK [GooseExts] [GoGlobalContext] : val
+opaque SYS_READLINK [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_CHMOD [GooseExts] [GoGlobalContext] : val
+opaque SYS_CHMOD [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_FCHMOD [GooseExts] [GoGlobalContext] : val
+opaque SYS_FCHMOD [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_CHOWN [GooseExts] [GoGlobalContext] : val
+opaque SYS_CHOWN [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_FCHOWN [GooseExts] [GoGlobalContext] : val
+opaque SYS_FCHOWN [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_LCHOWN [GooseExts] [GoGlobalContext] : val
+opaque SYS_LCHOWN [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_UMASK [GooseExts] [GoGlobalContext] : val
+opaque SYS_UMASK [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETTIMEOFDAY [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETTIMEOFDAY [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETRLIMIT [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETRLIMIT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETRUSAGE [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETRUSAGE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SYSINFO [GooseExts] [GoGlobalContext] : val
+opaque SYS_SYSINFO [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_TIMES [GooseExts] [GoGlobalContext] : val
+opaque SYS_TIMES [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_PTRACE [GooseExts] [GoGlobalContext] : val
+opaque SYS_PTRACE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETUID [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETUID [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SYSLOG [GooseExts] [GoGlobalContext] : val
+opaque SYS_SYSLOG [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETGID [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETGID [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SETUID [GooseExts] [GoGlobalContext] : val
+opaque SYS_SETUID [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SETGID [GooseExts] [GoGlobalContext] : val
+opaque SYS_SETGID [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETEUID [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETEUID [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETEGID [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETEGID [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SETPGID [GooseExts] [GoGlobalContext] : val
+opaque SYS_SETPGID [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETPPID [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETPPID [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETPGRP [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETPGRP [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SETSID [GooseExts] [GoGlobalContext] : val
+opaque SYS_SETSID [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SETREUID [GooseExts] [GoGlobalContext] : val
+opaque SYS_SETREUID [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SETREGID [GooseExts] [GoGlobalContext] : val
+opaque SYS_SETREGID [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETGROUPS [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETGROUPS [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SETGROUPS [GooseExts] [GoGlobalContext] : val
+opaque SYS_SETGROUPS [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SETRESUID [GooseExts] [GoGlobalContext] : val
+opaque SYS_SETRESUID [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETRESUID [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETRESUID [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SETRESGID [GooseExts] [GoGlobalContext] : val
+opaque SYS_SETRESGID [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETRESGID [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETRESGID [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETPGID [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETPGID [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SETFSUID [GooseExts] [GoGlobalContext] : val
+opaque SYS_SETFSUID [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SETFSGID [GooseExts] [GoGlobalContext] : val
+opaque SYS_SETFSGID [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETSID [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETSID [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_CAPGET [GooseExts] [GoGlobalContext] : val
+opaque SYS_CAPGET [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_CAPSET [GooseExts] [GoGlobalContext] : val
+opaque SYS_CAPSET [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_RT_SIGPENDING [GooseExts] [GoGlobalContext] : val
+opaque SYS_RT_SIGPENDING [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_RT_SIGTIMEDWAIT [GooseExts] [GoGlobalContext] : val
+opaque SYS_RT_SIGTIMEDWAIT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_RT_SIGQUEUEINFO [GooseExts] [GoGlobalContext] : val
+opaque SYS_RT_SIGQUEUEINFO [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_RT_SIGSUSPEND [GooseExts] [GoGlobalContext] : val
+opaque SYS_RT_SIGSUSPEND [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SIGALTSTACK [GooseExts] [GoGlobalContext] : val
+opaque SYS_SIGALTSTACK [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_UTIME [GooseExts] [GoGlobalContext] : val
+opaque SYS_UTIME [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MKNOD [GooseExts] [GoGlobalContext] : val
+opaque SYS_MKNOD [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_USELIB [GooseExts] [GoGlobalContext] : val
+opaque SYS_USELIB [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_PERSONALITY [GooseExts] [GoGlobalContext] : val
+opaque SYS_PERSONALITY [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_USTAT [GooseExts] [GoGlobalContext] : val
+opaque SYS_USTAT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_STATFS [GooseExts] [GoGlobalContext] : val
+opaque SYS_STATFS [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_FSTATFS [GooseExts] [GoGlobalContext] : val
+opaque SYS_FSTATFS [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SYSFS [GooseExts] [GoGlobalContext] : val
+opaque SYS_SYSFS [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETPRIORITY [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETPRIORITY [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SETPRIORITY [GooseExts] [GoGlobalContext] : val
+opaque SYS_SETPRIORITY [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SCHED_SETPARAM [GooseExts] [GoGlobalContext] : val
+opaque SYS_SCHED_SETPARAM [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SCHED_GETPARAM [GooseExts] [GoGlobalContext] : val
+opaque SYS_SCHED_GETPARAM [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SCHED_SETSCHEDULER [GooseExts] [GoGlobalContext] : val
+opaque SYS_SCHED_SETSCHEDULER [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SCHED_GETSCHEDULER [GooseExts] [GoGlobalContext] : val
+opaque SYS_SCHED_GETSCHEDULER [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SCHED_GET_PRIORITY_MAX [GooseExts] [GoGlobalContext] : val
+opaque SYS_SCHED_GET_PRIORITY_MAX [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SCHED_GET_PRIORITY_MIN [GooseExts] [GoGlobalContext] : val
+opaque SYS_SCHED_GET_PRIORITY_MIN [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SCHED_RR_GET_INTERVAL [GooseExts] [GoGlobalContext] : val
+opaque SYS_SCHED_RR_GET_INTERVAL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MLOCK [GooseExts] [GoGlobalContext] : val
+opaque SYS_MLOCK [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MUNLOCK [GooseExts] [GoGlobalContext] : val
+opaque SYS_MUNLOCK [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MLOCKALL [GooseExts] [GoGlobalContext] : val
+opaque SYS_MLOCKALL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MUNLOCKALL [GooseExts] [GoGlobalContext] : val
+opaque SYS_MUNLOCKALL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_VHANGUP [GooseExts] [GoGlobalContext] : val
+opaque SYS_VHANGUP [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MODIFY_LDT [GooseExts] [GoGlobalContext] : val
+opaque SYS_MODIFY_LDT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_PIVOT_ROOT [GooseExts] [GoGlobalContext] : val
+opaque SYS_PIVOT_ROOT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS__SYSCTL [GooseExts] [GoGlobalContext] : val
+opaque SYS__SYSCTL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_PRCTL [GooseExts] [GoGlobalContext] : val
+opaque SYS_PRCTL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_ARCH_PRCTL [GooseExts] [GoGlobalContext] : val
+opaque SYS_ARCH_PRCTL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_ADJTIMEX [GooseExts] [GoGlobalContext] : val
+opaque SYS_ADJTIMEX [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SETRLIMIT [GooseExts] [GoGlobalContext] : val
+opaque SYS_SETRLIMIT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_CHROOT [GooseExts] [GoGlobalContext] : val
+opaque SYS_CHROOT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SYNC [GooseExts] [GoGlobalContext] : val
+opaque SYS_SYNC [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_ACCT [GooseExts] [GoGlobalContext] : val
+opaque SYS_ACCT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SETTIMEOFDAY [GooseExts] [GoGlobalContext] : val
+opaque SYS_SETTIMEOFDAY [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MOUNT [GooseExts] [GoGlobalContext] : val
+opaque SYS_MOUNT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_UMOUNT2 [GooseExts] [GoGlobalContext] : val
+opaque SYS_UMOUNT2 [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SWAPON [GooseExts] [GoGlobalContext] : val
+opaque SYS_SWAPON [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SWAPOFF [GooseExts] [GoGlobalContext] : val
+opaque SYS_SWAPOFF [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_REBOOT [GooseExts] [GoGlobalContext] : val
+opaque SYS_REBOOT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SETHOSTNAME [GooseExts] [GoGlobalContext] : val
+opaque SYS_SETHOSTNAME [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SETDOMAINNAME [GooseExts] [GoGlobalContext] : val
+opaque SYS_SETDOMAINNAME [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_IOPL [GooseExts] [GoGlobalContext] : val
+opaque SYS_IOPL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_IOPERM [GooseExts] [GoGlobalContext] : val
+opaque SYS_IOPERM [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_CREATE_MODULE [GooseExts] [GoGlobalContext] : val
+opaque SYS_CREATE_MODULE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_INIT_MODULE [GooseExts] [GoGlobalContext] : val
+opaque SYS_INIT_MODULE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_DELETE_MODULE [GooseExts] [GoGlobalContext] : val
+opaque SYS_DELETE_MODULE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GET_KERNEL_SYMS [GooseExts] [GoGlobalContext] : val
+opaque SYS_GET_KERNEL_SYMS [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_QUERY_MODULE [GooseExts] [GoGlobalContext] : val
+opaque SYS_QUERY_MODULE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_QUOTACTL [GooseExts] [GoGlobalContext] : val
+opaque SYS_QUOTACTL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_NFSSERVCTL [GooseExts] [GoGlobalContext] : val
+opaque SYS_NFSSERVCTL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETPMSG [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETPMSG [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_PUTPMSG [GooseExts] [GoGlobalContext] : val
+opaque SYS_PUTPMSG [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_AFS_SYSCALL [GooseExts] [GoGlobalContext] : val
+opaque SYS_AFS_SYSCALL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_TUXCALL [GooseExts] [GoGlobalContext] : val
+opaque SYS_TUXCALL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SECURITY [GooseExts] [GoGlobalContext] : val
+opaque SYS_SECURITY [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETTID [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETTID [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_READAHEAD [GooseExts] [GoGlobalContext] : val
+opaque SYS_READAHEAD [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SETXATTR [GooseExts] [GoGlobalContext] : val
+opaque SYS_SETXATTR [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_LSETXATTR [GooseExts] [GoGlobalContext] : val
+opaque SYS_LSETXATTR [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_FSETXATTR [GooseExts] [GoGlobalContext] : val
+opaque SYS_FSETXATTR [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETXATTR [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETXATTR [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_LGETXATTR [GooseExts] [GoGlobalContext] : val
+opaque SYS_LGETXATTR [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_FGETXATTR [GooseExts] [GoGlobalContext] : val
+opaque SYS_FGETXATTR [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_LISTXATTR [GooseExts] [GoGlobalContext] : val
+opaque SYS_LISTXATTR [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_LLISTXATTR [GooseExts] [GoGlobalContext] : val
+opaque SYS_LLISTXATTR [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_FLISTXATTR [GooseExts] [GoGlobalContext] : val
+opaque SYS_FLISTXATTR [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_REMOVEXATTR [GooseExts] [GoGlobalContext] : val
+opaque SYS_REMOVEXATTR [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_LREMOVEXATTR [GooseExts] [GoGlobalContext] : val
+opaque SYS_LREMOVEXATTR [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_FREMOVEXATTR [GooseExts] [GoGlobalContext] : val
+opaque SYS_FREMOVEXATTR [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_TKILL [GooseExts] [GoGlobalContext] : val
+opaque SYS_TKILL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_TIME [GooseExts] [GoGlobalContext] : val
+opaque SYS_TIME [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_FUTEX [GooseExts] [GoGlobalContext] : val
+opaque SYS_FUTEX [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SCHED_SETAFFINITY [GooseExts] [GoGlobalContext] : val
+opaque SYS_SCHED_SETAFFINITY [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SCHED_GETAFFINITY [GooseExts] [GoGlobalContext] : val
+opaque SYS_SCHED_GETAFFINITY [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SET_THREAD_AREA [GooseExts] [GoGlobalContext] : val
+opaque SYS_SET_THREAD_AREA [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_IO_SETUP [GooseExts] [GoGlobalContext] : val
+opaque SYS_IO_SETUP [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_IO_DESTROY [GooseExts] [GoGlobalContext] : val
+opaque SYS_IO_DESTROY [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_IO_GETEVENTS [GooseExts] [GoGlobalContext] : val
+opaque SYS_IO_GETEVENTS [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_IO_SUBMIT [GooseExts] [GoGlobalContext] : val
+opaque SYS_IO_SUBMIT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_IO_CANCEL [GooseExts] [GoGlobalContext] : val
+opaque SYS_IO_CANCEL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GET_THREAD_AREA [GooseExts] [GoGlobalContext] : val
+opaque SYS_GET_THREAD_AREA [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_LOOKUP_DCOOKIE [GooseExts] [GoGlobalContext] : val
+opaque SYS_LOOKUP_DCOOKIE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_EPOLL_CREATE [GooseExts] [GoGlobalContext] : val
+opaque SYS_EPOLL_CREATE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_EPOLL_CTL_OLD [GooseExts] [GoGlobalContext] : val
+opaque SYS_EPOLL_CTL_OLD [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_EPOLL_WAIT_OLD [GooseExts] [GoGlobalContext] : val
+opaque SYS_EPOLL_WAIT_OLD [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_REMAP_FILE_PAGES [GooseExts] [GoGlobalContext] : val
+opaque SYS_REMAP_FILE_PAGES [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GETDENTS64 [GooseExts] [GoGlobalContext] : val
+opaque SYS_GETDENTS64 [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SET_TID_ADDRESS [GooseExts] [GoGlobalContext] : val
+opaque SYS_SET_TID_ADDRESS [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_RESTART_SYSCALL [GooseExts] [GoGlobalContext] : val
+opaque SYS_RESTART_SYSCALL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SEMTIMEDOP [GooseExts] [GoGlobalContext] : val
+opaque SYS_SEMTIMEDOP [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_FADVISE64 [GooseExts] [GoGlobalContext] : val
+opaque SYS_FADVISE64 [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_TIMER_CREATE [GooseExts] [GoGlobalContext] : val
+opaque SYS_TIMER_CREATE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_TIMER_SETTIME [GooseExts] [GoGlobalContext] : val
+opaque SYS_TIMER_SETTIME [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_TIMER_GETTIME [GooseExts] [GoGlobalContext] : val
+opaque SYS_TIMER_GETTIME [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_TIMER_GETOVERRUN [GooseExts] [GoGlobalContext] : val
+opaque SYS_TIMER_GETOVERRUN [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_TIMER_DELETE [GooseExts] [GoGlobalContext] : val
+opaque SYS_TIMER_DELETE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_CLOCK_SETTIME [GooseExts] [GoGlobalContext] : val
+opaque SYS_CLOCK_SETTIME [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_CLOCK_GETTIME [GooseExts] [GoGlobalContext] : val
+opaque SYS_CLOCK_GETTIME [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_CLOCK_GETRES [GooseExts] [GoGlobalContext] : val
+opaque SYS_CLOCK_GETRES [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_CLOCK_NANOSLEEP [GooseExts] [GoGlobalContext] : val
+opaque SYS_CLOCK_NANOSLEEP [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_EXIT_GROUP [GooseExts] [GoGlobalContext] : val
+opaque SYS_EXIT_GROUP [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_EPOLL_WAIT [GooseExts] [GoGlobalContext] : val
+opaque SYS_EPOLL_WAIT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_EPOLL_CTL [GooseExts] [GoGlobalContext] : val
+opaque SYS_EPOLL_CTL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_TGKILL [GooseExts] [GoGlobalContext] : val
+opaque SYS_TGKILL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_UTIMES [GooseExts] [GoGlobalContext] : val
+opaque SYS_UTIMES [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_VSERVER [GooseExts] [GoGlobalContext] : val
+opaque SYS_VSERVER [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MBIND [GooseExts] [GoGlobalContext] : val
+opaque SYS_MBIND [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SET_MEMPOLICY [GooseExts] [GoGlobalContext] : val
+opaque SYS_SET_MEMPOLICY [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GET_MEMPOLICY [GooseExts] [GoGlobalContext] : val
+opaque SYS_GET_MEMPOLICY [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MQ_OPEN [GooseExts] [GoGlobalContext] : val
+opaque SYS_MQ_OPEN [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MQ_UNLINK [GooseExts] [GoGlobalContext] : val
+opaque SYS_MQ_UNLINK [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MQ_TIMEDSEND [GooseExts] [GoGlobalContext] : val
+opaque SYS_MQ_TIMEDSEND [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MQ_TIMEDRECEIVE [GooseExts] [GoGlobalContext] : val
+opaque SYS_MQ_TIMEDRECEIVE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MQ_NOTIFY [GooseExts] [GoGlobalContext] : val
+opaque SYS_MQ_NOTIFY [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MQ_GETSETATTR [GooseExts] [GoGlobalContext] : val
+opaque SYS_MQ_GETSETATTR [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_KEXEC_LOAD [GooseExts] [GoGlobalContext] : val
+opaque SYS_KEXEC_LOAD [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_WAITID [GooseExts] [GoGlobalContext] : val
+opaque SYS_WAITID [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_ADD_KEY [GooseExts] [GoGlobalContext] : val
+opaque SYS_ADD_KEY [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_REQUEST_KEY [GooseExts] [GoGlobalContext] : val
+opaque SYS_REQUEST_KEY [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_KEYCTL [GooseExts] [GoGlobalContext] : val
+opaque SYS_KEYCTL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_IOPRIO_SET [GooseExts] [GoGlobalContext] : val
+opaque SYS_IOPRIO_SET [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_IOPRIO_GET [GooseExts] [GoGlobalContext] : val
+opaque SYS_IOPRIO_GET [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_INOTIFY_INIT [GooseExts] [GoGlobalContext] : val
+opaque SYS_INOTIFY_INIT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_INOTIFY_ADD_WATCH [GooseExts] [GoGlobalContext] : val
+opaque SYS_INOTIFY_ADD_WATCH [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_INOTIFY_RM_WATCH [GooseExts] [GoGlobalContext] : val
+opaque SYS_INOTIFY_RM_WATCH [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MIGRATE_PAGES [GooseExts] [GoGlobalContext] : val
+opaque SYS_MIGRATE_PAGES [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_OPENAT [GooseExts] [GoGlobalContext] : val
+opaque SYS_OPENAT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MKDIRAT [GooseExts] [GoGlobalContext] : val
+opaque SYS_MKDIRAT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MKNODAT [GooseExts] [GoGlobalContext] : val
+opaque SYS_MKNODAT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_FCHOWNAT [GooseExts] [GoGlobalContext] : val
+opaque SYS_FCHOWNAT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_FUTIMESAT [GooseExts] [GoGlobalContext] : val
+opaque SYS_FUTIMESAT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_NEWFSTATAT [GooseExts] [GoGlobalContext] : val
+opaque SYS_NEWFSTATAT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_UNLINKAT [GooseExts] [GoGlobalContext] : val
+opaque SYS_UNLINKAT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_RENAMEAT [GooseExts] [GoGlobalContext] : val
+opaque SYS_RENAMEAT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_LINKAT [GooseExts] [GoGlobalContext] : val
+opaque SYS_LINKAT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SYMLINKAT [GooseExts] [GoGlobalContext] : val
+opaque SYS_SYMLINKAT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_READLINKAT [GooseExts] [GoGlobalContext] : val
+opaque SYS_READLINKAT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_FCHMODAT [GooseExts] [GoGlobalContext] : val
+opaque SYS_FCHMODAT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_FACCESSAT [GooseExts] [GoGlobalContext] : val
+opaque SYS_FACCESSAT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_PSELECT6 [GooseExts] [GoGlobalContext] : val
+opaque SYS_PSELECT6 [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_PPOLL [GooseExts] [GoGlobalContext] : val
+opaque SYS_PPOLL [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_UNSHARE [GooseExts] [GoGlobalContext] : val
+opaque SYS_UNSHARE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SET_ROBUST_LIST [GooseExts] [GoGlobalContext] : val
+opaque SYS_SET_ROBUST_LIST [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_GET_ROBUST_LIST [GooseExts] [GoGlobalContext] : val
+opaque SYS_GET_ROBUST_LIST [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SPLICE [GooseExts] [GoGlobalContext] : val
+opaque SYS_SPLICE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_TEE [GooseExts] [GoGlobalContext] : val
+opaque SYS_TEE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SYNC_FILE_RANGE [GooseExts] [GoGlobalContext] : val
+opaque SYS_SYNC_FILE_RANGE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_VMSPLICE [GooseExts] [GoGlobalContext] : val
+opaque SYS_VMSPLICE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_MOVE_PAGES [GooseExts] [GoGlobalContext] : val
+opaque SYS_MOVE_PAGES [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_UTIMENSAT [GooseExts] [GoGlobalContext] : val
+opaque SYS_UTIMENSAT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_EPOLL_PWAIT [GooseExts] [GoGlobalContext] : val
+opaque SYS_EPOLL_PWAIT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SIGNALFD [GooseExts] [GoGlobalContext] : val
+opaque SYS_SIGNALFD [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_TIMERFD_CREATE [GooseExts] [GoGlobalContext] : val
+opaque SYS_TIMERFD_CREATE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_EVENTFD [GooseExts] [GoGlobalContext] : val
+opaque SYS_EVENTFD [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_FALLOCATE [GooseExts] [GoGlobalContext] : val
+opaque SYS_FALLOCATE [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_TIMERFD_SETTIME [GooseExts] [GoGlobalContext] : val
+opaque SYS_TIMERFD_SETTIME [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_TIMERFD_GETTIME [GooseExts] [GoGlobalContext] : val
+opaque SYS_TIMERFD_GETTIME [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_ACCEPT4 [GooseExts] [GoGlobalContext] : val
+opaque SYS_ACCEPT4 [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_SIGNALFD4 [GooseExts] [GoGlobalContext] : val
+opaque SYS_SIGNALFD4 [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_EVENTFD2 [GooseExts] [GoGlobalContext] : val
+opaque SYS_EVENTFD2 [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_EPOLL_CREATE1 [GooseExts] [GoGlobalContext] : val
+opaque SYS_EPOLL_CREATE1 [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_DUP3 [GooseExts] [GoGlobalContext] : val
+opaque SYS_DUP3 [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_PIPE2 [GooseExts] [GoGlobalContext] : val
+opaque SYS_PIPE2 [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_INOTIFY_INIT1 [GooseExts] [GoGlobalContext] : val
+opaque SYS_INOTIFY_INIT1 [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_PREADV [GooseExts] [GoGlobalContext] : val
+opaque SYS_PREADV [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_PWRITEV [GooseExts] [GoGlobalContext] : val
+opaque SYS_PWRITEV [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_RT_TGSIGQUEUEINFO [GooseExts] [GoGlobalContext] : val
+opaque SYS_RT_TGSIGQUEUEINFO [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_PERF_EVENT_OPEN [GooseExts] [GoGlobalContext] : val
+opaque SYS_PERF_EVENT_OPEN [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_RECVMMSG [GooseExts] [GoGlobalContext] : val
+opaque SYS_RECVMMSG [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_FANOTIFY_INIT [GooseExts] [GoGlobalContext] : val
+opaque SYS_FANOTIFY_INIT [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_FANOTIFY_MARK [GooseExts] [GoGlobalContext] : val
+opaque SYS_FANOTIFY_MARK [GooseExts] [GoGlobalContext] : val
 
-axiom SYS_PRLIMIT64 [GooseExts] [GoGlobalContext] : val
+opaque SYS_PRLIMIT64 [GooseExts] [GoGlobalContext] : val
 
-axiom sizeofPtr [GooseExts] [GoGlobalContext] : val
+opaque sizeofPtr [GooseExts] [GoGlobalContext] : val
 
-axiom sizeofShort [GooseExts] [GoGlobalContext] : val
+opaque sizeofShort [GooseExts] [GoGlobalContext] : val
 
-axiom sizeofInt [GooseExts] [GoGlobalContext] : val
+opaque sizeofInt [GooseExts] [GoGlobalContext] : val
 
-axiom sizeofLong [GooseExts] [GoGlobalContext] : val
+opaque sizeofLong [GooseExts] [GoGlobalContext] : val
 
-axiom sizeofLongLong [GooseExts] [GoGlobalContext] : val
+opaque sizeofLongLong [GooseExts] [GoGlobalContext] : val
 
-axiom PathMax [GooseExts] [GoGlobalContext] : val
+opaque PathMax [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofSockaddrInet4 [GooseExts] [GoGlobalContext] : val
+opaque SizeofSockaddrInet4 [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofSockaddrInet6 [GooseExts] [GoGlobalContext] : val
+opaque SizeofSockaddrInet6 [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofSockaddrAny [GooseExts] [GoGlobalContext] : val
+opaque SizeofSockaddrAny [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofSockaddrUnix [GooseExts] [GoGlobalContext] : val
+opaque SizeofSockaddrUnix [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofSockaddrLinklayer [GooseExts] [GoGlobalContext] : val
+opaque SizeofSockaddrLinklayer [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofSockaddrNetlink [GooseExts] [GoGlobalContext] : val
+opaque SizeofSockaddrNetlink [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofLinger [GooseExts] [GoGlobalContext] : val
+opaque SizeofLinger [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofIPMreq [GooseExts] [GoGlobalContext] : val
+opaque SizeofIPMreq [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofIPMreqn [GooseExts] [GoGlobalContext] : val
+opaque SizeofIPMreqn [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofIPv6Mreq [GooseExts] [GoGlobalContext] : val
+opaque SizeofIPv6Mreq [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofMsghdr [GooseExts] [GoGlobalContext] : val
+opaque SizeofMsghdr [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofCmsghdr [GooseExts] [GoGlobalContext] : val
+opaque SizeofCmsghdr [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofInet4Pktinfo [GooseExts] [GoGlobalContext] : val
+opaque SizeofInet4Pktinfo [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofInet6Pktinfo [GooseExts] [GoGlobalContext] : val
+opaque SizeofInet6Pktinfo [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofIPv6MTUInfo [GooseExts] [GoGlobalContext] : val
+opaque SizeofIPv6MTUInfo [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofICMPv6Filter [GooseExts] [GoGlobalContext] : val
+opaque SizeofICMPv6Filter [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofUcred [GooseExts] [GoGlobalContext] : val
+opaque SizeofUcred [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofTCPInfo [GooseExts] [GoGlobalContext] : val
+opaque SizeofTCPInfo [GooseExts] [GoGlobalContext] : val
 
-axiom IFA_UNSPEC [GooseExts] [GoGlobalContext] : val
+opaque IFA_UNSPEC [GooseExts] [GoGlobalContext] : val
 
-axiom IFA_ADDRESS [GooseExts] [GoGlobalContext] : val
+opaque IFA_ADDRESS [GooseExts] [GoGlobalContext] : val
 
-axiom IFA_LOCAL [GooseExts] [GoGlobalContext] : val
+opaque IFA_LOCAL [GooseExts] [GoGlobalContext] : val
 
-axiom IFA_LABEL [GooseExts] [GoGlobalContext] : val
+opaque IFA_LABEL [GooseExts] [GoGlobalContext] : val
 
-axiom IFA_BROADCAST [GooseExts] [GoGlobalContext] : val
+opaque IFA_BROADCAST [GooseExts] [GoGlobalContext] : val
 
-axiom IFA_ANYCAST [GooseExts] [GoGlobalContext] : val
+opaque IFA_ANYCAST [GooseExts] [GoGlobalContext] : val
 
-axiom IFA_CACHEINFO [GooseExts] [GoGlobalContext] : val
+opaque IFA_CACHEINFO [GooseExts] [GoGlobalContext] : val
 
-axiom IFA_MULTICAST [GooseExts] [GoGlobalContext] : val
+opaque IFA_MULTICAST [GooseExts] [GoGlobalContext] : val
 
-axiom IFLA_UNSPEC [GooseExts] [GoGlobalContext] : val
+opaque IFLA_UNSPEC [GooseExts] [GoGlobalContext] : val
 
-axiom IFLA_ADDRESS [GooseExts] [GoGlobalContext] : val
+opaque IFLA_ADDRESS [GooseExts] [GoGlobalContext] : val
 
-axiom IFLA_BROADCAST [GooseExts] [GoGlobalContext] : val
+opaque IFLA_BROADCAST [GooseExts] [GoGlobalContext] : val
 
-axiom IFLA_IFNAME [GooseExts] [GoGlobalContext] : val
+opaque IFLA_IFNAME [GooseExts] [GoGlobalContext] : val
 
-axiom IFLA_MTU [GooseExts] [GoGlobalContext] : val
+opaque IFLA_MTU [GooseExts] [GoGlobalContext] : val
 
-axiom IFLA_LINK [GooseExts] [GoGlobalContext] : val
+opaque IFLA_LINK [GooseExts] [GoGlobalContext] : val
 
-axiom IFLA_QDISC [GooseExts] [GoGlobalContext] : val
+opaque IFLA_QDISC [GooseExts] [GoGlobalContext] : val
 
-axiom IFLA_STATS [GooseExts] [GoGlobalContext] : val
+opaque IFLA_STATS [GooseExts] [GoGlobalContext] : val
 
-axiom IFLA_COST [GooseExts] [GoGlobalContext] : val
+opaque IFLA_COST [GooseExts] [GoGlobalContext] : val
 
-axiom IFLA_PRIORITY [GooseExts] [GoGlobalContext] : val
+opaque IFLA_PRIORITY [GooseExts] [GoGlobalContext] : val
 
-axiom IFLA_MASTER [GooseExts] [GoGlobalContext] : val
+opaque IFLA_MASTER [GooseExts] [GoGlobalContext] : val
 
-axiom IFLA_WIRELESS [GooseExts] [GoGlobalContext] : val
+opaque IFLA_WIRELESS [GooseExts] [GoGlobalContext] : val
 
-axiom IFLA_PROTINFO [GooseExts] [GoGlobalContext] : val
+opaque IFLA_PROTINFO [GooseExts] [GoGlobalContext] : val
 
-axiom IFLA_TXQLEN [GooseExts] [GoGlobalContext] : val
+opaque IFLA_TXQLEN [GooseExts] [GoGlobalContext] : val
 
-axiom IFLA_MAP [GooseExts] [GoGlobalContext] : val
+opaque IFLA_MAP [GooseExts] [GoGlobalContext] : val
 
-axiom IFLA_WEIGHT [GooseExts] [GoGlobalContext] : val
+opaque IFLA_WEIGHT [GooseExts] [GoGlobalContext] : val
 
-axiom IFLA_OPERSTATE [GooseExts] [GoGlobalContext] : val
+opaque IFLA_OPERSTATE [GooseExts] [GoGlobalContext] : val
 
-axiom IFLA_LINKMODE [GooseExts] [GoGlobalContext] : val
+opaque IFLA_LINKMODE [GooseExts] [GoGlobalContext] : val
 
-axiom IFLA_LINKINFO [GooseExts] [GoGlobalContext] : val
+opaque IFLA_LINKINFO [GooseExts] [GoGlobalContext] : val
 
-axiom IFLA_NET_NS_PID [GooseExts] [GoGlobalContext] : val
+opaque IFLA_NET_NS_PID [GooseExts] [GoGlobalContext] : val
 
-axiom IFLA_IFALIAS [GooseExts] [GoGlobalContext] : val
+opaque IFLA_IFALIAS [GooseExts] [GoGlobalContext] : val
 
-axiom IFLA_MAX [GooseExts] [GoGlobalContext] : val
+opaque IFLA_MAX [GooseExts] [GoGlobalContext] : val
 
-axiom RT_SCOPE_UNIVERSE [GooseExts] [GoGlobalContext] : val
+opaque RT_SCOPE_UNIVERSE [GooseExts] [GoGlobalContext] : val
 
-axiom RT_SCOPE_SITE [GooseExts] [GoGlobalContext] : val
+opaque RT_SCOPE_SITE [GooseExts] [GoGlobalContext] : val
 
-axiom RT_SCOPE_LINK [GooseExts] [GoGlobalContext] : val
+opaque RT_SCOPE_LINK [GooseExts] [GoGlobalContext] : val
 
-axiom RT_SCOPE_HOST [GooseExts] [GoGlobalContext] : val
+opaque RT_SCOPE_HOST [GooseExts] [GoGlobalContext] : val
 
-axiom RT_SCOPE_NOWHERE [GooseExts] [GoGlobalContext] : val
+opaque RT_SCOPE_NOWHERE [GooseExts] [GoGlobalContext] : val
 
-axiom RT_TABLE_UNSPEC [GooseExts] [GoGlobalContext] : val
+opaque RT_TABLE_UNSPEC [GooseExts] [GoGlobalContext] : val
 
-axiom RT_TABLE_COMPAT [GooseExts] [GoGlobalContext] : val
+opaque RT_TABLE_COMPAT [GooseExts] [GoGlobalContext] : val
 
-axiom RT_TABLE_DEFAULT [GooseExts] [GoGlobalContext] : val
+opaque RT_TABLE_DEFAULT [GooseExts] [GoGlobalContext] : val
 
-axiom RT_TABLE_MAIN [GooseExts] [GoGlobalContext] : val
+opaque RT_TABLE_MAIN [GooseExts] [GoGlobalContext] : val
 
-axiom RT_TABLE_LOCAL [GooseExts] [GoGlobalContext] : val
+opaque RT_TABLE_LOCAL [GooseExts] [GoGlobalContext] : val
 
-axiom RT_TABLE_MAX [GooseExts] [GoGlobalContext] : val
+opaque RT_TABLE_MAX [GooseExts] [GoGlobalContext] : val
 
-axiom RTA_UNSPEC [GooseExts] [GoGlobalContext] : val
+opaque RTA_UNSPEC [GooseExts] [GoGlobalContext] : val
 
-axiom RTA_DST [GooseExts] [GoGlobalContext] : val
+opaque RTA_DST [GooseExts] [GoGlobalContext] : val
 
-axiom RTA_SRC [GooseExts] [GoGlobalContext] : val
+opaque RTA_SRC [GooseExts] [GoGlobalContext] : val
 
-axiom RTA_IIF [GooseExts] [GoGlobalContext] : val
+opaque RTA_IIF [GooseExts] [GoGlobalContext] : val
 
-axiom RTA_OIF [GooseExts] [GoGlobalContext] : val
+opaque RTA_OIF [GooseExts] [GoGlobalContext] : val
 
-axiom RTA_GATEWAY [GooseExts] [GoGlobalContext] : val
+opaque RTA_GATEWAY [GooseExts] [GoGlobalContext] : val
 
-axiom RTA_PRIORITY [GooseExts] [GoGlobalContext] : val
+opaque RTA_PRIORITY [GooseExts] [GoGlobalContext] : val
 
-axiom RTA_PREFSRC [GooseExts] [GoGlobalContext] : val
+opaque RTA_PREFSRC [GooseExts] [GoGlobalContext] : val
 
-axiom RTA_METRICS [GooseExts] [GoGlobalContext] : val
+opaque RTA_METRICS [GooseExts] [GoGlobalContext] : val
 
-axiom RTA_MULTIPATH [GooseExts] [GoGlobalContext] : val
+opaque RTA_MULTIPATH [GooseExts] [GoGlobalContext] : val
 
-axiom RTA_FLOW [GooseExts] [GoGlobalContext] : val
+opaque RTA_FLOW [GooseExts] [GoGlobalContext] : val
 
-axiom RTA_CACHEINFO [GooseExts] [GoGlobalContext] : val
+opaque RTA_CACHEINFO [GooseExts] [GoGlobalContext] : val
 
-axiom RTA_TABLE [GooseExts] [GoGlobalContext] : val
+opaque RTA_TABLE [GooseExts] [GoGlobalContext] : val
 
-axiom RTN_UNSPEC [GooseExts] [GoGlobalContext] : val
+opaque RTN_UNSPEC [GooseExts] [GoGlobalContext] : val
 
-axiom RTN_UNICAST [GooseExts] [GoGlobalContext] : val
+opaque RTN_UNICAST [GooseExts] [GoGlobalContext] : val
 
-axiom RTN_LOCAL [GooseExts] [GoGlobalContext] : val
+opaque RTN_LOCAL [GooseExts] [GoGlobalContext] : val
 
-axiom RTN_BROADCAST [GooseExts] [GoGlobalContext] : val
+opaque RTN_BROADCAST [GooseExts] [GoGlobalContext] : val
 
-axiom RTN_ANYCAST [GooseExts] [GoGlobalContext] : val
+opaque RTN_ANYCAST [GooseExts] [GoGlobalContext] : val
 
-axiom RTN_MULTICAST [GooseExts] [GoGlobalContext] : val
+opaque RTN_MULTICAST [GooseExts] [GoGlobalContext] : val
 
-axiom RTN_BLACKHOLE [GooseExts] [GoGlobalContext] : val
+opaque RTN_BLACKHOLE [GooseExts] [GoGlobalContext] : val
 
-axiom RTN_UNREACHABLE [GooseExts] [GoGlobalContext] : val
+opaque RTN_UNREACHABLE [GooseExts] [GoGlobalContext] : val
 
-axiom RTN_PROHIBIT [GooseExts] [GoGlobalContext] : val
+opaque RTN_PROHIBIT [GooseExts] [GoGlobalContext] : val
 
-axiom RTN_THROW [GooseExts] [GoGlobalContext] : val
+opaque RTN_THROW [GooseExts] [GoGlobalContext] : val
 
-axiom RTN_NAT [GooseExts] [GoGlobalContext] : val
+opaque RTN_NAT [GooseExts] [GoGlobalContext] : val
 
-axiom RTN_XRESOLVE [GooseExts] [GoGlobalContext] : val
+opaque RTN_XRESOLVE [GooseExts] [GoGlobalContext] : val
 
-axiom RTNLGRP_NONE [GooseExts] [GoGlobalContext] : val
+opaque RTNLGRP_NONE [GooseExts] [GoGlobalContext] : val
 
-axiom RTNLGRP_LINK [GooseExts] [GoGlobalContext] : val
+opaque RTNLGRP_LINK [GooseExts] [GoGlobalContext] : val
 
-axiom RTNLGRP_NOTIFY [GooseExts] [GoGlobalContext] : val
+opaque RTNLGRP_NOTIFY [GooseExts] [GoGlobalContext] : val
 
-axiom RTNLGRP_NEIGH [GooseExts] [GoGlobalContext] : val
+opaque RTNLGRP_NEIGH [GooseExts] [GoGlobalContext] : val
 
-axiom RTNLGRP_TC [GooseExts] [GoGlobalContext] : val
+opaque RTNLGRP_TC [GooseExts] [GoGlobalContext] : val
 
-axiom RTNLGRP_IPV4_IFADDR [GooseExts] [GoGlobalContext] : val
+opaque RTNLGRP_IPV4_IFADDR [GooseExts] [GoGlobalContext] : val
 
-axiom RTNLGRP_IPV4_MROUTE [GooseExts] [GoGlobalContext] : val
+opaque RTNLGRP_IPV4_MROUTE [GooseExts] [GoGlobalContext] : val
 
-axiom RTNLGRP_IPV4_ROUTE [GooseExts] [GoGlobalContext] : val
+opaque RTNLGRP_IPV4_ROUTE [GooseExts] [GoGlobalContext] : val
 
-axiom RTNLGRP_IPV4_RULE [GooseExts] [GoGlobalContext] : val
+opaque RTNLGRP_IPV4_RULE [GooseExts] [GoGlobalContext] : val
 
-axiom RTNLGRP_IPV6_IFADDR [GooseExts] [GoGlobalContext] : val
+opaque RTNLGRP_IPV6_IFADDR [GooseExts] [GoGlobalContext] : val
 
-axiom RTNLGRP_IPV6_MROUTE [GooseExts] [GoGlobalContext] : val
+opaque RTNLGRP_IPV6_MROUTE [GooseExts] [GoGlobalContext] : val
 
-axiom RTNLGRP_IPV6_ROUTE [GooseExts] [GoGlobalContext] : val
+opaque RTNLGRP_IPV6_ROUTE [GooseExts] [GoGlobalContext] : val
 
-axiom RTNLGRP_IPV6_IFINFO [GooseExts] [GoGlobalContext] : val
+opaque RTNLGRP_IPV6_IFINFO [GooseExts] [GoGlobalContext] : val
 
-axiom RTNLGRP_IPV6_PREFIX [GooseExts] [GoGlobalContext] : val
+opaque RTNLGRP_IPV6_PREFIX [GooseExts] [GoGlobalContext] : val
 
-axiom RTNLGRP_IPV6_RULE [GooseExts] [GoGlobalContext] : val
+opaque RTNLGRP_IPV6_RULE [GooseExts] [GoGlobalContext] : val
 
-axiom RTNLGRP_ND_USEROPT [GooseExts] [GoGlobalContext] : val
+opaque RTNLGRP_ND_USEROPT [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofNlMsghdr [GooseExts] [GoGlobalContext] : val
+opaque SizeofNlMsghdr [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofNlMsgerr [GooseExts] [GoGlobalContext] : val
+opaque SizeofNlMsgerr [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofRtGenmsg [GooseExts] [GoGlobalContext] : val
+opaque SizeofRtGenmsg [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofNlAttr [GooseExts] [GoGlobalContext] : val
+opaque SizeofNlAttr [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofRtAttr [GooseExts] [GoGlobalContext] : val
+opaque SizeofRtAttr [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofIfInfomsg [GooseExts] [GoGlobalContext] : val
+opaque SizeofIfInfomsg [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofIfAddrmsg [GooseExts] [GoGlobalContext] : val
+opaque SizeofIfAddrmsg [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofRtMsg [GooseExts] [GoGlobalContext] : val
+opaque SizeofRtMsg [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofRtNexthop [GooseExts] [GoGlobalContext] : val
+opaque SizeofRtNexthop [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofSockFilter [GooseExts] [GoGlobalContext] : val
+opaque SizeofSockFilter [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofSockFprog [GooseExts] [GoGlobalContext] : val
+opaque SizeofSockFprog [GooseExts] [GoGlobalContext] : val
 
-axiom SizeofInotifyEvent [GooseExts] [GoGlobalContext] : val
+opaque SizeofInotifyEvent [GooseExts] [GoGlobalContext] : val
 
-axiom _AT_FDCWD [GooseExts] [GoGlobalContext] : val
+opaque _AT_FDCWD [GooseExts] [GoGlobalContext] : val
 
-axiom _AT_REMOVEDIR [GooseExts] [GoGlobalContext] : val
+opaque _AT_REMOVEDIR [GooseExts] [GoGlobalContext] : val
 
-axiom _AT_SYMLINK_NOFOLLOW [GooseExts] [GoGlobalContext] : val
+opaque _AT_SYMLINK_NOFOLLOW [GooseExts] [GoGlobalContext] : val
 
-axiom _AT_EACCESS [GooseExts] [GoGlobalContext] : val
+opaque _AT_EACCESS [GooseExts] [GoGlobalContext] : val
 
-axiom _AT_EMPTY_PATH [GooseExts] [GoGlobalContext] : val
+opaque _AT_EMPTY_PATH [GooseExts] [GoGlobalContext] : val
 
-axiom VINTR [GooseExts] [GoGlobalContext] : val
+opaque VINTR [GooseExts] [GoGlobalContext] : val
 
-axiom VQUIT [GooseExts] [GoGlobalContext] : val
+opaque VQUIT [GooseExts] [GoGlobalContext] : val
 
-axiom VERASE [GooseExts] [GoGlobalContext] : val
+opaque VERASE [GooseExts] [GoGlobalContext] : val
 
-axiom VKILL [GooseExts] [GoGlobalContext] : val
+opaque VKILL [GooseExts] [GoGlobalContext] : val
 
-axiom VEOF [GooseExts] [GoGlobalContext] : val
+opaque VEOF [GooseExts] [GoGlobalContext] : val
 
-axiom VTIME [GooseExts] [GoGlobalContext] : val
+opaque VTIME [GooseExts] [GoGlobalContext] : val
 
-axiom VMIN [GooseExts] [GoGlobalContext] : val
+opaque VMIN [GooseExts] [GoGlobalContext] : val
 
-axiom VSWTC [GooseExts] [GoGlobalContext] : val
+opaque VSWTC [GooseExts] [GoGlobalContext] : val
 
-axiom VSTART [GooseExts] [GoGlobalContext] : val
+opaque VSTART [GooseExts] [GoGlobalContext] : val
 
-axiom VSTOP [GooseExts] [GoGlobalContext] : val
+opaque VSTOP [GooseExts] [GoGlobalContext] : val
 
-axiom VSUSP [GooseExts] [GoGlobalContext] : val
+opaque VSUSP [GooseExts] [GoGlobalContext] : val
 
-axiom VEOL [GooseExts] [GoGlobalContext] : val
+opaque VEOL [GooseExts] [GoGlobalContext] : val
 
-axiom VREPRINT [GooseExts] [GoGlobalContext] : val
+opaque VREPRINT [GooseExts] [GoGlobalContext] : val
 
-axiom VDISCARD [GooseExts] [GoGlobalContext] : val
+opaque VDISCARD [GooseExts] [GoGlobalContext] : val
 
-axiom VWERASE [GooseExts] [GoGlobalContext] : val
+opaque VWERASE [GooseExts] [GoGlobalContext] : val
 
-axiom VLNEXT [GooseExts] [GoGlobalContext] : val
+opaque VLNEXT [GooseExts] [GoGlobalContext] : val
 
-axiom VEOL2 [GooseExts] [GoGlobalContext] : val
+opaque VEOL2 [GooseExts] [GoGlobalContext] : val
 
-axiom IGNBRK [GooseExts] [GoGlobalContext] : val
+opaque IGNBRK [GooseExts] [GoGlobalContext] : val
 
-axiom BRKINT [GooseExts] [GoGlobalContext] : val
+opaque BRKINT [GooseExts] [GoGlobalContext] : val
 
-axiom IGNPAR [GooseExts] [GoGlobalContext] : val
+opaque IGNPAR [GooseExts] [GoGlobalContext] : val
 
-axiom PARMRK [GooseExts] [GoGlobalContext] : val
+opaque PARMRK [GooseExts] [GoGlobalContext] : val
 
-axiom INPCK [GooseExts] [GoGlobalContext] : val
+opaque INPCK [GooseExts] [GoGlobalContext] : val
 
-axiom ISTRIP [GooseExts] [GoGlobalContext] : val
+opaque ISTRIP [GooseExts] [GoGlobalContext] : val
 
-axiom INLCR [GooseExts] [GoGlobalContext] : val
+opaque INLCR [GooseExts] [GoGlobalContext] : val
 
-axiom IGNCR [GooseExts] [GoGlobalContext] : val
+opaque IGNCR [GooseExts] [GoGlobalContext] : val
 
-axiom ICRNL [GooseExts] [GoGlobalContext] : val
+opaque ICRNL [GooseExts] [GoGlobalContext] : val
 
-axiom IUCLC [GooseExts] [GoGlobalContext] : val
+opaque IUCLC [GooseExts] [GoGlobalContext] : val
 
-axiom IXON [GooseExts] [GoGlobalContext] : val
+opaque IXON [GooseExts] [GoGlobalContext] : val
 
-axiom IXANY [GooseExts] [GoGlobalContext] : val
+opaque IXANY [GooseExts] [GoGlobalContext] : val
 
-axiom IXOFF [GooseExts] [GoGlobalContext] : val
+opaque IXOFF [GooseExts] [GoGlobalContext] : val
 
-axiom IMAXBEL [GooseExts] [GoGlobalContext] : val
+opaque IMAXBEL [GooseExts] [GoGlobalContext] : val
 
-axiom IUTF8 [GooseExts] [GoGlobalContext] : val
+opaque IUTF8 [GooseExts] [GoGlobalContext] : val
 
-axiom OPOST [GooseExts] [GoGlobalContext] : val
+opaque OPOST [GooseExts] [GoGlobalContext] : val
 
-axiom OLCUC [GooseExts] [GoGlobalContext] : val
+opaque OLCUC [GooseExts] [GoGlobalContext] : val
 
-axiom ONLCR [GooseExts] [GoGlobalContext] : val
+opaque ONLCR [GooseExts] [GoGlobalContext] : val
 
-axiom OCRNL [GooseExts] [GoGlobalContext] : val
+opaque OCRNL [GooseExts] [GoGlobalContext] : val
 
-axiom ONOCR [GooseExts] [GoGlobalContext] : val
+opaque ONOCR [GooseExts] [GoGlobalContext] : val
 
-axiom ONLRET [GooseExts] [GoGlobalContext] : val
+opaque ONLRET [GooseExts] [GoGlobalContext] : val
 
-axiom OFILL [GooseExts] [GoGlobalContext] : val
+opaque OFILL [GooseExts] [GoGlobalContext] : val
 
-axiom OFDEL [GooseExts] [GoGlobalContext] : val
+opaque OFDEL [GooseExts] [GoGlobalContext] : val
 
-axiom B0 [GooseExts] [GoGlobalContext] : val
+opaque B0 [GooseExts] [GoGlobalContext] : val
 
-axiom B50 [GooseExts] [GoGlobalContext] : val
+opaque B50 [GooseExts] [GoGlobalContext] : val
 
-axiom B75 [GooseExts] [GoGlobalContext] : val
+opaque B75 [GooseExts] [GoGlobalContext] : val
 
-axiom B110 [GooseExts] [GoGlobalContext] : val
+opaque B110 [GooseExts] [GoGlobalContext] : val
 
-axiom B134 [GooseExts] [GoGlobalContext] : val
+opaque B134 [GooseExts] [GoGlobalContext] : val
 
-axiom B150 [GooseExts] [GoGlobalContext] : val
+opaque B150 [GooseExts] [GoGlobalContext] : val
 
-axiom B200 [GooseExts] [GoGlobalContext] : val
+opaque B200 [GooseExts] [GoGlobalContext] : val
 
-axiom B300 [GooseExts] [GoGlobalContext] : val
+opaque B300 [GooseExts] [GoGlobalContext] : val
 
-axiom B600 [GooseExts] [GoGlobalContext] : val
+opaque B600 [GooseExts] [GoGlobalContext] : val
 
-axiom B1200 [GooseExts] [GoGlobalContext] : val
+opaque B1200 [GooseExts] [GoGlobalContext] : val
 
-axiom B1800 [GooseExts] [GoGlobalContext] : val
+opaque B1800 [GooseExts] [GoGlobalContext] : val
 
-axiom B2400 [GooseExts] [GoGlobalContext] : val
+opaque B2400 [GooseExts] [GoGlobalContext] : val
 
-axiom B4800 [GooseExts] [GoGlobalContext] : val
+opaque B4800 [GooseExts] [GoGlobalContext] : val
 
-axiom B9600 [GooseExts] [GoGlobalContext] : val
+opaque B9600 [GooseExts] [GoGlobalContext] : val
 
-axiom B19200 [GooseExts] [GoGlobalContext] : val
+opaque B19200 [GooseExts] [GoGlobalContext] : val
 
-axiom B38400 [GooseExts] [GoGlobalContext] : val
+opaque B38400 [GooseExts] [GoGlobalContext] : val
 
-axiom CSIZE [GooseExts] [GoGlobalContext] : val
+opaque CSIZE [GooseExts] [GoGlobalContext] : val
 
-axiom CS5 [GooseExts] [GoGlobalContext] : val
+opaque CS5 [GooseExts] [GoGlobalContext] : val
 
-axiom CS6 [GooseExts] [GoGlobalContext] : val
+opaque CS6 [GooseExts] [GoGlobalContext] : val
 
-axiom CS7 [GooseExts] [GoGlobalContext] : val
+opaque CS7 [GooseExts] [GoGlobalContext] : val
 
-axiom CS8 [GooseExts] [GoGlobalContext] : val
+opaque CS8 [GooseExts] [GoGlobalContext] : val
 
-axiom CSTOPB [GooseExts] [GoGlobalContext] : val
+opaque CSTOPB [GooseExts] [GoGlobalContext] : val
 
-axiom CREAD [GooseExts] [GoGlobalContext] : val
+opaque CREAD [GooseExts] [GoGlobalContext] : val
 
-axiom PARENB [GooseExts] [GoGlobalContext] : val
+opaque PARENB [GooseExts] [GoGlobalContext] : val
 
-axiom PARODD [GooseExts] [GoGlobalContext] : val
+opaque PARODD [GooseExts] [GoGlobalContext] : val
 
-axiom HUPCL [GooseExts] [GoGlobalContext] : val
+opaque HUPCL [GooseExts] [GoGlobalContext] : val
 
-axiom CLOCAL [GooseExts] [GoGlobalContext] : val
+opaque CLOCAL [GooseExts] [GoGlobalContext] : val
 
-axiom B57600 [GooseExts] [GoGlobalContext] : val
+opaque B57600 [GooseExts] [GoGlobalContext] : val
 
-axiom B115200 [GooseExts] [GoGlobalContext] : val
+opaque B115200 [GooseExts] [GoGlobalContext] : val
 
-axiom B230400 [GooseExts] [GoGlobalContext] : val
+opaque B230400 [GooseExts] [GoGlobalContext] : val
 
-axiom B460800 [GooseExts] [GoGlobalContext] : val
+opaque B460800 [GooseExts] [GoGlobalContext] : val
 
-axiom B500000 [GooseExts] [GoGlobalContext] : val
+opaque B500000 [GooseExts] [GoGlobalContext] : val
 
-axiom B576000 [GooseExts] [GoGlobalContext] : val
+opaque B576000 [GooseExts] [GoGlobalContext] : val
 
-axiom B921600 [GooseExts] [GoGlobalContext] : val
+opaque B921600 [GooseExts] [GoGlobalContext] : val
 
-axiom B1000000 [GooseExts] [GoGlobalContext] : val
+opaque B1000000 [GooseExts] [GoGlobalContext] : val
 
-axiom B1152000 [GooseExts] [GoGlobalContext] : val
+opaque B1152000 [GooseExts] [GoGlobalContext] : val
 
-axiom B1500000 [GooseExts] [GoGlobalContext] : val
+opaque B1500000 [GooseExts] [GoGlobalContext] : val
 
-axiom B2000000 [GooseExts] [GoGlobalContext] : val
+opaque B2000000 [GooseExts] [GoGlobalContext] : val
 
-axiom B2500000 [GooseExts] [GoGlobalContext] : val
+opaque B2500000 [GooseExts] [GoGlobalContext] : val
 
-axiom B3000000 [GooseExts] [GoGlobalContext] : val
+opaque B3000000 [GooseExts] [GoGlobalContext] : val
 
-axiom B3500000 [GooseExts] [GoGlobalContext] : val
+opaque B3500000 [GooseExts] [GoGlobalContext] : val
 
-axiom B4000000 [GooseExts] [GoGlobalContext] : val
+opaque B4000000 [GooseExts] [GoGlobalContext] : val
 
-axiom ISIG [GooseExts] [GoGlobalContext] : val
+opaque ISIG [GooseExts] [GoGlobalContext] : val
 
-axiom ICANON [GooseExts] [GoGlobalContext] : val
+opaque ICANON [GooseExts] [GoGlobalContext] : val
 
-axiom XCASE [GooseExts] [GoGlobalContext] : val
+opaque XCASE [GooseExts] [GoGlobalContext] : val
 
-axiom ECHO [GooseExts] [GoGlobalContext] : val
+opaque ECHO [GooseExts] [GoGlobalContext] : val
 
-axiom ECHOE [GooseExts] [GoGlobalContext] : val
+opaque ECHOE [GooseExts] [GoGlobalContext] : val
 
-axiom ECHOK [GooseExts] [GoGlobalContext] : val
+opaque ECHOK [GooseExts] [GoGlobalContext] : val
 
-axiom ECHONL [GooseExts] [GoGlobalContext] : val
+opaque ECHONL [GooseExts] [GoGlobalContext] : val
 
-axiom NOFLSH [GooseExts] [GoGlobalContext] : val
+opaque NOFLSH [GooseExts] [GoGlobalContext] : val
 
-axiom TOSTOP [GooseExts] [GoGlobalContext] : val
+opaque TOSTOP [GooseExts] [GoGlobalContext] : val
 
-axiom ECHOCTL [GooseExts] [GoGlobalContext] : val
+opaque ECHOCTL [GooseExts] [GoGlobalContext] : val
 
-axiom ECHOPRT [GooseExts] [GoGlobalContext] : val
+opaque ECHOPRT [GooseExts] [GoGlobalContext] : val
 
-axiom ECHOKE [GooseExts] [GoGlobalContext] : val
+opaque ECHOKE [GooseExts] [GoGlobalContext] : val
 
-axiom FLUSHO [GooseExts] [GoGlobalContext] : val
+opaque FLUSHO [GooseExts] [GoGlobalContext] : val
 
-axiom PENDIN [GooseExts] [GoGlobalContext] : val
+opaque PENDIN [GooseExts] [GoGlobalContext] : val
 
-axiom IEXTEN [GooseExts] [GoGlobalContext] : val
+opaque IEXTEN [GooseExts] [GoGlobalContext] : val
 
-axiom TCGETS [GooseExts] [GoGlobalContext] : val
+opaque TCGETS [GooseExts] [GoGlobalContext] : val
 
-axiom TCSETS [GooseExts] [GoGlobalContext] : val
+opaque TCSETS [GooseExts] [GoGlobalContext] : val
 
 noncomputable def envLock [GooseExts] [GoGlobalContext] : GoString :=
   go!"syscall.envLock"

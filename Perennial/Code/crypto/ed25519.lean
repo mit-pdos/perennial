@@ -2,7 +2,6 @@
 module
 
 public import Perennial.Golang.Defn
-public import Perennial.TrustedCode.crypto.ed25519
 
 @[expose] public section
 
@@ -36,21 +35,18 @@ noncomputable def Options.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] Options.ty
 
-axiom Options.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque Options.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom PublicKeySize [GooseExts] [GoGlobalContext] : val
+opaque PublicKeySize [GooseExts] [GoGlobalContext] : val
 
-axiom PrivateKeySize [GooseExts] [GoGlobalContext] : val
+opaque PrivateKeySize [GooseExts] [GoGlobalContext] : val
 
-axiom SignatureSize [GooseExts] [GoGlobalContext] : val
+opaque SignatureSize [GooseExts] [GoGlobalContext] : val
 
-axiom SeedSize [GooseExts] [GoGlobalContext] : val
+opaque SeedSize [GooseExts] [GoGlobalContext] : val
 
 noncomputable def privateKeyCache [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.privateKeyCache"
-
-noncomputable def cryptocustomrand [GooseExts] [GoGlobalContext] : GoString :=
-  go!"crypto/ed25519.cryptocustomrand"
 
 noncomputable def GenerateKey [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.GenerateKey"
@@ -73,17 +69,29 @@ noncomputable def Verify [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def VerifyWithOptions [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.VerifyWithOptions"
 
+/-- The package variables goose does not translate (the `skip` entries of the package's
+goose config): no Lean name, allocation or initialization step, so no translated code names
+them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot
+panic, and has no effect beyond the variable), for the reason given.
+
+- `cryptocustomrand` (`var cryptocustomrand = godebug.New("cryptocustomrand")`): `godebug.New("cryptocustomrand")` (ed25519.go): `internal/godebug`'s `New(name)` is
+`return &Setting{name: name}`, an allocation: cannot panic, no effect beyond the variable. Read
+only by `GenerateKey`, which is not translated.
+-/
+noncomputable def skipped' : List go.SkippedVar := [
+  ⟨"crypto/ed25519.cryptocustomrand", "`godebug.New(\"cryptocustomrand\")` (ed25519.go): `internal/godebug`'s `New(name)` is\n`return &Setting{name: name}`, an allocation: cannot panic, no effect beyond the variable. Read\nonly by `GenerateKey`, which is not translated.", "var cryptocustomrand = godebug.New(\"cryptocustomrand\")"⟩]
+
 noncomputable instance info' : PkgInfo pkg_id.crypto.ed25519 where
   pkgImportedPkgs := []
 
-axiom «_».init [GooseExts] [GoGlobalContext] : val
+opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.crypto.ed25519)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
-  (App (Val cryptocustomrand.init) (Val #())))))))
+  (Val #()))))))
 
 abbrev PublicKey [GooseExts] : Type := GoSlice
 
@@ -113,8 +121,10 @@ attribute [instance] PrivateKey.TypeAssumptions.underlying
   PrivateKey.TypeAssumptions.method_set
   PrivateKey.TypeAssumptions.ptr_method_set
 
-axiom Options : Type
-axiom Options.zero_val : ZeroVal Options
+opaque Options.nonempty_type : NonemptyType.{0}
+def Options : Type := Options.nonempty_type.type
+instance Options.nonempty : Nonempty Options := Options.nonempty_type.property
+opaque Options.zero_val : ZeroVal Options := ⟨Classical.ofNonempty⟩
 attribute [instance] Options.zero_val
 
 class Options.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

@@ -92,8 +92,34 @@ imports = ["!*"]
   (`sync.toml` trusts `"Mutex", "Mutex.*"`, which really have data races); for a
   package variable `X`, the model is its whole initialization `X.init : val`
   (allocation included), called where Go runs the initializer;
+* `[[skip]]` entries (`names = ["X", ...]`, exact package-variable names or
+  `"_@file.go:L"` for the blank `var _` at that position, and a required
+  `reason`; a package that skips a blank variable lists every one, so a new or
+  moved blank fails the translation until reviewed): variables that are
+  not translated at all, with no name, allocation or initialization step, for
+  variables no verified code is to read. The reason is the trusted claim: not
+  running the initializer is unobservable (it terminates, cannot panic, and
+  has no effect beyond the variable). A skip overrides `translate`; a
+  reference to a skipped variable from translated code is a goose error, and
+  the translation lists the skips in `skipped'`:
+
+  ```toml
+  # Perennial/Code/math/big.toml
+  [[skip]]
+  names = ["hasADX"]
+  reason = """
+  `cpu.X86.HasADX && cpu.X86.HasBMI2`: reads two booleans the runtime sets ..."""
+  ```
+
+  (A variable that translated code is to read once it is modelled, but whose
+  initializer cannot be translated yet, is `trusted` with an explicit no-op
+  `def X.init : val := λ: <>, #()` whose docstring says why that is sound; it
+  leaves `X` unallocated: a load or store of it is stuck.)
 * every other declaration is *axiomatized*: its name and type are emitted,
-  without a body. (`sync.toml` also has an `axiomatize = [...]` list; goose does
+  without a body, as an `opaque` constant (not an `axiom`: Lean checks that
+  its type is inhabited, so it cannot make the logic inconsistent). A type `T`
+  is the carrier of an opaque `T.nonempty_type : NonemptyType`, and its zero
+  value `T.zero_val` an opaque element of it. (`sync.toml` also has an `axiomatize = [...]` list; goose does
   not read that key, it documents the intent.)
 * `trust_proofgen = true` makes proofgen emit admitted (`sorry`) instances.
 
@@ -104,6 +130,9 @@ imports = ["!*"]
   body `def F.impl : val` (methods are `T.m.impl`);
 * types (`def S.ty : go.GoType`), and the struct value types `S` with fields `a'`, `b'`, ...;
 * `initialize'`, the package initialization function;
+* `skipped' : List go.SkippedVar`, if the config skips variables: each one's
+  `pkg.X` (`pkg._@file.go:L` for a blank one), reason and Go declaration
+  (informational; the variables themselves have no name);
 * `class Assumptions`: the facts a proof may assume about the package, such as
   `FuncUnfold F [] F.impl` (calling `F` runs its body) and the struct
   field-access semantics. Proofs take `[package_sem : <pkg>.Assumptions]`.
@@ -582,7 +611,10 @@ example (get_is_pkg_init : GoString → IProp GF)
 
 * `define_is_pkg_init P` builds `IsPkgInit` with user part `P` (usually
   `iprop(True)`; Go globals and their invariants go here); the dependency part is
-  computed from the package's imports, so their instances must exist.
+  computed from the package's imports, so their instances must exist (or, for
+  an import whose fact takes a parameter, its `IsPkgInitParam` instance: the
+  dependency part then holds `isPkgInitSome dep`; see the reference's "Package
+  initialization").
 * `wp_initialize'` initializes the imports in the order of `initialize'` in
   `Perennial/Code/<pkg>.lean`; `Hinit.2.1`, `Hinit.2.2.1`, ... are the
   imports' `GetIsPkgInitProp` facts.

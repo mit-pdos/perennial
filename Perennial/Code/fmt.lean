@@ -109,69 +109,67 @@ noncomputable def readRune.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] readRune.ty
 
-axiom pp.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque pp.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom readRune.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque ldigits [GooseExts] [GoGlobalContext] : val
 
-axiom ldigits [GooseExts] [GoGlobalContext] : val
+opaque udigits [GooseExts] [GoGlobalContext] : val
 
-axiom udigits [GooseExts] [GoGlobalContext] : val
+opaque signed [GooseExts] [GoGlobalContext] : val
 
-axiom signed [GooseExts] [GoGlobalContext] : val
+opaque unsigned [GooseExts] [GoGlobalContext] : val
 
-axiom unsigned [GooseExts] [GoGlobalContext] : val
+opaque commaSpaceString [GooseExts] [GoGlobalContext] : val
 
-axiom commaSpaceString [GooseExts] [GoGlobalContext] : val
+opaque nilAngleString [GooseExts] [GoGlobalContext] : val
 
-axiom nilAngleString [GooseExts] [GoGlobalContext] : val
+opaque nilParenString [GooseExts] [GoGlobalContext] : val
 
-axiom nilParenString [GooseExts] [GoGlobalContext] : val
+opaque nilString [GooseExts] [GoGlobalContext] : val
 
-axiom nilString [GooseExts] [GoGlobalContext] : val
+opaque mapString [GooseExts] [GoGlobalContext] : val
 
-axiom mapString [GooseExts] [GoGlobalContext] : val
+opaque percentBangString [GooseExts] [GoGlobalContext] : val
 
-axiom percentBangString [GooseExts] [GoGlobalContext] : val
+opaque missingString [GooseExts] [GoGlobalContext] : val
 
-axiom missingString [GooseExts] [GoGlobalContext] : val
+opaque badIndexString [GooseExts] [GoGlobalContext] : val
 
-axiom badIndexString [GooseExts] [GoGlobalContext] : val
+opaque panicString [GooseExts] [GoGlobalContext] : val
 
-axiom panicString [GooseExts] [GoGlobalContext] : val
+opaque extraString [GooseExts] [GoGlobalContext] : val
 
-axiom extraString [GooseExts] [GoGlobalContext] : val
+opaque badWidthString [GooseExts] [GoGlobalContext] : val
 
-axiom badWidthString [GooseExts] [GoGlobalContext] : val
+opaque badPrecString [GooseExts] [GoGlobalContext] : val
 
-axiom badPrecString [GooseExts] [GoGlobalContext] : val
+opaque noVerbString [GooseExts] [GoGlobalContext] : val
 
-axiom noVerbString [GooseExts] [GoGlobalContext] : val
+opaque invReflectString [GooseExts] [GoGlobalContext] : val
 
-axiom invReflectString [GooseExts] [GoGlobalContext] : val
+opaque eof [GooseExts] [GoGlobalContext] : val
 
-axiom eof [GooseExts] [GoGlobalContext] : val
+opaque binaryDigits [GooseExts] [GoGlobalContext] : val
 
-axiom binaryDigits [GooseExts] [GoGlobalContext] : val
+opaque octalDigits [GooseExts] [GoGlobalContext] : val
 
-axiom octalDigits [GooseExts] [GoGlobalContext] : val
+opaque decimalDigits [GooseExts] [GoGlobalContext] : val
 
-axiom decimalDigits [GooseExts] [GoGlobalContext] : val
+opaque hexadecimalDigits [GooseExts] [GoGlobalContext] : val
 
-axiom hexadecimalDigits [GooseExts] [GoGlobalContext] : val
+opaque sign [GooseExts] [GoGlobalContext] : val
 
-axiom sign [GooseExts] [GoGlobalContext] : val
+opaque period [GooseExts] [GoGlobalContext] : val
 
-axiom period [GooseExts] [GoGlobalContext] : val
+opaque exponent [GooseExts] [GoGlobalContext] : val
 
-axiom exponent [GooseExts] [GoGlobalContext] : val
+opaque floatVerbs [GooseExts] [GoGlobalContext] : val
 
-axiom floatVerbs [GooseExts] [GoGlobalContext] : val
+opaque hugeWid [GooseExts] [GoGlobalContext] : val
 
-axiom hugeWid [GooseExts] [GoGlobalContext] : val
+opaque intBits [GooseExts] [GoGlobalContext] : val
 
-axiom intBits [GooseExts] [GoGlobalContext] : val
-
-axiom uintptrBits [GooseExts] [GoGlobalContext] : val
+opaque uintptrBits [GooseExts] [GoGlobalContext] : val
 
 noncomputable def ppFree [GooseExts] [GoGlobalContext] : GoString :=
   go!"fmt.ppFree"
@@ -299,10 +297,70 @@ noncomputable def hexDigit [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def errorHandler [GooseExts] [GoGlobalContext] : GoString :=
   go!"fmt.errorHandler"
 
+/-- go: errors.go:75:21 -/
+noncomputable def wrapError.Error.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "e"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "e" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType wrapError.ty)))) (Var "e"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef wrapError.ty go!"msg"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType wrapError.ty)))) (Var "e"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
+
+/-- go: errors.go:79:21 -/
+noncomputable def wrapError.Unwrap.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "e"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "e" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType wrapError.ty)))) (Var "e"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (StructFieldRef wrapError.ty go!"err"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType wrapError.ty)))) (Var "e"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.error))) (Var "$res0"))))))
+
+/-- go: errors.go:88:22 -/
+noncomputable def wrapErrors.Error.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "e"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "e" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType wrapErrors.ty)))) (Var "e"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef wrapErrors.ty go!"msg"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType wrapErrors.ty)))) (Var "e"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
+
+/-- go: errors.go:92:22 -/
+noncomputable def wrapErrors.Unwrap.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "e"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.error)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.error)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "e" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType wrapErrors.ty)))) (Var "e"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.error)))) (App (Val (GoInstruction (StructFieldRef wrapErrors.ty go!"errs"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType wrapErrors.ty)))) (Var "e"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.error)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.error)))) (Var "$res0"))))))
+
 noncomputable instance info' : PkgInfo pkg_id.fmt where
   pkgImportedPkgs := [pkg_id.errors, pkg_id.io, pkg_id.sync]
 
-axiom «_».init [GooseExts] [GoGlobalContext] : val
+opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -425,6 +483,8 @@ class wrapError.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   set_err : ∀ (x : wrapError) (y : GoError), go.IsGoStepPureDetTagged under (StructFieldSet wrapError.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : wrapError)))
   method_set : go.MethodSetIs wrapError.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType wrapError.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"Unwrap", (some (go.signature.Signature [] false [go.error])))]
+  ptr_Error_unfold : MethodUnfold (go.GoType.PointerType wrapError.ty) go!"Error" wrapError.Error.impl
+  ptr_Unwrap_unfold : MethodUnfold (go.GoType.PointerType wrapError.ty) go!"Unwrap" wrapError.Unwrap.impl
 
 attribute [instance] wrapError.TypeAssumptions.type_repr
   wrapError.TypeAssumptions.underlying
@@ -434,6 +494,8 @@ attribute [instance] wrapError.TypeAssumptions.type_repr
   wrapError.TypeAssumptions.set_err
   wrapError.TypeAssumptions.method_set
   wrapError.TypeAssumptions.ptr_method_set
+  wrapError.TypeAssumptions.ptr_Error_unfold
+  wrapError.TypeAssumptions.ptr_Unwrap_unfold
 
 structure wrapErrors [GooseExts] where
   mk ::
@@ -466,6 +528,8 @@ class wrapErrors.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] 
   set_errs : ∀ (x : wrapErrors) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet wrapErrors.underlying go!"errs") (PairV #x #y) (Val #(({ x with errs' := y } : wrapErrors)))
   method_set : go.MethodSetIs wrapErrors.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType wrapErrors.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"Unwrap", (some (go.signature.Signature [] false [(go.GoType.SliceType go.error)])))]
+  ptr_Error_unfold : MethodUnfold (go.GoType.PointerType wrapErrors.ty) go!"Error" wrapErrors.Error.impl
+  ptr_Unwrap_unfold : MethodUnfold (go.GoType.PointerType wrapErrors.ty) go!"Unwrap" wrapErrors.Unwrap.impl
 
 attribute [instance] wrapErrors.TypeAssumptions.type_repr
   wrapErrors.TypeAssumptions.underlying
@@ -475,6 +539,8 @@ attribute [instance] wrapErrors.TypeAssumptions.type_repr
   wrapErrors.TypeAssumptions.set_errs
   wrapErrors.TypeAssumptions.method_set
   wrapErrors.TypeAssumptions.ptr_method_set
+  wrapErrors.TypeAssumptions.ptr_Error_unfold
+  wrapErrors.TypeAssumptions.ptr_Unwrap_unfold
 
 structure fmtFlags [GooseExts] where
   mk ::
@@ -688,8 +754,10 @@ attribute [instance] buffer.TypeAssumptions.underlying
   buffer.TypeAssumptions.method_set
   buffer.TypeAssumptions.ptr_method_set
 
-axiom pp : Type
-axiom pp.zero_val : ZeroVal pp
+opaque pp.nonempty_type : NonemptyType.{0}
+def pp : Type := pp.nonempty_type.type
+instance pp.nonempty : Nonempty pp := pp.nonempty_type.property
+opaque pp.zero_val : ZeroVal pp := ⟨Classical.ofNonempty⟩
 attribute [instance] pp.zero_val
 
 class pp.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -906,20 +974,62 @@ attribute [instance] ss.TypeAssumptions.type_repr
   ss.TypeAssumptions.method_set
   ss.TypeAssumptions.ptr_method_set
 
-axiom readRune : Type
-axiom readRune.zero_val : ZeroVal readRune
-attribute [instance] readRune.zero_val
+structure readRune [GooseExts] where
+  mk ::
+  reader' : _root_.Perennial.io.Reader
+  buf' : (GoArray w8 4)
+  pending' : w64
+  pendBuf' : (GoArray w8 4)
+  peekRune' : w32
+
+noncomputable instance readRune.zero_val [GooseExts] : ZeroVal readRune :=
+  ⟨readRune.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def readRune.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"reader" _root_.Perennial.io.Reader.ty),
+(go.field_decl.FieldDecl go!"buf" (go.GoType.ArrayType 4 go.byte)),
+(go.field_decl.FieldDecl go!"pending" go.int),
+(go.field_decl.FieldDecl go!"pendBuf" (go.GoType.ArrayType 4 go.byte)),
+(go.field_decl.FieldDecl go!"peekRune" go.rune)]
+
+@[irreducible] noncomputable def readRune.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  readRune.fieldsUnsealed
+
+noncomputable instance equals_unfold_readRune [GooseExts] [GoGlobalContext] :
+    EqualsUnfold readRune.fields readRune.fieldsUnsealed :=
+  ⟨by unfold readRune.fields; rfl⟩
+
+@[reducible] noncomputable def readRune.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType readRune.fields)
 
 class readRune.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying readRune.underlying readRune
   underlying : go.UnderlyingDirectedEq readRune.ty readRune.underlying
-  isUnderlying : go.IsUnderlying readRune.underlying readRune.underlying
+  get_reader : ∀ (x : readRune), go.IsGoStepPureDetTagged under (StructFieldGet readRune.underlying go!"reader") #x (Val #(x.reader'))
+  set_reader : ∀ (x : readRune) (y : _root_.Perennial.io.Reader), go.IsGoStepPureDetTagged under (StructFieldSet readRune.underlying go!"reader") (PairV #x #y) (Val #(({ x with reader' := y } : readRune)))
+  get_buf : ∀ (x : readRune), go.IsGoStepPureDetTagged under (StructFieldGet readRune.underlying go!"buf") #x (Val #(x.buf'))
+  set_buf : ∀ (x : readRune) (y : (GoArray w8 4)), go.IsGoStepPureDetTagged under (StructFieldSet readRune.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : readRune)))
+  get_pending : ∀ (x : readRune), go.IsGoStepPureDetTagged under (StructFieldGet readRune.underlying go!"pending") #x (Val #(x.pending'))
+  set_pending : ∀ (x : readRune) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet readRune.underlying go!"pending") (PairV #x #y) (Val #(({ x with pending' := y } : readRune)))
+  get_pendBuf : ∀ (x : readRune), go.IsGoStepPureDetTagged under (StructFieldGet readRune.underlying go!"pendBuf") #x (Val #(x.pendBuf'))
+  set_pendBuf : ∀ (x : readRune) (y : (GoArray w8 4)), go.IsGoStepPureDetTagged under (StructFieldSet readRune.underlying go!"pendBuf") (PairV #x #y) (Val #(({ x with pendBuf' := y } : readRune)))
+  get_peekRune : ∀ (x : readRune), go.IsGoStepPureDetTagged under (StructFieldGet readRune.underlying go!"peekRune") #x (Val #(x.peekRune'))
+  set_peekRune : ∀ (x : readRune) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet readRune.underlying go!"peekRune") (PairV #x #y) (Val #(({ x with peekRune' := y } : readRune)))
   method_set : go.MethodSetIs readRune.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType readRune.ty) [(go!"ReadRune", (some (go.signature.Signature [] false [go.rune, go.int, go.error]))), (go!"UnreadRune", (some (go.signature.Signature [] false [go.error]))), (go!"fmt.readByte", (some (go.signature.Signature [] false [go.byte, go.error])))]
 
 attribute [instance] readRune.TypeAssumptions.type_repr
   readRune.TypeAssumptions.underlying
-  readRune.TypeAssumptions.isUnderlying
+  readRune.TypeAssumptions.get_reader
+  readRune.TypeAssumptions.set_reader
+  readRune.TypeAssumptions.get_buf
+  readRune.TypeAssumptions.set_buf
+  readRune.TypeAssumptions.get_pending
+  readRune.TypeAssumptions.set_pending
+  readRune.TypeAssumptions.get_pendBuf
+  readRune.TypeAssumptions.set_pendBuf
+  readRune.TypeAssumptions.get_peekRune
+  readRune.TypeAssumptions.set_peekRune
   readRune.TypeAssumptions.method_set
   readRune.TypeAssumptions.ptr_method_set
 
@@ -942,6 +1052,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   ssave_instance : ssave.TypeAssumptions
   readRune_instance : readRune.TypeAssumptions
   Errorf_unfold : FuncUnfold Errorf [] Errorf.impl
+  Fprintf_unfold : FuncUnfold Fprintf [] Fprintf.impl
   Printf_unfold : FuncUnfold Printf [] Printf.impl
   Sprintf_unfold : FuncUnfold Sprintf [] Sprintf.impl
   Print_unfold : FuncUnfold Print [] Print.impl
@@ -967,6 +1078,7 @@ attribute [instance] Assumptions.wrapError_instance
   Assumptions.ssave_instance
   Assumptions.readRune_instance
   Assumptions.Errorf_unfold
+  Assumptions.Fprintf_unfold
   Assumptions.Printf_unfold
   Assumptions.Sprintf_unfold
   Assumptions.Print_unfold

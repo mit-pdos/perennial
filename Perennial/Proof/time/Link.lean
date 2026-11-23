@@ -8,6 +8,13 @@ module
 public import Perennial.Proof.errors.Link
 public import Perennial.Proof.time.After
 public import Perennial.Proof.time.AfterFunc
+public import Perennial.Proof.time.Duration__Abs
+public import Perennial.Proof.time.Duration__Microseconds
+public import Perennial.Proof.time.Duration__Milliseconds
+public import Perennial.Proof.time.Duration__Nanoseconds
+public import Perennial.Proof.time.Duration__Seconds
+public import Perennial.Proof.time.Duration__String
+public import Perennial.Proof.time.Duration__format
 public import Perennial.Proof.time.NewTicker
 public import Perennial.Proof.time.NewTimer
 public import Perennial.Proof.time.Now
@@ -19,7 +26,10 @@ public import Perennial.Proof.time.Time__Add
 public import Perennial.Proof.time.Time__After
 public import Perennial.Proof.time.Time__Before
 public import Perennial.Proof.time.Time__Equal
+public import Perennial.Proof.time.Time__IsZero
+public import Perennial.Proof.time.Time__Location
 public import Perennial.Proof.time.Time__Sub
+public import Perennial.Proof.time.Time__Unix
 public import Perennial.Proof.time.Time__UnixNano
 public import Perennial.Proof.time.Time__addSec
 public import Perennial.Proof.time.Time__nsec
@@ -28,11 +38,16 @@ public import Perennial.Proof.time.Time__stripMono
 public import Perennial.Proof.time.Time__unixSec
 public import Perennial.Proof.time.Timer__Reset
 public import Perennial.Proof.time.Timer__Stop
+public import Perennial.Proof.time.Unix
 public import Perennial.Proof.time.Until
+public import Perennial.Proof.time.fmtFrac
+public import Perennial.Proof.time.fmtInt
 public import Perennial.Proof.time.initialize
 public import Perennial.Proof.time.runtimeIsBubbled
 public import Perennial.Proof.time.runtimeNano
+public import Perennial.Proof.time.runtimeNow
 public import Perennial.Proof.time.subMono
+public import Perennial.Proof.time.unixTime
 public import Perennial.Proof.time.when
 
 @[expose] public section
@@ -78,6 +93,51 @@ theorem time.wp_when : time.when.spec (GF := GF) (hG := hG) :=
 theorem time.wp_AfterFunc : time.AfterFunc.spec (GF := GF) (hG := hG) :=
   time.AfterFunc.wp_proof time.wp_when
 
+end link
+
+section link
+variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem : time.Assumptions]
+
+theorem time.Duration.wp_Abs : time.Duration.Abs.spec (GF := GF) (hG := hG) :=
+  time.Duration.Abs.wp_proof
+
+theorem time.Duration.wp_Microseconds : time.Duration.Microseconds.spec (GF := GF) (hG := hG) :=
+  time.Duration.Microseconds.wp_proof
+
+theorem time.Duration.wp_Milliseconds : time.Duration.Milliseconds.spec (GF := GF) (hG := hG) :=
+  time.Duration.Milliseconds.wp_proof
+
+theorem time.Duration.wp_Nanoseconds : time.Duration.Nanoseconds.spec (GF := GF) (hG := hG) :=
+  time.Duration.Nanoseconds.wp_proof
+
+theorem time.Duration.wp_Seconds : time.Duration.Seconds.spec (GF := GF) (hG := hG) :=
+  time.Duration.Seconds.wp_proof
+
+theorem time.wp_fmtFrac : time.fmtFrac.spec (GF := GF) (hG := hG) :=
+  time.fmtFrac.wp_proof
+
+theorem time.wp_fmtInt : time.fmtInt.spec (GF := GF) (hG := hG) :=
+  time.fmtInt.wp_proof
+
+theorem time.Duration.wp_format : time.Duration.format.spec (GF := GF) (hG := hG) :=
+  time.Duration.format.wp_proof time.wp_fmtFrac time.wp_fmtInt
+
+theorem time.Duration.wp_String : time.Duration.String.spec (GF := GF) (hG := hG) :=
+  time.Duration.String.wp_proof time.Duration.wp_format
+
+end link
+
+section link
+variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [go_gctx : GoGlobalContext]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
+variable [sem : go.Semantics]
+variable [package_sem : time.Assumptions]
+
 theorem time.wp_NewTicker : time.NewTicker.spec (GF := GF) (hG := hG) :=
   time.NewTicker.wp_proof
 
@@ -93,8 +153,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
+theorem time.wp_runtimeNow : time.runtimeNow.spec (GF := GF) (hG := hG) :=
+  time.runtimeNow.wp_proof
+
 theorem time.wp_Now : time.Now.spec (GF := GF) (hG := hG) :=
-  time.Now.wp_proof
+  time.Now.wp_proof time.wp_runtimeNow
 
 theorem time.wp_runtimeIsBubbled : time.runtimeIsBubbled.spec (GF := GF) (hG := hG) :=
   time.runtimeIsBubbled.wp_proof
@@ -159,8 +222,17 @@ variable [package_sem : time.Assumptions]
 theorem time.Time.wp_After : time.Time.After.spec (GF := GF) (hG := hG) :=
   time.Time.After.wp_proof time.Time.wp_sec time.Time.wp_nsec
 
+theorem time.Time.wp_IsZero : time.Time.IsZero.spec (GF := GF) (hG := hG) :=
+  time.Time.IsZero.wp_proof
+
+theorem time.Time.wp_Location : time.Time.Location.spec (GF := GF) (hG := hG) :=
+  time.Time.Location.wp_proof
+
 theorem time.Time.wp_unixSec : time.Time.unixSec.spec (GF := GF) (hG := hG) :=
   time.Time.unixSec.wp_proof time.Time.wp_sec
+
+theorem time.Time.wp_Unix : time.Time.Unix.spec (GF := GF) (hG := hG) :=
+  time.Time.Unix.wp_proof time.Time.wp_unixSec
 
 theorem time.Time.wp_UnixNano : time.Time.UnixNano.spec (GF := GF) (hG := hG) :=
   time.Time.UnixNano.wp_proof time.Time.wp_unixSec time.Time.wp_nsec
@@ -188,6 +260,12 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
+
+theorem time.wp_unixTime : time.unixTime.spec (GF := GF) (hG := hG) :=
+  time.unixTime.wp_proof
+
+theorem time.wp_Unix : time.Unix.spec (GF := GF) (hG := hG) :=
+  time.Unix.wp_proof time.wp_unixTime
 
 theorem time.wp_Until : time.Until.spec (GF := GF) (hG := hG) :=
   time.Until.wp_proof time.wp_runtimeIsBubbled time.wp_runtimeNano time.wp_subMono time.wp_Now time.Time.wp_Sub

@@ -56,49 +56,49 @@ noncomputable def Zipf.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] Zipf.ty
 
-axiom re [GooseExts] [GoGlobalContext] : val
+opaque re [GooseExts] [GoGlobalContext] : val
 
-axiom rn [GooseExts] [GoGlobalContext] : val
+opaque rn [GooseExts] [GoGlobalContext] : val
 
-axiom rngLen [GooseExts] [GoGlobalContext] : val
+opaque rngLen [GooseExts] [GoGlobalContext] : val
 
-axiom rngTap [GooseExts] [GoGlobalContext] : val
+opaque rngTap [GooseExts] [GoGlobalContext] : val
 
-axiom rngMax [GooseExts] [GoGlobalContext] : val
+opaque rngMax [GooseExts] [GoGlobalContext] : val
 
-axiom rngMask [GooseExts] [GoGlobalContext] : val
+opaque rngMask [GooseExts] [GoGlobalContext] : val
 
-axiom int32max [GooseExts] [GoGlobalContext] : val
+opaque int32max [GooseExts] [GoGlobalContext] : val
 
 noncomputable def ke [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.ke"
 
-axiom ke.init [GooseExts] [GoGlobalContext] : val
+opaque ke.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def we [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.we"
 
-axiom we.init [GooseExts] [GoGlobalContext] : val
+opaque we.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def fe [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.fe"
 
-axiom fe.init [GooseExts] [GoGlobalContext] : val
+opaque fe.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def kn [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.kn"
 
-axiom kn.init [GooseExts] [GoGlobalContext] : val
+opaque kn.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def wn [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.wn"
 
-axiom wn.init [GooseExts] [GoGlobalContext] : val
+opaque wn.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def fn [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.fn"
 
-axiom fn.init [GooseExts] [GoGlobalContext] : val
+opaque fn.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def globalRandGenerator [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.globalRandGenerator"
@@ -106,17 +106,17 @@ noncomputable def globalRandGenerator [GooseExts] [GoGlobalContext] : GoString :
 noncomputable def randautoseed [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.randautoseed"
 
-axiom randautoseed.init [GooseExts] [GoGlobalContext] : val
+opaque randautoseed.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def randseednop [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.randseednop"
 
-axiom randseednop.init [GooseExts] [GoGlobalContext] : val
+opaque randseednop.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def rngCooked [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.rngCooked"
 
-axiom rngCooked.init [GooseExts] [GoGlobalContext] : val
+opaque rngCooked.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def absInt32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.absInt32"
@@ -196,7 +196,7 @@ noncomputable def NewZipf [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable instance info' : PkgInfo pkg_id.math.rand where
   pkgImportedPkgs := [pkg_id.sync]
 
-axiom «_».init [GooseExts] [GoGlobalContext] : val
+opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon

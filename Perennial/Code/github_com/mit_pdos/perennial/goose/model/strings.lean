@@ -22,6 +22,9 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.model.strings
 
+@[reducible] noncomputable def byteStrings [GooseExts] [GoGlobalContext] : val :=
+  #([W8 0, W8 1, W8 2, W8 3, W8 4, W8 5, W8 6, W8 7, W8 8, W8 9, W8 10, W8 11, W8 12, W8 13, W8 14, W8 15, W8 16, W8 17, W8 18, W8 19, W8 20, W8 21, W8 22, W8 23, W8 24, W8 25, W8 26, W8 27, W8 28, W8 29, W8 30, W8 31, W8 32, W8 33, W8 34, W8 35, W8 36, W8 37, W8 38, W8 39, W8 40, W8 41, W8 42, W8 43, W8 44, W8 45, W8 46, W8 47, W8 48, W8 49, W8 50, W8 51, W8 52, W8 53, W8 54, W8 55, W8 56, W8 57, W8 58, W8 59, W8 60, W8 61, W8 62, W8 63, W8 64, W8 65, W8 66, W8 67, W8 68, W8 69, W8 70, W8 71, W8 72, W8 73, W8 74, W8 75, W8 76, W8 77, W8 78, W8 79, W8 80, W8 81, W8 82, W8 83, W8 84, W8 85, W8 86, W8 87, W8 88, W8 89, W8 90, W8 91, W8 92, W8 93, W8 94, W8 95, W8 96, W8 97, W8 98, W8 99, W8 100, W8 101, W8 102, W8 103, W8 104, W8 105, W8 106, W8 107, W8 108, W8 109, W8 110, W8 111, W8 112, W8 113, W8 114, W8 115, W8 116, W8 117, W8 118, W8 119, W8 120, W8 121, W8 122, W8 123, W8 124, W8 125, W8 126, W8 127, W8 128, W8 129, W8 130, W8 131, W8 132, W8 133, W8 134, W8 135, W8 136, W8 137, W8 138, W8 139, W8 140, W8 141, W8 142, W8 143, W8 144, W8 145, W8 146, W8 147, W8 148, W8 149, W8 150, W8 151, W8 152, W8 153, W8 154, W8 155, W8 156, W8 157, W8 158, W8 159, W8 160, W8 161, W8 162, W8 163, W8 164, W8 165, W8 166, W8 167, W8 168, W8 169, W8 170, W8 171, W8 172, W8 173, W8 174, W8 175, W8 176, W8 177, W8 178, W8 179, W8 180, W8 181, W8 182, W8 183, W8 184, W8 185, W8 186, W8 187, W8 188, W8 189, W8 190, W8 191, W8 192, W8 193, W8 194, W8 195, W8 196, W8 197, W8 198, W8 199, W8 200, W8 201, W8 202, W8 203, W8 204, W8 205, W8 206, W8 207, W8 208, W8 209, W8 210, W8 211, W8 212, W8 213, W8 214, W8 215, W8 216, W8 217, W8 218, W8 219, W8 220, W8 221, W8 222, W8 223, W8 224, W8 225, W8 226, W8 227, W8 228, W8 229, W8 230, W8 231, W8 232, W8 233, W8 234, W8 235, W8 236, W8 237, W8 238, W8 239, W8 240, W8 241, W8 242, W8 243, W8 244, W8 245, W8 246, W8 247, W8 248, W8 249, W8 250, W8 251, W8 252, W8 253, W8 254, W8 255] : GoString)
+
 /-- the "error" Rune or "Unicode replacement character" -/
 @[reducible] noncomputable def runeError [GooseExts] [GoGlobalContext] : val :=
   #(65533 : Int)
@@ -142,7 +145,7 @@ noncomputable def StringToByteSlice.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "a") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "$res0"))))))
 
-/-- go: convert.go:12:6 -/
+/-- go: convert.go:14:6 -/
 noncomputable def ByteSliceToString.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "a"
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
@@ -159,7 +162,8 @@ noncomputable def ByteSliceToString.impl [GooseExts] [GoGlobalContext] : val :=
   (Lam "$value"
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (App (Val (GoInstruction (Convert go.byte go.string))) (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Let "$s" (Val byteStrings)
+  (App (Val (GoInstruction (Slice go.untypedString))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (Convert go.byte go.int))) (App (Val (GoInstruction (GoLoad go.byte))) (Var "c"))) (Val #(W64 1)))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0")))))))
   (App (Val doExecute)

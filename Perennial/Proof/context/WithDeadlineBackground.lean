@@ -115,7 +115,7 @@ theorem wp_WithDeadlineCause_Background_of
   · wp_apply wp_timerCtx_cancel «$r0_ptr» γ true dexc cause hdexc $$ [$Hc $HceD] as -
     · simp only [↓reduceIte]
       iexists backgroundCtxVal; iframe #
-      unfold isParentCtx; ileft; ipureintro; rfl
+      unfold isParentCtx; ileft; ipureintro; exact Or.inl rfl
     iapply HΦ $$ %(interface.mk (go.GoType.PointerType context.timerCtx.ty) #«$r0_ptr») %γ
     isplitl []
     · imodintro
@@ -147,7 +147,7 @@ theorem wp_WithDeadlineCause_Background_of
         wp_apply wp_timerCtx_cancel «$r0_ptr» γ true dexc cause hdexc $$ [$Hc $HceD] as -
         · simp only [↓reduceIte]
           iexists backgroundCtxVal; iframe #
-          unfold isParentCtx; ileft; ipureintro; rfl
+          unfold isParentCtx; ileft; ipureintro; exact Or.inl rfl
         itrivial
       wp_apply wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hod Htm0]
       · inext; unfold cancelCtxLockInv; iexists children, cause0, od, closed; iframe
@@ -161,7 +161,7 @@ theorem wp_WithDeadlineCause_Background_of
           as -
         · simp only [↓reduceIte]
           iexists backgroundCtxVal; iframe #
-          unfold isParentCtx; ileft; ipureintro; rfl
+          unfold isParentCtx; ileft; ipureintro; exact Or.inl rfl
         iapply HΦ' $$ []; itrivial
       isplitl []
       · iapply isContext_timerCtx «$r0_ptr» γ d _ rfl rfl rfl
@@ -181,7 +181,7 @@ theorem wp_WithDeadlineCause_Background_of
           as -
         · simp only [↓reduceIte]
           iexists backgroundCtxVal; iframe #
-          unfold isParentCtx; ileft; ipureintro; rfl
+          unfold isParentCtx; ileft; ipureintro; exact Or.inl rfl
         iapply HΦ' $$ []; itrivial
       isplitl []
       · iapply isContext_timerCtx «$r0_ptr» γ d _ rfl rfl rfl

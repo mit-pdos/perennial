@@ -81,6 +81,10 @@ unsoundness because floats are modeled conservatively"). The float operations ar
 uninterpreted, so a byte view of a float tells a proof nothing a proof could not
 already get from `math.Float64bits`.
 
+(Later the float operations became IEEE 754's, with an arbitrary NaN wherever IEEE 754's
+result is a NaN: `docs/design/float-semantics.md`. A NaN's bits are then arbitrary at each
+operation, which removes the cost above.)
+
 ## P1. `ArraySemantics` proves `False` (unsound)
 
 - **Witness (Lean).**
@@ -164,6 +168,9 @@ already get from `math.Float64bits`.
 - **Not taken.** Modelling tags: a third `FieldDecl` argument, 7 match sites, 37 in
   Theory, and a new conversion rule.
 - **Closest case.** Case 7: leave it refused, which adds no trust.
+- **Later.** Superseded by mit-pdos/perennial#655: every field declaration carries its tag
+  (`go.field_decl.Field name type tag`), goose writes them for unnamed struct types, and the
+  conversions that would need the new rule stay stuck (`docs/KNOWN_LIMITATIONS.md`).
 
 ## P5. Blank struct fields (unsound)
 

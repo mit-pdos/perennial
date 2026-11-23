@@ -162,6 +162,7 @@ theorem future_fulfill_au (γ : FutureNames) (ch : Loc) (v : V) (Φ : IProp GF) 
       sendAu γ.chanName v Φ := by
   unfold isFuture sendAu
   iintro ⟨#Hisch, #Hinv⟩ ⟨Hlc1, Hlc2, Hlc3, HFulfilled⟩ Hau
+  iapply ncfupd_of_fupd
   iinv Hinv with Hi Hclose
   imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi
   unfold futureInv
@@ -194,6 +195,7 @@ theorem future_fulfill_au (γ : FutureNames) (ch : Loc) (v : V) (Φ : IProp GF) 
     · inext; iexists .SndPending v; iframe
     imodintro
     unfold sendNestedAu
+    iapply ncfupd_of_fupd
     iinv Hinv with Hi Hclose
     imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc2 Hi with Hi
     icases Hi with ⟨%s, Hoc1, Hi⟩
@@ -286,6 +288,7 @@ theorem future_await_au (γ : FutureNames) (ch : Loc) (pending : List (V → IPr
       recvAu γ.chanName V Φ := by
   unfold isFuture recvAu
   iintro ⟨#Hisch, #Hinv⟩ ⟨Hlc1, Hlc2, Hlc3, HAwait⟩ Hau
+  iapply ncfupd_of_fupd
   iinv Hinv with Hi Hclose
   imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi
   unfold futureInv
@@ -313,6 +316,7 @@ theorem future_await_au (γ : FutureNames) (ch : Loc) (pending : List (V → IPr
     · inext; iexists .RcvPending; iframe
     imodintro
     unfold recvNestedAu
+    iapply ncfupd_of_fupd
     iinv Hinv with Hi Hclose
     imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc2 Hi with Hi
     icases Hi with ⟨%s, Hoc1, Hi⟩

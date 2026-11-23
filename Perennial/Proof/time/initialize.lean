@@ -41,6 +41,8 @@ theorem time.initialize'.wp_proof
     | wp_apply wp_GlobalAlloc (V := GoSlice) _ (go.SliceType go.string) as _
     | wp_apply wp_GlobalAlloc (V := GoInterface) _ go.error as _
     | wp_apply wp_GlobalAlloc (V := Loc) _ (go.MapType go.string go.uint64) as _
+    | wp_apply wp_GlobalAlloc (V := Loc) Local (go.PointerType Location.ty) as HLocal
+    | wp_apply wp_GlobalAlloc (V := Loc) UTC (go.PointerType Location.ty) as HUTC
     | wp_apply wp_GlobalAlloc (V := Loc) _ (go.PointerType Location.ty) as _
     | wp_apply wp_GlobalAlloc (V := Location) _ Location.ty as _)
   wp_apply wp_errors_initialize _ Hinit.2.1 $$ Hown as ⟨Hown, #Herrors⟩
@@ -56,11 +58,25 @@ theorem time.initialize'.wp_proof
   -- unitMap
   wp_apply (wp_map_make1 (K := GoString) (V := w64)) as %m Hm
   repeat (wp_apply wp_mapInsert $$ Hm as Hm)
-  -- asynctimerchan: its trusted initializer does nothing
+  -- asynctimerchan: its trusted initializer allocates the runtime clock
   wp_call
+  unfold runtimeClockInit runtimeClockType
+  wp_call
+  wp_apply wp_GlobalAlloc (V := Loc) runtimeClock (go.PointerType go.int64) as Hclk
+  wp_apply wp_ArbitraryInt as %c0 -
+  wp_apply wp_alloc_untyped #c0 as %lc Hlc
+  try wp_auto
+  ipersist Hclk
+  imod mono_nat_own_alloc (GF := GF) (clockEnc (sint.Z c0)) with ⟨%γ, Hauth, #Hlb0⟩
+  imod inv_alloc clockN ⊤ (clockInv γ lc) $$ [Hlc Hauth] with #Hinv
+  · inext; iexists c0; iframe
   -- startNano = runtimeNano() - 1; Go never writes it again
   wp_apply wp_runtimeNano as %t _
   ipersist Hstart
+  -- Local = &localLoc (set before startNano, in Go's order); read only from here on (`isInit`)
+  ipersist HLocal
+  -- UTC = &utcLoc (set just after Local); likewise read only from here on
+  ipersist HUTC
   repeat (first
     | (wp_apply wp_New as %_ _)
     | (wp_apply wp_slice_literal (V := GoString) _
@@ -71,8 +87,19 @@ theorem time.initialize'.wp_proof
     | wp_auto)
   iframe Hown
   is_pkg_init_finish
-  iexists _
-  iexact Hstart
+  imodintro
+  unfold isInit
+  isplitr
+  · iexists _; iexact Hstart
+  isplitr
+  · iexists _; iexact HLocal
+  isplitr
+  · iexists _; iexact HUTC
+  unfold clockLb isRuntimeClock
+  iexists γ
+  isplitr
+  · iexists lc; iframe #
+  iapply monoNatLbOwn_le _ (by unfold clockEnc; omega) $$ Hlb0
 
 end proof
 

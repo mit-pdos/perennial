@@ -58,7 +58,8 @@ theorem select_nb_only_send_au (γ : ChanNames) (ch : Loc) (v : Unit) (Φ Φnotr
   unfold isSelectNbOnly nonblockingSendAu nonblockingSendAuInner
   icases Hnb with ⟨#Hch, #Hinv⟩
   isplit
-  · iinv Hinv with ⟨%s, >Hoc, >%Hs⟩ Hclose
+  · iapply ncfupd_of_fupd
+    iinv Hinv with ⟨%s, >Hoc, >%Hs⟩ Hclose
     iapply fupd_mask_intro Std.LawfulSet.empty_subset
     iintro Hmask
     inext
@@ -77,7 +78,8 @@ theorem select_nb_only_rcv_au (γ : ChanNames) (ch : Loc) (Φ : Unit → Bool �
   unfold isSelectNbOnly nonblockingRecvAu nonblockingRecvAuInner
   icases Hnb with ⟨#Hch, #Hinv⟩
   isplit
-  · iinv Hinv with ⟨%s, >Hoc, >%Hs⟩ Hclose
+  · iapply ncfupd_of_fupd
+    iinv Hinv with ⟨%s, >Hoc, >%Hs⟩ Hclose
     iapply fupd_mask_intro Std.LawfulSet.empty_subset
     iintro Hmask
     inext
@@ -111,7 +113,8 @@ theorem select_nb_full1_send_au (γ : ChanNames) (ch : Loc) (Φ Φnotready : IPr
   unfold isSelectNbFull1 nonblockingSendAu nonblockingSendAuInner
   icases Hfull with ⟨#Hch, %Hcap1, Hoc⟩
   isplit
-  · iapply fupd_mask_intro Std.LawfulSet.empty_subset
+  · iapply ncfupd_of_fupd
+    iapply fupd_mask_intro Std.LawfulSet.empty_subset
     iintro Hmask
     inext
     iexists .Buffered [W64 0]
@@ -129,6 +132,7 @@ theorem SendAU_from_empty_buffer_to (_ch : Loc) (γ : ChanNames) (Φ : IProp GF)
       sendAu γ (W64 0) Φ := by
   iintro Hoc Hk
   unfold sendAu
+  iapply ncfupd_of_fupd
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
   inext
@@ -147,6 +151,7 @@ theorem SendAU_full_cap1_vacuous (_ch : Loc) (γ : ChanNames) (v0 v : w64) (Φ :
     ⊢ ownChan γ w64 (.Buffered [v0]) -∗ sendAu γ v Φ := by
   iintro Hoc
   unfold sendAu
+  iapply ncfupd_of_fupd
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
   inext

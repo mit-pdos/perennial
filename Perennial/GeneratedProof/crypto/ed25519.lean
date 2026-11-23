@@ -2,7 +2,6 @@
 module
 
 public import Perennial.Proof.ProofPrelude
-public import Perennial.ManualProof.crypto.ed25519
 public import Perennial.Golang.Theory
 public import Perennial.Code.crypto.ed25519
 

@@ -41,7 +41,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.eliminatio
   irename s => s1
   iStructNamed s1
   wp_auto_lc 2
-  wp_apply wp_After (W64 10000) as %after_ch %γafter #Hafter
+  wp_apply (time.After.spec_pkgInit wp_After (W64 10000)) as %after_ch %γafter #Hafter
   wp_apply_core chan.wp_select_blocking
   iapply BigAndL.bigAndL_cons.2
   isplit
@@ -52,6 +52,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.eliminatio
     · ipureintro; rfl
     iframe Hch
     unfold recvAu
+    iapply ncfupd_of_fupd
     iinv Hinv with ⟨%stack, %exstate, Hls, Hauth, exchanger, %γs, %γr, Hsa, Hra, Hexchanger⟩ Hclose
     imod lc_fupd_elim_later (E := ⊤ \ ↑(N.@"inv")) $$ Hlc1 Hexchanger with Hexchanger
     iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -97,6 +98,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.eliminatio
         · iexact Hsf
       imodintro
       unfold recvNestedAu
+      iapply ncfupd_of_fupd
       iinv Hinv with ⟨%stack2, %exstate2, Hls, Hauth, exchanger, %γs2, %γr2, Hsa, Hra, Hexchanger⟩ Hclose
       imod lc_fupd_elim_later (E := ⊤ \ ↑(N.@"inv")) $$ Hlc2 Hexchanger with Hexchanger
       iapply fupd_mask_intro Std.LawfulSet.empty_subset

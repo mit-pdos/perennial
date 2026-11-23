@@ -26,8 +26,9 @@ this skill, whose mechanical half is `etc/land.sh`.
    ```
 
    It fetches and merges `origin/lean` into the branch (resolve conflicts,
-   commit, rerun), `lake build`s the changed modules (and `Perennial` when
-   framework files changed), and runs `go test ./goose/...` if goose changed.
+   commit, rerun), `lake build`s the changed modules (and `Perennial` and the
+   regression tests `Perennial/ProgramLogic/*Test.lean` when framework files
+   changed), and runs `go test ./goose/...` if goose changed.
    A build failure is yours to fix: fix, commit, rerun. `--no-build` is for a
    checkout with no `.lake` (say so in the report; the memory note on sharing
    `.lake/packages` says how to get one).

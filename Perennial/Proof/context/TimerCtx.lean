@@ -221,10 +221,11 @@ theorem isContext_timerCtx_of
     iintro %e ⟨%hne, He⟩
     have hne := hne rfl
     rw [ite_eq_right hne]
-    icases He with ⟨%ht, #Hce, -⟩
+    icases He with ⟨%ht, #Hce, #Hp, -⟩
     iapply HΦ
     · ipureintro; exact ht
     · iexact Hce
+    · rw [hP]; imodintro; itrivial
   isplitl []
   · imodintro
     iintro %ch #Hd
@@ -236,8 +237,8 @@ theorem isContext_timerCtx_of
       iintro %ch %cch %Φ #Hd #Hcch %hne HΦ
       iapply wp_parentCancelCtx_timer c _ _ ch cch hne $$ [$Hpkg $Hc $Hd $Hcch]
       inext; iintro -
-      iapply HΦ
-      unfold isCancelCtx; iexists _, _; iexact Hc
+      iapply HΦ $$ Hc
+      imodintro; iintro -; rw [hP]; itrivial
   · iapply isCancelCtxOf_closedchan $$ Hc
 
 /-- `(*Timer).Stop()` for a timer made by `AfterFunc` (`isFuncTimer`): some `bool` (the second case

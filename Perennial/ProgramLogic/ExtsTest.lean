@@ -10,7 +10,7 @@ own `HasExt` instance, and its adequacy obligations are those of both.
 -/
 module
 
-public import Perennial.GooseLang.Adequacy
+public import Perennial.GooseLang.InitAdequacy
 public import Perennial.GooseLang.Ext.Grove.Specs
 
 @[expose] public section
@@ -62,6 +62,11 @@ instance tick_interp : ExtInterp tickExt where
     iapply bupd_intro; iexists (); isplitl [] <;> itrivial
   local_init _ _ _ _ _ := by
     iapply bupd_intro; iexists (); isplitl [] <;> itrivial
+
+/-- The ghost state makes no assumption on the initial states. -/
+instance tick_init_compat : ExtInitCompat tickExt where
+  initgP_of_init _ _ := trivial
+  initP_of_init _ _ _ := trivial
 
 /-! ## Its spec, for any program that includes it -/
 
@@ -144,6 +149,10 @@ example (σg σg' : CfgState) (v : val) (e' : Expr)
 example (g : GlobalState) (σ : state) :
     extsInitgP g.globalWorld ∧ extsInitP σ.world g.globalWorld :=
   ⟨⟨trivial, trivial, trivial⟩, ⟨trivial, trivial, trivial⟩⟩
+
+-- the ghost states of both extensions accept their semantics' initial states, so that the
+-- adequacy theorems apply from those (`goose_adequacy_init`)
+example : GooseInitCompat := ⟨inferInstance, inferInstance, trivial⟩
 
 end closed
 

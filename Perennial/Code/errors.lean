@@ -34,9 +34,6 @@ attribute [irreducible] joinError.ty
 noncomputable def ErrUnsupported [GooseExts] [GoGlobalContext] : GoString :=
   go!"errors.ErrUnsupported"
 
-noncomputable def errorType [GooseExts] [GoGlobalContext] : GoString :=
-  go!"errors.errorType"
-
 noncomputable def New [GooseExts] [GoGlobalContext] : GoString :=
   go!"errors.New"
 
@@ -96,6 +93,89 @@ noncomputable def errorString.Error.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
+
+/-- Join returns an error that wraps the given errors.
+    Any nil error values are discarded.
+    Join returns nil if every value in errs is nil.
+    The error formats as the concatenation of the strings obtained
+    by calling the Error method of each element of errs, with a newline
+    between each string.
+
+    A non-nil error returned by Join implements the Unwrap() []error method.
+    The errors may be inspected with [Is] and [As].
+
+    go: join.go:20:6 -/
+noncomputable def Join.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "errs"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "errs" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.error)))) (Var "errs"))
+  (Let "$r0" (Val #(W64 0))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc joinError.ty))) (Let "$v0" (App (App (App (Val (GoInstruction (FuncResolve go.make3 [(go.GoType.SliceType go.error)]))) (Val #())) (Val #(W64 0))) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))
+  (App (Val (GoInstruction (CompositeLiteral joinError.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"errs")) (ElementExpression (go.GoType.SliceType go.error) (Var "$v0")))]))))
+  (Let "e" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType joinError.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType joinError.ty)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType joinError.ty) go.error))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType joinError.ty)))) (Var "e")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.error)))) (Var "errs"))
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (App (App (Val (slice.forRange go.error)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.error)))) (App (Val (GoInstruction (StructFieldRef joinError.ty go!"errs"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType joinError.ty)))) (Var "e"))))
+  (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.error)))) (LiteralValue [(KeyedElement none (ElementExpression go.error (Var "$sl0")))])))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.error)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.error)))) (Pair (App (Val (GoInstruction (StructFieldRef joinError.ty go!"errs"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType joinError.ty)))) (Var "e"))) (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (Var "$key")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$value")))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType joinError.ty)))) (Pair (Var "e") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 0)))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.error)))) (Var "errs"))
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (App (App (Val (slice.forRange go.error)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1)))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (Var "$key")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$value")))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.error))) (Var "$res0")))))
 
 /-- Unwrap returns the result of calling the Unwrap method on err, if err's
     type contains an Unwrap method returning error.
@@ -454,10 +534,23 @@ noncomputable def asType.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : va
   (Val #()))))))
   (Pair (App (Val (GoInstruction (GoLoad E))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res1"))))))))
 
+/-- The package variables goose does not translate (the `skip` entries of the package's
+goose config): no Lean name, allocation or initialization step, so no translated code names
+them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot
+panic, and has no effect beyond the variable), for the reason given.
+
+- `errorType` (`var errorType = reflectlite.TypeOf((*error)(nil)).Elem()`): `reflectlite.TypeOf((*error)(nil)).Elem()` (wrap.go): reads the static runtime type descriptor
+of `error` (`abi.TypeOf`, through `unsafe`), which the semantics cannot represent; it allocates
+nothing the program can see, cannot panic and has no other effect. Read only by `As`, which is
+not translated.
+-/
+noncomputable def skipped' : List go.SkippedVar := [
+  ⟨"errors.errorType", "`reflectlite.TypeOf((*error)(nil)).Elem()` (wrap.go): reads the static runtime type descriptor\nof `error` (`abi.TypeOf`, through `unsafe`), which the semantics cannot represent; it allocates\nnothing the program can see, cannot panic and has no other effect. Read only by `As`, which is\nnot translated.", "var errorType = reflectlite.TypeOf((*error)(nil)).Elem()"⟩]
+
 noncomputable instance info' : PkgInfo pkg_id.errors where
   pkgImportedPkgs := []
 
-axiom «_».init [GooseExts] [GoGlobalContext] : val
+opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -466,11 +559,8 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"unsupported operation"))
   (App (App (Val (GoInstruction (FuncResolve New []))) (Val #())) (Var "$a0")))
-  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val errorType.init) (Val #())))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrUnsupported))) (Val #())) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrUnsupported))) (Val #())) (Var "$r0")))))))
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrUnsupported go.error)) (Val #()))))))))
 
@@ -550,6 +640,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   errorString_instance : errorString.TypeAssumptions
   joinError_instance : joinError.TypeAssumptions
   New_unfold : FuncUnfold New [] New.impl
+  Join_unfold : FuncUnfold Join [] Join.impl
   Unwrap_unfold : FuncUnfold Unwrap [] Unwrap.impl
   Is_unfold : FuncUnfold Is [] Is.impl
   is_unfold : FuncUnfold is' [] is.impl
@@ -559,6 +650,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
 attribute [instance] Assumptions.errorString_instance
   Assumptions.joinError_instance
   Assumptions.New_unfold
+  Assumptions.Join_unfold
   Assumptions.Unwrap_unfold
   Assumptions.Is_unfold
   Assumptions.is_unfold

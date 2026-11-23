@@ -35,6 +35,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.select_nb_
   wp_apply_core chan.wp_close (V := w64) ch γ $$ His_ch
   iintro -
   unfold closeAu
+  iapply ncfupd_of_fupd
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
   inext
@@ -55,6 +56,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.select_nb_
     isplitr
     · iexact His_ch
     unfold nonblockingRecvAuAlt
+    iapply ncfupd_of_fupd
     iapply fupd_mask_intro Std.LawfulSet.empty_subset
     iintro Hmask
     inext

@@ -37,8 +37,13 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   state (`GooseLocalGS`), from a client-chosen precondition `P L` of the
   generation's local ghost state `L`, which each generation's proof guarantees
   for the next generation after its crash, from its persistent `crashed` token (exclusive with the `notCrashed` that its state interpretation owns,
-  `GooseLang/CrashToken.lean`). There are no crash reasoning principles yet
-  (no `crash_own`). End-to-end example: the Go package
+  `GooseLang/CrashToken.lean`) and a later credit `£ 1` (example:
+  `ProgramLogic/GenStartTest.lean`). There are no crash reasoning principles yet
+  (no `crash_own`) beyond the crash-token update (`ncfupd`,
+  `GooseLang/NotCrashed.lean`), by which a ghost step may use `notCrashed`
+  (to open an invariant `inv N (P ∨ crashed ∗ tok)` shared with later
+  generations), before a step or in the client's update of a channel
+  operation's atomic update. End-to-end example: the Go package
   `goose/testdata/examples/crashfs`, a boot program on a toy filesystem
   (`GooseLang/Ext/Fs`, Go side `crashfs/fsext`; not a sound model of a Linux
   filesystem, see `GooseLang/Ext/Fs/Impl.lean`) whose `panic` assertions never
@@ -57,7 +62,11 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `goose_dist_crash_adequacy` combines this with crash adequacy: each
   generation of each node is proved with the standard WP from a client-chosen
   precondition `P i L`, which it guarantees for the node's next generation, as
-  in `goose_crash_adequacy`. End-to-end example: the Go package
+  in `goose_crash_adequacy`. `goose_dist_mixed_crash_adequacy` is for systems
+  where only some nodes crash: the nodes `crashing ++ stable`, of which the
+  crashing ones owe that guarantee and the stable ones (which never crash) owe
+  only their WP, as without crashes (example:
+  `ProgramLogic/MixedCrashTest.lean`). End-to-end example: the Go package
   `goose/testdata/examples/netfs`, three nodes on a toy network
   (`GooseLang/Ext/Net`, Go side `netfs/netext`, whose primitives are stubs: the
   extension is a specification of a network) and the toy filesystem, where a
@@ -101,8 +110,14 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   the client discharges the proof's premises about the bounds; the main
   thread's postcondition must exclude panics, see "Panics" below) and are about
   real executions of *fewer than `N` steps* along which *fewer than `T`
-  threads are live*, explicit hypotheses. See
-  `docs/PERENNIAL_PROOF_REFERENCE.md`, "Time receipts" and "Thread tokens".
+  threads are live*, explicit hypotheses. `goose_adequacy` states the thread
+  hypothesis over *every* execution of `n` steps (`RealThreadsBelow T n`);
+  `goose_adequacy_below`/`goose_invariance_below`
+  (`GooseLang/AdequacyAlong.lean`) state it of the one execution the theorem
+  concludes about (`RealNstepsBelow T n`: fewer than `T` threads in each of its
+  configurations), so that a program whose goroutine count is unbounded over
+  all schedules can still use a constant `T` without bounding the step count by
+  it. See `docs/PERENNIAL_PROOF_REFERENCE.md`, "Time receipts" and "Thread tokens".
 * **Iris substrate.** iris-lean provides the BI, proof mode, invariants,
   ghost maps, later credits and the WP. General-purpose libraries that iris-lean
   lacks (finite maps and sets, machine words, list lemmas) live in
@@ -116,7 +131,19 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
     are discharged with `word`, `omega` and `bv_omega`. Do not use `bv_decide`/`native_decide`: they trust
     native code (`Lean.ofReduceBool`); prove bitwise facts via `toNat`.
   * `GoString` is `List w8`.
-* **64-bit platform.** The Go semantics assumes a 64-bit platform: the
+* **Platform: gc on linux/amd64 (trusted assumption).** The model assumes Go
+  programs are built by gc for linux/amd64. Every allocation address lies in
+  `(0, maxAddr]`, `maxAddr = 2^47` (`GooseLang/Lang.lean`, `IsFresh`/`IsFreshBytes`),
+  gc's user address space there, and proofs use that bound to rule out address
+  overflow (`unsafe.Slice`, `unsafe.Add`). The bound is false elsewhere, where
+  a proof may claim "no panic" for a program gc stops:
+  * aix/ppc64: gc's heap hints lie above `0xa0<<52`.
+  * linux/arm64 PIE and android: globals and `zerobase` load near
+    `0xaaaa_xxxx_xxxx`, above 2^47, and the heap's fallback reservation maps near 2^48.
+  * s390x: the user address space (`TASK_SIZE`) is 2^64.
+
+  `docs/KNOWN_LIMITATIONS.md`, "Platform", repeats this.
+  The Go semantics also assumes a 64-bit platform: the
   word-sized types `int`, `uint` and `uintptr` are 64-bit (values `w64`).
   `uintptr` (`go.UintptrSemantics`, `Perennial/Golang/Defn/Predeclared.lean`)
   is an integer type like `uint64`. Pointer/`unsafe.Pointer` to/from `uintptr`
@@ -156,10 +183,10 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   elements' lengths and panics before allocating anything, so a few gigabytes
   of aliased elements (`make([]string, 1<<30+1)` with a long separator) reach
   the panic. **Known, not yet fixed:** `Join` is still a trusted model that
-  omits that panic, and `strings.wp_Join` has no premise excluding it (a fix
-  that translates the real `Join` is on branch `join-translation`; its model of
-  `strings.Builder.String` must first be made stuck where Go's `String`
-  aliases the builder's buffer). `sync.WaitGroup`'s
+  omits that panic, and `strings.wp_Join` has no premise excluding it. The fix
+  is to translate the real `Join` over `strings.Builder`, whose methods are now
+  goose's translation but for `String`, a model that is stuck where Go's
+  `String` aliases the builder's buffer (`TrustedCode/strings.lean`). `sync.WaitGroup`'s
   `int32` counter is another (two `Add(1 << 30)` calls panic in Go): `WaitGroup.Add`
   is Goose's translation, and `WaitGroup.wp_Add` asks its caller to bound the
   new counter by `2^31`. A caller whose counter is backed by one goroutine per
@@ -167,6 +194,31 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   threadBound GF`, and the client assumes `threadBound GF ≤ 2^31` at adequacy
   time (`ProgramLogic/ThreadTokensTest.lean`, `docs/PERENNIAL_PROOF_REFERENCE.md`
   "Thread tokens").
+* **Model assumption (SHA-256 collisions), opt-in.** `crypto/sha256.Sum256` is a
+  trusted model over the SHA-256 extension (`GooseLang/Ext/Sha256/Impl.lean`): an
+  opaque function `sha256Hash` and a global state of every input hashed so far.
+  The extension takes a filter `ok` of the hash steps a run allows; a step `ok`
+  refuses is an `AngelicExit`. With `sha256NoFilter` (every step allowed) the
+  model removes no execution, and Go's collisions are executions of the model.
+  A theorem may instead assume `Sha256NoCollision ok`: `ok` allows the hash step
+  to return `h` for an input only if no other input hashed before has the hash
+  `h`. Such a theorem covers only the runs with no SHA-256 collision among the
+  inputs hashed during the run (instantiated with `sha256NoCollisionFilter`, it
+  covers exactly those). This is a cryptographic assumption, reachable in
+  principle and so not of the overflow kind above: it is never made by the
+  semantics, only by a top-level statement that names `Sha256NoCollision ok` as a
+  hypothesis (`GooseLang/Ext/Sha256/Adequacy.lean`). Only `crypto.sha256.is_hash_inj`
+  needs it.
+* **Model assumptions (initial states).** An extension's
+  `ExtSemantics.initLocal`/`initGlobal` (`GooseLang/Lang.lean`, default `True`)
+  are what a top-level theorem assumes of the states its execution starts from.
+  A value other than the default is either an assumption that every real start
+  of a machine satisfies, or a constraint on state only the model has (sha256's
+  `initGlobal`: nothing hashed yet); its docstring says which. The two must be
+  jointly satisfiable, or every `_init` adequacy theorem is vacuous: each
+  extension that sets one has a checked `example` of `∃ g s, initGlobal g ∧
+  initLocal s g` next to its instance (sha256's, `Ext/Sha256/Impl.lean`:
+  `⟨(∅ : Sha256State), (), rfl, trivial⟩`).
 * **Panics.** A panic outcome is a value, `PanicV p`, that unwinds every
   evaluation frame but that of `Catch e h k` (`GooseLang/Lang.lean`); `panic(p)`
   steps to it, a function with `defer`s runs its body under a `Catch`
@@ -182,24 +234,78 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `Catch`, so a verified program does not die of a panic within the step bound.
   Run-time panics of builtins (`Panic "msg"`) are stuck. See
   `docs/PERENNIAL_PROOF_REFERENCE.md`, "Panics".
+* **Program exit.** `os.Exit` is translated over `syscall.Exit`, whose trusted
+  model is `AngelicExit` (`TrustedCode/syscall.lean`): the calling goroutine
+  steps forever, so its deferred functions never run and its code after the call
+  is unreachable (`syscall.Exit.spec` has postcondition `False`). The other
+  goroutines keep running in the model, where Go stops them, as after `main`
+  returns: every Go execution is a prefix of the model's, so the adequacy
+  theorems' conclusions (no stuck thread, no unrecovered panic) cover Go up to the
+  exit, and a proof must also show the other goroutines safe after it. An exit is
+  not a failure: `os.Exit(1)` (and a logger's `Fatal`) ends a run that the
+  theorems count as safe; a program that reports a violation by exiting is not
+  checked by them.
+* **Skipped package variables.** A package variable listed in a `[[skip]]`
+  entry of its goose config (`names`, and a required `reason`) is not
+  translated at all: goose emits no Lean name, no `X.init`, no allocation and
+  no step in `initialize'`, and lists the skipped variables with their
+  reasons in the package's `skipped' : List go.SkippedVar`
+  (`Golang/Defn/Pkg.lean`). Translated code that names one (in its package or
+  one that imports it) is a goose error, and hand-written Lean cannot name it,
+  so that verified code never touches the variable holds by construction. The
+  trusted claim of each entry is its reason: *not running the variable's Go
+  initializer is unobservable* (it terminates, cannot panic, and has no effect
+  beyond the variable). A blank variable (`var _ = ...`) is listed by its
+  position, `"_@file.go:L"`, with its own reason; a package that skips one
+  lists all of its blank variables, so that one a Go upgrade adds or moves
+  fails the translation until its entry is reviewed. Each entry of `skipped'`
+  carries the variable's Go declaration, so a changed initializer changes the
+  generated file, and `etc/trusted-delta.py` reports every added, removed or
+  changed `skipped'` entry as a change to the trusted base. (Hand-written Lean
+  can still write a skipped variable's address from a literal name,
+  `GlobalVarAddr go!"pkg.X"`: `trusted-delta` flags every such literal,
+  `global-var-addr`, and a load or store through it is stuck, as the variable
+  is never allocated.) `goose/cmd/skiplint`, run by
+  `etc/update-goose-new.py` after translating and separate from goose, warns
+  on the side about a skipped initializer that stores to a package variable
+  or takes one's address, directly or through its package's functions; it is
+  best-effort (it does not follow other packages, interfaces or pointers it
+  did not see taken), so every reason is still reviewed.
+  `grep -A3 '\[\[skip\]\]' Perennial/Code` lists the entries; the
+  `review-trusted` rule R11 says how to check one.
 * **Trusted package-variable initializers.** A package variable listed in a
   goose config's `trusted` gets its initializer `X.init` (allocation included)
-  from `Perennial/TrustedCode`. **Accepted for now, to remove later:** five such
+  from `Perennial/TrustedCode`. A few of them do nothing (`λ: <>, #()`)
+  although translated code is to read the variable once it is modelled
+  (`os.Stdout`, `log.std` and `math.useFMA`, until they get real models:
+  perennial#663): the variable is then not allocated, so a load or store of it
+  is stuck (taking its address steps), and each docstring says why skipping
+  Go's initializer is sound. An initializer of several variables
+  (`var c, d = pair()`, one Go evaluation) that is trusted or axiomatized
+  runs `c.init` then `d.init`: goose cannot split the evaluation, so by
+  convention the first variable's `init` carries all of it (its effects, any
+  panic, and the variables it gives values to), each later one only what is
+  left for its own variable (nothing, if the first did it all), and the first
+  one's docstring says so. **Accepted for now, to remove later:** four such
   models are trusted although goose translates the real source, so the
   `review-trusted` rule R2 grades them REWORK; they were accepted (2026-10-19)
   to finish the standard library's init proofs, and later reviews and
   soundness work should translate them away:
-  `crypto/ed25519.cryptocustomrand` and `time.asynctimerchan` (no-ops; the fix
+  `time.asynctimerchan` (the fix
   translates `internal/godebug`, trusting its runtime hooks `setUpdate` and
-  `setNewIncNonDefault`, with `internal/bisect` and `internal/godebugs`),
+  `setNewIncNonDefault`, with `internal/bisect` and `internal/godebugs`;
+  `asynctimerchan`'s model also allocates the model's runtime clock, runtime
+  state no Go variable holds, so translating it needs another place for that,
+  such as a goose hook for a package's model-only initialization),
   `log.std` (no-op; needs `os.Stderr`, so `os`'s initialization), `log`'s
   `init` (no-op; it writes `log/internal.DefaultOutput`, and no ownership of
   another package's variable reaches an init proof: a program-logic gap), and
   `crypto/rand.Reader` (stores a value of Go's dynamic type with a placeholder
   inside; needs `crypto/internal/rand` and `drbg`, whose init runs a FIPS
-  self-test). The no-ops for `errors.errorType` (a reflection type
-  descriptor), `math.useFMA` and `math/big.hasADX` (CPU features the runtime
-  detects) model irreducible behaviour. Each model's docstring says why it is
+  self-test). (A fifth, `crypto/ed25519.cryptocustomrand`, is now a skip
+  entry: no translated code reads it.) The no-op for `math.useFMA` (a CPU
+  feature the runtime detects) models irreducible behaviour;
+  `errors.errorType` and `math/big.hasADX`, the same kind, are skip entries. Each model's docstring says why it is
   faithful.
 * **`sync.Pool`.** `Get` and `Put` are trusted (`TrustedCode/sync.lean`): the real
   ones rely on runtime pinning to a P, pointer arithmetic and `eface` layout
@@ -210,6 +316,15 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   nondeterministic than gc's pools, victim cache and GC clearing. As with the
   channel and string models, the model's translation is part of `go.Semantics`
   (`pool_sem`).
+* **`sync.Mutex`.** Goose translates `sync.Mutex` (`struct { _ noCopy; mu isync.Mutex }`)
+  and its methods, which forward to `internal/sync.Mutex`. That `Mutex` and its `Lock`,
+  `TryLock` and `Unlock` are trusted (`TrustedCode/internal/sync.lean`): Go's have data races
+  (the race detector is disabled on the sync packages) and park on the runtime's semaphores.
+  The model is the spin lock of `Golang/Defn/Lock.lean` on a `bool` (`false` is unlocked),
+  more nondeterministic than Go's (no fairness or starvation mode, and `TryLock` may fail on
+  an unlocked mutex, as Go's does in starvation mode or when its CAS loses to a waiter);
+  `Unlock` of an unlocked mutex is stuck, where Go ends the program (`fatal`). `sync.Mutex{}` is a literal of the
+  translated struct, so it steps by the ordinary struct rules to a zero, unlocked mutex.
 * **Method sets.** Whether a type implements an interface (`go.typeSetContains`, used by
   type assertions and conversions) is decided by `methodSet`, an uninterpreted function of
   the semantics constrained by `go.MethodSetIs t ms` facts (`Golang/Defn/MethodSet.lean`):
@@ -229,16 +344,22 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   interface, embedded interfaces included), so that `typeSetContains` needs no recursion
   through embedded named interfaces; embedded constraint elements (unions, `comparable`) stay
   as type terms. A type a signature mentions that the translation cannot name (a named type
-  of a package it does not import, an alias it does not translate) is written as what it
-  denotes (`go.Named "<path>.<Name>" args`, the aliased type), so that an interface type has
+  or alias of a package it does not import) is written as what it denotes
+  (`go.Named "<path>.<Name>" args`, the aliased type), so that an interface type has
   the same term, up to unfolding descriptors and aliases, in every package that writes it: Go's
   type identity, which `=` on `go.GoType` must agree with wherever interface types are compared
   (in signatures, as element types). Nothing is claimed beyond what is known: a method whose
   signature has a type goose does not support is an entry without a signature (`(id, none)`:
   it exists), and the method set of any other type (a struct type literal with
   embedded fields, a type declared in a function, a type of an untranslated package) is
-  unconstrained. Two limits of the model's type identity (`=` on `go.GoType`) apply here as
-  to type assertions: struct tags are not part of `go.StructType`, and the unexported field
+  unconstrained. Struct tags are part of `go.StructType`: every field declaration
+  (`go.field_decl.Field`/`Embedded name type tag`, the tag empty when there is none; the
+  shorthands `go.FieldDecl`/`go.EmbeddedField name type` for the usual untagged field) carries
+  its tag, which goose writes for the fields of unnamed struct types, so that `=` is Go's type
+  identity for them. A defined struct type's underlying type is written without its tags (its
+  identity is its name), so a conversion that Go allows only by ignoring tags, or between a
+  tagged unnamed struct type and a defined type, is stuck (`docs/KNOWN_LIMITATIONS.md`). One
+  limit of the model's type identity applies here as to type assertions: the unexported field
   names of struct type literals are not qualified by package. goose loads code with the build
   tag `goose`: a method declared only in files excluded by it (or included only by it) would
   make the emitted method set differ from the real build's.
@@ -305,6 +426,12 @@ models, trust lists, `assume`s); the `review-trusted` skill
   no assumption, and `ElemExt E`/`HasExt E` (proofs about `E`) are
   propositions, proved by computation when a program is closed off. Goose knows
   nothing of extensions.
+* An extension's initial states are part of its trusted semantics
+  (`ExtSemantics.initLocal`/`initGlobal`, default `True`), not of its ghost
+  state: a top-level theorem assumes `extsInitLocal`/`extsInitGlobal`, through
+  the adequacy theorems' `_init` versions (`GooseLang/InitAdequacy.lean`),
+  which require each interpretation to accept them (`ExtInitCompat`). See
+  `docs/PERENNIAL_PROOF_REFERENCE.md`, "Initial states of extensions".
 * An extension (`GooseExt`) requires `Pos.Countable` of its `Val`, and
   `Loc`, `GoSlice`, `val`, `Expr`, `GoFunc`, `GoInterface`, `go.GoType`, ... are
   `Pos.Countable` (`Perennial/GooseLang/Countable.lean`, via an injection into

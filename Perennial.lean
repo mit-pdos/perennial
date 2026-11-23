@@ -12,22 +12,27 @@ public import Perennial.GooseLang.Threads
 public import Perennial.GooseLang.Lifting
 public import Perennial.GooseLang.IPersist
 public import Perennial.GooseLang.Adequacy
+public import Perennial.GooseLang.AdequacyAlong
 public import Perennial.GooseLang.CrashToken
+public import Perennial.GooseLang.NotCrashed
 public import Perennial.GooseLang.CrashLang
 public import Perennial.GooseLang.CrashAdequacy
 public import Perennial.GooseLang.DistLang
 public import Perennial.GooseLang.DistAdequacy
+public import Perennial.GooseLang.InitAdequacy
 public import Perennial.ProgramLogic.AtomicFupd
 public import Perennial.ProgramLogic.Bounds
 public import Perennial.GooseLang.Ext.Grove.Adequacy
 public import Perennial.GooseLang.Ext.Fs.Adequacy
 public import Perennial.GooseLang.Ext.Net.Adequacy
+public import Perennial.GooseLang.Ext.Sha256.Adequacy
 public import Perennial.Ghost
 public import Perennial.Golang.Defn
 public import Perennial.Golang.Theory
 public import Perennial.Golang.Theory.Chan
 public import Perennial.Golang.Theory.ChanAuto
 public import Perennial.Golang.Theory.IfJoin
+public import Perennial.Golang.Theory.RangeFunc
 public import Perennial.Golang.Theory.Chan.Idioms.Idioms
 
 @[expose] public section

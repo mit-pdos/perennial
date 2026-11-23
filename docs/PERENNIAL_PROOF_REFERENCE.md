@@ -137,7 +137,7 @@ is `l[i]?` and `<[i := v]> l` is `l.set i v`. `go!"abc"` is a `GoString` (a
 Sealed (opaque) definitions are written
 
 ```
-def isMutexDef (m : Loc) (R : IProp GF) : IProp GF := isLock m R
+def isMutexDef (m : Loc) (R : IProp GF) : IProp GF := isLock (structFieldRef sync.Mutex go!"mu" m) R
 @[irreducible] def isMutex (m : Loc) (R : IProp GF) : IProp GF := isMutexDef m R
 theorem isMutex_unseal : @isMutex = @isMutexDef := by funext; with_unfolding_all rfl
 ```
@@ -398,7 +398,8 @@ before `wp_for`.
 
 `wp_for_post` proves a `forPostcondition` goal at the end of an iteration with
 `wp_for_post_do` (fall-through: then the post statement runs, e.g. `i++`),
-`wp_for_post_continue`, `wp_for_post_break` or `wp_for_post_return`, then runs
+`wp_for_post_continue`, `wp_for_post_break`, `wp_for_post_return`,
+`wp_for_post_panic` or `wp_for_post_labeled` (below), then runs
 `wp_auto`. After it, re-establish the invariant (`iframe; iexists ...; ...`).
 
 Range loops are `for:` loops too: `slice.forRange`, and for arrays
@@ -409,6 +410,17 @@ their `for:` loop by `wp_auto` (`Theory/Array.lean`), whose counter is an extra
 switch or `select` ends that statement: Goose wraps such a statement in
 `catchBreak`, which `wp_auto` steps through (`break:` becomes `do:`; the
 `pure_catch_break_*` instances in `Theory/Loop.lean`).
+
+`break L` and `continue L` are `doBreakTo #"L"` and `doContinueTo #"L"`, whose
+outcomes `breakToVal L` and `continueToVal L` every loop, `switch` and `select`
+passes outward unchanged. Goose wraps the body of a loop labeled `L` in
+`catchLabel #"L"`, which turns them into `break` and `continue` of that loop
+(so `continue L` runs its post statement), and a labeled `switch` or `select`
+in `catchBreak (catchLabel #"L" ...)`; `wp_auto` steps through both
+(`pure_catch_label_*`). In an inner loop that `break L` or `continue L` leaves,
+`wp_for_post` proves the body's `forPostcondition` with `wp_for_post_labeled`
+(the loop ends with that outcome), and the proof continues in the enclosing
+loop's body. Example: `labeledContinue` in the semantics tests.
 
 A range over a string is `string.forRange s body` (`Golang/Defn/String.lean`): a
 `for:` loop over a byte index whose iteration decodes the rune at the index with
@@ -436,6 +448,18 @@ or from the body, and `f` returning while the body runs, are undefined behavior
 (see "Results") and ends the loop; the function returns once `f` returns, with
 the values the result variables have then, as in Go. Unfold it with
 `func.forRange_unseal`.
+
+An iterator (`iter.Seq[E]`) is specified by `iter.SeqRuns f R ok`
+(`Golang/Theory/RangeFunc.lean`): run with the resource `R` and a yield function,
+`f` chooses a list `xs` with `ok xs` and calls yield on its elements in order until
+one call returns `false`, then gives `R` back; the caller's yield invariant is
+chosen once `xs` is known. `maps.Keys`/`maps.Values` return such iterators
+(`□ ∀ dq M, iter.SeqRuns f (m ↦${dq} M) ..`), and `slices.AppendSeq`, `Collect`
+and `Sorted` take one. A range over one (`n = 1`) is proved with
+`wp_func_for_range1 f R ok body Φ`: from `iter.SeqRuns f R ok` and `R`, given `xs`,
+an invariant `P i` over the elements done, with the body at `xs[i]` ending in
+`forMapPostcondition (P (i + 1)) (fun v => R -∗ Φ v)`. Example: `slices.AppendSeq`
+(`Proof/slices/AppendSeq.lean`).
 
 Each iteration of a loop has its own iteration variables. Goose shares one
 variable among the iterations unless that is observable, that is, unless the
@@ -506,8 +530,8 @@ the old behaviour).
 | `iStructNamed H` | split `H : l ↦{dq} (v : S)` into field points-tos named after the fields | `Golang/Theory/PostLifting.lean` |
 | `iStructNamedPrefix H "p"`, `iStructNamedSuffix H "s"` | with renaming | same |
 | `ipersist H` | turn `H : l ↦ v` (or anything with `UpdateIntoPersistently`) into persistent `H : l ↦□ v`; needs an update in the goal (a WP is fine) | `GooseLang/IPersist.lean` |
-| `iPkgInit` | solve an `isPkgInit` goal or the `isPkgInit` conjuncts at the front of a `∗` goal from the intuitionistic context | `Golang/Theory/Pkg.lean` |
-| `solve_pkg_init` | solve one `isPkgInit pkg` goal (also through the dependencies of other packages' `isPkgInit`) | same |
+| `iPkgInit` | solve an `isPkgInit` (or `isPkgInitSome`) goal or such conjuncts at the front of a `∗` goal from the intuitionistic context | `Golang/Theory/Pkg.lean` |
+| `solve_pkg_init` | solve one `isPkgInit pkg` or `isPkgInitSome pkg` goal (also through the dependencies of other packages' `isPkgInit` and `isPkgInitSome`) | same |
 | `isPkgInit_unfold`, `is_pkg_init_finish` | unfold `isPkgInit` in the goal; finish a `wp_initialize'` proof | `Golang/Theory/Auto.lean` |
 | `cleanup_bool_decide` | simplify `if decide (#(decide P) = #true)` and friends | `Golang/Theory/Auto.lean` |
 | `solve_ndisj` | prove namespace mask conditions (`↑(N.@"a") ⊆ ⊤ ∖ ↑(N.@"b")`, `⊤ ∖ ↑N ⊆ ⊤ ∖ ↑(N.@x)`, `↑(N.@"a") ## ↑(N.@"b")`, using mask hypotheses); `iinv` discharges its mask side condition with it | `Golang/Theory/IrisTactics.lean` |
@@ -588,6 +612,7 @@ Specs take `isPkgInit` of their package; `wp_apply` discharges it.
 | `wp_mapInsert` | `{{ l ↦$ m }} ... {{ RET #(); l ↦$ <[k := v]> m }}` (needs `SafeMapKey`) |
 | `wp_map_lookup1`, `wp_map_lookup2` | `m[k]`, `v, ok := m[k]`; the result is `(m !! k).getD (zero_val V)` (and `decide (m !! k).isSome`) |
 | `wp_mapDelete`, `wp_map_clear`, `wp_map_for_range` | |
+| `wp_map_clone` | `InternalMapClone` (the model of `maps.clone`): a fresh `l' ↦$ m` from `l ↦${dq} m`; callers use `maps.wp_Clone` (`Proof/maps`) |
 
 Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `GMap.insert_empty`.
 
@@ -602,7 +627,7 @@ pointers (`safeMapKey_interface_pointer`); a proof with other interface keys giv
 
 | Lemma | |
 |:--|:--|
-| `wp_for`, `wp_for_post_do/continue/break/return/panic` | loops (used by the tactics) |
+| `wp_for`, `wp_for_post_do/continue/break/return/panic/labeled` | loops (used by the tactics) |
 | `wp_with_defer` | functions with `defer` (introduce `%defer Hdefer`, see `Once.wp_doSlow`); the body runs under a `Catch` (see "Panics") |
 | `wp_with_defer_recover`, `wp_recoverPanic` | functions whose deferred function literal calls `recover()` (introduce `%defer %pnc defer pnc`) and the `recover()` |
 | `wp_panic`, `wp_unwind`, `wp_catch`, `wp_catch_panic`, `wp_catch_val` | panics (see "Panics") |
@@ -664,6 +689,10 @@ that is not translated, or an entry whose signature has a type goose does not su
 method that is not translated may: `("Equal", none)`); then the entry still says that the
 method exists. A type that the translation cannot name (of a package it does not import) is
 written out in signatures as its descriptor's definition, `go.Named "<path>.<Name>" []`.
+A type alias `A` always has a reducible descriptor `A.ty`, defined as the descriptor of the
+type it denotes, whether its package's configuration translates, axiomatizes or trusts it
+(`example : dep.A.ty = dep.X.ty := rfl` for `type A = X`); only when goose cannot translate
+that type is an untranslated alias's `A.ty` opaque.
 
 ---
 
@@ -1193,6 +1222,86 @@ that assumed `threadBound GF ≤ 2 ^ 31` takes `T = 2 ^ 31`
 (`ThreadTokensTest.lean`); as for `N`, there is nothing to gain from a smaller
 `T`.
 
+**Adequacy: the thread bound along the execution.** `RealThreadsBelow T n` is about
+every execution of at most `n` steps, not the one the theorem concludes about. For a
+program whose goroutine count an adversarial schedule can grow without limit (a ticker
+goroutine that keeps firing while the goroutines it spawns are never scheduled), the only
+way to discharge it is `T = n + 2` (`real_nsteps_threads`: each step forks at most one
+thread), which then bounds the step count by whatever constant the proof needs
+(`threadBound GF ≤ 2 ^ 31` gives `n + 2 ≤ 2 ^ 31`). `goose_adequacy_below`
+(`GooseLang/AdequacyAlong.lean`) takes the bound on the execution itself instead:
+
+```lean
+inductive RealNstepsBelow (T : Nat) :
+    Nat → List Expr × CfgState → List Observation → List Expr × CfgState → Prop
+  | refl (ρ) : ρ.2.1.threads < T → RealNstepsBelow T 0 ρ [] ρ
+  | cons : ρ₁.2.1.threads < T → Language.Step ρ₁ κ ρ₂ →
+      RealNstepsBelow T n ρ₂ κs ρ₃ → RealNstepsBelow T (n + 1) ρ₁ (κ ++ κs) ρ₃
+
+theorem goose_adequacy_below [hPre : GooseGpreS GF] (N T : Nat) (e σ g φ hφ Hinitg Hinit)
+    (Hwp : ...)  -- as goose_adequacy's
+    (n κs t2 σ2) (Hsteps : RealNstepsBelow T n ([e], (σ, g)) κs (t2, σ2))
+    (Hbound : n < N) (Hthreads : σ.threads = 1) : ...  -- goose_adequacy's conclusions
+```
+
+so the client takes `T = 2 ^ 31` and `N` from the receipts alone; the executions the
+theorem leaves out are exactly those in which `T` threads are live at once. The proof is
+`goose_adequacy`'s: the simulation into the bounded layer (`bounded_nsteps_of_real_below`)
+only ever used the thread bound along the given execution. `RealNstepsBelow.of_threadsBelow`
+gives the new hypothesis from the old one (so `goose_adequacy` follows,
+`goose_adequacy_of_below`), `.of_one` gives it at `T = n + 2` from one thread, `.mono`
+raises `T`, `.nsteps` forgets it. `goose_invariance_below` is the same for
+`goose_invariance`.
+
+### Initial states of extensions
+
+Files: `Perennial/GooseLang/Lang.lean` (`ExtSemantics.initLocal`/`initGlobal`,
+`extsInitLocal`/`extsInitGlobal`), `GooseLang/Lifting.lean` (`ExtInitCompat`),
+`GooseLang/InitAdequacy.lean` (`goose_adequacy_init` and the others), and the
+example `Perennial/ProgramLogic/ExtInitTest.lean`.
+
+The states an execution starts from belong to the trusted semantics: each
+extension's `ExtSemantics` has `initLocal s g` (a state `s` of the extension on a
+machine before its process has taken a step, for the global state `g`) and
+`initGlobal g`, both `True` by default (no assumption, the strongest theorem). For
+the program, `extsInitLocal σ g` and `extsInitGlobal g` are their conjunctions over
+the extensions. A top-level theorem assumes these, never the ghost state's
+`ExtInterp.initP`/`initgP`, which are chosen with the proof (an interpretation
+with `initP := False` would make a theorem stated with it vacuous).
+
+A value other than the default is trusted: either an assumption that every real start
+of a machine satisfies (`ExtInitTest`'s resource is not yet taken), or a constraint on
+state only the model has (sha256's `initGlobal`: nothing hashed yet, where the global
+state records the run's hashed inputs). The extension's docstring says which. The two
+predicates must be jointly satisfiable, or every `_init` theorem is vacuous: an
+extension that sets either proves `∃ g s, initGlobal g ∧ initLocal s g` next to its
+`ExtSemantics` instance (an `example`: sha256's in `Ext/Sha256/Impl.lean`, `onceExt`'s
+in the example file). The extensions' states are independent, so these witnesses
+together satisfy the program's `extsInitGlobal`/`extsInitLocal`.
+
+A top-level statement names its tuple of semantics explicitly, as the example's
+`onceSemantics` (`@[reducible] def`, made a local instance, with the theorem stated
+over the closed list), rather than leaving `[GooseSemantics]` or an extension's
+`ExtSemantics` to instance resolution at the use site: `extsInitLocal` and
+`extsInitGlobal` unfold through whatever instance is found, so a second
+`ExtSemantics E` instance in scope (one with a stronger `initLocal`, say) could
+otherwise silently change what the theorem assumes.
+
+The adequacy theorems still allocate the ghost state under `extsInitP`/`extsInitgP`;
+their `_init` versions (`goose_adequacy_init`, `goose_crash_adequacy_init`,
+`goose_dist_adequacy_init`, `goose_dist_crash_adequacy_init`,
+`goose_dist_mixed_crash_adequacy_init`) take the trusted
+predicates and `GooseInitCompat`: every extension's interpretation accepts its
+semantics' initial states (`ExtInitCompat E`, an instance next to the
+`ExtInterp`). For a closed list it is `⟨inferInstance, ..., trivial⟩`.
+
+The initial states constrain only the first start of a machine; a restart is in
+whatever state `crash` gives. When a restarted machine is meant to start afresh
+(a volatile state), `crash` should produce only initial states:
+`ExtSemantics.CrashRestartsInit E` (`Lifting.lean`, outside the trusted semantics),
+which an extension may prove as a check and no theorem requires (a durable state does
+not have it).
+
 ### Crashes
 
 Files: `Perennial/GooseLang/Lang.lean` (`Crash`, `ExtSemantics.crash`),
@@ -1223,8 +1332,13 @@ on the proof:
 * `Hwp`: in every generation, the WP of `e` from `P` and the main thread's
   token, together with `P L'` of whatever next local ghost state `L'` the
   crash allocates, from the generation's `crashed`, the extensions'
-  `crashStart` resources and `L'`'s empty package state. Since a thread's
-  resources are lost at a crash, what `P L'` needs must live in invariants.
+  `crashStart` resources, `L'`'s empty package state and a later credit `£ 1`.
+  Since a thread's resources are lost at a crash, what `P L'` needs must live
+  in invariants; the credit strips the later off what the crash obligation
+  takes out of one (`lc_fupd_elim_later`). Shape: `P L -∗ threadTok ={⊤}=∗
+  WP e {{ φ }} ∗ ∀ L', crashed -∗ extsCrashStart L L' -∗ ownGoState ∅ -∗ £ 1
+  ={⊤}=∗ P L'`; a proof that does not need the credit ignores it with `_`.
+  Example: `Perennial/ProgramLogic/GenStartTest.lean`.
 
 Each extension provides `ExtCrashInterp` (how its ghost state survives a
 crash); the filesystem keeps its ghost state (`crashStart old new := ⌜new = old⌝`).
@@ -1234,6 +1348,55 @@ client: an execution of `n` steps from one thread has fewer than `n + 2` live
 threads (`RealCrashThreadsBelow.of_single`), and `fsGF` (with `fsGpreS`)
 provides the ghost state of a filesystem program, so the example's
 `crash_safety` mentions neither.
+
+#### Crash-shared state and the crash token
+
+Files: `Perennial/GooseLang/NotCrashed.lean`, `GooseLang/CrashToken.lean`; example
+`Perennial/ProgramLogic/NotCrashedChanTest.lean`.
+
+State that a generation shares with the generations after its crash lives in an
+invariant of the form `inv N (P ∨ crashed ∗ tok)`: `P` while the generation runs, and
+after its crash `crashed ∗ tok`, which the crash obligation of `Hwp` (holding the
+exclusive `tok`) swaps in to take `P` for the next generation (`token γ`,
+`Ghost/Token.lean`, is a ready `tok`). A thread of the running generation must rule
+out the crash side to use `P` at all, to update it and also to read it (a later
+generation may have changed it): that takes the generation's `notCrashed`. No thread
+owns it: the state interpretation does (`gooseBstateInterp`), so a thread holds it
+only at a step. So a ghost step on crash-shared state needs one of:
+
+* `ncfupd E1 E2 P`, notation `|NC={E1,E2}=> P` (`|NC={E}=> P`): the crash-token
+  update, `notCrashed -∗ |={E1,E2}=> notCrashed ∗ P`. A plain update is one
+  (`ncfupd_of_fupd`); `ncfupd_trans`, `ncfupd_wand`, `ncfupd_bind`,
+  `ncfupd_fupd_l`/`_r` compose them. It is reducible: open one with
+  `imod H $$ Hnc with ⟨Hnc, H⟩`.
+* `inv_nc_acc Hsub : inv N (P ∨ crashed ∗ Q) ⊢ |NC={E, E ∖ N}=> ▷ P ∗ (▷ P ={E ∖ N, E}=∗ True)`:
+  open such an invariant on its live side (`notCrashed_or_crashed`, `ncfupd_or_crashed`:
+  the same without an invariant).
+* `wp_ncfupd e Φ h : (|NC={E}=> WP e {{ Φ }}) ⊢ WP e {{ Φ }}` for a non-value `e`
+  (`h : toVal e = none`, usually `rfl`): an update before a step (in a proof,
+  `iapply wp_ncfupd _ _ rfl` and `iintro Hnc` in place of `iapply fupd_wp`). Also
+  `wp_notCrashed_acc` (the same, unfolded).
+* `wp_atomic_nc`: `wp_atomic` whose mask-changing update before the atomic step is a
+  crash-token update (the client's update of a logically atomic spec around an atomic
+  step).
+* `wp_ncfupd_post e Φ h : WP e {{ v, |NC={E}=> Φ v }} ⊢ WP e {{ Φ }}`: an update in the
+  postcondition of a non-value `e`, run after its last step (a ghost step at a function's
+  return).
+
+The channel specifications' atomic updates (`sendAu`, `recvAu`, `sendNestedAu`,
+`recvNestedAu`, `closeAu`, the nonblocking and `Alt` ones, `bufferedSendAu`,
+`Golang/Theory/Chan/AuSpec/ChanAuBase.lean`) are crash-token updates:
+`|NC={⊤,∅}=> ▷ ∃ s, ownChan γ V s ∗ …`. The channel code runs the client's update at
+its linearization point (`wp_ncfupd`, in `ChanAuSend.lean`/`ChanAuRecv.lean`), so the
+update may open a crash-shared invariant: a ghost step on crash-shared state
+linearized with a send, a receive or a close (also in a `select` clause, whose
+precondition is such an update, and in the channel idioms). To prove one of them,
+`unfold sendAu`, then either `iintro Hnc` (to use the token: `inv_nc_acc ... $$ Hinv`,
+then `imod H $$ Hnc with ⟨Hnc, HP, Hclose⟩`, and give `Hnc` back after the mask-changing
+update to `∅`) or `iapply ncfupd_of_fupd` (without it, as before). The example
+`NotCrashedChanTest` is a goroutine whose `select { case ch <- 1: ; case <-done: }`
+increments a counter kept in a crash invariant exactly when the send fires, proved up to
+`goose_crash_adequacy` (`crash_safety`).
 
 ### Distributed systems
 
@@ -1283,11 +1446,35 @@ a generation `L`; `Hstart` is the global setup followed by every node's first
 `P i` (`nodeStart`, from the node's start resources); `Hwp` is, for every
 generation of every node, the WP of its boot program from `P i` and the main
 thread's token, together with `P i L'` of the next generation, from `crashed`,
-`extsCrashStart` and the empty package state. What `P i L'` needs from the old
+`extsCrashStart`, the empty package state and a later credit, as for
+`goose_crash_adequacy`. What `P i L'` needs from the old
 generation must be persistent (invariants, discarded points-to) or come back
 through `extsCrashStart` (`fsNet_crashStart`: a crash keeps the files' and the
 address's ghost state). The bounds are as without crashes
 (`DistCrashThreadsBelow.of_single`); a crash counts as a step.
+
+Some nodes crashing, others not: `goose_dist_mixed_crash_adequacy N T crashing
+stable g φ ... P Hstart Hwp` is about the system `crashing ++ stable` with the
+boot programs `crashing.map Prod.fst` (`DistCrashNsteps` crashes only the nodes
+that have a boot program, so the stable nodes never crash). `Hwp` and `P` are as
+above, for the crashing nodes only; `Hstart` gives, after the global setup, every
+crashing node's first `P i` and every stable node's `nodeWp` (node
+`crashing.length + j` for `stable[j]`), as in `goose_dist_adequacy`: a stable
+node keeps what it owns for the whole execution, with nothing to re-establish
+after a crash. `goose_dist_crash_adequacy` is its case `stable = []`. Example:
+`Perennial/ProgramLogic/MixedCrashTest.lean`, which also shows that the
+stable node's obligation could not be met if it crashed.
+
+The thread bound along one distributed execution: `DistCrashNstepsBelow boots T n
+c κs c'` is `DistCrashNsteps boots n c κs c'` with every configuration, the first
+and the last included, having fewer than `T` live threads on every node
+(`DistCfgThreadsBelow`); it is `RealNstepsBelow` for several nodes, with crashes.
+A statement whose thread bound is a premise about the execution it is about (a
+robustness statement: "fewer than `T` goroutines alive at once on any machine")
+quantifies over these, and its step bound need not be below its thread bound. No
+adequacy theorem takes it yet: `of_threadsBelow` turns `goose_dist_crash_adequacy`'s
+premise into it, `of_single` gives `n + 2` from one thread per node, `nsteps`
+forgets it, and `mono` raises `T`.
 
 The network (`netExt`): a node's local state is its address; the network maps
 each address to the set of messages sent to it, each with its sender's address.
@@ -1335,3 +1522,21 @@ initializer meeting the standard spec above. So a package's `wp_initialize'` nee
 not be restated to show that it initializes nothing away. The price is that
 `wp_PackageInitStart` takes the premise that the package is not initialized (an
 autoParam `by assumption`: `package.init` checks first).
+
+**A fact that takes a parameter.** A package whose fact names something the
+program's proof chooses (per-run ghost state its initializer fills, allocated by
+the proof before the program starts) declares a family of facts instead of one:
+`IsPkgInitParam PROP pkg`, with `Param : Type` and `inst : Param → IsPkgInit PROP
+pkg`. Code proved at a known parameter uses the fact there (`IsPkgInitParam.inst x`,
+usually through a local instance taking the parameter's class as an argument). An
+importer's fact holds `isPkgInitSome pkg` (`∃ x, isPkgInit (inst x) pkg`, persistent):
+`define_is_pkg_init` writes it for every dependency with an `IsPkgInitParam`
+instance, so the importer's `IsPkgInit` instance takes no parameter. Its
+`GetIsPkgInitWf` instance does (give it an explicit binder, `instance [MyGS] :
+GetIsPkgInitWf …`, not a section variable): the well-formedness fixes the fact the
+package's initializer establishes, at the parameter the importer's initializer
+relies on. `is_pkg_init_finish` proves an `isPkgInitSome` conjunct from the fact at
+a parameter (the `Frame` instance `isPkgInitSome_frame`), and `solve_pkg_init`
+proves `isPkgInitSome` goals and searches through `isPkgInitSome` hypotheses (for
+facts that do not depend on the parameter). Worked example:
+`Perennial/Golang/Theory/PkgParamTest.lean`.

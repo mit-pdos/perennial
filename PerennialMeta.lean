@@ -33,6 +33,7 @@ public import Perennial.Golang.Defn.Assume
 public import Perennial.Golang.Defn.Chan
 public import Perennial.Golang.Defn.Defer
 public import Perennial.Golang.Defn.Exception
+public import Perennial.Golang.Defn.Float
 public import Perennial.Golang.Defn.Interface
 public import Perennial.Golang.Defn.Lock
 public import Perennial.Golang.Defn.Loop
@@ -56,6 +57,7 @@ public import Perennial.Golang.Theory.Chan.AuSpec.ChanInit
 public import Perennial.Golang.Theory.Defer
 public import Perennial.Golang.Theory.Display
 public import Perennial.Golang.Theory.Exception
+public import Perennial.Golang.Theory.Float
 public import Perennial.Golang.Theory.IfJoin
 public import Perennial.Golang.Theory.IrisTactics
 public import Perennial.Golang.Theory.Join
@@ -92,6 +94,7 @@ public import Perennial.GooseLang.Lang
 public import Perennial.GooseLang.Lifting
 public import Perennial.GooseLang.LiftingBytes
 public import Perennial.GooseLang.Locations
+public import Perennial.GooseLang.NotCrashed
 public import Perennial.GooseLang.Notation
 public import Perennial.GooseLang.Receipts
 public import Perennial.GooseLang.Threads

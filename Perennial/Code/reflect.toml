@@ -1,2 +1,11 @@
-translate = ["!*"]
-imports = ["!*"]
+translate = ["!*", "Type", "Kind", "Value", "flag", "kindNames", "intArgRegs", "floatArgRegs", "floatRegSize"]
+imports = ["!*", "internal/abi"]
+
+[[skip]]
+names = ["stringType", "bytesType", "uint8Type"]
+reason = """
+`rtypeOf("")`, `rtypeOf(([]byte)(nil))`, `rtypeOf(uint8(0))` (map.go, value.go): each reads the
+static runtime type descriptor of its argument's type (`abi.TypeOf`, which reinterprets an
+interface's memory through `unsafe`; the semantics cannot represent the descriptors); they
+allocate nothing the program can see, cannot panic and have no other effect. Read only by
+`Value.MapIndex`/`SetMapIndex`, `Value.Bytes` and `Value.Index`, which are not translated."""

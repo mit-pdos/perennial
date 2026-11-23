@@ -4,6 +4,7 @@ module
 public import Perennial.Code.io.fs
 public import Perennial.Code.sync
 public import Perennial.Code.syscall
+public import Perennial.Code.internal.testlog
 public import Perennial.Code.internal.poll
 public import Perennial.Code.errors
 public import Perennial.Golang.Defn
@@ -165,11 +166,11 @@ attribute [irreducible] fileStat.ty
 @[reducible] noncomputable def syscallErrorType.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   _root_.Perennial.syscall.Errno.ty
 
-axiom Process.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque Process.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom processHandle.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque processHandle.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom file.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque file.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
 @[reducible] noncomputable def sysfdType.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   go.int
@@ -180,107 +181,107 @@ axiom file.underlying [GooseExts] [GoGlobalContext] : go.GoType
 @[reducible] noncomputable def FileMode.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   _root_.Perennial.io.fs.FileMode.ty
 
-axiom fileStat.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque fileStat.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom readdirName [GooseExts] [GoGlobalContext] : val
+opaque readdirName [GooseExts] [GoGlobalContext] : val
 
-axiom readdirDirEntry [GooseExts] [GoGlobalContext] : val
+opaque readdirDirEntry [GooseExts] [GoGlobalContext] : val
 
-axiom readdirFileInfo [GooseExts] [GoGlobalContext] : val
+opaque readdirFileInfo [GooseExts] [GoGlobalContext] : val
 
-axiom blockSize [GooseExts] [GoGlobalContext] : val
+opaque blockSize [GooseExts] [GoGlobalContext] : val
 
-axiom errENOSYS [GooseExts] [GoGlobalContext] : val
+opaque errENOSYS [GooseExts] [GoGlobalContext] : val
 
-axiom errERANGE [GooseExts] [GoGlobalContext] : val
+opaque errERANGE [GooseExts] [GoGlobalContext] : val
 
-axiom errENOMEM [GooseExts] [GoGlobalContext] : val
+opaque errENOMEM [GooseExts] [GoGlobalContext] : val
 
-axiom statusOK [GooseExts] [GoGlobalContext] : val
+opaque statusOK [GooseExts] [GoGlobalContext] : val
 
-axiom statusDone [GooseExts] [GoGlobalContext] : val
+opaque statusDone [GooseExts] [GoGlobalContext] : val
 
-axiom statusReleased [GooseExts] [GoGlobalContext] : val
+opaque statusReleased [GooseExts] [GoGlobalContext] : val
 
-axiom pidUnset [GooseExts] [GoGlobalContext] : val
+opaque pidUnset [GooseExts] [GoGlobalContext] : val
 
-axiom pidReleased [GooseExts] [GoGlobalContext] : val
+opaque pidReleased [GooseExts] [GoGlobalContext] : val
 
-axiom O_RDONLY [GooseExts] [GoGlobalContext] : val
+opaque O_RDONLY [GooseExts] [GoGlobalContext] : val
 
-axiom O_WRONLY [GooseExts] [GoGlobalContext] : val
+opaque O_WRONLY [GooseExts] [GoGlobalContext] : val
 
-axiom O_RDWR [GooseExts] [GoGlobalContext] : val
+opaque O_RDWR [GooseExts] [GoGlobalContext] : val
 
-axiom O_APPEND [GooseExts] [GoGlobalContext] : val
+opaque O_APPEND [GooseExts] [GoGlobalContext] : val
 
-axiom O_CREATE [GooseExts] [GoGlobalContext] : val
+opaque O_CREATE [GooseExts] [GoGlobalContext] : val
 
-axiom O_EXCL [GooseExts] [GoGlobalContext] : val
+opaque O_EXCL [GooseExts] [GoGlobalContext] : val
 
-axiom O_SYNC [GooseExts] [GoGlobalContext] : val
+opaque O_SYNC [GooseExts] [GoGlobalContext] : val
 
-axiom O_TRUNC [GooseExts] [GoGlobalContext] : val
+opaque O_TRUNC [GooseExts] [GoGlobalContext] : val
 
-axiom SEEK_SET [GooseExts] [GoGlobalContext] : val
+opaque SEEK_SET [GooseExts] [GoGlobalContext] : val
 
-axiom SEEK_CUR [GooseExts] [GoGlobalContext] : val
+opaque SEEK_CUR [GooseExts] [GoGlobalContext] : val
 
-axiom SEEK_END [GooseExts] [GoGlobalContext] : val
+opaque SEEK_END [GooseExts] [GoGlobalContext] : val
 
-axiom _UTIME_OMIT [GooseExts] [GoGlobalContext] : val
+opaque _UTIME_OMIT [GooseExts] [GoGlobalContext] : val
 
-axiom kindNewFile [GooseExts] [GoGlobalContext] : val
+opaque kindNewFile [GooseExts] [GoGlobalContext] : val
 
-axiom kindOpenFile [GooseExts] [GoGlobalContext] : val
+opaque kindOpenFile [GooseExts] [GoGlobalContext] : val
 
-axiom kindPipe [GooseExts] [GoGlobalContext] : val
+opaque kindPipe [GooseExts] [GoGlobalContext] : val
 
-axiom kindSock [GooseExts] [GoGlobalContext] : val
+opaque kindSock [GooseExts] [GoGlobalContext] : val
 
-axiom kindNoPoll [GooseExts] [GoGlobalContext] : val
+opaque kindNoPoll [GooseExts] [GoGlobalContext] : val
 
-axiom DevNull [GooseExts] [GoGlobalContext] : val
+opaque DevNull [GooseExts] [GoGlobalContext] : val
 
-axiom PathSeparator [GooseExts] [GoGlobalContext] : val
+opaque PathSeparator [GooseExts] [GoGlobalContext] : val
 
-axiom PathListSeparator [GooseExts] [GoGlobalContext] : val
+opaque PathListSeparator [GooseExts] [GoGlobalContext] : val
 
-axiom rootMaxSymlinks [GooseExts] [GoGlobalContext] : val
+opaque rootMaxSymlinks [GooseExts] [GoGlobalContext] : val
 
-axiom supportsCreateWithStickyBit [GooseExts] [GoGlobalContext] : val
+opaque supportsCreateWithStickyBit [GooseExts] [GoGlobalContext] : val
 
-axiom supportsCloseOnExec [GooseExts] [GoGlobalContext] : val
+opaque supportsCloseOnExec [GooseExts] [GoGlobalContext] : val
 
-axiom ModeDir [GooseExts] [GoGlobalContext] : val
+opaque ModeDir [GooseExts] [GoGlobalContext] : val
 
-axiom ModeAppend [GooseExts] [GoGlobalContext] : val
+opaque ModeAppend [GooseExts] [GoGlobalContext] : val
 
-axiom ModeExclusive [GooseExts] [GoGlobalContext] : val
+opaque ModeExclusive [GooseExts] [GoGlobalContext] : val
 
-axiom ModeTemporary [GooseExts] [GoGlobalContext] : val
+opaque ModeTemporary [GooseExts] [GoGlobalContext] : val
 
-axiom ModeSymlink [GooseExts] [GoGlobalContext] : val
+opaque ModeSymlink [GooseExts] [GoGlobalContext] : val
 
-axiom ModeDevice [GooseExts] [GoGlobalContext] : val
+opaque ModeDevice [GooseExts] [GoGlobalContext] : val
 
-axiom ModeNamedPipe [GooseExts] [GoGlobalContext] : val
+opaque ModeNamedPipe [GooseExts] [GoGlobalContext] : val
 
-axiom ModeSocket [GooseExts] [GoGlobalContext] : val
+opaque ModeSocket [GooseExts] [GoGlobalContext] : val
 
-axiom ModeSetuid [GooseExts] [GoGlobalContext] : val
+opaque ModeSetuid [GooseExts] [GoGlobalContext] : val
 
-axiom ModeSetgid [GooseExts] [GoGlobalContext] : val
+opaque ModeSetgid [GooseExts] [GoGlobalContext] : val
 
-axiom ModeCharDevice [GooseExts] [GoGlobalContext] : val
+opaque ModeCharDevice [GooseExts] [GoGlobalContext] : val
 
-axiom ModeSticky [GooseExts] [GoGlobalContext] : val
+opaque ModeSticky [GooseExts] [GoGlobalContext] : val
 
-axiom ModeIrregular [GooseExts] [GoGlobalContext] : val
+opaque ModeIrregular [GooseExts] [GoGlobalContext] : val
 
-axiom ModeType [GooseExts] [GoGlobalContext] : val
+opaque ModeType [GooseExts] [GoGlobalContext] : val
 
-axiom ModePerm [GooseExts] [GoGlobalContext] : val
+opaque ModePerm [GooseExts] [GoGlobalContext] : val
 
 noncomputable def dirBufPool [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.dirBufPool"
@@ -320,9 +321,6 @@ noncomputable def Interrupt [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def Kill [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.Kill"
-
-noncomputable def Stdin [GooseExts] [GoGlobalContext] : GoString :=
-  go!"os.Stdin"
 
 noncomputable def Stdout [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.Stdout"
@@ -949,13 +947,56 @@ noncomputable def init.«0».impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))))
   (Val #())))
 
+/-- Exit causes the current program to exit with the given status code.
+    Conventionally, code zero indicates success, non-zero an error.
+    The program terminates immediately; deferred functions are not run.
+
+    For portability, the status code should be in the range [0, 125].
+
+    go: proc.go:62:6 -/
+noncomputable def Exit.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "code"
+  (Seq (App (Val exceptionDo)
+  (Let "code" (App (Val (GoInstruction (GoAlloc go.int))) (Var "code"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "code"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.syscall.Exit []))) (Val #())) (Var "$a0"))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "code"))
+  (App (App (Val (GoInstruction (FuncResolve runtime_beforeExit []))) (Val #())) (Var "$a0")))))))
+  (If (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "code")) (Val #(W64 0)))) (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.testlog.PanicOnExit0 []))) (Val #())) (Val #())) (Val #false))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"unexpected call to os.Exit(0) during test")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (Val #())))
+
+/-- The package variables goose does not translate (the `skip` entries of the package's
+goose config): no Lean name, allocation or initialization step, so no translated code names
+them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot
+panic, and has no effect beyond the variable), for the reason given.
+
+- `Stdin` (`var Stdin = NewFile(uintptr(syscall.Stdin), "/dev/stdin")`): `NewFile(uintptr(syscall.Stdin), "/dev/stdin")` (file.go): `newFileFromNewFile` reads the
+descriptor's flags (`unix.Fcntl(fd, syscall.F_GETFL, 0)`, a system call whose error it ignores)
+and wraps the descriptor in a new `*File` (`newFile`: `pfd.Init`, the runtime poller's
+`runtime_pollOpen` if the descriptor is non-blocking) with a finalizer: cannot panic, no effect
+beyond the new `File` and the variable (the descriptor is the process's, open before `main`). Not translated by the user's decision (fix-semantics Case 33). Not read by
+translated code.
+-/
+noncomputable def skipped' : List go.SkippedVar := [
+  ⟨"os.Stdin", "`NewFile(uintptr(syscall.Stdin), \"/dev/stdin\")` (file.go): `newFileFromNewFile` reads the\ndescriptor's flags (`unix.Fcntl(fd, syscall.F_GETFL, 0)`, a system call whose error it ignores)\nand wraps the descriptor in a new `*File` (`newFile`: `pfd.Init`, the runtime poller's\n`runtime_pollOpen` if the descriptor is non-blocking) with a finalizer: cannot panic, no effect\nbeyond the new `File` and the variable (the descriptor is the process's, open before `main`). Not translated by the user's decision (fix-semantics Case 33). Not read by\ntranslated code.", "var Stdin = NewFile(uintptr(syscall.Stdin), \"/dev/stdin\")"⟩]
+
 noncomputable instance info' : PkgInfo pkg_id.os where
-  pkgImportedPkgs := [pkg_id.io.fs, pkg_id.sync, pkg_id.syscall, pkg_id.internal.poll, pkg_id.errors]
+  pkgImportedPkgs := [pkg_id.io.fs, pkg_id.sync, pkg_id.syscall, pkg_id.internal.testlog, pkg_id.internal.poll, pkg_id.errors]
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.os)) (Lam BAnon
   (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1029,7 +1070,6 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"os: invalid use of WriteAt on file opened with O_APPEND"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1077,8 +1117,6 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val Stdout.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val Stdin.init) (Val #()))))))
-  (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Signal.ty))) (Pair (App (Val (GoInstruction (GlobalVarAddr Kill))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Signal.ty))) (Pair (App (Val (GoInstruction (GlobalVarAddr Interrupt))) (Val #())) (Var "$r0"))))))))
@@ -1110,6 +1148,8 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.sync.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.syscall.initialize') (Val #()))))))
+  (App (Val doExecute)
+  (App (Val _root_.Perennial.internal.testlog.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.internal.poll.initialize') (Val #()))))))
   (App (Val doExecute)
@@ -1295,8 +1335,10 @@ attribute [instance] processStatus.TypeAssumptions.underlying
   processStatus.TypeAssumptions.method_set
   processStatus.TypeAssumptions.ptr_method_set
 
-axiom Process : Type
-axiom Process.zero_val : ZeroVal Process
+opaque Process.nonempty_type : NonemptyType.{0}
+def Process : Type := Process.nonempty_type.type
+instance Process.nonempty : Nonempty Process := Process.nonempty_type.property
+opaque Process.zero_val : ZeroVal Process := ⟨Classical.ofNonempty⟩
 attribute [instance] Process.zero_val
 
 class Process.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1312,8 +1354,10 @@ attribute [instance] Process.TypeAssumptions.type_repr
   Process.TypeAssumptions.method_set
   Process.TypeAssumptions.ptr_method_set
 
-axiom processHandle : Type
-axiom processHandle.zero_val : ZeroVal processHandle
+opaque processHandle.nonempty_type : NonemptyType.{0}
+def processHandle : Type := processHandle.nonempty_type.type
+instance processHandle.nonempty : Nonempty processHandle := processHandle.nonempty_type.property
+opaque processHandle.zero_val : ZeroVal processHandle := ⟨Classical.ofNonempty⟩
 attribute [instance] processHandle.zero_val
 
 class processHandle.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1652,8 +1696,10 @@ attribute [instance] dirFS.TypeAssumptions.underlying
   dirFS.TypeAssumptions.method_set
   dirFS.TypeAssumptions.ptr_method_set
 
-axiom file : Type
-axiom file.zero_val : ZeroVal file
+opaque file.nonempty_type : NonemptyType.{0}
+def file : Type := file.nonempty_type.type
+instance file.nonempty : Nonempty file := file.nonempty_type.property
+opaque file.zero_val : ZeroVal file := ⟨Classical.ofNonempty⟩
 attribute [instance] file.zero_val
 
 class file.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1928,8 +1974,10 @@ attribute [instance] File.TypeAssumptions.type_repr
   File.TypeAssumptions.method_set
   File.TypeAssumptions.ptr_method_set
 
-axiom fileStat : Type
-axiom fileStat.zero_val : ZeroVal fileStat
+opaque fileStat.nonempty_type : NonemptyType.{0}
+def fileStat : Type := fileStat.nonempty_type.type
+instance fileStat.nonempty : Nonempty fileStat := fileStat.nonempty_type.property
+opaque fileStat.zero_val : ZeroVal fileStat := ⟨Classical.ofNonempty⟩
 attribute [instance] fileStat.zero_val
 
 class fileStat.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1976,9 +2024,12 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   errDeadlineExceeded_unfold : FuncUnfold errDeadlineExceeded [] errDeadlineExceeded.impl
   «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
   runtime_args_unfold : FuncUnfold runtime_args [] runtime_args.impl
+  Exit_unfold : FuncUnfold Exit [] Exit.impl
+  runtime_beforeExit_unfold : FuncUnfold runtime_beforeExit [] runtime_beforeExit.impl
   import_fs_Assumption : _root_.Perennial.io.fs.Assumptions
   import_sync_Assumption : _root_.Perennial.sync.Assumptions
   import_syscall_Assumption : _root_.Perennial.syscall.Assumptions
+  import_testlog_Assumption : _root_.Perennial.internal.testlog.Assumptions
   import_poll_Assumption : _root_.Perennial.internal.poll.Assumptions
   import_errors_Assumption : _root_.Perennial.errors.Assumptions
 
@@ -2012,9 +2063,12 @@ attribute [instance] Assumptions.readdirMode_instance
   Assumptions.errDeadlineExceeded_unfold
   Assumptions.«init.0_unfold»
   Assumptions.runtime_args_unfold
+  Assumptions.Exit_unfold
+  Assumptions.runtime_beforeExit_unfold
   Assumptions.import_fs_Assumption
   Assumptions.import_sync_Assumption
   Assumptions.import_syscall_Assumption
+  Assumptions.import_testlog_Assumption
   Assumptions.import_poll_Assumption
   Assumptions.import_errors_Assumption
 

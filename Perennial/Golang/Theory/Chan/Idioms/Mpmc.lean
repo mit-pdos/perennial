@@ -356,6 +356,7 @@ theorem mpmc_send_au (γ : MpmcNames) (ch : Loc) (n_prod n_cons : Nat) (P : V �
       ▷ (mpmcProducer γ (sent • msetSingleton v) -∗ Φ) -∗ sendAu γ.mpmcChanName v Φ := by
   unfold isMpmc sendAu
   iintro ⟨#Hchan, #Hinv⟩ ⟨Hlc1, Hlc2⟩ ⟨Hprod, HP⟩ Hcont
+  iapply ncfupd_of_fupd
   iinv Hinv with Hi Hclose
   imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi
   icases mpmcInv_elim _ _ _ _ _ $$ Hi with ⟨%s, %sent0, %recv, Hch, HsentI, HrecvI, %Hpure, Hclosed, Hm⟩
@@ -403,6 +404,7 @@ theorem mpmc_send_au (γ : MpmcNames) (ch : Loc) (n_prod n_cons : Nat) (P : V �
       · simp only [mpmcInvMatch]; iexact HP
     imodintro
     unfold sendNestedAu
+    iapply ncfupd_of_fupd
     iinv Hinv with Hi Hclose
     imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc2 Hi with Hi
     icases mpmcInv_elim _ _ _ _ _ $$ Hi with
@@ -478,6 +480,7 @@ theorem mpmc_rcv_au (γ : MpmcNames) (ch : Loc) (n_prod n_cons : Nat) (P : V →
       recvAu γ.mpmcChanName V Φ := by
   unfold isMpmc recvAu
   iintro ⟨#Hchan, #Hinv⟩ ⟨Hlc1, Hlc2⟩ Hcons Hcont
+  iapply ncfupd_of_fupd
   iinv Hinv with Hi Hclose
   imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi
   icases mpmcInv_elim _ _ _ _ _ $$ Hi with ⟨%s, %sent, %recv, Hch, HsentI, HrecvI, %Hpure, Hclosed, Hm⟩
@@ -523,6 +526,7 @@ theorem mpmc_rcv_au (γ : MpmcNames) (ch : Loc) (n_prod n_cons : Nat) (P : V →
       · simp only [mpmcInvMatch]; itrivial
     imodintro
     unfold recvNestedAu
+    iapply ncfupd_of_fupd
     iinv Hinv with Hi Hclose
     imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc2 Hi with Hi
     icases mpmcInv_elim _ _ _ _ _ $$ Hi with
@@ -708,6 +712,7 @@ theorem mpmc_close_au (γ : MpmcNames) (ch : Loc) (n_prod n_cons : Nat) (P : V �
   subst hlen
   unfold isMpmc closeAu
   iintro ⟨#Hchan, #Hinv⟩ Hlc1 ⟨Hprods, HR⟩ Hcont
+  iapply ncfupd_of_fupd
   iinv Hinv with Hi Hclose
   imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi
   icases mpmcInv_elim _ _ _ _ _ $$ Hi with ⟨%s, %sent, %recv, Hch, HsentI, HrecvI, %Hpure, Hclosed, Hm⟩

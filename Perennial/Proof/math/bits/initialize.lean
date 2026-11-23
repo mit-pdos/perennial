@@ -34,9 +34,19 @@ theorem math.bits.initialize'.wp_proof
   wp_apply wp_GlobalAlloc (V := GoInterface) overflowError go.error with _
   wp_apply wp_GlobalAlloc (V := GoArray w8 64) deBruijn64tab (go.ArrayType 64 go.byte) with H1
   wp_apply wp_GlobalAlloc (V := GoArray w8 32) deBruijn32tab (go.ArrayType 32 go.byte) with H2
+  -- the stores of the tables end the initializer: keep an update to make `deBruijn64tab`'s cell
+  -- persistent afterwards
+  iapply wp_fupd
   wp_apply wp_unsafe_initialize _ Hinit.2.1 $$ Hown with ⟨Hown, #Hunsafe⟩
+  ipersist H1
   iframe Hown
   is_pkg_init_finish
+  isplitr
+  · itrivial
+  imodintro
+  imodintro
+  unfold math.bits.isInit math.bits.deBruijn64tabVal
+  iexact H1
 
 end proof
 

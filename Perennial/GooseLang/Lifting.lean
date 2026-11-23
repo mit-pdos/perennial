@@ -477,7 +477,9 @@ end go_state_definitions
 and ghost names it uses, and `localCtx`/`globalCtx` interpret its states in the
 state interpretation. For adequacy, it says how to allocate them (from `PreG`)
 for initial states satisfying `initP`/`initgP`, handing the program the start
-resources `localStart`/`globalStart`. -/
+resources `localStart`/`globalStart`. Those conditions are the proof's, not trusted:
+a top-level theorem assumes the semantics' initial states
+(`ExtSemantics.initLocal`/`initGlobal`), which they must accept (`ExtInitCompat`). -/
 class ExtInterp (E : GooseExt) where
   LocalGS : BundledGFunctors → Type
   GlobalGS : BundledGFunctors → Type
@@ -586,6 +588,54 @@ theorem local_init : (l : List GooseExt) → (Is : ExtTuple ExtInterp l) →
     isplitl [Hc1 Hc2]
     · isplitl [Hc1] <;> iassumption
     · isplitl [Hs1] <;> iassumption
+
+end Exts
+
+/-! ### The ghost state's initial states and the semantics'
+
+The adequacy theorems allocate an extension's ghost state for the initial states its
+interpretation accepts (`ExtInterp.initP`/`initgP`), which a proof chooses; a
+top-level theorem is stated with the semantics' initial states
+(`ExtSemantics.initLocal`/`initGlobal`), which are trusted. `ExtInitCompat` says that the
+interpretation accepts every initial state of the semantics, so that the adequacy
+theorems apply to the trusted initial states (`goose_adequacy_init` and the others,
+`InitAdequacy.lean`). -/
+
+/-- The ghost state of `E` can be allocated for every initial state of `E`'s semantics:
+its conditions on the initial states (`ExtInterp.initgP`/`initP`) follow from the
+semantics' (`ExtSemantics.initGlobal`/`initLocal`). -/
+class ExtInitCompat (E : GooseExt) [S : ExtSemantics E] [I : ExtInterp E] : Prop where
+  initgP_of_init : ∀ g, S.initGlobal g → I.initgP g
+  initP_of_init : ∀ σ g, S.initLocal σ g → I.initP σ g
+
+/-- The crash relation of `E` restarts its local state in an initial state, whatever
+the global state: a property of a volatile state (one that a restarted machine sees
+afresh), which a durable state does not have. No theorem requires it; an extension that
+means its restarted state to be a fresh one can prove it, as a check of its `crash`
+against its `initLocal`. -/
+def ExtSemantics.CrashRestartsInit (E : GooseExt) [S : ExtSemantics E] : Prop :=
+  ∀ s s' g, S.crash s s' → S.initLocal s' g
+
+namespace Exts
+
+/-- An `ExtInitCompat` for each extension of `l`. -/
+def InitCompat : (l : List GooseExt) → ExtTuple ExtSemantics l → ExtTuple ExtInterp l → Prop
+  | [], _, _ => True
+  | E :: l, Ss, Is => @ExtInitCompat E Ss.1 Is.1 ∧ InitCompat l Ss.2 Is.2
+
+theorem initgP_of_init : (l : List GooseExt) → (Ss : ExtTuple ExtSemantics l) →
+    (Is : ExtTuple ExtInterp l) → InitCompat l Ss Is → (g : ExtsGlobalState l) →
+    ExtsInitGlobal l Ss g → initgP l Is g
+  | [], _, _, _, _, _ => trivial
+  | _ :: l, _, _, ⟨hc, hcs⟩, _, ⟨h, hs⟩ =>
+    ⟨hc.initgP_of_init _ h, initgP_of_init l _ _ hcs _ hs⟩
+
+theorem initP_of_init : (l : List GooseExt) → (Ss : ExtTuple ExtSemantics l) →
+    (Is : ExtTuple ExtInterp l) → InitCompat l Ss Is → (σ : ExtsLocalState l) →
+    (g : ExtsGlobalState l) → ExtsInitLocal l Ss σ g → initP l Is σ g
+  | [], _, _, _, _, _, _ => trivial
+  | _ :: l, _, _, ⟨hc, hcs⟩, _, _, ⟨h, hs⟩ =>
+    ⟨hc.initP_of_init _ _ h, initP_of_init l _ _ hcs _ _ hs⟩
 
 end Exts
 

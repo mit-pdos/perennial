@@ -172,10 +172,11 @@ theorem isContext_cancelCtx_of
     iintro %e ⟨%hne, He⟩
     have hne := hne rfl
     rw [ite_eq_right hne]
-    icases He with ⟨%ht, #Hce, -⟩
+    icases He with ⟨%ht, #Hce, #Hp, -⟩
     iapply HΦ
     · ipureintro; exact ht
     · iexact Hce
+    · iexact Hp
   isplitl []
   · imodintro
     iintro %ch #Hd
@@ -187,8 +188,8 @@ theorem isContext_cancelCtx_of
       iintro %ch %cch %Φ #Hd #Hcch %hne HΦ
       iapply wp_parentCancelCtx_self c _ _ ch cch hne $$ [$Hpkg $Hc $Hd $Hcch]
       inext; iintro -
-      iapply HΦ
-      unfold isCancelCtx; iexists _, _; iexact Hc
+      iapply HΦ $$ Hc
+      imodintro; iintro #Hp; iexact Hp
   · iapply isCancelCtxOf_closedchan $$ Hc
 
 end wps

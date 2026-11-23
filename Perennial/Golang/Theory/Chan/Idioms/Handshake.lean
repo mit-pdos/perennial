@@ -67,6 +67,7 @@ theorem handshake_receive_au (γ : ChanNames) (ch : Loc) (P : V → IProp GF) (Q
     ⊢ £ 1 ∗ £ 1 -∗ isHandshake γ ch P Q -∗ Q -∗ ▷ (∀ v, P v -∗ Φ v true) -∗ recvAu γ V Φ := by
   unfold isHandshake recvAu
   iintro ⟨Hlc1, Hlc2⟩ ⟨#Hchan, #Hinv⟩ HQ Hau
+  iapply ncfupd_of_fupd
   iinv Hinv with Hi Hclose
   imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi
   unfold handshakeInv
@@ -88,6 +89,7 @@ theorem handshake_receive_au (γ : ChanNames) (ch : Loc) (P : V → IProp GF) (Q
       iframe
     imodintro
     unfold recvNestedAu
+    iapply ncfupd_of_fupd
     iinv Hinv with Hi Hclose
     imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc2 Hi with Hi
     icases Hi with ⟨%s, Hch, Hi⟩
@@ -135,6 +137,7 @@ theorem handshake_send_au (γ : ChanNames) (ch : Loc) (v : V) (P : V → IProp G
     ⊢ £ 1 ∗ £ 1 ∗ £ 1 -∗ isHandshake γ ch P Q -∗ P v -∗ ▷ (Q -∗ Φ) -∗ sendAu γ v Φ := by
   unfold isHandshake sendAu
   iintro ⟨Hlc1, Hlc2, Hlc3⟩ ⟨#Hchan, #Hinv⟩ HP Hau
+  iapply ncfupd_of_fupd
   iinv Hinv with Hi Hclose
   imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi
   unfold handshakeInv
@@ -155,6 +158,7 @@ theorem handshake_send_au (γ : ChanNames) (ch : Loc) (v : V) (P : V → IProp G
       iframe
     imodintro
     unfold sendNestedAu
+    iapply ncfupd_of_fupd
     iinv Hinv with Hi Hclose
     imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc2 Hi with Hi
     icases Hi with ⟨%s, Hch, Hi⟩

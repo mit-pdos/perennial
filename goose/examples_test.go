@@ -25,6 +25,8 @@ import (
 	"testing"
 
 	"github.com/mit-pdos/perennial/goose"
+	"github.com/mit-pdos/perennial/goose/glang"
+	"github.com/mit-pdos/perennial/goose/util"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -141,7 +143,7 @@ func TestExamples(testingT *testing.T) {
 		testingT.Run(t.name, func(testingT *testing.T) {
 			testingT.Parallel()
 			assert := assert.New(testingT)
-			files, errs, patternError := goose.TranslatePackages(t.path, t.path, ".")
+			files, errs, patternError := goose.TranslatePackages(t.path, t.path, util.LoadOptions{}, ".")
 			if patternError != nil {
 				// shouldn't be possible since "." is valid
 				assert.FailNowf("loading failed", "load error: %v", patternError)
@@ -154,41 +156,116 @@ func TestExamples(testingT *testing.T) {
 				assert.FailNow(errs[0].Error())
 			}
 
-			var b bytes.Buffer
-			files[0].Write(&b)
-			actual := b.String()
-
-			expected := t.Gold()
-			if *updateGold {
-				if actual != expected {
-					fmt.Fprintf(os.Stderr, "updated %s\n", t.GoldFile())
-				}
-				t.UpdateGold(actual)
-				t.DeleteActual()
-				return
-			}
-
-			if expected == "" {
-				assert.FailNowf("could not load gold output",
-					"gold file: %s",
-					t.GoldFile())
-			}
-			if actual != expected {
-				t.PutActual(actual)
-				assert.FailNowf("actual Lean output != gold output",
-					"see %s",
-					t.ActualFile())
-				return
-			}
-			// when tests pass, clean up actual output
-			t.DeleteActual()
+			t.checkGold(testingT, files[0])
 		})
 	}
+}
+
+// checkGold compares a translation with the test's gold file (or updates the
+// gold file, under -update-gold).
+func (t positiveTest) checkGold(testingT *testing.T, f glang.File) {
+	assert := assert.New(testingT)
+	var b bytes.Buffer
+	f.Write(&b)
+	actual := b.String()
+
+	expected := t.Gold()
+	if *updateGold {
+		if actual != expected {
+			fmt.Fprintf(os.Stderr, "updated %s\n", t.GoldFile())
+		}
+		t.UpdateGold(actual)
+		t.DeleteActual()
+		return
+	}
+
+	if expected == "" {
+		assert.FailNowf("could not load gold output",
+			"gold file: %s",
+			t.GoldFile())
+	}
+	if actual != expected {
+		t.PutActual(actual)
+		assert.FailNowf("actual Lean output != gold output",
+			"see %s",
+			t.ActualFile())
+		return
+	}
+	// when tests pass, clean up actual output
+	t.DeleteActual()
+}
+
+// TestOverlay translates testdata/overlay/pkg with the overlay
+// testdata/overlay/overlay.json (as goose -overlay), which adds a file
+// declaring a method, replaces a file, and adds a file under a build
+// constraint goose does not meet. The translation is checked against
+// pkg/pkg.gold.lean, which has the added method and the replaced function's
+// new body, and not the excluded file's function.
+func TestOverlay(testingT *testing.T) {
+	assert := assert.New(testingT)
+	opts := util.LoadOptions{}
+	overlay, err := util.ReadOverlay("testdata/overlay/overlay.json")
+	if err != nil {
+		assert.FailNow(err.Error())
+	}
+	opts.Overlay = overlay
+	t := positiveTest{newTest("testdata/overlay", "pkg")}
+	files, errs, patternError := goose.TranslatePackages(t.path, t.path, opts, ".")
+	if patternError != nil {
+		assert.FailNowf("loading failed", "load error: %v", patternError)
+	}
+	if !(len(files) == 1 && len(errs) == 1) {
+		assert.FailNowf("pattern matched unexpected number of packages", "files: %v", files)
+	}
+	if errs[0] != nil {
+		assert.FailNow(errs[0].Error())
+	}
+	t.checkGold(testingT, files[0])
+
+	// The overlay makes the difference: without it, the package has neither
+	// the method nor the new body.
+	var withB, withoutB bytes.Buffer
+	files[0].Write(&withB)
+	files, errs, _ = goose.TranslatePackages(t.path, t.path, util.LoadOptions{}, ".")
+	if len(errs) != 1 || errs[0] != nil {
+		assert.FailNowf("translation without the overlay failed", "%v", errs)
+	}
+	files[0].Write(&withoutB)
+	with, without := withB.String(), withoutB.String()
+	assert.Contains(with, "Counter.Inc.impl")
+	assert.NotContains(without, "Counter.Inc.impl")
+	assert.Contains(with, `(Let "$r0" (Val #(W64 2))`)
+	assert.NotContains(with, `(Let "$r0" (Val #(W64 1))`)
+	assert.Contains(without, `(Let "$r0" (Val #(W64 1))`)
+	assert.NotContains(with, "Excluded")
 }
 
 type errorExpectation struct {
 	Line  int
 	Error string
+}
+
+// hasExpectedError reports whether a directory of testdata/negative-tests is
+// a test: a package whose Go files have an ERROR comment. Other directories
+// are a test's helpers: a package it imports, or its goose configs.
+func hasExpectedError(pkgDir string) bool {
+	names, err := os.ReadDir(pkgDir)
+	if err != nil {
+		panic(err)
+	}
+	for _, name := range names {
+		if name.IsDir() || !strings.HasSuffix(name.Name(), ".go") {
+			continue
+		}
+		contents, err := os.ReadFile(path.Join(pkgDir, name.Name()))
+		if err != nil {
+			panic(err)
+		}
+		if regexp.MustCompile(`ERROR ?(.*)`).Match(contents) {
+			return true
+		}
+	}
+	return false
 }
 
 func getExpectedError(pkgDir string) *errorExpectation {
@@ -246,13 +323,13 @@ func getFirstConversionError(err error) *goose.ConversionError {
 func TestNegativeExamples(testingT *testing.T) {
 	tests := loadTests("./testdata/negative-tests")
 	for _, t := range tests {
-		if !t.isDir() {
+		if !t.isDir() || !hasExpectedError(t.path) {
 			continue
 		}
 		testingT.Run(t.name, func(testingT *testing.T) {
 			testingT.Parallel()
 			assert := assert.New(testingT)
-			files, errs, patternError := goose.TranslatePackages(t.path, t.path, ".")
+			files, errs, patternError := goose.TranslatePackages(t.path, t.path, util.LoadOptions{}, ".")
 
 			if patternError != nil { // shouldn't be possible since "." is valid
 				assert.FailNowf("loading failed", "load error: %v", patternError)

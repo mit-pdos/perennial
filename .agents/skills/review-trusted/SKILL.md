@@ -19,7 +19,7 @@ Tiers (what the helper script reports):
 
 | tier | what | files |
 |---|---|---|
-| 0 | **semantics** (the model of Go) | `Perennial/GooseLang/{Lang,BoundedLang,Adequacy,Threads,Receipts,Locations,Ext}.lean`, `GooseLang/Ext/**`, `Perennial/Golang/Defn.lean`, `Perennial/Golang/Defn/**`, `GrovePrelude.lean` |
+| 0 | **semantics** (the model of Go) | `Perennial/GooseLang/{Lang,BoundedLang,Adequacy,Threads,Receipts,Locations,Ext,CrashLang,CrashAdequacy,DistLang,DistAdequacy,InitAdequacy}.lean`, `GooseLang/Ext/**`, `Perennial/Golang/Defn.lean`, `Perennial/Golang/Defn/**`, `GrovePrelude.lean` |
 | 0 | **translator** | `goose/**` (`*.go`), gold files `goose/testdata/**/*.gold.lean`, Go models `goose/model/**` |
 | 0 | **trusted models** | `Perennial/TrustedCode/**` |
 | 0 | **goose configuration** | `Perennial/Code/**/*.toml` (`trusted`, `translate`, `!p`, `trust_proofgen`) |
@@ -64,7 +64,7 @@ Also trusted wherever they appear: `axiom`, `sorry` outside `Perennial/Proof`,
 
 3. **Classify every tier-0 item** as one of: new semantics rule; changed
    semantics rule; new/changed trusted model; new model assumption (`assume`,
-   `AngelicExit`, stuck `Panic`); trust-list change; translator change;
+   `AngelicExit`, stuck `Panic`); trust-list change; skip entry (R11); translator change;
    adequacy-statement change; new axiom/sorry/opaque. Then apply the rules
    below to each. Do not skip an item because it looks routine: the two
    calibration failures in `cases.md` both looked routine.
@@ -292,6 +292,13 @@ conclusion must still talk about `gooseRealEctxiLang`, not only the bounded
 layer; `README.md` and `docs/PERENNIAL_PROOF_REFERENCE.md` must describe the
 new hypothesis. Missing documentation is REWORK; a hypothesis the client
 cannot establish without trusting the logic is BLOCK.
+A new or changed non-default `ExtSemantics.initLocal`/`initGlobal` is a
+hypothesis of every `_init` theorem: its docstring must say whether it is an
+assumption every real machine start satisfies (then check that it is) or a
+constraint on model-only state, and a checked `example` of `∃ g s,
+initGlobal g ∧ initLocal s g` must sit next to the instance (unsatisfiable
+predicates make every `_init` theorem vacuous). A missing witness is REWORK; a
+predicate real starts can violate is BLOCK.
 
 **R7. Generated code is trusted only through goose.** Any hand edit of
 `Perennial/Code/**/*.lean` or `Perennial/GeneratedProof/**` is REWORK:
@@ -339,6 +346,45 @@ A rejected-alternatives list that dismisses the faithful model as "a later
 change" does not justify the axioms. Precedent: cf98e5f15 and 432c32f
 (`time`'s `newTimerMade` and six timer/ticker axioms), undone by modelling
 the runtime's timer state (`fix-semantics/examples.md`, Case 34).
+
+**R11. A skipped package variable must be unobservable.** A `[[skip]]` entry
+of a goose config (`names` and a `reason`) makes goose translate nothing of the
+variable: no name, no `X.init`, no allocation, no step in `initialize'`.
+That verified code never touches it is checked by construction (goose refuses
+a reference from translated code, in its package or one that imports it, and
+hand-written Lean cannot name it); what is trusted is the reason: *not running
+the variable's Go initializer is unobservable*. Check each added name against
+its real initializer (`etc/trusted-delta.py` prints `go doc -u -src` for it;
+a blank `var _` is named by its position, `_@file.go:L`, and its declaration
+is in the translation's `skipped'`). A changed `skipped'` entry in a generated
+file (`trusted-delta`'s "skipped package variables" section: a Go upgrade that
+adds, moves or changes a skipped variable) is checked the same way. The
+warnings of `goose/cmd/skiplint` (stores to, or addresses of, package
+variables in a skipped initializer) point at the second item below, but the
+lint is best-effort: its silence proves nothing.
+- it terminates and cannot panic, reading every callee the initializer
+  reaches (a constant table, `errors.New`, an allocating constructor, an
+  interface assertion: yes; anything that can fail, loop or block: BLOCK);
+- it has no effect beyond the variable: no write to another variable of its
+  package or another package (a registration, `var a = register(k)`, a
+  counter, a logger installed in a global cache), no effect on the outside
+  world the model tracks. An effect another variable depends on
+  (`var b = table[k]` after `var a = register(k)`) is exactly this case: BLOCK;
+- the reason says so, in terms a reader can check against the source, and
+  names the variable's untranslated readers when it has any (a reason that
+  only says "unused" for a variable with readers is REWORK: the readers show
+  what translating them later will need).
+A skip is for a variable verified code is never to read; one it will read once
+modelled stays translated or trusted (an explicit no-op `X.init` whose
+docstring says why skipping is sound, perennial#663). A literal
+`GlobalVarAddr go!"pkg.X"` in hand-written code (signal `global-var-addr`)
+reaches a variable without its Lean name: if `X` is skipped, BLOCK (a load or
+store through it would be stuck, as the variable is never allocated, but no
+hand-written code has a reason to name it). A trusted initializer of several
+variables (`var c, d = pair()`) runs `c.init` then `d.init` where Go evaluates
+`pair()` once: the first `init` must carry the whole evaluation (effects, any
+panic) and say so in its docstring, the later ones only what is left for their
+own variable; a model that runs `pair()`'s effects in each: REWORK.
 
 ## Report format
 

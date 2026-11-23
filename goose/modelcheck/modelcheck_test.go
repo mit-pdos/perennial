@@ -16,7 +16,7 @@ import (
 // TestCases checks that Assign and Range report exactly the lines of
 // testdata/cases marked "// want".
 func TestCases(t *testing.T) {
-	pkgs, err := packages.Load(util.NewPackageConfig(".", false), "./testdata/cases")
+	pkgs, err := packages.Load(util.NewPackageConfig(".", false, util.LoadOptions{}), "./testdata/cases")
 	if err != nil {
 		t.Fatal(err)
 	}

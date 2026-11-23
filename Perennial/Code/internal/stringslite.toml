@@ -1,4 +1,4 @@
-translate = ["!*"]
+translate = ["!*", "HasPrefix", "HasSuffix", "TrimSuffix"]
 imports = ["!*"]
 # `Clone` ends in `unsafe.String`, which goose does not translate (TrustedCode/internal/stringslite.lean)
 trusted = ["Clone"]

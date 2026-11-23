@@ -8,6 +8,11 @@ module
 public import Perennial.Proof.ProofPrelude
 public import Perennial.Code.strings
 public import Perennial.GeneratedProof.strings
+public import Perennial.Proof.internal.stringslite.Base
+public import Perennial.Proof.sync.Base
+public import Perennial.Proof.io.Base
+public import Perennial.Proof.internal.bytealg.Base
+public import Perennial.Proof.unicode.utf8.Base
 
 @[expose] public section
 
@@ -199,6 +204,12 @@ theorem splitAux_no_infix (sep r field : GoString) (hsep : sep ≠ [])
 theorem split_no_infix (s sep : GoString) (hsep : sep ≠ []) :
     ∀ f ∈ split s sep, ¬ sep <:+: f :=
   splitAux_no_infix sep s [] hsep (by simp)
+
+/-- A `*Replacer` made by `NewReplacer(oldnew...)` and not used yet: its own copy of the
+`oldnew` pairs, its `once` and its built `r` still zero. -/
+def ownReplacer (r : Loc) (oldnew : List GoString) : IProp GF :=
+  iprop(∃ (sl : GoSlice), r ↦ ({ once' := zero_val _, r' := zero_val _, oldnew' := sl } : Replacer) ∗
+    sl ↦* oldnew ∗ ownSliceCap GoString sl (DFrac.own 1))
 
 end wps
 

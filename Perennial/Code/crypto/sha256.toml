@@ -1,0 +1,8 @@
+translate = ["!*"]
+imports = ["!*"]
+
+# `Sum256` is the hash primitive of the sha256 extension (TrustedCode/crypto/sha256.lean):
+# its Go body runs the FIPS 140 implementation, which is not translated.
+# `init.0` registers `New224` and `New` with `crypto.RegisterHash`; `crypto` is not translated,
+# so nothing a translated program does reads the registration (TrustedCode/crypto/sha256.lean).
+trusted = ["init.0", "Sum256"]

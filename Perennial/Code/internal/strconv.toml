@@ -2,6 +2,10 @@
 translate = [
   "ParseUint", "underscoreOK", "Error", "Error.Error", "ErrRange", "ErrSyntax", "ErrBase",
   "ErrBitSize", "intSize", "IntSize", "maxUint64",
+  "ParseBool", "FormatBool",
+  # FormatUint, FormatInt, Itoa and what they need
+  "FormatUint", "FormatInt", "Itoa", "ParseInt", "Atoi", "formatBits", "formatBase10", "small", "isPowerOfTwo",
+  "digits", "nSmalls", "smalls", "host64bit",
   # the package variables (tables of constants), so that the initializer is translated
   "optimize", "powtab", "float64pow10", "float32pow10", "leftcheats", "float32info", "float64info",
   "uint64pow10", "div5Tab",
@@ -9,12 +13,17 @@ translate = [
   "float32MantBits", "float32ExpBits", "float32Bias", "float64MantBits", "float64ExpBits",
   "float64Bias",
 ]
-imports = ["!*"]
-# `pow10Tab`, a 696-entry table of 128-bit powers of ten read only by the float conversions,
-# which are not translated (TrustedCode/internal/strconv.lean)
-trusted = ["pow10Tab", "lower"]
+imports = ["!*", "math/bits"]
+trusted = ["lower"]
 # `lower`: `c | ('x' - 'X')`, whose constant `'x' - 'X'` goose emits as an untyped subtraction
 # the semantics does not step (TrustedCode/internal/strconv.lean)
 
 # translate the definitions of all type declarations goose supports
 translate_types = true
+
+[[skip]]
+names = ["pow10Tab"]
+reason = """
+A 696-entry array literal of 128-bit powers of ten (pow10tab.go, generated): stores constants,
+cannot panic and has no effect beyond the variable. Read only by `pow10` (math.go), which only
+the float conversions (`ParseFloat`, `FormatFloat` and their helpers) call; none is translated."""

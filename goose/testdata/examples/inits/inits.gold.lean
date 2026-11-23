@@ -30,6 +30,19 @@ noncomputable def y [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def z [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/inits.z"
 
+noncomputable def w [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/inits.w"
+
+noncomputable def c [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/inits.c"
+
+opaque c.init [GooseExts] [GoGlobalContext] : val
+
+noncomputable def d [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/inits.d"
+
+opaque d.init [GooseExts] [GoGlobalContext] : val
+
 noncomputable def init.«0» [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/inits.init.0"
 
@@ -38,6 +51,9 @@ noncomputable def init.«1» [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def computeZ [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/inits.computeZ"
+
+noncomputable def pair [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/inits.pair"
 
 /-- go: inits.go:6:6 -/
 noncomputable def init.«0».impl [GooseExts] [GoGlobalContext] : val :=
@@ -48,7 +64,7 @@ noncomputable def init.«0».impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GlobalVarAddr x))) (Val #())) (Var "$r0"))))))
   (Val #())))
 
-/-- go: inits.go:17:6 -/
+/-- go: inits.go:22:6 -/
 noncomputable def computeZ.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -61,6 +77,24 @@ noncomputable def computeZ.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0")))))
 
+/-- go: inits.go:30:6 -/
+noncomputable def pair.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Val #(W64 1))
+  (Let "$r1" (Val #(W64 2))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res1")))))))
+
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.inits where
   pkgImportedPkgs := []
 
@@ -72,12 +106,21 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve init.«1» []))) (Val #())) (Val #())))))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve init.«0» []))) (Val #())) (Val #()))))))
   (App (Val doExecute)
+  (App (Val d.init) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val c.init) (Val #()))))))
+  (App (Val doExecute)
   (App (Val z.init) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val w.init) (Val #()))))))
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc x go.uint64)) (Val #()))))))
   (App (Val doExecute)
@@ -87,10 +130,12 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
   «init.1_unfold» : FuncUnfold init.«1» [] init.«1».impl
   computeZ_unfold : FuncUnfold computeZ [] computeZ.impl
+  pair_unfold : FuncUnfold pair [] pair.impl
 
 attribute [instance] Assumptions.«init.0_unfold»
   Assumptions.«init.1_unfold»
   Assumptions.computeZ_unfold
+  Assumptions.pair_unfold
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.inits
 

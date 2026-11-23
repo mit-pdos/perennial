@@ -1,6 +1,7 @@
 /-
 Trusted code for the Go `os` package, in namespace `os` (as the generated package): what its
-initializer runs that has no Go body (`runtime_args`), and the standard streams' initializers,
+initializer runs that has no Go body (`runtime_args`), what `Exit` calls that has none
+(`runtime_beforeExit`), and the standard streams' initializers,
 which are not translated by the user's decision (fix-semantics Case 33).
 -/
 module
@@ -25,6 +26,30 @@ argument list. -/
 noncomputable def runtime_args.impl : val :=
   syscall.arbitraryStrings
 
+/-- `runtime_beforeExit(exitCode int)` (`proc.go`: `func runtime_beforeExit(exitCode int) // implemented
+in runtime`), which `Exit` (translated) calls before `syscall.Exit`: a `go:linkname` with no Go
+body, the runtime's `os_beforeExit`:
+
+```go
+func os_beforeExit(exitCode int) {
+	runExitHooks(exitCode)
+	if exitCode == 0 && raceenabled {
+		racefini()
+	}
+	if exitCode == 0 && asanenabled && (isarchive || islibrary || NumCgoCall() > 1) {
+		lsandoleakcheck()
+	}
+}
+```
+
+The exit hooks are registered only by coverage instrumentation (`internal/coverage/cfile`, of a
+`-cover` build; `internal/runtime/exithook` is internal to the standard library), and the race
+and address sanitizers only in `-race` and `-asan` builds, which the semantics does not model;
+in a plain build it does nothing. The model: nothing (it returns). -/
+def runtime_beforeExit.impl : val :=
+  λ: "exitCode",
+    #()
+
 /-! ## The standard streams
 
 ```go
@@ -43,19 +68,18 @@ system call), registers it with the runtime's poller (`runtime_pollServerInit`,
 trusted model that does nothing? This is conservative because it leaves Stdin, Stdout, Stderr as
 undefined, so any code relying on it will be unprovable. I do not want to follow the rule
 'translatable => *must* verify' in this case."). The models give a proof less than Go does,
-never more: -/
+never more (`Stdin` is not translated at all: a `skip` entry of `Code/os.toml`): -/
 
-/-- `Stdin`'s initializer. The model does nothing: the variable is not allocated, so code that
-loads `os.Stdin` is stuck (has no proof), where Go reads a `*File`. -/
-def Stdin.init : val :=
-  λ: <>, #()
-
-/-- `Stdout`'s initializer. The model does nothing: the variable is not allocated, so code that
-loads `os.Stdout` is stuck (has no proof), where Go reads a `*File`. -/
+/-- `Stdout`'s initializer. The model does nothing, and the variable is not allocated (goose emits
+no allocation for a trusted variable: its `init` is its whole initialization), so code that
+loads `os.Stdout` is stuck (has no proof), where Go reads a `*File`; taking its address steps,
+to the address Go would give. Sound because Go's initializer (`NewFile` above) cannot panic and
+has no effect a proof can observe beyond the variable. (Not a `skip` entry: it is to get a real
+model, perennial#663.) -/
 def Stdout.init : val :=
   λ: <>, #()
 
-/-- `Stderr`'s initializer. Unlike `Stdin` and `Stdout`, the model allocates the variable,
+/-- `Stderr`'s initializer. Unlike `Stdout`, the model allocates the variable,
 because package initializers that only store `os.Stderr` (`log`'s standard logger in Go,
 raft's `defaultLogger`, `log.New(os.Stderr, ...)`) must be provable: it stores a fresh
 non-nil pointer to an untyped cell, which is not the memory of a `File`. So the variable holds a

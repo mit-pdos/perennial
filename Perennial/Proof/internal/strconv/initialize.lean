@@ -4,6 +4,7 @@ The proof of `internal.strconv.initialize'`.
 module
 
 public import Perennial.Spec.internal.strconv.initialize
+public import Perennial.Spec.math.bits.initialize
 
 @[expose] public section
 
@@ -22,7 +23,8 @@ variable [package_sem : internal.strconv.Assumptions]
 
 set_option maxRecDepth 20000 in
 set_option maxHeartbeats 2000000 in
-theorem internal.strconv.initialize'.wp_proof :
+theorem internal.strconv.initialize'.wp_proof
+    (wp_bits_initialize : math.bits.initialize'.spec (GF := GF) (hG := hG)) :
     internal.strconv.initialize'.spec (GF := GF) (hG := hG) := by
   intro get_is_pkg_init Hinit
   wp_start as Hown
@@ -37,6 +39,7 @@ theorem internal.strconv.initialize'.wp_proof :
     | wp_apply wp_GlobalAlloc (V := GoArray w64 _) _ (go.ArrayType _ go.uint64) as _
     | wp_apply wp_GlobalAlloc (V := GoArray (GoArray w64 _) _) _
         (go.ArrayType _ (go.ArrayType _ go.uint64)) as _)
+  wp_apply wp_bits_initialize _ Hinit.2.1 $$ Hown as ⟨Hown, #Hbits⟩
   -- the variables' initializers: `optimize`, then the constant tables
   repeat (first
     | (wp_apply wp_slice_literal (V := w64) (t := go.int) _
@@ -56,8 +59,6 @@ theorem internal.strconv.initialize'.wp_proof :
        · ipureintro; rfl
        iintro %_ ⟨_, _⟩)
     | wp_auto)
-  -- pow10Tab: its trusted initializer does nothing
-  wp_call
   iframe Hown
   is_pkg_init_finish
 

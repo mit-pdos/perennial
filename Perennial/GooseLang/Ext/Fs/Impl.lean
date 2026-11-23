@@ -24,6 +24,8 @@ may exhaust memory in Go and not in the model.
   operation instead of reporting it, and serializes the operations, so that a
   write is durable before any read sees it.
 * Crashes (`ExtSemantics.crash`): the files survive unchanged.
+* Initial states (`ExtSemantics.initLocal`): any (the default): a node may start
+  with any files.
 * Neither operation changes the heap; file names and contents are passed and
   returned as Go values (`#f`, `#data`).
 -/
