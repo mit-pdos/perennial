@@ -1,5 +1,9 @@
+# `ReadUvarint`, `ReadVarint`, `PutUvarint`, `PutVarint` (varint.go): plain Go loops over an
+# `io.ByteReader` or a slice, no assembly, linkname or build tag; `MaxVarintLen64`, the bound of
+# `ReadUvarint`'s loop
 translate = ["!*", "LittleEndian", "littleEndian*", "BigEndian", "bigEndian*", "err*",
-  "Read", "Write", "intDataSize", "decodeFast", "encodeFast"]
+  "Read", "Write", "intDataSize", "decodeFast", "encodeFast",
+  "MaxVarintLen64", "ReadUvarint", "ReadVarint", "PutUvarint", "PutVarint"]
 imports = ["*"]
 
 # translate the definitions of all type declarations goose supports
