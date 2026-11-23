@@ -1505,6 +1505,46 @@ noncomputable instance msRenamed_access_store_b {A' : Type} [TypedPointsto (GF :
 end def_
 end msRenamed
 
+namespace catcher
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
+
+noncomputable instance catcher_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.catcher where
+  typedPointstoDef l v dq := iprop(
+    "seen" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.catcher go!"seen" l) v.seen' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance catcher_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.catcher github_com.mit_pdos.perennial.goose.testdata.examples.semantics.catcher.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance catcher_access_load_seen (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.catcher) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.catcher go!"seen" l) v.seen' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.catcher go!"seen" l) v.seen' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance catcher_access_store_seen (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.catcher) (seen' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.catcher go!"seen" l) v.seen' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.catcher go!"seen" l) seen' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with seen' := seen' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.catcher) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end catcher
+
 namespace BoolTest
 section def_
 

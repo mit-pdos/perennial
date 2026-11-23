@@ -1429,3 +1429,47 @@ semantics supports integer-to-float conversions, of every type.
 **Why.** Reviewed by the owner (upamanyus), 2026-11-22 (relayed by coordinator-E): "it's simpler for
 us to be able to say 'our go semantics supports integer to float conversions' than it is to say 'our
 semantics supports conversions for float64 but not float32'."
+
+## Case 45 — ACCEPTED: `recover()` in a function or method called by `defer`: `F'deferred` takes the cell (branch `goose-deferred-recover`)
+
+**Symptom.** Incomplete. Goose translated `recover()` only directly in a function literal that is
+the operand of `defer` (it reads the deferring function's `$panic` cell lexically) and refused it in
+a named function or method, whose body cannot see that cell. Go recovers when the deferred function
+is a named function, a method or a method value (spec, "Handling panics"); `fmt`'s
+`handleMethods` defers `p.catchPanic(p.arg, verb, "Error")` (#671 stage 0, item 2).
+
+**Witness.** `func (c *catcher) catch(res *uint64) { if r := recover(); r != nil { *res =
+r.(uint64) } }; func methodRecover() (x uint64) { c := &catcher{}; defer c.catch(&x);
+panic(uint64(7)) }` (Go: 7); `semantics/recover_deferred.go`.
+
+**Taken.** No GooseLang definition or rule. Goose: each translated function or method `F` whose own
+body calls `recover()` (`recoveringFuncs`, outside nested literals) is emitted twice: `F'deferred`
+(its own `GoString`/`FuncUnfold`, or a `MethodUnfold` next to `F`'s for every method-set entry of `F`,
+including the pointer-receiver wrapper and promotions; the method sets themselves are unchanged)
+takes the cell as an extra parameter `$recover` after the receiver, and its `recover()` is
+`recoverPanic $recover`; the ordinary `F` is `Panic "recover() not in a deferred call"` (stuck, less
+defined than Go: Go recovers under a dynamic `defer f()`, so `nil` would be unsound). `defer F(args)`
+/ `defer x.M(args)`, with `F` a function of the package or `M` a method of a concrete type in that
+set, defers `$f $panic args` with `$f` the `'deferred` function or method value, and marks the
+function `with_defer_recover:`. A function value, method value or interface method is deferred as
+today and runs the stuck `F` (`KNOWN_LIMITATIONS.md`). Functions without `recover()` translate
+byte-for-byte as before: every other gold file and the regenerated std-lib and model output
+(go1.26.0) are unchanged. The negative test `recover_indirect` (a deferred named helper) is deleted,
+since that program now translates. Proof side: no new lemma; `F'deferred`'s spec takes the cell's
+points-to, its proof reads it with `wp_recoverPanic`, and the caller passes `pnc` from
+`wp_with_defer_recover`. Semantics tests (Go-checked and proved): a deferred method and a deferred
+function that recover the value, a re-panic, an `F'deferred` with its own recovering literal (two
+cells), and a deferred function when nothing panics; unittest gold `recover_deferred.go` with the
+`handleMethods`/`catchPanic` shape, value receivers, and the stuck shapes (method value, interface
+method, direct call). Cost: 0 definitions, 0 rules, 1 `deferStmt` branch, 1 new kind of generated
+declaration, about 100 goose lines.
+
+**Not taken.** (B) The goroutine's panic state and the running deferred frame in the semantics:
+faithful also for dynamic `defer f()`, but a large semantics change. (C) Inlining `F` into a deferred
+literal: not compositional, fails on recursion. `recover()` in the ordinary `F` as `nil`: Go's value
+for a direct call, but unsound under a dynamic `defer`.
+
+**Why.** Approved by the owner (upamanyus), 2026-11-22 (#671 stage-0 plan, part 2, design A), with a
+refinement: functions with no `recover()` get no second version and translate exactly as today, and
+the ordinary form of a recovering function is kept minimal, only so the method set and function
+values still translate.

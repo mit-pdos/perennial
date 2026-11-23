@@ -297,10 +297,9 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) typeAssumptionsDe
 
 	if !types.IsInterface(t) {
 		// for every method in `t`
-		for i := range goMset.Len() {
-			selection := goMset.At(i)
-			methodName, index := selection.Obj().Name(), selection.Index()
-			if ctx.filter.GetAction(typeName+"."+methodName) == declfilter.Axiomatize {
+		for _, m := range ctx.methodDecls(goMset) {
+			selection, methodName, index := m.selection, m.name, m.selection.Index()
+			if ctx.filter.GetAction(typeName+"."+selection.Obj().Name()) == declfilter.Axiomatize {
 				continue
 			}
 			var impl string
@@ -329,10 +328,9 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) typeAssumptionsDe
 		}
 
 		// for every method in `*t`
-		for i := range goPtrMset.Len() {
-			selection := goPtrMset.At(i)
-			methodName, index := selection.Obj().Name(), selection.Index()
-			if ctx.filter.GetAction(typeName+"."+methodName) == declfilter.Axiomatize {
+		for _, m := range ctx.methodDecls(goPtrMset) {
+			selection, methodName, index := m.selection, m.name, m.selection.Index()
+			if ctx.filter.GetAction(typeName+"."+selection.Obj().Name()) == declfilter.Axiomatize {
 				continue
 			}
 			var impl string
@@ -386,6 +384,26 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) typeAssumptionsDe
 		VerbatimDecl: glang.VerbatimDecl{Content: leanClass(glang.LeanEncodedName(typeName+"_Assumptions"), " [GooseExts] "+leanClassParams, fields)},
 		fields:       len(fields),
 	}
+}
+
+type methodDecl struct {
+	selection *types.Selection
+	name      string
+}
+
+// methodDecls returns the methods of mset with the names of their
+// declarations: the method's name, and also its `'deferred` variant for a
+// method in `recovering` (see funcDecl).
+func (ctx *Ctx) methodDecls(mset *types.MethodSet) []methodDecl {
+	var ms []methodDecl
+	for i := range mset.Len() {
+		sel := mset.At(i)
+		ms = append(ms, methodDecl{sel, sel.Obj().Name()})
+		if ctx.recovering[sel.Obj().(*types.Func).Origin()] {
+			ms = append(ms, methodDecl{sel, sel.Obj().Name() + "'deferred"})
+		}
+	}
+	return ms
 }
 
 // structFieldAssumptions adds the StructFieldGet and StructFieldSet steps of the
@@ -632,11 +650,17 @@ func (ctx *Ctx) leanPackagePropClass(typeSpecs []*ast.TypeSpec) string {
 		for _, p := range params {
 			typeArgs = append(typeArgs, glang.LeanIdent(p))
 		}
-		impl := leanApplied(glang.LeanIdent(glang.FuncImpl(name)), params)
-		fields = append(fields, leanClassField{name: name + "_unfold",
-			ty: leanForall(leanTypeParamBinders(params, "go.GoType"),
-				fmt.Sprintf("FuncUnfold %s [%s] %s", glang.LeanIdent(name),
-					strings.Join(typeArgs, ", "), impl))})
+		names := []string{name}
+		if ctx.recovering[ctx.info.Defs[f.Name].(*types.Func)] {
+			names = append(names, name+"'deferred")
+		}
+		for _, name := range names {
+			impl := leanApplied(glang.LeanIdent(glang.FuncImpl(name)), params)
+			fields = append(fields, leanClassField{name: name + "_unfold",
+				ty: leanForall(leanTypeParamBinders(params, "go.GoType"),
+					fmt.Sprintf("FuncUnfold %s [%s] %s", glang.LeanIdent(name),
+						strings.Join(typeArgs, ", "), impl))})
+		}
 	}
 	for _, impName := range ctx.importNamesOrdered {
 		pkg := impName.Imported()

@@ -616,7 +616,7 @@ pointers (`safeMapKey_interface_pointer`); a proof with other interface keys giv
 |:--|:--|
 | `wp_for`, `wp_for_post_do/continue/break/return/panic/labeled` | loops (used by the tactics) |
 | `wp_with_defer` | functions with `defer` (introduce `%defer Hdefer`, see `Once.wp_doSlow`); the body runs under a `Catch` (see "Panics") |
-| `wp_with_defer_recover`, `wp_recoverPanic` | functions whose deferred function literal calls `recover()` (introduce `%defer %pnc defer pnc`) and the `recover()` |
+| `wp_with_defer_recover`, `wp_recoverPanic` | functions whose deferred function literal or `F'deferred` calls `recover()` (introduce `%defer %pnc defer pnc`) and the `recover()` (of `$panic` or `$recover`) |
 | `wp_panic`, `wp_unwind`, `wp_catch`, `wp_catch_panic`, `wp_catch_val` | panics (see "Panics") |
 | `wp_fork` | `go` statements: `▷ WP e {{ v, ⌜v.isPanic = false⌝ }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}` |
 | `wp_fork_tok`, `wp_ThreadExit` | `go` statements with thread tokens: the forking thread receives a `threadTok`, the forked thread `e ;; ThreadExit` must end with one; see "Thread tokens" |
@@ -811,6 +811,30 @@ theorem wp_recoverNamed :
   wp_apply wp_recoverPanic $$ [$pnc] as pnc       -- in the deferred literal
   iapply HΦ
   itrivial
+```
+
+A function or method `F` whose own body calls `recover()` is translated twice:
+`F'deferred` takes the cell as an extra parameter `$recover` (after the receiver),
+and is what `defer F(args)` (with `F` a function, or a method of a concrete
+type) calls, as `F'deferred $panic args`; the ordinary `F` (called directly, or
+deferred as a function value or an interface method) is stuck (`Panic`), since
+Go's `recover()` recovers only when called directly by the deferred function. The
+spec of `F'deferred` takes the cell's points-to, which its proof reads with
+`wp_recoverPanic`, and the deferring function's proof passes it `pnc`
+(`recover_deferred.go`'s proofs, e.g. `methodRecover.lean`):
+
+```lean
+abbrev catcher.catch'deferred.spec : Prop :=
+  ∀ (c res pnc : Loc) (s x w : w64),
+    {{ (c.[catcher, go!"seen"] ↦ s : IProp GF) ∗ res ↦ x ∗ pnc ↦ interface.mkOk go.uint64 #w }}
+      (App (App (Val (c @!! go.GoType.PointerType catcher.ty @!! go!"catch'deferred")) (Val #pnc))
+        (Val #res))
+    {{ RET #(); c.[catcher, go!"seen"] ↦ (s + W64 1) ∗ res ↦ w ∗ pnc ↦ (interface.nil : GoInterface) }}
+-- methodRecover: `defer c.catch(&x); panic(uint64(7))`
+  wp_apply wp_with_defer_recover as %defer %pnc defer pnc
+  iStructNamed «$r0»
+  wp_apply wp_panic
+  wp_apply wp_catch $$ [$seen $x $pnc] as ⟨seen, x, pnc⟩
 ```
 
 A loop body that panics proves its `forPostcondition` with `wp_for_post`

@@ -100,6 +100,23 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   panicking. Fix: run `$oldf` also when `$f` panics, with `$f`'s panic replacing the
   current one. Found 2026-10-26 by the trusted-base review of the range-over-func change.
 
+- **`recover()` in a function deferred dynamically, or called directly, is stuck
+  (incomplete).** A function or method `F` whose body calls `recover()` recovers only
+  as `F'deferred`, which `defer F(...)` calls when `F` is a function or a method of a
+  concrete type (`deferStmt`, `goose/goose.go`); the ordinary `F` is stuck (`Panic
+  "recover() not in a deferred call"`). Go also recovers when `F` is deferred as a
+  function value, a method value or an interface method, and its `recover()` returns
+  `nil` in a direct call:
+
+  ```go
+  func (c *T) catch(x *int) { if r := recover(); r != nil { *x = 1 } }
+  func F() (x int) { f := c.catch; defer f(&x); panic("p") } // Go: 1; the model: stuck
+  func G() { c.catch(new(int)) }                             // Go: returns; the model: stuck
+  ```
+
+  Fix, if a program needs it: model the goroutine's panic state and the deferred call
+  that is running in the semantics, instead of passing the cell.
+
 - **`panic(nil)` counts as recovered under `with_defer_recover:` (unsound).** Since Go
   1.21, `panic(nil)` panics with a `*runtime.PanicNilError`, so `recover()` returns a
   non-nil value and an unrecovered `panic(nil)` crashes. The model raises the nil

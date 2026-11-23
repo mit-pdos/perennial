@@ -21,6 +21,12 @@ for each proved function `F`. By Go source file:
   literal that sets a named result (`recoverNamed`), a panic raised two calls down
   inside a loop that reaches a recovering `defer` (`catchTwoDeep`), and a panic that
   runs the deferred functions and continues (`panicUnrecovered`).
+* `recover_deferred.go`: `recover()` in a function or method called by `defer`, whose
+  `F'deferred` reads the cell that `defer F(...)` passes it (`$recover`) with
+  `wp_recoverPanic`, as a deferred literal reads `$panic`: a deferred method and a
+  deferred function that recover (`methodRecover`, `topRecover`), a deferred method
+  that panics again (`repanic`), one with its own recovering deferred literal, a second
+  cell (`twoCells`), and one deferred when nothing panics (`recoverNotPanicking`).
 * `anon_structs.go`: unnamed struct types (each modeled by a generated structure): field
   reads, writes and addresses, a pointer to one, one type in two functions, one nested in
   another, and one with a type parameter captured by a closure (as `sync.OnceValue`'s).

@@ -839,6 +839,10 @@ func (e CatchLabelExpr) Lean(m LeanMode) string {
 	return eApp(eVal("catchLabel"), NewStringVal(e.Label).Lean(LeanExpr), e.Body.Lean(LeanExpr))
 }
 
+func (e PanicExpr) Lean(m LeanMode) string {
+	return "(_root_.Perennial.Panic " + strconv.Quote(e.Msg) + ")"
+}
+
 func (e ReturnExpr) Lean(m LeanMode) string {
 	return eLetLike("App", []string{eVal("doReturn")}, e.Value.Lean(LeanExpr))
 }
@@ -1231,6 +1235,9 @@ func (d FuncDecl) LeanDecl() string {
 	var names []string
 	if d.RecvArg != nil {
 		names = append(names, d.RecvArg.Name)
+	}
+	if d.RecoverArg {
+		names = append(names, "$recover")
 	}
 	for _, a := range d.Args {
 		names = append(names, a.Name)

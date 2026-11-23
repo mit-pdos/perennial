@@ -81,12 +81,18 @@ type Ctx struct {
 	usesDefer bool
 
 	// Set when the function's own body defers a function literal that calls
-	// recover(): the function is wrapped with `with_defer_recover:`, which binds
-	// the `$panic` cell that recover() reads and clears.
+	// recover(), or a function or method in `recovering`: the function is
+	// wrapped with `with_defer_recover:`, which binds the `$panic` cell that
+	// recover() reads and clears.
 	usesRecover bool
-	// recover() is translated only when this is set: directly in a function
-	// literal that is the operand of a `defer` statement.
-	recoverOK bool
+	// The cell that recover() reads and clears: `$panic` directly in a function
+	// literal that is the operand of a `defer` statement, `$recover` directly in
+	// the body of a `'deferred` declaration (see funcDecl), and "" (recover() is
+	// unsupported) elsewhere.
+	recoverCell string
+	// The translated functions and methods of the package whose own body calls
+	// recover() (see recoveringFuncs).
+	recovering map[*types.Func]bool
 	// the next function literal translated is the operand of a `defer`
 	nextFuncLitDeferred bool
 
@@ -147,7 +153,31 @@ func NewPkgCtx(pkg *packages.Package, filter declfilter.DeclFilter) Ctx {
 		localTypes:        make(map[string]bool),
 		anonStructs:       make(map[string]*anonStruct),
 		inits:             initFuncs(pkg.Syntax),
+		recovering:        recoveringFuncs(pkg, filter),
 	}
+}
+
+// recoveringFuncs returns the translated functions and methods of pkg whose own
+// body calls recover(). Each such F is translated as `F'deferred`, which takes
+// the cell recover() reads as an extra parameter `$recover` and is what
+// `defer F(...)` calls, and as an ordinary F that is stuck, since Go's
+// recover() only stops a panic when called directly by a deferred function.
+func recoveringFuncs(pkg *packages.Package, filter declfilter.DeclFilter) map[*types.Func]bool {
+	recovering := make(map[*types.Func]bool)
+	for _, f := range pkg.Syntax {
+		for _, d := range f.Decls {
+			d, ok := d.(*ast.FuncDecl)
+			if !ok || d.Body == nil || (d.Recv == nil && d.Name.Name == "init") {
+				continue
+			}
+			fn, ok := pkg.TypesInfo.Defs[d.Name].(*types.Func)
+			if ok && fn.Name() != "_" && filter.GetAction(funcName(fn)) == declfilter.Translate &&
+				callsRecoverDirectly(pkg.TypesInfo, d.Body) {
+				recovering[fn] = true
+			}
+		}
+	}
+	return recovering
 }
 
 func initFuncs(fs []*ast.File) []*ast.FuncDecl {
@@ -451,11 +481,11 @@ func (ctx *Ctx) maybeHandleSpecialBuiltin(s *ast.CallExpr) (glang.Expr, bool) {
 		}
 		return glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"), ty, e), true
 	case "recover":
-		if !ctx.recoverOK {
-			ctx.unsupported(s, "recover() is supported only directly in a function literal "+
-				"deferred by a defer statement (defer func() { ... recover() ... }())")
+		if ctx.recoverCell == "" {
+			ctx.unsupported(s, "recover() is supported only directly in a function or method "+
+				"declaration or in a function literal deferred by a defer statement")
 		}
-		return glang.NewCallExpr(glang.VerbatimExpr("recoverPanic"), glang.IdentExpr("$panic")), true
+		return glang.NewCallExpr(glang.VerbatimExpr("recoverPanic"), glang.IdentExpr(ctx.recoverCell)), true
 	}
 
 	return nil, false
@@ -621,27 +651,33 @@ func (ctx *Ctx) selectorExpr(e *ast.SelectorExpr) glang.Expr {
 		return expr
 
 	case types.MethodVal:
-		// 2*2 cases: receiver type could be (T) or (*T), and e.X type
-		// (including embedded fields) could be (T) or (*T).
-
-		f := selection.Obj().(*types.Func)
-		receiverType := types.Unalias(ctx.typeOf(e.X))
-		receiver := ctx.expr(e.X)
-		methodExpr := glang.StringLiteral{Value: e.Sel.Name}
-
-		// If x is addressable and &x's method set contains m, x.m() is shorthand for (&x).m().
-		if ctx.info.Types[e.X].Addressable() {
-			ptrType := types.NewPointer(receiverType)
-			if obj, _, _ := types.LookupFieldOrMethod(ptrType, false, f.Pkg(), f.Name()); obj != nil {
-				receiverType = ptrType
-				receiver = ctx.exprAddr(e.X)
-			}
-		}
-		typeExpr := ctx.glangType(e.X, receiverType)
-
-		return glang.NewCallExpr(glang.VerbatimExpr("MethodResolve"), typeExpr, methodExpr, receiver)
+		return ctx.methodVal(e, selection, e.Sel.Name)
 	}
 	panic("unreachable")
+}
+
+// methodVal translates the method value e (of the selection selection) as the
+// method named name of e.X's type.
+func (ctx *Ctx) methodVal(e *ast.SelectorExpr, selection *types.Selection, name string) glang.Expr {
+	// 2*2 cases: receiver type could be (T) or (*T), and e.X type
+	// (including embedded fields) could be (T) or (*T).
+
+	f := selection.Obj().(*types.Func)
+	receiverType := types.Unalias(ctx.typeOf(e.X))
+	receiver := ctx.expr(e.X)
+	methodExpr := glang.StringLiteral{Value: name}
+
+	// If x is addressable and &x's method set contains m, x.m() is shorthand for (&x).m().
+	if ctx.info.Types[e.X].Addressable() {
+		ptrType := types.NewPointer(receiverType)
+		if obj, _, _ := types.LookupFieldOrMethod(ptrType, false, f.Pkg(), f.Name()); obj != nil {
+			receiverType = ptrType
+			receiver = ctx.exprAddr(e.X)
+		}
+	}
+	typeExpr := ctx.glangType(e.X, receiverType)
+
+	return glang.NewCallExpr(glang.VerbatimExpr("MethodResolve"), typeExpr, methodExpr, receiver)
 }
 
 type compositeBinding struct {
@@ -908,16 +944,20 @@ func (ctx *Ctx) unaryExpr(e *ast.UnaryExpr, multipleBindings bool) glang.Expr {
 }
 
 func (ctx *Ctx) function(s *ast.Ident) glang.Expr {
+	return ctx.functionNamed(s, s.Name)
+}
+
+// functionNamed translates the function s as the package-level function name.
+func (ctx *Ctx) functionNamed(s *ast.Ident, name string) glang.Expr {
 	if ctx.info.ObjectOf(s).Pkg().Path() != ctx.pkgPath {
 		ctx.nope(s, "expected function ident to refer to local function")
 	}
-	f, ok := ctx.info.ObjectOf(s).(*types.Func)
-	if !ok {
+	if _, ok := ctx.info.ObjectOf(s).(*types.Func); !ok {
 		ctx.nope(s, "expected to get a types.Func object for function ident")
 	}
 	typeArgs := ctx.info.Instances[s].TypeArgs
 	return glang.NewCallExpr(glang.VerbatimExpr("FuncResolve"),
-		ctx.termIdent(f.Name()),
+		ctx.termIdent(name),
 		glang.ListExpr(ctx.convertTypeArgsToGlang(s, typeArgs)),
 		glang.Tt,
 	)
@@ -1090,12 +1130,15 @@ func (ctx *Ctx) funcLit(e *ast.FuncLit) glang.FuncLit {
 		ctx.usesDefer = b
 	}(ctx.usesDefer)
 	ctx.usesDefer = false
-	defer func(b, ok bool) {
+	defer func(b bool, cell string) {
 		ctx.usesRecover = b
-		ctx.recoverOK = ok
-	}(ctx.usesRecover, ctx.recoverOK)
+		ctx.recoverCell = cell
+	}(ctx.usesRecover, ctx.recoverCell)
 	ctx.usesRecover = false
-	ctx.recoverOK = ctx.nextFuncLitDeferred
+	ctx.recoverCell = ""
+	if ctx.nextFuncLitDeferred {
+		ctx.recoverCell = "$panic"
+	}
 	ctx.nextFuncLitDeferred = false
 
 	defer func(oldFuncType *types.Signature) {
@@ -1427,13 +1470,13 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt, label *ast.Ident) glang.Expr {
 	// Each iteration has its own iteration variables. A variable the loop
 	// declares is allocated in the body if the body captures it or takes its
 	// address (loopVarEscapes), and otherwise once, before the loop.
-	recoverOK := ctx.recoverOK
+	recoverCell := ctx.recoverCell
 	if _, ok := ctx.typeOf(s.X).Underlying().(*types.Signature); ok {
 		// recover() in the body of a range over a function returns nil in Go
-		ctx.recoverOK = false
+		ctx.recoverCell = ""
 	}
 	body := ctx.loopBody(s.Body, label)
-	ctx.recoverOK = recoverOK
+	ctx.recoverCell = recoverCell
 	var shared []*ast.Ident
 	for _, kv := range []struct {
 		x ast.Expr
@@ -2025,7 +2068,7 @@ func (ctx *Ctx) goStmt(e *ast.GoStmt, cont glang.Expr) glang.Expr {
 
 // callsRecoverDirectly reports whether body calls the builtin recover() outside
 // any nested function literal.
-func (ctx *Ctx) callsRecoverDirectly(body *ast.BlockStmt) bool {
+func callsRecoverDirectly(info *types.Info, body *ast.BlockStmt) bool {
 	found := false
 	ast.Inspect(body, func(n ast.Node) bool {
 		switch n := n.(type) {
@@ -2033,7 +2076,7 @@ func (ctx *Ctx) callsRecoverDirectly(body *ast.BlockStmt) bool {
 			return false
 		case *ast.CallExpr:
 			if id, ok := n.Fun.(*ast.Ident); ok && id.Name == "recover" &&
-				ctx.info.Types[n.Fun].IsBuiltin() {
+				info.Types[n.Fun].IsBuiltin() {
 				found = true
 			}
 		}
@@ -2047,6 +2090,23 @@ func (ctx *Ctx) callsRecoverDirectly(body *ast.BlockStmt) bool {
 // once its deferred functions have run (wrapFuncBody).
 func resultCell(i int) glang.IdentExpr {
 	return glang.IdentExpr(fmt.Sprintf("$res%d", i))
+}
+
+// deferredRecovering returns the `'deferred` declaration of fun, if fun is a
+// function or a method of a concrete type in `recovering`.
+func (ctx *Ctx) deferredRecovering(fun ast.Expr) (glang.Expr, bool) {
+	switch fun := ast.Unparen(fun).(type) {
+	case *ast.Ident:
+		if f, ok := ctx.info.Uses[fun].(*types.Func); ok && ctx.recovering[f.Origin()] {
+			return ctx.functionNamed(fun, f.Name()+"'deferred"), true
+		}
+	case *ast.SelectorExpr:
+		if sel := ctx.info.Selections[fun]; sel != nil && sel.Kind() == types.MethodVal &&
+			ctx.recovering[sel.Obj().(*types.Func).Origin()] {
+			return ctx.methodVal(fun, sel, fun.Sel.Name+"'deferred"), true
+		}
+	}
+	return nil, false
 }
 
 // wrapFuncBody wraps the body of a function (with its parameters' allocations)
@@ -2165,8 +2225,27 @@ func (ctx *Ctx) returnStmt(s *ast.ReturnStmt, cont glang.Expr) glang.Expr {
 
 func (ctx *Ctx) deferStmt(s *ast.DeferStmt, cont glang.Expr) (expr glang.Expr) {
 	ctx.usesDefer = true
+	var fun glang.Expr
+	args := ctx.callArgs(s.Call)
+	if fl, ok := s.Call.Fun.(*ast.FuncLit); ok {
+		if callsRecoverDirectly(ctx.info, fl.Body) {
+			ctx.usesRecover = true
+		}
+		ctx.nextFuncLitDeferred = true
+		fun = ctx.expr(s.Call.Fun)
+		ctx.nextFuncLitDeferred = false
+	} else if f, ok := ctx.deferredRecovering(s.Call.Fun); ok {
+		ctx.usesRecover = true
+		fun = f
+		if len(args) == 0 {
+			args = []glang.Expr{glang.Tt}
+		}
+		args = append([]glang.Expr{glang.IdentExpr("$panic")}, args...)
+	} else {
+		fun = ctx.expr(s.Call.Fun)
+	}
 	expr = glang.LetExpr{
-		ValExpr: glang.NewCallExpr(glang.IdentExpr("$f"), ctx.callArgs(s.Call)...),
+		ValExpr: glang.NewCallExpr(glang.IdentExpr("$f"), args...),
 		Cont:    glang.NewCallExpr(glang.IdentExpr("$oldf"), glang.Tt),
 	}
 
@@ -2184,17 +2263,6 @@ func (ctx *Ctx) deferStmt(s *ast.DeferStmt, cont glang.Expr) (expr glang.Expr) {
 		X:   expr,
 	}
 
-	var fun glang.Expr
-	if fl, ok := s.Call.Fun.(*ast.FuncLit); ok {
-		if ctx.callsRecoverDirectly(fl.Body) {
-			ctx.usesRecover = true
-		}
-		ctx.nextFuncLitDeferred = true
-		fun = ctx.expr(s.Call.Fun)
-		ctx.nextFuncLitDeferred = false
-	} else {
-		fun = ctx.expr(s.Call.Fun)
-	}
 	expr = glang.LetExpr{
 		Names:   []string{"$f"},
 		ValExpr: fun,
@@ -2557,6 +2625,7 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 	}
 	ctx.curDecl = funcName
 	defer func() { ctx.curDecl = "" }()
+	recovering := ctx.recovering[ctx.info.Defs[d.Name].(*types.Func)]
 
 	if d.Recv == nil {
 		funcName = ctx.funcDeclName(d)
@@ -2567,6 +2636,13 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 			Val:  glang.StringLiteral{Value: funcId},
 			Type: glang.VerbatimExpr("go_string"),
 		})
+		if recovering {
+			ctx.out.funcDecls = append(ctx.out.funcDecls, glang.ConstDecl{
+				Name: funcName + "'deferred",
+				Val:  glang.StringLiteral{Value: funcId + "'deferred"},
+				Type: glang.VerbatimExpr("go_string"),
+			})
+		}
 		ctx.functions = append(ctx.functions, d)
 	}
 
@@ -2597,8 +2673,9 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 
 	ctx.usesDefer = false
 	ctx.usesRecover = false
-	ctx.recoverOK = false
+	ctx.recoverCell = ""
 	ctx.nextFuncLitDeferred = false
+	var deferredName string
 	var fd glang.FuncDecl
 	addSourceDoc(d.Doc, &fd.Comment)
 	ctx.addSourceFile(d, &fd.Comment)
@@ -2631,6 +2708,7 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 		typeName := namedType.Obj().Name()
 
 		fd.Name = glang.TypeMethod(typeName, d.Name.Name)
+		deferredName = glang.TypeMethod(typeName, d.Name.Name+"'deferred")
 
 		name := "_"
 		if len(receiver.Names) > 0 {
@@ -2651,6 +2729,7 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 		}
 	} else {
 		fd.Name = glang.FuncImpl(funcName)
+		deferredName = glang.FuncImpl(funcName + "'deferred")
 		switch ctx.filter.GetAction(funcName) {
 		case declfilter.Trust:
 			return
@@ -2670,6 +2749,9 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 		ctx.unsupported(d, "external function")
 	}
 
+	if recovering {
+		ctx.recoverCell = "$recover"
+	}
 	body := ctx.blockStmt(d.Body, nil)
 
 	fd.Body = body
@@ -2690,6 +2772,15 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 	maybeAddReceiver()
 	fd.Body = ctx.wrapFuncBody(fd.Body, d.Type)
 
+	if recovering {
+		// the function called other than by `defer F(...)`, whose recover() is
+		// stuck
+		stuck := fd
+		stuck.Body = glang.PanicExpr{Msg: "recover() not in a deferred call"}
+		ctx.out.funcImplDecls = append(ctx.out.funcImplDecls, stuck)
+		fd.Name = deferredName
+		fd.RecoverArg = true
+	}
 	ctx.out.funcImplDecls = append(ctx.out.funcImplDecls, fd)
 }
 
