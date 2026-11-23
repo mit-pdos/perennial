@@ -2,7 +2,7 @@
 module
 
 public import Perennial.Proof.ProofPrelude
-public import Perennial.GeneratedProof.crypto
+public import Perennial.ManualProof.crypto.sha1
 public import Perennial.GeneratedProof.crypto.internal.boring
 public import Perennial.GeneratedProof.crypto.internal.fips140only
 public import Perennial.GeneratedProof.errors

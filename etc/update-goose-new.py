@@ -310,7 +310,6 @@ def main():
             "context",
             "cmp",
             "unsafe",
-            "crypto",
             "crypto/ed25519",
             "crypto/fips140",
             "crypto/internal/boring",
