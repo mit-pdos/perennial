@@ -20,22 +20,19 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : maps.Assumptions]
 
-/-- `maps.Clone(m)` (a trusted model, `TrustedCode/maps.lean`: Go's calls the runtime), at a map
-type `map[Kt]Vt` whose keys are safe (`SafeMapKey`: `==` on them is equality): of a map `m` (any
-fraction of it), a fresh map `m'` with the same entries, which the caller owns alone; `m` is only
-read. Of the `nil` map, `nil`. Stated at the literal map type: the model's `make(M, len(m))` is
-defined only there (the semantics' `make` of a map takes the literal type). -/
+/-- `maps.Clone(m)` (Go's calls the runtime's `maps_clone` through `clone`, whose model is the
+semantics' `InternalMapClone`), at any type `T` whose underlying type is `map[Kt]Vt`: of a map `m`
+(any fraction of it), a fresh map `m'` with the same entries, which the caller owns alone; `m` is
+only read. Of the `nil` map, `nil`. -/
 abbrev maps.Clone.spec : Prop :=
   ∀ {K V : Type} [ZeroVal K] [DecidableEq K] [MapKeys K] [ZeroVal V] [go.IntoValInj K]
-    {Kt Vt : go.GoType} [TypedPointsto (GF := GF) K] [IntoValTyped (GF := GF) K Kt]
-    [TypedPointsto (GF := GF) V] [IntoValTyped (GF := GF) V Vt]
-    [∀ k : K, SafeMapKey (GF := GF) Kt k],
+    {T Kt Vt : go.GoType} [T ↓u go.MapType Kt Vt],
   (∀ (m : Loc) (dq : DFrac) (M : GMap K V),
     {{ (m ↦${dq} M : IProp GF) }}
-      (App (Val #(functions maps.Clone [go.MapType Kt Vt, Kt, Vt])) (Val #m))
+      (App (Val #(functions maps.Clone [T, Kt, Vt])) (Val #m))
     {{ (m' : Loc), RET #m'; m ↦${dq} M ∗ m' ↦$ M }}) ∧
   {{ (True : IProp GF) }}
-    (App (Val #(functions maps.Clone [go.MapType Kt Vt, Kt, Vt])) (Val #map.nil))
+    (App (Val #(functions maps.Clone [T, Kt, Vt])) (Val #map.nil))
   {{ RET #map.nil; True }}
 
 end spec

@@ -600,6 +600,7 @@ Specs take `isPkgInit` of their package; `wp_apply` discharges it.
 | `wp_mapInsert` | `{{ l ↦$ m }} ... {{ RET #(); l ↦$ <[k := v]> m }}` (needs `SafeMapKey`) |
 | `wp_map_lookup1`, `wp_map_lookup2` | `m[k]`, `v, ok := m[k]`; the result is `(m !! k).getD (zero_val V)` (and `decide (m !! k).isSome`) |
 | `wp_mapDelete`, `wp_map_clear`, `wp_map_for_range` | |
+| `wp_map_clone` | `InternalMapClone` (the model of `maps.clone`): a fresh `l' ↦$ m` from `l ↦${dq} m`; callers use `maps.wp_Clone` (`Proof/maps`) |
 
 Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `GMap.insert_empty`.
 

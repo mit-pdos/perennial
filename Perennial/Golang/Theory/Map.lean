@@ -651,6 +651,35 @@ theorem wp_map_make1 (key_type elem_type : go.GoType) [TypeRepr key_type K]
   wp_apply (wp_map_make2 (K := K) (V := V) (W64 0) key_type elem_type) with %mref Hm
   iapply HΦ $$ Hm
 
+/-- `InternalMapClone` (`maps.clone`, see `internal_map_clone_step`) of an interface holding the
+map `mref` (any fraction): a fresh map with the same entries, which the caller owns, in an
+interface of the same dynamic type `t`. -/
+theorem wp_map_clone {t key_type elem_type : go.GoType} [t ↓u go.MapType key_type elem_type]
+    (mref : Loc) (dq : DFrac) (m : GMap K V) :
+    {{ (mref ↦${dq} m : IProp GF) }}
+      (App (Val (GoInstruction InternalMapClone)) (Val #(interface.mkOk t #mref))) @ s; E
+    {{ (mref' : Loc), RET #(interface.mkOk t #mref'); mref ↦${dq} m ∗ mref' ↦$ m }} := by
+  rw [ownMap_unseal]
+  iintro %Φ Hm HΦ
+  iNamed Hm
+  obtain ⟨rfl, Hnd, Hok, Hagree⟩ := Hrepr
+  wp_pures
+  wp_apply (_internal_wp_untyped_read _ _ _ (map.mapV_not_panic _ _)) $$ Hown with Hown
+  wp_apply (wp_alloc_untyped _ (by simp)) with %l Hl
+  wp_pures
+  iapply HΦ
+  unfold ownMapDef
+  simp only [named]
+  isplitl [Hown]
+  · iexists _, ps
+    iframe Hown
+    ipureintro
+    exact ⟨rfl, Hnd, Hok, Hagree⟩
+  · iexists _, ps
+    iframe Hl
+    ipureintro
+    exact ⟨rfl, Hnd, Hok, Hagree⟩
+
 theorem ownMap_not_nil (mref : Loc) (m : GMap K V) (dq : DFrac) :
     (mref ↦${dq} m : IProp GF) ⊢ ⌜mref ≠ map.nil⌝ := by
   rw [ownMap_unseal]

@@ -358,6 +358,34 @@ noncomputable def EqualFunc.impl [GooseExts] [GoGlobalContext] (M1 M2 K V1 V2 : 
   (Val #()))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))))
 
+/-- Clone returns a copy of m.  This is a shallow clone:
+    the new keys and values are set using ordinary assignment.
+
+    go: maps.go:50:6 -/
+noncomputable def Clone.impl [GooseExts] [GoGlobalContext] (M K V : go.GoType) : val :=
+  (LamV "m"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc M))) (App (Val (GoInstruction (GoZeroVal M))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "m" (App (Val (GoInstruction (GoAlloc M))) (Var "m"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (TypeAssert M))) (Let "$a0" (App (Val (GoInstruction (Convert M go.any))) (App (Val (GoInstruction (GoLoad M))) (Var "m")))
+  (App (App (Val (GoInstruction (FuncResolve clone []))) (Val #())) (Var "$a0"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore M))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals M))) (Pair (App (Val (GoInstruction (GoLoad M))) (Var "m")) (App (Val (GoInstruction (Convert go.untypedNil M))) (Val UntypedNil)))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil M))) (Val UntypedNil))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore M))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val (GoInstruction (GoLoad M))) (Var "$res0")))))
+
 /-- Copy copies all key/value pairs in src adding them to dst.
     When a key in src is already present in dst,
     the value in dst will be overwritten by the value associated
@@ -437,6 +465,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Collect_unfold : ∀ (K V : go.GoType), FuncUnfold Collect [K, V] (Collect.impl K V)
   Equal_unfold : ∀ (M1 M2 K V : go.GoType), FuncUnfold Equal [M1, M2, K, V] (Equal.impl M1 M2 K V)
   EqualFunc_unfold : ∀ (M1 M2 K V1 V2 : go.GoType), FuncUnfold EqualFunc [M1, M2, K, V1, V2] (EqualFunc.impl M1 M2 K V1 V2)
+  clone_unfold : FuncUnfold clone [] clone.impl
   Clone_unfold : ∀ (M K V : go.GoType), FuncUnfold Clone [M, K, V] (Clone.impl M K V)
   Copy_unfold : ∀ (M1 M2 K V : go.GoType), FuncUnfold Copy [M1, M2, K, V] (Copy.impl M1 M2 K V)
   DeleteFunc_unfold : ∀ (M K V : go.GoType), FuncUnfold DeleteFunc [M, K, V] (DeleteFunc.impl M K V)
@@ -449,6 +478,7 @@ attribute [instance] Assumptions.All_unfold
   Assumptions.Collect_unfold
   Assumptions.Equal_unfold
   Assumptions.EqualFunc_unfold
+  Assumptions.clone_unfold
   Assumptions.Clone_unfold
   Assumptions.Copy_unfold
   Assumptions.DeleteFunc_unfold

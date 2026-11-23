@@ -43,36 +43,6 @@ theorem gmap_eq_of_subseteq_size {K V : Type} [DecidableEq K] {m₁ m₂ : GMap 
       rw [← hperm.mem_iff, GMap.mem_dom_list, h1] at hk
       cases hk
 
-/-- The entries of `m` whose key is in `l` (what a copy loop has copied after visiting `l`). -/
-def restrict {K V : Type} [DecidableEq K] (m : GMap K V) (l : List K) : GMap K V :=
-  GMap.filter (fun k _ => decide (k ∈ l)) m
-
-theorem restrict_nil {K V : Type} [DecidableEq K] (m : GMap K V) :
-    restrict m [] = ∅ := by
-  apply GMap.map_eq; intro k
-  simp only [restrict, GMap.lookup_filter, List.not_mem_nil, decide_false]
-  cases m !! k <;> rfl
-
-theorem restrict_snoc {K V : Type} [DecidableEq K] (m : GMap K V) (l : List K) (k : K) (v : V)
-    (hk : m !! k = some v) : restrict m (l ++ [k]) = <[k := v]> (restrict m l) := by
-  apply GMap.map_eq; intro k'
-  by_cases e : k = k'
-  · subst e; simp [restrict, hk]
-  · rw [GMap.lookup_insert_ne _ _ e]
-    simp only [restrict, GMap.lookup_filter, List.mem_append, List.mem_singleton]
-    have : ¬ k' = k := fun h => e h.symm
-    simp [this]
-
-theorem restrict_all {K V : Type} [DecidableEq K] (m : GMap K V) (l : List K)
-    (hl : ∀ k, (m !! k).isSome → k ∈ l) : restrict m l = m := by
-  apply GMap.map_eq; intro k
-  simp only [restrict, GMap.lookup_filter]
-  cases h : m !! k with
-  | none => rfl
-  | some v =>
-    have := hl k (by rw [h]; rfl)
-    simp [this]
-
 section defs
 variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]

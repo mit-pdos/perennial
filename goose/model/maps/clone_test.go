@@ -1,7 +1,9 @@
-// Package maps holds the evidence for the model of maps.Clone
-// (Perennial/TrustedCode/maps.lean, Clone.impl): the model, copied below as
-// cloneModel, against the real maps.Clone (whose clone is the runtime's
-// maps_clone).
+// Package maps holds the evidence for the model of maps.clone, the runtime's
+// maps_clone (Perennial/TrustedCode/maps.lean, clone.impl: the semantics'
+// InternalMapClone, internal_map_clone_step in Golang/Defn/Map.lean): the real
+// maps.Clone returns a new map with the same entries (each entry copied, NaN
+// keys included), nil for nil, and an empty non-nil map for an empty one,
+// exactly as cloneModel below, a plain Go loop.
 package maps
 
 import (
@@ -11,7 +13,7 @@ import (
 	"testing"
 )
 
-// cloneModel is the Go of Clone.impl's docstring.
+// cloneModel: a fresh map filled with m's entries.
 func cloneModel[M ~map[K]V, K comparable, V any](m M) M {
 	if m == nil {
 		return nil
