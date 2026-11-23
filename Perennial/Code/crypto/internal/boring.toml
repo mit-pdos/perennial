@@ -1,0 +1,3 @@
+# What `crypto/sha1` reaches, of notboring.go (the build without `boringcrypto`).
+translate = ["Enabled", "available", "Unreachable", "NewSHA1", "SHA1"]
+imports = ["!*", "crypto/internal/boring/sig", "hash"]

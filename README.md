@@ -143,6 +143,11 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   * s390x: the user address space (`TASK_SIZE`) is 2^64.
 
   `docs/KNOWN_LIMITATIONS.md`, "Platform", repeats this.
+  The standard library is translated with the build tag `purego`
+  (`etc/update-goose-new.py`), which selects the pure-Go code of the crypto
+  packages (`crypto/sha1`'s `blockGeneric`, where the default build calls
+  assembly) and changes no other package; build tags are those of a whole
+  build, so the results are about programs built with `-tags purego`.
   The Go semantics also assumes a 64-bit platform: the
   word-sized types `int`, `uint` and `uintptr` are 64-bit (values `w64`).
   `uintptr` (`go.UintptrSemantics`, `Perennial/Golang/Defn/Predeclared.lean`)
@@ -209,6 +214,17 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   semantics, only by a top-level statement that names `Sha256NoCollision ok` as a
   hypothesis (`GooseLang/Ext/Sha256/Adequacy.lean`). Only `crypto.sha256.is_hash_inj`
   needs it.
+* **Environment premise (GODEBUG `fips140`), opt-in.** `crypto/fips140`'s
+  `enabled` (`godebug.New("fips140").Value() == "only"`) is a trusted
+  initializer (`TrustedCode/crypto/fips140.lean`) over `godebugFips140`, an
+  opaque string standing for the run's `fips140` GODEBUG setting, of which
+  nothing is proved. In mode `only`, `crypto/sha1.Sum` panics. A theorem whose
+  proof needs the mode off names `GodebugFips140Off` (the setting is unset or
+  `off`) as a hypothesis, and then covers only the runs with that setting; it is
+  the condition under which the untranslated initializers of
+  `crypto/internal/fips140` and `crypto/internal/fips140/check` do not panic
+  (with `purego`, FIPS 140-3 mode panics at start). The model makes no such
+  assumption itself.
 * **Model assumptions (initial states).** An extension's
   `ExtSemantics.initLocal`/`initGlobal` (`GooseLang/Lang.lean`, default `True`)
   are what a top-level theorem assumes of the states its execution starts from.
