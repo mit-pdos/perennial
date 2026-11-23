@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"go/ast"
+	"go/build"
 	"go/parser"
 	"go/token"
 	"go/types"
@@ -460,15 +461,20 @@ func (b *builder) readModel(pm *PackageModel) ([]*modelFile, []error) {
 			continue
 		}
 		for _, cg := range f.Comments {
-			if cg.Pos() >= f.Package {
-				break
-			}
 			for _, c := range cg.List {
-				if strings.HasPrefix(c.Text, "//go:build") || strings.HasPrefix(c.Text, "// +build") {
+				if cg.Pos() < f.Package && (strings.HasPrefix(c.Text, "//go:build") || strings.HasPrefix(c.Text, "// +build")) {
 					errs = append(errs, errors.Errorf("%s: a model file has no build constraint "+
 						"(it is part of the package exactly when the model is)", path))
 				}
+				if strings.HasPrefix(c.Text, "//line ") || strings.HasPrefix(c.Text, "/*line ") {
+					errs = append(errs, errors.Errorf("%s: a model file has no //line directive "+
+						"(the positions of its declarations say which are the model's)", path))
+				}
 			}
+		}
+		if constrainedName(n) {
+			errs = append(errs, errors.Errorf("%s: a model file's name has no GOOS or GOARCH suffix "+
+				"(it is part of the package exactly when the model is)", path))
 		}
 		mf := &modelFile{path: path, src: src, fset: fset, file: f, imports: make(map[string]string)}
 		for _, imp := range f.Imports {
@@ -484,6 +490,27 @@ func (b *builder) readModel(pm *PackageModel) ([]*modelFile, []error) {
 		errs = append(errs, errors.Errorf("model directory %s has no model files", pm.Dir))
 	}
 	return mfs, errs
+}
+
+// constrainedName says whether a file name has a GOOS or GOARCH suffix
+// (go/build's file-name constraints): whether some build configuration
+// excludes the file by its name alone.
+func constrainedName(name string) bool {
+	dir, err := os.MkdirTemp("", "gomodel-name-")
+	if err != nil {
+		return false
+	}
+	defer os.RemoveAll(dir)
+	if os.WriteFile(filepath.Join(dir, name), []byte("package p\n"), 0666) != nil {
+		return false
+	}
+	matches := func(goos, goarch string) bool {
+		ctxt := build.Default
+		ctxt.GOOS, ctxt.GOARCH, ctxt.CgoEnabled = goos, goarch, false
+		ok, err := ctxt.MatchFile(dir, name)
+		return err == nil && ok
+	}
+	return !matches("linux", "amd64") || !matches("windows", "arm64") || !matches("darwin", "386")
 }
 
 // importNames fills in the local names of the model files' imports: the
@@ -612,6 +639,7 @@ func collectDecls(files []*ast.File, model bool) (map[string]*decl, []*decl, []e
 	var all []*decl
 	var errs []error
 	inits := 0
+	markers := make(map[string]bool)
 	for i, f := range files {
 		for _, d := range f.Decls {
 			switch d := d.(type) {
@@ -636,6 +664,10 @@ func collectDecls(files []*ast.File, model bool) (map[string]*decl, []*decl, []e
 										c.Text, replaceDirective))
 									continue
 								}
+								if markers[name] {
+									errs = append(errs, errors.Errorf("%s: a second model init marked as replacing %s", c.Text, name))
+								}
+								markers[name] = true
 								x.name, x.replaces, x.firstLine = name, name, line
 							}
 						}
@@ -872,6 +904,10 @@ func (b *builder) splicePackage(pm *PackageModel, pkg *packages.Package) []error
 			if realDecls[n] != nil && !replaced[n] {
 				errs = append(errs, errors.Errorf("the model declares %q, a real declaration that replaces does not list", n))
 			}
+			if m.kind != "method" && realDecls[n] == nil && types.Universe.Lookup(n) != nil {
+				errs = append(errs, errors.Errorf("the model declares %q, a predeclared identifier "+
+					"(it would change the meaning of the real code)", n))
+			}
 		}
 	}
 	if len(errs) > 0 {
@@ -1006,6 +1042,10 @@ func (b *builder) splicePackage(pm *PackageModel, pkg *packages.Package) []error
 					}
 					used[n] = true
 					continue
+				}
+				if types.Universe.Lookup(n) != nil {
+					errs = append(errs, errors.Errorf("%s: the model's %s imports %q as %s, a predeclared identifier",
+						mf.path, m.name, p, n))
 				}
 				if ap, ok := added[n]; ok && ap != p {
 					errs = append(errs, errors.Errorf("%s: the models spliced into %s use %s for both %q and %q",
@@ -1253,6 +1293,17 @@ func CheckAPI(real, over *types.Package, config declfilter.ModelConfig) []error 
 		case *types.TypeName:
 			if whole || replaced[name] {
 				errs = append(errs, checkType(name, r, o.(*types.TypeName))...)
+			} else if !r.IsAlias() {
+				// a replaced type it embeds or contains may change what it
+				// promotes and whether it is comparable
+				ot := o.(*types.TypeName).Type()
+				if types.Comparable(r.Type()) != types.Comparable(ot) {
+					errs = append(errs, errors.Errorf("%s: the model changes whether it is comparable", name))
+				}
+				if rf, of := exportedFields(r.Type()), exportedFields(ot); !slices.Equal(rf, of) {
+					errs = append(errs, errors.Errorf("%s: exported and embedded fields %v, which the model changes to %v",
+						name, rf, of))
+				}
 			}
 			errs = append(errs, checkMethods(name, r, o.(*types.TypeName), config, whole)...)
 		}
@@ -1326,7 +1377,7 @@ func typeParams(t types.Type) string {
 
 func checkType(name string, r, o *types.TypeName) []error {
 	var errs []error
-	if r.Exported() {
+	{
 		if r.IsAlias() != o.IsAlias() {
 			return []error{errors.Errorf("%s: the model changes whether it is an alias", name)}
 		}
@@ -1372,7 +1423,7 @@ func exportedFields(t types.Type) []string {
 	var out []string
 	for i := range st.NumFields() {
 		f := st.Field(i)
-		if f.Exported() {
+		if f.Exported() || f.Embedded() {
 			out = append(out, fmt.Sprintf("%s %s embedded=%v tag=%q", f.Name(), typeString(f.Type()),
 				f.Embedded(), st.Tag(i)))
 		}
@@ -1435,8 +1486,13 @@ func methodSet(t types.Type) map[string]string {
 	ms := make(map[string]string)
 	set := types.NewMethodSet(t)
 	for i := range set.Len() {
-		f := set.At(i).Obj().(*types.Func)
-		ms[f.Name()] = typeString(f.Type())
+		sel := set.At(i)
+		f := sel.Obj().(*types.Func)
+		recv := ""
+		if r := f.Signature().Recv(); r != nil {
+			recv = typeString(r.Type())
+		}
+		ms[f.Name()] = fmt.Sprintf("%s (declared on %s, at embedding path %v)", typeString(f.Type()), recv, sel.Index())
 	}
 	return ms
 }

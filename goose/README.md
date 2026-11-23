@@ -103,7 +103,9 @@ the model's in its place between `//line` directives, so the real file order,
 `init` order and variable-initialization order are kept and the `go:`
 positions name the model file; an import the model needs is added, one only
 the deleted code used becomes `_`; the model's other declarations (additions)
-go in `zz_gomodel_<file>.go`. It refuses a model whose `replaces` does not
+go in `zz_gomodel_<file>.go` (their `init`s run after the real ones; their
+variables initialize in dependency order, after the real ones they do not
+feed). It refuses a model whose `replaces` does not
 match both ways, that shadows a real declaration, or that changes the real
 package's API (a replaced function's, method's or variable's type; a replaced
 type's exported fields, kind or comparability; a real type's method set
@@ -111,7 +113,10 @@ beyond `added_methods`). The model's declarations are translated, except
 those the config trusts (primitive stubs, with a `.impl` in TrustedCode).
 `goose model-overlay -o DIR <packages>` writes the same overlay for `go
 build/test -overlay DIR/overlay.json`; what is verified is the program built
-with it. Model files live in a module nothing builds
+with it, under the same build configuration (linux/amd64, `-tags goose,...`:
+the files of a package, and so the splice, depend on it). A model file has no
+build constraint, no GOOS/GOARCH suffix and no `//line` directive, and
+declares no predeclared identifier. Model files live in a module nothing builds
 (`goose/model/overlay/<import path>`); the standard-library models' choice and
 stuck points are `internal/gomodel`'s `Choose`, `ChooseUint64` and `Stuck`, a
 package the overlay adds (go1.26.0's `go list` does not find such a package

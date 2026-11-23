@@ -329,3 +329,38 @@ func TestModelStdAdded(t *testing.T) {
 		t.Fatalf("go build: %v\n%s", err, out)
 	}
 }
+
+// TestModelRefusals are the models that change the real package's meaning
+// through a route other than a replaced declaration's own type.
+func TestModelRefusals(t *testing.T) {
+	const inner = "type inner struct{ X int }\n\nfunc (inner) M() int { return 1 }\n\ntype E struct{ inner }\n\ntype U struct{ in inner }\n"
+	for _, c := range []struct {
+		name, real, model, replaces string
+		extra                       map[string]string
+		want                        string
+	}{
+		{"universe", "func F() bool { return true }", "const true = false", ``, nil,
+			`the model declares "true", a predeclared identifier`},
+		{"unexported-underlying", "type t int32\n\nfunc F() t { return 0 }", "type t int64", `"t"`, nil,
+			"t: underlying type int32, which the model changes to int64"},
+		{"comparable-component", inner, "type inner struct{ X int; y []int }",
+			`"inner"`, nil, "U: the model changes whether it is comparable"},
+		{"embedded-pointer", inner, "type E struct{ *inner }", `"E"`, nil, "E: exported fields"},
+		{"override-promoted", inner, "func (E) M() int { return 2 }", ``, nil, "E: method M of E has type"},
+		{"line-directive", "func F() {}", "//line other.go:1\nfunc G() {}", ``, nil, "a model file has no //line directive"},
+		{"two-markers", "func init() { _ = 1 }",
+			"//gomodel:replace init.0 \"_ = 1\"\nfunc init() {}\n\n//gomodel:replace init.0 \"_ = 1\"\nfunc init() {}",
+			`"init.0"`, nil, "a second model init marked as replacing init.0"},
+		{"name-suffix", "func F() {}", "func G() {}", ``,
+			map[string]string{"model/x_windows.go": "package p\n\nfunc H() {}\n"}, "a model file's name has no GOOS or GOARCH suffix"},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			root := modelModule(t, "package p\n\n"+c.real+"\n", "package p\n\n"+c.model+"\n",
+				"[model]\ndir = \"model\"\nreplaces = ["+c.replaces+"]\n", c.extra)
+			_, err := buildModels(root, "./p")
+			if err == nil || !strings.Contains(err.Error(), c.want) {
+				t.Errorf("error:\n%v\nwant it to contain %q", err, c.want)
+			}
+		})
+	}
+}

@@ -102,6 +102,9 @@ func modelOverlay(args []string) {
 		os.Exit(1)
 	}
 	fmt.Println(out)
+	// the overlay is that of this build configuration (util.NewPackageConfig)
+	fmt.Fprintf(os.Stderr, "goose model-overlay: build with GOOS=linux GOARCH=amd64 go build -tags %s -overlay %s\n",
+		strings.Join(append([]string{"goose"}, opts.Tags...), ","), out)
 }
 
 // noinspection GoUnhandledErrorResult
