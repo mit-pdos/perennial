@@ -35,16 +35,12 @@ theorem reflect.initialize'.wp_proof
   wp_apply wp_GlobalAlloc (V := w64) floatArgRegs go.int as Hfa
   wp_apply wp_GlobalAlloc (V := w64) intArgRegs go.int as Hia
   wp_apply wp_abi_initialize _ Hinit.2.1 $$ Hown with ⟨Hown, #Habi⟩
-  -- stringType, bytesType, uint8Type: their trusted initializers do nothing
-  wp_call
   -- kindNames
   wp_apply wp_slice_literal (V := GoString) (t := go.string) _
   isplitr
   · ipureintro; rfl
   iintro %_ ⟨_, _⟩
   wp_auto
-  wp_call
-  wp_call
   iframe Hown
   is_pkg_init_finish
 

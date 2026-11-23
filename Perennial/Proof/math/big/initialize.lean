@@ -43,7 +43,7 @@ theorem math.big.initialize'.wp_proof
     | wp_apply wp_GlobalAlloc (V := w64) _ go.int as _)
   wp_apply wp_errors_initialize _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Herrors⟩
   wp_apply wp_fmt_initialize _ Hinit.2.1 $$ Hown as ⟨Hown, #Hfmt⟩
-  -- the variables, in Go's initialization order; `hasADX`'s trusted initializer does nothing
+  -- the variables, in Go's initialization order (`hasADX` is skipped: not translated)
   repeat (first
     | (wp_apply wp_New as %_ _)
     | (wp_apply wp_slice_literal (V := w64) [_]

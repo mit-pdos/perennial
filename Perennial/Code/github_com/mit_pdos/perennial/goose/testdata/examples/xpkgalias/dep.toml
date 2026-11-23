@@ -1,0 +1,5 @@
+# X and A are translated, Tr is trusted, the other aliases are axiomatized;
+# sync is not imported
+translate = ["!*", "X", "A"]
+trusted = ["Tr"]
+imports = ["!*", "github.com/mit-pdos/perennial/goose/testdata/examples/xpkgalias/dep2"]

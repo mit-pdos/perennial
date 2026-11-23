@@ -3,8 +3,8 @@ Results of `context` derived from the linked ones, under their old names: the me
 `*cancelCtx` and `*timerCtx` (`wp_cancelCtx_Done`, ..., `wp_timerCtx_cancel`, the Link's
 `cancelCtx.wp_Done`, ...), the promoted methods of `*timerCtx` (`wp_timerCtx_Done`, ...), the
 three cases of `propagateCancel`'s spec (`wp_propagateCancel_background`, `_background_any`,
-`_cancelCtx`, `_ctx`, `_any`), the other triples of `WithCancel` (`wp_WithCancel_gen`,
-`wp_WithCancel_ctx`, `wp_WithCancel_any`, `wp_WithCancel_Background`), of the deadline constructors (`wp_WithDeadlineCause_Background`,
+`_todo`, `_todo_any`, `_cancelCtx`, `_ctx`, `_any`), the other triples of `WithCancel` (`wp_WithCancel_gen`,
+`wp_WithCancel_ctx`, `wp_WithCancel_any`, `wp_WithCancel_Background`, `wp_WithCancel_TODO`), of the deadline constructors (`wp_WithDeadlineCause_Background`,
 `wp_WithDeadline_Background`, `wp_WithTimeout_Background`) and of `parentCancelCtx` (`wp_parentCancelCtx_self`,
 `wp_parentCancelCtx_timer`), the `atomic.Value` cells (`wp_done_Load`, ...) and the `isContext`s of
 `*cancelCtx` and `*timerCtx`: each the shared `_of` lemma applied to the linked results.
@@ -153,6 +153,16 @@ theorem wp_propagateCancel_background (c : Loc) :
     {{ RET #(); ctxField c ↦ (interface.ok backgroundCtxVal : GoInterface) }} :=
   wp_propagateCancel_background_of cancelCtx.wp_propagateCancel c
 
+/-- `c.propagateCancel(TODO(), c)`: the parent is never canceled (`Done()` is `nil`). -/
+theorem wp_propagateCancel_todo (c : Loc) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗
+        ctxField c ↦ (interface.nil : GoInterface) }}
+      (App (App (Val (c @!! go.GoType.PointerType context.cancelCtx.ty @!! go!"propagateCancel"))
+        (Val #(interface.ok todoCtxVal)))
+        (Val #(interface.mkOk (go.GoType.PointerType context.cancelCtx.ty) #c)))
+    {{ RET #(); ctxField c ↦ (interface.ok todoCtxVal : GoInterface) }} :=
+  wp_propagateCancel_todo_of cancelCtx.wp_propagateCancel c
+
 /-- `c.propagateCancel(parent, c)` for a parent that is a `*cancelCtx` described by `s` whose
 Done proposition implies `c`'s: either the parent is already done (then `c` is canceled at once),
 or `c` is added to the parent's `children` (with its `childCancelSpec`). -/
@@ -265,6 +275,21 @@ theorem wp_WithCancel_Background (PDone' : IProp GF) :
   wp_WithCancel_Background_of wp_withCancel cancelCtx.wp_cancel cancelCtx.wp_propagateCancel
     cancelCtx.wp_Done cancelCtx.wp_Err cancelCtx.wp_Value sync.atomic.Value.wp_Load PDone'
 
+/-- `WithCancel(TODO())`: as `wp_WithCancel_Background` (`TODO()` is never done, and has no values
+and no deadline). -/
+theorem wp_WithCancel_TODO (PDone' : IProp GF) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isClosedchanInit }}
+      (App (Val (@! context.WithCancel)) (Val #(interface.ok todoCtxVal)))
+    {{ (ctx' : GoInterfaceOk) (γ' : ContextNames) (cancel : GoFunc),
+        RET (PairV #(interface.ok ctx') #cancel);
+        □ (∀ Φ : val → IProp GF, □ PDone' -∗ ▷ (ContextClosed γ' -∗ Φ #()) -∗
+          WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
+        isContext ctx' { Values := ∅, Deadline := none, Done_gn := γ', PDone := PDone' } ∗
+        isCancelCtxCtx ctx' { Values := ∅, Deadline := none, Done_gn := γ', PDone := PDone' } ∗
+        ctxValueFrom todoCtxVal ctx' }} :=
+  wp_WithCancel_TODO_of wp_withCancel cancelCtx.wp_cancel cancelCtx.wp_propagateCancel
+    cancelCtx.wp_Done cancelCtx.wp_Err cancelCtx.wp_Value sync.atomic.Value.wp_Load PDone'
+
 /-- `wp_timerCtx_Done_of` applied to the linked results (see there). -/
 theorem wp_timerCtx_Done (c : Loc) (γ : ContextNames) (P : IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOf (tcc c) γ P }}
@@ -335,6 +360,17 @@ theorem wp_propagateCancel_background_any (c : Loc) (k : GoInterface)
         (Val #k))
     {{ RET #(); ctxField c ↦ (interface.ok backgroundCtxVal : GoInterface) }} :=
   wp_propagateCancel_background_any_of cancelCtx.wp_propagateCancel c k
+
+/-- `wp_propagateCancel_todo_any_of` applied to the linked results (see there). -/
+theorem wp_propagateCancel_todo_any (c : Loc) (k : GoInterface)
+    [SafeMapKey (GF := GF) context.canceler.ty k] :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗
+        ctxField c ↦ (interface.nil : GoInterface) }}
+      (App (App (Val (c @!! go.GoType.PointerType context.cancelCtx.ty @!! go!"propagateCancel"))
+        (Val #(interface.ok todoCtxVal)))
+        (Val #k))
+    {{ RET #(); ctxField c ↦ (interface.ok todoCtxVal : GoInterface) }} :=
+  wp_propagateCancel_todo_any_of cancelCtx.wp_propagateCancel c k
 
 /-- `WithDeadlineCause(Background(), d, cause)` (`wp_WithDeadlineCause_Background_of` applied to
 the linked results): a context with no values, the deadline `d` and the Done proposition `True`,

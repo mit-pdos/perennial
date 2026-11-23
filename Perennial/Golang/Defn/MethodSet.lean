@@ -91,7 +91,7 @@ attribute [instance] PredeclaredNoMethods.bool PredeclaredNoMethods.string
 
 /-- A struct field that is not embedded (it promotes no method). -/
 class inductive NotEmbedded : go.field_decl → Prop
-  | field (n : GoString) (t : go.GoType) : NotEmbedded (go.FieldDecl n t)
+  | field (n : GoString) (t : go.GoType) (tag : GoString) : NotEmbedded (go.field_decl.Field n t tag)
 
 attribute [instance] NotEmbedded.field
 

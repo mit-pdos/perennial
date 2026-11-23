@@ -7,6 +7,7 @@ module
 
 public import Perennial.Proof.context.Background
 public import Perennial.Proof.context.Cause
+public import Perennial.Proof.context.TODO
 public import Perennial.Proof.context.WithCancel
 public import Perennial.Proof.context.WithDeadline
 public import Perennial.Proof.context.WithDeadlineCause
@@ -44,6 +45,9 @@ theorem context.wp_Background : context.Background.spec (GF := GF) (hG := hG) :=
 
 theorem context.wp_Cause : context.Cause.spec (GF := GF) (hG := hG) :=
   context.Cause.wp_proof sync.Mutex.wp_Lock sync.Mutex.wp_Unlock
+
+theorem context.wp_TODO : context.TODO.spec (GF := GF) (hG := hG) :=
+  context.TODO.wp_proof
 
 theorem context.cancelCtx.wp_Done : context.cancelCtx.Done.spec (GF := GF) (hG := hG) :=
   context.cancelCtx.Done.wp_proof sync.Mutex.wp_Lock sync.Mutex.wp_Unlock sync.atomic.Value.wp_Load sync.atomic.Value.wp_Store

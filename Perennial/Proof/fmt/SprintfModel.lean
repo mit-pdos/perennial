@@ -1101,7 +1101,7 @@ theorem not_simpleDirective_nil (f : GoString) (h : f.head? ≠ some (W8 37)) :
 
 /-- The helper `fmt.formatArg` of the model of `Sprintf`: at the `%` at index `i` of `format`, the
 output of the directive for the argument `x` and the index after it, if the model formats it. -/
-theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
+theorem wp_formatArg (B : GoInterface → Option GoString) (format : GoString) (i : w64) (x : GoInterface)
     (Hi : 0 ≤ sint.Z i ∧ sint.Z i < (format.length : Int))
     (Hx : ((format.drop (sint.nat i + 1)).head? = some (W8 115) ∨
         (format.drop (sint.nat i + 1)).head? = some (W8 118) ∨
@@ -1112,8 +1112,8 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
       (App (App (App (Val formatArg) (Val #format)) (Val #i)) (Val #x))
     {{ (s : GoString) (next : w64) (ok : Bool), RET (PairV (PairV #s #next) #ok);
         ⌜ok = true → sint.Z i < sint.Z next ∧ sint.Z next ≤ (format.length : Int) ∧
-          (∀ args r, SprintfOut (format.drop (sint.nat next)) args r →
-            SprintfOut (W8 37 :: format.drop (sint.nat i + 1)) (x :: args) (s ++ r)) ∧
+          (∀ args r, SprintfOutB B (format.drop (sint.nat next)) args r →
+            SprintfOutB B (W8 37 :: format.drop (sint.nat i + 1)) (x :: args) (s ++ r)) ∧
           AuxStep format (sint.nat i) (sint.nat next)⌝ ∗
         ⌜ok = false → (format.drop (sint.nat i + 1)).head? ≠ some (W8 37) →
           ∀ args, ¬ SimpleDirective (format.drop (sint.nat i + 1)) (x :: args)⌝ }} := by
@@ -1155,7 +1155,7 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
             auxStep_simple format _ _ (W8 115) (.inl rfl) (by rw [Hdrop, Hdrop2])⟩
           rw [Hdrop2] at hr
           rw [Hdrop]
-          exact SprintfOut.str _ _ _ _ _ Hval hr
+          exact SprintfOutB.str _ _ _ _ _ Hval hr
         · ipureintro; intro h; cases h
     · rw [decide_eq_false hs]
       wp_auto
@@ -1208,7 +1208,7 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
                   auxStep_simple format _ _ (W8 120) (.inr (.inr (.inl rfl))) (by rw [Hdrop, Hdrop2])⟩
                 rw [Hdrop2] at hr
                 rw [Hdrop]
-                exact SprintfOut.hex _ _ _ _ _ Hval hr
+                exact SprintfOutB.hex _ _ _ _ _ Hval hr
               · ipureintro; intro h; cases h
           · rw [decide_eq_false hx]
             wp_auto
@@ -1239,7 +1239,7 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
                 iapply HΦ
                 isplitl []
                 · ipureintro; intro _
-                  exact ⟨Hn1, Hn2, fun args r hr => SprintfOut.int _ _ _ _ _ _ _ Hparse Hval hr,
+                  exact ⟨Hn1, Hn2, fun args r hr => SprintfOutB.int _ _ _ _ _ _ _ Hparse Hval hr,
                     auxStep_int format (sint.nat i) (sint.nat next) _ Hparse⟩
                 · ipureintro; intro h; cases h
         · obtain ⟨ii, rfl, Hval⟩ := Hs1 rfl
@@ -1251,7 +1251,7 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
               auxStep_simple format _ _ (W8 118) (.inr (.inl rfl)) (by rw [Hdrop, Hdrop2, hv])⟩
             rw [Hdrop2] at hr
             rw [Hdrop, hv]
-            exact SprintfOut.strV _ _ _ _ _ Hval hr
+            exact SprintfOutB.strV _ _ _ _ _ Hval hr
           · ipureintro; intro h; cases h
       · rw [decide_eq_false hv]
         wp_auto
@@ -1290,7 +1290,7 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
                 auxStep_simple format _ _ (W8 120) (.inr (.inr (.inl rfl))) (by rw [Hdrop, Hdrop2])⟩
               rw [Hdrop2] at hr
               rw [Hdrop]
-              exact SprintfOut.hex _ _ _ _ _ Hval hr
+              exact SprintfOutB.hex _ _ _ _ _ Hval hr
             · ipureintro; intro h; cases h
         · rw [decide_eq_false hx]
           wp_auto
@@ -1321,7 +1321,7 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
               iapply HΦ
               isplitl []
               · ipureintro; intro _
-                exact ⟨Hn1, Hn2, fun args r hr => SprintfOut.int _ _ _ _ _ _ _ Hparse Hval hr,
+                exact ⟨Hn1, Hn2, fun args r hr => SprintfOutB.int _ _ _ _ _ _ _ Hparse Hval hr,
                     auxStep_int format (sint.nat i) (sint.nat next) _ Hparse⟩
               · ipureintro; intro h; cases h
 
@@ -1363,7 +1363,7 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
         iapply HΦ
         isplitl []
         · ipureintro; intro _
-          exact ⟨Hn1, Hn2, fun args r hr => SprintfOut.int _ _ _ _ _ _ _ Hparse Hval hr,
+          exact ⟨Hn1, Hn2, fun args r hr => SprintfOutB.int _ _ _ _ _ _ _ Hparse Hval hr,
                     auxStep_int format (sint.nat i) (sint.nat next) _ Hparse⟩
         · ipureintro; intro h; cases h
 

@@ -281,6 +281,152 @@ noncomputable def symMergeOrdered [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def rotateOrdered [GooseExts] [GoGlobalContext] : GoString :=
   go!"slices.rotateOrdered"
 
+/-- Clone returns a copy of the slice.
+    The elements are copied using assignment, so this is a shallow clone.
+    The result may have additional unused capacity.
+    The result preserves the nilness of s.
+
+    go: slices.go:353:6 -/
+noncomputable def Clone.impl [GooseExts] [GoGlobalContext] (S E : go.GoType) : val :=
+  (LamV "s"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc S))) (App (Val (GoInstruction (GoZeroVal S))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc S))) (Var "s"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (CompositeLiteral S))) (LiteralValue []))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad S))) (Var "s"))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [S]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore S))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals S))) (Pair (App (Val (GoInstruction (GoLoad S))) (Var "s")) (App (Val (GoInstruction (Convert go.untypedNil S))) (Val UntypedNil)))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil S))) (Val UntypedNil))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore S))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val (GoInstruction (GoLoad S))) (Var "$res0")))))
+
+/-- Grow increases the slice's capacity, if necessary, to guarantee space for
+    another n elements. After Grow(n), at least n elements can be appended
+    to the slice without another allocation. If n is negative or too large to
+    allocate the memory, Grow panics.
+    The result preserves the nilness of s.
+
+    go: slices.go:420:6 -/
+noncomputable def Grow.impl [GooseExts] [GoGlobalContext] (S E : go.GoType) : val :=
+  (LamV "s"
+  (Lam "n"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc S))) (App (Val (GoInstruction (GoZeroVal S))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (Var "n"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc S))) (Var "s"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad S))) (Var "s"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore S))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 0)))))
+  (Let "$r0" (Let "$s" (Let "$a0" (Let "$s" (App (Val (GoInstruction (GoLoad S))) (Var "s"))
+  (App (Val (GoInstruction (Slice S))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Let "$a0" (App (Val (GoInstruction (GoLoad S))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.cap [S]))) (Val #())) (Var "$a0"))))))
+  (Let "$a1" (App (Val (GoInstruction (Convert (go.GoType.SliceType E) S))) (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType E)]))) (Val #())) (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [S]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (Val (GoInstruction (Slice S))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Let "$a0" (App (Val (GoInstruction (GoLoad S))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [S]))) (Val #())) (Var "$a0"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore S))) (Pair (Var "s") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad S))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.cap [S]))) (Val #())) (Var "$a0"))) (Let "$a0" (App (Val (GoInstruction (GoLoad S))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [S]))) (Val #())) (Var "$a0"))))))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 0)))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"cannot be negative")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val (GoInstruction (GoLoad S))) (Var "$res0"))))))
+
+/-- Concat returns a new slice concatenating the passed in slices.
+    If the concatenation is empty, the result is nil.
+
+    go: slices.go:489:6 -/
+noncomputable def Concat.impl [GooseExts] [GoGlobalContext] (S E : go.GoType) : val :=
+  (LamV "slices"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc S))) (App (Val (GoInstruction (GoZeroVal S))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "slices" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType S)))) (Var "slices"))
+  (Let "$r0" (Val #(W64 0))
+  (Let "size" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert go.untypedNil S))) (Val UntypedNil))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "size"))
+  (App (App (App (Val (GoInstruction (FuncResolve Grow [S, E]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (Let "newslice" (App (Val (GoInstruction (GoAlloc S))) (App (Val (GoInstruction (GoZeroVal S))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad S))) (Var "newslice"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore S))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType S)))) (Var "slices"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc S))) (App (Val (GoInstruction (GoZeroVal S))) (Val #())))
+  (App (App (Val (slice.forRange S)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad S))) (Var "newslice"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad S))) (Var "s"))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [S]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore S))) (Pair (Var "newslice") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Var "$key")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore S))) (Pair (Var "s") (Var "$value")))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore S))) (Pair (Var "newslice") (Var "$r0")))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType S)))) (Var "slices"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc S))) (App (Val (GoInstruction (GoZeroVal S))) (Val #())))
+  (App (App (Val (slice.forRange S)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "size")) (Val #(W64 0)))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"len out of range")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "size")) (Let "$a0" (App (Val (GoInstruction (GoLoad S))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [S]))) (Val #())) (Var "$a0")))))))))))
+  (App (Val doExecute)
+  (Var "$key")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore S))) (Pair (Var "s") (Var "$value")))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad S))) (Var "$res0")))))
+
 /-- Sort sorts a slice of any ordered type in ascending order.
     When sorting floating-point numbers, NaNs are ordered before other values.
 
@@ -3564,6 +3710,9 @@ attribute [instance] xorshift.TypeAssumptions.underlying
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   sortedHint_instance : sortedHint.TypeAssumptions
   xorshift_instance : xorshift.TypeAssumptions
+  Clone_unfold : ∀ (S E : go.GoType), FuncUnfold Clone [S, E] (Clone.impl S E)
+  Grow_unfold : ∀ (S E : go.GoType), FuncUnfold Grow [S, E] (Grow.impl S E)
+  Concat_unfold : ∀ (S E : go.GoType), FuncUnfold Concat [S, E] (Concat.impl S E)
   Sort_unfold : ∀ (S E : go.GoType), FuncUnfold «Sort» [S, E] («Sort».impl S E)
   SortFunc_unfold : ∀ (S E : go.GoType), FuncUnfold SortFunc [S, E] (SortFunc.impl S E)
   nextPowerOfTwo_unfold : FuncUnfold nextPowerOfTwo [] nextPowerOfTwo.impl
@@ -3606,6 +3755,9 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
 
 attribute [instance] Assumptions.sortedHint_instance
   Assumptions.xorshift_instance
+  Assumptions.Clone_unfold
+  Assumptions.Grow_unfold
+  Assumptions.Concat_unfold
   Assumptions.Sort_unfold
   Assumptions.SortFunc_unfold
   Assumptions.nextPowerOfTwo_unfold

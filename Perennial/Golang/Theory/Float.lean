@@ -46,6 +46,24 @@ theorem msb_encode_ofInt_of_nonneg (n : Int) (h : 0 ≤ n) :
   | none => simp
   | some b => exact f.msb_encode_round false _ b hb
 
+/-- The rounding of a non-negative constant has a clear sign bit (it is `+0`, positive or
+`+∞`). -/
+theorem msb_encode_ofConst_of_nonneg (q : Rat) (h : 0 ≤ q) :
+    ((f.encode (f.ofConst q)).getD 0).msb = false := by
+  have hq : ¬ q < 0 := Rat.not_lt.mpr h
+  rw [ofConst_unseal, ofConstDef]
+  split
+  · cases hb : f.encode (.finite false 0) with
+    | none => simp
+    | some b =>
+      simp only [encode] at hb
+      split at hb <;> (cases hb; exact f.msb_pack ..)
+  · rw [roundRat]
+    simp only [hq, decide_false, if_false]
+    cases hb : f.encode (f.round false q) with
+    | none => simp
+    | some b => exact f.msb_encode_round false _ b hb
+
 theorem pow2_nonneg (k : Int) : 0 ≤ pow2 k := by
   unfold pow2
   split
@@ -84,13 +102,13 @@ non-negative integer has a clear sign bit (it is `+0` or positive), and a `float
 clear sign bit (`+0`, a positive number, `+∞` or a NaN) is not below `+0`. -/
 
 theorem int64ToFloat64_sign_clear (n : w64) (h : 0 ≤ sint.Z n) : 0 ≤ sint.Z (int64ToFloat64 n) :=
-  BitVec.toInt_nonneg_of_msb_false (binary64.msb_encode_ofInt_of_nonneg _ h)
+  BitVec.toInt_nonneg_of_msb_false (binary64.msb_encode_ofConst_of_nonneg _ (by exact_mod_cast h))
 theorem uint64ToFloat64_sign_clear (n : w64) : 0 ≤ sint.Z (uint64ToFloat64 n) :=
-  BitVec.toInt_nonneg_of_msb_false (binary64.msb_encode_ofInt_of_nonneg _ (by omega))
+  BitVec.toInt_nonneg_of_msb_false (binary64.msb_encode_ofConst_of_nonneg _ (by exact_mod_cast Nat.zero_le _))
 theorem int32ToFloat64_sign_clear (n : w32) (h : 0 ≤ sint.Z n) : 0 ≤ sint.Z (int32ToFloat64 n) :=
-  BitVec.toInt_nonneg_of_msb_false (binary64.msb_encode_ofInt_of_nonneg _ h)
+  BitVec.toInt_nonneg_of_msb_false (binary64.msb_encode_ofConst_of_nonneg _ (by exact_mod_cast h))
 theorem uint32ToFloat64_sign_clear (n : w32) : 0 ≤ sint.Z (uint32ToFloat64 n) :=
-  BitVec.toInt_nonneg_of_msb_false (binary64.msb_encode_ofInt_of_nonneg _ (by omega))
+  BitVec.toInt_nonneg_of_msb_false (binary64.msb_encode_ofConst_of_nonneg _ (by exact_mod_cast Nat.zero_le _))
 
 private theorem decode_zero64 : binary64.decode (W64 0) = .finite false 0 := by
   simp [Format.decode, binary64]
@@ -133,6 +151,15 @@ theorem float32Encodes_exists (d : FloatValue) : ∃ b, float32Encodes d b := by
   cases h : binary32.encode d with
   | some b => exact ⟨b, rfl⟩
   | none => exact ⟨0x7FC00000, by simp only; decide⟩
+
+/-- The encoding of a value that is not a NaN is its bit pattern. (The premise is a `==`, so that
+`decide +kernel` proves it of a closed value.) -/
+theorem float64Encodes_eq {d : FloatValue} {b f : w64} (h : (binary64.encode d == some b) = true)
+    (hf : float64Encodes d f) : f = b := by
+  simp only [float64Encodes, Format.encodes, eq_of_beq h] at hf; exact hf
+theorem float32Encodes_eq {d : FloatValue} {b f : w32} (h : (binary32.encode d == some b) = true)
+    (hf : float32Encodes d f) : f = b := by
+  simp only [float32Encodes, Format.encodes, eq_of_beq h] at hf; exact hf
 
 open Perennial.go in
 /-- `x < 0` of a `float64` `x` with a clear sign bit is `false`: the step of `x < 0`
@@ -240,6 +267,23 @@ theorem wp_float32_neg {t : go.GoType} [t ↓u go.float32] (v : w32) :
     {{ (f : w32), RET #f; ⌜float32Encodes (float32Neg v) f⌝ }} :=
   wp_go_step_rel (fun f : w32 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.neg_float32 v)
     (float32Encodes_exists _)
+
+/-! The conversions between `float64` and `float32` (`float32(x)`, `float64(x)`, also of named
+types): the result `f` encodes the rounding of `x` (any NaN if `x` is NaN). -/
+
+theorem wp_float64_to_float32 {t1 t2 : go.GoType} [t1 ↓u go.float64] [t2 ↓u go.float32]
+    (v : w64) :
+    {{ (True : IProp GF) }} (App (Val (GoInstruction (Convert t1 t2))) (Val #v)) @ s; E
+    {{ (f : w32), RET #f; ⌜float32Encodes (float64ToFloat32 v) f⌝ }} :=
+  wp_go_step_rel (fun f : w32 => #f) _ _ _ (fun _ _ _ => Iff.rfl)
+    (go.convert_float64_to_float32 v) (float32Encodes_exists _)
+
+theorem wp_float32_to_float64 {t1 t2 : go.GoType} [t1 ↓u go.float32] [t2 ↓u go.float64]
+    (v : w32) :
+    {{ (True : IProp GF) }} (App (Val (GoInstruction (Convert t1 t2))) (Val #v)) @ s; E
+    {{ (f : w64), RET #f; ⌜float64Encodes (float32ToFloat64 v) f⌝ }} :=
+  wp_go_step_rel (fun f : w64 => #f) _ _ _ (fun _ _ _ => Iff.rfl)
+    (go.convert_float32_to_float64 v) (float64Encodes_exists _)
 
 end wp
 

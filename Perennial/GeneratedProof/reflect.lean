@@ -2,7 +2,6 @@
 module
 
 public import Perennial.Proof.ProofPrelude
-public import Perennial.ManualProof.reflect
 public import Perennial.GeneratedProof.internal.abi
 public import Perennial.Golang.Theory
 public import Perennial.Code.reflect
