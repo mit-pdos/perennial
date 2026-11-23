@@ -323,7 +323,10 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `crypto/rand.Reader` (stores a value of Go's dynamic type with a placeholder
   inside; needs `crypto/internal/rand` and `drbg`, whose init runs a FIPS
   self-test). (A fifth, `crypto/ed25519.cryptocustomrand`, is now a skip
-  entry: no translated code reads it.) The no-op for `math.useFMA` (a CPU
+  entry: no translated code reads it.) `crypto/sha1`'s `init` (`crypto.RegisterHash(crypto.SHA1,
+  New)`) is a trusted no-op for the same program-logic gap, as `crypto/sha256`'s:
+  `crypto` is not translated, so nothing translated reads its hash table
+  (the user's decision, 2026-11-23). The no-op for `math.useFMA` (a CPU
   feature the runtime detects) models irreducible behaviour;
   `errors.errorType` and `math/big.hasADX`, the same kind, are skip entries. Each model's docstring says why it is
   faithful.
