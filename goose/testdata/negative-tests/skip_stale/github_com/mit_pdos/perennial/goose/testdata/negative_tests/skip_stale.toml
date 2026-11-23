@@ -1,0 +1,3 @@
+[[skip]]
+names = ["X", "Gone"]
+reason = "constants"

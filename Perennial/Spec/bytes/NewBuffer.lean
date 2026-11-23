@@ -21,10 +21,11 @@ variable [sem : go.Semantics]
 variable [package_sem : bytes.Assumptions]
 
 /-- `bytes.NewBuffer(buf)`: a fresh `*Buffer` whose unread content is `buf`'s bytes; it takes
-`buf`. -/
+`buf` with its capacity (Go: "The new Buffer takes ownership of buf", and writes grow into its
+capacity). -/
 abbrev bytes.NewBuffer.spec : Prop :=
   ∀ (b : GoSlice) (bs : List w8),
-    {{ (b ↦* bs : IProp GF) }}
+    {{ (b ↦* bs ∗ ownSliceCap w8 b (DFrac.own 1) : IProp GF) }}
       (App (Val (@! bytes.NewBuffer)) (Val #b))
     {{ (l : Loc), RET #l; bytes.ownBuffer l bs }}
 

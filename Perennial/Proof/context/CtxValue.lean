@@ -34,10 +34,6 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : context.Assumptions]
 
-/-- The context `TODO()` returns: a `todoCtx{}` as a `Context`. -/
-abbrev todoCtxVal : GoInterfaceOk :=
-  interface.mk todoCtx.ty #(zero_val todoCtx)
-
 /-- The `Context` field of the `*valueCtx` `p`. -/
 abbrev vctxField [GoSemanticsFunctions] (p : Loc) : Loc :=
   structFieldRef context.valueCtx go!"Context" p

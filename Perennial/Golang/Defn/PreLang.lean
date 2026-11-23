@@ -34,9 +34,30 @@ inductive ChanDir where
   | sendonly
   | recvonly
 
+/-- A field declaration of a struct type (spec, "Struct types": `FieldDecl = (IdentifierList
+Type | EmbeddedField) [ Tag ]`): `Field name type tag` or `Embedded name type tag`, a field
+without a tag having the empty tag (Go does not tell an absent tag from `""`: the spec's
+"Struct types" makes the tag the field's string literal, and `go/types` reports `""` for both,
+so `struct{A int ""}` and `struct{A int}` are one type; an `Option` would give it two
+representations). `FieldDecl name type` and `EmbeddedField name type` (below) are the
+untagged ones, which goose writes for every field without a tag.
+
+Tags are part of a struct type's identity (spec, "Type identity": "Two struct types are
+identical if they have the same sequence of fields, and if corresponding fields have the same
+names, and identical types, and identical tags"), so ``struct{A int `json:"a"`}``,
+`struct{A int}` and ``struct{A int `json:"b"`}`` are three different `GoType`s, as in Go. The
+semantics of field access, zero values, allocation, loads, stores and comparison look fields up
+by name and ignore the tag, as Go's do.
+
+goose writes the tags of an unnamed struct type's fields only. A defined struct type's
+underlying type is written without them: a defined type's identity is its name, and its field
+steps do not depend on them. So a conversion between struct types that Go allows only by
+ignoring tags (spec, "Conversions": "ignoring struct tags"), such as `T(x)` from a tagged
+unnamed struct to a defined type `T`, has no rule and is stuck: the model is less defined than
+Go there, never more (`KNOWN_LIMITATIONS.md`). -/
 inductive field_decl where
-  | FieldDecl : GoString → GoType → field_decl
-  | EmbeddedField : GoString → GoType → field_decl
+  | Field (name : GoString) (type : GoType) (tag : GoString) : field_decl
+  | Embedded (name : GoString) (type : GoType) (tag : GoString) : field_decl
 
 inductive signature where
   | Signature : List GoType → Bool → List GoType → signature
@@ -57,6 +78,15 @@ noncomputable instance : DecidableEq signature := fun a b => Classical.propDecid
 
 
 instance : Inhabited GoType := ⟨.Named go!"any" []⟩
+
+/-- A field without a tag (its tag is empty): what goose writes for the usual field. -/
+@[match_pattern] abbrev field_decl.FieldDecl (name : GoString) (type : GoType) : field_decl :=
+  .Field name type []
+
+/-- An embedded field without a tag (its tag is empty). -/
+@[match_pattern] abbrev field_decl.EmbeddedField (name : GoString) (type : GoType) :
+    field_decl :=
+  .Embedded name type []
 
 -- Constructors are available directly in `go` (`go.Named`, `go.FieldDecl`, ...).
 export GoType (Named ArrayType StructType PointerType FunctionType InterfaceType SliceType MapType

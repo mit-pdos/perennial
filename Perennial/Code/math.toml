@@ -1,6 +1,11 @@
 translate = [
   "MaxUint64", "MaxInt64", "MaxInt", "MinInt",
 
+  # `Sqrt` (over the trusted `sqrt`, below), the bit casts (`unsafe` views of a float's bytes) and
+  # the helpers of the software `sqrt`
+  "Sqrt", "Float64bits", "Float64frombits", "IsNaN", "IsInf", "Abs", "NaN",
+  "uvnan", "mask", "shift", "bias", "MaxFloat64",
+
   # the package variables (tables of constants), all but `useFMA`
   "_gamP", "_gamQ", "_gamS", "p0R8", "p0S8", "p0R5", "p0S5", "p0R3", "p0S3",
   "p0R2", "p0S2", "q0R8", "q0S8", "q0R5", "q0S5", "q0R3", "q0S3", "q0R2",
@@ -13,5 +18,6 @@ translate = [
 
 imports = ["!*"]
 
-# `useFMA = cpu.X86.HasAVX && cpu.X86.HasFMA` (TrustedCode/math.lean)
-trusted = ["useFMA"]
+# `useFMA = cpu.X86.HasAVX && cpu.X86.HasFMA` (TrustedCode/math.lean); `sqrt`, which gc compiles
+# to the square-root instruction, not its Go body (TrustedCode/math.lean)
+trusted = ["useFMA", "sqrt"]

@@ -398,7 +398,8 @@ before `wp_for`.
 
 `wp_for_post` proves a `forPostcondition` goal at the end of an iteration with
 `wp_for_post_do` (fall-through: then the post statement runs, e.g. `i++`),
-`wp_for_post_continue`, `wp_for_post_break` or `wp_for_post_return`, then runs
+`wp_for_post_continue`, `wp_for_post_break`, `wp_for_post_return`,
+`wp_for_post_panic` or `wp_for_post_labeled` (below), then runs
 `wp_auto`. After it, re-establish the invariant (`iframe; iexists ...; ...`).
 
 Range loops are `for:` loops too: `slice.forRange`, and for arrays
@@ -409,6 +410,17 @@ their `for:` loop by `wp_auto` (`Theory/Array.lean`), whose counter is an extra
 switch or `select` ends that statement: Goose wraps such a statement in
 `catchBreak`, which `wp_auto` steps through (`break:` becomes `do:`; the
 `pure_catch_break_*` instances in `Theory/Loop.lean`).
+
+`break L` and `continue L` are `doBreakTo #"L"` and `doContinueTo #"L"`, whose
+outcomes `breakToVal L` and `continueToVal L` every loop, `switch` and `select`
+passes outward unchanged. Goose wraps the body of a loop labeled `L` in
+`catchLabel #"L"`, which turns them into `break` and `continue` of that loop
+(so `continue L` runs its post statement), and a labeled `switch` or `select`
+in `catchBreak (catchLabel #"L" ...)`; `wp_auto` steps through both
+(`pure_catch_label_*`). In an inner loop that `break L` or `continue L` leaves,
+`wp_for_post` proves the body's `forPostcondition` with `wp_for_post_labeled`
+(the loop ends with that outcome), and the proof continues in the enclosing
+loop's body. Example: `labeledContinue` in the semantics tests.
 
 A range over a string is `string.forRange s body` (`Golang/Defn/String.lean`): a
 `for:` loop over a byte index whose iteration decodes the rune at the index with
@@ -506,8 +518,8 @@ the old behaviour).
 | `iStructNamed H` | split `H : l ↦{dq} (v : S)` into field points-tos named after the fields | `Golang/Theory/PostLifting.lean` |
 | `iStructNamedPrefix H "p"`, `iStructNamedSuffix H "s"` | with renaming | same |
 | `ipersist H` | turn `H : l ↦ v` (or anything with `UpdateIntoPersistently`) into persistent `H : l ↦□ v`; needs an update in the goal (a WP is fine) | `GooseLang/IPersist.lean` |
-| `iPkgInit` | solve an `isPkgInit` goal or the `isPkgInit` conjuncts at the front of a `∗` goal from the intuitionistic context | `Golang/Theory/Pkg.lean` |
-| `solve_pkg_init` | solve one `isPkgInit pkg` goal (also through the dependencies of other packages' `isPkgInit`) | same |
+| `iPkgInit` | solve an `isPkgInit` (or `isPkgInitSome`) goal or such conjuncts at the front of a `∗` goal from the intuitionistic context | `Golang/Theory/Pkg.lean` |
+| `solve_pkg_init` | solve one `isPkgInit pkg` or `isPkgInitSome pkg` goal (also through the dependencies of other packages' `isPkgInit` and `isPkgInitSome`) | same |
 | `isPkgInit_unfold`, `is_pkg_init_finish` | unfold `isPkgInit` in the goal; finish a `wp_initialize'` proof | `Golang/Theory/Auto.lean` |
 | `cleanup_bool_decide` | simplify `if decide (#(decide P) = #true)` and friends | `Golang/Theory/Auto.lean` |
 | `solve_ndisj` | prove namespace mask conditions (`↑(N.@"a") ⊆ ⊤ ∖ ↑(N.@"b")`, `⊤ ∖ ↑N ⊆ ⊤ ∖ ↑(N.@x)`, `↑(N.@"a") ## ↑(N.@"b")`, using mask hypotheses); `iinv` discharges its mask side condition with it | `Golang/Theory/IrisTactics.lean` |
@@ -602,7 +614,7 @@ pointers (`safeMapKey_interface_pointer`); a proof with other interface keys giv
 
 | Lemma | |
 |:--|:--|
-| `wp_for`, `wp_for_post_do/continue/break/return/panic` | loops (used by the tactics) |
+| `wp_for`, `wp_for_post_do/continue/break/return/panic/labeled` | loops (used by the tactics) |
 | `wp_with_defer` | functions with `defer` (introduce `%defer Hdefer`, see `Once.wp_doSlow`); the body runs under a `Catch` (see "Panics") |
 | `wp_with_defer_recover`, `wp_recoverPanic` | functions whose deferred function literal calls `recover()` (introduce `%defer %pnc defer pnc`) and the `recover()` |
 | `wp_panic`, `wp_unwind`, `wp_catch`, `wp_catch_panic`, `wp_catch_val` | panics (see "Panics") |
@@ -664,6 +676,10 @@ that is not translated, or an entry whose signature has a type goose does not su
 method that is not translated may: `("Equal", none)`); then the entry still says that the
 method exists. A type that the translation cannot name (of a package it does not import) is
 written out in signatures as its descriptor's definition, `go.Named "<path>.<Name>" []`.
+A type alias `A` always has a reducible descriptor `A.ty`, defined as the descriptor of the
+type it denotes, whether its package's configuration translates, axiomatizes or trusts it
+(`example : dep.A.ty = dep.X.ty := rfl` for `type A = X`); only when goose cannot translate
+that type is an untranslated alias's `A.ty` opaque.
 
 ---
 
@@ -1487,3 +1503,21 @@ initializer meeting the standard spec above. So a package's `wp_initialize'` nee
 not be restated to show that it initializes nothing away. The price is that
 `wp_PackageInitStart` takes the premise that the package is not initialized (an
 autoParam `by assumption`: `package.init` checks first).
+
+**A fact that takes a parameter.** A package whose fact names something the
+program's proof chooses (per-run ghost state its initializer fills, allocated by
+the proof before the program starts) declares a family of facts instead of one:
+`IsPkgInitParam PROP pkg`, with `Param : Type` and `inst : Param → IsPkgInit PROP
+pkg`. Code proved at a known parameter uses the fact there (`IsPkgInitParam.inst x`,
+usually through a local instance taking the parameter's class as an argument). An
+importer's fact holds `isPkgInitSome pkg` (`∃ x, isPkgInit (inst x) pkg`, persistent):
+`define_is_pkg_init` writes it for every dependency with an `IsPkgInitParam`
+instance, so the importer's `IsPkgInit` instance takes no parameter. Its
+`GetIsPkgInitWf` instance does (give it an explicit binder, `instance [MyGS] :
+GetIsPkgInitWf …`, not a section variable): the well-formedness fixes the fact the
+package's initializer establishes, at the parameter the importer's initializer
+relies on. `is_pkg_init_finish` proves an `isPkgInitSome` conjunct from the fact at
+a parameter (the `Frame` instance `isPkgInitSome_frame`), and `solve_pkg_init`
+proves `isPkgInitSome` goals and searches through `isPkgInitSome` hypotheses (for
+facts that do not depend on the parameter). Worked example:
+`Perennial/Golang/Theory/PkgParamTest.lean`.

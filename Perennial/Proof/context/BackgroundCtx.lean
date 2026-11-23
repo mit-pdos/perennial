@@ -3,7 +3,9 @@ The context `Background()` returns (`backgroundCtxVal`): the specs of its `Done`
 `Deadline` methods (promoted from the embedded `emptyCtx`; method-set wrappers, not functions of
 the package's code), its `deadlineSpec`, and `parentCancelCtx(Background())`
 (`wp_parentCancelCtx_background`: a second triple of `parentCancelCtx`, with the exact result,
-proved from its code; `removeChild` and `propagateCancel` use it).
+proved from its code; `removeChild` and `propagateCancel` use it); and the same for the context
+`TODO()` returns (`todoCtxVal`), which Go treats alike (`wp_todo_Done`, `wp_todo_Deadline`,
+`wp_parentCancelCtx_todo`, `deadlineSpec_todo`).
 -/
 module
 
@@ -77,6 +79,57 @@ theorem deadlineSpec_background : ⊢ deadlineSpec (GF := GF) backgroundCtxVal n
   imodintro
   iintro %Φ - HΦ
   iapply wp_background_Deadline
+  · itrivial
+  inext; iintro -
+  iapply HΦ $$ []
+  itrivial
+
+/-! ### `TODO()` -/
+
+theorem wp_todo_Done :
+    {{ (True : IProp GF) }}
+      (App (Val #(methods todoCtx.ty go!"Done" #(zero_val todoCtx))) (Val #()))
+    {{ RET #chan.nil; True }} := by
+  wp_start
+  wp_method_call
+  wp_auto
+  iapply HΦ
+  itrivial
+
+theorem wp_todo_Deadline :
+    {{ (True : IProp GF) }}
+      (App (Val #(methods todoCtx.ty go!"Deadline" #(zero_val todoCtx))) (Val #()))
+    {{ RET (PairV #(zero_val time.Time) #false); True }} := by
+  wp_start
+  wp_method_call
+  wp_auto
+  iapply HΦ
+  itrivial
+
+theorem wp_parentCancelCtx_todo :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context }}
+      (App (Val (@! context.parentCancelCtx)) (Val #(interface.ok todoCtxVal)))
+    {{ RET (PairV #Loc.null #false); True }} := by
+  wp_start
+  ihave #Hi := isInit_access $$ Hpkg
+  icases Hi with ⟨_, ⟨%closed, #Hclosed⟩, _⟩
+  wp_alloc par as Hpar
+  wp_auto
+  wp_apply wp_todo_Done
+  by_cases h : chan.nil = closed
+  · simp only [h, _root_.decide_true]
+    wp_auto
+    iapply HΦ; itrivial
+  · simp only [h, _root_.decide_false]
+    wp_auto
+    iapply HΦ; itrivial
+
+theorem deadlineSpec_todo : ⊢ deadlineSpec (GF := GF) todoCtxVal none := by
+  unfold deadlineSpec
+  simp only [Option.getD]
+  imodintro
+  iintro %Φ - HΦ
+  iapply wp_todo_Deadline
   · itrivial
   inext; iintro -
   iapply HΦ $$ []
