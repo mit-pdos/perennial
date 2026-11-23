@@ -1,3 +1,6 @@
 # What `crypto/sha1` reaches, of notboring.go (the build without `boringcrypto`).
 translate = ["Enabled", "available", "Unreachable", "NewSHA1", "SHA1"]
 imports = ["!*", "crypto/internal/boring/sig", "hash"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

@@ -62,22 +62,6 @@ noncomputable def PrivateKeyECDH.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] PrivateKeyECDH.ty
 
-opaque BigInt.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
-opaque randReader.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
-opaque PublicKeyECDSA.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
-opaque PrivateKeyECDSA.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
-opaque PublicKeyRSA.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
-opaque PrivateKeyRSA.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
-opaque PublicKeyECDH.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
-opaque PrivateKeyECDH.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
 @[reducible] noncomputable def Enabled [GooseExts] [GoGlobalContext] : val :=
   #false
 
@@ -246,155 +230,231 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.hash.initialize') (Val #()))))))))
 
-opaque BigInt.nonempty_type : NonemptyType.{0}
-def BigInt : Type := BigInt.nonempty_type.type
-instance BigInt.nonempty : Nonempty BigInt := BigInt.nonempty_type.property
-opaque BigInt.zero_val : ZeroVal BigInt := ⟨Classical.ofNonempty⟩
-attribute [instance] BigInt.zero_val
+abbrev BigInt [GooseExts] : Type := GoSlice
+
+@[reducible] noncomputable def BigInt.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.uint)
 
 class BigInt.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying BigInt.underlying BigInt
   underlying : go.UnderlyingDirectedEq BigInt.ty BigInt.underlying
-  isUnderlying : go.IsUnderlying BigInt.underlying BigInt.underlying
   method_set : go.MethodSetIs BigInt.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType BigInt.ty) []
 
-attribute [instance] BigInt.TypeAssumptions.type_repr
-  BigInt.TypeAssumptions.underlying
-  BigInt.TypeAssumptions.isUnderlying
+attribute [instance] BigInt.TypeAssumptions.underlying
   BigInt.TypeAssumptions.method_set
   BigInt.TypeAssumptions.ptr_method_set
 
-opaque randReader.nonempty_type : NonemptyType.{0}
-def randReader : Type := randReader.nonempty_type.type
-instance randReader.nonempty : Nonempty randReader := randReader.nonempty_type.property
-opaque randReader.zero_val : ZeroVal randReader := ⟨Classical.ofNonempty⟩
-attribute [instance] randReader.zero_val
+abbrev randReader [GooseExts] : Type := w64
+
+@[reducible] noncomputable def randReader.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  go.int
 
 class randReader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying randReader.underlying randReader
   underlying : go.UnderlyingDirectedEq randReader.ty randReader.underlying
-  isUnderlying : go.IsUnderlying randReader.underlying randReader.underlying
   method_set : go.MethodSetIs randReader.ty [(go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType randReader.ty) [(go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error])))]
 
-attribute [instance] randReader.TypeAssumptions.type_repr
-  randReader.TypeAssumptions.underlying
-  randReader.TypeAssumptions.isUnderlying
+attribute [instance] randReader.TypeAssumptions.underlying
   randReader.TypeAssumptions.method_set
   randReader.TypeAssumptions.ptr_method_set
 
-opaque PublicKeyECDSA.nonempty_type : NonemptyType.{0}
-def PublicKeyECDSA : Type := PublicKeyECDSA.nonempty_type.type
-instance PublicKeyECDSA.nonempty : Nonempty PublicKeyECDSA := PublicKeyECDSA.nonempty_type.property
-opaque PublicKeyECDSA.zero_val : ZeroVal PublicKeyECDSA := ⟨Classical.ofNonempty⟩
-attribute [instance] PublicKeyECDSA.zero_val
+structure PublicKeyECDSA [GooseExts] where
+  mk ::
+  «_#0'» : w64
+
+noncomputable instance PublicKeyECDSA.zero_val [GooseExts] : ZeroVal PublicKeyECDSA :=
+  ⟨PublicKeyECDSA.mk zeroValDef⟩
+
+@[reducible] noncomputable def PublicKeyECDSA.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"_#0" go.int)]
+
+@[irreducible] noncomputable def PublicKeyECDSA.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  PublicKeyECDSA.fieldsUnsealed
+
+noncomputable instance equals_unfold_PublicKeyECDSA [GooseExts] [GoGlobalContext] :
+    EqualsUnfold PublicKeyECDSA.fields PublicKeyECDSA.fieldsUnsealed :=
+  ⟨by unfold PublicKeyECDSA.fields; rfl⟩
+
+@[reducible] noncomputable def PublicKeyECDSA.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType PublicKeyECDSA.fields)
 
 class PublicKeyECDSA.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying PublicKeyECDSA.underlying PublicKeyECDSA
   underlying : go.UnderlyingDirectedEq PublicKeyECDSA.ty PublicKeyECDSA.underlying
-  isUnderlying : go.IsUnderlying PublicKeyECDSA.underlying PublicKeyECDSA.underlying
+  «get__#0» : ∀ (x : PublicKeyECDSA), go.IsGoStepPureDetTagged under (StructFieldGet PublicKeyECDSA.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : PublicKeyECDSA) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet PublicKeyECDSA.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : PublicKeyECDSA)))
   method_set : go.MethodSetIs PublicKeyECDSA.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType PublicKeyECDSA.ty) []
 
 attribute [instance] PublicKeyECDSA.TypeAssumptions.type_repr
   PublicKeyECDSA.TypeAssumptions.underlying
-  PublicKeyECDSA.TypeAssumptions.isUnderlying
+  PublicKeyECDSA.TypeAssumptions.«get__#0»
+  PublicKeyECDSA.TypeAssumptions.«set__#0»
   PublicKeyECDSA.TypeAssumptions.method_set
   PublicKeyECDSA.TypeAssumptions.ptr_method_set
 
-opaque PrivateKeyECDSA.nonempty_type : NonemptyType.{0}
-def PrivateKeyECDSA : Type := PrivateKeyECDSA.nonempty_type.type
-instance PrivateKeyECDSA.nonempty : Nonempty PrivateKeyECDSA := PrivateKeyECDSA.nonempty_type.property
-opaque PrivateKeyECDSA.zero_val : ZeroVal PrivateKeyECDSA := ⟨Classical.ofNonempty⟩
-attribute [instance] PrivateKeyECDSA.zero_val
+structure PrivateKeyECDSA [GooseExts] where
+  mk ::
+  «_#0'» : w64
+
+noncomputable instance PrivateKeyECDSA.zero_val [GooseExts] : ZeroVal PrivateKeyECDSA :=
+  ⟨PrivateKeyECDSA.mk zeroValDef⟩
+
+@[reducible] noncomputable def PrivateKeyECDSA.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"_#0" go.int)]
+
+@[irreducible] noncomputable def PrivateKeyECDSA.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  PrivateKeyECDSA.fieldsUnsealed
+
+noncomputable instance equals_unfold_PrivateKeyECDSA [GooseExts] [GoGlobalContext] :
+    EqualsUnfold PrivateKeyECDSA.fields PrivateKeyECDSA.fieldsUnsealed :=
+  ⟨by unfold PrivateKeyECDSA.fields; rfl⟩
+
+@[reducible] noncomputable def PrivateKeyECDSA.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType PrivateKeyECDSA.fields)
 
 class PrivateKeyECDSA.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying PrivateKeyECDSA.underlying PrivateKeyECDSA
   underlying : go.UnderlyingDirectedEq PrivateKeyECDSA.ty PrivateKeyECDSA.underlying
-  isUnderlying : go.IsUnderlying PrivateKeyECDSA.underlying PrivateKeyECDSA.underlying
+  «get__#0» : ∀ (x : PrivateKeyECDSA), go.IsGoStepPureDetTagged under (StructFieldGet PrivateKeyECDSA.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : PrivateKeyECDSA) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet PrivateKeyECDSA.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : PrivateKeyECDSA)))
   method_set : go.MethodSetIs PrivateKeyECDSA.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType PrivateKeyECDSA.ty) []
 
 attribute [instance] PrivateKeyECDSA.TypeAssumptions.type_repr
   PrivateKeyECDSA.TypeAssumptions.underlying
-  PrivateKeyECDSA.TypeAssumptions.isUnderlying
+  PrivateKeyECDSA.TypeAssumptions.«get__#0»
+  PrivateKeyECDSA.TypeAssumptions.«set__#0»
   PrivateKeyECDSA.TypeAssumptions.method_set
   PrivateKeyECDSA.TypeAssumptions.ptr_method_set
 
-opaque PublicKeyRSA.nonempty_type : NonemptyType.{0}
-def PublicKeyRSA : Type := PublicKeyRSA.nonempty_type.type
-instance PublicKeyRSA.nonempty : Nonempty PublicKeyRSA := PublicKeyRSA.nonempty_type.property
-opaque PublicKeyRSA.zero_val : ZeroVal PublicKeyRSA := ⟨Classical.ofNonempty⟩
-attribute [instance] PublicKeyRSA.zero_val
+structure PublicKeyRSA [GooseExts] where
+  mk ::
+  «_#0'» : w64
+
+noncomputable instance PublicKeyRSA.zero_val [GooseExts] : ZeroVal PublicKeyRSA :=
+  ⟨PublicKeyRSA.mk zeroValDef⟩
+
+@[reducible] noncomputable def PublicKeyRSA.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"_#0" go.int)]
+
+@[irreducible] noncomputable def PublicKeyRSA.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  PublicKeyRSA.fieldsUnsealed
+
+noncomputable instance equals_unfold_PublicKeyRSA [GooseExts] [GoGlobalContext] :
+    EqualsUnfold PublicKeyRSA.fields PublicKeyRSA.fieldsUnsealed :=
+  ⟨by unfold PublicKeyRSA.fields; rfl⟩
+
+@[reducible] noncomputable def PublicKeyRSA.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType PublicKeyRSA.fields)
 
 class PublicKeyRSA.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying PublicKeyRSA.underlying PublicKeyRSA
   underlying : go.UnderlyingDirectedEq PublicKeyRSA.ty PublicKeyRSA.underlying
-  isUnderlying : go.IsUnderlying PublicKeyRSA.underlying PublicKeyRSA.underlying
+  «get__#0» : ∀ (x : PublicKeyRSA), go.IsGoStepPureDetTagged under (StructFieldGet PublicKeyRSA.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : PublicKeyRSA) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet PublicKeyRSA.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : PublicKeyRSA)))
   method_set : go.MethodSetIs PublicKeyRSA.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType PublicKeyRSA.ty) []
 
 attribute [instance] PublicKeyRSA.TypeAssumptions.type_repr
   PublicKeyRSA.TypeAssumptions.underlying
-  PublicKeyRSA.TypeAssumptions.isUnderlying
+  PublicKeyRSA.TypeAssumptions.«get__#0»
+  PublicKeyRSA.TypeAssumptions.«set__#0»
   PublicKeyRSA.TypeAssumptions.method_set
   PublicKeyRSA.TypeAssumptions.ptr_method_set
 
-opaque PrivateKeyRSA.nonempty_type : NonemptyType.{0}
-def PrivateKeyRSA : Type := PrivateKeyRSA.nonempty_type.type
-instance PrivateKeyRSA.nonempty : Nonempty PrivateKeyRSA := PrivateKeyRSA.nonempty_type.property
-opaque PrivateKeyRSA.zero_val : ZeroVal PrivateKeyRSA := ⟨Classical.ofNonempty⟩
-attribute [instance] PrivateKeyRSA.zero_val
+structure PrivateKeyRSA [GooseExts] where
+  mk ::
+  «_#0'» : w64
+
+noncomputable instance PrivateKeyRSA.zero_val [GooseExts] : ZeroVal PrivateKeyRSA :=
+  ⟨PrivateKeyRSA.mk zeroValDef⟩
+
+@[reducible] noncomputable def PrivateKeyRSA.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"_#0" go.int)]
+
+@[irreducible] noncomputable def PrivateKeyRSA.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  PrivateKeyRSA.fieldsUnsealed
+
+noncomputable instance equals_unfold_PrivateKeyRSA [GooseExts] [GoGlobalContext] :
+    EqualsUnfold PrivateKeyRSA.fields PrivateKeyRSA.fieldsUnsealed :=
+  ⟨by unfold PrivateKeyRSA.fields; rfl⟩
+
+@[reducible] noncomputable def PrivateKeyRSA.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType PrivateKeyRSA.fields)
 
 class PrivateKeyRSA.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying PrivateKeyRSA.underlying PrivateKeyRSA
   underlying : go.UnderlyingDirectedEq PrivateKeyRSA.ty PrivateKeyRSA.underlying
-  isUnderlying : go.IsUnderlying PrivateKeyRSA.underlying PrivateKeyRSA.underlying
+  «get__#0» : ∀ (x : PrivateKeyRSA), go.IsGoStepPureDetTagged under (StructFieldGet PrivateKeyRSA.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : PrivateKeyRSA) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet PrivateKeyRSA.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : PrivateKeyRSA)))
   method_set : go.MethodSetIs PrivateKeyRSA.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType PrivateKeyRSA.ty) []
 
 attribute [instance] PrivateKeyRSA.TypeAssumptions.type_repr
   PrivateKeyRSA.TypeAssumptions.underlying
-  PrivateKeyRSA.TypeAssumptions.isUnderlying
+  PrivateKeyRSA.TypeAssumptions.«get__#0»
+  PrivateKeyRSA.TypeAssumptions.«set__#0»
   PrivateKeyRSA.TypeAssumptions.method_set
   PrivateKeyRSA.TypeAssumptions.ptr_method_set
 
-opaque PublicKeyECDH.nonempty_type : NonemptyType.{0}
-def PublicKeyECDH : Type := PublicKeyECDH.nonempty_type.type
-instance PublicKeyECDH.nonempty : Nonempty PublicKeyECDH := PublicKeyECDH.nonempty_type.property
-opaque PublicKeyECDH.zero_val : ZeroVal PublicKeyECDH := ⟨Classical.ofNonempty⟩
-attribute [instance] PublicKeyECDH.zero_val
+structure PublicKeyECDH [GooseExts] where
+  mk ::
+
+noncomputable instance PublicKeyECDH.zero_val [GooseExts] : ZeroVal PublicKeyECDH :=
+  ⟨PublicKeyECDH.mk⟩
+
+@[reducible] noncomputable def PublicKeyECDH.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  []
+
+@[irreducible] noncomputable def PublicKeyECDH.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  PublicKeyECDH.fieldsUnsealed
+
+noncomputable instance equals_unfold_PublicKeyECDH [GooseExts] [GoGlobalContext] :
+    EqualsUnfold PublicKeyECDH.fields PublicKeyECDH.fieldsUnsealed :=
+  ⟨by unfold PublicKeyECDH.fields; rfl⟩
+
+@[reducible] noncomputable def PublicKeyECDH.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType PublicKeyECDH.fields)
 
 class PublicKeyECDH.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying PublicKeyECDH.underlying PublicKeyECDH
   underlying : go.UnderlyingDirectedEq PublicKeyECDH.ty PublicKeyECDH.underlying
-  isUnderlying : go.IsUnderlying PublicKeyECDH.underlying PublicKeyECDH.underlying
   method_set : go.MethodSetIs PublicKeyECDH.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType PublicKeyECDH.ty) [(go!"Bytes", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)])))]
 
 attribute [instance] PublicKeyECDH.TypeAssumptions.type_repr
   PublicKeyECDH.TypeAssumptions.underlying
-  PublicKeyECDH.TypeAssumptions.isUnderlying
   PublicKeyECDH.TypeAssumptions.method_set
   PublicKeyECDH.TypeAssumptions.ptr_method_set
 
-opaque PrivateKeyECDH.nonempty_type : NonemptyType.{0}
-def PrivateKeyECDH : Type := PrivateKeyECDH.nonempty_type.type
-instance PrivateKeyECDH.nonempty : Nonempty PrivateKeyECDH := PrivateKeyECDH.nonempty_type.property
-opaque PrivateKeyECDH.zero_val : ZeroVal PrivateKeyECDH := ⟨Classical.ofNonempty⟩
-attribute [instance] PrivateKeyECDH.zero_val
+structure PrivateKeyECDH [GooseExts] where
+  mk ::
+
+noncomputable instance PrivateKeyECDH.zero_val [GooseExts] : ZeroVal PrivateKeyECDH :=
+  ⟨PrivateKeyECDH.mk⟩
+
+@[reducible] noncomputable def PrivateKeyECDH.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  []
+
+@[irreducible] noncomputable def PrivateKeyECDH.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  PrivateKeyECDH.fieldsUnsealed
+
+noncomputable instance equals_unfold_PrivateKeyECDH [GooseExts] [GoGlobalContext] :
+    EqualsUnfold PrivateKeyECDH.fields PrivateKeyECDH.fieldsUnsealed :=
+  ⟨by unfold PrivateKeyECDH.fields; rfl⟩
+
+@[reducible] noncomputable def PrivateKeyECDH.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType PrivateKeyECDH.fields)
 
 class PrivateKeyECDH.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying PrivateKeyECDH.underlying PrivateKeyECDH
   underlying : go.UnderlyingDirectedEq PrivateKeyECDH.ty PrivateKeyECDH.underlying
-  isUnderlying : go.IsUnderlying PrivateKeyECDH.underlying PrivateKeyECDH.underlying
   method_set : go.MethodSetIs PrivateKeyECDH.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType PrivateKeyECDH.ty) [(go!"PublicKey", (some (go.signature.Signature [] false [(go.GoType.PointerType PublicKeyECDH.ty), go.error])))]
 
 attribute [instance] PrivateKeyECDH.TypeAssumptions.type_repr
   PrivateKeyECDH.TypeAssumptions.underlying
-  PrivateKeyECDH.TypeAssumptions.isUnderlying
   PrivateKeyECDH.TypeAssumptions.method_set
   PrivateKeyECDH.TypeAssumptions.ptr_method_set
 
