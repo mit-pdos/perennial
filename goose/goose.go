@@ -1138,7 +1138,7 @@ func (ctx *Ctx) funcLit(e *ast.FuncLit) glang.FuncLit {
 	ctx.recoverCell = ""
 	if ctx.nextFuncLitDeferred {
 		ctx.recoverCell = "$panic"
-		if ctx.defersRecovering(e.Body) {
+		if callsRecoverDirectly(ctx.info, e.Body) && ctx.defersRecovering(e.Body) {
 			// the literal binds its own `$panic` (wrapFuncBody), so its recover()
 			// reads the deferring function's through `$recover`
 			ctx.recoverCell = "$recover"

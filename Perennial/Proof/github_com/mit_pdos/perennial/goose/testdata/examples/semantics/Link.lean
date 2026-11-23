@@ -16,6 +16,7 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.continueFromNestedSwitch
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.countPairs
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.countRune
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.defersOnlyRecovering
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.labeledBreak
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.labeledContinue
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.labeledSwitch
@@ -57,6 +58,7 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCompareSliceToNil
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testContinueNestedSwitch
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCountPairs
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDefersOnlyRecovering
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDefinedStrTypesEqual
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDowncastInterface
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testEmptyBlock
@@ -197,6 +199,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_count
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_countRune : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.countRune.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.countRune.wp_proof
 
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_defersOnlyRecovering : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.defersOnlyRecovering.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.defersOnlyRecovering.wp_proof github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_catchNil'deferred
+
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_labeledBreak : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.labeledBreak.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.labeledBreak.wp_proof
 
@@ -313,6 +318,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testC
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testCountPairs : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCountPairs.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCountPairs.wp_proof github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_countPairs
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testDefersOnlyRecovering : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDefersOnlyRecovering.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDefersOnlyRecovering.wp_proof github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_defersOnlyRecovering
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testDefinedStrTypesEqual : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDefinedStrTypesEqual.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDefinedStrTypesEqual.wp_proof

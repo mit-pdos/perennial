@@ -899,6 +899,10 @@ func (suite *GoTestSuite) TestOuterSeenByLiteral() {
 	suite.Equal(true, testOuterSeenByLiteral())
 }
 
+func (suite *GoTestSuite) TestDefersOnlyRecovering() {
+	suite.Equal(true, testDefersOnlyRecovering())
+}
+
 func (suite *GoTestSuite) TestShortcircuitAndTF() {
 	suite.Equal(true, testShortcircuitAndTF())
 }

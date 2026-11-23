@@ -28,7 +28,7 @@ for each proved function `F`. By Go source file:
   that panics again (`repanic`), one with its own recovering deferred literal, a second
   cell (`twoCells`), one deferred when nothing panics (`recoverNotPanicking`), and a deferred
   literal that defers recovering calls and so reads the outer cell as `$recover`
-  (`outerSeenByLiteral`).
+  (`outerSeenByLiteral`; `defersOnlyRecovering` when it does not recover itself).
 * `anon_structs.go`: unnamed struct types (each modeled by a generated structure): field
   reads, writes and addresses, a pointer to one, one type in two functions, one nested in
   another, and one with a type parameter captured by a closure (as `sync.OnceValue`'s).

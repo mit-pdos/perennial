@@ -108,3 +108,15 @@ func outerSeenByLiteral() (x uint64) {
 }
 
 func testOuterSeenByLiteral() bool { return outerSeenByLiteral() == 10 }
+
+// defersOnlyRecovering: a deferred literal that defers a recovering function
+// but does not call recover() itself, when nothing panics.
+func defersOnlyRecovering() uint64 {
+	defer func() {
+		var isNil bool
+		defer catchNil(&isNil)
+	}()
+	return 7
+}
+
+func testDefersOnlyRecovering() bool { return defersOnlyRecovering() == 7 }

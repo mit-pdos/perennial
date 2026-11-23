@@ -1454,9 +1454,10 @@ set, defers `$f $panic args` with `$f` the `'deferred` function or method value,
 function `with_defer_recover:`. A deferred literal that itself defers a recovering literal or
 `F'deferred` binds its own `$panic` (its `with_defer_recover:`), which shadowed the deferring
 function's cell, so its `recover()` read `nil` (unsound, found by the trusted review; the
-literal-only form predates this change): such a literal is now `let: "$recover" := "$panic"` around
-its body, and its `recover()` reads `$recover`, as an `F'deferred` does (`defersRecovering`;
-semantics test `outerSeenByLiteral`). A function value, method value or interface method is deferred as
+literal-only form predates this change): such a literal, if it also calls `recover()` itself (so
+the deferring function binds `$panic`), is now `let: "$recover" := "$panic"` around its body, and its
+`recover()` reads `$recover`, as an `F'deferred` does (`defersRecovering`; semantics tests
+`outerSeenByLiteral`, and `defersOnlyRecovering` for a literal that only defers one). A function value, method value or interface method is deferred as
 today and runs the stuck `F` (`KNOWN_LIMITATIONS.md`). Functions without `recover()` translate
 byte-for-byte as before: every other gold file and the regenerated std-lib and model output
 (go1.26.0) are unchanged. The negative test `recover_indirect` (a deferred named helper) is deleted,
