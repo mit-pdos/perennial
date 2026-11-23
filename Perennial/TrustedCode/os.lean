@@ -1,6 +1,7 @@
 /-
 Trusted code for the Go `os` package, in namespace `os` (as the generated package): what its
-initializer runs that has no Go body (`runtime_args`), and the standard streams' initializers,
+initializer runs that has no Go body (`runtime_args`), what `Exit` calls that has none
+(`runtime_beforeExit`), and the standard streams' initializers,
 which are not translated by the user's decision (fix-semantics Case 33).
 -/
 module
@@ -24,6 +25,30 @@ arguments. The model: an arbitrary `[]string` (`syscall.arbitraryStrings`), whic
 argument list. -/
 noncomputable def runtime_args.impl : val :=
   syscall.arbitraryStrings
+
+/-- `runtime_beforeExit(exitCode int)` (`proc.go`: `func runtime_beforeExit(exitCode int) // implemented
+in runtime`), which `Exit` (translated) calls before `syscall.Exit`: a `go:linkname` with no Go
+body, the runtime's `os_beforeExit`:
+
+```go
+func os_beforeExit(exitCode int) {
+	runExitHooks(exitCode)
+	if exitCode == 0 && raceenabled {
+		racefini()
+	}
+	if exitCode == 0 && asanenabled && (isarchive || islibrary || NumCgoCall() > 1) {
+		lsandoleakcheck()
+	}
+}
+```
+
+The exit hooks are registered only by coverage instrumentation (`internal/coverage/cfile`, of a
+`-cover` build; `internal/runtime/exithook` is internal to the standard library), and the race
+and address sanitizers only in `-race` and `-asan` builds, which the semantics does not model;
+in a plain build it does nothing. The model: nothing (it returns). -/
+def runtime_beforeExit.impl : val :=
+  λ: "exitCode",
+    #()
 
 /-! ## The standard streams
 

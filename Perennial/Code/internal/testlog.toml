@@ -1,0 +1,3 @@
+# internal/testlog: what `os.Exit` calls, `PanicOnExit0`, and the variable it reads.
+translate = ["!*", "PanicOnExit0", "panicOnExit0"]
+imports = ["!*", "sync"]

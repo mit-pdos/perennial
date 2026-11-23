@@ -4,7 +4,9 @@
 # * `runtime_envs` (`env_unix.go`, a `go:linkname` into the runtime): an arbitrary `[]string`;
 # * `init.0` (`rlimit.go`: raises the soft RLIMIT_NOFILE through the raw `prlimit` system call):
 #   a no-op. The changed limit is only observable by `exec` (and `Getrlimit`), which Perennial
-#   does not model (the user's decision, fix-semantics Case 33).
+#   does not model (the user's decision, fix-semantics Case 33);
+# * `Exit` (`syscall.go`, a body-less declaration the runtime provides, `syscall_Exit`): the
+#   process exits, `AngelicExit`.
 translate = ["!*",
   "envs", "env", "copyenv",
   "none", "slash", "forceClone3", "fcntl64Syscall",
@@ -15,7 +17,7 @@ translate = ["!*",
   # the constants these initializers use
   "SYS_FCNTL", "EAGAIN", "EINVAL", "ENOENT",
 ]
-trusted = ["runtime_envs", "init.0"]
+trusted = ["runtime_envs", "init.0", "Exit"]
 
 imports = ["!*", "sync"]
 

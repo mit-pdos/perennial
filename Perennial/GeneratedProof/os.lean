@@ -5,6 +5,7 @@ public import Perennial.Proof.ProofPrelude
 public import Perennial.ManualProof.os
 public import Perennial.GeneratedProof.errors
 public import Perennial.GeneratedProof.internal.poll
+public import Perennial.GeneratedProof.internal.testlog
 public import Perennial.GeneratedProof.io.fs
 public import Perennial.GeneratedProof.sync
 public import Perennial.GeneratedProof.syscall
