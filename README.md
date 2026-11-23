@@ -224,7 +224,11 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   the condition under which the untranslated initializers of
   `crypto/internal/fips140` and `crypto/internal/fips140/check` do not panic
   (with `purego`, FIPS 140-3 mode panics at start). The model makes no such
-  assumption itself.
+  assumption itself. The trusted initializer stands in for translating
+  `internal/godebug` (by the user's decision, 2026-11-23), which goose
+  translates but for four `go:linkname` hooks (`setUpdate`, whose model would
+  have to hand it the environment, `registerMetric`, `setNewIncNonDefault`,
+  `write`) and which needs `sync.Map` and `internal/bisect`, not translated.
 * **Model assumptions (initial states).** An extension's
   `ExtSemantics.initLocal`/`initGlobal` (`GooseLang/Lang.lean`, default `True`)
   are what a top-level theorem assumes of the states its execution starts from.
