@@ -1787,7 +1787,8 @@ func (ctx *Ctx) handleImplicitConversion(n locatable, from, to types.Type, e gla
 	if from == nil {
 		ctx.unsupported(n, "implicit conversion: don't know from type")
 	}
-	if types.Identical(from.Underlying(), to.Underlying()) {
+	_, fromTypeParam := types.Unalias(from).(*types.TypeParam)
+	if types.Identical(from, to) || !fromTypeParam && types.Identical(from.Underlying(), to.Underlying()) {
 		return e
 	} else {
 		return glang.NewCallExpr(glang.VerbatimExpr("Convert"),
