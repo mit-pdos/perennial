@@ -8,6 +8,7 @@ module
 
 public import Perennial.Proof.fmt.Args
 public import Perennial.Proof.fmt.SprintfModel
+public import Perennial.Proof.fmt.BytesModel
 
 @[expose] public section
 
@@ -631,18 +632,20 @@ theorem wp_visitArg_argOk (x : GoInterface) (verb : w8) (sharpV wrapErrs : Bool)
         · exact ⟨hm, .inl hu⟩
       obtain ⟨⟨hF, hG, hE, hS⟩, hk⟩ := hnf
       have hnB := ne_SliceType_of_kind go.byte hk
+      have hnS := ne_SliceType_of_kind go.string hk
       repeat' (first | wp_if_destruct | wp_auto | simp only [tsc_method1, tsc_error, hF, hG, hE, hS,
-        hnB, ↓reduceIte, reduceCtorEq, decide_false] | wp_apply (wp_visitKind _ ⟨_, rfl, hk⟩))
+        hnB, hnS, ↓reduceIte, reduceCtorEq, decide_false] | wp_apply (wp_visitKind _ ⟨_, rfl, hk⟩))
       all_goals first
         | (iapply HΦ; itrivial)
         | (exfalso; simp_all; done)
     · -- an integer kind with `Error()`/`String()` under a verb that calls neither
       obtain ⟨hnm, hk, hF, -⟩ := Hni
       have hnB := ne_SliceType_of_kind go.byte (.inr hk)
+      have hnS := ne_SliceType_of_kind go.string (.inr hk)
       cases wrapErrs <;> simp only [modeVerbs, Bool.false_eq_true, ↓reduceIte] at hnm
       all_goals
         repeat' (first | wp_if_destruct | wp_auto | simp only [tsc_method1, tsc_error, hF,
-          hnB, ↓reduceIte, reduceCtorEq, decide_false] | wp_apply (wp_visitKind _ ⟨_, rfl, .inr hk⟩))
+          hnB, hnS, ↓reduceIte, reduceCtorEq, decide_false] | wp_apply (wp_visitKind _ ⟨_, rfl, .inr hk⟩))
       all_goals first
         | (iapply HΦ; itrivial)
         | (exfalso; simp_all [methodVerbs, errorfVerbs]; done)
@@ -660,28 +663,31 @@ theorem wp_visitArg_argOk (x : GoInterface) (verb : w8) (sharpV wrapErrs : Bool)
           · exact ⟨hm, .inl hu⟩
         obtain ⟨⟨hF, hG, hE, hS⟩, hk⟩ := hnf
         have hnB := ne_SliceType_of_kind go.byte hk
+        have hnS := ne_SliceType_of_kind go.string hk
         repeat' (first | wp_if_destruct | wp_auto | simp only [tsc_method1, tsc_error, hF, hG, hE, hS,
-          hnB, ↓reduceIte, reduceCtorEq, decide_false] | wp_apply (wp_visitKind _ ⟨_, rfl, hk⟩))
+          hnB, hnS, ↓reduceIte, reduceCtorEq, decide_false] | wp_apply (wp_visitKind _ ⟨_, rfl, hk⟩))
         all_goals first
           | (iapply HΦ; itrivial)
           | (exfalso; simp_all; done)
       · obtain ⟨hF, hE⟩ := hE
         have hnB := ne_SliceType_of_method go.byte hE
+        have hnS := ne_SliceType_of_method go.string hE
         cases wrapErrs <;> simp only [modeVerbs, Bool.false_eq_true, ↓reduceIte] at hmv
         all_goals
           repeat' (first | (wp_apply (wp_callError ii) $$ [$HE]) | wp_if_destruct | wp_auto |
             simp only [tsc_method1, tsc_error, hF, hE,
-            hnB, ↓reduceIte, noArgStringSig, reduceCtorEq, decide_false, decide_true])
+            hnB, hnS, ↓reduceIte, noArgStringSig, reduceCtorEq, decide_false, _root_.decide_true])
         all_goals first
           | (iapply HΦ; itrivial)
           | (exfalso; simp_all [methodVerbs, errorfVerbs]; done)
       · obtain ⟨hF, hE, hS, hR⟩ := hS
         have hnB := ne_SliceType_of_method go.byte hS
+        have hnS := ne_SliceType_of_method go.string hS
         cases wrapErrs <;> simp only [modeVerbs, Bool.false_eq_true, ↓reduceIte] at hmv
         all_goals
           repeat' (first | (wp_apply (wp_callString ii) $$ [$HS]) | wp_if_destruct | wp_auto |
             simp only [tsc_method1, tsc_error, hF, hE, hS,
-            hR, hnB, ↓reduceIte, noArgStringSig, reduceCtorEq, decide_false, decide_true])
+            hR, hnB, hnS, ↓reduceIte, noArgStringSig, reduceCtorEq, decide_false, _root_.decide_true])
         all_goals first
           | (iapply HΦ; itrivial)
           | (exfalso; simp_all [methodVerbs, errorfVerbs]; done)
@@ -696,8 +702,9 @@ theorem not_isBasicType_SliceType (t : go.GoType) : ¬ IsBasicType (go.SliceType
 set_option maxHeartbeats 1000000 in
 /-- The helper `fmt.visitArg`: for an argument `argOkAtB` its directive, calls what Go's `printArg`
 calls of it (`wp_visitArg_argOk`), or reads the bytes of a lent `[]byte` (Go's `fmtBytes`, under
-every verb but `%T` and `%p`); the lent bytes come back. -/
-theorem wp_visitArg (B : GoInterface → Option GoString) (dqb : DFrac) (x : GoInterface) (verb : w8)
+every verb but `%T` and `%p`) or the strings of a lent `[]string` (Go's `printValue`, under the same
+verbs); the lent contents come back. -/
+theorem wp_visitArg (B : GoInterface → Option Lent) (dqb : DFrac) (x : GoInterface) (verb : w8)
     (sharpV wrapErrs : Bool) (Hsv : sharpV = true → verb = W8 118 ∨ verb = W8 119) :
     {{ argOkAtB (GF := GF) B (modeVerbs wrapErrs) ⟨verb, sharpV⟩ x ∗ bytesArgOwn dqb B x }}
       (App (App (App (App (Val visitArg) (Val #x)) (Val #verb)) (Val #sharpV)) (Val #wrapErrs))
@@ -707,35 +714,72 @@ theorem wp_visitArg (B : GoInterface → Option GoString) (dqb : DFrac) (x : GoI
   icases Hx with (Hx | %HB)
   · wp_apply (wp_visitArg_argOk x verb sharpV wrapErrs Hsv) $$ [$Hx]
     iapply HΦ; iexact Hown
-  obtain ⟨bs, hbs⟩ := Option.isSome_iff_exists.mp HB
-  icases (bytesArgOwn_some (dq := dqb) hbs).1 $$ Hown with ⟨%ii, %sl, %Hp, Hsl⟩
-  obtain ⟨rfl, hty, hv⟩ := Hp
-  ihave Hback : iprop(sl ↦*{dqb} bs -∗ bytesArgOwn dqb B (interface.ok ii)) $$ []
-  · iintro Hsl
-    iapply (bytesArgOwn_some (dq := dqb) hbs).2
-    iexists ii, sl
-    iframe
-    ipureintro; exact ⟨rfl, hty, hv⟩
-  unfold visitArg
-  wp_auto
-  wp_if_destruct
-  · iapply HΦ; iapply Hback; iexact Hsl
-  wp_if_destruct
-  · iapply HΦ; iapply Hback; iexact Hsl
-  wp_apply wp_isBasic as %b %Hb
-  cases b
-  case true =>
-    exfalso
-    obtain ⟨ii', h', hb⟩ := Hb.1 rfl
-    cases h'
-    rw [hty] at hb
-    exact not_isBasicType_SliceType _ hb
-  wp_auto
-  simp only [hty, ↓reduceIte, decide_true, hv]
-  wp_auto
-  wp_apply wp_bytes_to_string $$ Hsl as Hsl
-  try wp_auto
-  iapply HΦ; iapply Hback; iexact Hsl
+  obtain ⟨L, hL⟩ := Option.isSome_iff_exists.mp HB
+  have hbs_ne : go.SliceType go.byte ≠ go.SliceType go.string := by
+    simp [go.byte, go.string, go.uint8]
+  cases L with
+  | bytes bs =>
+    icases (bytesArgOwn_some (dq := dqb) hL).1 $$ Hown with ⟨%ii, %sl, %Hp, Hsl⟩
+    obtain ⟨rfl, hty, hv⟩ := Hp
+    ihave Hback : iprop(sl ↦*{dqb} bs -∗ bytesArgOwn dqb B (interface.ok ii)) $$ []
+    · iintro Hsl
+      iapply (bytesArgOwn_some (dq := dqb) hL).2
+      iexists ii, sl
+      iframe
+      ipureintro; exact ⟨rfl, hty, hv⟩
+    have hts : ii.ty ≠ go.SliceType go.string := fun h => hbs_ne (hty ▸ h)
+    unfold visitArg
+    wp_auto
+    wp_if_destruct
+    · iapply HΦ; iapply Hback; iexact Hsl
+    wp_if_destruct
+    · iapply HΦ; iapply Hback; iexact Hsl
+    wp_apply wp_isBasic as %b %Hb
+    cases b
+    case true =>
+      exfalso
+      obtain ⟨ii', h', hb⟩ := Hb.1 rfl
+      cases h'
+      rw [hty] at hb
+      exact not_isBasicType_SliceType _ hb
+    wp_auto
+    simp only [hty, ↓reduceIte, _root_.decide_true, hv]
+    wp_auto
+    wp_apply wp_bytes_to_string $$ Hsl as Hsl
+    try wp_auto
+    iapply HΦ; iapply Hback; iexact Hsl
+  | strings ss =>
+    icases (bytesArgOwn_strings (dq := dqb) hL).1 $$ Hown with ⟨%ii, %sl, %Hp, Hsl⟩
+    obtain ⟨rfl, hts, hv⟩ := Hp
+    ihave Hback : iprop(sl ↦*{dqb} ss -∗ bytesArgOwn dqb B (interface.ok ii)) $$ []
+    · iintro Hsl
+      iapply (bytesArgOwn_strings (dq := dqb) hL).2
+      iexists ii, sl
+      iframe
+      ipureintro; exact ⟨rfl, hts, hv⟩
+    have hty : ii.ty ≠ go.SliceType go.byte := fun h => hbs_ne (h ▸ hts)
+    unfold visitArg
+    wp_auto
+    wp_if_destruct
+    · iapply HΦ; iapply Hback; iexact Hsl
+    wp_if_destruct
+    · iapply HΦ; iapply Hback; iexact Hsl
+    wp_apply wp_isBasic as %b %Hb
+    cases b
+    case true =>
+      exfalso
+      obtain ⟨ii', h', hb⟩ := Hb.1 rfl
+      cases h'
+      rw [hts] at hb
+      exact not_isBasicType_SliceType _ hb
+    wp_auto
+    simp only [hty, ↓reduceIte, decide_false]
+    wp_auto
+    simp only [hts, ↓reduceIte, _root_.decide_true, hv]
+    wp_auto
+    wp_apply (wp_joinStrings sl ss dqb) $$ Hsl as %s ⟨Hsl, -⟩
+    try wp_auto
+    iapply HΦ; iapply Hback; iexact Hsl
 
 theorem argsOkAt_nil_args (mv : List w8) (ds : List Directive) :
     ⊢ argsOkAt (GF := GF) mv ds [] := by
@@ -747,11 +791,11 @@ theorem argOkAt_of_argWf (mv : List w8) (d : Directive) (x : GoInterface)
   | nil => unfold argOkAt; itrivial
   | ok ii => unfold argOkAt; ileft; ipureintro; exact h ii rfl
 
-theorem argOkAtB_of_argWf (B : GoInterface → Option GoString) (mv : List w8) (d : Directive)
+theorem argOkAtB_of_argWf (B : GoInterface → Option Lent) (mv : List w8) (d : Directive)
     (x : GoInterface) (h : ∀ ii, x = interface.ok ii → ArgWf ii) : ⊢ argOkAtB (GF := GF) B mv d x := by
   unfold argOkAtB; ileft; iapply argOkAt_of_argWf; exact h
 
-theorem argsOkAtB_nil_args (B : GoInterface → Option GoString) (mv : List w8) (ds : List Directive) :
+theorem argsOkAtB_nil_args (B : GoInterface → Option Lent) (mv : List w8) (ds : List Directive) :
     ⊢ argsOkAtB (GF := GF) B mv ds [] := by
   cases ds <;> (unfold argsOkAtB; itrivial)
 
@@ -760,7 +804,7 @@ set_option maxHeartbeats 4000000 in
 calls what Go calls of each argument (its directive's, or `%v` for those left over), for arguments
 `argsOk` the directives left; returns the arguments of the `%w` directives (`wrapArgsFrom`), or
 gives up (`unknown`) at a directive `fmtDirectives` refuses, every argument being `ArgWf`. -/
-theorem wp_visitRest (B : GoInterface → Option GoString) (dqb : DFrac) (format : GoString) (i : w64) (sl : GoSlice) (xs : List GoInterface)
+theorem wp_visitRest (B : GoInterface → Option Lent) (dqb : DFrac) (format : GoString) (i : w64) (sl : GoSlice) (xs : List GoInterface)
     (dq : DFrac) (k : w64) (wrapErrs : Bool)
     (Hi : 0 ≤ sint.Z i ∧ sint.Z i ≤ (format.length : Int)) (Hlen : (format.length : Int) < 2 ^ 63)
     (Hk : 0 ≤ sint.Z k ∧ sint.Z k ≤ (xs.length : Int)) :
