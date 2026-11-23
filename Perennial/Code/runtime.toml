@@ -1,8 +1,10 @@
-translate = ["!*"]
+translate = ["!*", "Version"]
 
 imports = ["!*", "internal/runtime/atomic", "internal/runtime/sys"]
 
-trusted = ["Gosched"]
+# `Gosched` (TrustedCode/runtime.lean); `buildVersion`, which `Version` returns and the linker
+# sets (TrustedCode/runtime.lean: its `init` stores an arbitrary string)
+trusted = ["Gosched", "buildVersion"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

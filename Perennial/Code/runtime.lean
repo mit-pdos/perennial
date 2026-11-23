@@ -405,6 +405,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   «struct#72a1e364_instance» : «struct#72a1e364».TypeAssumptions
   «struct#cf01e664_instance» : «struct#cf01e664».TypeAssumptions
   «struct#1768b3d4_instance» : «struct#1768b3d4».TypeAssumptions
+  Version_unfold : FuncUnfold Version [] Version.impl
   Gosched_unfold : FuncUnfold Gosched [] Gosched.impl
   import_sys_Assumption : _root_.Perennial.internal.runtime.sys.Assumptions
   import_atomic_Assumption : _root_.Perennial.internal.runtime.atomic.Assumptions
@@ -788,6 +789,7 @@ attribute [instance] Assumptions.userArena_instance
   Assumptions.«struct#72a1e364_instance»
   Assumptions.«struct#cf01e664_instance»
   Assumptions.«struct#1768b3d4_instance»
+  Assumptions.Version_unfold
   Assumptions.Gosched_unfold
   Assumptions.import_sys_Assumption
   Assumptions.import_atomic_Assumption
