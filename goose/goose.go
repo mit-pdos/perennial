@@ -1138,8 +1138,14 @@ func (ctx *Ctx) funcLit(e *ast.FuncLit) glang.FuncLit {
 	ctx.recoverCell = ""
 	if ctx.nextFuncLitDeferred {
 		ctx.recoverCell = "$panic"
+		if ctx.defersRecovering(e.Body) {
+			// the literal binds its own `$panic` (wrapFuncBody), so its recover()
+			// reads the deferring function's through `$recover`
+			ctx.recoverCell = "$recover"
+		}
 	}
 	ctx.nextFuncLitDeferred = false
+	recoverCell := ctx.recoverCell
 
 	defer func(oldFuncType *types.Signature) {
 		ctx.curFuncType = oldFuncType
@@ -1164,6 +1170,9 @@ func (ctx *Ctx) funcLit(e *ast.FuncLit) glang.FuncLit {
 		}
 	}
 	fl.Body = ctx.wrapFuncBody(fl.Body, e.Type)
+	if recoverCell == "$recover" {
+		fl.Body = glang.LetExpr{Names: []string{"$recover"}, ValExpr: glang.IdentExpr("$panic"), Cont: fl.Body}
+	}
 
 	return fl
 }
@@ -2092,19 +2101,52 @@ func resultCell(i int) glang.IdentExpr {
 	return glang.IdentExpr(fmt.Sprintf("$res%d", i))
 }
 
+// defersRecovering reports whether body (outside nested function literals)
+// defers a function literal that calls recover() or a function or method in
+// `recovering`, so that its function binds its own `$panic` cell.
+func (ctx *Ctx) defersRecovering(body *ast.BlockStmt) bool {
+	found := false
+	ast.Inspect(body, func(n ast.Node) bool {
+		switch n := n.(type) {
+		case *ast.FuncLit:
+			return false
+		case *ast.DeferStmt:
+			if fl, ok := n.Call.Fun.(*ast.FuncLit); ok {
+				found = found || callsRecoverDirectly(ctx.info, fl.Body)
+			} else {
+				found = found || ctx.recoveringCallee(n.Call.Fun)
+			}
+		}
+		return !found
+	})
+	return found
+}
+
+// recoveringCallee reports whether fun is a function or a method of a concrete
+// type in `recovering`.
+func (ctx *Ctx) recoveringCallee(fun ast.Expr) bool {
+	switch fun := ast.Unparen(fun).(type) {
+	case *ast.Ident:
+		f, ok := ctx.info.Uses[fun].(*types.Func)
+		return ok && ctx.recovering[f.Origin()]
+	case *ast.SelectorExpr:
+		sel := ctx.info.Selections[fun]
+		return sel != nil && sel.Kind() == types.MethodVal && ctx.recovering[sel.Obj().(*types.Func).Origin()]
+	}
+	return false
+}
+
 // deferredRecovering returns the `'deferred` declaration of fun, if fun is a
 // function or a method of a concrete type in `recovering`.
 func (ctx *Ctx) deferredRecovering(fun ast.Expr) (glang.Expr, bool) {
+	if !ctx.recoveringCallee(fun) {
+		return nil, false
+	}
 	switch fun := ast.Unparen(fun).(type) {
 	case *ast.Ident:
-		if f, ok := ctx.info.Uses[fun].(*types.Func); ok && ctx.recovering[f.Origin()] {
-			return ctx.functionNamed(fun, f.Name()+"'deferred"), true
-		}
+		return ctx.functionNamed(fun, fun.Name+"'deferred"), true
 	case *ast.SelectorExpr:
-		if sel := ctx.info.Selections[fun]; sel != nil && sel.Kind() == types.MethodVal &&
-			ctx.recovering[sel.Obj().(*types.Func).Origin()] {
-			return ctx.methodVal(fun, sel, fun.Sel.Name+"'deferred"), true
-		}
+		return ctx.methodVal(fun, ctx.info.Selections[fun], fun.Sel.Name+"'deferred"), true
 	}
 	return nil, false
 }

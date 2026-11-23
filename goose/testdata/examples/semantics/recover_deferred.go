@@ -93,3 +93,18 @@ func testTopRecover() bool          { return topRecover() == 8 }
 func testRepanic() bool             { return repanic() == 61 }
 func testTwoCells() bool            { return twoCells() == 50 }
 func testRecoverNotPanicking() bool { return recoverNotPanicking() }
+
+// outerSeenByLiteral: a deferred literal that itself defers a recovering
+// function and a recovering literal still recovers the panic of the function
+// that deferred it; its own deferred calls then get nil.
+func outerSeenByLiteral() (x uint64) {
+	defer func() {
+		var isNil bool
+		defer catchNil(&isNil)
+		defer func() { recover() }()
+		x = recover().(uint64) * 10
+	}()
+	panic(uint64(1))
+}
+
+func testOuterSeenByLiteral() bool { return outerSeenByLiteral() == 10 }

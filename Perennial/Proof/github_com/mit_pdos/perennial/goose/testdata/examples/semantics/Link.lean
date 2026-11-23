@@ -21,6 +21,7 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.labeledSwitch
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.methodRecover
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.miniPrintf
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.outerSeenByLiteral
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.panicInLoop
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.panicTwoDeep
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.panicUnrecovered
@@ -100,6 +101,7 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testNilDefault
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testNilVal
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testOrCompare
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testOuterSeenByLiteral
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testParamsInterface
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testPrimitiveTypesEqual
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testRangeArrayLit
@@ -209,6 +211,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_metho
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_miniPrintf : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.miniPrintf.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.miniPrintf.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_outerSeenByLiteral : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.outerSeenByLiteral.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.outerSeenByLiteral.wp_proof github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_catchNil'deferred
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_panicUnrecovered : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.panicUnrecovered.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.panicUnrecovered.wp_proof
@@ -440,6 +445,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testN
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testOrCompare : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testOrCompare.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testOrCompare.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testOuterSeenByLiteral : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testOuterSeenByLiteral.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testOuterSeenByLiteral.wp_proof github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_outerSeenByLiteral
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testParamsInterface : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testParamsInterface.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testParamsInterface.wp_proof

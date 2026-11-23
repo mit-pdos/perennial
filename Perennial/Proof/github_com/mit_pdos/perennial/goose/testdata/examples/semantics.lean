@@ -26,7 +26,9 @@ for each proved function `F`. By Go source file:
   `wp_recoverPanic`, as a deferred literal reads `$panic`: a deferred method and a
   deferred function that recover (`methodRecover`, `topRecover`), a deferred method
   that panics again (`repanic`), one with its own recovering deferred literal, a second
-  cell (`twoCells`), and one deferred when nothing panics (`recoverNotPanicking`).
+  cell (`twoCells`), one deferred when nothing panics (`recoverNotPanicking`), and a deferred
+  literal that defers recovering calls and so reads the outer cell as `$recover`
+  (`outerSeenByLiteral`).
 * `anon_structs.go`: unnamed struct types (each modeled by a generated structure): field
   reads, writes and addresses, a pointer to one, one type in two functions, one nested in
   another, and one with a type parameter captured by a closure (as `sync.OnceValue`'s).

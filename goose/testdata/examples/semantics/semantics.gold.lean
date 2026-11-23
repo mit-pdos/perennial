@@ -1507,6 +1507,12 @@ noncomputable def testTwoCells [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def testRecoverNotPanicking [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRecoverNotPanicking"
 
+noncomputable def outerSeenByLiteral [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.outerSeenByLiteral"
+
+noncomputable def testOuterSeenByLiteral [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testOuterSeenByLiteral"
+
 noncomputable def CheckTrue [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.CheckTrue"
 
@@ -12413,6 +12419,73 @@ noncomputable def testRecoverNotPanicking.impl [GooseExts] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
+/-- outerSeenByLiteral: a deferred literal that itself defers a recovering
+    function and a recovering literal still recovers the panic of the function
+    that deferred it; its own deferred calls then get nil.
+
+    go: recover_deferred.go:100:6 -/
+noncomputable def outerSeenByLiteral.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$res0" (Var "x")
+  (Seq (App (Val wrapDeferRecover)
+  (Lam "$defer"
+  (Lam "$panic"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.uint64 (go.GoType.InterfaceType [])))) (Val #(W64 1)))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))
+  (App (Val doExecute)
+  (Let "$f" (Lam BAnon
+  (Let "$recover" (Var "$panic")
+  (Seq (App (Val wrapDeferRecover)
+  (Lam "$defer"
+  (Lam "$panic"
+  (Let "isNil" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (TypeAssert go.uint64))) (App (Val recoverPanic)
+  (Var "$recover"))) (Val #(W64 10))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Let "$f" (Lam BAnon
+  (Seq (App (Val exceptionDo)
+  (App (Val doExecute)
+  (App (Val recoverPanic)
+  (Var "$panic"))))
+  (Val #())))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Val #()))
+  (App (Var "$oldf") (Val #()))))))))))))
+  (App (Val doExecute)
+  (Let "$a0" (Var "isNil")
+  (Let "$f" (App (Val (GoInstruction (FuncResolve catchNil'deferred []))) (Val #()))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (App (Var "$f") (Var "$panic")) (Var "$a0"))
+  (App (Var "$oldf") (Val #())))))))))))))))
+  (Val #()))))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Val #()))
+  (App (Var "$oldf") (Val #())))))))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0"))))))
+
+/-- go: recover_deferred.go:110:6 -/
+noncomputable def testOuterSeenByLiteral.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve outerSeenByLiteral []))) (Val #())) (Val #())) (Val #(W64 10))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
 /-- go: shortcircuiting.go:11:6 -/
 noncomputable def CheckTrue.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
@@ -17203,6 +17276,8 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testRepanic_unfold : FuncUnfold testRepanic [] testRepanic.impl
   testTwoCells_unfold : FuncUnfold testTwoCells [] testTwoCells.impl
   testRecoverNotPanicking_unfold : FuncUnfold testRecoverNotPanicking [] testRecoverNotPanicking.impl
+  outerSeenByLiteral_unfold : FuncUnfold outerSeenByLiteral [] outerSeenByLiteral.impl
+  testOuterSeenByLiteral_unfold : FuncUnfold testOuterSeenByLiteral [] testOuterSeenByLiteral.impl
   CheckTrue_unfold : FuncUnfold CheckTrue [] CheckTrue.impl
   CheckFalse_unfold : FuncUnfold CheckFalse [] CheckFalse.impl
   testShortcircuitAndTF_unfold : FuncUnfold testShortcircuitAndTF [] testShortcircuitAndTF.impl
@@ -17661,6 +17736,8 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testRepanic_unfold
   Assumptions.testTwoCells_unfold
   Assumptions.testRecoverNotPanicking_unfold
+  Assumptions.outerSeenByLiteral_unfold
+  Assumptions.testOuterSeenByLiteral_unfold
   Assumptions.CheckTrue_unfold
   Assumptions.CheckFalse_unfold
   Assumptions.testShortcircuitAndTF_unfold
