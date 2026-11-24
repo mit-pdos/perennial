@@ -45,6 +45,10 @@
 #                                     value Go's GC would have dropped
 # internal/stringslite has no tests; bytes, internal/bytealg and internal/sync
 # run in full.
+# runtime: its model (Frames.Next, a choice: gomodel's Go bodies take one value, so
+# its frames are empty: no function, file or line) is spliced into every overlay
+# above as a dependency's; runtime's own tests are not run. (runtime.callers is
+# not a model: trusted, with the runtime's real stack walk under gc.)
 #
 # usage: etc/model-tests.sh
 set -euo pipefail
