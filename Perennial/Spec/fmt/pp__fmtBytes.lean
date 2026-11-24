@@ -26,6 +26,7 @@ abbrev fmt.pp.fmtBytes.spec : Prop :=
   ∀ (p : Loc) (x : GoInterface) (bs : GoString) (wid prec : w64) (sl : GoSlice) (ys : GoString)
     (q : DFrac) (verb : w8) (typeString : GoString),
     (verb = verb_s ∨ verb = verb_v ∨ verb = verb_d ∨ verb = verb_x) →
+    (verb = verb_x → ys.length < 2 ^ 62) →
     {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ isPrinterA p x bs noFlags wid prec ∗ sl ↦*{q} ys }}
       (App (App (App (Val (p @!! go.GoType.PointerType pp.ty @!! go!"fmtBytes")) (Val #sl)) (Val #(W32 (uint.nat verb))))
         (Val #typeString))

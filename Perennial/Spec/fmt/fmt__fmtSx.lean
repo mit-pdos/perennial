@@ -24,6 +24,7 @@ variable [package_sem : fmt.Assumptions]
 abbrev fmt.fmt.fmtSx.spec : Prop :=
   ∀ (f b : Loc) (F : fmtFlags) (wid prec : w64) (bs s : GoString) (upper : Bool),
     F.precPresent' = false → F.widPresent' = false → F.sharp' = false → F.space' = false →
+    s.length < 2 ^ 62 →
     {{ fmtOwn (GF := GF) f b F wid prec ∗ bufferOwn b bs }}
       (App (App (Val (f @!! go.GoType.PointerType fmt.fmt.ty @!! go!"fmtSx")) (Val #s)) (Val #(hexDigits upper)))
     {{ RET #(); fmtOwn f b F wid prec ∗ bufferOwn b (bs ++ bytesHex upper s) }}

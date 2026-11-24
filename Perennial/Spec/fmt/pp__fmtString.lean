@@ -24,7 +24,7 @@ variable [package_sem : fmt.Assumptions]
 hexadecimal (`x`). -/
 abbrev fmt.pp.fmtString.spec : Prop :=
   ∀ (p : Loc) (x : GoInterface) (bs : GoString) (wid prec : w64) (v : GoString) (verb : w8),
-    (verb = verb_s ∨ verb = verb_v ∨ verb = verb_x) →
+    (verb = verb_s ∨ verb = verb_v ∨ verb = verb_x) → (verb = verb_x → v.length < 2 ^ 62) →
     {{ isPrinterA (GF := GF) p x bs noFlags wid prec }}
       (App (App (Val (p @!! go.GoType.PointerType pp.ty @!! go!"fmtString")) (Val #v)) (Val #(W32 (uint.nat verb))))
     {{ RET #(); isPrinterA p x (bs ++ if verb = verb_x then bytesHex false v else v)

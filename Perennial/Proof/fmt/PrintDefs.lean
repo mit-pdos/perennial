@@ -77,14 +77,17 @@ def ZeroWidthOk : Option Nat → Prop
   | some n => 1 ≤ n ∧ n ≤ 1000000
 
 /-- The directive `%verb` (`zw = none`) or `%0Nverb` (`zw = some N`) of the argument `a` is in
-the verified subset. -/
+the verified subset. `%x` of fewer than `2^62` bytes: `fmtSbx` computes the width `2 * length` in
+an `int`, and writes nothing if that wraps. -/
 def DirOk : Option Nat → w8 → Arg → Prop
   | zw, v, .int _ => (v = verb_d ∨ v = verb_v ∨ v = verb_x) ∧ ZeroWidthOk zw
   | none, v, .nil => v = verb_v
   | none, v, .bool _ => v = verb_v
-  | none, v, .str _ => v = verb_s ∨ v = verb_v ∨ v = verb_x
-  | none, v, .bytes _ _ => v = verb_s ∨ v = verb_v ∨ v = verb_d ∨ v = verb_x
-  | none, v, .method _ => v = verb_s ∨ v = verb_v ∨ v = verb_x
+  | none, v, .str s => v = verb_s ∨ v = verb_v ∨ (v = verb_x ∧ s.length < 2 ^ 62)
+  | none, v, .bytes bs _ =>
+    v = verb_s ∨ v = verb_v ∨ v = verb_d ∨ (v = verb_x ∧ bs.length < 2 ^ 62)
+  | none, v, .method P =>
+    v = verb_s ∨ v = verb_v ∨ (v = verb_x ∧ ∀ s, P s → s.length < 2 ^ 62)
   | some _, _, _ => False
 
 /-- The pieces `ps` and the arguments `as` are in the verified subset: no literal contains a `%`,

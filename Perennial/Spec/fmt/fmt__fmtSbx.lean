@@ -21,11 +21,13 @@ variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
 
 /-- `f.fmtSbx(s, p, digits)` without a width, precision, `#` or ` `: appends the hexadecimal
-(`digits` lowercase or uppercase) of the bytes `ys` of `p`, or of `s` if `p` is `nil`. -/
+(`digits` lowercase or uppercase) of the bytes `ys` of `p`, or of `s` if `p` is `nil`, fewer than
+`2^62` of them (Go computes the width `2 * length` in an `int`). -/
 abbrev fmt.fmt.fmtSbx.spec : Prop :=
   ∀ (f b : Loc) (F : fmtFlags) (wid prec : w64) (bs s : GoString) (sl : GoSlice) (ys : GoString)
     (q : DFrac) (upper : Bool),
     F.precPresent' = false → F.widPresent' = false → F.sharp' = false → F.space' = false →
+    (if sl = slice.nil then s else ys).length < 2 ^ 62 →
     {{ fmtOwn (GF := GF) f b F wid prec ∗ bufferOwn b bs ∗ sl ↦*{q} ys }}
       (App (App (App (Val (f @!! go.GoType.PointerType fmt.fmt.ty @!! go!"fmtSbx")) (Val #s)) (Val #sl))
         (Val #(hexDigits upper)))
