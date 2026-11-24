@@ -67,8 +67,9 @@ One rule per kind of name (`glang/syntax.go`):
   `into_val_typed'T`, `access_load'T'F`, `access_store'T'F`.
 
 Guillemets are a lexing fallback, not a conflict rule: Go identifiers may use
-Unicode letters and digits that Lean's identifier lexer rejects (`é`, `名`, `λ`),
-and such a name is written in guillemets (`«é»`), which does not change the name.
+Unicode letters and digits that Lean's identifier lexer rejects (`名`, `λ`), and
+such a name is written in guillemets (`«名»`; goose quotes every non-ASCII name,
+`«é»` too), which does not change the name.
 (Goose also quotes its own encoded names, `«struct#<h>»`, `«_#0'»`, `init.«0»`,
 which are not Go identifiers, and package-path components that are Lean keywords
 in namespaces, `pkg_id.«unsafe»`.)

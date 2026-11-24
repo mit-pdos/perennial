@@ -21,6 +21,7 @@ func TestLeanIdent(t *testing.T) {
 	assert.Equal("T.match''.impl", LeanIdent(TypeMethod("T", "match")))
 	// guillemets only where Lean cannot lex the identifier
 	assert.Equal("«é»", LeanIdent("é"))
+	assert.Equal("«名»", LeanIdent("名"))
 	assert.Equal("«λ''»", LeanIdent("λ"))
 	// reserved names get "''", in every name built from them
 	assert.Equal("lookup''", LeanIdent("lookup"))
