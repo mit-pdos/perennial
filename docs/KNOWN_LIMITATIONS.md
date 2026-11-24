@@ -298,6 +298,26 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   func h[T ~int64]() T { return T(1e18 + 1) } // gc: 1000000000000000000; model: 1000000000000000001
   ```
 
+## time
+
+- **GODEBUG changed while the program runs (sound only while setenv of `GODEBUG` is stuck).**
+  The Go model of the timers (`goose/model/overlay/time/sleep.go`, `makeTimerChan`) fixes a
+  timer channel's kind, synchronous (capacity 0) or asynchronous (capacity 1), when it is
+  made. gc's runtime instead re-reads `GODEBUG=asynctimerchan` on every `cap`, `len` and
+  send of a timer channel, so a program that changes the setting mid-run sees one timer's
+  `cap(t.C)` change from 0 to 1, which no model channel does. Witness (go1.26.11 prints
+  `0 0 1 1 1` and panics):
+  ```go
+  t := time.NewTimer(time.Hour)
+  c0 := cap(t.C)
+  os.Setenv("GODEBUG", "asynctimerchan=1")
+  if c0 != cap(t.C) { panic("cap of a timer channel changed") }
+  ```
+  The model cannot reach this: `os.Setenv`/`syscall.Setenv` have no body (stuck), and the
+  runtime-provided setenv hook is to be stuck on the key `GODEBUG` (as
+  `TrustedCode/crypto/fips140.lean` fixes its own GODEBUG setting for the run). A model of
+  `Setenv` that lets `GODEBUG` change would make this entry unsound.
+
 ## Grove (`grove_ffi`)
 
 - **The process is assumed not to run out of file descriptors or similar resources
