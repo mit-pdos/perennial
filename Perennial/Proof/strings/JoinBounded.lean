@@ -2,10 +2,14 @@
 `strings.Join` with its output-length premise discharged per element and by count: if every
 element has at most `B` bytes and `n` elements with their separators fit, `n * (B + |sep|) <
 joinMax`, the output is shorter than `joinMax` (`strings.Join.spec`'s premise).
+With the slice fully owned, the count needs no premise: a fully owned slice has fewer than
+`maxAddr` elements (`ownSlice_string_length_lt_maxAddr`), so `maxAddr * (B + |sep|) ≤ joinMax`
+suffices (`strings.Join_owned_bounded_of`).
 -/
 module
 
 public import Perennial.Spec.strings.Join
+public import Perennial.Golang.Theory.SliceBounds
 
 @[expose] public section
 
@@ -61,6 +65,31 @@ theorem strings.Join_bounded_of (wp_Join : strings.Join.spec (GF := GF) (hG := h
   have := strings.length_intercalate_le sep xs B hB
   unfold strings.joinMax at hn
   omega
+
+/-- `strings.Join(elems, sep)` of a fully owned slice of elements of at most `B` bytes each, with
+`maxAddr * (B + |sep|) ≤ joinMax`: the elements separated by `sep`. The count is bounded by the
+slice's ownership (`ownSlice_string_length_lt_maxAddr`). -/
+theorem strings.Join_owned_bounded_of (wp_Join : strings.Join.spec (GF := GF) (hG := hG)) :
+    ∀ (elems : GoSlice) (xs : List GoString) (sep : GoString) (B : Nat),
+    (∀ x ∈ xs, x.length ≤ B) → maxAddr.toNat * (B + sep.length) ≤ strings.joinMax →
+    {{ isPkgInit (PROP := IProp GF) pkg_id.strings ∗ elems ↦* xs }}
+      (App (App (Val (@! strings.Join)) (Val #elems)) (Val #sep))
+    {{ RET #(sep.intercalate xs); elems ↦* xs }} := by
+  intro elems xs sep B hB hm
+  iintro %Φ ⟨#Hpkg, Hs⟩ HΦ
+  icases ownSlice_string_length_lt_maxAddr elems xs $$ Hs with %Hlen
+  have hn : xs.length * (B + sep.length) < strings.joinMax := by
+    have hle : xs.length + 1 ≤ maxAddr.toNat := by
+      have : (0 : Int) ≤ maxAddr := by simp [maxAddr]
+      omega
+    have h1 := Nat.mul_le_mul_right (B + sep.length) hle
+    rw [Nat.succ_mul] at h1
+    rcases Nat.eq_zero_or_pos (B + sep.length) with h0 | h0
+    · rw [h0, Nat.mul_zero]; unfold strings.joinMax; omega
+    · omega
+  iapply (strings.Join_bounded_of wp_Join elems xs (DFrac.own 1) sep B hB hn) $$ [Hs] HΦ
+  iframe
+  iexact Hpkg
 
 end wps
 

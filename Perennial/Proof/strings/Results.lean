@@ -1,6 +1,7 @@
 /-
 Results of `strings` derived from the linked ones: `Join` with its length premise discharged per
-element and by count (`strings.wp_Join_bounded`).
+element and by count (`strings.wp_Join_bounded`), or, for a fully owned slice, per element
+(`strings.wp_Join_owned_bounded`).
 -/
 module
 
@@ -30,6 +31,16 @@ theorem strings.wp_Join_bounded :
       (App (App (Val (@! strings.Join)) (Val #elems)) (Val #sep))
     {{ RET #(sep.intercalate xs); elems ↦*{dq} xs }} :=
   strings.Join_bounded_of strings.wp_Join
+
+/-- `strings.Join` of a fully owned slice of elements of at most `B` bytes each,
+`maxAddr * (B + |sep|) ≤ joinMax`. -/
+theorem strings.wp_Join_owned_bounded :
+    ∀ (elems : GoSlice) (xs : List GoString) (sep : GoString) (B : Nat),
+    (∀ x ∈ xs, x.length ≤ B) → maxAddr.toNat * (B + sep.length) ≤ strings.joinMax →
+    {{ isPkgInit (PROP := IProp GF) pkg_id.strings ∗ elems ↦* xs }}
+      (App (App (Val (@! strings.Join)) (Val #elems)) (Val #sep))
+    {{ RET #(sep.intercalate xs); elems ↦* xs }} :=
+  strings.Join_owned_bounded_of strings.wp_Join
 
 end results
 
