@@ -1296,10 +1296,54 @@ func typeString(t types.Type) string {
 	return types.TypeString(t, func(p *types.Package) string { return p.Path() })
 }
 
+// unnamedParams is t with the names of the parameters and results of its
+// function types dropped (in t and in the pointer, slice, array, map and
+// channel types it is built of), which types.Identical ignores too: a model
+// must name a parameter the real bodyless declaration leaves unnamed
+// (`func stopTimer(*Timer) bool`) to use it. Everything else, variadic-ness
+// and type parameters included, is kept.
+func unnamedParams(t types.Type) types.Type {
+	switch t := t.(type) {
+	case *types.Signature:
+		strip := func(tup *types.Tuple) *types.Tuple {
+			vars := make([]*types.Var, tup.Len())
+			for i := range vars {
+				v := tup.At(i)
+				vars[i] = types.NewParam(v.Pos(), v.Pkg(), "", unnamedParams(v.Type()))
+			}
+			return types.NewTuple(vars...)
+		}
+		// fresh type parameters (one may be bound to one signature only),
+		// printed as the originals
+		tparams := func(l *types.TypeParamList) []*types.TypeParam {
+			var ps []*types.TypeParam
+			for i := 0; i < l.Len(); i++ {
+				tp := l.At(i)
+				ps = append(ps, types.NewTypeParam(
+					types.NewTypeName(tp.Obj().Pos(), tp.Obj().Pkg(), tp.Obj().Name(), nil), tp.Constraint()))
+			}
+			return ps
+		}
+		return types.NewSignatureType(nil, tparams(t.RecvTypeParams()), tparams(t.TypeParams()),
+			strip(t.Params()), strip(t.Results()), t.Variadic())
+	case *types.Pointer:
+		return types.NewPointer(unnamedParams(t.Elem()))
+	case *types.Slice:
+		return types.NewSlice(unnamedParams(t.Elem()))
+	case *types.Array:
+		return types.NewArray(unnamedParams(t.Elem()), t.Len())
+	case *types.Map:
+		return types.NewMap(unnamedParams(t.Key()), unnamedParams(t.Elem()))
+	case *types.Chan:
+		return types.NewChan(t.Dir(), unnamedParams(t.Elem()))
+	}
+	return t
+}
+
 // CheckAPI checks that the overlaid package over keeps the API of the real
 // package real (D5): a replaced function, method or variable has an
 // identical type (printed with package paths, so type parameters keep their
-// names too); a replaced type keeps its exported fields (names, order,
+// names too, and without parameter and result names, see unnamedParams); a replaced type keeps its exported fields (names, order,
 // types, embedding and tags, and the exported fields its embedded fields
 // promote), and an exported one also its kind (alias or defined, struct or
 // not), its underlying type if it is not a struct, and its comparability;
@@ -1337,7 +1381,7 @@ func CheckAPI(real, over *types.Package, config declfilter.ModelConfig) []error 
 		}
 		switch r := r.(type) {
 		case *types.Func, *types.Var:
-			if typeString(r.Type()) != typeString(o.Type()) {
+			if typeString(unnamedParams(r.Type())) != typeString(unnamedParams(o.Type())) {
 				errs = append(errs, errors.Errorf("%s: type %s, which the model changes to %s",
 					name, typeString(r.Type()), typeString(o.Type())))
 			}
