@@ -9,12 +9,13 @@
 #
 # The tests left out are the ones a model fails by design (each MODEL: comment
 # says why):
-#   strings  TestSplit, ExampleSplit  an empty separator: Split's model is stuck
-#                                     there (gomodel.Stuck, which blocks in gc)
-#            TestBuilderGrow, TestBuilderAllocs, TestBuilderGrowSizeclasses,
+#   strings  TestBuilderGrow, TestBuilderAllocs, TestBuilderGrowSizeclasses,
 #            TestReplace              allocation counts: Builder.String's model
 #                                     copies the buffer, and copyCheck's stores
-#                                     b in b.addr, so b escapes
+#                                     b in b.addr, so b escapes; and
+#                                     internal/bytealg.MakeNoZero's Go body
+#                                     allocates exactly the length asked for,
+#                                     not gc's size class
 #            TestBuilderCopyPanic     copyCheck's model is stuck (gomodel.Stuck,
 #                                     which blocks in gc) where Go's check
 #                                     fails, and Reset's model keeps b.addr
@@ -34,7 +35,7 @@ go build -o "$OUT/goose" ./cmd/goose
   strings bytes errors internal/stringslite internal/bytealg
 # go vet does not find the overlay-added internal/gomodel (it changes into the package's directory)
 run() { go test -vet=off -timeout 300s -overlay "$OUT/ov/overlay.json" -tags purego,goose "$@"; }
-run strings -skip '^(TestSplit|ExampleSplit|TestBuilderGrow|TestBuilderAllocs|TestBuilderGrowSizeclasses|TestReplace|TestBuilderCopyPanic)$'
+run strings -skip '^(TestBuilderGrow|TestBuilderAllocs|TestBuilderGrowSizeclasses|TestReplace|TestBuilderCopyPanic)$'
 run errors -skip '^TestIs$'
 run bytes internal/stringslite internal/bytealg
 echo "model-tests: ok"
