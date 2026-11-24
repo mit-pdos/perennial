@@ -34,7 +34,6 @@ theorem wp_runtime_args_impl [internal.gomodel.Assumptions]
     {{ (s : GoSlice), RET #s; ∃ xs : List GoString,
         s ↦* xs ∗ ownSliceCap GoString s (DFrac.own 1) }} := by
   wp_start
-  wp_auto
   wp_apply wp_ChooseStrings as %s Hs
   iapply HΦ
   iexact Hs
