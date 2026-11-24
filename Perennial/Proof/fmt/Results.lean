@@ -26,11 +26,12 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
 
-/-- `fmt.Sprintf` without method arguments returns `render ps args` (`fmt.Out.eq_render`). -/
+/-- `fmt.Sprintf` without `%q` and without method arguments returns `render ps args`
+(`fmt.Out.eq_render`). -/
 theorem fmt.wp_Sprintf_render :
     ∀ (format : GoString) (ps : List fmt.Piece) (args_sl : GoSlice) (xs : List GoInterface)
       (args : List fmt.Arg) (dq : DFrac),
-    format = fmt.encode ps → fmt.Fits ps args → (∀ a ∈ args, a.NoMethod) →
+    format = fmt.encode ps → fmt.Fits ps args → (∀ a ∈ args, a.NoMethod) → fmt.NoQuote ps →
     {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ args_sl ↦*{dq} xs ∗
         [∗list] x;a ∈ xs;args, fmt.isArg x a }}
       (App (App (Val (@! fmt.Sprintf)) (Val #format)) (Val #args_sl))

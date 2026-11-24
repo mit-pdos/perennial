@@ -3,12 +3,13 @@ Shared definitions of the proofs of `fmt`'s print path (print.go, format.go), tr
 what the spec of `Sprintf` says (a format made of `Piece`s, the arguments as `Arg`s, the output
 `Out`), and the resources its proofs pass around (a printer's buffer, its `fmt`, the printer).
 
-The verified subset: literal text, `%%`, and `%d %v %x` of an integer (also `%0Nd %0Nv %0Nx`), `%v`
-of a bool and of `nil`, `%s %v %x` of a string and of a value with an `Error()` or `String()`
-method, `%s %v %d %x` of a `[]byte`, with exactly one argument per directive. Everything else
-(other verbs or flags, a width or precision, argument indices, `%T`, `%p`, floats, extra or missing
-arguments, and `%v` of a value Go formats by reflection, `printValue`) is outside the precondition:
-the translated code is stuck there or not verified.
+The verified subset: literal text, `%%`, and `%d %v %x` of an integer (also `%0Nd %0Nv %0Nx`, and
+`%.Pd %.Pv %.Px %.PX`), `%v %t` of a bool, `%v` of `nil`, `%s %v %x %q` of a string and of a value
+with an `Error()` or `String()` method, `%s %v %d %x` of a `[]byte`, with exactly one argument per
+directive. Everything else (other verbs or flags, a width with a precision, a precision of anything
+but an integer, argument indices, `%T`, `%p`, floats, extra or missing arguments, and `%v` of a
+value Go formats by reflection, `printValue`) is outside the precondition: the translated code is
+stuck there or not verified.
 -/
 module
 
@@ -26,12 +27,15 @@ namespace fmt
 
 /-! ## The format and the arguments -/
 
-/-- The bytes of the verbs: `d` is `W8 100`, `s` `W8 115`, `v` `W8 118`, `x` `W8 120`; `%` is
-`W8 37`, `0` `W8 48`. -/
+/-- The bytes of the verbs: `d` is `W8 100`, `s` `W8 115`, `v` `W8 118`, `x` `W8 120`, `q`
+`W8 113`, `t` `W8 116`, `X` `W8 88`; `%` is `W8 37`, `0` `W8 48`, `.` `W8 46`. -/
 abbrev verb_d : w8 := W8 100
 abbrev verb_s : w8 := W8 115
 abbrev verb_v : w8 := W8 118
 abbrev verb_x : w8 := W8 120
+abbrev verb_q : w8 := W8 113
+abbrev verb_t : w8 := W8 116
+abbrev verb_X : w8 := W8 88
 
 /-- A piece of a format string in the verified subset. -/
 inductive Piece where
@@ -42,6 +46,8 @@ inductive Piece where
   /-- `%` and the verb `verb`, or, with `zw = some N`, `%0N` and the verb: zero padding to the
   width `N` (written in decimal, `1 ≤ N ≤ 10^6`, `Fits`). -/
   | dir (zw : Option Nat) (verb : w8)
+  /-- `%.P` and the verb: the precision `P` (written in decimal, `P ≤ 10^6`, `Fits`). -/
+  | prec (p : Nat) (verb : w8)
 
 /-- The bytes of a piece in the format string. -/
 def Piece.encode : Piece → GoString
@@ -49,6 +55,7 @@ def Piece.encode : Piece → GoString
   | .percent => [W8 37, W8 37]
   | .dir none v => [W8 37, v]
   | .dir (some n) v => W8 37 :: W8 48 :: (decimalNat n ++ [v])
+  | .prec p v => W8 37 :: W8 46 :: (decimalNat p ++ [v])
 
 /-- The format string made of the pieces `ps`. -/
 def encode (ps : List Piece) : GoString := ps.flatMap Piece.encode
@@ -78,17 +85,26 @@ def ZeroWidthOk : Option Nat → Prop
 
 /-- The directive `%verb` (`zw = none`) or `%0Nverb` (`zw = some N`) of the argument `a` is in
 the verified subset. `%x` of fewer than `2^62` bytes: `fmtSbx` computes the width `2 * length` in
-an `int`, and writes nothing if that wraps. -/
+an `int`, and writes nothing if that wraps. `%q` of at most `maxAddr` bytes: `strconv`'s quoting
+(`appendQuotedWith`) allocates a buffer of `len(s)+2` bytes. -/
 def DirOk : Option Nat → w8 → Arg → Prop
   | zw, v, .int _ => (v = verb_d ∨ v = verb_v ∨ v = verb_x) ∧ ZeroWidthOk zw
   | none, v, .nil => v = verb_v
-  | none, v, .bool _ => v = verb_v
-  | none, v, .str s => v = verb_s ∨ v = verb_v ∨ (v = verb_x ∧ s.length < 2 ^ 62)
+  | none, v, .bool _ => v = verb_v ∨ v = verb_t
+  | none, v, .str s => v = verb_s ∨ v = verb_v ∨ (v = verb_x ∧ s.length < 2 ^ 62) ∨
+    (v = verb_q ∧ s.length ≤ maxAddr)
   | none, v, .bytes bs _ =>
     v = verb_s ∨ v = verb_v ∨ v = verb_d ∨ (v = verb_x ∧ bs.length < 2 ^ 62)
   | none, v, .method P =>
-    v = verb_s ∨ v = verb_v ∨ (v = verb_x ∧ ∀ s, P s → s.length < 2 ^ 62)
+    v = verb_s ∨ v = verb_v ∨ (v = verb_x ∧ ∀ s, P s → s.length < 2 ^ 62) ∨
+    (v = verb_q ∧ ∀ s, P s → s.length ≤ maxAddr)
   | some _, _, _ => False
+
+/-- The directive `%.Pverb` of the argument `a` is in the verified subset: an integer under `d`,
+`v`, `x` or `X`, the precision at most `10^6` (Go's `parsenum` gives up on more digits). -/
+def PrecOk (p : Nat) (v : w8) : Arg → Prop
+  | .int _ => (v = verb_d ∨ v = verb_v ∨ v = verb_x ∨ v = verb_X) ∧ p ≤ 1000000
+  | _ => False
 
 /-- The pieces `ps` and the arguments `as` are in the verified subset: no literal contains a `%`,
 each directive takes the next argument and is `DirOk` of it, and every argument is used. -/
@@ -99,6 +115,8 @@ inductive Fits : List Piece → List Arg → Prop
   | percent (ps : List Piece) (args : List Arg) : Fits ps args → Fits (.percent :: ps) args
   | dir (zw : Option Nat) (v : w8) (a : Arg) (ps : List Piece) (args : List Arg) :
       DirOk zw v a → Fits ps args → Fits (.dir zw v :: ps) (a :: args)
+  | prec (p : Nat) (v : w8) (a : Arg) (ps : List Piece) (args : List Arg) :
+      PrecOk p v a → Fits ps args → Fits (.prec p v :: ps) (a :: args)
 
 /-! ## The output -/
 
@@ -113,6 +131,39 @@ zero padding (0 for none): `decimalPad w z` or `hexPad w z`. -/
 def intOut (base : Nat) (w : Nat) (z : Int) : GoString :=
   if base = 16 then hexPad w z else decimalPad w z
 
+/-- The uppercase hexadecimal digit of `d < 16`: `'0' + d` below 10, `'A' + (d - 10)` above. -/
+def hexDigitByteU (d : Nat) : w8 := if d < 10 then W8 (48 + d) else W8 (65 + (d - 10))
+
+/-- The uppercase hexadecimal digits of `n`, most significant first, without leading zeros. -/
+def hexNatU (n : Nat) : GoString :=
+  (if n < 16 then [] else hexNatU (n / 16)) ++ [hexDigitByteU (n % 16)]
+termination_by n
+decreasing_by omega
+
+/-- The digits of `n` in base `base`: hexadecimal for 16 (uppercase if `upper`), decimal
+otherwise. -/
+def digitsIn (base : Nat) (upper : Bool) (n : Nat) : GoString :=
+  if base = 16 then (if upper then hexNatU n else hexNat n) else decimalNat n
+
+/-- What `fmtInteger` writes for the width `w` of zero padding (`%0Nd`; 0 for none): the digits
+of `z` in base `base` (`digitsIn`) with leading zeros up to width `w`, the sign of a negative `z`
+before the zeros (and counted in the width). `intOut base w z` for lowercase digits
+(`widthPad_false`). -/
+def widthPad (base : Nat) (upper : Bool) (w : Nat) (z : Int) : GoString :=
+  if z < 0 then W8 45 :: padZeros (w - 1) (digitsIn base upper z.natAbs)
+  else padZeros w (digitsIn base upper z.natAbs)
+
+/-- What `fmtInteger` writes for the precision `p` (`%.Pd`): the digits of `z` in base `base`
+(`digitsIn`) with leading zeros up to `p` digits, the sign of a negative `z` before them; nothing
+for `z = 0` at precision 0. -/
+def precPad (base : Nat) (upper : Bool) (p : Nat) (z : Int) : GoString :=
+  if p = 0 ∧ z = 0 then []
+  else if z < 0 then W8 45 :: padZeros p (digitsIn base upper z.natAbs)
+  else padZeros p (digitsIn base upper z.natAbs)
+
+/-- The base `fmtInteger` formats the integer verb `v` in: 16 for `x` and `X`, 10 otherwise. -/
+def verbBase (v : w8) : Nat := if v = verb_x ∨ v = verb_X then 16 else 10
+
 /-- The digits `fmt` takes for hexadecimal: `ldigits` (`upper` false) or `udigits`. -/
 def hexDigits (upper : Bool) : GoString :=
   if upper then go!"0123456789ABCDEFX" else go!"0123456789abcdefx"
@@ -125,12 +176,16 @@ def nilAngle : GoString := go!"<nil>"
 inductive DirOut : Option Nat → w8 → Arg → GoString → Prop
   | nil_v : DirOut none verb_v .nil nilAngle
   | bool_v (b : Bool) : DirOut none verb_v (.bool b) (if b then go!"true" else go!"false")
+  | bool_t (b : Bool) : DirOut none verb_t (.bool b) (if b then go!"true" else go!"false")
   | int_d (zw : Option Nat) (z : Int) : DirOut zw verb_d (.int z) (decimalPad (zw.getD 0) z)
   | int_v (zw : Option Nat) (z : Int) : DirOut zw verb_v (.int z) (decimalPad (zw.getD 0) z)
   | int_x (zw : Option Nat) (z : Int) : DirOut zw verb_x (.int z) (hexPad (zw.getD 0) z)
   | str_s (s : GoString) : DirOut none verb_s (.str s) s
   | str_v (s : GoString) : DirOut none verb_v (.str s) s
   | str_x (s : GoString) : DirOut none verb_x (.str s) (bytesHex false s)
+  /-- `%q` writes `s` double-quoted as a Go literal (`strconv.Quote`), of which `strconv`'s spec
+  says nothing more: any string. -/
+  | str_q (s o : GoString) : DirOut none verb_q (.str s) o
   | bytes_s (bs : GoString) (dq : DFrac) : DirOut none verb_s (.bytes bs dq) bs
   | bytes_v (bs : GoString) (dq : DFrac) : DirOut none verb_v (.bytes bs dq) (bytesDec bs)
   | bytes_d (bs : GoString) (dq : DFrac) : DirOut none verb_d (.bytes bs dq) (bytesDec bs)
@@ -139,6 +194,18 @@ inductive DirOut : Option Nat → w8 → Arg → GoString → Prop
   | method_v (P : GoString → Prop) (s : GoString) : P s → DirOut none verb_v (.method P) s
   | method_x (P : GoString → Prop) (s : GoString) :
       P s → DirOut none verb_x (.method P) (bytesHex false s)
+  /-- `%q` of the method's result `s`: as `str_q`, any string. -/
+  | method_q (P : GoString → Prop) (s o : GoString) : P s → DirOut none verb_q (.method P) o
+
+/-- What `pp.fmtString` writes for the verb `verb` (`s`, `v`, `x` or `q`, without flags) of the
+string `s`: `s` itself (`s`, `v`), its hexadecimal (`x`), or, for `q`, any string (`DirOut.str_q`). -/
+def StrOut (verb : w8) (s o : GoString) : Prop :=
+  verb = verb_q ∨ o = if verb = verb_x then bytesHex false s else s
+
+/-- `PrecOut p verb a out`: Go writes `out` for the directive `%.Pverb` of the argument `a`. -/
+inductive PrecOut : Nat → w8 → Arg → GoString → Prop
+  | int (p : Nat) (v : w8) (z : Int) :
+      PrecOut p v (.int z) (precPad (verbBase v) (decide (v = verb_X)) p z)
 
 /-- `Out ps as out`: `Sprintf(encode ps, as...)` returns `out` (given `Fits ps as`): the pieces'
 outputs in order, a directive's from the next argument. -/
@@ -151,6 +218,9 @@ inductive Out : List Piece → List Arg → GoString → Prop
   | dir (zw : Option Nat) (v : w8) (a : Arg) (o : GoString) (ps : List Piece) (args : List Arg)
       (out : GoString) :
       DirOut zw v a o → Out ps args out → Out (.dir zw v :: ps) (a :: args) (o ++ out)
+  | prec (p : Nat) (v : w8) (a : Arg) (o : GoString) (ps : List Piece) (args : List Arg)
+      (out : GoString) :
+      PrecOut p v a o → Out ps args out → Out (.prec p v :: ps) (a :: args) (o ++ out)
 
 /-! ## `parsenum` -/
 
@@ -271,6 +341,50 @@ def dirFlags : Option Nat → fmtFlags
 
 /-- The width of the directive `%verb` (`zw = none`: 0) or `%0Nverb` (`N`). -/
 def dirWid (zw : Option Nat) : w64 := W64 (zw.getD 0)
+
+/-- What a directive of the verified subset puts between the `%` and the verb: nothing or a zero
+width (`width zw`: `%verb`, `%0Nverb`, `Piece.dir`), or a precision (`prec p`: `%.Pverb`,
+`Piece.prec`). -/
+inductive Mod where
+  | width (zw : Option Nat)
+  | prec (p : Nat)
+
+/-- The flags `doPrintf` sets for the directive when it calls `printArg`: `dirFlags` for a width,
+`precPresent` alone for a precision. -/
+def Mod.flags : Mod → fmtFlags
+  | .width zw => dirFlags zw
+  | .prec _ => { noFlags with precPresent' := true }
+
+/-- The width `doPrintf` sets for the directive (`parsenum` gives 0 when there is none). -/
+def Mod.wid : Mod → w64
+  | .width zw => dirWid zw
+  | .prec _ => W64 0
+
+/-- The precision `doPrintf` sets for the directive (0 when there is none). -/
+def Mod.precW : Mod → w64
+  | .width _ => W64 0
+  | .prec p => W64 p
+
+/-- The directive is in the verified subset (`DirOk`, `PrecOk`). -/
+def Mod.Ok : Mod → w8 → Arg → Prop
+  | .width zw => DirOk zw
+  | .prec p => PrecOk p
+
+/-- What Go writes for the directive (`DirOut`, `PrecOut`). -/
+def Mod.Out : Mod → w8 → Arg → GoString → Prop
+  | .width zw => DirOut zw
+  | .prec p => PrecOut p
+
+/-- The integer directives of the verified subset: `%d %v %x`, zero-padded to a width of at most
+`10^6`, or `%d %v %x %X` with a precision of at most `10^6`. -/
+def Mod.IntOk : Mod → w8 → Prop
+  | .width zw, v => (v = verb_d ∨ v = verb_v ∨ v = verb_x) ∧ ZeroWidthOk zw
+  | .prec p, v => (v = verb_d ∨ v = verb_v ∨ v = verb_x ∨ v = verb_X) ∧ p ≤ 1000000
+
+/-- What Go writes for the integer directive of `z` (`Mod.IntOk`). -/
+def Mod.intOut : Mod → w8 → Int → GoString
+  | .width zw, v, z => widthPad (verbBase v) (decide (v = verb_X)) (zw.getD 0) z
+  | .prec p, v, z => precPad (verbBase v) (decide (v = verb_X)) p z
 
 /-- The printer at `p` (a `*pp` that `newPrinter` returned), its field `arg` holding `x`, its
 buffer holding `bs`, its `fmt` the flags `F`, width `wid` and precision `prec`: the struct's

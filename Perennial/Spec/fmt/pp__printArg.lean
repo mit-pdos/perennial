@@ -20,17 +20,18 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
 
-/-- `p.printArg(arg, verb)` for the directive `%verb` or `%0Nverb` (`dirFlags zw`, `dirWid zw`) of
-an argument `arg` that is `a` (`isArg`), in the verified subset (`DirOk`): appends what Go writes
-for it (`DirOut`), leaving `arg` in `p.arg`. -/
+/-- `p.printArg(arg, verb)` for the directive `%verb`, `%0Nverb` or `%.Pverb` (`md`: the flags,
+width and precision `doPrintf` sets for it, `Mod.flags`, `Mod.wid`, `Mod.precW`) of an argument
+`arg` that is `a` (`isArg`), in the verified subset (`Mod.Ok`): appends what Go writes for it
+(`Mod.Out`), leaving `arg` in `p.arg`. -/
 abbrev fmt.pp.printArg.spec : Prop :=
-  ∀ (p : Loc) (arg : GoInterface) (a : Arg) (bs : GoString) (zw : Option Nat) (verb : w8),
-    DirOk zw verb a →
-    {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ isPrinter p bs (dirFlags zw) (dirWid zw) (W64 0) ∗
+  ∀ (p : Loc) (arg : GoInterface) (a : Arg) (bs : GoString) (md : Mod) (verb : w8),
+    md.Ok verb a →
+    {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ isPrinter p bs md.flags md.wid md.precW ∗
         isArg arg a }}
       (App (App (Val (p @!! go.GoType.PointerType pp.ty @!! go!"printArg")) (Val #arg)) (Val #(W32 (uint.nat verb))))
-    {{ RET #(); ∃ o : GoString, ⌜DirOut zw verb a o⌝ ∗
-        isPrinterA p arg (bs ++ o) (dirFlags zw) (dirWid zw) (W64 0) ∗ isArg arg a }}
+    {{ RET #(); ∃ o : GoString, ⌜md.Out verb a o⌝ ∗
+        isPrinterA p arg (bs ++ o) md.flags md.wid md.precW ∗ isArg arg a }}
 
 end spec
 
