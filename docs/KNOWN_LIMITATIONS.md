@@ -197,6 +197,17 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   type, `TypeOfEq`). Refusing such
   types would reject common code (`struct{ mu sync.Mutex; … }`); modelling it means
   qualifying field names everywhere.
+- **`error` and `interface{ Error() string }` are one type (unsound).** In Go they are
+  different types (`error` is a predeclared defined type); the model has one
+  (`go.error` is `InterfaceType [Error() string]`), so a type assertion between types that
+  differ only there succeeds, and so does `TypeOfEq`; `reflect.TypeOf`'s identity (tokens are
+  compared by `==` of their dynamic types) inherits it:
+  ```go
+  var e any = (*error)(nil)
+  _, ok := e.(*interface{ Error() string }) // Go: false; the model: true
+  _ = reflect.TypeOf((*error)(nil)) == reflect.TypeOf((*interface{ Error() string })(nil)) // Go: false; the model: true
+  ```
+  Pre-existing (not introduced by `reflect`'s model). Fix: `error` as a named predeclared type.
 - **Conversions that involve struct tags are stuck (incomplete, sound).** Every field
   declaration carries its tag (`go.field_decl.Field name type tag`, empty when absent;
   `go.FieldDecl name type` is the untagged shorthand), and goose writes the tags of an unnamed
