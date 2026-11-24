@@ -6,6 +6,7 @@ public import Perennial.Code.sync
 public import Perennial.Code.github_com.goose_lang.primitive
 public import Perennial.Code.log
 public import Perennial.Code.github_com.goose_lang.std
+public import Perennial.Code.github_com.mit_pdos.perennial.proph
 public import Perennial.Golang.Defn
 
 @[expose] public section
@@ -199,6 +200,11 @@ noncomputable def typing.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.typing" [])
 
 attribute [irreducible] typing.ty
+
+noncomputable def prophEvent.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.prophEvent" [])
+
+attribute [irreducible] prophEvent.ty
 
 noncomputable def composite.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.composite" [])
@@ -943,6 +949,9 @@ noncomputable def PanicAtTheDisco [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def Oracle [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.Oracle"
+
+noncomputable def ResolveEvents [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.ResolveEvents"
 
 noncomputable def ReassignVars [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.ReassignVars"
@@ -4866,7 +4875,7 @@ noncomputable def PanicAtTheDisco.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))))
   (Val #())))
 
-/-- go: proph.go:5:6 -/
+/-- go: proph.go:8:6 -/
 noncomputable def Oracle.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Seq (App (Val exceptionDo)
@@ -4878,6 +4887,38 @@ noncomputable def Oracle.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.ProphId.ty))) (Pair (Var "p") (Var "$r0")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.ProphId.ty))) (Pair (Var "p") (Var "$r0"))))))))
+  (Val #())))
+
+/-- ResolveEvents uses github.com/mit-pdos/perennial/proph, Perennial's package
+    of prophecy variables, including Resolve, which resolves with an interface value.
+
+    go: proph.go:24:6 -/
+noncomputable def ResolveEvents.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "x"
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.mit_pdos.perennial.proph.NewProph []))) (Val #())) (Val #()))
+  (Let "p" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.mit_pdos.perennial.proph.ProphId.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.mit_pdos.perennial.proph.ProphId.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.uint64 go.any))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.mit_pdos.perennial.proph.ProphId.ty) go!"Resolve"))) (Var "p")) (Var "$a0"))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert prophEvent.ty go.any))) (Let "$v0" (Val #(W64 1))
+  (Let "$v1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
+  (App (Val (GoInstruction (CompositeLiteral prophEvent.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"kind")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"val")) (ElementExpression go.uint64 (Var "$v1")))])))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.mit_pdos.perennial.proph.ProphId.ty) go!"Resolve"))) (Var "p")) (Var "$a0")))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.mit_pdos.perennial.proph.ProphId.ty) go!"ResolveU64"))) (Var "p")) (Var "$a0")))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 0))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.mit_pdos.perennial.proph.ProphId.ty) go!"ResolveBool"))) (Var "p")) (Var "$a0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.mit_pdos.perennial.proph.ProphId.ty))) (Pair (Var "p") (Var "$r0")))))))))
   (Val #())))
 
 /-- go: reassign.go:8:6 -/
@@ -6481,12 +6522,13 @@ noncomputable def LocalConsts.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest where
-  pkgImportedPkgs := [pkg_id.fmt, pkg_id.sync, pkg_id.github_com.goose_lang.primitive, pkg_id.log, pkg_id.github_com.goose_lang.std]
+  pkgImportedPkgs := [pkg_id.fmt, pkg_id.sync, pkg_id.github_com.goose_lang.primitive, pkg_id.log, pkg_id.github_com.goose_lang.std, pkg_id.github_com.mit_pdos.perennial.proph]
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest)) (Lam BAnon
   (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -6538,6 +6580,8 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.log.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.goose_lang.std.initialize') (Val #()))))))
+  (App (Val doExecute)
+  (App (Val _root_.Perennial.github_com.mit_pdos.perennial.proph.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc GlobalX go.uint64)) (Val #()))))))
   (App (Val doExecute)
@@ -7591,6 +7635,47 @@ attribute [instance] typing.TypeAssumptions.type_repr
   typing.TypeAssumptions.method_set
   typing.TypeAssumptions.ptr_method_set
 
+structure prophEvent [GooseExts] where
+  mk ::
+  kind' : w64
+  val' : w64
+
+noncomputable instance prophEvent.zero_val [GooseExts] : ZeroVal prophEvent :=
+  ⟨prophEvent.mk zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def prophEvent.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"kind" go.uint64),
+(go.field_decl.FieldDecl go!"val" go.uint64)]
+
+@[irreducible] noncomputable def prophEvent.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  prophEvent.fieldsUnsealed
+
+noncomputable instance equals_unfold_prophEvent [GooseExts] [GoGlobalContext] :
+    EqualsUnfold prophEvent.fields prophEvent.fieldsUnsealed :=
+  ⟨by unfold prophEvent.fields; rfl⟩
+
+@[reducible] noncomputable def prophEvent.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType prophEvent.fields)
+
+class prophEvent.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying prophEvent.underlying prophEvent
+  underlying : go.UnderlyingDirectedEq prophEvent.ty prophEvent.underlying
+  get_kind : ∀ (x : prophEvent), go.IsGoStepPureDetTagged under (StructFieldGet prophEvent.underlying go!"kind") #x (Val #(x.kind'))
+  set_kind : ∀ (x : prophEvent) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet prophEvent.underlying go!"kind") (PairV #x #y) (Val #(({ x with kind' := y } : prophEvent)))
+  get_val : ∀ (x : prophEvent), go.IsGoStepPureDetTagged under (StructFieldGet prophEvent.underlying go!"val") #x (Val #(x.val'))
+  set_val : ∀ (x : prophEvent) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet prophEvent.underlying go!"val") (PairV #x #y) (Val #(({ x with val' := y } : prophEvent)))
+  method_set : go.MethodSetIs prophEvent.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType prophEvent.ty) []
+
+attribute [instance] prophEvent.TypeAssumptions.type_repr
+  prophEvent.TypeAssumptions.underlying
+  prophEvent.TypeAssumptions.get_kind
+  prophEvent.TypeAssumptions.set_kind
+  prophEvent.TypeAssumptions.get_val
+  prophEvent.TypeAssumptions.set_val
+  prophEvent.TypeAssumptions.method_set
+  prophEvent.TypeAssumptions.ptr_method_set
+
 structure composite [GooseExts] where
   mk ::
   a' : w64
@@ -8317,6 +8402,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   containsPointer_instance : containsPointer.TypeAssumptions
   wrapExternalStruct_instance : wrapExternalStruct.TypeAssumptions
   typing_instance : typing.TypeAssumptions
+  prophEvent_instance : prophEvent.TypeAssumptions
   composite_instance : composite.TypeAssumptions
   pp_instance : pp.TypeAssumptions
   stringer_instance : stringer.TypeAssumptions
@@ -8499,6 +8585,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Negative_unfold : FuncUnfold Negative [] Negative.impl
   PanicAtTheDisco_unfold : FuncUnfold PanicAtTheDisco [] PanicAtTheDisco.impl
   Oracle_unfold : FuncUnfold Oracle [] Oracle.impl
+  ResolveEvents_unfold : FuncUnfold ResolveEvents [] ResolveEvents.impl
   ReassignVars_unfold : FuncUnfold ReassignVars [] ReassignVars.impl
   deferValueMethod_unfold : FuncUnfold deferValueMethod [] deferValueMethod.impl
   deferMethodValue_unfold : FuncUnfold deferMethodValue [] deferMethodValue.impl
@@ -8565,6 +8652,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   import_primitive_Assumption : _root_.Perennial.github_com.goose_lang.primitive.Assumptions
   import_log_Assumption : _root_.Perennial.log.Assumptions
   import_std_Assumption : _root_.Perennial.github_com.goose_lang.std.Assumptions
+  import_proph_Assumption : _root_.Perennial.github_com.mit_pdos.perennial.proph.Assumptions
 
 attribute [instance] Assumptions.Foo_instance
   Assumptions.importantStruct_instance
@@ -8601,6 +8689,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.containsPointer_instance
   Assumptions.wrapExternalStruct_instance
   Assumptions.typing_instance
+  Assumptions.prophEvent_instance
   Assumptions.composite_instance
   Assumptions.pp_instance
   Assumptions.stringer_instance
@@ -8783,6 +8872,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.Negative_unfold
   Assumptions.PanicAtTheDisco_unfold
   Assumptions.Oracle_unfold
+  Assumptions.ResolveEvents_unfold
   Assumptions.ReassignVars_unfold
   Assumptions.deferValueMethod_unfold
   Assumptions.deferMethodValue_unfold
@@ -8849,6 +8939,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.import_primitive_Assumption
   Assumptions.import_log_Assumption
   Assumptions.import_std_Assumption
+  Assumptions.import_proph_Assumption
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.unittest
 

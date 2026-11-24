@@ -1,6 +1,24 @@
-translate = ["!*", "ppFree", "ssFree", "errBool", "errComplex", "space", "wrapError.*", "wrapErrors.*"]
-imports = ["!*", "io", "errors", "sync"]
-trusted = ["Errorf", "Fprint", "Fprintf", "Print", "Printf", "Sprintf"]
+# The print path of print.go and format.go (`Sprintf` and the printer it runs), the package
+# variables, and errors.go's types. Not translated (stuck when called):
+# - `pp.printValue`, which formats by reflection (`reflect` has no semantics), and
+#   `pp.fmtComplex`, which needs the `real`/`imag` built-ins goose does not support;
+# - scan.go (only its package variables are translated, for the initializer);
+# - `errorf`, translated with `Errorf` at stage 2 of perennial#671, and `Println`, which writes
+#   to `os.Stdout`, with `Printf` and `Print` at stage 2.
+translate = [
+  "*",
+  "!pp.printValue", "!pp.fmtComplex",
+  "!errorf", "!Println",
+  # trusted (below)
+  "!Errorf", "!Fprint", "!Fprintf", "!Print", "!Printf",
+  # scan.go: only the package variables
+  "!Scan", "!Scanln", "!Scanf", "!Sscan", "!Sscanln", "!Sscanf", "!Fscan", "!Fscanln", "!Fscanf",
+  "!isSpace", "!notSpace", "!newScanState", "!indexRune", "!hasX", "!hexDigit", "!errorHandler",
+  "!ss.*", "!readRune.*", "!stringReader.*", "!scanError.*",
+]
+imports = ["!*", "io", "errors", "sync", "unicode/utf8", "reflect", "strconv"]
+# the trusted models of TrustedCode/fmt.lean, until stage 2 of perennial#671
+trusted = ["Errorf", "Fprint", "Fprintf", "Print", "Printf"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true
