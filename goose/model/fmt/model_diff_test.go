@@ -1,12 +1,13 @@
 package fmt_test
 
-// Differential tests of the model of fmt (model_test.go, the Go that the docstrings of
-// Perennial/TrustedCode/fmt.lean quote) against Go's fmt: on every call the model does not get
-// stuck on, its output matches Go's (each arbitrary string in it standing for any string), it
-// calls exactly the methods Go calls, in the same order, and its Errorf returns an error of the
-// same kind (errors.New, one wrapped error, several) wrapping the same errors. And on every call
-// the specs admit (argsOk, a transcription of fmt.argsOk of Perennial/Proof/fmt/Base.lean), the
-// model does not get stuck.
+// Differential tests of the Go model of fmt (goose/model/overlay/fmt: the model printer of
+// printmodel.go, copied into model_test.go, and the replaced declarations of print.go, mirrored in
+// model_harness_test.go) against Go's fmt: on every call the model does not get stuck on, its
+// output matches Go's (each arbitrary string in it standing for any string), it calls exactly the
+// methods Go calls, in the same order, and its Errorf returns an error of the same kind
+// (errors.New, one wrapped error, several) wrapping the same errors. And on every call the specs
+// admit (argsOk, a transcription of fmt.argsOk of Perennial/Proof/fmt/Args.lean), the model does
+// not get stuck.
 
 import (
 	"errors"

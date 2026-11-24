@@ -4,10 +4,15 @@ module
 public import Perennial.Proof.ProofPrelude
 public import Perennial.ManualProof.fmt
 public import Perennial.GeneratedProof.errors
+public import Perennial.GeneratedProof.internal.gomodel
+public import Perennial.GeneratedProof.internal.poll
+public import Perennial.GeneratedProof.internal.stringslite
 public import Perennial.GeneratedProof.io
+public import Perennial.GeneratedProof.io.fs
 public import Perennial.GeneratedProof.reflect
 public import Perennial.GeneratedProof.strconv
 public import Perennial.GeneratedProof.sync
+public import Perennial.GeneratedProof.syscall
 public import Perennial.GeneratedProof.unicode.utf8
 public import Perennial.Golang.Theory
 public import Perennial.Code.fmt
@@ -994,6 +999,29 @@ noncomputable instance readRune_access_store_peekRune (l : Loc) (v : fmt.readRun
 
 end def_
 end readRune
+
+namespace stdout
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : fmt.Assumptions]
+
+noncomputable instance stdout_typed_pointsto :
+    TypedPointsto (GF := GF) fmt.stdout where
+  typedPointstoDef l v dq := iprop(
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance stdout_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) fmt.stdout fmt.stdout.underlying := by
+  solve_into_val_typed_struct
+
+end def_
+end stdout
 
 end fmt
 end

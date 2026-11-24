@@ -22,6 +22,13 @@
 #                                     compares it, which panics in gc (and is
 #                                     stuck in GooseLang)
 # internal/stringslite has no tests; bytes and internal/bytealg run in full.
+#   fmt      not run: its models (errorf, Fprintf, Printf, pp.doPrint) print an
+#            empty string where the model printer's output is arbitrary
+#            (gomodel's Go bodies choose 0) and block where it is stuck, so
+#            fmt's own tests of Errorf, Fprint(f), Printf and Sprint fail by
+#            design (and time out). The model's evidence is the differential
+#            tests of goose/model/fmt (go test ./model/fmt, run by
+#            go test ./goose/...), which compare it with the real fmt.
 #
 # usage: etc/model-tests.sh
 set -euo pipefail
