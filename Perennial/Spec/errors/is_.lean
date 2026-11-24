@@ -31,7 +31,7 @@ abbrev errors.is.spec : Prop :=
     S err →
     (c = true → ∃ tii, target = interface.ok tii ∧ ComparableErr S tii) →
     {{ errorWalkTree (GF := GF) S I U target }}
-      (App (App (App (Val (@! is')) (Val #err)) (Val #target)) (Val #c))
+      (App (App (App (Val (@! is'')) (Val #err)) (Val #target)) (Val #c))
     {{ (b : Bool), RET #b; ⌜IsWalk c I U target err b⌝ }}
 
 end spec

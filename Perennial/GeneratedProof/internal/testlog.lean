@@ -66,11 +66,11 @@ noncomputable instance «struct#03d5a6ce_access_load_mu» (l : Loc) (v : interna
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#03d5a6ce_access_store_mu» (l : Loc) (v : internal.testlog.«struct#03d5a6ce») (mu' : _root_.Perennial.sync.Mutex) :
+noncomputable instance «struct#03d5a6ce_access_store_mu» (l : Loc) (v : internal.testlog.«struct#03d5a6ce») (y : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.testlog.«struct#03d5a6ce» go!"mu" l) v.mu' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.testlog.«struct#03d5a6ce» go!"mu" l) mu' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := mu' } : internal.testlog.«struct#03d5a6ce») (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.testlog.«struct#03d5a6ce» go!"mu" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := y } : internal.testlog.«struct#03d5a6ce») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -82,11 +82,11 @@ noncomputable instance «struct#03d5a6ce_access_load_val» (l : Loc) (v : intern
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#03d5a6ce_access_store_val» (l : Loc) (v : internal.testlog.«struct#03d5a6ce») (val' : Bool) :
+noncomputable instance «struct#03d5a6ce_access_store_val» (l : Loc) (v : internal.testlog.«struct#03d5a6ce») (y : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.testlog.«struct#03d5a6ce» go!"val" l) v.val' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.testlog.«struct#03d5a6ce» go!"val" l) val' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with val' := val' } : internal.testlog.«struct#03d5a6ce») (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.testlog.«struct#03d5a6ce» go!"val" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with val' := y } : internal.testlog.«struct#03d5a6ce») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

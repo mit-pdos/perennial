@@ -227,7 +227,7 @@ type packageAssumptionsDecl struct {
 func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) typeAssumptionsDecl {
 	typeName := spec.Name.Name
 	descName := glang.LeanTypeDesc(typeName)
-	implName := glang.LeanIdent(glang.TypeImpl(glang.ToIdent(typeName)))
+	implName := glang.LeanIdent(glang.TypeImpl(typeName))
 
 	t := ctx.typeOf(spec.Name).(*types.Named)
 	tunder := ctx.typeOf(spec.Type)
@@ -381,7 +381,7 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) typeAssumptionsDe
 	}
 
 	return typeAssumptionsDecl{
-		VerbatimDecl: glang.VerbatimDecl{Content: leanClass(glang.LeanEncodedName(typeName+"_Assumptions"), " [GooseExts] "+leanClassParams, fields)},
+		VerbatimDecl: glang.VerbatimDecl{Content: leanClass(glang.LeanEncodedName(typeName+"'assumptions"), " [GooseExts] "+leanClassParams, fields)},
 		fields:       len(fields),
 	}
 }
@@ -628,11 +628,11 @@ func (ctx *Ctx) leanPackagePropClass(typeSpecs []*ast.TypeSpec) string {
 	var fields []leanClassField
 	for _, t := range typeSpecs {
 		fields = append(fields, leanClassField{name: t.Name.Name + "_instance",
-			ty: glang.LeanEncodedName(t.Name.Name + "_Assumptions")})
+			ty: glang.LeanEncodedName(t.Name.Name + "'assumptions")})
 	}
 	for _, a := range ctx.anonStructOrder {
 		fields = append(fields, leanClassField{name: a.name + "_instance",
-			ty: glang.LeanEncodedName(a.name + "_Assumptions")})
+			ty: glang.LeanEncodedName(a.name + "'assumptions")})
 	}
 	for _, f := range ctx.functions {
 		name := ctx.funcDeclName(f)

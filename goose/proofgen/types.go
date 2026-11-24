@@ -254,12 +254,11 @@ func translateTypesDeps(pkg *packages.Package, filter declfilter.DeclFilter) []t
 }
 
 func (tr *typesTranslator) newTypeDecl(spec *ast.TypeSpec, axiomatize bool) tmpl.TypeDecl {
-	rawName := glang.ToIdent(spec.Name.Name)
 	return tmpl.TypeDecl{
 		PkgName:    glang.LeanNamespace(tr.pkg.PkgPath),
 		Name:       glang.LeanIdent(spec.Name.Name),
-		RawName:    rawName,
-		ImplName:   glang.LeanIdent(glang.TypeImpl(rawName)),
+		RawName:    spec.Name.Name,
+		ImplName:   glang.LeanIdent(glang.TypeImpl(spec.Name.Name)),
 		TypeParams: nil, // populated by caller
 		Axiomatize: axiomatize,
 	}
@@ -303,7 +302,7 @@ func (tr *typesTranslator) toLeanType(t types.Type) string {
 	case *types.Named:
 		var base string
 		if pkg := t.Obj().Pkg(); pkg != nil {
-			base = glang.LeanNamespace(pkg.Path()) + "." + glang.LeanQuote(glang.ToIdent(t.Obj().Name()))
+			base = glang.LeanNamespace(pkg.Path()) + "." + glang.LeanIdent(t.Obj().Name())
 			if pkg.Path() != tr.pkg.PkgPath {
 				// rooted, as goose's references to other packages (pkgRef): a relative
 				// `sync.Mutex` from inside namespace `internal.testlog` would resolve to

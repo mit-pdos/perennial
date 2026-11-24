@@ -899,7 +899,7 @@ class cleanupQueue.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext
   get_free : ∀ (x : cleanupQueue), go.IsGoStepPureDetTagged under (StructFieldGet cleanupQueue.underlying go!"free") #x (Val #(x.free'))
   set_free : ∀ (x : cleanupQueue) (y : lfstack), go.IsGoStepPureDetTagged under (StructFieldSet cleanupQueue.underlying go!"free") (PairV #x #y) (Val #(({ x with free' := y } : cleanupQueue)))
   get_flushed : ∀ (x : cleanupQueue), go.IsGoStepPureDetTagged under (StructFieldGet cleanupQueue.underlying go!"flushed") #x (Val #(x.flushed'))
-  set_flushed : ∀ (x : cleanupQueue) (y : _root_.Perennial.internal.runtime.atomic.Bool'), go.IsGoStepPureDetTagged under (StructFieldSet cleanupQueue.underlying go!"flushed") (PairV #x #y) (Val #(({ x with flushed' := y } : cleanupQueue)))
+  set_flushed : ∀ (x : cleanupQueue) (y : _root_.Perennial.internal.runtime.atomic.Bool''), go.IsGoStepPureDetTagged under (StructFieldSet cleanupQueue.underlying go!"flushed") (PairV #x #y) (Val #(({ x with flushed' := y } : cleanupQueue)))
   «get__#5» : ∀ (x : cleanupQueue), go.IsGoStepPureDetTagged under (StructFieldGet cleanupQueue.underlying go!"_#5") #x (Val #(x.«_#5'»))
   «set__#5» : ∀ (x : cleanupQueue) (y : (GoArray w8 55)), go.IsGoStepPureDetTagged under (StructFieldSet cleanupQueue.underlying go!"_#5") (PairV #x #y) (Val #(({ x with «_#5'» := y } : cleanupQueue)))
   get_all : ∀ (x : cleanupQueue), go.IsGoStepPureDetTagged under (StructFieldGet cleanupQueue.underlying go!"all") #x (Val #(x.all'))

@@ -92,7 +92,7 @@ variable [package_sem : math.big.Assumptions]
 /-- `ownInt p z`: the `big.Int` at `p` holds `z`. Exclusive, since a `big.Int`
 is mutable. -/
 def ownInt (p : Loc) (z : Int) : IProp GF :=
-  iprop(∃ (x : Int') (ws : List w64),
+  iprop(∃ (x : Int'') (ws : List w64),
     p ↦ x ∗ x.abs' ↦* ws ∗
     ⌜(z = if x.neg' then - natValue ws else natValue ws) ∧ natNormalized ws⌝)
 

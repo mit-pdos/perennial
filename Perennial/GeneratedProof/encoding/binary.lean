@@ -99,11 +99,11 @@ noncomputable instance coder_access_load_order (l : Loc) (v : encoding.binary.co
  by
   solve_pointsto_access_struct
 
-noncomputable instance coder_access_store_order (l : Loc) (v : encoding.binary.coder) (order' : encoding.binary.ByteOrder) :
+noncomputable instance coder_access_store_order (l : Loc) (v : encoding.binary.coder) (y : encoding.binary.ByteOrder) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef encoding.binary.coder go!"order" l) v.order' (DFrac.own 1))
-      (typedPointsto (structFieldRef encoding.binary.coder go!"order" l) order' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with order' := order' } : encoding.binary.coder) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef encoding.binary.coder go!"order" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with order' := y } : encoding.binary.coder) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -115,11 +115,11 @@ noncomputable instance coder_access_load_buf (l : Loc) (v : encoding.binary.code
  by
   solve_pointsto_access_struct
 
-noncomputable instance coder_access_store_buf (l : Loc) (v : encoding.binary.coder) (buf' : GoSlice) :
+noncomputable instance coder_access_store_buf (l : Loc) (v : encoding.binary.coder) (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef encoding.binary.coder go!"buf" l) v.buf' (DFrac.own 1))
-      (typedPointsto (structFieldRef encoding.binary.coder go!"buf" l) buf' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with buf' := buf' } : encoding.binary.coder) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef encoding.binary.coder go!"buf" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with buf' := y } : encoding.binary.coder) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -131,11 +131,11 @@ noncomputable instance coder_access_load_offset (l : Loc) (v : encoding.binary.c
  by
   solve_pointsto_access_struct
 
-noncomputable instance coder_access_store_offset (l : Loc) (v : encoding.binary.coder) (offset' : w64) :
+noncomputable instance coder_access_store_offset (l : Loc) (v : encoding.binary.coder) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef encoding.binary.coder go!"offset" l) v.offset' (DFrac.own 1))
-      (typedPointsto (structFieldRef encoding.binary.coder go!"offset" l) offset' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with offset' := offset' } : encoding.binary.coder) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef encoding.binary.coder go!"offset" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with offset' := y } : encoding.binary.coder) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -171,11 +171,11 @@ noncomputable instance nativeEndian_access_load_littleEndian (l : Loc) (v : enco
  by
   solve_pointsto_access_struct
 
-noncomputable instance nativeEndian_access_store_littleEndian (l : Loc) (v : encoding.binary.nativeEndian) (littleEndian' : encoding.binary.littleEndian) :
+noncomputable instance nativeEndian_access_store_littleEndian (l : Loc) (v : encoding.binary.nativeEndian) (y : encoding.binary.littleEndian) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef encoding.binary.nativeEndian go!"littleEndian" l) v.littleEndian' (DFrac.own 1))
-      (typedPointsto (structFieldRef encoding.binary.nativeEndian go!"littleEndian" l) littleEndian' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with littleEndian' := littleEndian' } : encoding.binary.nativeEndian) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef encoding.binary.nativeEndian go!"littleEndian" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with littleEndian' := y } : encoding.binary.nativeEndian) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

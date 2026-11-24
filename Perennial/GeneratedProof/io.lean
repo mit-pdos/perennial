@@ -48,11 +48,11 @@ noncomputable instance LimitedReader_access_load_R (l : Loc) (v : io.LimitedRead
  by
   solve_pointsto_access_struct
 
-noncomputable instance LimitedReader_access_store_R (l : Loc) (v : io.LimitedReader) (R' : io.Reader) :
+noncomputable instance LimitedReader_access_store_R (l : Loc) (v : io.LimitedReader) (y : io.Reader) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.LimitedReader go!"R" l) v.R' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.LimitedReader go!"R" l) R' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with R' := R' } : io.LimitedReader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.LimitedReader go!"R" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with R' := y } : io.LimitedReader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -64,11 +64,11 @@ noncomputable instance LimitedReader_access_load_N (l : Loc) (v : io.LimitedRead
  by
   solve_pointsto_access_struct
 
-noncomputable instance LimitedReader_access_store_N (l : Loc) (v : io.LimitedReader) (N' : w64) :
+noncomputable instance LimitedReader_access_store_N (l : Loc) (v : io.LimitedReader) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.LimitedReader go!"N" l) v.N' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.LimitedReader go!"N" l) N' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with N' := N' } : io.LimitedReader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.LimitedReader go!"N" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with N' := y } : io.LimitedReader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -108,11 +108,11 @@ noncomputable instance SectionReader_access_load_r (l : Loc) (v : io.SectionRead
  by
   solve_pointsto_access_struct
 
-noncomputable instance SectionReader_access_store_r (l : Loc) (v : io.SectionReader) (r' : io.ReaderAt) :
+noncomputable instance SectionReader_access_store_r (l : Loc) (v : io.SectionReader) (y : io.ReaderAt) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.SectionReader go!"r" l) v.r' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.SectionReader go!"r" l) r' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r' := r' } : io.SectionReader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.SectionReader go!"r" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r' := y } : io.SectionReader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -124,11 +124,11 @@ noncomputable instance SectionReader_access_load_base (l : Loc) (v : io.SectionR
  by
   solve_pointsto_access_struct
 
-noncomputable instance SectionReader_access_store_base (l : Loc) (v : io.SectionReader) (base' : w64) :
+noncomputable instance SectionReader_access_store_base (l : Loc) (v : io.SectionReader) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.SectionReader go!"base" l) v.base' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.SectionReader go!"base" l) base' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with base' := base' } : io.SectionReader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.SectionReader go!"base" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with base' := y } : io.SectionReader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -140,11 +140,11 @@ noncomputable instance SectionReader_access_load_off (l : Loc) (v : io.SectionRe
  by
   solve_pointsto_access_struct
 
-noncomputable instance SectionReader_access_store_off (l : Loc) (v : io.SectionReader) (off' : w64) :
+noncomputable instance SectionReader_access_store_off (l : Loc) (v : io.SectionReader) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.SectionReader go!"off" l) v.off' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.SectionReader go!"off" l) off' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with off' := off' } : io.SectionReader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.SectionReader go!"off" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with off' := y } : io.SectionReader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -156,11 +156,11 @@ noncomputable instance SectionReader_access_load_limit (l : Loc) (v : io.Section
  by
   solve_pointsto_access_struct
 
-noncomputable instance SectionReader_access_store_limit (l : Loc) (v : io.SectionReader) (limit' : w64) :
+noncomputable instance SectionReader_access_store_limit (l : Loc) (v : io.SectionReader) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.SectionReader go!"limit" l) v.limit' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.SectionReader go!"limit" l) limit' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with limit' := limit' } : io.SectionReader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.SectionReader go!"limit" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with limit' := y } : io.SectionReader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -172,11 +172,11 @@ noncomputable instance SectionReader_access_load_n (l : Loc) (v : io.SectionRead
  by
   solve_pointsto_access_struct
 
-noncomputable instance SectionReader_access_store_n (l : Loc) (v : io.SectionReader) (n' : w64) :
+noncomputable instance SectionReader_access_store_n (l : Loc) (v : io.SectionReader) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.SectionReader go!"n" l) v.n' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.SectionReader go!"n" l) n' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with n' := n' } : io.SectionReader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.SectionReader go!"n" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with n' := y } : io.SectionReader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -214,11 +214,11 @@ noncomputable instance OffsetWriter_access_load_w (l : Loc) (v : io.OffsetWriter
  by
   solve_pointsto_access_struct
 
-noncomputable instance OffsetWriter_access_store_w (l : Loc) (v : io.OffsetWriter) (w' : io.WriterAt) :
+noncomputable instance OffsetWriter_access_store_w (l : Loc) (v : io.OffsetWriter) (y : io.WriterAt) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.OffsetWriter go!"w" l) v.w' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.OffsetWriter go!"w" l) w' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with w' := w' } : io.OffsetWriter) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.OffsetWriter go!"w" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with w' := y } : io.OffsetWriter) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -230,11 +230,11 @@ noncomputable instance OffsetWriter_access_load_base (l : Loc) (v : io.OffsetWri
  by
   solve_pointsto_access_struct
 
-noncomputable instance OffsetWriter_access_store_base (l : Loc) (v : io.OffsetWriter) (base' : w64) :
+noncomputable instance OffsetWriter_access_store_base (l : Loc) (v : io.OffsetWriter) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.OffsetWriter go!"base" l) v.base' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.OffsetWriter go!"base" l) base' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with base' := base' } : io.OffsetWriter) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.OffsetWriter go!"base" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with base' := y } : io.OffsetWriter) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -246,11 +246,11 @@ noncomputable instance OffsetWriter_access_load_off (l : Loc) (v : io.OffsetWrit
  by
   solve_pointsto_access_struct
 
-noncomputable instance OffsetWriter_access_store_off (l : Loc) (v : io.OffsetWriter) (off' : w64) :
+noncomputable instance OffsetWriter_access_store_off (l : Loc) (v : io.OffsetWriter) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.OffsetWriter go!"off" l) v.off' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.OffsetWriter go!"off" l) off' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with off' := off' } : io.OffsetWriter) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.OffsetWriter go!"off" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with off' := y } : io.OffsetWriter) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -287,11 +287,11 @@ noncomputable instance teeReader_access_load_r (l : Loc) (v : io.teeReader) (dq 
  by
   solve_pointsto_access_struct
 
-noncomputable instance teeReader_access_store_r (l : Loc) (v : io.teeReader) (r' : io.Reader) :
+noncomputable instance teeReader_access_store_r (l : Loc) (v : io.teeReader) (y : io.Reader) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.teeReader go!"r" l) v.r' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.teeReader go!"r" l) r' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r' := r' } : io.teeReader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.teeReader go!"r" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r' := y } : io.teeReader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -303,11 +303,11 @@ noncomputable instance teeReader_access_load_w (l : Loc) (v : io.teeReader) (dq 
  by
   solve_pointsto_access_struct
 
-noncomputable instance teeReader_access_store_w (l : Loc) (v : io.teeReader) (w' : io.Writer) :
+noncomputable instance teeReader_access_store_w (l : Loc) (v : io.teeReader) (y : io.Writer) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.teeReader go!"w" l) v.w' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.teeReader go!"w" l) w' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with w' := w' } : io.teeReader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.teeReader go!"w" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with w' := y } : io.teeReader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -366,11 +366,11 @@ noncomputable instance nopCloser_access_load_Reader (l : Loc) (v : io.nopCloser)
  by
   solve_pointsto_access_struct
 
-noncomputable instance nopCloser_access_store_Reader (l : Loc) (v : io.nopCloser) (Reader' : io.Reader) :
+noncomputable instance nopCloser_access_store_Reader (l : Loc) (v : io.nopCloser) (y : io.Reader) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.nopCloser go!"Reader" l) v.Reader' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.nopCloser go!"Reader" l) Reader' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Reader' := Reader' } : io.nopCloser) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.nopCloser go!"Reader" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Reader' := y } : io.nopCloser) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -406,11 +406,11 @@ noncomputable instance nopCloserWriterTo_access_load_Reader (l : Loc) (v : io.no
  by
   solve_pointsto_access_struct
 
-noncomputable instance nopCloserWriterTo_access_store_Reader (l : Loc) (v : io.nopCloserWriterTo) (Reader' : io.Reader) :
+noncomputable instance nopCloserWriterTo_access_store_Reader (l : Loc) (v : io.nopCloserWriterTo) (y : io.Reader) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.nopCloserWriterTo go!"Reader" l) v.Reader' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.nopCloserWriterTo go!"Reader" l) Reader' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Reader' := Reader' } : io.nopCloserWriterTo) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.nopCloserWriterTo go!"Reader" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Reader' := y } : io.nopCloserWriterTo) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -469,11 +469,11 @@ noncomputable instance multiReader_access_load_readers (l : Loc) (v : io.multiRe
  by
   solve_pointsto_access_struct
 
-noncomputable instance multiReader_access_store_readers (l : Loc) (v : io.multiReader) (readers' : GoSlice) :
+noncomputable instance multiReader_access_store_readers (l : Loc) (v : io.multiReader) (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.multiReader go!"readers" l) v.readers' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.multiReader go!"readers" l) readers' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with readers' := readers' } : io.multiReader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.multiReader go!"readers" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with readers' := y } : io.multiReader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -509,11 +509,11 @@ noncomputable instance multiWriter_access_load_writers (l : Loc) (v : io.multiWr
  by
   solve_pointsto_access_struct
 
-noncomputable instance multiWriter_access_store_writers (l : Loc) (v : io.multiWriter) (writers' : GoSlice) :
+noncomputable instance multiWriter_access_store_writers (l : Loc) (v : io.multiWriter) (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.multiWriter go!"writers" l) v.writers' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.multiWriter go!"writers" l) writers' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with writers' := writers' } : io.multiWriter) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.multiWriter go!"writers" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with writers' := y } : io.multiWriter) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -550,11 +550,11 @@ noncomputable instance onceError_access_load_Mutex (l : Loc) (v : io.onceError) 
  by
   solve_pointsto_access_struct
 
-noncomputable instance onceError_access_store_Mutex (l : Loc) (v : io.onceError) (Mutex' : _root_.Perennial.sync.Mutex) :
+noncomputable instance onceError_access_store_Mutex (l : Loc) (v : io.onceError) (y : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.onceError go!"Mutex" l) v.Mutex' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.onceError go!"Mutex" l) Mutex' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Mutex' := Mutex' } : io.onceError) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.onceError go!"Mutex" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Mutex' := y } : io.onceError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -566,11 +566,11 @@ noncomputable instance onceError_access_load_err (l : Loc) (v : io.onceError) (d
  by
   solve_pointsto_access_struct
 
-noncomputable instance onceError_access_store_err (l : Loc) (v : io.onceError) (err' : GoError) :
+noncomputable instance onceError_access_store_err (l : Loc) (v : io.onceError) (y : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.onceError go!"err" l) v.err' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.onceError go!"err" l) err' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with err' := err' } : io.onceError) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.onceError go!"err" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with err' := y } : io.onceError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -612,11 +612,11 @@ noncomputable instance pipe_access_load_wrMu (l : Loc) (v : io.pipe) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-noncomputable instance pipe_access_store_wrMu (l : Loc) (v : io.pipe) (wrMu' : _root_.Perennial.sync.Mutex) :
+noncomputable instance pipe_access_store_wrMu (l : Loc) (v : io.pipe) (y : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"wrMu" l) v.wrMu' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.pipe go!"wrMu" l) wrMu' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wrMu' := wrMu' } : io.pipe) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.pipe go!"wrMu" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wrMu' := y } : io.pipe) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -628,11 +628,11 @@ noncomputable instance pipe_access_load_wrCh (l : Loc) (v : io.pipe) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-noncomputable instance pipe_access_store_wrCh (l : Loc) (v : io.pipe) (wrCh' : GoChan) :
+noncomputable instance pipe_access_store_wrCh (l : Loc) (v : io.pipe) (y : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"wrCh" l) v.wrCh' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.pipe go!"wrCh" l) wrCh' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wrCh' := wrCh' } : io.pipe) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.pipe go!"wrCh" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wrCh' := y } : io.pipe) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -644,11 +644,11 @@ noncomputable instance pipe_access_load_rdCh (l : Loc) (v : io.pipe) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-noncomputable instance pipe_access_store_rdCh (l : Loc) (v : io.pipe) (rdCh' : GoChan) :
+noncomputable instance pipe_access_store_rdCh (l : Loc) (v : io.pipe) (y : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"rdCh" l) v.rdCh' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.pipe go!"rdCh" l) rdCh' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rdCh' := rdCh' } : io.pipe) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.pipe go!"rdCh" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rdCh' := y } : io.pipe) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -660,11 +660,11 @@ noncomputable instance pipe_access_load_once (l : Loc) (v : io.pipe) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-noncomputable instance pipe_access_store_once (l : Loc) (v : io.pipe) (once' : _root_.Perennial.sync.Once) :
+noncomputable instance pipe_access_store_once (l : Loc) (v : io.pipe) (y : _root_.Perennial.sync.Once) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"once" l) v.once' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.pipe go!"once" l) once' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with once' := once' } : io.pipe) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.pipe go!"once" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with once' := y } : io.pipe) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -676,11 +676,11 @@ noncomputable instance pipe_access_load_done (l : Loc) (v : io.pipe) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-noncomputable instance pipe_access_store_done (l : Loc) (v : io.pipe) (done' : GoChan) :
+noncomputable instance pipe_access_store_done (l : Loc) (v : io.pipe) (y : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"done" l) v.done' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.pipe go!"done" l) done' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with done' := done' } : io.pipe) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.pipe go!"done" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with done' := y } : io.pipe) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -692,11 +692,11 @@ noncomputable instance pipe_access_load_rerr (l : Loc) (v : io.pipe) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-noncomputable instance pipe_access_store_rerr (l : Loc) (v : io.pipe) (rerr' : io.onceError) :
+noncomputable instance pipe_access_store_rerr (l : Loc) (v : io.pipe) (y : io.onceError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"rerr" l) v.rerr' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.pipe go!"rerr" l) rerr' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rerr' := rerr' } : io.pipe) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.pipe go!"rerr" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rerr' := y } : io.pipe) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -708,11 +708,11 @@ noncomputable instance pipe_access_load_werr (l : Loc) (v : io.pipe) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-noncomputable instance pipe_access_store_werr (l : Loc) (v : io.pipe) (werr' : io.onceError) :
+noncomputable instance pipe_access_store_werr (l : Loc) (v : io.pipe) (y : io.onceError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"werr" l) v.werr' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.pipe go!"werr" l) werr' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with werr' := werr' } : io.pipe) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.pipe go!"werr" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with werr' := y } : io.pipe) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -748,11 +748,11 @@ noncomputable instance PipeReader_access_load_pipe (l : Loc) (v : io.PipeReader)
  by
   solve_pointsto_access_struct
 
-noncomputable instance PipeReader_access_store_pipe (l : Loc) (v : io.PipeReader) (pipe' : io.pipe) :
+noncomputable instance PipeReader_access_store_pipe (l : Loc) (v : io.PipeReader) (y : io.pipe) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.PipeReader go!"pipe" l) v.pipe' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.PipeReader go!"pipe" l) pipe' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pipe' := pipe' } : io.PipeReader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.PipeReader go!"pipe" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pipe' := y } : io.PipeReader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -788,11 +788,11 @@ noncomputable instance PipeWriter_access_load_r (l : Loc) (v : io.PipeWriter) (d
  by
   solve_pointsto_access_struct
 
-noncomputable instance PipeWriter_access_store_r (l : Loc) (v : io.PipeWriter) (r' : io.PipeReader) :
+noncomputable instance PipeWriter_access_store_r (l : Loc) (v : io.PipeWriter) (y : io.PipeReader) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.PipeWriter go!"r" l) v.r' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.PipeWriter go!"r" l) r' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r' := r' } : io.PipeWriter) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef io.PipeWriter go!"r" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r' := y } : io.PipeWriter) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

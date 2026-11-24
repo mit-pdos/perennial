@@ -98,7 +98,7 @@ noncomputable def init.«0» [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def Cutover [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/bytealg.Cutover"
 
-noncomputable def Index' [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def Index'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/bytealg.Index"
 
 noncomputable def IndexString [GooseExts] [GoGlobalContext] : GoString :=
@@ -423,7 +423,7 @@ noncomputable def Cutover.impl [GooseExts] [GoGlobalContext] : val :=
     is not present in a. Requires 2 <= len(b) <= MaxLen.
 
     go: index.go:24:6 -/
-noncomputable def Index.impl [GooseExts] [GoGlobalContext] : val :=
+noncomputable def Index''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam "b"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -667,7 +667,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   CompareString_unfold : FuncUnfold CompareString [] CompareString.impl
   «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
   Cutover_unfold : FuncUnfold Cutover [] Cutover.impl
-  Index_unfold : FuncUnfold Index' [] Index.impl
+  Index_unfold : FuncUnfold Index'' [] Index''.impl
   IndexString_unfold : FuncUnfold IndexString [] IndexString.impl
   IndexByte_unfold : FuncUnfold IndexByte [] IndexByte.impl
   IndexByteString_unfold : FuncUnfold IndexByteString [] IndexByteString.impl

@@ -47,11 +47,11 @@ noncomputable instance «PublicKeyECDSA_access_load__#0» (l : Loc) (v : crypto.
  by
   solve_pointsto_access_struct
 
-noncomputable instance «PublicKeyECDSA_access_store__#0» (l : Loc) (v : crypto.internal.boring.PublicKeyECDSA) («_#0'» : w64) :
+noncomputable instance «PublicKeyECDSA_access_store__#0» (l : Loc) (v : crypto.internal.boring.PublicKeyECDSA) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef crypto.internal.boring.PublicKeyECDSA go!"_#0" l) v.«_#0'» (DFrac.own 1))
-      (typedPointsto (structFieldRef crypto.internal.boring.PublicKeyECDSA go!"_#0" l) «_#0'» (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := «_#0'» } : crypto.internal.boring.PublicKeyECDSA) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef crypto.internal.boring.PublicKeyECDSA go!"_#0" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := y } : crypto.internal.boring.PublicKeyECDSA) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -87,11 +87,11 @@ noncomputable instance «PrivateKeyECDSA_access_load__#0» (l : Loc) (v : crypto
  by
   solve_pointsto_access_struct
 
-noncomputable instance «PrivateKeyECDSA_access_store__#0» (l : Loc) (v : crypto.internal.boring.PrivateKeyECDSA) («_#0'» : w64) :
+noncomputable instance «PrivateKeyECDSA_access_store__#0» (l : Loc) (v : crypto.internal.boring.PrivateKeyECDSA) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef crypto.internal.boring.PrivateKeyECDSA go!"_#0" l) v.«_#0'» (DFrac.own 1))
-      (typedPointsto (structFieldRef crypto.internal.boring.PrivateKeyECDSA go!"_#0" l) «_#0'» (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := «_#0'» } : crypto.internal.boring.PrivateKeyECDSA) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef crypto.internal.boring.PrivateKeyECDSA go!"_#0" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := y } : crypto.internal.boring.PrivateKeyECDSA) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -127,11 +127,11 @@ noncomputable instance «PublicKeyRSA_access_load__#0» (l : Loc) (v : crypto.in
  by
   solve_pointsto_access_struct
 
-noncomputable instance «PublicKeyRSA_access_store__#0» (l : Loc) (v : crypto.internal.boring.PublicKeyRSA) («_#0'» : w64) :
+noncomputable instance «PublicKeyRSA_access_store__#0» (l : Loc) (v : crypto.internal.boring.PublicKeyRSA) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef crypto.internal.boring.PublicKeyRSA go!"_#0" l) v.«_#0'» (DFrac.own 1))
-      (typedPointsto (structFieldRef crypto.internal.boring.PublicKeyRSA go!"_#0" l) «_#0'» (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := «_#0'» } : crypto.internal.boring.PublicKeyRSA) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef crypto.internal.boring.PublicKeyRSA go!"_#0" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := y } : crypto.internal.boring.PublicKeyRSA) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -167,11 +167,11 @@ noncomputable instance «PrivateKeyRSA_access_load__#0» (l : Loc) (v : crypto.i
  by
   solve_pointsto_access_struct
 
-noncomputable instance «PrivateKeyRSA_access_store__#0» (l : Loc) (v : crypto.internal.boring.PrivateKeyRSA) («_#0'» : w64) :
+noncomputable instance «PrivateKeyRSA_access_store__#0» (l : Loc) (v : crypto.internal.boring.PrivateKeyRSA) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef crypto.internal.boring.PrivateKeyRSA go!"_#0" l) v.«_#0'» (DFrac.own 1))
-      (typedPointsto (structFieldRef crypto.internal.boring.PrivateKeyRSA go!"_#0" l) «_#0'» (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := «_#0'» } : crypto.internal.boring.PrivateKeyRSA) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef crypto.internal.boring.PrivateKeyRSA go!"_#0" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := y } : crypto.internal.boring.PrivateKeyRSA) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

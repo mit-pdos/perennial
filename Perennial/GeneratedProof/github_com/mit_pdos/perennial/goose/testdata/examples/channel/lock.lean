@@ -46,11 +46,11 @@ noncomputable instance Lock_access_load_ch (l : Loc) (v : github_com.mit_pdos.pe
  by
   solve_pointsto_access_struct
 
-noncomputable instance Lock_access_store_ch (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock) (ch' : GoChan) :
+noncomputable instance Lock_access_store_ch (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock) (y : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock go!"ch" l) v.ch' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock go!"ch" l) ch' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ch' := ch' } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock go!"ch" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ch' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

@@ -1133,7 +1133,7 @@ class traceRegionAlloc.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalCon
   get_lock : ∀ (x : traceRegionAlloc), go.IsGoStepPureDetTagged under (StructFieldGet traceRegionAlloc.underlying go!"lock") #x (Val #(x.lock'))
   set_lock : ∀ (x : traceRegionAlloc) (y : mutex), go.IsGoStepPureDetTagged under (StructFieldSet traceRegionAlloc.underlying go!"lock") (PairV #x #y) (Val #(({ x with lock' := y } : traceRegionAlloc)))
   get_dropping : ∀ (x : traceRegionAlloc), go.IsGoStepPureDetTagged under (StructFieldGet traceRegionAlloc.underlying go!"dropping") #x (Val #(x.dropping'))
-  set_dropping : ∀ (x : traceRegionAlloc) (y : _root_.Perennial.internal.runtime.atomic.Bool'), go.IsGoStepPureDetTagged under (StructFieldSet traceRegionAlloc.underlying go!"dropping") (PairV #x #y) (Val #(({ x with dropping' := y } : traceRegionAlloc)))
+  set_dropping : ∀ (x : traceRegionAlloc) (y : _root_.Perennial.internal.runtime.atomic.Bool''), go.IsGoStepPureDetTagged under (StructFieldSet traceRegionAlloc.underlying go!"dropping") (PairV #x #y) (Val #(({ x with dropping' := y } : traceRegionAlloc)))
   get_current : ∀ (x : traceRegionAlloc), go.IsGoStepPureDetTagged under (StructFieldGet traceRegionAlloc.underlying go!"current") #x (Val #(x.current'))
   set_current : ∀ (x : traceRegionAlloc) (y : _root_.Perennial.internal.runtime.atomic.UnsafePointer), go.IsGoStepPureDetTagged under (StructFieldSet traceRegionAlloc.underlying go!"current") (PairV #x #y) (Val #(({ x with current' := y } : traceRegionAlloc)))
   get_full : ∀ (x : traceRegionAlloc), go.IsGoStepPureDetTagged under (StructFieldGet traceRegionAlloc.underlying go!"full") #x (Val #(x.full'))

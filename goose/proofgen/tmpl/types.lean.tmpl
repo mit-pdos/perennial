@@ -1,18 +1,18 @@
 {{ define "ValueType" -}}
-{{- if .TypeParams }}({{.PkgName}}.{{.Name}} {{- range $param := .TypeParams }} {{$param}}'{{ end -}}){{ else }}{{.PkgName}}.{{.Name}}{{ end -}}
+{{- if .TypeParams }}({{.PkgName}}.{{.Name}} {{- range $param := .TypeParams }} {{tpval $param}}{{ end -}}){{ else }}{{.PkgName}}.{{.Name}}{{ end -}}
 {{- end -}}
 
 {{ define "GoTypeImpl" -}}
-{{- if .TypeParams }}({{.PkgName}}.{{.ImplName}} {{- range $param := .TypeParams }} {{$param}}{{ end -}}){{ else }}{{.PkgName}}.{{.ImplName}}{{ end -}}
+{{- if .TypeParams }}({{.PkgName}}.{{.ImplName}} {{- range $param := .TypeParams }} {{tpdesc $param}}{{ end -}}){{ else }}{{.PkgName}}.{{.ImplName}}{{ end -}}
 {{- end -}}
 
 {{ define "TypedPointstoParams" -}}
-{{- range $param := . -}}{ {{- $param}}' : Type} [TypedPointsto (GF := GF) {{$param}}'] {{ end -}}
+{{- range $param := . -}}{ {{- tpval $param}} : Type} [TypedPointsto (GF := GF) {{tpval $param}}] {{ end -}}
 {{- end -}}
 
 {{ define "IntoValParams" -}}
 {{- range $p:= . -}}
-({{$p}} : go.GoType) { {{- $p}}' : Type} [ZeroVal {{$p}}'] [TypedPointsto (GF := GF) {{$p}}'] [IntoValTyped (GF := GF) {{$p}}' {{$p}}] {{ end -}}
+({{tpdesc $p}} : go.GoType) { {{- tpval $p}} : Type} [ZeroVal {{tpval $p}}] [TypedPointsto (GF := GF) {{tpval $p}}] [IntoValTyped (GF := GF) {{tpval $p}} {{tpdesc $p}}] {{ end -}}
 {{- end -}}
 
 {{- range $t := .Types -}}
@@ -66,11 +66,11 @@ noncomputable instance {{leanq (print $t.RawName "_access_load_" $f.Name)}} {{ t
  by
   solve_pointsto_access_struct
 
-noncomputable instance {{leanq (print $t.RawName "_access_store_" $f.Name)}} {{ template "TypedPointstoParams" $t.TypeParams }}(l : Loc) (v : {{ template "ValueType" $t}}) ({{$f.Proj}} : {{$f.Type}}) :
+noncomputable instance {{leanq (print $t.RawName "_access_store_" $f.Name)}} {{ template "TypedPointstoParams" $t.TypeParams }}(l : Loc) (v : {{ template "ValueType" $t}}) (y : {{$f.Type}}) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef {{template "ValueType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} (DFrac.own 1))
-      (typedPointsto (structFieldRef {{template "ValueType" $t}} {{$f.GoString}} l) {{$f.Proj}} (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with {{$f.Proj}} := {{$f.Proj}} } : {{ template "ValueType" $t}}) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef {{template "ValueType" $t}} {{$f.GoString}} l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with {{$f.Proj}} := y } : {{ template "ValueType" $t}}) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 {{ end }}

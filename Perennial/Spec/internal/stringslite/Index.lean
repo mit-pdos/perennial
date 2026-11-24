@@ -27,7 +27,7 @@ length. -/
 abbrev internal.stringslite.Index.spec : Prop :=
   ∀ (s substr : GoString),
     {{ isPkgInit (PROP := IProp GF) pkg_id.internal.stringslite }}
-      (App (App (Val (@! Index')) (Val #s)) (Val #substr))
+      (App (App (Val (@! Index'')) (Val #s)) (Val #substr))
     {{ RET #(W64 (internal.bytealg.index s substr)); ⌜substr ≠ [] → s.length < 2 ^ 63⌝ }}
 
 end spec

@@ -85,11 +85,11 @@ noncomputable instance ConnectRet_access_load_Err (l : Loc) (v : github_com.mit_
  by
   solve_pointsto_access_struct
 
-noncomputable instance ConnectRet_access_store_Err (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (Err' : Bool) :
+noncomputable instance ConnectRet_access_store_Err (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (y : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Err" l) v.Err' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Err" l) Err' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Err' := Err' } : github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Err" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Err' := y } : github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -101,11 +101,11 @@ noncomputable instance ConnectRet_access_load_Connection (l : Loc) (v : github_c
  by
   solve_pointsto_access_struct
 
-noncomputable instance ConnectRet_access_store_Connection (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (Connection' : github_com.mit_pdos.gokv.grove_ffi.Connection) :
+noncomputable instance ConnectRet_access_store_Connection (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (y : github_com.mit_pdos.gokv.grove_ffi.Connection) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Connection" l) v.Connection' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Connection" l) Connection' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Connection' := Connection' } : github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Connection" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Connection' := y } : github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -142,11 +142,11 @@ noncomputable instance ReceiveRet_access_load_Err (l : Loc) (v : github_com.mit_
  by
   solve_pointsto_access_struct
 
-noncomputable instance ReceiveRet_access_store_Err (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (Err' : Bool) :
+noncomputable instance ReceiveRet_access_store_Err (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (y : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Err" l) v.Err' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Err" l) Err' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Err' := Err' } : github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Err" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Err' := y } : github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -158,11 +158,11 @@ noncomputable instance ReceiveRet_access_load_Data (l : Loc) (v : github_com.mit
  by
   solve_pointsto_access_struct
 
-noncomputable instance ReceiveRet_access_store_Data (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (Data' : GoSlice) :
+noncomputable instance ReceiveRet_access_store_Data (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Data" l) v.Data' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Data" l) Data' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Data' := Data' } : github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Data" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Data' := y } : github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

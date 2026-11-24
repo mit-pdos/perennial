@@ -113,7 +113,7 @@ noncomputable def Uint64 [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def Int31 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.Int31"
 
-noncomputable def Int' [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def Int'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.Int"
 
 noncomputable def Int63n [GooseExts] [GoGlobalContext] : GoString :=

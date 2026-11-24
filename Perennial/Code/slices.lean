@@ -81,7 +81,7 @@ noncomputable def Compare [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def CompareFunc [GooseExts] [GoGlobalContext] : GoString :=
   go!"slices.CompareFunc"
 
-noncomputable def Index' [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def Index'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"slices.Index"
 
 noncomputable def IndexFunc [GooseExts] [GoGlobalContext] : GoString :=
@@ -287,34 +287,34 @@ noncomputable def rotateOrdered [GooseExts] [GoGlobalContext] : GoString :=
     If seq is empty, the result preserves the nilness of s.
 
     go: iter.go:50:6 -/
-noncomputable def AppendSeq.impl [GooseExts] [GoGlobalContext] (Slice' E : go.GoType) : val :=
+noncomputable def AppendSeq.impl [GooseExts] [GoGlobalContext] (Slice'' E : go.GoType) : val :=
   (LamV "s"
   (Lam "seq"
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc Slice'))) (App (Val (GoInstruction (GoZeroVal Slice'))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Slice''))) (App (Val (GoInstruction (GoZeroVal Slice''))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "seq" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq'.ty E)))) (Var "seq"))
-  (Let "s" (App (Val (GoInstruction (GoAlloc Slice'))) (Var "s"))
+  (Let "seq" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq''.ty E)))) (Var "seq"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc Slice''))) (Var "s"))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad Slice'))) (Var "s"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad Slice''))) (Var "s"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore Slice'))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (Let "$range" (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq'.ty E)))) (Var "seq"))
+  (App (Val (GoInstruction (GoStore Slice''))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq''.ty E)))) (Var "seq"))
   (Let "v" (App (Val (GoInstruction (GoAlloc E))) (App (Val (GoInstruction (GoZeroVal E))) (Val #())))
   (App (App (Val (func.forRange 1)) (Var "$range"))
   (Lam "$key"
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad Slice'))) (Var "s"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad Slice''))) (Var "s"))
   (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (GoLoad E))) (Var "v"))
   (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType E)))) (LiteralValue [(KeyedElement none (ElementExpression E (Var "$sl0")))])))
-  (App (App (App (Val (GoInstruction (FuncResolve go.append [Slice']))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [Slice'']))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore Slice'))) (Pair (Var "s") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoStore Slice''))) (Pair (Var "s") (Var "$r0")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore E))) (Pair (Var "v") (Var "$key")))))))))))))
-  (App (Val (GoInstruction (GoLoad Slice'))) (Var "$res0"))))))
+  (App (Val (GoInstruction (GoLoad Slice''))) (Var "$res0"))))))
 
 /-- Collect collects values from seq into a new slice and returns it.
     If seq is empty, the result is nil.
@@ -324,9 +324,9 @@ noncomputable def Collect.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : v
   (LamV "seq"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType E)))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "seq" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq'.ty E)))) (Var "seq"))
+  (Let "seq" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq''.ty E)))) (Var "seq"))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType E)))) (Val UntypedNil))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq'.ty E)))) (Var "seq"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq''.ty E)))) (Var "seq"))
   (App (App (App (Val (GoInstruction (FuncResolve AppendSeq [(go.GoType.SliceType E), E]))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -344,8 +344,8 @@ noncomputable def Sorted.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : va
   (LamV "seq"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType E)))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "seq" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq'.ty E)))) (Var "seq"))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq'.ty E)))) (Var "seq"))
+  (Let "seq" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq''.ty E)))) (Var "seq"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq''.ty E)))) (Var "seq"))
   (App (App (Val (GoInstruction (FuncResolve Collect [E]))) (Val #())) (Var "$a0")))
   (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType E)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -3795,7 +3795,7 @@ attribute [instance] xorshift.TypeAssumptions.underlying
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   sortedHint_instance : sortedHint.TypeAssumptions
   xorshift_instance : xorshift.TypeAssumptions
-  AppendSeq_unfold : ∀ (Slice' E : go.GoType), FuncUnfold AppendSeq [Slice', E] (AppendSeq.impl Slice' E)
+  AppendSeq_unfold : ∀ (Slice'' E : go.GoType), FuncUnfold AppendSeq [Slice'', E] (AppendSeq.impl Slice'' E)
   Collect_unfold : ∀ (E : go.GoType), FuncUnfold Collect [E] (Collect.impl E)
   Sorted_unfold : ∀ (E : go.GoType), FuncUnfold Sorted [E] (Sorted.impl E)
   Clone_unfold : ∀ (S E : go.GoType), FuncUnfold Clone [S, E] (Clone.impl S E)

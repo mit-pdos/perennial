@@ -46,11 +46,11 @@ noncomputable instance acceptRange_access_load_lo (l : Loc) (v : unicode.utf8.ac
  by
   solve_pointsto_access_struct
 
-noncomputable instance acceptRange_access_store_lo (l : Loc) (v : unicode.utf8.acceptRange) (lo' : w8) :
+noncomputable instance acceptRange_access_store_lo (l : Loc) (v : unicode.utf8.acceptRange) (y : w8) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef unicode.utf8.acceptRange go!"lo" l) v.lo' (DFrac.own 1))
-      (typedPointsto (structFieldRef unicode.utf8.acceptRange go!"lo" l) lo' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lo' := lo' } : unicode.utf8.acceptRange) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef unicode.utf8.acceptRange go!"lo" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lo' := y } : unicode.utf8.acceptRange) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -62,11 +62,11 @@ noncomputable instance acceptRange_access_load_hi (l : Loc) (v : unicode.utf8.ac
  by
   solve_pointsto_access_struct
 
-noncomputable instance acceptRange_access_store_hi (l : Loc) (v : unicode.utf8.acceptRange) (hi' : w8) :
+noncomputable instance acceptRange_access_store_hi (l : Loc) (v : unicode.utf8.acceptRange) (y : w8) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef unicode.utf8.acceptRange go!"hi" l) v.hi' (DFrac.own 1))
-      (typedPointsto (structFieldRef unicode.utf8.acceptRange go!"hi" l) hi' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with hi' := hi' } : unicode.utf8.acceptRange) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef unicode.utf8.acceptRange go!"hi" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with hi' := y } : unicode.utf8.acceptRange) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

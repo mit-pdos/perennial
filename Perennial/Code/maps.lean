@@ -102,7 +102,7 @@ noncomputable def All.impl [GooseExts] [GoGlobalContext] (Map K V : go.GoType) :
     go: iter.go:25:6 -/
 noncomputable def Keys.impl [GooseExts] [GoGlobalContext] (Map K V : go.GoType) : val :=
   (LamV "m"
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq'.ty K)))) (App (Val (GoInstruction (GoZeroVal (_root_.Perennial.iter.Seq'.ty K)))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq''.ty K)))) (App (Val (GoInstruction (GoZeroVal (_root_.Perennial.iter.Seq''.ty K)))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "m" (App (Val (GoInstruction (GoAlloc Map))) (Var "m"))
   (Let "$r0" (Lam "yield"
@@ -127,8 +127,8 @@ noncomputable def Keys.impl [GooseExts] [GoGlobalContext] (Map K V : go.GoType) 
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (_root_.Perennial.iter.Seq'.ty K)))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq'.ty K)))) (Var "$res0")))))
+  (App (Val (GoInstruction (GoStore (_root_.Perennial.iter.Seq''.ty K)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq''.ty K)))) (Var "$res0")))))
 
 /-- Values returns an iterator over values in m.
     The iteration order is not specified and is not guaranteed
@@ -137,7 +137,7 @@ noncomputable def Keys.impl [GooseExts] [GoGlobalContext] (Map K V : go.GoType) 
     go: iter.go:38:6 -/
 noncomputable def Values.impl [GooseExts] [GoGlobalContext] (Map K V : go.GoType) : val :=
   (LamV "m"
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq'.ty V)))) (App (Val (GoInstruction (GoZeroVal (_root_.Perennial.iter.Seq'.ty V)))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq''.ty V)))) (App (Val (GoInstruction (GoZeroVal (_root_.Perennial.iter.Seq''.ty V)))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "m" (App (Val (GoInstruction (GoAlloc Map))) (Var "m"))
   (Let "$r0" (Lam "yield"
@@ -165,8 +165,8 @@ noncomputable def Values.impl [GooseExts] [GoGlobalContext] (Map K V : go.GoType
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (_root_.Perennial.iter.Seq'.ty V)))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq'.ty V)))) (Var "$res0")))))
+  (App (Val (GoInstruction (GoStore (_root_.Perennial.iter.Seq''.ty V)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq''.ty V)))) (Var "$res0")))))
 
 /-- Insert adds the key-value pairs from seq to m.
     If a key in seq already exists in m, its value will be overwritten.

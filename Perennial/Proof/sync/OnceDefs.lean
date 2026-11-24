@@ -72,8 +72,8 @@ theorem init_Once (o : Loc) (P Q : IProp GF) (E : CoPset) [Persistent Q] :
   iintro ⟨Ho, HP⟩
   rw [isOnce_unseal]; unfold isOnceDef
   iStructNamed Ho
-  have hz : (zero_val sync.atomic.Bool') =
-      ({ «_#0'» := zero_val _, v' := sync.atomic.b32w false } : sync.atomic.Bool') := rfl
+  have hz : (zero_val sync.atomic.Bool'') =
+      ({ «_#0'» := zero_val _, v' := sync.atomic.b32w false } : sync.atomic.Bool'') := rfl
   ihave Hd := (ownBool_halves (OnceDone (GF := GF) o) false).1 $$ [done]
   · simp only [sync.atomic.ownBool_unseal, sync.atomic.ownBoolDef]
     rw [← hz]; iexact done

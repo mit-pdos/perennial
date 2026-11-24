@@ -52,11 +52,11 @@ noncomputable instance «struct#1768b3d4_access_load_root» (l : Loc) (v : runti
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#1768b3d4_access_store_root» (l : Loc) (v : runtime.«struct#1768b3d4») (root' : runtime.semaRoot) :
+noncomputable instance «struct#1768b3d4_access_store_root» (l : Loc) (v : runtime.«struct#1768b3d4») (y : runtime.semaRoot) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"root" l) v.root' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"root" l) root' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with root' := root' } : runtime.«struct#1768b3d4») (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"root" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with root' := y } : runtime.«struct#1768b3d4») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -68,11 +68,11 @@ noncomputable instance «struct#1768b3d4_access_load_pad» (l : Loc) (v : runtim
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#1768b3d4_access_store_pad» (l : Loc) (v : runtime.«struct#1768b3d4») (pad' : (GoArray w8 40)) :
+noncomputable instance «struct#1768b3d4_access_store_pad» (l : Loc) (v : runtime.«struct#1768b3d4») (y : (GoArray w8 40)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"pad" l) v.pad' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"pad" l) pad' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pad' := pad' } : runtime.«struct#1768b3d4») (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"pad" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pad' := y } : runtime.«struct#1768b3d4») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -119,11 +119,11 @@ noncomputable instance synctestBubble_access_load_mu (l : Loc) (v : runtime.sync
  by
   solve_pointsto_access_struct
 
-noncomputable instance synctestBubble_access_store_mu (l : Loc) (v : runtime.synctestBubble) (mu' : runtime.mutex) :
+noncomputable instance synctestBubble_access_store_mu (l : Loc) (v : runtime.synctestBubble) (y : runtime.mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.synctestBubble go!"mu" l) v.mu' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.synctestBubble go!"mu" l) mu' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := mu' } : runtime.synctestBubble) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.synctestBubble go!"mu" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := y } : runtime.synctestBubble) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -135,11 +135,11 @@ noncomputable instance synctestBubble_access_load_timers (l : Loc) (v : runtime.
  by
   solve_pointsto_access_struct
 
-noncomputable instance synctestBubble_access_store_timers (l : Loc) (v : runtime.synctestBubble) (timers' : runtime.timers) :
+noncomputable instance synctestBubble_access_store_timers (l : Loc) (v : runtime.synctestBubble) (y : runtime.timers) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.synctestBubble go!"timers" l) v.timers' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.synctestBubble go!"timers" l) timers' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with timers' := timers' } : runtime.synctestBubble) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.synctestBubble go!"timers" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with timers' := y } : runtime.synctestBubble) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -151,11 +151,11 @@ noncomputable instance synctestBubble_access_load_id (l : Loc) (v : runtime.sync
  by
   solve_pointsto_access_struct
 
-noncomputable instance synctestBubble_access_store_id (l : Loc) (v : runtime.synctestBubble) (id' : w64) :
+noncomputable instance synctestBubble_access_store_id (l : Loc) (v : runtime.synctestBubble) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.synctestBubble go!"id" l) v.id' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.synctestBubble go!"id" l) id' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with id' := id' } : runtime.synctestBubble) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.synctestBubble go!"id" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with id' := y } : runtime.synctestBubble) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -167,11 +167,11 @@ noncomputable instance synctestBubble_access_load_now (l : Loc) (v : runtime.syn
  by
   solve_pointsto_access_struct
 
-noncomputable instance synctestBubble_access_store_now (l : Loc) (v : runtime.synctestBubble) (now' : w64) :
+noncomputable instance synctestBubble_access_store_now (l : Loc) (v : runtime.synctestBubble) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.synctestBubble go!"now" l) v.now' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.synctestBubble go!"now" l) now' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with now' := now' } : runtime.synctestBubble) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.synctestBubble go!"now" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with now' := y } : runtime.synctestBubble) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -183,11 +183,11 @@ noncomputable instance synctestBubble_access_load_root (l : Loc) (v : runtime.sy
  by
   solve_pointsto_access_struct
 
-noncomputable instance synctestBubble_access_store_root (l : Loc) (v : runtime.synctestBubble) (root' : Loc) :
+noncomputable instance synctestBubble_access_store_root (l : Loc) (v : runtime.synctestBubble) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.synctestBubble go!"root" l) v.root' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.synctestBubble go!"root" l) root' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with root' := root' } : runtime.synctestBubble) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.synctestBubble go!"root" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with root' := y } : runtime.synctestBubble) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -199,11 +199,11 @@ noncomputable instance synctestBubble_access_load_waiter (l : Loc) (v : runtime.
  by
   solve_pointsto_access_struct
 
-noncomputable instance synctestBubble_access_store_waiter (l : Loc) (v : runtime.synctestBubble) (waiter' : Loc) :
+noncomputable instance synctestBubble_access_store_waiter (l : Loc) (v : runtime.synctestBubble) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.synctestBubble go!"waiter" l) v.waiter' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.synctestBubble go!"waiter" l) waiter' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with waiter' := waiter' } : runtime.synctestBubble) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.synctestBubble go!"waiter" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with waiter' := y } : runtime.synctestBubble) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -215,11 +215,11 @@ noncomputable instance synctestBubble_access_load_main (l : Loc) (v : runtime.sy
  by
   solve_pointsto_access_struct
 
-noncomputable instance synctestBubble_access_store_main (l : Loc) (v : runtime.synctestBubble) (main' : Loc) :
+noncomputable instance synctestBubble_access_store_main (l : Loc) (v : runtime.synctestBubble) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.synctestBubble go!"main" l) v.main' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.synctestBubble go!"main" l) main' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with main' := main' } : runtime.synctestBubble) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.synctestBubble go!"main" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with main' := y } : runtime.synctestBubble) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -231,11 +231,11 @@ noncomputable instance synctestBubble_access_load_waiting (l : Loc) (v : runtime
  by
   solve_pointsto_access_struct
 
-noncomputable instance synctestBubble_access_store_waiting (l : Loc) (v : runtime.synctestBubble) (waiting' : Bool) :
+noncomputable instance synctestBubble_access_store_waiting (l : Loc) (v : runtime.synctestBubble) (y : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.synctestBubble go!"waiting" l) v.waiting' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.synctestBubble go!"waiting" l) waiting' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with waiting' := waiting' } : runtime.synctestBubble) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.synctestBubble go!"waiting" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with waiting' := y } : runtime.synctestBubble) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -247,11 +247,11 @@ noncomputable instance synctestBubble_access_load_done (l : Loc) (v : runtime.sy
  by
   solve_pointsto_access_struct
 
-noncomputable instance synctestBubble_access_store_done (l : Loc) (v : runtime.synctestBubble) (done' : Bool) :
+noncomputable instance synctestBubble_access_store_done (l : Loc) (v : runtime.synctestBubble) (y : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.synctestBubble go!"done" l) v.done' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.synctestBubble go!"done" l) done' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with done' := done' } : runtime.synctestBubble) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.synctestBubble go!"done" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with done' := y } : runtime.synctestBubble) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -263,11 +263,11 @@ noncomputable instance synctestBubble_access_load_total (l : Loc) (v : runtime.s
  by
   solve_pointsto_access_struct
 
-noncomputable instance synctestBubble_access_store_total (l : Loc) (v : runtime.synctestBubble) (total' : w64) :
+noncomputable instance synctestBubble_access_store_total (l : Loc) (v : runtime.synctestBubble) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.synctestBubble go!"total" l) v.total' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.synctestBubble go!"total" l) total' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with total' := total' } : runtime.synctestBubble) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.synctestBubble go!"total" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with total' := y } : runtime.synctestBubble) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -279,11 +279,11 @@ noncomputable instance synctestBubble_access_load_running (l : Loc) (v : runtime
  by
   solve_pointsto_access_struct
 
-noncomputable instance synctestBubble_access_store_running (l : Loc) (v : runtime.synctestBubble) (running' : w64) :
+noncomputable instance synctestBubble_access_store_running (l : Loc) (v : runtime.synctestBubble) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.synctestBubble go!"running" l) v.running' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.synctestBubble go!"running" l) running' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with running' := running' } : runtime.synctestBubble) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.synctestBubble go!"running" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with running' := y } : runtime.synctestBubble) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -295,11 +295,11 @@ noncomputable instance synctestBubble_access_load_active (l : Loc) (v : runtime.
  by
   solve_pointsto_access_struct
 
-noncomputable instance synctestBubble_access_store_active (l : Loc) (v : runtime.synctestBubble) (active' : w64) :
+noncomputable instance synctestBubble_access_store_active (l : Loc) (v : runtime.synctestBubble) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.synctestBubble go!"active" l) v.active' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.synctestBubble go!"active" l) active' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with active' := active' } : runtime.synctestBubble) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.synctestBubble go!"active" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with active' := y } : runtime.synctestBubble) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -337,11 +337,11 @@ noncomputable instance timeTimer_access_load_c (l : Loc) (v : runtime.timeTimer)
  by
   solve_pointsto_access_struct
 
-noncomputable instance timeTimer_access_store_c (l : Loc) (v : runtime.timeTimer) (c' : Loc) :
+noncomputable instance timeTimer_access_store_c (l : Loc) (v : runtime.timeTimer) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.timeTimer go!"c" l) v.c' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.timeTimer go!"c" l) c' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with c' := c' } : runtime.timeTimer) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.timeTimer go!"c" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with c' := y } : runtime.timeTimer) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -353,11 +353,11 @@ noncomputable instance timeTimer_access_load_init (l : Loc) (v : runtime.timeTim
  by
   solve_pointsto_access_struct
 
-noncomputable instance timeTimer_access_store_init (l : Loc) (v : runtime.timeTimer) (init' : Bool) :
+noncomputable instance timeTimer_access_store_init (l : Loc) (v : runtime.timeTimer) (y : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.timeTimer go!"init" l) v.init' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.timeTimer go!"init" l) init' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with init' := init' } : runtime.timeTimer) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.timeTimer go!"init" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with init' := y } : runtime.timeTimer) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -369,11 +369,11 @@ noncomputable instance timeTimer_access_load_timer (l : Loc) (v : runtime.timeTi
  by
   solve_pointsto_access_struct
 
-noncomputable instance timeTimer_access_store_timer (l : Loc) (v : runtime.timeTimer) (timer' : runtime.timer) :
+noncomputable instance timeTimer_access_store_timer (l : Loc) (v : runtime.timeTimer) (y : runtime.timer) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.timeTimer go!"timer" l) v.timer' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.timeTimer go!"timer" l) timer' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with timer' := timer' } : runtime.timeTimer) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.timeTimer go!"timer" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with timer' := y } : runtime.timeTimer) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

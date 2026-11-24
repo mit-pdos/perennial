@@ -1564,7 +1564,7 @@ noncomputable def deleteOtherFiles.impl [GooseExts] [GoGlobalContext] : val :=
   (Seq (App (Val exceptionDo)
   (Let "tableName" (App (Val (GoInstruction (GoAlloc go.string))) (Var "tableName"))
   (Let "$r0" (Let "$a0" (Val #(go!"db"))
-  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.filesys.List' []))) (Val #())) (Var "$a0")))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.filesys.List'' []))) (Val #())) (Var "$a0")))
   (Let "files" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.string)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "files"))

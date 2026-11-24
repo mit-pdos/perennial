@@ -3059,7 +3059,7 @@ func importSuffixAlias(pkgPath string, suffixLen int) string {
 	if suffixLen > len(parts) {
 		suffixLen = len(parts)
 	}
-	return glang.ToIdent(strings.Join(parts[len(parts)-suffixLen:], "_"))
+	return strings.Join(parts[len(parts)-suffixLen:], "_")
 }
 
 // uniqueImportAliases assigns aliases (used in the names of the Assumptions
@@ -3156,7 +3156,7 @@ func (ctx *Ctx) finalizeImports() {
 	for _, impName := range ctx.importNamesOrdered {
 		pkg := impName.Imported()
 		if len(importsByName[pkg.Name()]) == 1 {
-			ref := glang.ToIdent(pkg.Name())
+			ref := pkg.Name()
 			ctx.importAssumptions[pkg.Path()] = "import_" + ref + "_Assumption"
 			usedRefs[ref] = true
 		}
@@ -3200,7 +3200,7 @@ func (ctx *Ctx) importAssumptionName(pkg *types.Package) string {
 	if name, ok := ctx.importAssumptions[pkg.Path()]; ok {
 		return name
 	}
-	return "import_" + glang.ToIdent(pkg.Name()) + "_Assumption"
+	return "import_" + pkg.Name() + "_Assumption"
 }
 
 func (ctx *Ctx) decl(d ast.Decl) {

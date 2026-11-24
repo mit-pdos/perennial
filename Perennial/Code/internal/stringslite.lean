@@ -30,7 +30,7 @@ noncomputable def HasSuffix [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def IndexByte [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/stringslite.IndexByte"
 
-noncomputable def Index' [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def Index'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/stringslite.Index"
 
 noncomputable def Cut [GooseExts] [GoGlobalContext] : GoString :=
@@ -111,7 +111,7 @@ noncomputable def IndexByte.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
 /-- go: strings.go:28:6 -/
-noncomputable def Index.impl [GooseExts] [GoGlobalContext] : val :=
+noncomputable def Index''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "substr"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -427,7 +427,7 @@ noncomputable def Cut.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "sep"))
-  (App (App (App (Val (GoInstruction (FuncResolve Index' []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (App (Val (GoInstruction (FuncResolve Index'' []))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 0)))))
@@ -572,7 +572,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   HasPrefix_unfold : FuncUnfold HasPrefix [] HasPrefix.impl
   HasSuffix_unfold : FuncUnfold HasSuffix [] HasSuffix.impl
   IndexByte_unfold : FuncUnfold IndexByte [] IndexByte.impl
-  Index_unfold : FuncUnfold Index' [] Index.impl
+  Index_unfold : FuncUnfold Index'' [] Index''.impl
   Cut_unfold : FuncUnfold Cut [] Cut.impl
   TrimPrefix_unfold : FuncUnfold TrimPrefix [] TrimPrefix.impl
   TrimSuffix_unfold : FuncUnfold TrimSuffix [] TrimSuffix.impl

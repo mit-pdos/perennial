@@ -1483,10 +1483,10 @@ noncomputable def gsignalStack.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] gsignalStack.ty
 
-noncomputable def slice'.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+noncomputable def slice''.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"runtime.slice" [])
 
-attribute [irreducible] slice'.ty
+attribute [irreducible] slice''.ty
 
 noncomputable def notInHeapSlice.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"runtime.notInHeapSlice" [])
@@ -3736,7 +3736,7 @@ noncomputable def _cgo_getstackbound [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def iscgo [GooseExts] [GoGlobalContext] : GoString :=
   go!"runtime.iscgo"
 
-noncomputable def set_crosscall2 [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def set_crosscall2'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"runtime.set_crosscall2"
 
 noncomputable def cgoHasExtraM [GooseExts] [GoGlobalContext] : GoString :=
@@ -10954,7 +10954,7 @@ structure userArena [GooseExts] where
   fullList' : Loc
   active' : Loc
   refs' : GoSlice
-  defunct' : _root_.Perennial.internal.runtime.atomic.Bool'
+  defunct' : _root_.Perennial.internal.runtime.atomic.Bool''
 
 noncomputable instance userArena.zero_val [GooseExts] : ZeroVal userArena :=
   ⟨userArena.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -10963,7 +10963,7 @@ noncomputable instance userArena.zero_val [GooseExts] : ZeroVal userArena :=
   [(go.field_decl.FieldDecl go!"fullList" (go.GoType.PointerType mspan.ty)),
 (go.field_decl.FieldDecl go!"active" (go.GoType.PointerType mspan.ty)),
 (go.field_decl.FieldDecl go!"refs" (go.GoType.SliceType «unsafe».Pointer)),
-(go.field_decl.FieldDecl go!"defunct" _root_.Perennial.internal.runtime.atomic.Bool'.ty)]
+(go.field_decl.FieldDecl go!"defunct" _root_.Perennial.internal.runtime.atomic.Bool''.ty)]
 
 @[irreducible] noncomputable def userArena.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   userArena.fieldsUnsealed
@@ -12869,7 +12869,7 @@ structure cleanupQueue [GooseExts] where
   workUnits' : _root_.Perennial.internal.runtime.atomic.Uint64
   «_#2'» : (GoArray w8 48)
   free' : lfstack
-  flushed' : _root_.Perennial.internal.runtime.atomic.Bool'
+  flushed' : _root_.Perennial.internal.runtime.atomic.Bool''
   «_#5'» : (GoArray w8 55)
   all' : _root_.Perennial.internal.runtime.atomic.UnsafePointer
   «_#7'» : (GoArray w8 56)
@@ -12890,7 +12890,7 @@ noncomputable instance cleanupQueue.zero_val [GooseExts] : ZeroVal cleanupQueue 
 (go.field_decl.FieldDecl go!"workUnits" _root_.Perennial.internal.runtime.atomic.Uint64.ty),
 (go.field_decl.FieldDecl go!"_#2" (go.GoType.ArrayType 48 go.byte)),
 (go.field_decl.FieldDecl go!"free" lfstack.ty),
-(go.field_decl.FieldDecl go!"flushed" _root_.Perennial.internal.runtime.atomic.Bool'.ty),
+(go.field_decl.FieldDecl go!"flushed" _root_.Perennial.internal.runtime.atomic.Bool''.ty),
 (go.field_decl.FieldDecl go!"_#5" (go.GoType.ArrayType 55 go.byte)),
 (go.field_decl.FieldDecl go!"all" _root_.Perennial.internal.runtime.atomic.UnsafePointer.ty),
 (go.field_decl.FieldDecl go!"_#7" (go.GoType.ArrayType 56 go.byte)),
@@ -13555,7 +13555,7 @@ noncomputable instance «struct#51fa335f».zero_val [GooseExts] : ZeroVal «stru
 structure gcCPULimiterState [GooseExts] where
   mk ::
   lock' : _root_.Perennial.internal.runtime.atomic.Uint32
-  enabled' : _root_.Perennial.internal.runtime.atomic.Bool'
+  enabled' : _root_.Perennial.internal.runtime.atomic.Bool''
   gcEnabled' : Bool
   transitioning' : Bool
   test' : Bool
@@ -13573,7 +13573,7 @@ noncomputable instance gcCPULimiterState.zero_val [GooseExts] : ZeroVal gcCPULim
 
 @[reducible] noncomputable def gcCPULimiterState.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"lock" _root_.Perennial.internal.runtime.atomic.Uint32.ty),
-(go.field_decl.FieldDecl go!"enabled" _root_.Perennial.internal.runtime.atomic.Bool'.ty),
+(go.field_decl.FieldDecl go!"enabled" _root_.Perennial.internal.runtime.atomic.Bool''.ty),
 (go.field_decl.FieldDecl go!"gcEnabled" go.bool),
 (go.field_decl.FieldDecl go!"transitioning" go.bool),
 (go.field_decl.FieldDecl go!"test" go.bool),
@@ -13707,7 +13707,7 @@ structure spanSPMC [GooseExts] where
   mk ::
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   allnode' : listNodeManual
-  dead' : _root_.Perennial.internal.runtime.atomic.Bool'
+  dead' : _root_.Perennial.internal.runtime.atomic.Bool''
   prev' : _root_.Perennial.internal.runtime.atomic.UnsafePointer
   head' : _root_.Perennial.internal.runtime.atomic.Uint32
   tail' : _root_.Perennial.internal.runtime.atomic.Uint32
@@ -13720,7 +13720,7 @@ noncomputable instance spanSPMC.zero_val [GooseExts] : ZeroVal spanSPMC :=
 @[reducible] noncomputable def spanSPMC.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"allnode" listNodeManual.ty),
-(go.field_decl.FieldDecl go!"dead" _root_.Perennial.internal.runtime.atomic.Bool'.ty),
+(go.field_decl.FieldDecl go!"dead" _root_.Perennial.internal.runtime.atomic.Bool''.ty),
 (go.field_decl.FieldDecl go!"prev" _root_.Perennial.internal.runtime.atomic.UnsafePointer.ty),
 (go.field_decl.FieldDecl go!"head" _root_.Perennial.internal.runtime.atomic.Uint32.ty),
 (go.field_decl.FieldDecl go!"tail" _root_.Perennial.internal.runtime.atomic.Uint32.ty),
@@ -15842,7 +15842,7 @@ noncomputable instance equals_unfold_note [GooseExts] [GoGlobalContext] :
 structure mOS [GooseExts] where
   mk ::
   profileTimer' : w32
-  profileTimerValid' : _root_.Perennial.internal.runtime.atomic.Bool'
+  profileTimerValid' : _root_.Perennial.internal.runtime.atomic.Bool''
   needPerThreadSyscall' : _root_.Perennial.internal.runtime.atomic.Uint8
   vgetrandomState' : w64
   waitsema' : w32
@@ -15852,7 +15852,7 @@ noncomputable instance mOS.zero_val [GooseExts] : ZeroVal mOS :=
 
 @[reducible] noncomputable def mOS.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"profileTimer" go.int32),
-(go.field_decl.FieldDecl go!"profileTimerValid" _root_.Perennial.internal.runtime.atomic.Bool'.ty),
+(go.field_decl.FieldDecl go!"profileTimerValid" _root_.Perennial.internal.runtime.atomic.Bool''.ty),
 (go.field_decl.FieldDecl go!"needPerThreadSyscall" _root_.Perennial.internal.runtime.atomic.Uint8.ty),
 (go.field_decl.FieldDecl go!"vgetrandomState" go.uintptr),
 (go.field_decl.FieldDecl go!"waitsema" go.uint32)]
@@ -16339,7 +16339,7 @@ structure updateMaxProcsGState [GooseExts] where
   mk ::
   lock' : mutex
   g' : Loc
-  idle' : _root_.Perennial.internal.runtime.atomic.Bool'
+  idle' : _root_.Perennial.internal.runtime.atomic.Bool''
   procs' : w32
 
 noncomputable instance updateMaxProcsGState.zero_val [GooseExts] : ZeroVal updateMaxProcsGState :=
@@ -16348,7 +16348,7 @@ noncomputable instance updateMaxProcsGState.zero_val [GooseExts] : ZeroVal updat
 @[reducible] noncomputable def updateMaxProcsGState.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"lock" mutex.ty),
 (go.field_decl.FieldDecl go!"g" (go.GoType.PointerType g.ty)),
-(go.field_decl.FieldDecl go!"idle" _root_.Perennial.internal.runtime.atomic.Bool'.ty),
+(go.field_decl.FieldDecl go!"idle" _root_.Perennial.internal.runtime.atomic.Bool''.ty),
 (go.field_decl.FieldDecl go!"procs" go.int32)]
 
 @[irreducible] noncomputable def updateMaxProcsGState.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
@@ -16929,7 +16929,7 @@ structure g [GooseExts] where
   gcscandone' : Bool
   throwsplit' : Bool
   activeStackChans' : Bool
-  parkingOnChan' : _root_.Perennial.internal.runtime.atomic.Bool'
+  parkingOnChan' : _root_.Perennial.internal.runtime.atomic.Bool''
   inMarkAssist' : Bool
   coroexit' : Bool
   raceignore' : w8
@@ -16943,7 +16943,7 @@ structure g [GooseExts] where
   fipsOnlyBypass' : Bool
   ditWanted' : Bool
   syncSafePoint' : Bool
-  runningCleanups' : _root_.Perennial.internal.runtime.atomic.Bool'
+  runningCleanups' : _root_.Perennial.internal.runtime.atomic.Bool''
   sig' : w32
   secret' : w32
   writebuf' : GoSlice
@@ -16999,7 +16999,7 @@ noncomputable instance g.zero_val [GooseExts] : ZeroVal g :=
 (go.field_decl.FieldDecl go!"gcscandone" go.bool),
 (go.field_decl.FieldDecl go!"throwsplit" go.bool),
 (go.field_decl.FieldDecl go!"activeStackChans" go.bool),
-(go.field_decl.FieldDecl go!"parkingOnChan" _root_.Perennial.internal.runtime.atomic.Bool'.ty),
+(go.field_decl.FieldDecl go!"parkingOnChan" _root_.Perennial.internal.runtime.atomic.Bool''.ty),
 (go.field_decl.FieldDecl go!"inMarkAssist" go.bool),
 (go.field_decl.FieldDecl go!"coroexit" go.bool),
 (go.field_decl.FieldDecl go!"raceignore" go.int8),
@@ -17013,7 +17013,7 @@ noncomputable instance g.zero_val [GooseExts] : ZeroVal g :=
 (go.field_decl.FieldDecl go!"fipsOnlyBypass" go.bool),
 (go.field_decl.FieldDecl go!"ditWanted" go.bool),
 (go.field_decl.FieldDecl go!"syncSafePoint" go.bool),
-(go.field_decl.FieldDecl go!"runningCleanups" _root_.Perennial.internal.runtime.atomic.Bool'.ty),
+(go.field_decl.FieldDecl go!"runningCleanups" _root_.Perennial.internal.runtime.atomic.Bool''.ty),
 (go.field_decl.FieldDecl go!"sig" go.uint32),
 (go.field_decl.FieldDecl go!"secret" go.int32),
 (go.field_decl.FieldDecl go!"writebuf" (go.GoType.SliceType go.byte)),
@@ -17322,10 +17322,10 @@ structure schedt [GooseExts] where
   deferlock' : mutex
   deferpool' : Loc
   freem' : Loc
-  gcwaiting' : _root_.Perennial.internal.runtime.atomic.Bool'
+  gcwaiting' : _root_.Perennial.internal.runtime.atomic.Bool''
   stopwait' : w32
   stopnote' : note
-  sysmonwait' : _root_.Perennial.internal.runtime.atomic.Bool'
+  sysmonwait' : _root_.Perennial.internal.runtime.atomic.Bool''
   sysmonnote' : note
   safePointFn' : GoFunc
   safePointWait' : w32
@@ -17375,10 +17375,10 @@ noncomputable instance schedt.zero_val [GooseExts] : ZeroVal schedt :=
 (go.field_decl.FieldDecl go!"deferlock" mutex.ty),
 (go.field_decl.FieldDecl go!"deferpool" (go.GoType.PointerType _defer.ty)),
 (go.field_decl.FieldDecl go!"freem" (go.GoType.PointerType m.ty)),
-(go.field_decl.FieldDecl go!"gcwaiting" _root_.Perennial.internal.runtime.atomic.Bool'.ty),
+(go.field_decl.FieldDecl go!"gcwaiting" _root_.Perennial.internal.runtime.atomic.Bool''.ty),
 (go.field_decl.FieldDecl go!"stopwait" go.int32),
 (go.field_decl.FieldDecl go!"stopnote" note.ty),
-(go.field_decl.FieldDecl go!"sysmonwait" _root_.Perennial.internal.runtime.atomic.Bool'.ty),
+(go.field_decl.FieldDecl go!"sysmonwait" _root_.Perennial.internal.runtime.atomic.Bool''.ty),
 (go.field_decl.FieldDecl go!"sysmonnote" note.ty),
 (go.field_decl.FieldDecl go!"safePointFn" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType p.ty)] false []))),
 (go.field_decl.FieldDecl go!"safePointWait" go.int32),
@@ -17448,7 +17448,7 @@ structure forcegcstate [GooseExts] where
   mk ::
   lock' : mutex
   g' : Loc
-  idle' : _root_.Perennial.internal.runtime.atomic.Bool'
+  idle' : _root_.Perennial.internal.runtime.atomic.Bool''
 
 noncomputable instance forcegcstate.zero_val [GooseExts] : ZeroVal forcegcstate :=
   ⟨forcegcstate.mk zeroValDef zeroValDef zeroValDef⟩
@@ -17456,7 +17456,7 @@ noncomputable instance forcegcstate.zero_val [GooseExts] : ZeroVal forcegcstate 
 @[reducible] noncomputable def forcegcstate.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"lock" mutex.ty),
 (go.field_decl.FieldDecl go!"g" (go.GoType.PointerType g.ty)),
-(go.field_decl.FieldDecl go!"idle" _root_.Perennial.internal.runtime.atomic.Bool'.ty)]
+(go.field_decl.FieldDecl go!"idle" _root_.Perennial.internal.runtime.atomic.Bool''.ty)]
 
 @[irreducible] noncomputable def forcegcstate.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   forcegcstate.fieldsUnsealed
@@ -17823,29 +17823,29 @@ noncomputable instance equals_unfold_gsignalStack [GooseExts] [GoGlobalContext] 
 @[reducible] noncomputable def gsignalStack.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType gsignalStack.fields)
 
-structure slice' [GooseExts] where
+structure slice'' [GooseExts] where
   mk ::
   array' : Loc
   len' : w64
   cap' : w64
 
-noncomputable instance slice'.zero_val [GooseExts] : ZeroVal slice' :=
-  ⟨slice'.mk zeroValDef zeroValDef zeroValDef⟩
+noncomputable instance slice''.zero_val [GooseExts] : ZeroVal slice'' :=
+  ⟨slice''.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def slice.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def slice''.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"array" «unsafe».Pointer),
 (go.field_decl.FieldDecl go!"len" go.int),
 (go.field_decl.FieldDecl go!"cap" go.int)]
 
-@[irreducible] noncomputable def slice.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  slice.fieldsUnsealed
+@[irreducible] noncomputable def slice''.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  slice''.fieldsUnsealed
 
 noncomputable instance equals_unfold_slice [GooseExts] [GoGlobalContext] :
-    EqualsUnfold slice.fields slice.fieldsUnsealed :=
-  ⟨by unfold slice.fields; rfl⟩
+    EqualsUnfold slice''.fields slice''.fieldsUnsealed :=
+  ⟨by unfold slice''.fields; rfl⟩
 
-@[reducible] noncomputable def slice'.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType slice.fields)
+@[reducible] noncomputable def slice''.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType slice''.fields)
 
 structure notInHeapSlice [GooseExts] where
   mk ::
@@ -18950,7 +18950,7 @@ noncomputable instance equals_unfold_traceMapNode [GooseExts] [GoGlobalContext] 
 structure traceRegionAlloc [GooseExts] where
   mk ::
   lock' : mutex
-  dropping' : _root_.Perennial.internal.runtime.atomic.Bool'
+  dropping' : _root_.Perennial.internal.runtime.atomic.Bool''
   current' : _root_.Perennial.internal.runtime.atomic.UnsafePointer
   full' : Loc
 
@@ -18959,7 +18959,7 @@ noncomputable instance traceRegionAlloc.zero_val [GooseExts] : ZeroVal traceRegi
 
 @[reducible] noncomputable def traceRegionAlloc.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"lock" mutex.ty),
-(go.field_decl.FieldDecl go!"dropping" _root_.Perennial.internal.runtime.atomic.Bool'.ty),
+(go.field_decl.FieldDecl go!"dropping" _root_.Perennial.internal.runtime.atomic.Bool''.ty),
 (go.field_decl.FieldDecl go!"current" _root_.Perennial.internal.runtime.atomic.UnsafePointer.ty),
 (go.field_decl.FieldDecl go!"full" (go.GoType.PointerType traceRegionAllocBlock.ty))]
 
@@ -19021,7 +19021,7 @@ noncomputable instance equals_unfold_traceRegionAllocBlock [GooseExts] [GoGlobal
 
 structure mTraceState [GooseExts] where
   mk ::
-  writing' : _root_.Perennial.internal.runtime.atomic.Bool'
+  writing' : _root_.Perennial.internal.runtime.atomic.Bool''
   buf' : (GoArray (GoArray Loc 2) 2)
   link' : Loc
   reentered' : w32
@@ -19032,7 +19032,7 @@ noncomputable instance mTraceState.zero_val [GooseExts] : ZeroVal mTraceState :=
   ⟨mTraceState.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def mTraceState.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"writing" _root_.Perennial.internal.runtime.atomic.Bool'.ty),
+  [(go.field_decl.FieldDecl go!"writing" _root_.Perennial.internal.runtime.atomic.Bool''.ty),
 (go.field_decl.FieldDecl go!"buf" (go.GoType.ArrayType 2 (go.GoType.ArrayType 2 (go.GoType.PointerType traceBuf.ty)))),
 (go.field_decl.FieldDecl go!"link" (go.GoType.PointerType m.ty)),
 (go.field_decl.FieldDecl go!"reentered" go.uint32),

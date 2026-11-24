@@ -127,7 +127,7 @@ func (ctx *Ctx) anonStructDecls(a *anonStruct) []glang.Decl {
 		ctx.structFieldAssumptions(n, a.t, valTy, implTy, goBinders, valBinders, add)
 	}
 	decls = append(decls, typeAssumptionsDecl{
-		VerbatimDecl: glang.VerbatimDecl{Content: leanClass(glang.LeanEncodedName(a.name+"_Assumptions"),
+		VerbatimDecl: glang.VerbatimDecl{Content: leanClass(glang.LeanEncodedName(a.name+"'assumptions"),
 			" [GooseExts] "+leanClassParams, fields)},
 		fields: len(fields),
 	})

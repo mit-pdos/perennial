@@ -48,11 +48,11 @@ noncomputable instance LockedStack_access_load_mu (l : Loc) (v : github_com.mit_
  by
   solve_pointsto_access_struct
 
-noncomputable instance LockedStack_access_store_mu (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack) (mu' : _root_.Perennial.sync.Mutex) :
+noncomputable instance LockedStack_access_store_mu (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack) (y : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack go!"mu" l) v.mu' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack go!"mu" l) mu' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := mu' } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack go!"mu" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -64,11 +64,11 @@ noncomputable instance LockedStack_access_load_stack (l : Loc) (v : github_com.m
  by
   solve_pointsto_access_struct
 
-noncomputable instance LockedStack_access_store_stack (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack) (stack' : GoSlice) :
+noncomputable instance LockedStack_access_store_stack (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack) (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack go!"stack" l) v.stack' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack go!"stack" l) stack' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with stack' := stack' } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack go!"stack" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with stack' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -105,11 +105,11 @@ noncomputable instance EliminationStack_access_load_base (l : Loc) (v : github_c
  by
   solve_pointsto_access_struct
 
-noncomputable instance EliminationStack_access_store_base (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.EliminationStack) (base' : Loc) :
+noncomputable instance EliminationStack_access_store_base (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.EliminationStack) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.EliminationStack go!"base" l) v.base' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.EliminationStack go!"base" l) base' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with base' := base' } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.EliminationStack) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.EliminationStack go!"base" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with base' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.EliminationStack) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -121,11 +121,11 @@ noncomputable instance EliminationStack_access_load_exchanger (l : Loc) (v : git
  by
   solve_pointsto_access_struct
 
-noncomputable instance EliminationStack_access_store_exchanger (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.EliminationStack) (exchanger' : GoChan) :
+noncomputable instance EliminationStack_access_store_exchanger (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.EliminationStack) (y : GoChan) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.EliminationStack go!"exchanger" l) v.exchanger' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.EliminationStack go!"exchanger" l) exchanger' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with exchanger' := exchanger' } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.EliminationStack) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.EliminationStack go!"exchanger" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with exchanger' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.EliminationStack) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

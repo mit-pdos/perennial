@@ -45,11 +45,11 @@ noncomputable instance Y_access_load_v (l : Loc) (v : github_com.mit_pdos.perenn
  by
   solve_pointsto_access_struct
 
-noncomputable instance Y_access_store_v (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep2.Y) (v' : w64) :
+noncomputable instance Y_access_store_v (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep2.Y) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep2.Y go!"v" l) v.v' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep2.Y go!"v" l) v' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := v' } : github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep2.Y) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep2.Y go!"v" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep2.Y) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -85,11 +85,11 @@ noncomputable instance Box_access_load_v {T' : Type} [TypedPointsto (GF := GF) T
  by
   solve_pointsto_access_struct
 
-noncomputable instance Box_access_store_v {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep2.Box T')) (v' : T') :
+noncomputable instance Box_access_store_v {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep2.Box T')) (y : T') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep2.Box T') go!"v" l) v.v' (DFrac.own 1))
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep2.Box T') go!"v" l) v' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := v' } : (github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep2.Box T')) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep2.Box T') go!"v" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep2.Box T')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

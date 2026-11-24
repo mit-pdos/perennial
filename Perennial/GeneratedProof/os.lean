@@ -55,11 +55,11 @@ noncomputable instance dirInfo_access_load_mu (l : Loc) (v : os.dirInfo) (dq : D
  by
   solve_pointsto_access_struct
 
-noncomputable instance dirInfo_access_store_mu (l : Loc) (v : os.dirInfo) (mu' : _root_.Perennial.sync.Mutex) :
+noncomputable instance dirInfo_access_store_mu (l : Loc) (v : os.dirInfo) (y : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.dirInfo go!"mu" l) v.mu' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.dirInfo go!"mu" l) mu' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := mu' } : os.dirInfo) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.dirInfo go!"mu" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := y } : os.dirInfo) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -71,11 +71,11 @@ noncomputable instance dirInfo_access_load_buf (l : Loc) (v : os.dirInfo) (dq : 
  by
   solve_pointsto_access_struct
 
-noncomputable instance dirInfo_access_store_buf (l : Loc) (v : os.dirInfo) (buf' : Loc) :
+noncomputable instance dirInfo_access_store_buf (l : Loc) (v : os.dirInfo) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.dirInfo go!"buf" l) v.buf' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.dirInfo go!"buf" l) buf' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with buf' := buf' } : os.dirInfo) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.dirInfo go!"buf" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with buf' := y } : os.dirInfo) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -87,11 +87,11 @@ noncomputable instance dirInfo_access_load_nbuf (l : Loc) (v : os.dirInfo) (dq :
  by
   solve_pointsto_access_struct
 
-noncomputable instance dirInfo_access_store_nbuf (l : Loc) (v : os.dirInfo) (nbuf' : w64) :
+noncomputable instance dirInfo_access_store_nbuf (l : Loc) (v : os.dirInfo) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.dirInfo go!"nbuf" l) v.nbuf' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.dirInfo go!"nbuf" l) nbuf' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with nbuf' := nbuf' } : os.dirInfo) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.dirInfo go!"nbuf" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with nbuf' := y } : os.dirInfo) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -103,11 +103,11 @@ noncomputable instance dirInfo_access_load_bufp (l : Loc) (v : os.dirInfo) (dq :
  by
   solve_pointsto_access_struct
 
-noncomputable instance dirInfo_access_store_bufp (l : Loc) (v : os.dirInfo) (bufp' : w64) :
+noncomputable instance dirInfo_access_store_bufp (l : Loc) (v : os.dirInfo) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.dirInfo go!"bufp" l) v.bufp' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.dirInfo go!"bufp" l) bufp' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with bufp' := bufp' } : os.dirInfo) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.dirInfo go!"bufp" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with bufp' := y } : os.dirInfo) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -144,11 +144,11 @@ noncomputable instance SyscallError_access_load_Syscall (l : Loc) (v : os.Syscal
  by
   solve_pointsto_access_struct
 
-noncomputable instance SyscallError_access_store_Syscall (l : Loc) (v : os.SyscallError) (Syscall' : GoString) :
+noncomputable instance SyscallError_access_store_Syscall (l : Loc) (v : os.SyscallError) (y : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.SyscallError go!"Syscall" l) v.Syscall' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.SyscallError go!"Syscall" l) Syscall' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Syscall' := Syscall' } : os.SyscallError) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.SyscallError go!"Syscall" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Syscall' := y } : os.SyscallError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -160,11 +160,11 @@ noncomputable instance SyscallError_access_load_Err (l : Loc) (v : os.SyscallErr
  by
   solve_pointsto_access_struct
 
-noncomputable instance SyscallError_access_store_Err (l : Loc) (v : os.SyscallError) (Err' : GoError) :
+noncomputable instance SyscallError_access_store_Err (l : Loc) (v : os.SyscallError) (y : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.SyscallError go!"Err" l) v.Err' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.SyscallError go!"Err" l) Err' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Err' := Err' } : os.SyscallError) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.SyscallError go!"Err" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Err' := y } : os.SyscallError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -241,11 +241,11 @@ noncomputable instance ProcAttr_access_load_Dir (l : Loc) (v : os.ProcAttr) (dq 
  by
   solve_pointsto_access_struct
 
-noncomputable instance ProcAttr_access_store_Dir (l : Loc) (v : os.ProcAttr) (Dir' : GoString) :
+noncomputable instance ProcAttr_access_store_Dir (l : Loc) (v : os.ProcAttr) (y : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.ProcAttr go!"Dir" l) v.Dir' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.ProcAttr go!"Dir" l) Dir' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Dir' := Dir' } : os.ProcAttr) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.ProcAttr go!"Dir" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Dir' := y } : os.ProcAttr) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -257,11 +257,11 @@ noncomputable instance ProcAttr_access_load_Env (l : Loc) (v : os.ProcAttr) (dq 
  by
   solve_pointsto_access_struct
 
-noncomputable instance ProcAttr_access_store_Env (l : Loc) (v : os.ProcAttr) (Env' : GoSlice) :
+noncomputable instance ProcAttr_access_store_Env (l : Loc) (v : os.ProcAttr) (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.ProcAttr go!"Env" l) v.Env' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.ProcAttr go!"Env" l) Env' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Env' := Env' } : os.ProcAttr) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.ProcAttr go!"Env" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Env' := y } : os.ProcAttr) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -273,11 +273,11 @@ noncomputable instance ProcAttr_access_load_Files (l : Loc) (v : os.ProcAttr) (d
  by
   solve_pointsto_access_struct
 
-noncomputable instance ProcAttr_access_store_Files (l : Loc) (v : os.ProcAttr) (Files' : GoSlice) :
+noncomputable instance ProcAttr_access_store_Files (l : Loc) (v : os.ProcAttr) (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.ProcAttr go!"Files" l) v.Files' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.ProcAttr go!"Files" l) Files' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Files' := Files' } : os.ProcAttr) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.ProcAttr go!"Files" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Files' := y } : os.ProcAttr) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -289,11 +289,11 @@ noncomputable instance ProcAttr_access_load_Sys (l : Loc) (v : os.ProcAttr) (dq 
  by
   solve_pointsto_access_struct
 
-noncomputable instance ProcAttr_access_store_Sys (l : Loc) (v : os.ProcAttr) (Sys' : Loc) :
+noncomputable instance ProcAttr_access_store_Sys (l : Loc) (v : os.ProcAttr) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.ProcAttr go!"Sys" l) v.Sys' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.ProcAttr go!"Sys" l) Sys' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Sys' := Sys' } : os.ProcAttr) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.ProcAttr go!"Sys" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Sys' := y } : os.ProcAttr) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -331,11 +331,11 @@ noncomputable instance ProcessState_access_load_pid (l : Loc) (v : os.ProcessSta
  by
   solve_pointsto_access_struct
 
-noncomputable instance ProcessState_access_store_pid (l : Loc) (v : os.ProcessState) (pid' : w64) :
+noncomputable instance ProcessState_access_store_pid (l : Loc) (v : os.ProcessState) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.ProcessState go!"pid" l) v.pid' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.ProcessState go!"pid" l) pid' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pid' := pid' } : os.ProcessState) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.ProcessState go!"pid" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pid' := y } : os.ProcessState) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -347,11 +347,11 @@ noncomputable instance ProcessState_access_load_status (l : Loc) (v : os.Process
  by
   solve_pointsto_access_struct
 
-noncomputable instance ProcessState_access_store_status (l : Loc) (v : os.ProcessState) (status' : _root_.Perennial.syscall.WaitStatus) :
+noncomputable instance ProcessState_access_store_status (l : Loc) (v : os.ProcessState) (y : _root_.Perennial.syscall.WaitStatus) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.ProcessState go!"status" l) v.status' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.ProcessState go!"status" l) status' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with status' := status' } : os.ProcessState) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.ProcessState go!"status" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with status' := y } : os.ProcessState) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -363,11 +363,11 @@ noncomputable instance ProcessState_access_load_rusage (l : Loc) (v : os.Process
  by
   solve_pointsto_access_struct
 
-noncomputable instance ProcessState_access_store_rusage (l : Loc) (v : os.ProcessState) (rusage' : Loc) :
+noncomputable instance ProcessState_access_store_rusage (l : Loc) (v : os.ProcessState) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.ProcessState go!"rusage" l) v.rusage' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.ProcessState go!"rusage" l) rusage' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rusage' := rusage' } : os.ProcessState) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.ProcessState go!"rusage" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rusage' := y } : os.ProcessState) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -406,11 +406,11 @@ noncomputable instance LinkError_access_load_Op (l : Loc) (v : os.LinkError) (dq
  by
   solve_pointsto_access_struct
 
-noncomputable instance LinkError_access_store_Op (l : Loc) (v : os.LinkError) (Op' : GoString) :
+noncomputable instance LinkError_access_store_Op (l : Loc) (v : os.LinkError) (y : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.LinkError go!"Op" l) v.Op' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.LinkError go!"Op" l) Op' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Op' := Op' } : os.LinkError) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.LinkError go!"Op" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Op' := y } : os.LinkError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -422,11 +422,11 @@ noncomputable instance LinkError_access_load_Old (l : Loc) (v : os.LinkError) (d
  by
   solve_pointsto_access_struct
 
-noncomputable instance LinkError_access_store_Old (l : Loc) (v : os.LinkError) (Old' : GoString) :
+noncomputable instance LinkError_access_store_Old (l : Loc) (v : os.LinkError) (y : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.LinkError go!"Old" l) v.Old' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.LinkError go!"Old" l) Old' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Old' := Old' } : os.LinkError) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.LinkError go!"Old" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Old' := y } : os.LinkError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -438,11 +438,11 @@ noncomputable instance LinkError_access_load_New (l : Loc) (v : os.LinkError) (d
  by
   solve_pointsto_access_struct
 
-noncomputable instance LinkError_access_store_New (l : Loc) (v : os.LinkError) (New' : GoString) :
+noncomputable instance LinkError_access_store_New (l : Loc) (v : os.LinkError) (y : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.LinkError go!"New" l) v.New' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.LinkError go!"New" l) New' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with New' := New' } : os.LinkError) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.LinkError go!"New" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with New' := y } : os.LinkError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -454,11 +454,11 @@ noncomputable instance LinkError_access_load_Err (l : Loc) (v : os.LinkError) (d
  by
   solve_pointsto_access_struct
 
-noncomputable instance LinkError_access_store_Err (l : Loc) (v : os.LinkError) (Err' : GoError) :
+noncomputable instance LinkError_access_store_Err (l : Loc) (v : os.LinkError) (y : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.LinkError go!"Err" l) v.Err' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.LinkError go!"Err" l) Err' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Err' := Err' } : os.LinkError) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.LinkError go!"Err" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Err' := y } : os.LinkError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -518,11 +518,11 @@ noncomputable instance fileWithoutReadFrom_access_load_noReadFrom (l : Loc) (v :
  by
   solve_pointsto_access_struct
 
-noncomputable instance fileWithoutReadFrom_access_store_noReadFrom (l : Loc) (v : os.fileWithoutReadFrom) (noReadFrom' : os.noReadFrom) :
+noncomputable instance fileWithoutReadFrom_access_store_noReadFrom (l : Loc) (v : os.fileWithoutReadFrom) (y : os.noReadFrom) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.fileWithoutReadFrom go!"noReadFrom" l) v.noReadFrom' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.fileWithoutReadFrom go!"noReadFrom" l) noReadFrom' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with noReadFrom' := noReadFrom' } : os.fileWithoutReadFrom) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.fileWithoutReadFrom go!"noReadFrom" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with noReadFrom' := y } : os.fileWithoutReadFrom) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -534,11 +534,11 @@ noncomputable instance fileWithoutReadFrom_access_load_File (l : Loc) (v : os.fi
  by
   solve_pointsto_access_struct
 
-noncomputable instance fileWithoutReadFrom_access_store_File (l : Loc) (v : os.fileWithoutReadFrom) (File' : Loc) :
+noncomputable instance fileWithoutReadFrom_access_store_File (l : Loc) (v : os.fileWithoutReadFrom) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.fileWithoutReadFrom go!"File" l) v.File' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.fileWithoutReadFrom go!"File" l) File' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with File' := File' } : os.fileWithoutReadFrom) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.fileWithoutReadFrom go!"File" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with File' := y } : os.fileWithoutReadFrom) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -598,11 +598,11 @@ noncomputable instance fileWithoutWriteTo_access_load_noWriteTo (l : Loc) (v : o
  by
   solve_pointsto_access_struct
 
-noncomputable instance fileWithoutWriteTo_access_store_noWriteTo (l : Loc) (v : os.fileWithoutWriteTo) (noWriteTo' : os.noWriteTo) :
+noncomputable instance fileWithoutWriteTo_access_store_noWriteTo (l : Loc) (v : os.fileWithoutWriteTo) (y : os.noWriteTo) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.fileWithoutWriteTo go!"noWriteTo" l) v.noWriteTo' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.fileWithoutWriteTo go!"noWriteTo" l) noWriteTo' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with noWriteTo' := noWriteTo' } : os.fileWithoutWriteTo) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.fileWithoutWriteTo go!"noWriteTo" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with noWriteTo' := y } : os.fileWithoutWriteTo) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -614,11 +614,11 @@ noncomputable instance fileWithoutWriteTo_access_load_File (l : Loc) (v : os.fil
  by
   solve_pointsto_access_struct
 
-noncomputable instance fileWithoutWriteTo_access_store_File (l : Loc) (v : os.fileWithoutWriteTo) (File' : Loc) :
+noncomputable instance fileWithoutWriteTo_access_store_File (l : Loc) (v : os.fileWithoutWriteTo) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.fileWithoutWriteTo go!"File" l) v.File' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.fileWithoutWriteTo go!"File" l) File' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with File' := File' } : os.fileWithoutWriteTo) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.fileWithoutWriteTo go!"File" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with File' := y } : os.fileWithoutWriteTo) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -676,11 +676,11 @@ noncomputable instance unixDirent_access_load_parent (l : Loc) (v : os.unixDiren
  by
   solve_pointsto_access_struct
 
-noncomputable instance unixDirent_access_store_parent (l : Loc) (v : os.unixDirent) (parent' : GoString) :
+noncomputable instance unixDirent_access_store_parent (l : Loc) (v : os.unixDirent) (y : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.unixDirent go!"parent" l) v.parent' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.unixDirent go!"parent" l) parent' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with parent' := parent' } : os.unixDirent) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.unixDirent go!"parent" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with parent' := y } : os.unixDirent) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -692,11 +692,11 @@ noncomputable instance unixDirent_access_load_name (l : Loc) (v : os.unixDirent)
  by
   solve_pointsto_access_struct
 
-noncomputable instance unixDirent_access_store_name (l : Loc) (v : os.unixDirent) (name' : GoString) :
+noncomputable instance unixDirent_access_store_name (l : Loc) (v : os.unixDirent) (y : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.unixDirent go!"name" l) v.name' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.unixDirent go!"name" l) name' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with name' := name' } : os.unixDirent) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.unixDirent go!"name" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with name' := y } : os.unixDirent) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -708,11 +708,11 @@ noncomputable instance unixDirent_access_load_typ (l : Loc) (v : os.unixDirent) 
  by
   solve_pointsto_access_struct
 
-noncomputable instance unixDirent_access_store_typ (l : Loc) (v : os.unixDirent) (typ' : _root_.Perennial.io.fs.FileMode) :
+noncomputable instance unixDirent_access_store_typ (l : Loc) (v : os.unixDirent) (y : _root_.Perennial.io.fs.FileMode) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.unixDirent go!"typ" l) v.typ' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.unixDirent go!"typ" l) typ' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with typ' := typ' } : os.unixDirent) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.unixDirent go!"typ" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with typ' := y } : os.unixDirent) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -724,11 +724,11 @@ noncomputable instance unixDirent_access_load_info (l : Loc) (v : os.unixDirent)
  by
   solve_pointsto_access_struct
 
-noncomputable instance unixDirent_access_store_info (l : Loc) (v : os.unixDirent) (info' : _root_.Perennial.io.fs.FileInfo) :
+noncomputable instance unixDirent_access_store_info (l : Loc) (v : os.unixDirent) (y : _root_.Perennial.io.fs.FileInfo) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.unixDirent go!"info" l) v.info' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.unixDirent go!"info" l) info' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with info' := info' } : os.unixDirent) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.unixDirent go!"info" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with info' := y } : os.unixDirent) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -764,11 +764,11 @@ noncomputable instance rawConn_access_load_file (l : Loc) (v : os.rawConn) (dq :
  by
   solve_pointsto_access_struct
 
-noncomputable instance rawConn_access_store_file (l : Loc) (v : os.rawConn) (file' : Loc) :
+noncomputable instance rawConn_access_store_file (l : Loc) (v : os.rawConn) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.rawConn go!"file" l) v.file' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.rawConn go!"file" l) file' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with file' := file' } : os.rawConn) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.rawConn go!"file" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with file' := y } : os.rawConn) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -804,11 +804,11 @@ noncomputable instance Root_access_load_root (l : Loc) (v : os.Root) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-noncomputable instance Root_access_store_root (l : Loc) (v : os.Root) (root' : Loc) :
+noncomputable instance Root_access_store_root (l : Loc) (v : os.Root) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.Root go!"root" l) v.root' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.Root go!"root" l) root' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with root' := root' } : os.Root) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.Root go!"root" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with root' := y } : os.Root) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -848,11 +848,11 @@ noncomputable instance root_access_load_name (l : Loc) (v : os.root) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-noncomputable instance root_access_store_name (l : Loc) (v : os.root) (name' : GoString) :
+noncomputable instance root_access_store_name (l : Loc) (v : os.root) (y : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.root go!"name" l) v.name' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.root go!"name" l) name' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with name' := name' } : os.root) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.root go!"name" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with name' := y } : os.root) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -864,11 +864,11 @@ noncomputable instance root_access_load_mu (l : Loc) (v : os.root) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-noncomputable instance root_access_store_mu (l : Loc) (v : os.root) (mu' : _root_.Perennial.sync.Mutex) :
+noncomputable instance root_access_store_mu (l : Loc) (v : os.root) (y : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.root go!"mu" l) v.mu' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.root go!"mu" l) mu' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := mu' } : os.root) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.root go!"mu" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := y } : os.root) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -880,11 +880,11 @@ noncomputable instance root_access_load_fd (l : Loc) (v : os.root) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-noncomputable instance root_access_store_fd (l : Loc) (v : os.root) (fd' : w64) :
+noncomputable instance root_access_store_fd (l : Loc) (v : os.root) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.root go!"fd" l) v.fd' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.root go!"fd" l) fd' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with fd' := fd' } : os.root) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.root go!"fd" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with fd' := y } : os.root) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -896,11 +896,11 @@ noncomputable instance root_access_load_refs (l : Loc) (v : os.root) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-noncomputable instance root_access_store_refs (l : Loc) (v : os.root) (refs' : w64) :
+noncomputable instance root_access_store_refs (l : Loc) (v : os.root) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.root go!"refs" l) v.refs' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.root go!"refs" l) refs' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with refs' := refs' } : os.root) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.root go!"refs" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with refs' := y } : os.root) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -912,11 +912,11 @@ noncomputable instance root_access_load_closed (l : Loc) (v : os.root) (dq : DFr
  by
   solve_pointsto_access_struct
 
-noncomputable instance root_access_store_closed (l : Loc) (v : os.root) (closed' : Bool) :
+noncomputable instance root_access_store_closed (l : Loc) (v : os.root) (y : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.root go!"closed" l) v.closed' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.root go!"closed" l) closed' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with closed' := closed' } : os.root) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.root go!"closed" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with closed' := y } : os.root) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -952,11 +952,11 @@ noncomputable instance File_access_load_file (l : Loc) (v : os.File) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-noncomputable instance File_access_store_file (l : Loc) (v : os.File) (file' : Loc) :
+noncomputable instance File_access_store_file (l : Loc) (v : os.File) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef os.File go!"file" l) v.file' (DFrac.own 1))
-      (typedPointsto (structFieldRef os.File go!"file" l) file' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with file' := file' } : os.File) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef os.File go!"file" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with file' := y } : os.File) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

@@ -31,8 +31,8 @@ It does not read `rand`. Go returns `rand`'s read error, if any; the package's o
 `wp_Int` (`Perennial/Spec/crypto/rand/Int.lean`) is stated only for that reader. -/
 noncomputable def Int.impl : val :=
   λ: "rand" "max",
-    let: "abs" := ![math.big.nat.ty] (StructFieldRef math.big.Int'.ty go!"abs" "max") in
-    if: (![go.bool] (StructFieldRef math.big.Int'.ty go!"neg" "max")) ||
+    let: "abs" := ![math.big.nat.ty] (StructFieldRef math.big.Int''.ty go!"abs" "max") in
+    if: (![go.bool] (StructFieldRef math.big.Int''.ty go!"neg" "max")) ||
         (FuncResolve go.len [math.big.nat.ty] #() "abs" ≠⟨go.int⟩ #(W64 1))
     then Panic "crypto/rand: Int is modelled only for 0 < max < 2^63"
     else

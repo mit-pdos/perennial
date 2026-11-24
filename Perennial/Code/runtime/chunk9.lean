@@ -62,7 +62,7 @@ class mTraceState.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext]
   type_repr : go.TypeReprUnderlying mTraceState.underlying mTraceState
   underlying : go.UnderlyingDirectedEq mTraceState.ty mTraceState.underlying
   get_writing : ∀ (x : mTraceState), go.IsGoStepPureDetTagged under (StructFieldGet mTraceState.underlying go!"writing") #x (Val #(x.writing'))
-  set_writing : ∀ (x : mTraceState) (y : _root_.Perennial.internal.runtime.atomic.Bool'), go.IsGoStepPureDetTagged under (StructFieldSet mTraceState.underlying go!"writing") (PairV #x #y) (Val #(({ x with writing' := y } : mTraceState)))
+  set_writing : ∀ (x : mTraceState) (y : _root_.Perennial.internal.runtime.atomic.Bool''), go.IsGoStepPureDetTagged under (StructFieldSet mTraceState.underlying go!"writing") (PairV #x #y) (Val #(({ x with writing' := y } : mTraceState)))
   get_buf : ∀ (x : mTraceState), go.IsGoStepPureDetTagged under (StructFieldGet mTraceState.underlying go!"buf") #x (Val #(x.buf'))
   set_buf : ∀ (x : mTraceState) (y : (GoArray (GoArray Loc 2) 2)), go.IsGoStepPureDetTagged under (StructFieldSet mTraceState.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : mTraceState)))
   get_link : ∀ (x : mTraceState), go.IsGoStepPureDetTagged under (StructFieldGet mTraceState.underlying go!"link") #x (Val #(x.link'))

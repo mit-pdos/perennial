@@ -60,7 +60,7 @@ func (ctx *Ctx) typeDecl(spec *ast.TypeSpec) {
 				typeStr = glang.GenericTypeExpr{Params: params}
 			}
 			ctx.out.typeAliasDecls = append(ctx.out.typeAliasDecls, glang.AxiomDecl{
-				DeclName: glang.TypeImpl(glang.ToIdent(typeName)),
+				DeclName: glang.TypeImpl(typeName),
 				Type:     typeStr,
 			})
 		}
@@ -145,7 +145,7 @@ func (ctx *Ctx) namedTypeImplDecl(spec *ast.TypeSpec) (decls []glang.Decl) {
 	}
 
 	decl := glang.TypeDecl{
-		Name:       glang.TypeImpl(glang.ToIdent(typeName)),
+		Name:       glang.TypeImpl(typeName),
 		Body:       body,
 		TypeParams: ctx.typeParamList(spec.TypeParams),
 	}

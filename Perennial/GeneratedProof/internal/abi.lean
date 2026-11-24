@@ -244,7 +244,7 @@ noncomputable instance InterfaceSwitchCacheEntry_into_val_typed :
 end def_
 end InterfaceSwitchCacheEntry
 
-namespace TypeAssert'
+namespace TypeAssert''
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -252,16 +252,16 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance TypeAssert'_typed_pointsto :
-    TypedPointsto (GF := GF) internal.abi.TypeAssert' :=
+noncomputable instance TypeAssert_typed_pointsto :
+    TypedPointsto (GF := GF) internal.abi.TypeAssert'' :=
   sorry -- axiomatized type
 
-noncomputable instance TypeAssert'_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) internal.abi.TypeAssert' internal.abi.TypeAssert'.underlying :=
+noncomputable instance TypeAssert_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) internal.abi.TypeAssert'' internal.abi.TypeAssert''.underlying :=
   sorry -- axiomatized type
 
 end def_
-end TypeAssert'
+end TypeAssert''
 
 namespace TypeAssertCache
 section def_
@@ -358,7 +358,7 @@ noncomputable instance FuncID_into_val_typed :
 end def_
 end FuncID
 
-namespace Type'
+namespace «Type»
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -366,207 +366,207 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance Type'_typed_pointsto :
-    TypedPointsto (GF := GF) internal.abi.Type' where
+noncomputable instance Type_typed_pointsto :
+    TypedPointsto (GF := GF) internal.abi.«Type» where
   typedPointstoDef l v dq := iprop(
-    "Size_" ∷ typedPointsto (structFieldRef internal.abi.Type' go!"Size_" l) v.Size_' dq ∗
-    "PtrBytes" ∷ typedPointsto (structFieldRef internal.abi.Type' go!"PtrBytes" l) v.PtrBytes' dq ∗
-    "Hash" ∷ typedPointsto (structFieldRef internal.abi.Type' go!"Hash" l) v.Hash' dq ∗
-    "TFlag" ∷ typedPointsto (structFieldRef internal.abi.Type' go!"TFlag" l) v.TFlag' dq ∗
-    "Align_" ∷ typedPointsto (structFieldRef internal.abi.Type' go!"Align_" l) v.Align_' dq ∗
-    "FieldAlign_" ∷ typedPointsto (structFieldRef internal.abi.Type' go!"FieldAlign_" l) v.FieldAlign_' dq ∗
-    "Kind_" ∷ typedPointsto (structFieldRef internal.abi.Type' go!"Kind_" l) v.Kind_' dq ∗
-    "Equal" ∷ typedPointsto (structFieldRef internal.abi.Type' go!"Equal" l) v.Equal' dq ∗
-    "GCData" ∷ typedPointsto (structFieldRef internal.abi.Type' go!"GCData" l) v.GCData' dq ∗
-    "Str" ∷ typedPointsto (structFieldRef internal.abi.Type' go!"Str" l) v.Str' dq ∗
-    "PtrToThis" ∷ typedPointsto (structFieldRef internal.abi.Type' go!"PtrToThis" l) v.PtrToThis' dq ∗
+    "Size_" ∷ typedPointsto (structFieldRef internal.abi.«Type» go!"Size_" l) v.Size_' dq ∗
+    "PtrBytes" ∷ typedPointsto (structFieldRef internal.abi.«Type» go!"PtrBytes" l) v.PtrBytes' dq ∗
+    "Hash" ∷ typedPointsto (structFieldRef internal.abi.«Type» go!"Hash" l) v.Hash' dq ∗
+    "TFlag" ∷ typedPointsto (structFieldRef internal.abi.«Type» go!"TFlag" l) v.TFlag' dq ∗
+    "Align_" ∷ typedPointsto (structFieldRef internal.abi.«Type» go!"Align_" l) v.Align_' dq ∗
+    "FieldAlign_" ∷ typedPointsto (structFieldRef internal.abi.«Type» go!"FieldAlign_" l) v.FieldAlign_' dq ∗
+    "Kind_" ∷ typedPointsto (structFieldRef internal.abi.«Type» go!"Kind_" l) v.Kind_' dq ∗
+    "Equal" ∷ typedPointsto (structFieldRef internal.abi.«Type» go!"Equal" l) v.Equal' dq ∗
+    "GCData" ∷ typedPointsto (structFieldRef internal.abi.«Type» go!"GCData" l) v.GCData' dq ∗
+    "Str" ∷ typedPointsto (structFieldRef internal.abi.«Type» go!"Str" l) v.Str' dq ∗
+    "PtrToThis" ∷ typedPointsto (structFieldRef internal.abi.«Type» go!"PtrToThis" l) v.PtrToThis' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance Type'_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) internal.abi.Type' internal.abi.Type'.underlying := by
+noncomputable instance Type_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) internal.abi.«Type» internal.abi.«Type».underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance Type'_access_load_Size_ (l : Loc) (v : internal.abi.Type') (dq : DFrac) :
+noncomputable instance Type_access_load_Size_ (l : Loc) (v : internal.abi.«Type») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Size_" l) v.Size_' dq)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Size_" l) v.Size_' dq)
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Size_" l) v.Size_' dq)
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Size_" l) v.Size_' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type'_access_store_Size_ (l : Loc) (v : internal.abi.Type') (Size_' : w64) :
+noncomputable instance Type_access_store_Size_ (l : Loc) (v : internal.abi.«Type») (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Size_" l) v.Size_' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Size_" l) Size_' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Size_' := Size_' } : internal.abi.Type') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Size_" l) v.Size_' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Size_" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Size_' := y } : internal.abi.«Type») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type'_access_load_PtrBytes (l : Loc) (v : internal.abi.Type') (dq : DFrac) :
+noncomputable instance Type_access_load_PtrBytes (l : Loc) (v : internal.abi.«Type») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"PtrBytes" l) v.PtrBytes' dq)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"PtrBytes" l) v.PtrBytes' dq)
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"PtrBytes" l) v.PtrBytes' dq)
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"PtrBytes" l) v.PtrBytes' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type'_access_store_PtrBytes (l : Loc) (v : internal.abi.Type') (PtrBytes' : w64) :
+noncomputable instance Type_access_store_PtrBytes (l : Loc) (v : internal.abi.«Type») (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"PtrBytes" l) v.PtrBytes' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.abi.Type' go!"PtrBytes" l) PtrBytes' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with PtrBytes' := PtrBytes' } : internal.abi.Type') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"PtrBytes" l) v.PtrBytes' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"PtrBytes" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with PtrBytes' := y } : internal.abi.«Type») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type'_access_load_Hash (l : Loc) (v : internal.abi.Type') (dq : DFrac) :
+noncomputable instance Type_access_load_Hash (l : Loc) (v : internal.abi.«Type») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Hash" l) v.Hash' dq)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Hash" l) v.Hash' dq)
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Hash" l) v.Hash' dq)
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Hash" l) v.Hash' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type'_access_store_Hash (l : Loc) (v : internal.abi.Type') (Hash' : w32) :
+noncomputable instance Type_access_store_Hash (l : Loc) (v : internal.abi.«Type») (y : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Hash" l) v.Hash' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Hash" l) Hash' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Hash' := Hash' } : internal.abi.Type') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Hash" l) v.Hash' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Hash" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Hash' := y } : internal.abi.«Type») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type'_access_load_TFlag (l : Loc) (v : internal.abi.Type') (dq : DFrac) :
+noncomputable instance Type_access_load_TFlag (l : Loc) (v : internal.abi.«Type») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"TFlag" l) v.TFlag' dq)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"TFlag" l) v.TFlag' dq)
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"TFlag" l) v.TFlag' dq)
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"TFlag" l) v.TFlag' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type'_access_store_TFlag (l : Loc) (v : internal.abi.Type') (TFlag' : internal.abi.TFlag) :
+noncomputable instance Type_access_store_TFlag (l : Loc) (v : internal.abi.«Type») (y : internal.abi.TFlag) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"TFlag" l) v.TFlag' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.abi.Type' go!"TFlag" l) TFlag' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with TFlag' := TFlag' } : internal.abi.Type') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"TFlag" l) v.TFlag' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"TFlag" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with TFlag' := y } : internal.abi.«Type») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type'_access_load_Align_ (l : Loc) (v : internal.abi.Type') (dq : DFrac) :
+noncomputable instance Type_access_load_Align_ (l : Loc) (v : internal.abi.«Type») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Align_" l) v.Align_' dq)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Align_" l) v.Align_' dq)
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Align_" l) v.Align_' dq)
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Align_" l) v.Align_' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type'_access_store_Align_ (l : Loc) (v : internal.abi.Type') (Align_' : w8) :
+noncomputable instance Type_access_store_Align_ (l : Loc) (v : internal.abi.«Type») (y : w8) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Align_" l) v.Align_' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Align_" l) Align_' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Align_' := Align_' } : internal.abi.Type') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Align_" l) v.Align_' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Align_" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Align_' := y } : internal.abi.«Type») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type'_access_load_FieldAlign_ (l : Loc) (v : internal.abi.Type') (dq : DFrac) :
+noncomputable instance Type_access_load_FieldAlign_ (l : Loc) (v : internal.abi.«Type») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"FieldAlign_" l) v.FieldAlign_' dq)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"FieldAlign_" l) v.FieldAlign_' dq)
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"FieldAlign_" l) v.FieldAlign_' dq)
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"FieldAlign_" l) v.FieldAlign_' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type'_access_store_FieldAlign_ (l : Loc) (v : internal.abi.Type') (FieldAlign_' : w8) :
+noncomputable instance Type_access_store_FieldAlign_ (l : Loc) (v : internal.abi.«Type») (y : w8) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"FieldAlign_" l) v.FieldAlign_' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.abi.Type' go!"FieldAlign_" l) FieldAlign_' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with FieldAlign_' := FieldAlign_' } : internal.abi.Type') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"FieldAlign_" l) v.FieldAlign_' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"FieldAlign_" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with FieldAlign_' := y } : internal.abi.«Type») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type'_access_load_Kind_ (l : Loc) (v : internal.abi.Type') (dq : DFrac) :
+noncomputable instance Type_access_load_Kind_ (l : Loc) (v : internal.abi.«Type») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Kind_" l) v.Kind_' dq)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Kind_" l) v.Kind_' dq)
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Kind_" l) v.Kind_' dq)
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Kind_" l) v.Kind_' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type'_access_store_Kind_ (l : Loc) (v : internal.abi.Type') (Kind_' : internal.abi.Kind) :
+noncomputable instance Type_access_store_Kind_ (l : Loc) (v : internal.abi.«Type») (y : internal.abi.Kind) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Kind_" l) v.Kind_' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Kind_" l) Kind_' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Kind_' := Kind_' } : internal.abi.Type') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Kind_" l) v.Kind_' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Kind_" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Kind_' := y } : internal.abi.«Type») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type'_access_load_Equal (l : Loc) (v : internal.abi.Type') (dq : DFrac) :
+noncomputable instance Type_access_load_Equal (l : Loc) (v : internal.abi.«Type») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Equal" l) v.Equal' dq)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Equal" l) v.Equal' dq)
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Equal" l) v.Equal' dq)
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Equal" l) v.Equal' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type'_access_store_Equal (l : Loc) (v : internal.abi.Type') (Equal' : GoFunc) :
+noncomputable instance Type_access_store_Equal (l : Loc) (v : internal.abi.«Type») (y : GoFunc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Equal" l) v.Equal' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Equal" l) Equal' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Equal' := Equal' } : internal.abi.Type') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Equal" l) v.Equal' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Equal" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Equal' := y } : internal.abi.«Type») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type'_access_load_GCData (l : Loc) (v : internal.abi.Type') (dq : DFrac) :
+noncomputable instance Type_access_load_GCData (l : Loc) (v : internal.abi.«Type») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"GCData" l) v.GCData' dq)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"GCData" l) v.GCData' dq)
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"GCData" l) v.GCData' dq)
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"GCData" l) v.GCData' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type'_access_store_GCData (l : Loc) (v : internal.abi.Type') (GCData' : Loc) :
+noncomputable instance Type_access_store_GCData (l : Loc) (v : internal.abi.«Type») (y : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"GCData" l) v.GCData' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.abi.Type' go!"GCData" l) GCData' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with GCData' := GCData' } : internal.abi.Type') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"GCData" l) v.GCData' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"GCData" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with GCData' := y } : internal.abi.«Type») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type'_access_load_Str (l : Loc) (v : internal.abi.Type') (dq : DFrac) :
+noncomputable instance Type_access_load_Str (l : Loc) (v : internal.abi.«Type») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Str" l) v.Str' dq)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Str" l) v.Str' dq)
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Str" l) v.Str' dq)
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Str" l) v.Str' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type'_access_store_Str (l : Loc) (v : internal.abi.Type') (Str' : internal.abi.NameOff) :
+noncomputable instance Type_access_store_Str (l : Loc) (v : internal.abi.«Type») (y : internal.abi.NameOff) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Str" l) v.Str' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.abi.Type' go!"Str" l) Str' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Str' := Str' } : internal.abi.Type') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Str" l) v.Str' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"Str" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Str' := y } : internal.abi.«Type») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type'_access_load_PtrToThis (l : Loc) (v : internal.abi.Type') (dq : DFrac) :
+noncomputable instance Type_access_load_PtrToThis (l : Loc) (v : internal.abi.«Type») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"PtrToThis" l) v.PtrToThis' dq)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"PtrToThis" l) v.PtrToThis' dq)
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"PtrToThis" l) v.PtrToThis' dq)
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"PtrToThis" l) v.PtrToThis' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type'_access_store_PtrToThis (l : Loc) (v : internal.abi.Type') (PtrToThis' : internal.abi.TypeOff) :
+noncomputable instance Type_access_store_PtrToThis (l : Loc) (v : internal.abi.«Type») (y : internal.abi.TypeOff) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type' go!"PtrToThis" l) v.PtrToThis' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.abi.Type' go!"PtrToThis" l) PtrToThis' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with PtrToThis' := PtrToThis' } : internal.abi.Type') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"PtrToThis" l) v.PtrToThis' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.abi.«Type» go!"PtrToThis" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with PtrToThis' := y } : internal.abi.«Type») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 end def_
-end Type'
+end «Type»
 
 namespace TextOff
 section def_

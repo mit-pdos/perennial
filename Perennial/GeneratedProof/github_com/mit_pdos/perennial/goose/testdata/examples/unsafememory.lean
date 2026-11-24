@@ -51,11 +51,11 @@ noncomputable instance InBucket_access_load_root (l : Loc) (v : github_com.mit_p
  by
   solve_pointsto_access_struct
 
-noncomputable instance InBucket_access_store_root (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.InBucket) (root' : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid) :
+noncomputable instance InBucket_access_store_root (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.InBucket) (y : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.InBucket go!"root" l) v.root' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.InBucket go!"root" l) root' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with root' := root' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.InBucket) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.InBucket go!"root" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with root' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.InBucket) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -67,11 +67,11 @@ noncomputable instance InBucket_access_load_sequence (l : Loc) (v : github_com.m
  by
   solve_pointsto_access_struct
 
-noncomputable instance InBucket_access_store_sequence (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.InBucket) (sequence' : w64) :
+noncomputable instance InBucket_access_store_sequence (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.InBucket) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.InBucket go!"sequence" l) v.sequence' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.InBucket go!"sequence" l) sequence' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sequence' := sequence' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.InBucket) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.InBucket go!"sequence" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sequence' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.InBucket) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -115,11 +115,11 @@ noncomputable instance Meta_access_load_magic (l : Loc) (v : github_com.mit_pdos
  by
   solve_pointsto_access_struct
 
-noncomputable instance Meta_access_store_magic (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (magic' : w32) :
+noncomputable instance Meta_access_store_magic (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"magic" l) v.magic' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"magic" l) magic' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with magic' := magic' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"magic" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with magic' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -131,11 +131,11 @@ noncomputable instance Meta_access_load_version (l : Loc) (v : github_com.mit_pd
  by
   solve_pointsto_access_struct
 
-noncomputable instance Meta_access_store_version (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (version' : w32) :
+noncomputable instance Meta_access_store_version (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"version" l) v.version' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"version" l) version' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with version' := version' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"version" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with version' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -147,11 +147,11 @@ noncomputable instance Meta_access_load_pageSize (l : Loc) (v : github_com.mit_p
  by
   solve_pointsto_access_struct
 
-noncomputable instance Meta_access_store_pageSize (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (pageSize' : w32) :
+noncomputable instance Meta_access_store_pageSize (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"pageSize" l) v.pageSize' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"pageSize" l) pageSize' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pageSize' := pageSize' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"pageSize" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pageSize' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -163,11 +163,11 @@ noncomputable instance Meta_access_load_flags (l : Loc) (v : github_com.mit_pdos
  by
   solve_pointsto_access_struct
 
-noncomputable instance Meta_access_store_flags (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (flags' : w32) :
+noncomputable instance Meta_access_store_flags (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"flags" l) v.flags' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"flags" l) flags' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with flags' := flags' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"flags" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with flags' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -179,11 +179,11 @@ noncomputable instance Meta_access_load_root (l : Loc) (v : github_com.mit_pdos.
  by
   solve_pointsto_access_struct
 
-noncomputable instance Meta_access_store_root (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (root' : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.InBucket) :
+noncomputable instance Meta_access_store_root (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (y : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.InBucket) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"root" l) v.root' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"root" l) root' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with root' := root' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"root" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with root' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -195,11 +195,11 @@ noncomputable instance Meta_access_load_freelist (l : Loc) (v : github_com.mit_p
  by
   solve_pointsto_access_struct
 
-noncomputable instance Meta_access_store_freelist (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (freelist' : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid) :
+noncomputable instance Meta_access_store_freelist (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (y : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"freelist" l) v.freelist' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"freelist" l) freelist' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with freelist' := freelist' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"freelist" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with freelist' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -211,11 +211,11 @@ noncomputable instance Meta_access_load_pgid (l : Loc) (v : github_com.mit_pdos.
  by
   solve_pointsto_access_struct
 
-noncomputable instance Meta_access_store_pgid (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (pgid' : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid) :
+noncomputable instance Meta_access_store_pgid (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (y : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"pgid" l) v.pgid' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"pgid" l) pgid' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pgid' := pgid' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"pgid" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pgid' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -227,11 +227,11 @@ noncomputable instance Meta_access_load_txid (l : Loc) (v : github_com.mit_pdos.
  by
   solve_pointsto_access_struct
 
-noncomputable instance Meta_access_store_txid (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (txid' : w64) :
+noncomputable instance Meta_access_store_txid (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"txid" l) v.txid' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"txid" l) txid' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with txid' := txid' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"txid" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with txid' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -243,11 +243,11 @@ noncomputable instance Meta_access_load_checksum (l : Loc) (v : github_com.mit_p
  by
   solve_pointsto_access_struct
 
-noncomputable instance Meta_access_store_checksum (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (checksum' : w64) :
+noncomputable instance Meta_access_store_checksum (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"checksum" l) v.checksum' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"checksum" l) checksum' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with checksum' := checksum' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta go!"checksum" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with checksum' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -286,11 +286,11 @@ noncomputable instance Page_access_load_id (l : Loc) (v : github_com.mit_pdos.pe
  by
   solve_pointsto_access_struct
 
-noncomputable instance Page_access_store_id (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page) (id' : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid) :
+noncomputable instance Page_access_store_id (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page) (y : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page go!"id" l) v.id' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page go!"id" l) id' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with id' := id' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page go!"id" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with id' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -302,11 +302,11 @@ noncomputable instance Page_access_load_flags (l : Loc) (v : github_com.mit_pdos
  by
   solve_pointsto_access_struct
 
-noncomputable instance Page_access_store_flags (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page) (flags' : w16) :
+noncomputable instance Page_access_store_flags (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page) (y : w16) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page go!"flags" l) v.flags' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page go!"flags" l) flags' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with flags' := flags' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page go!"flags" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with flags' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -318,11 +318,11 @@ noncomputable instance Page_access_load_count (l : Loc) (v : github_com.mit_pdos
  by
   solve_pointsto_access_struct
 
-noncomputable instance Page_access_store_count (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page) (count' : w16) :
+noncomputable instance Page_access_store_count (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page) (y : w16) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page go!"count" l) v.count' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page go!"count" l) count' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with count' := count' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page go!"count" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with count' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -334,11 +334,11 @@ noncomputable instance Page_access_load_overflow (l : Loc) (v : github_com.mit_p
  by
   solve_pointsto_access_struct
 
-noncomputable instance Page_access_store_overflow (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page) (overflow' : w32) :
+noncomputable instance Page_access_store_overflow (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page go!"overflow" l) v.overflow' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page go!"overflow" l) overflow' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with overflow' := overflow' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page go!"overflow" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with overflow' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -377,11 +377,11 @@ noncomputable instance leafPageElement_access_load_flags (l : Loc) (v : github_c
  by
   solve_pointsto_access_struct
 
-noncomputable instance leafPageElement_access_store_flags (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement) (flags' : w32) :
+noncomputable instance leafPageElement_access_store_flags (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement go!"flags" l) v.flags' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement go!"flags" l) flags' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with flags' := flags' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement go!"flags" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with flags' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -393,11 +393,11 @@ noncomputable instance leafPageElement_access_load_pos (l : Loc) (v : github_com
  by
   solve_pointsto_access_struct
 
-noncomputable instance leafPageElement_access_store_pos (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement) (pos' : w32) :
+noncomputable instance leafPageElement_access_store_pos (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement go!"pos" l) v.pos' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement go!"pos" l) pos' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pos' := pos' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement go!"pos" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pos' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -409,11 +409,11 @@ noncomputable instance leafPageElement_access_load_ksize (l : Loc) (v : github_c
  by
   solve_pointsto_access_struct
 
-noncomputable instance leafPageElement_access_store_ksize (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement) (ksize' : w32) :
+noncomputable instance leafPageElement_access_store_ksize (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement go!"ksize" l) v.ksize' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement go!"ksize" l) ksize' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ksize' := ksize' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement go!"ksize" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ksize' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -425,11 +425,11 @@ noncomputable instance leafPageElement_access_load_vsize (l : Loc) (v : github_c
  by
   solve_pointsto_access_struct
 
-noncomputable instance leafPageElement_access_store_vsize (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement) (vsize' : w32) :
+noncomputable instance leafPageElement_access_store_vsize (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement go!"vsize" l) v.vsize' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement go!"vsize" l) vsize' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with vsize' := vsize' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement go!"vsize" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with vsize' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -467,11 +467,11 @@ noncomputable instance branchPageElement_access_load_pos (l : Loc) (v : github_c
  by
   solve_pointsto_access_struct
 
-noncomputable instance branchPageElement_access_store_pos (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement) (pos' : w32) :
+noncomputable instance branchPageElement_access_store_pos (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement go!"pos" l) v.pos' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement go!"pos" l) pos' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pos' := pos' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement go!"pos" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pos' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -483,11 +483,11 @@ noncomputable instance branchPageElement_access_load_ksize (l : Loc) (v : github
  by
   solve_pointsto_access_struct
 
-noncomputable instance branchPageElement_access_store_ksize (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement) (ksize' : w32) :
+noncomputable instance branchPageElement_access_store_ksize (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement go!"ksize" l) v.ksize' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement go!"ksize" l) ksize' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ksize' := ksize' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement go!"ksize" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ksize' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -499,11 +499,11 @@ noncomputable instance branchPageElement_access_load_pgid (l : Loc) (v : github_
  by
   solve_pointsto_access_struct
 
-noncomputable instance branchPageElement_access_store_pgid (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement) (pgid' : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid) :
+noncomputable instance branchPageElement_access_store_pgid (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement) (y : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement go!"pgid" l) v.pgid' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement go!"pgid" l) pgid' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pgid' := pgid' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement go!"pgid" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pgid' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -542,11 +542,11 @@ noncomputable instance inode_access_load_flags (l : Loc) (v : github_com.mit_pdo
  by
   solve_pointsto_access_struct
 
-noncomputable instance inode_access_store_flags (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode) (flags' : w32) :
+noncomputable instance inode_access_store_flags (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode go!"flags" l) v.flags' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode go!"flags" l) flags' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with flags' := flags' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode go!"flags" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with flags' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -558,11 +558,11 @@ noncomputable instance inode_access_load_pgid (l : Loc) (v : github_com.mit_pdos
  by
   solve_pointsto_access_struct
 
-noncomputable instance inode_access_store_pgid (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode) (pgid' : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid) :
+noncomputable instance inode_access_store_pgid (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode) (y : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode go!"pgid" l) v.pgid' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode go!"pgid" l) pgid' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pgid' := pgid' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode go!"pgid" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pgid' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -574,11 +574,11 @@ noncomputable instance inode_access_load_key (l : Loc) (v : github_com.mit_pdos.
  by
   solve_pointsto_access_struct
 
-noncomputable instance inode_access_store_key (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode) (key' : GoSlice) :
+noncomputable instance inode_access_store_key (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode) (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode go!"key" l) v.key' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode go!"key" l) key' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with key' := key' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode go!"key" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with key' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -590,11 +590,11 @@ noncomputable instance inode_access_load_value (l : Loc) (v : github_com.mit_pdo
  by
   solve_pointsto_access_struct
 
-noncomputable instance inode_access_store_value (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode) (value' : GoSlice) :
+noncomputable instance inode_access_store_value (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode) (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode go!"value" l) v.value' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode go!"value" l) value' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with value' := value' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode go!"value" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with value' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -631,11 +631,11 @@ noncomputable instance TxStats_access_load_PageCount (l : Loc) (v : github_com.m
  by
   solve_pointsto_access_struct
 
-noncomputable instance TxStats_access_store_PageCount (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.TxStats) (PageCount' : w64) :
+noncomputable instance TxStats_access_store_PageCount (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.TxStats) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.TxStats go!"PageCount" l) v.PageCount' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.TxStats go!"PageCount" l) PageCount' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with PageCount' := PageCount' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.TxStats) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.TxStats go!"PageCount" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with PageCount' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.TxStats) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -647,11 +647,11 @@ noncomputable instance TxStats_access_load_WriteTime (l : Loc) (v : github_com.m
  by
   solve_pointsto_access_struct
 
-noncomputable instance TxStats_access_store_WriteTime (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.TxStats) (WriteTime' : _root_.Perennial.time.Duration) :
+noncomputable instance TxStats_access_store_WriteTime (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.TxStats) (y : _root_.Perennial.time.Duration) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.TxStats go!"WriteTime" l) v.WriteTime' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.TxStats go!"WriteTime" l) WriteTime' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with WriteTime' := WriteTime' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.TxStats) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.TxStats go!"WriteTime" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with WriteTime' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.TxStats) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -694,11 +694,11 @@ noncomputable instance words_access_load_a (l : Loc) (v : github_com.mit_pdos.pe
  by
   solve_pointsto_access_struct
 
-noncomputable instance words_access_store_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (a' : w64) :
+noncomputable instance words_access_store_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"a" l) v.a' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"a" l) a' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with a' := a' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"a" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with a' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -710,11 +710,11 @@ noncomputable instance words_access_load_b (l : Loc) (v : github_com.mit_pdos.pe
  by
   solve_pointsto_access_struct
 
-noncomputable instance words_access_store_b (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (b' : w64) :
+noncomputable instance words_access_store_b (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"b" l) v.b' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"b" l) b' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with b' := b' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"b" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with b' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -726,11 +726,11 @@ noncomputable instance words_access_load_c (l : Loc) (v : github_com.mit_pdos.pe
  by
   solve_pointsto_access_struct
 
-noncomputable instance words_access_store_c (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (c' : w64) :
+noncomputable instance words_access_store_c (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"c" l) v.c' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"c" l) c' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with c' := c' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"c" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with c' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -742,11 +742,11 @@ noncomputable instance words_access_load_d (l : Loc) (v : github_com.mit_pdos.pe
  by
   solve_pointsto_access_struct
 
-noncomputable instance words_access_store_d (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (d' : w64) :
+noncomputable instance words_access_store_d (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"d" l) v.d' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"d" l) d' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with d' := d' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"d" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with d' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -758,11 +758,11 @@ noncomputable instance words_access_load_e (l : Loc) (v : github_com.mit_pdos.pe
  by
   solve_pointsto_access_struct
 
-noncomputable instance words_access_store_e (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (e' : w64) :
+noncomputable instance words_access_store_e (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"e" l) v.e' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"e" l) e' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with e' := e' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"e" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with e' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -774,11 +774,11 @@ noncomputable instance words_access_load_f (l : Loc) (v : github_com.mit_pdos.pe
  by
   solve_pointsto_access_struct
 
-noncomputable instance words_access_store_f (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (f' : w64) :
+noncomputable instance words_access_store_f (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"f" l) v.f' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"f" l) f' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with f' := f' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"f" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with f' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -790,11 +790,11 @@ noncomputable instance words_access_load_g (l : Loc) (v : github_com.mit_pdos.pe
  by
   solve_pointsto_access_struct
 
-noncomputable instance words_access_store_g (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (g' : w64) :
+noncomputable instance words_access_store_g (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"g" l) v.g' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"g" l) g' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with g' := g' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"g" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with g' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -806,11 +806,11 @@ noncomputable instance words_access_load_h (l : Loc) (v : github_com.mit_pdos.pe
  by
   solve_pointsto_access_struct
 
-noncomputable instance words_access_store_h (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (h' : w64) :
+noncomputable instance words_access_store_h (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"h" l) v.h' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"h" l) h' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with h' := h' } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words go!"h" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with h' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.words) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

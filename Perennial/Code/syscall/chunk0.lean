@@ -4280,7 +4280,7 @@ noncomputable def envs [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def copyenv [GooseExts] [GoGlobalContext] : GoString :=
   go!"syscall.copyenv"
 
-noncomputable def none' [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def none'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"syscall.none"
 
 noncomputable def slash [GooseExts] [GoGlobalContext] : GoString :=
@@ -5743,7 +5743,7 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 2 go.byte)))) (Pair (App (Val (GoInstruction (GlobalVarAddr slash))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 5 go.byte)))) (Pair (App (Val (GoInstruction (GlobalVarAddr none'))) (Val #())) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 5 go.byte)))) (Pair (App (Val (GoInstruction (GlobalVarAddr none''))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Pair (App (Val (GoInstruction (GlobalVarAddr copyenv))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
@@ -5757,7 +5757,7 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc copyenv (go.GoType.FunctionType (go.signature.Signature [] false [])))) (Val #()))))))
   (App (Val doExecute)
-  (App (Val (go.GlobalAlloc none' (go.GoType.ArrayType 5 go.byte))) (Val #()))))))
+  (App (Val (go.GlobalAlloc none'' (go.GoType.ArrayType 5 go.byte))) (Val #()))))))
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc slash (go.GoType.ArrayType 2 go.byte))) (Val #()))))))
   (App (Val doExecute)

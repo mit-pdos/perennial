@@ -26,7 +26,7 @@ class userArena.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   get_refs : ∀ (x : userArena), go.IsGoStepPureDetTagged under (StructFieldGet userArena.underlying go!"refs") #x (Val #(x.refs'))
   set_refs : ∀ (x : userArena) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet userArena.underlying go!"refs") (PairV #x #y) (Val #(({ x with refs' := y } : userArena)))
   get_defunct : ∀ (x : userArena), go.IsGoStepPureDetTagged under (StructFieldGet userArena.underlying go!"defunct") #x (Val #(x.defunct'))
-  set_defunct : ∀ (x : userArena) (y : _root_.Perennial.internal.runtime.atomic.Bool'), go.IsGoStepPureDetTagged under (StructFieldSet userArena.underlying go!"defunct") (PairV #x #y) (Val #(({ x with defunct' := y } : userArena)))
+  set_defunct : ∀ (x : userArena) (y : _root_.Perennial.internal.runtime.atomic.Bool''), go.IsGoStepPureDetTagged under (StructFieldSet userArena.underlying go!"defunct") (PairV #x #y) (Val #(({ x with defunct' := y } : userArena)))
   method_set : go.MethodSetIs userArena.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType userArena.ty) [(go!"runtime.alloc", (some (go.signature.Signature [(go.GoType.PointerType _type.ty), go.int] false [«unsafe».Pointer]))), (go!"runtime.free", (some (go.signature.Signature [] false []))), (go!"runtime.new", (some (go.signature.Signature [(go.GoType.PointerType _type.ty)] false [«unsafe».Pointer]))), (go!"runtime.refill", (some (go.signature.Signature [] false [(go.GoType.PointerType mspan.ty)]))), (go!"runtime.slice", (some (go.signature.Signature [go.any, go.int] false [])))]
 
