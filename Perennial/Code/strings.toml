@@ -1,7 +1,7 @@
 # The real Go is translated: Builder (but three methods, modelled), Join (over Builder), Compare
 # (over `bytealg.CompareString`, modelled in its package), HasPrefix and TrimPrefix (over
-# internal/stringslite's), and the rest of `translate`. `grow`'s `bytealg.MakeNoZero` is trusted in
-# its package. `TrimLeft` with its ASCII helpers (`trimLeftByte`, `makeASCIISet`,
+# internal/stringslite's), and the rest of `translate`. `grow`'s `bytealg.MakeNoZero` is a Go
+# model in its package. `TrimLeft` with its ASCII helpers (`trimLeftByte`, `makeASCIISet`,
 # `asciiSet.contains`, `trimLeftASCII`); its non-ASCII path, `trimLeftUnicode`, is not translated
 # (it reaches `IndexRune` and utf8 decoding): a call of `TrimLeft` with a cutset that is not all ASCII
 # has no proof. `LastIndex`, `IndexByte` and `Cut` (over internal/stringslite and internal/bytealg).
@@ -20,7 +20,13 @@ translate_types = true
 # least Go's behaviours. `Builder.String` (`unsafe.String`, which aliases the buffer),
 # `Builder.copyCheck` (an `unsafe.Pointer` converted to `*Builder`, which the semantics has no rule
 # for) and `Builder.Reset` (which must not store to the `addr` that `copyCheck`'s model makes
-# read-only); `Split` (`Count` and `Index`, which end in `internal/bytealg`'s assembly); `IndexRune`
+# read-only); `Split`. Goose translates the real `Split` (`genSplit`, `Count`, `Index`, `explode`),
+# but its spec could not keep today's statement: for any `s` with `len(s) = 2^63-1` the real
+# `genSplit(s, sep, 0, -1)` panics (`len(s)+1` overflows to `-2^63`, so `n > len(s)+1` holds for
+# every `n >= 1`, `n` becomes `-2^63` and `make([]string, n)` panics), and string values are not
+# bounded in the semantics (`len` only gives `< 2^63`), so the spec would need a new premise
+# `len(s) < 2^63-1`. gc cannot hold such a string (maxAlloc is 2^48). The model has no such
+# arithmetic; it is stuck on an empty `sep`. `IndexRune`
 # (its search for a non-ASCII rune is written with goto, which goose does not translate).
 [model]
 dir = "goose/model/overlay/strings"
