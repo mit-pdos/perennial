@@ -182,6 +182,17 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   valid; a length of `2^63` or more is not a Go type, and reaches `AngelicExit`). A size
   check needs the layout table, which R1 of `docs/design/unsafe-memory.md` adds for plain
   types only.
+- **Strings are no longer than the address space (trusted assumption).** `len(s)` of a
+  string longer than `maxAddr = 2^47` bytes is an `AngelicExit` (`internal_string_len_step`,
+  `Golang/Defn/String.lean`): a string's bytes are stored in memory, and gc on
+  linux/amd64 cannot build a longer one. The Go spec
+  bounds a string's length only by `int` (up to `2^63 - 1`). Witness: `strings.Repeat("a",
+  1<<47+1)` ends with `runtime: out of memory: cannot allocate 140737492549632-byte block`
+  (fatal), and `strings.Repeat("a", 1<<48+1)` panics with `makeslice: len out of range`;
+  nothing produces a string of `2^63 - 2` bytes, for which `strconv.Quote`'s
+  `len(s)+2` capacity would wrap. The exit removes only executions on strings no
+  implementation of this platform can produce. A heap byte slice gets the same bound from
+  allocation (`IsFresh`), not from an exit.
 - **Out of memory is outside the model.** The heap is bounded: every allocation lies in
   `(0, maxAddr]`, `maxAddr = 2^47` (`GooseLang/Lang.lean`; valid only for gc on
   linux/amd64, "Platform" above). When no free range is left, an allocation steps to itself forever
