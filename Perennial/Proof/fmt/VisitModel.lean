@@ -807,17 +807,22 @@ theorem wp_writeArbitrary
   · iexists s; iframe
   wp_for IH
   wp_apply wp_Choose as %c -
-  wp_if_destruct
-  · wp_apply (wp_chooseString wp_ChooseUint64) as %s' -
-    wp_apply wp_writeString $$ Hb as Hb
-    try wp_auto
-    wp_for_post
-    iexists (r ++ s')
-    simp only [List.append_assoc]
-    iframe
+  rcases c with _ | _ <;> simp only [intoVal_eq_iff, decide_false, decide_true,
+    Bool.false_eq_true, ↓reduceIte]
+  -- `false`: the loop ends
   · try wp_auto
     iapply HΦ
     iexists r
+    iframe
+  -- `true`: one more string
+  · try wp_auto
+    wp_apply (wp_chooseString wp_ChooseUint64) as %s' -
+    wp_apply wp_writeString $$ Hb as Hb
+    try wp_auto
+    wp_for_post
+    iframe
+    iexists (r ++ s')
+    simp only [List.append_assoc]
     iframe
 
 /-- `wp_writeArbitrary` of a buffer holding `bs` and some string after it. -/
