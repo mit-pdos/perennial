@@ -3,6 +3,7 @@ module
 
 public import Perennial.Proof.ProofPrelude
 public import Perennial.ManualProof.sync
+public import Perennial.GeneratedProof.internal.gomodel
 public import Perennial.GeneratedProof.internal.race
 public import Perennial.GeneratedProof.internal.sync
 public import Perennial.GeneratedProof.internal.synctest
@@ -1041,6 +1042,63 @@ noncomputable instance WaitGroup_access_store_sema (l : Loc) (v : sync.WaitGroup
 
 end def_
 end WaitGroup
+
+namespace poolModel
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : sync.Assumptions]
+
+noncomputable instance poolModel_typed_pointsto :
+    TypedPointsto (GF := GF) sync.poolModel where
+  typedPointstoDef l v dq := iprop(
+    "mu" ∷ typedPointsto (structFieldRef sync.poolModel go!"mu" l) v.mu' dq ∗
+    "items" ∷ typedPointsto (structFieldRef sync.poolModel go!"items" l) v.items' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance poolModel_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) sync.poolModel sync.poolModel.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance poolModel_access_load_mu (l : Loc) (v : sync.poolModel) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef sync.poolModel go!"mu" l) v.mu' dq)
+      (typedPointsto (structFieldRef sync.poolModel go!"mu" l) v.mu' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance poolModel_access_store_mu (l : Loc) (v : sync.poolModel) (mu' : sync.Mutex) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef sync.poolModel go!"mu" l) v.mu' (DFrac.own 1))
+      (typedPointsto (structFieldRef sync.poolModel go!"mu" l) mu' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := mu' } : sync.poolModel) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance poolModel_access_load_items (l : Loc) (v : sync.poolModel) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef sync.poolModel go!"items" l) v.items' dq)
+      (typedPointsto (structFieldRef sync.poolModel go!"items" l) v.items' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance poolModel_access_store_items (l : Loc) (v : sync.poolModel) (items' : GoSlice) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef sync.poolModel go!"items" l) v.items' (DFrac.own 1))
+      (typedPointsto (structFieldRef sync.poolModel go!"items" l) items' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with items' := items' } : sync.poolModel) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end poolModel
 
 namespace «struct#27ad43a3»
 section def_

@@ -3,6 +3,7 @@ module
 
 public import Perennial.Code.sync.atomic
 public import Perennial.Code.internal.sync
+public import Perennial.Code.internal.gomodel
 public import Perennial.Code.internal.race
 public import Perennial.Code.internal.synctest
 public import Perennial.Golang.Defn
@@ -119,6 +120,11 @@ noncomputable def WaitGroup.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync.WaitGroup" [])
 
 attribute [irreducible] WaitGroup.ty
+
+noncomputable def poolModel.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"sync.poolModel" [])
+
+attribute [irreducible] poolModel.ty
 
 @[reducible] noncomputable def «struct#27ad43a3».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"f" (go.GoType.FunctionType (go.signature.Signature [] false []))),
@@ -278,6 +284,12 @@ noncomputable def fatal [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def syscall_hasWaitingReaders [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync.syscall_hasWaitingReaders"
+
+noncomputable def poolModelOf [GooseExts] [GoGlobalContext] : GoString :=
+  go!"sync.poolModelOf"
+
+noncomputable def poolModelAt [GooseExts] [GoGlobalContext] : GoString :=
+  go!"sync.poolModelAt"
 
 /-- NewCond returns a new Cond with Locker l.
 
@@ -746,6 +758,127 @@ noncomputable def OnceValues.impl [GooseExts] [GoGlobalContext] (T1 T2 : go.GoTy
   (App (Val (GoInstruction (GoStore («struct#3b550fdf».underlying T1 T2)))) (Pair (Var "d") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [T1, T2]))))) (Var "$res0")))))
 
+/-- MODEL: Go's Put ignores nil and otherwise pins the goroutine to its P and
+    stores x in that P's private slot or pushes it onto the P's lock-free
+    shared chain; the GC later moves the per-P pools to the victim cache and
+    then drops them. Goose translates it, but the translation is stuck at
+    indexLocal's conversion of a uintptr back to an unsafe.Pointer (pointer
+    arithmetic) and at poolDequeue's store of an any through an
+    unsafe.Pointer to its eface; runtime_procPin, which keeps the goroutine on
+    its P, has no Go body. The model ignores nil as Go does, and otherwise
+    adds x to the pool's state or drops it (gomodel.Choose: the GC may drop it
+    in Go before any Get).
+
+    go: pool.go:62:16 -/
+noncomputable def Pool.Put.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Lam "x"
+  (Seq (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Pool.ty)))) (Var "p"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (Var "x"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Pool.ty)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve poolModelOf []))) (Val #())) (Var "$a0")))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType poolModel.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType poolModel.ty)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (App (Val (GoInstruction (StructFieldRef poolModel.ty go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType poolModel.ty)))) (Var "s"))))
+  (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.any)))) (LiteralValue [(KeyedElement none (ElementExpression go.any (Var "$sl0")))])))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.any)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef poolModel.ty go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType poolModel.ty)))) (Var "s")))) (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.any)))) (Pair (App (Val (GoInstruction (StructFieldRef poolModel.ty go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType poolModel.ty)))) (Var "s"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef poolModel.ty go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType poolModel.ty)))) (Var "s")))) (Val #()))))))
+  (If (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.Choose []))) (Val #())) (Val #()))
+  (App (Val doReturn)
+  (Val #()))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType poolModel.ty)))) (Pair (Var "s") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil)))))
+  (App (Val doReturn)
+  (Val #()))
+  (App (Val doExecute)
+  (Val #())))))))
+  (Val #()))))
+
+/-- MODEL: Go's Get pins the goroutine to its P and takes the P's private
+    value, else pops its shared chain, else steals from other Ps and the
+    victim cache (getSlow); if it found nothing and New is not nil, it returns
+    New(). Goose translates it but is stuck as for Put. The model's search
+    takes an arbitrary element of the pool's state or nothing, even when the
+    state is not empty (gomodel.Choose: Go's search may miss values in other
+    Ps' chains or dropped by the GC, and gomodel.ChooseUint64: which value it
+    finds); the rest, calling New, is Go's.
+
+    go: pool.go:83:16 -/
+noncomputable def Pool.Get.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Pool.ty)))) (Var "p"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Pool.ty)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve poolModelOf []))) (Val #())) (Var "$a0")))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType poolModel.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType poolModel.ty)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (App (Val (GoInstruction (StructFieldRef poolModel.ty go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType poolModel.ty)))) (Var "s"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.any)]))) (Val #())) (Var "$a0"))))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil)))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.FunctionType (go.signature.Signature [] false [go.any]))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [go.any]))))) (App (Val (GoInstruction (StructFieldRef Pool.ty go!"New"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Pool.ty)))) (Var "p")))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.FunctionType (go.signature.Signature [] false [go.any]))))) (Val UntypedNil))))) (Val #false)))
+  (Let "$r0" (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [go.any]))))) (App (Val (GoInstruction (StructFieldRef Pool.ty go!"New"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Pool.ty)))) (Var "p")))) (Val #()))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "x") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef poolModel.ty go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType poolModel.ty)))) (Var "s")))) (Val #()))))))
+  (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n")) (Val #(W64 0))))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.Choose []))) (Val #())) (Val #()))) (Val #false))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.ChooseUint64 []))) (Val #())) (Val #())) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n"))))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.any))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.any)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (App (Val (GoInstruction (StructFieldRef poolModel.ty go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType poolModel.ty)))) (Var "s")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.any))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.any)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (App (Val (GoInstruction (StructFieldRef poolModel.ty go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType poolModel.ty)))) (Var "s")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n")) (Val #(W64 1))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (App (Val (GoInstruction (StructFieldRef poolModel.ty go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType poolModel.ty)))) (Var "s"))))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.any)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n")) (Val #(W64 1)))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.any)))) (Pair (App (Val (GoInstruction (StructFieldRef poolModel.ty go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType poolModel.ty)))) (Var "s"))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.any)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (App (Val (GoInstruction (StructFieldRef poolModel.ty go!"items"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType poolModel.ty)))) (Var "s")))) (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "x") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "n") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef poolModel.ty go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType poolModel.ty)))) (Var "s")))) (Val #())))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType poolModel.ty)))) (Pair (Var "s") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.any))) (Var "$res0"))))))
+
 /-- go: pool.go:296:6 -/
 noncomputable def init.«0».impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -753,6 +886,285 @@ noncomputable def init.«0».impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (FuncResolve poolCleanup []))) (Val #()))
   (App (App (Val (GoInstruction (FuncResolve runtime_registerPoolCleanup []))) (Val #())) (Var "$a0")))))
+  (Val #())))
+
+/-- MODEL: Go's runtime_registerPoolCleanup (a runtime push linkname, no Go
+    body) records poolCleanup for the GC to call at the start of each cycle;
+    poolCleanup moves the per-P pools to the victim cache. The model has no GC,
+    and its pools' state is not in the per-P pools, which only the replaced
+    Get and Put used, so recording it changes nothing.
+
+    go: pool.go:106:6 -/
+noncomputable def runtime_registerPoolCleanup.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "cleanup"
+  (Seq (App (Val exceptionDo)
+  (Let "cleanup" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "cleanup"))
+  (App (Val doExecute)
+  (Val #()))))
+  (Val #())))
+
+/-- MODEL: Go's runtime_Semacquire (runtime/sema.go, semacquire1) waits until
+    *s > 0 and decrements it, trying first
+
+    	func cansemacquire(addr *uint32) bool {
+    		for {
+    			v := atomic.Load(addr)
+    			if v == 0 {
+    				return false
+    			}
+    			if atomic.Cas(addr, v, v-1) {
+    				return true
+    			}
+    		}
+    	}
+
+    and, while that fails, parking on a queue that runtime_Semrelease wakes. The
+    model is cansemacquire's loop, retried until it succeeds: it returns exactly
+    when it has decremented a positive *s, as Go's does; a model goroutine
+    spinning where Go's parks is a schedule with the same results (the queue
+    only orders the waiters). A goroutine that never acquires spins forever
+    where Go's parks forever: spinning for parking is partial correctness, and
+    Go's deadlock detector (a global deadlock becomes the fatal throw "all
+    goroutines are asleep") is not modelled (docs/KNOWN_LIMITATIONS.md).
+
+    go: runtime.go:36:6 -/
+noncomputable def runtime_Semacquire.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Seq (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint32)))) (Var "s"))
+  (App (App (App (Val doFor) (Lam BAnon
+  (Val #true))) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint32)))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.LoadUint32 []))) (Val #())) (Var "$a0")))
+  (Let "v" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint32)))) (Var "s"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "v"))
+  (Let "$a2" (App (Val (GoInstruction (GoOp GoSub go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "v")) (Val #(W32 1))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.CompareAndSwapUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (Val doReturn)
+  (Val #()))
+  (App (Val doExecute)
+  (Val #())))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "v")) (Val #(W32 0)))))
+  (App (Val doContinue) (Val #()))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "v") (Var "$r0")))))))))
+  (Lam BAnon
+  (Val #())))))
+  (Val #())))
+
+/-- MODEL: as runtime_Semacquire: Go's differs only in the reason it reports
+    for a parked goroutine and in synctest's durable blocking, which the model
+    does not observe.
+
+    go: runtime.go:51:6 -/
+noncomputable def runtime_SemacquireWaitGroup.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Lam "synctestDurable"
+  (Seq (App (Val exceptionDo)
+  (Let "synctestDurable" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "synctestDurable"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint32)))) (Var "s"))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint32)))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve runtime_Semacquire []))) (Val #())) (Var "$a0")))))))
+  (Val #()))))
+
+/-- MODEL: as runtime_Semacquire: lifo and skipframes only order the waiters
+    and select the profiled stack frames.
+
+    go: runtime.go:57:6 -/
+noncomputable def runtime_SemacquireRWMutexR.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Lam "lifo"
+  (Lam "skipframes"
+  (Seq (App (Val exceptionDo)
+  (Let "skipframes" (App (Val (GoInstruction (GoAlloc go.int))) (Var "skipframes"))
+  (Let "lifo" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "lifo"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint32)))) (Var "s"))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint32)))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve runtime_Semacquire []))) (Val #())) (Var "$a0"))))))))
+  (Val #())))))
+
+/-- MODEL: as runtime_Semacquire (see runtime_SemacquireRWMutexR).
+
+    go: runtime.go:62:6 -/
+noncomputable def runtime_SemacquireRWMutex.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Lam "lifo"
+  (Lam "skipframes"
+  (Seq (App (Val exceptionDo)
+  (Let "skipframes" (App (Val (GoInstruction (GoAlloc go.int))) (Var "skipframes"))
+  (Let "lifo" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "lifo"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint32)))) (Var "s"))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint32)))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve runtime_Semacquire []))) (Val #())) (Var "$a0"))))))))
+  (Val #())))))
+
+/-- MODEL: Go's runtime_Semrelease (semrelease1) atomically increments *s and
+    wakes a waiter if there is one (handing it the count directly if handoff);
+    the model's waiters spin, so it is the increment.
+
+    go: runtime.go:69:6 -/
+noncomputable def runtime_Semrelease.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Lam "handoff"
+  (Lam "skipframes"
+  (Seq (App (Val exceptionDo)
+  (Let "skipframes" (App (Val (GoInstruction (GoAlloc go.int))) (Var "skipframes"))
+  (Let "handoff" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "handoff"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint32)))) (Var "s"))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint32)))) (Var "s"))
+  (Let "$a1" (Val #(W32 1))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.AddUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))
+  (Val #())))))
+
+/-- MODEL: Go's runtime_notifyListAdd (runtime/sema.go, notifyListAdd) is
+
+    	return l.wait.Add(1) - 1
+
+    the next ticket of the list, taken atomically; the model is the same over
+    sync/atomic (wait is the runtime's atomic.Uint32, a uint32 in sync's copy of
+    the type).
+
+    go: runtime.go:80:6 -/
+noncomputable def runtime_notifyListAdd.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "l"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType notifyList.ty)))) (Var "l"))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.uint32))) (Pair (Let "$a0" (App (Val (GoInstruction (StructFieldRef notifyList.ty go!"wait"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType notifyList.ty)))) (Var "l")))
+  (Let "$a1" (Val #(W32 1))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.AddUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W32 1))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.uint32))) (Var "$res0")))))
+
+/-- MODEL: Go's runtime_notifyListWait (notifyListWait) returns at once if
+    ticket t has been notified, less(t, l.notify) with
+
+    	func less(a, b uint32) bool {
+    		return int32(a-b) < 0
+    	}
+
+    and otherwise parks until a notify call readies it, which the notify calls
+    do exactly when they advance l.notify past t (NotifyOne readies the waiter
+    whose ticket is the old l.notify, NotifyAll every waiter). The model spins
+    on the same test, reading l.notify atomically: it returns exactly when Go's
+    can. A goroutine that is never notified spins forever where Go's parks
+    forever: spinning for parking is partial correctness, and Go's deadlock
+    detector (a global deadlock becomes the fatal throw "all goroutines are
+    asleep") is not modelled (docs/KNOWN_LIMITATIONS.md).
+
+    go: runtime.go:99:6 -/
+noncomputable def runtime_notifyListWait.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "l"
+  (Lam "t"
+  (Seq (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "t"))
+  (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType notifyList.ty)))) (Var "l"))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoGe go.int32))) (Pair (App (Val (GoInstruction (Convert go.uint32 go.int32))) (App (Val (GoInstruction (GoOp GoSub go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "t")) (Let "$a0" (App (Val (GoInstruction (StructFieldRef notifyList.ty go!"notify"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType notifyList.ty)))) (Var "l")))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.LoadUint32 []))) (Val #())) (Var "$a0")))))) (Val #(W32 0)))))) (Lam BAnon
+  (App (Val doExecute)
+  (Val #()))))
+  (Lam BAnon
+  (Val #()))))))
+  (Val #()))))
+
+/-- MODEL: Go's runtime_notifyListNotifyAll (notifyListNotifyAll) returns if
+    l.wait == l.notify (no waiter), and otherwise, under the list's lock, sets
+    l.notify to l.wait and readies every parked waiter. The model reads both and
+    sets l.notify with a compare-and-swap, retried if l.notify changed in
+    between: the store linearizes at the compare-and-swap, as Go's does under
+    the lock (the lock only orders the notify calls, which the compare-and-swap
+    also does). The waiters are readied by the new l.notify (see
+    runtime_notifyListWait).
+
+    go: runtime.go:112:6 -/
+noncomputable def runtime_notifyListNotifyAll.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "l"
+  (Seq (App (Val exceptionDo)
+  (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType notifyList.ty)))) (Var "l"))
+  (App (App (App (Val doFor) (Lam BAnon
+  (Val #true))) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef notifyList.ty go!"notify"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType notifyList.ty)))) (Var "l")))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.LoadUint32 []))) (Val #())) (Var "$a0")))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef notifyList.ty go!"wait"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType notifyList.ty)))) (Var "l")))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.LoadUint32 []))) (Val #())) (Var "$a0")))
+  (Let "w" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (If (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "n")) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "w")))) (Val #true) (Let "$a0" (App (Val (GoInstruction (StructFieldRef notifyList.ty go!"notify"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType notifyList.ty)))) (Var "l")))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "n"))
+  (Let "$a2" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "w"))
+  (App (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.CompareAndSwapUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))
+  (App (Val doReturn)
+  (Val #()))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "w") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "n") (Var "$r0")))))))))
+  (Lam BAnon
+  (Val #())))))
+  (Val #())))
+
+/-- MODEL: Go's runtime_notifyListNotifyOne (notifyListNotifyOne) returns if
+    l.wait == l.notify (no waiter), and otherwise, under the list's lock,
+    increments l.notify and readies the waiter holding the old value as its
+    ticket, if it has parked yet (if not, its Wait sees the ticket notified and
+    returns at once). The model is the same increment by compare-and-swap,
+    retried if l.notify changed in between (as for NotifyAll).
+
+    go: runtime.go:128:6 -/
+noncomputable def runtime_notifyListNotifyOne.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "l"
+  (Seq (App (Val exceptionDo)
+  (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType notifyList.ty)))) (Var "l"))
+  (App (App (App (Val doFor) (Lam BAnon
+  (Val #true))) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef notifyList.ty go!"notify"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType notifyList.ty)))) (Var "l")))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.LoadUint32 []))) (Val #())) (Var "$a0")))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (If (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "n")) (Let "$a0" (App (Val (GoInstruction (StructFieldRef notifyList.ty go!"wait"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType notifyList.ty)))) (Var "l")))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.LoadUint32 []))) (Val #())) (Var "$a0"))))) (Val #true) (Let "$a0" (App (Val (GoInstruction (StructFieldRef notifyList.ty go!"notify"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType notifyList.ty)))) (Var "l")))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "n"))
+  (Let "$a2" (App (Val (GoInstruction (GoOp GoPlus go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "n")) (Val #(W32 1))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.CompareAndSwapUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))
+  (App (Val doReturn)
+  (Val #()))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "n") (Var "$r0")))))))))
+  (Lam BAnon
+  (Val #())))))
+  (Val #())))
+
+/-- MODEL: Go's runtime_notifyListCheck throws if size is not the runtime's
+    size of notifyList; the type is the real one, so its size is the runtime's,
+    and the check passes.
+
+    go: runtime.go:140:6 -/
+noncomputable def runtime_notifyListCheck.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "size"
+  (Seq (App (Val exceptionDo)
+  (Let "size" (App (Val (GoInstruction (GoAlloc go.uintptr))) (Var "size"))
+  (App (Val doExecute)
+  (Val #()))))
   (Val #())))
 
 /-- go: runtime.go:53:6 -/
@@ -1574,8 +1986,47 @@ noncomputable def WaitGroup.Go.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType WaitGroup.ty) go!"Add"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))) (Var "$a0"))))))))
   (Val #()))))
 
+/-- poolModelOf returns the state of the pool p, installing a new, empty one on
+    first use: p.local is nil in a zero Pool, and only this function writes it,
+    with a compare-and-swap from nil, so that racing first calls of Get and Put
+    agree on one state.
+
+    go: pool.go:32:6 -/
+noncomputable def poolModelOf.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType poolModel.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType poolModel.ty)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Pool.ty)))) (Var "p"))
+  (App (App (App (Val doFor) (Lam BAnon
+  (Val #true))) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Pool.ty go!"local"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Pool.ty)))) (Var "p")))
+  (Let "$a1" (App (Val (GoInstruction (Convert go.untypedNil «unsafe».Pointer))) (Val UntypedNil))
+  (Let "$a2" (App (Val (GoInstruction (Convert (go.GoType.PointerType poolModel.ty) «unsafe».Pointer))) (App (Val (GoInstruction (GoAlloc poolModel.ty))) (App (Val (GoInstruction (GoZeroVal poolModel.ty))) (Val #()))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.CompareAndSwapPointer []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Pool.ty go!"local"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Pool.ty)))) (Var "p")))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.LoadPointer []))) (Val #())) (Var "$a0")))
+  (Let "l" (App (Val (GoInstruction (GoAlloc «unsafe».Pointer))) (App (Val (GoInstruction (GoZeroVal «unsafe».Pointer))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals «unsafe».Pointer))) (Pair (App (Val (GoInstruction (GoLoad «unsafe».Pointer))) (Var "l")) (App (Val (GoInstruction (Convert go.untypedNil «unsafe».Pointer))) (Val UntypedNil))))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad «unsafe».Pointer))) (Var "l"))
+  (App (App (Val (GoInstruction (FuncResolve poolModelAt []))) (Val #())) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType poolModel.ty)))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore «unsafe».Pointer))) (Pair (Var "l") (Var "$r0"))))))))))
+  (Lam BAnon
+  (Val #())))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType poolModel.ty)))) (Var "$res0")))))
+
 noncomputable instance info' : PkgInfo pkg_id.sync where
-  pkgImportedPkgs := [pkg_id.sync.atomic, pkg_id.internal.sync, pkg_id.internal.race, pkg_id.internal.synctest]
+  pkgImportedPkgs := [pkg_id.sync.atomic, pkg_id.internal.sync, pkg_id.internal.gomodel, pkg_id.internal.race, pkg_id.internal.synctest]
 
 opaque «_».init [GooseExts] [GoGlobalContext] : val
 
@@ -1583,6 +2034,7 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.sync)) (Lam BAnon
   (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1596,6 +2048,8 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.sync.atomic.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.internal.sync.initialize') (Val #()))))))
+  (App (Val doExecute)
+  (App (Val _root_.Perennial.internal.gomodel.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.internal.race.initialize') (Val #()))))))
   (App (Val doExecute)
@@ -2368,6 +2822,47 @@ attribute [instance] WaitGroup.TypeAssumptions.type_repr
   WaitGroup.TypeAssumptions.ptr_Go_unfold
   WaitGroup.TypeAssumptions.ptr_Wait_unfold
 
+structure poolModel [GooseExts] where
+  mk ::
+  mu' : Mutex
+  items' : GoSlice
+
+noncomputable instance poolModel.zero_val [GooseExts] : ZeroVal poolModel :=
+  ⟨poolModel.mk zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def poolModel.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"mu" Mutex.ty),
+(go.field_decl.FieldDecl go!"items" (go.GoType.SliceType go.any))]
+
+@[irreducible] noncomputable def poolModel.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  poolModel.fieldsUnsealed
+
+noncomputable instance equals_unfold_poolModel [GooseExts] [GoGlobalContext] :
+    EqualsUnfold poolModel.fields poolModel.fieldsUnsealed :=
+  ⟨by unfold poolModel.fields; rfl⟩
+
+@[reducible] noncomputable def poolModel.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType poolModel.fields)
+
+class poolModel.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying poolModel.underlying poolModel
+  underlying : go.UnderlyingDirectedEq poolModel.ty poolModel.underlying
+  get_mu : ∀ (x : poolModel), go.IsGoStepPureDetTagged under (StructFieldGet poolModel.underlying go!"mu") #x (Val #(x.mu'))
+  set_mu : ∀ (x : poolModel) (y : Mutex), go.IsGoStepPureDetTagged under (StructFieldSet poolModel.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : poolModel)))
+  get_items : ∀ (x : poolModel), go.IsGoStepPureDetTagged under (StructFieldGet poolModel.underlying go!"items") #x (Val #(x.items'))
+  set_items : ∀ (x : poolModel) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet poolModel.underlying go!"items") (PairV #x #y) (Val #(({ x with items' := y } : poolModel)))
+  method_set : go.MethodSetIs poolModel.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType poolModel.ty) []
+
+attribute [instance] poolModel.TypeAssumptions.type_repr
+  poolModel.TypeAssumptions.underlying
+  poolModel.TypeAssumptions.get_mu
+  poolModel.TypeAssumptions.set_mu
+  poolModel.TypeAssumptions.get_items
+  poolModel.TypeAssumptions.set_items
+  poolModel.TypeAssumptions.method_set
+  poolModel.TypeAssumptions.ptr_method_set
+
 structure «struct#27ad43a3» [GooseExts] where
   mk ::
   f' : GoFunc
@@ -2496,6 +2991,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   RWMutex_instance : RWMutex.TypeAssumptions
   rlocker_instance : rlocker.TypeAssumptions
   WaitGroup_instance : WaitGroup.TypeAssumptions
+  poolModel_instance : poolModel.TypeAssumptions
   «struct#27ad43a3_instance» : «struct#27ad43a3».TypeAssumptions
   «struct#a4b331e8_instance» : «struct#a4b331e8».TypeAssumptions
   «struct#3b550fdf_instance» : «struct#3b550fdf».TypeAssumptions
@@ -2516,8 +3012,11 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   runtime_notifyListNotifyOne_unfold : FuncUnfold runtime_notifyListNotifyOne [] runtime_notifyListNotifyOne.impl
   runtime_notifyListCheck_unfold : FuncUnfold runtime_notifyListCheck [] runtime_notifyListCheck.impl
   «init.1_unfold» : FuncUnfold init.«1» [] init.«1».impl
+  poolModelOf_unfold : FuncUnfold poolModelOf [] poolModelOf.impl
+  poolModelAt_unfold : FuncUnfold poolModelAt [] poolModelAt.impl
   import_atomic_Assumption : _root_.Perennial.sync.atomic.Assumptions
   import_sync_Assumption : _root_.Perennial.internal.sync.Assumptions
+  import_gomodel_Assumption : _root_.Perennial.internal.gomodel.Assumptions
   import_race_Assumption : _root_.Perennial.internal.race.Assumptions
   import_synctest_Assumption : _root_.Perennial.internal.synctest.Assumptions
 
@@ -2540,6 +3039,7 @@ attribute [instance] Assumptions.Cond_instance
   Assumptions.RWMutex_instance
   Assumptions.rlocker_instance
   Assumptions.WaitGroup_instance
+  Assumptions.poolModel_instance
   Assumptions.«struct#27ad43a3_instance»
   Assumptions.«struct#a4b331e8_instance»
   Assumptions.«struct#3b550fdf_instance»
@@ -2560,8 +3060,11 @@ attribute [instance] Assumptions.Cond_instance
   Assumptions.runtime_notifyListNotifyOne_unfold
   Assumptions.runtime_notifyListCheck_unfold
   Assumptions.«init.1_unfold»
+  Assumptions.poolModelOf_unfold
+  Assumptions.poolModelAt_unfold
   Assumptions.import_atomic_Assumption
   Assumptions.import_sync_Assumption
+  Assumptions.import_gomodel_Assumption
   Assumptions.import_race_Assumption
   Assumptions.import_synctest_Assumption
 

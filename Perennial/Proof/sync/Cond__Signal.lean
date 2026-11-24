@@ -34,7 +34,7 @@ theorem sync.Cond.Signal.wp_proof
   iNamed H
   wp_auto
   wp_apply wp_copyChecker_check $$ [$Hchecker]
-  wp_apply wp_runtime_notifyListNotifyOne $$ [$Hnotify] with _
+  wp_apply wp_runtime_notifyListNotifyOne $$ [$Hnotify]
   wp_end
 
 end proof

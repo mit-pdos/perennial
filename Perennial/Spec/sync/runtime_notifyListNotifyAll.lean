@@ -23,10 +23,10 @@ variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
 abbrev sync.runtime_notifyListNotifyAll.spec : Prop :=
-  ∀ (l : Loc) (l_v : notifyList) (dq : DFrac),
-    {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ typedPointsto (GF := GF) l l_v dq }}
+  ∀ (l : Loc),
+    {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isNotifyList (GF := GF) l }}
       (App (Val (@! runtime_notifyListNotifyAll)) (Val #l))
-    {{ RET #(); typedPointsto (GF := GF) l l_v dq }}
+    {{ RET #(); True }}
 
 end spec
 
