@@ -8,18 +8,26 @@ module
 public import Perennial.Proof.errors.Link
 public import Perennial.Proof.internal.strconv.Link
 public import Perennial.Proof.internal.stringslite.Link
+public import Perennial.Proof.strconv.AppendQuote
 public import Perennial.Proof.strconv.Atoi
 public import Perennial.Proof.strconv.FormatBool
 public import Perennial.Proof.strconv.FormatInt
 public import Perennial.Proof.strconv.FormatUint
+public import Perennial.Proof.strconv.IsPrint
 public import Perennial.Proof.strconv.Itoa
 public import Perennial.Proof.strconv.ParseBool
 public import Perennial.Proof.strconv.ParseInt
 public import Perennial.Proof.strconv.ParseUint
+public import Perennial.Proof.strconv.Quote
+public import Perennial.Proof.strconv.appendEscapedRune
+public import Perennial.Proof.strconv.appendQuotedWith
+public import Perennial.Proof.strconv.bsearch
 public import Perennial.Proof.strconv.initialize
+public import Perennial.Proof.strconv.quoteWith
 public import Perennial.Proof.strconv.rangeError
 public import Perennial.Proof.strconv.syntaxError
 public import Perennial.Proof.strconv.toError
+public import Perennial.Proof.unicode.utf8.Link
 
 @[expose] public section
 
@@ -33,6 +41,21 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : strconv.Assumptions]
+
+theorem strconv.wp_bsearch : strconv.bsearch.spec (GF := GF) (hG := hG) :=
+  strconv.bsearch.wp_proof
+
+theorem strconv.wp_IsPrint : strconv.IsPrint.spec (GF := GF) (hG := hG) :=
+  strconv.IsPrint.wp_proof strconv.wp_bsearch
+
+theorem strconv.wp_appendEscapedRune : strconv.appendEscapedRune.spec (GF := GF) (hG := hG) :=
+  strconv.appendEscapedRune.wp_proof strconv.wp_IsPrint unicode.utf8.wp_AppendRune unicode.utf8.wp_ValidRune
+
+theorem strconv.wp_appendQuotedWith : strconv.appendQuotedWith.spec (GF := GF) (hG := hG) :=
+  strconv.appendQuotedWith.wp_proof strconv.wp_appendEscapedRune unicode.utf8.wp_DecodeRuneInString
+
+theorem strconv.wp_AppendQuote : strconv.AppendQuote.spec (GF := GF) (hG := hG) :=
+  strconv.AppendQuote.wp_proof strconv.wp_appendQuotedWith
 
 theorem strconv.wp_syntaxError : strconv.syntaxError.spec (GF := GF) (hG := hG) :=
   strconv.syntaxError.wp_proof internal.stringslite.wp_Clone
@@ -67,8 +90,14 @@ theorem strconv.wp_ParseInt : strconv.ParseInt.spec (GF := GF) (hG := hG) :=
 theorem strconv.wp_ParseUint : strconv.ParseUint.spec (GF := GF) (hG := hG) :=
   strconv.ParseUint.wp_proof internal.strconv.wp_ParseUint strconv.wp_toError
 
+theorem strconv.wp_quoteWith : strconv.quoteWith.spec (GF := GF) (hG := hG) :=
+  strconv.quoteWith.wp_proof strconv.wp_appendQuotedWith
+
+theorem strconv.wp_Quote : strconv.Quote.spec (GF := GF) (hG := hG) :=
+  strconv.Quote.wp_proof strconv.wp_quoteWith
+
 theorem strconv.wp_initialize' : strconv.initialize'.spec (GF := GF) (hG := hG) :=
-  strconv.initialize'.wp_proof errors.wp_initialize' internal.strconv.wp_initialize' internal.stringslite.wp_initialize'
+  strconv.initialize'.wp_proof errors.wp_initialize' internal.strconv.wp_initialize' internal.stringslite.wp_initialize' unicode.utf8.wp_initialize'
 
 end link
 
