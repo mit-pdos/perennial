@@ -175,6 +175,32 @@ func TestModelImportBlanked(t *testing.T) {
 	}
 }
 
+// TestModelParamNames: parameter and result names are not part of a replaced
+// function's type (types.Identical ignores them), so a model may name what
+// the real declaration leaves unnamed, also inside a parameter's func type;
+// the types themselves are still compared there.
+func TestModelParamNames(t *testing.T) {
+	real := "package p\n\nfunc F(*int, func(int) bool) (int, error) { return 0, nil }\n"
+	for _, c := range []struct{ model, want string }{
+		{"func F(p *int, f func(n int) bool) (r int, err error) { return *p, nil }", ""},
+		{"func F(p *int, f func(n int64) bool) (r int, err error) { return *p, nil }",
+			"F: type func(*int, func(int) bool) (int, error), which the model changes to " +
+				"func(p *int, f func(n int64) bool) (r int, err error)"},
+		{"func F(p *int, f ...func(n int) bool) (r int, err error) { return *p, nil }",
+			"which the model changes to func(p *int, f ...func(n int) bool)"},
+	} {
+		root := modelModule(t, real, "package p\n\n"+c.model+"\n",
+			"[model]\ndir = \"model\"\nreplaces = [\"F\"]\n", nil)
+		_, err := buildModels(root, "./p")
+		switch {
+		case c.want == "" && err != nil:
+			t.Errorf("%s: %v", c.model, err)
+		case c.want != "" && (err == nil || !strings.Contains(err.Error(), c.want)):
+			t.Errorf("%s: error %v, want it to contain %q", c.model, err, c.want)
+		}
+	}
+}
+
 func TestModelErrors(t *testing.T) {
 	const real = `package p
 
