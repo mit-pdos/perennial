@@ -1280,8 +1280,12 @@ func typeString(t types.Type) string {
 // every named type of the real package keeps its method sets (of T and *T),
 // gaining only methods that added_methods lists, and every pattern there
 // matches an added method. For a whole-package model the checks are on the
-// names the model declares, and the methods of the real package it does not
-// declare may be missing.
+// exported names the model declares (the unexported ones are internal to
+// the model), the methods of the real package it does not declare may be
+// missing, unexported methods are not compared, and an exported interface
+// keeps its exported methods (its unexported ones, which no other package
+// can call or implement, may change, as long as it has some exactly when
+// the real one has).
 func CheckAPI(real, over *types.Package, config declfilter.ModelConfig) []error {
 	var errs []error
 	whole := config.WholePackage()
@@ -1297,6 +1301,9 @@ func CheckAPI(real, over *types.Package, config declfilter.ModelConfig) []error 
 			if _, isType := r.(*types.TypeName); !isType {
 				continue
 			}
+		}
+		if whole && !token.IsExported(name) {
+			continue
 		}
 		if o == nil {
 			if !whole {
@@ -1322,7 +1329,7 @@ func CheckAPI(real, over *types.Package, config declfilter.ModelConfig) []error 
 			}
 		case *types.TypeName:
 			if whole || replaced[name] {
-				errs = append(errs, checkType(name, r, o.(*types.TypeName))...)
+				errs = append(errs, checkType(name, r, o.(*types.TypeName), whole)...)
 			} else if !r.IsAlias() {
 				// a replaced type it embeds or contains may change what it
 				// promotes and whether it is comparable
@@ -1405,7 +1412,7 @@ func typeParams(t types.Type) string {
 	return "[" + strings.Join(s, ", ") + "]"
 }
 
-func checkType(name string, r, o *types.TypeName) []error {
+func checkType(name string, r, o *types.TypeName, whole bool) []error {
 	var errs []error
 	{
 		if r.IsAlias() != o.IsAlias() {
@@ -1423,9 +1430,17 @@ func checkType(name string, r, o *types.TypeName) []error {
 		}
 		_, rStruct := r.Type().Underlying().(*types.Struct)
 		_, oStruct := o.Type().Underlying().(*types.Struct)
+		ri, rIface := r.Type().Underlying().(*types.Interface)
+		oi, oIface := o.Type().Underlying().(*types.Interface)
 		switch {
 		case rStruct != oStruct:
 			errs = append(errs, errors.Errorf("%s: the model changes whether it is a struct", name))
+		case whole && rIface && oIface:
+			// the exported methods are compared by checkMethods
+			if hasUnexportedMethod(ri) != hasUnexportedMethod(oi) {
+				errs = append(errs, errors.Errorf("%s: the model changes whether the interface has "+
+					"unexported methods (whether other packages can implement it)", name))
+			}
 		case !rStruct && typeString(r.Type().Underlying()) != typeString(o.Type().Underlying()):
 			errs = append(errs, errors.Errorf("%s: underlying type %s, which the model changes to %s",
 				name, typeString(r.Type().Underlying()), typeString(o.Type().Underlying())))
@@ -1512,6 +1527,18 @@ func exportedFields(t types.Type) []string {
 	return out
 }
 
+func hasUnexportedMethod(t *types.Interface) bool {
+	for i := range t.NumMethods() {
+		if !t.Method(i).Exported() {
+			return true
+		}
+	}
+	return false
+}
+
+// methodSet describes the method set of t: each method's type, receiver and
+// the embedded fields it is promoted through (the selection's index without
+// its last element, the method's position in its type's declarations).
 func methodSet(t types.Type) map[string]string {
 	ms := make(map[string]string)
 	set := types.NewMethodSet(t)
@@ -1522,7 +1549,8 @@ func methodSet(t types.Type) map[string]string {
 		if r := f.Signature().Recv(); r != nil {
 			recv = typeString(r.Type())
 		}
-		ms[f.Name()] = fmt.Sprintf("%s (declared on %s, at embedding path %v)", typeString(f.Type()), recv, sel.Index())
+		path := sel.Index()
+		ms[f.Name()] = fmt.Sprintf("%s (declared on %s, at embedding path %v)", typeString(f.Type()), recv, path[:len(path)-1])
 	}
 	return ms
 }
@@ -1556,6 +1584,9 @@ func checkMethods(name string, r, o *types.TypeName, config declfilter.ModelConf
 		for _, n := range names {
 			rs, inR := rm[n]
 			ovsig, inO := om[n]
+			if whole && !token.IsExported(n) {
+				continue
+			}
 			switch {
 			case inR && !inO:
 				if !whole {
