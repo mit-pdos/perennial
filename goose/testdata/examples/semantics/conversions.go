@@ -37,6 +37,16 @@ func testByteToString() bool {
 	return string(a) == "A" && string(c) == "\xc3\x88"
 }
 
+func testRuneToString() bool {
+	var a, e, smile rune = 'A', 'é', 0x1F600
+	var surrogate, negative, tooBig rune = 0xD800, -1, 0x110000
+	type myRune rune
+	var euro myRune = 0x20AC
+	return string(a) == "A" && string(e) == "\xc3\xa9" && string(smile) == "\xf0\x9f\x98\x80" &&
+		string(surrogate) == "\xef\xbf\xbd" && string(negative) == "\xef\xbf\xbd" &&
+		string(tooBig) == "\xef\xbf\xbd" && string(euro) == "\xe2\x82\xac"
+}
+
 const slashRune = '/'
 
 func testUntypedRuneConst() bool {

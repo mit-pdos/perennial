@@ -115,8 +115,9 @@ func TestModelBlankAsmRefused(t *testing.T) {
 // TestModelBytealgDifftest is the difftest of internal/bytealg's model
 // (Perennial/Code/internal/bytealg.toml, goose/model/overlay/internal/bytealg):
 // the standard library's own strings and bytes tests, under the overlay that
-// replaces IndexByte, IndexByteString, Index and IndexString by their Go
-// models and blanks indexbyte_amd64.s and index_amd64.s. It runs only under
+// replaces IndexByte, IndexByteString, Index, IndexString, Count and
+// CountString by their Go models and blanks indexbyte_amd64.s, index_amd64.s
+// and count_amd64.s. It runs only under
 // the toolchain the translations are generated with (the model is of its
 // sources), and not with -short. go vet is off: it cannot enter internal/gomodel,
 // a directory only the overlay adds.
@@ -149,7 +150,7 @@ func TestModelBytealgDifftest(t *testing.T) {
 	if models.Packages["internal/bytealg"] == nil {
 		t.Fatalf("no model of internal/bytealg: %v", models.Packages)
 	}
-	for _, s := range []string{"indexbyte_amd64.s", "index_amd64.s"} {
+	for _, s := range []string{"indexbyte_amd64.s", "index_amd64.s", "count_amd64.s"} {
 		found := false
 		for p, c := range models.Overlay {
 			if filepath.Base(p) == s && strings.Contains(string(c), "blanked") {

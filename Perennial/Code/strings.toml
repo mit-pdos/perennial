@@ -5,9 +5,12 @@
 # `asciiSet.contains`, `trimLeftASCII`); its non-ASCII path, `trimLeftUnicode`, is not translated
 # (it reaches `IndexRune` and utf8 decoding): a call of `TrimLeft` with a cutset that is not all ASCII
 # has no proof. `LastIndex`, `IndexByte` and `Cut` (over internal/stringslite and internal/bytealg).
+# `Index` (stringslite's), `IndexAny` (over `IndexRune` and the ASCII set), `IndexRune` (a Go model,
+# below) and `Count` (over `Index`, bytealg's `CountString` and utf8's `RuneCountInString`).
 translate = ["Builder", "Builder.*", "asciiSpace", "Compare", "HasPrefix", "HasSuffix", "Join", "maxInt", "TrimPrefix", "TrimSuffix", "NewReplacer",
   "LastIndex", "IndexByte", "Cut",
-  "TrimLeft", "trimLeftByte", "trimLeftASCII", "makeASCIISet", "asciiSet.contains"]
+  "TrimLeft", "trimLeftByte", "trimLeftASCII", "makeASCIISet", "asciiSet.contains",
+  "Index", "IndexAny", "IndexRune", "Count"]
 imports = ["!*", "internal/stringslite", "sync", "io", "internal/bytealg", "unicode/utf8", "internal/gomodel"]
 
 # translate the definitions of all type declarations goose supports
@@ -17,7 +20,8 @@ translate_types = true
 # least Go's behaviours. `Builder.String` (`unsafe.String`, which aliases the buffer),
 # `Builder.copyCheck` (an `unsafe.Pointer` converted to `*Builder`, which the semantics has no rule
 # for) and `Builder.Reset` (which must not store to the `addr` that `copyCheck`'s model makes
-# read-only); `Split` (`Count` and `Index`, which end in `internal/bytealg`'s assembly).
+# read-only); `Split` (`Count` and `Index`, which end in `internal/bytealg`'s assembly); `IndexRune`
+# (its search for a non-ASCII rune is written with goto, which goose does not translate).
 [model]
 dir = "goose/model/overlay/strings"
-replaces = ["Split", "Builder.copyCheck", "Builder.String", "Builder.Reset"]
+replaces = ["Split", "Builder.copyCheck", "Builder.String", "Builder.Reset", "IndexRune"]

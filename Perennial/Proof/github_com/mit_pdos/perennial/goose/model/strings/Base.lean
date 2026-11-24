@@ -153,6 +153,175 @@ theorem runesFrom_end (s : GoString) (k : Nat) (hk : s.length ≤ k) :
     runesFrom s (s.length - k) k = [] := by
   rw [show s.length - k = 0 by omega]; rfl
 
+/-! ## What the decoding of a range loop says about the bytes -/
+
+/-- `runeError` is not ASCII. -/
+theorem runeError_sint : sint.Z runeError = 0xFFFD := by
+  unfold runeError; word
+
+/-- A multi-byte decoding gives `runeError` or a rune above `0x7F`. -/
+theorem decodeMulti_fst (t : GoString) :
+    (decodeMulti t).1 = runeError ∨ 0x7F < sint.Z (decodeMulti t).1 := by
+  unfold decodeMulti
+  simp only
+  repeat' split
+  all_goals first
+    | exact Or.inl rfl
+    | (right; rename_i h; simp only at h ⊢; omega)
+
+/-- The bytes after the first of a multi-byte decoding are continuation bytes of `t`. -/
+theorem decodeMulti_cont (t : GoString) :
+    ∀ i, 0 < i → i < (decodeMulti t).2 → i < t.length ∧ 0x80 ≤ uint.Z (t.getD i 0) := by
+  unfold decodeMulti
+  simp only
+  split
+  · split
+    · rename_i h
+      intro i h0 hi
+      simp only at hi
+      have : i = 1 := by omega
+      subst this
+      exact ⟨h.1.1, h.1.2.1⟩
+    · intro i h0 hi; simp only at hi; omega
+  · split
+    · split
+      · rename_i h
+        intro i h0 hi
+        simp only at hi
+        rcases (by omega : i = 1 ∨ i = 2) with rfl | rfl
+        · exact ⟨h.1.1, h.1.2.1⟩
+        · exact ⟨h.2.1.1, h.2.1.2.1⟩
+      · intro i h0 hi; simp only at hi; omega
+    · split
+      · split
+        · rename_i h
+          intro i h0 hi
+          simp only at hi
+          rcases (by omega : i = 1 ∨ i = 2 ∨ i = 3) with rfl | rfl | rfl
+          · exact ⟨h.1.1, h.1.2.1⟩
+          · exact ⟨h.2.1.1, h.2.1.2.1⟩
+          · exact ⟨h.2.2.1.1, h.2.2.1.2.1⟩
+        · intro i h0 hi; simp only at hi; omega
+      · intro i h0 hi; simp only at hi; omega
+
+/-- An ASCII byte is a rune by itself. -/
+theorem decodeRune_ascii (s : GoString) (k : Nat) (b : w8) (hb : s[k]? = some b)
+    (hlt : uint.Z b < 0x80) : decodeRune s k = (W32 (uint.Z b), k + 1) := by
+  have hd : (s.drop k).getD 0 0 = b := by
+    rw [List.getD_eq_getElem?_getD, List.getElem?_drop, Nat.add_zero, hb]; rfl
+  unfold decodeRune
+  simp only [hd, hlt, ↓reduceIte]
+
+/-- A rune decoded from a non-ASCII byte is above `0x7F`. -/
+theorem decodeRune_nonascii (s : GoString) (k : Nat) (b : w8) (hb : s[k]? = some b)
+    (hge : 0x80 ≤ uint.Z b) : 0x7F < sint.Z (decodeRune s k).1 := by
+  have hd : (s.drop k).getD 0 0 = b := by
+    rw [List.getD_eq_getElem?_getD, List.getElem?_drop, Nat.add_zero, hb]; rfl
+  unfold decodeRune
+  simp only [hd, show ¬ uint.Z b < 0x80 by omega, ↓reduceIte]
+  rcases decodeMulti_fst (s.drop k) with h | h
+  · rw [h, runeError_sint]; omega
+  · exact h
+
+/-- The bytes between a rune's first byte and the next rune are continuation bytes. -/
+theorem decodeRune_cont (s : GoString) (k p : Nat) (hk : k < p) (hp : p < (decodeRune s k).2) :
+    ∃ b, s[p]? = some b ∧ 0x80 ≤ uint.Z b := by
+  unfold decodeRune at hp
+  simp only at hp
+  split at hp
+  · simp only at hp; omega
+  · simp only at hp
+    have := decodeMulti_cont (s.drop k) (p - k) (by omega) (by omega)
+    rw [List.getD_eq_getElem?_getD, List.getElem?_drop, show k + (p - k) = p by omega] at this
+    rw [List.length_drop] at this
+    obtain ⟨hl, hc⟩ := this
+    refine ⟨s[p]'(by omega), List.getElem?_eq_getElem (by omega), ?_⟩
+    rw [List.getElem?_eq_getElem (by omega)] at hc
+    exact hc
+
+/-- What `runesFrom` lists: runes at increasing indices from `k` on, each the decoding at its
+index. -/
+theorem runesFrom_mem (s : GoString) (fuel : Nat) :
+    ∀ (k : Nat), ∀ e ∈ runesFrom s fuel k, k ≤ e.1 ∧ e.1 < s.length ∧
+      e.2 = (decodeRune s e.1).1 := by
+  induction fuel with
+  | zero => intro k e he; simp [runesFrom] at he
+  | succ fuel ih =>
+    intro k e he
+    simp only [runesFrom] at he
+    split at he
+    · rename_i hk
+      rcases List.mem_cons.1 he with rfl | he
+      · exact ⟨Nat.le_refl _, hk, by dsimp only⟩
+      · have h1 := ih _ e he
+        have h2 := decodeRune_snd s k hk
+        exact ⟨by omega, h1.2.1, h1.2.2⟩
+    · nomatch he
+
+theorem runesFrom_pairwise (s : GoString) (fuel : Nat) :
+    ∀ (k : Nat), (runesFrom s fuel k).Pairwise (fun a b => a.1 < b.1) := by
+  induction fuel with
+  | zero => intro k; simp [runesFrom]
+  | succ fuel ih =>
+    intro k
+    simp only [runesFrom]
+    split
+    · rename_i hk
+      refine List.pairwise_cons.2 ⟨fun e he => ?_, ih _⟩
+      have h1 := (runesFrom_mem s fuel _ e he).1
+      have h2 := decodeRune_snd s k hk
+      simp only; omega
+    · exact List.Pairwise.nil
+
+/-- Every ASCII byte of `s` past `k` is a rune of `runesFrom s _ k`. -/
+theorem runesFrom_ascii (s : GoString) (fuel : Nat) :
+    ∀ (k p : Nat) (b : w8), s.length - k ≤ fuel → k ≤ p → s[p]? = some b →
+      uint.Z b < 0x80 → (p, W32 (uint.Z b)) ∈ runesFrom s fuel k := by
+  induction fuel with
+  | zero =>
+    intro k p b hf hkp hb _
+    have := (List.getElem?_eq_some_iff.1 hb).1; omega
+  | succ fuel ih =>
+    intro k p b hf hkp hb hlt
+    have hp := (List.getElem?_eq_some_iff.1 hb).1
+    have hk : k < s.length := by omega
+    simp only [runesFrom, hk, ↓reduceIte]
+    rcases Nat.lt_or_ge k p with hkp' | hkp'
+    · refine List.mem_cons_of_mem _ (ih _ p b ?_ ?_ hb hlt)
+      · have := decodeRune_snd s k hk; omega
+      · refine Classical.byContradiction fun hc => ?_
+        obtain ⟨b', hb', hge⟩ := decodeRune_cont s k p hkp' (by omega)
+        rw [hb] at hb'; cases hb'; omega
+    · have : p = k := by omega
+      subst this
+      rw [decodeRune_ascii s p b hb hlt]
+      exact List.mem_cons_self
+
+theorem runes_mem (s : GoString) (e : Nat × w32) (he : e ∈ runes s) :
+    e.1 < s.length ∧ e.2 = (decodeRune s e.1).1 :=
+  let h := runesFrom_mem s _ _ e he; ⟨h.2.1, h.2.2⟩
+
+theorem runes_pairwise (s : GoString) : (runes s).Pairwise (fun a b => a.1 < b.1) :=
+  runesFrom_pairwise s _ _
+
+/-- Every ASCII byte of `s` is a rune of a range loop over `s`. -/
+theorem runes_ascii (s : GoString) (p : Nat) (b : w8) (hb : s[p]? = some b)
+    (hlt : uint.Z b < 0x80) : (p, W32 (uint.Z b)) ∈ runes s :=
+  runesFrom_ascii s _ 0 p b (by omega) (Nat.zero_le _) hb hlt
+
+/-- A rune below `0x80` of a range loop over `s` is the byte at its index. -/
+theorem runes_lt_0x80 (s : GoString) (e : Nat × w32) (he : e ∈ runes s)
+    (hlt : 0 ≤ sint.Z e.2 ∧ sint.Z e.2 < 0x80) :
+    ∃ b, s[e.1]? = some b ∧ uint.Z b < 0x80 ∧ e.2 = W32 (uint.Z b) := by
+  obtain ⟨hl, he2⟩ := runes_mem s e he
+  obtain ⟨b, hb⟩ : ∃ b, s[e.1]? = some b := ⟨_, List.getElem?_eq_getElem hl⟩
+  rcases Nat.lt_or_ge (uint.Z b).toNat 0x80 with h | h
+  · have h' : uint.Z b < 0x80 := by omega
+    rw [decodeRune_ascii s e.1 b hb h'] at he2
+    exact ⟨b, hb, h', he2⟩
+  · have := decodeRune_nonascii s e.1 b hb (by omega)
+    rw [← he2] at this; omega
+
 end go
 
 end Perennial

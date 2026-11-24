@@ -400,6 +400,90 @@ noncomputable def CompareString.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
+/-- MODEL: Count returns the number of instances of c in b. Go's generic body
+    (count_generic.go); the assembly computes the same function,
+    deterministically.
+
+    go: count.go:20:6 -/
+noncomputable def Count.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "b"
+  (Lam "c"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "c" (App (Val (GoInstruction (GoAlloc go.byte))) (Var "c"))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
+  (Let "$r0" (Val #(W64 0))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
+  (App (App (Val (slice.forRange go.byte)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "x")) (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1)))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (Var "$key")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "x") (Var "$value")))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
+
+/-- MODEL: CountString returns the number of instances of c in s. Go's generic
+    body (count_generic.go); the assembly computes the same function,
+    deterministically.
+
+    go: count.go:33:6 -/
+noncomputable def CountString.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Lam "c"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "c" (App (Val (GoInstruction (GoAlloc go.byte))) (Var "c"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (Let "$r0" (Val #(W64 0))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$r0" (Val #(W64 0))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))))))) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))) (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1)))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
+
 /-- Cutover reports the number of failures of IndexByte we should tolerate
     before switching over to Index.
     n is the number of bytes processed so far.
@@ -665,6 +749,8 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   IndexRabinKarp_unfold : ∀ (T : go.GoType), FuncUnfold IndexRabinKarp [T] (IndexRabinKarp.impl T)
   MakeNoZero_unfold : FuncUnfold MakeNoZero [] MakeNoZero.impl
   CompareString_unfold : FuncUnfold CompareString [] CompareString.impl
+  Count_unfold : FuncUnfold Count [] Count.impl
+  CountString_unfold : FuncUnfold CountString [] CountString.impl
   «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
   Cutover_unfold : FuncUnfold Cutover [] Cutover.impl
   Index_unfold : FuncUnfold Index' [] Index.impl
@@ -679,6 +765,8 @@ attribute [instance] Assumptions.HashStr_unfold
   Assumptions.IndexRabinKarp_unfold
   Assumptions.MakeNoZero_unfold
   Assumptions.CompareString_unfold
+  Assumptions.Count_unfold
+  Assumptions.CountString_unfold
   Assumptions.«init.0_unfold»
   Assumptions.Cutover_unfold
   Assumptions.Index_unfold

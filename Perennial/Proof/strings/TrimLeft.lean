@@ -65,8 +65,9 @@ theorem strings.TrimLeft.wp_proof
       itrivial
     · exfalso; revert Hif; word
   try wp_auto
-  wp_apply wp_makeASCIISet as %aset ⟨%Hlen, %Hhas⟩
-  · ipureintro; exact Hascii
+  wp_apply wp_makeASCIISet as %aset %ok ⟨%Hok, %Hlen, %Hhas⟩
+  have Hhas := Hhas (Hok.2 Hascii)
+  rw [show ok = true from Hok.2 Hascii]
   try wp_auto
   irename «as» => Has
   wp_apply wp_trimLeftASCII $$ Has as Has

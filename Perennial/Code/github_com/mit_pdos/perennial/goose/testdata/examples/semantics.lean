@@ -59,6 +59,11 @@ noncomputable def minMaxDur.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] minMaxDur.ty
 
+noncomputable def myRune.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.myRune" [])
+
+attribute [irreducible] myRune.ty
+
 noncomputable def float32Box.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.float32Box" [])
 
@@ -757,6 +762,9 @@ noncomputable def testByteSliceToString [GooseExts] [GoGlobalContext] : GoString
 
 noncomputable def testByteToString [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testByteToString"
+
+noncomputable def testRuneToString [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRuneToString"
 
 noncomputable def testUntypedRuneConst [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testUntypedRuneConst"
@@ -3774,7 +3782,55 @@ noncomputable def testByteToString.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "a") (Var "$r0"))))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
-/-- go: conversions.go:42:6 -/
+/-- go: conversions.go:40:6 -/
+noncomputable def testRuneToString.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Val #(W32 65))
+  (Let "$r1" (Val #(W32 233))
+  (Let "$r2" (Val #(W32 128512))
+  (Let "smile" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (Let "e" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (Let "a" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W32 55296))
+  (Let "$r1" (App (Val (GoInstruction (Convert go.untypedInt go.rune))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int))))
+  (Let "$r2" (Val #(W32 1114112))
+  (Let "tooBig" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (Let "negative" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (Let "surrogate" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W32 8364))
+  (Let "euro" (App (Val (GoInstruction (GoAlloc myRune.ty))) (App (Val (GoInstruction (GoZeroVal myRune.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (If (If (If (If (If (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (Convert go.rune go.string))) (App (Val (GoInstruction (GoLoad go.rune))) (Var "a"))) (Val #(go!"A")))) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (Convert go.rune go.string))) (App (Val (GoInstruction (GoLoad go.rune))) (Var "e"))) (Val #(go!"é")))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (Convert go.rune go.string))) (App (Val (GoInstruction (GoLoad go.rune))) (Var "smile"))) (Val #(go!"😀")))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (Convert go.rune go.string))) (App (Val (GoInstruction (GoLoad go.rune))) (Var "surrogate"))) (Val #(go!"�")))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (Convert go.rune go.string))) (App (Val (GoInstruction (GoLoad go.rune))) (Var "negative"))) (Val #(go!"�")))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (Convert go.rune go.string))) (App (Val (GoInstruction (GoLoad go.rune))) (Var "tooBig"))) (Val #(go!"�")))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (Convert myRune.ty go.string))) (App (Val (GoInstruction (GoLoad myRune.ty))) (Var "euro"))) (Val #(go!"€")))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore myRune.ty))) (Pair (Var "euro") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "tooBig") (Var "$r2")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "negative") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "surrogate") (Var "$r0")))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "smile") (Var "$r2")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "e") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "a") (Var "$r0"))))))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: conversions.go:52:6 -/
 noncomputable def testUntypedRuneConst.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -3794,7 +3850,7 @@ noncomputable def testUntypedRuneConst.impl [GooseExts] [GoGlobalContext] : val 
 
 /-- a constant is never a negative zero: one that rounds to zero converts to +0
 
-    go: conversions.go:52:6 -/
+    go: conversions.go:62:6 -/
 noncomputable def testNegUnderflowConstIsPosZero.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -3828,7 +3884,7 @@ noncomputable def testNegUnderflowConstIsPosZero.impl [GooseExts] [GoGlobalConte
   (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "x") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
-/-- go: conversions.go:67:6 -/
+/-- go: conversions.go:77:6 -/
 noncomputable def float32Id.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
@@ -3847,7 +3903,7 @@ noncomputable def float32Id.impl [GooseExts] [GoGlobalContext] : val :=
     float32 rounding of its float64 rounding 1+0x1p-24 (an exact tie, which
     rounds to even, 1); -1e-50 rounds to +0
 
-    go: conversions.go:75:6 -/
+    go: conversions.go:85:6 -/
 noncomputable def testFloat32ConstRoundsOnce.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -3895,7 +3951,7 @@ noncomputable def testFloat32ConstRoundsOnce.impl [GooseExts] [GoGlobalContext] 
   (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "a") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
-/-- go: conversions.go:96:6 -/
+/-- go: conversions.go:106:6 -/
 noncomputable def offTieAt.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
@@ -3908,7 +3964,7 @@ noncomputable def offTieAt.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : 
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad T))) (Var "$res0")))))
 
-/-- go: conversions.go:100:6 -/
+/-- go: conversions.go:110:6 -/
 noncomputable def offTieConvertedAt.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
@@ -3921,7 +3977,7 @@ noncomputable def offTieConvertedAt.impl [GooseExts] [GoGlobalContext] (T : go.G
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad T))) (Var "$res0")))))
 
-/-- go: conversions.go:106:6 -/
+/-- go: conversions.go:116:6 -/
 noncomputable def negUnderflowAt.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
@@ -3934,7 +3990,7 @@ noncomputable def negUnderflowAt.impl [GooseExts] [GoGlobalContext] (T : go.GoTy
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad T))) (Var "$res0")))))
 
-/-- go: conversions.go:110:6 -/
+/-- go: conversions.go:120:6 -/
 noncomputable def bigIntegralAt.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
@@ -3950,7 +4006,7 @@ noncomputable def bigIntegralAt.impl [GooseExts] [GoGlobalContext] (T : go.GoTyp
 /-- an untyped float constant at a type parameter is rounded once, from its
     exact value, at the instantiation; -1e-50 rounds to +0
 
-    go: conversions.go:116:6 -/
+    go: conversions.go:126:6 -/
 noncomputable def testUntypedFloatConstAtTypeParam.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -3968,7 +4024,7 @@ noncomputable def testUntypedFloatConstAtTypeParam.impl [GooseExts] [GoGlobalCon
     1 where the model gives 1+0x1p-23, so that instantiation is not tested here;
     see docs/KNOWN_LIMITATIONS.md.)
 
-    go: conversions.go:125:6 -/
+    go: conversions.go:135:6 -/
 noncomputable def testUntypedFloatConvertAtTypeParam.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -3984,7 +4040,7 @@ noncomputable def testUntypedFloatConvertAtTypeParam.impl [GooseExts] [GoGlobalC
 /-- an integral untyped float constant converts to an integer type exactly (its
     float64 rounding would be 1e18)
 
-    go: conversions.go:131:6 -/
+    go: conversions.go:141:6 -/
 noncomputable def testUntypedFloatConstToInt.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -4021,7 +4077,7 @@ noncomputable def testUntypedFloatConstToInt.impl [GooseExts] [GoGlobalContext] 
 /-- a typed float64 constant expression is a constant: -0 and an underflow of a
     negative constant product are +0
 
-    go: conversions.go:147:6 -/
+    go: conversions.go:157:6 -/
 noncomputable def testFloat64ConstExprIsConst.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -4044,7 +4100,7 @@ noncomputable def testFloat64ConstExprIsConst.impl [GooseExts] [GoGlobalContext]
   (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "x") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
-/-- go: conversions.go:153:6 -/
+/-- go: conversions.go:163:6 -/
 noncomputable def testUntypedIntToFloat64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -4071,7 +4127,7 @@ noncomputable def testUntypedIntToFloat64.impl [GooseExts] [GoGlobalContext] : v
     rounded once to binary32. 2^24+1 is halfway between 2^24 and 2^24+2 and rounds to even
     (2^24); 2^24+3 rounds to 2^24+4.
 
-    go: conversions.go:162:6 -/
+    go: conversions.go:172:6 -/
 noncomputable def testIntToFloat32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -4152,7 +4208,7 @@ noncomputable def testIntToFloat32.impl [GooseExts] [GoGlobalContext] : val :=
 /-- float64(n) of every integer type, and of an untyped integer constant: the exact integer
     rounded once to binary64. 2^53+1 rounds to 2^53; 2^53+3 to 2^53+4.
 
-    go: conversions.go:186:6 -/
+    go: conversions.go:196:6 -/
 noncomputable def testIntToFloat64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -15356,6 +15412,20 @@ attribute [instance] minMaxDur.TypeAssumptions.underlying
   minMaxDur.TypeAssumptions.method_set
   minMaxDur.TypeAssumptions.ptr_method_set
 
+abbrev myRune [GooseExts] : Type := w32
+
+@[reducible] noncomputable def myRune.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  go.rune
+
+class myRune.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq myRune.ty myRune.underlying
+  method_set : go.MethodSetIs myRune.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType myRune.ty) []
+
+attribute [instance] myRune.TypeAssumptions.underlying
+  myRune.TypeAssumptions.method_set
+  myRune.TypeAssumptions.ptr_method_set
+
 structure float32Box [GooseExts] where
   mk ::
   f' : w32
@@ -17527,6 +17597,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   pairs_instance : pairs.TypeAssumptions
   blankFieldStruct_instance : blankFieldStruct.TypeAssumptions
   minMaxDur_instance : minMaxDur.TypeAssumptions
+  myRune_instance : myRune.TypeAssumptions
   float32Box_instance : float32Box.TypeAssumptions
   myFloat32_instance : myFloat32.TypeAssumptions
   myInt64_instance : myInt64.TypeAssumptions
@@ -17664,6 +17735,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testStringToBytesEmptyNonNil_unfold : FuncUnfold testStringToBytesEmptyNonNil [] testStringToBytesEmptyNonNil.impl
   testByteSliceToString_unfold : FuncUnfold testByteSliceToString [] testByteSliceToString.impl
   testByteToString_unfold : FuncUnfold testByteToString [] testByteToString.impl
+  testRuneToString_unfold : FuncUnfold testRuneToString [] testRuneToString.impl
   testUntypedRuneConst_unfold : FuncUnfold testUntypedRuneConst [] testUntypedRuneConst.impl
   testNegUnderflowConstIsPosZero_unfold : FuncUnfold testNegUnderflowConstIsPosZero [] testNegUnderflowConstIsPosZero.impl
   float32Id_unfold : FuncUnfold float32Id [] float32Id.impl
@@ -18007,6 +18079,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.pairs_instance
   Assumptions.blankFieldStruct_instance
   Assumptions.minMaxDur_instance
+  Assumptions.myRune_instance
   Assumptions.float32Box_instance
   Assumptions.myFloat32_instance
   Assumptions.myInt64_instance
@@ -18144,6 +18217,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testStringToBytesEmptyNonNil_unfold
   Assumptions.testByteSliceToString_unfold
   Assumptions.testByteToString_unfold
+  Assumptions.testRuneToString_unfold
   Assumptions.testUntypedRuneConst_unfold
   Assumptions.testNegUnderflowConstIsPosZero_unfold
   Assumptions.float32Id_unfold

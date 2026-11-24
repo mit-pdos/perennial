@@ -91,7 +91,7 @@ variable [package_sem : strings.Assumptions]
 theorem strings.makeASCIISet.wp_proof :
     strings.makeASCIISet.spec (GF := GF) (hG := hG) := by
   intro chars
-  wp_start as %Hascii
+  wp_start
   wp_auto
   irename «as» => Has
   have hz : (zero_val (GoArray w32 8)) = ⟨List.replicate 8 (W32 0)⟩ := rfl
@@ -99,11 +99,12 @@ theorem strings.makeASCIISet.wp_proof :
   ihave HI : (∃ (j : Nat) (vs : List w32), "i" ∷ i_ptr ↦ W64 (j : Int) ∗
       "Has" ∷ as_ptr ↦ (⟨vs⟩ : GoArray w32 8) ∗
       "%Hj" ∷ ⌜j ≤ chars.length ∧ vs.length = 8 ∧
-        ∀ c, strings.asciiSetHas ⟨vs⟩ c = decide (c ∈ chars.take j)⌝ : IProp GF) $$ [i Has]
+        (∀ c, strings.asciiSetHas ⟨vs⟩ c = decide (c ∈ chars.take j)) ∧
+        ∀ b ∈ chars.take j, uint.Z b < 128⌝ : IProp GF) $$ [i Has]
   · iexists 0, _
     iframe
     ipureintro
-    refine ⟨Nat.zero_le _, rfl, fun c => ?_⟩
+    refine ⟨Nat.zero_le _, rfl, fun c => ?_, by simp⟩
     rw [strings.asciiSetHas_zero]; simp
   wp_for HI
   wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len as %Hl
@@ -113,12 +114,20 @@ theorem strings.makeASCIISet.wp_proof :
     have Hk : sint.nat (W64 (j : Int)) = j := by word
     have Hk0 : 0 ≤ sint.Z (W64 (j : Int)) := by word
     obtain ⟨c, Hc⟩ : ∃ c, chars[j]? = some c := ⟨_, List.getElem?_eq_getElem Hjl⟩
-    have Hc128 : uint.Z c < 128 := Hascii c (List.mem_of_getElem? Hc)
+    have Htake : chars.take (j + 1) = chars.take j ++ [c] := by
+      rw [List.take_add_one, Hc]; rfl
     try wp_auto
     simp only [Hk, Hk0, ↓reduceIte, Hc]
     try wp_auto
     wp_if_destruct
-    · exfalso; revert Hif; word
+    · -- a byte of `chars` is not ASCII
+      wp_for_post
+      iapply HΦ
+      ipureintro
+      refine ⟨⟨(fun h => nomatch h), (fun h => ?_)⟩, Hj.2.1, (fun h => nomatch h)⟩
+      have := h c (List.mem_of_getElem? Hc)
+      revert Hif; word
+    have Hc128 : uint.Z c < 128 := by revert Hif; word
     try wp_auto
     have hi : sint.Z (W64 (uint.Z (c / W8 32))) = ((c.toNat / 32 : Nat) : Int) := by word
     have hlt : c.toNat / 32 < vs.length := by have := c.isLt; omega
@@ -139,18 +148,23 @@ theorem strings.makeASCIISet.wp_proof :
       iexact i
     iframe
     ipureintro
-    refine ⟨by omega, by simp [Hj.2.1], fun c' => ?_⟩
-    rw [strings.asciiSetHas_set vs c c' _ (List.getElem?_eq_getElem hlt), Hj.2.2 c',
-      List.take_add_one, Hc, Option.toList_some]
-    simp
+    refine ⟨by omega, by simp [Hj.2.1], fun c' => ?_, ?_⟩
+    · rw [strings.asciiSetHas_set vs c c' _ (List.getElem?_eq_getElem hlt), Hj.2.2.1 c',
+        List.take_add_one, Hc, Option.toList_some]
+      simp
+    · rw [Htake]
+      intro b hb
+      rcases List.mem_append.1 hb with hb | hb
+      · exact Hj.2.2.2 b hb
+      · rw [List.mem_singleton.1 hb]; exact Hc128
   · simp only [intoVal_eq_iff, decide_eq_true_eq] at Hif
     have Hjl : j = chars.length := by have := Hj.1; revert Hif; word
     simp only [Hif, decide_false, Bool.false_eq_true, ↓reduceIte]
     try wp_auto
     iapply HΦ
     ipureintro
-    refine ⟨Hj.2.1, fun c => ?_⟩
-    rw [Hj.2.2 c, Hjl, List.take_length]
+    rw [Hjl, List.take_length] at Hj
+    exact ⟨⟨(fun _ => Hj.2.2.2), (fun _ => rfl)⟩, Hj.2.1, (fun _ c => Hj.2.2.1 c)⟩
 
 end proof
 
