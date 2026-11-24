@@ -28,7 +28,7 @@ theorem sync.runtime_SemacquireRWMutex.wp_proof
     sync.runtime_SemacquireRWMutex.spec (GF := GF) (hG := hG) := by
   intro sema γ N lifo skipframes
   wp_start as #Hsem
-  rw [show (go!"sync.runtime_Semacquire" : GoString) = runtime_Semacquire from rfl]
+  wp_auto
   wp_apply_core wp_runtime_Semacquire sema γ N $$ [] HΦ
   iframe #
 

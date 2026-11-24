@@ -467,7 +467,7 @@ def isChanDef : IProp GF :=
   iprop(∃ (mu_loc : Loc),
     "#cap" ∷ ch.[channel.Channel V, go!"cap"] ↦□ γ.chanCap ∗
     "#mu" ∷ ch.[channel.Channel V, go!"mu"] ↦□ mu_loc ∗
-    "#lock" ∷ isLock mu_loc (chanInvInner ch γ V) ∗
+    "#lock" ∷ isSpinLock mu_loc (chanInvInner ch γ V) ∗
     "%Hnotnull" ∷ ⌜ch ≠ chan.nil⌝ ∗
     "%Hcap" ∷ ⌜0 ≤ sint.Z γ.chanCap⌝)
 /-- The public predicate that clients use to interact with channels. This is
@@ -986,7 +986,7 @@ variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics]
 
 /-- `is_lock` is `isMutex` (the channel invariant is stated with `is_lock`). -/
 theorem isLock_eq_is_Mutex (m : Loc) (R : IProp GF) :
-    isLock m R = github_com.goose_lang.primitive.isMutex m R := by
+    isSpinLock m R = github_com.goose_lang.primitive.isMutex m R := by
   rw [github_com.goose_lang.primitive.isMutex_unseal]; rfl
 
 end lock

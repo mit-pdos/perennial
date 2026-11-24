@@ -21,7 +21,20 @@
 #   errors   TestIs                   its uncomparable target (#13): Is's model
 #                                     compares it, which panics in gc (and is
 #                                     stuck in GooseLang)
-# internal/stringslite has no tests; bytes and internal/bytealg run in full.
+#   sync     TestCondSignal, TestCondBroadcast, TestRace
+#                                     Cond.Wait returns at once: the model of
+#                                     runtime_notifyListWait does not park (a
+#                                     behaviour Go does not have; the tests
+#                                     count wakeups)
+#            TestMutexMisuse          an Unlock of an unlocked Mutex: fatal's
+#                                     model is stuck (gomodel.Stuck, which
+#                                     blocks in gc) where Go ends the program
+#            TestPool, TestPoolGC, TestPoolRelease
+#                                     the GC clearing pools: the model of
+#                                     Pool has no GC, its Get may return a
+#                                     value Go's GC would have dropped
+# internal/stringslite has no tests; bytes, internal/bytealg and internal/sync
+# run in full.
 #
 # usage: etc/model-tests.sh
 set -euo pipefail
@@ -31,10 +44,11 @@ trap 'rm -rf "$OUT"' EXIT
 cd "$ROOT/goose"
 go build -o "$OUT/goose" ./cmd/goose
 "$OUT/goose" model-overlay -configdir "$ROOT/Perennial/Code" -dir . -tags purego -o "$OUT/ov" \
-  strings bytes errors internal/stringslite internal/bytealg
+  strings bytes errors internal/stringslite internal/bytealg internal/sync sync
 # go vet does not find the overlay-added internal/gomodel (it changes into the package's directory)
 run() { go test -vet=off -timeout 300s -overlay "$OUT/ov/overlay.json" -tags purego,goose "$@"; }
 run strings -skip '^(TestSplit|ExampleSplit|TestBuilderGrow|TestBuilderAllocs|TestBuilderGrowSizeclasses|TestReplace|TestBuilderCopyPanic)$'
 run errors -skip '^TestIs$'
-run bytes internal/stringslite internal/bytealg
+run sync -skip '^(TestCondSignal|TestCondBroadcast|TestRace|TestMutexMisuse|TestPool|TestPoolGC|TestPoolRelease)$'
+run bytes internal/stringslite internal/bytealg internal/sync
 echo "model-tests: ok"

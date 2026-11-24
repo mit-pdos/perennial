@@ -1,6 +1,6 @@
 translate = [
   "!*",
-  # Mutex forwards to internal/sync.Mutex, whose methods are trusted
+  # Mutex forwards to internal/sync.Mutex, whose methods are modelled
   "Mutex",
   "Mutex.*",
   "rwmutexMaxReaders",
@@ -29,39 +29,32 @@ translate = [
   "init.1",
 ]
 
-imports = ["sync/atomic", "internal/race", "internal/synctest", "internal/sync"]
+imports = ["sync/atomic", "internal/race", "internal/synctest", "internal/sync", "internal/gomodel"]
 
-axiomatize = ["notifyList"]
-
+# The Go model (goose/model/overlay/sync): each declaration's MODEL: comment says why it has at least
+# Go's behaviours. The runtime hooks (`runtime_Semacquire*`, `runtime_Semrelease`, `runtime_notifyList*`,
+# `runtime_registerPoolCleanup`: no Go body, defined by the runtime's push linknames), `copyChecker` and
+# its `check` (a `uintptr` holding its own address), and `Pool.Get`/`Put` (per-P pools reached by pointer
+# arithmetic). `poolModelAt` is a primitive stub (TrustedCode/sync.lean).
 trusted = [
-  "runtime_notifyList*",
-
-  # `copyChecker` is a `uintptr` holding its own address, and `check` converts
-  # `unsafe.Pointer(c)` to `uintptr` and CASes it; goose supports neither, so
+  "poolModelAt",
+  # PENDING (copyChecker model): `copyChecker` is a `uintptr` holding its own address, and `check`
+  # converts `unsafe.Pointer(c)` to `uintptr` and CASes it; the semantics has neither conversion, so
   # both are modeled in TrustedCode/sync.lean (as an `unsafe.Pointer`).
   "copyChecker",
   "copyChecker.*",
-
-  "runtime_Semacquire*",
-  "runtime_Semrelease",
-
-  # a runtime linkname with no Go body
-  "runtime_registerPoolCleanup",
-
-  # `Pool.Get` and `Put` are modeled in TrustedCode/sync.lean with the Go model
-  # goose/model/pool. With them and all their helpers (`pin`, `pinSlow`,
-  # `getSlow`, `indexLocal`, `poolChain.*`, `poolDequeue.*`) in `translate`,
-  # goose rejects only the runtime linknames with no Go body
-  # (`runtime_procPin`, `runtime_procUnpin`, `runtime_LoadAcquintptr`,
-  # `runtime_StoreReluintptr`), but what it translates is irreducible too:
-  # `indexLocal` converts a `uintptr` back to an `unsafe.Pointer` (pointer
-  # arithmetic, stuck in the semantics), `poolDequeue` stores an `any` through
-  # `(*any)(unsafe.Pointer(slot))` of an `eface` (layout reinterpretation), and
-  # the plain accesses to `l.private` are race-free only because `procPin`
-  # keeps the goroutine on its P, which Go code cannot express.
-  "Pool.Get",
-  "Pool.Put",
 ]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true
+
+[model]
+dir = "goose/model/overlay/sync"
+replaces = [
+  "runtime_Semacquire", "runtime_SemacquireWaitGroup", "runtime_SemacquireRWMutexR",
+  "runtime_SemacquireRWMutex", "runtime_Semrelease",
+  "runtime_notifyListAdd", "runtime_notifyListWait", "runtime_notifyListNotifyAll",
+  "runtime_notifyListNotifyOne", "runtime_notifyListCheck",
+  "runtime_registerPoolCleanup",
+  "Pool.Get", "Pool.Put",
+]

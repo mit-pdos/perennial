@@ -28,7 +28,7 @@ theorem sync.runtime_SemacquireWaitGroup.wp_proof
     sync.runtime_SemacquireWaitGroup.spec (GF := GF) (hG := hG) := by
   intro sema γ N
   wp_start as #Hsem
-  rw [show (go!"sync.runtime_Semacquire" : GoString) = runtime_Semacquire from rfl]
+  wp_auto
   wp_apply_core wp_runtime_Semacquire sema γ N $$ [] HΦ
   iframe #
 
