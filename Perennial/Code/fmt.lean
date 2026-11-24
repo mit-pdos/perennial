@@ -1055,6 +1055,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Fprintf_unfold : FuncUnfold Fprintf [] Fprintf.impl
   Printf_unfold : FuncUnfold Printf [] Printf.impl
   Sprintf_unfold : FuncUnfold Sprintf [] Sprintf.impl
+  Fprint_unfold : FuncUnfold Fprint [] Fprint.impl
   Print_unfold : FuncUnfold Print [] Print.impl
   import_errors_Assumption : _root_.Perennial.errors.Assumptions
   import_io_Assumption : _root_.Perennial.io.Assumptions
@@ -1081,6 +1082,7 @@ attribute [instance] Assumptions.wrapError_instance
   Assumptions.Fprintf_unfold
   Assumptions.Printf_unfold
   Assumptions.Sprintf_unfold
+  Assumptions.Fprint_unfold
   Assumptions.Print_unfold
   Assumptions.import_errors_Assumption
   Assumptions.import_io_Assumption

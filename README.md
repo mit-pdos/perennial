@@ -147,6 +147,11 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   * s390x: the user address space (`TASK_SIZE`) is 2^64.
 
   `docs/KNOWN_LIMITATIONS.md`, "Platform", repeats this.
+  The standard library is translated with the build tag `purego`
+  (`etc/update-goose-new.py`), which selects the pure-Go code of the crypto
+  packages (`crypto/sha1`'s `blockGeneric`, where the default build calls
+  assembly) and changes no other package; build tags are those of a whole
+  build, so the results are about programs built with `-tags purego`.
   The Go semantics also assumes a 64-bit platform: the
   word-sized types `int`, `uint` and `uintptr` are 64-bit (values `w64`).
   `uintptr` (`go.UintptrSemantics`, `Perennial/Golang/Defn/Predeclared.lean`)
@@ -213,6 +218,21 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   semantics, only by a top-level statement that names `Sha256NoCollision ok` as a
   hypothesis (`GooseLang/Ext/Sha256/Adequacy.lean`). Only `crypto.sha256.is_hash_inj`
   needs it.
+* **Environment premise (GODEBUG `fips140`), opt-in.** `crypto/fips140`'s
+  `enabled` (`godebug.New("fips140").Value() == "only"`) is a trusted
+  initializer (`TrustedCode/crypto/fips140.lean`) over `godebugFips140`, an
+  opaque string standing for the text of the run's `fips140` GODEBUG setting,
+  of which nothing is proved. In mode `only`, `crypto/sha1.Sum` panics. A theorem whose
+  proof needs the mode off names `GodebugFips140Off` (the setting is unset or
+  `off`) as a hypothesis, and then covers only the runs with that setting; it is
+  the condition under which the untranslated initializers of
+  `crypto/internal/fips140` and `crypto/internal/fips140/check` do not panic
+  (with `purego`, FIPS 140-3 mode panics at start). The model makes no such
+  assumption itself. The trusted initializer stands in for translating
+  `internal/godebug` (by the user's decision, 2026-11-23), which goose
+  translates but for four `go:linkname` hooks (`setUpdate`, whose model would
+  have to hand it the environment, `registerMetric`, `setNewIncNonDefault`,
+  `write`) and which needs `sync.Map` and `internal/bisect`, not translated.
 * **Model assumptions (initial states).** An extension's
   `ExtSemantics.initLocal`/`initGlobal` (`GooseLang/Lang.lean`, default `True`)
   are what a top-level theorem assumes of the states its execution starts from.
@@ -227,7 +247,9 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   evaluation frame but that of `Catch e h k` (`GooseLang/Lang.lean`); `panic(p)`
   steps to it, a function with `defer`s runs its body under a `Catch`
   (`Golang/Defn/Defer.lean`), and `recover()` (Goose translates it only directly
-  in a deferred function literal) reads and clears the panic. A postcondition
+  in a deferred function literal, or in a function or method `F` that `defer
+  F(...)` calls as `F'deferred`, passing the cell as `$recover`) reads and clears
+  the panic. A postcondition
   receives panics too, a spec `{{ P }} e {{ RET v; Q }}` excludes them, and a
   goroutine must not panic (`wp_fork`: `forkPost`). The adequacy theorems
   (`goose_adequacy` and the grove/disk ones) require the main thread's
@@ -307,7 +329,18 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `crypto/rand.Reader` (stores a value of Go's dynamic type with a placeholder
   inside; needs `crypto/internal/rand` and `drbg`, whose init runs a FIPS
   self-test). (A fifth, `crypto/ed25519.cryptocustomrand`, is now a skip
-  entry: no translated code reads it.) The no-op for `math.useFMA` (a CPU
+  entry: no translated code reads it.) A function of the same standing (R2
+  REWORK, accepted 2026-11-23 to give `math/rand`'s top-level functions
+  proved specs): `math/rand.globalRand`, Go's body with its
+  `randautoseed.Value() == "0"` test (a `GODEBUG` read) replaced by the
+  default outcome, the generator over the runtime's source; its docstring
+  argues that the other outcome's results are among the model's. The fix
+  translates `internal/godebug` (as for `asynctimerchan`) and the seeded path
+  it then reaches (`lockedSource`, `rngSource` and its seeding over
+  `rngCooked`). `crypto/sha1`'s `init` (`crypto.RegisterHash(crypto.SHA1,
+  New)`) is a trusted no-op for the same program-logic gap, as `crypto/sha256`'s:
+  `crypto` is not translated, so nothing translated reads its hash table
+  (the user's decision, 2026-11-23). The no-op for `math.useFMA` (a CPU
   feature the runtime detects) models irreducible behaviour;
   `errors.errorType` and `math/big.hasADX`, the same kind, are skip entries. Each model's docstring says why it is
   faithful.
