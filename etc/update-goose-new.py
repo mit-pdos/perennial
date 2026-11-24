@@ -236,10 +236,10 @@ def main():
             check=True,
         )
 
-    def run_skiplint(src_path, pkgs):
+    def run_skiplint(src_path, pkgs, tag_args):
         if skiplint_bin is None:
             return
-        cmd = [skiplint_bin, "-configdir", code_dir, "-dir", src_path] + pkgs
+        cmd = [skiplint_bin, "-configdir", code_dir, "-dir", src_path] + tag_args + pkgs
         if args.verbose:
             print(" ".join(cmd))
         r = subprocess.run(cmd, capture_output=True, text=True)
@@ -249,16 +249,18 @@ def main():
                 f"skiplint did not run on {src_path}: {' '.join(pkgs)}: {r.stderr.strip()}"
             )
 
-    def run_goose(src_path, *pkgs, extra_args=None):
+    def run_goose(src_path, *pkgs, tags=None):
         if src_path is None:
             return
         if not pkgs:
             pkgs = ["."]
         else:
             pkgs = list(pkgs)
+        # goose, proofgen, modelcheck and skiplint must load a package with the same tags
+        tag_args = ["-tags", ",".join(tags)] if tags else []
 
         if args.modelcheck:
-            cmd = [modelcheck_bin, "-configdir", code_dir, "-dir", src_path] + pkgs
+            cmd = [modelcheck_bin, "-configdir", code_dir, "-dir", src_path] + tag_args + pkgs
             if args.dry_run or args.verbose:
                 print(" ".join(cmd))
             if not args.dry_run and subprocess.run(cmd).returncode != 0:
@@ -280,9 +282,10 @@ def main():
                 "-dir",
                 src_path,
             ]
+            + tag_args
             + pkgs
         )
-        run_skiplint(src_path, pkgs)
+        run_skiplint(src_path, pkgs, tag_args)
 
         proofgen_bin = path.join(gopath, "bin", "proofgen")
 
@@ -296,6 +299,7 @@ def main():
                 "-dir",
                 src_path,
             ]
+            + tag_args
             + pkgs
         )
 
@@ -322,6 +326,11 @@ def main():
         run_goose(goose_dir, "./model/strings")
         run_goose(goose_dir, "./model/pool")
 
+    # The standard library is translated with the build tag purego, which selects the
+    # pure-Go implementations of the crypto packages (crypto/sha1's blockGeneric, where
+    # the default build has assembly); it changes no other package. Build tags are
+    # those of a whole build: results are about programs built with -tags purego.
+    std_tags = ["purego"]
     if args.std_lib:
         run_goose(
             goose_dir,
@@ -331,7 +340,13 @@ def main():
             "cmp",
             "unsafe",
             "crypto/ed25519",
+            "crypto/fips140",
+            "crypto/internal/boring",
+            "crypto/internal/boring/sig",
+            "crypto/internal/fips140only",
             "crypto/rand",
+            "crypto/sha1",
+            "hash",
             "errors",
             "io",
             "io/fs",
@@ -354,6 +369,7 @@ def main():
             "internal/strconv",
             "internal/stringslite",
             "internal/bytealg",
+            "internal/byteorder",
             "strings",
             "unicode/utf8",
             "sync",
@@ -369,6 +385,7 @@ def main():
             "encoding/binary",
             # added by its Go model overlay (Perennial/Code/internal/gomodel.toml)
             "internal/gomodel",
+            tags=std_tags,
         )
 
     for proj in projs:
@@ -379,7 +396,7 @@ def main():
     # packages whose types (only) are translated, so that the types of the
     # packages above that refer to them can be translated
     if args.std_lib:
-        run_goose(goose_dir, "internal/runtime/atomic", "internal/runtime/sys")
+        run_goose(goose_dir, "internal/runtime/atomic", "internal/runtime/sys", tags=std_tags)
     pm.wait_all()
     if skiplint_warnings:
         print("skiplint (best-effort; every skip reason is still reviewed):", file=sys.stderr)
