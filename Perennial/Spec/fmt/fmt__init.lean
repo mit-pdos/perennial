@@ -20,12 +20,12 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
 
-/-- `f.init(b)`: the `fmt` at `f` writes to the buffer at `b`, with no flag, width or precision. -/
+/-- `f.init(b)`: the `fmt` at `f` writes to the buffer at `b`, with no flag, width or precision (and its `intbuf`). -/
 abbrev fmt.fmt.init.spec : Prop :=
   ∀ (f b : Loc) (v : fmt.fmt),
     {{ (f ↦ v : IProp GF) }}
       (App (Val (f @!! go.GoType.PointerType fmt.fmt.ty @!! go!"init")) (Val #b))
-    {{ RET #(); fmtOwn f b noFlags (W64 0) (W64 0) }}
+    {{ RET #(); fmtOwn f b noFlags (W64 0) (W64 0) ∗ intbufOwn f }}
 
 end spec
 

@@ -32,10 +32,10 @@ abbrev fmt.fmt.fmtInteger.spec : Prop :=
     F.precPresent' = false →
     (F.widPresent' = true → F.zero' = true ∧ 0 ≤ sint.Z wid ∧ sint.Z wid ≤ 1000000 ∧
       prec = W64 0) →
-    {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ fmtOwn (GF := GF) f b F wid prec ∗ bufferOwn b bs }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ fmtOwn (GF := GF) f b F wid prec ∗ intbufOwn f ∗ bufferOwn b bs }}
       (App (App (App (App (App (Val (f @!! go.GoType.PointerType fmt.fmt.ty @!! go!"fmtInteger")) (Val #u)) (Val #base))
         (Val #isSigned)) (Val #verb)) (Val #(hexDigits false)))
-    {{ RET #(); fmtOwn f b F wid prec ∗
+    {{ RET #(); fmtOwn f b F wid prec ∗ intbufOwn f ∗
         bufferOwn b (bs ++ intOut (uint.nat base) (if F.widPresent' then sint.nat wid else 0)
           (if isSigned then sint.Z u else uint.Z u)) }}
 

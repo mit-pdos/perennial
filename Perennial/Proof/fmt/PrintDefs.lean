@@ -246,10 +246,15 @@ def bufferOwn (b : Loc) (bs : GoString) : IProp GF :=
   iprop(∃ sl : GoSlice, b ↦ (sl : buffer) ∗ sl ↦* bs ∗ ownSliceCap w8 sl (DFrac.own 1))
 
 /-- The `fmt` at `f` writes to the buffer at `b`, with the flags `F`, the width `wid` and the
-precision `prec` (its scratch array `intbuf` holding anything). -/
+precision `prec`: its fields but `intbuf` (`intbufOwn`), which `fmtInteger` formats into while
+it calls `pad` on a slice of it. -/
 def fmtOwn (f b : Loc) (F : fmtFlags) (wid prec : w64) : IProp GF :=
-  iprop(∃ ib : GoArray w8 68,
-    f ↦ ({ buf' := b, fmtFlags' := F, wid' := wid, prec' := prec, intbuf' := ib } : fmt.fmt))
+  iprop(f.[fmt.fmt, go!"buf"] ↦ b ∗ f.[fmt.fmt, go!"fmtFlags"] ↦ F ∗
+    f.[fmt.fmt, go!"wid"] ↦ wid ∗ f.[fmt.fmt, go!"prec"] ↦ prec)
+
+/-- The scratch array `intbuf` of the `fmt` at `f`, holding anything. -/
+def intbufOwn (f : Loc) : IProp GF :=
+  iprop(∃ ib : GoArray w8 68, f.[fmt.fmt, go!"intbuf"] ↦ ib)
 
 /-- No flag set (`clearflags`). -/
 def noFlags : fmtFlags := ⟨false, false, false, false, false, false, false, false, false⟩
@@ -272,6 +277,7 @@ def isPrinterA (p : Loc) (x : GoInterface) (bs : GoString) (F : fmtFlags) (wid p
     IProp GF :=
   iprop(bufferOwn (p.[pp, go!"buf"]) bs ∗
     fmtOwn (p.[pp, go!"fmt"]) (p.[pp, go!"buf"]) F wid prec ∗
+    intbufOwn (p.[pp, go!"fmt"]) ∗
     p.[pp, go!"arg"] ↦ x ∗
     (∃ v : reflect.Value, p.[pp, go!"value"] ↦ v) ∗
     (∃ b : Bool, p.[pp, go!"reordered"] ↦ b) ∗
