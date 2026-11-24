@@ -413,6 +413,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   callers_unfold : FuncUnfold callers [] callers.impl
   import_sys_Assumption : _root_.Perennial.internal.runtime.sys.Assumptions
   import_atomic_Assumption : _root_.Perennial.internal.runtime.atomic.Assumptions
+  import_gomodel_Assumption : _root_.Perennial.internal.gomodel.Assumptions
 
 attribute [instance] Assumptions.userArena_instance
   Assumptions.liveUserArenaChunk_instance
@@ -801,6 +802,7 @@ attribute [instance] Assumptions.userArena_instance
   Assumptions.callers_unfold
   Assumptions.import_sys_Assumption
   Assumptions.import_atomic_Assumption
+  Assumptions.import_gomodel_Assumption
 
 end runtime
 

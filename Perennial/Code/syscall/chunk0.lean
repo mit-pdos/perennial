@@ -2,6 +2,8 @@
 module
 
 public import Perennial.Code.sync
+public import Perennial.Code.sync.atomic
+public import Perennial.Code.internal.gomodel
 public import Perennial.Golang.Defn
 public import Perennial.TrustedCode.syscall
 
@@ -2074,7 +2076,8 @@ opaque RLIMIT_DATA [GooseExts] [GoGlobalContext] : val
 
 opaque RLIMIT_FSIZE [GooseExts] [GoGlobalContext] : val
 
-opaque RLIMIT_NOFILE [GooseExts] [GoGlobalContext] : val
+@[reducible] noncomputable def RLIMIT_NOFILE [GooseExts] [GoGlobalContext] : val :=
+  #(7 : Int)
 
 opaque RLIMIT_STACK [GooseExts] [GoGlobalContext] : val
 
@@ -5411,13 +5414,235 @@ noncomputable def Utime [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def utimes [GooseExts] [GoGlobalContext] : GoString :=
   go!"syscall.utimes"
 
+/-- Some systems set an artificially low soft limit on open file count, for compatibility
+    with code that uses select and its hard-coded maximum file descriptor
+    (limited by the size of fd_set).
+
+    Go does not use select, so it should not be subject to these limits.
+    On some systems the limit is 256, which is very easy to run into,
+    even in simple programs like gofmt when they parallelize walking
+    a file tree.
+
+    After a long discussion on go.dev/issue/46279, we decided the
+    best approach was for Go to raise the limit unconditionally for itself,
+    and then leave old software to set the limit back as needed.
+    Code that really wants Go to leave the limit alone can set the hard limit,
+    which Go of course has no choice but to respect.
+
+    go: rlimit.go:30:6 -/
+noncomputable def init.«0».impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Seq (App (Val exceptionDo)
+  (Let "lim" (App (Val (GoInstruction (GoAlloc Rlimit.ty))) (App (Val (GoInstruction (GoZeroVal Rlimit.ty))) (Val #())))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val RLIMIT_NOFILE))
+  (Let "$a1" (Var "lim")
+  (App (App (App (Val (GoInstruction (FuncResolve Getrlimit []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (If (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil)))) (App (Val (GoInstruction (GoOp GoGt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Rlimit.ty go!"Max"))) (Var "lim"))) (Val #(W64 0)))) (Val #false)) (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Rlimit.ty go!"Cur"))) (Var "lim"))) (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Rlimit.ty go!"Max"))) (Var "lim"))) (Val #(W64 1)))))) (Val #false)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad Rlimit.ty))) (Var "lim"))
+  (Let "nlim" (App (Val (GoInstruction (GoAlloc Rlimit.ty))) (App (Val (GoInstruction (GoZeroVal Rlimit.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Rlimit.ty go!"Max"))) (Var "nlim"))) (Val #(W64 1))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val RLIMIT_NOFILE))
+  (Let "$a1" (Var "nlim")
+  (App (App (App (Val (GoInstruction (FuncResolve setrlimit []))) (Val #())) (Var "$a0")) (Var "$a1")))))))
+  (App (Val doExecute)
+  (Let "$a0" (Var "nlim")
+  (App (App (Val (GoInstruction (FuncResolve adjustFileLimit []))) (Val #())) (Var "$a0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef Rlimit.ty go!"Cur"))) (Var "nlim")) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Rlimit.ty))) (Pair (Var "nlim") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (Let "$a0" (Var "lim")
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (_root_.Perennial.sync.atomic.Pointer.ty Rlimit.ty)) go!"Store"))) (App (Val (GoInstruction (GlobalVarAddr origRlimitNofile))) (Val #()))) (Var "$a0")))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r0")))))))))
+  (Val #())))
+
+/-- adjustFileLimit adds per-OS limitations on the Rlimit used for RLIMIT_NOFILE. See rlimit.go.
+
+    go: rlimit_stub.go:10:6 -/
+noncomputable def adjustFileLimit.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "lim"
+  (Seq (App (Val exceptionDo)
+  (Let "lim" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Rlimit.ty)))) (Var "lim"))
+  (App (Val doExecute)
+  (Val #()))))
+  (Val #())))
+
+/-- go: syscall_linux.go:1293:6 -/
+noncomputable def Getrlimit.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "resource"
+  (Lam "rlim"
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Let "$res0" (Var "err")
+  (Seq (App (Val exceptionDo)
+  (Let "rlim" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Rlimit.ty)))) (Var "rlim"))
+  (Let "resource" (App (Val (GoInstruction (GoAlloc go.int))) (Var "resource"))
+  (Let "$r0" (Let "$a0" (Val #(W64 0))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "resource"))
+  (Let "$a2" (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType Rlimit.ty)))) (Val UntypedNil))
+  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Rlimit.ty)))) (Var "rlim"))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve prlimit1 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.error))) (Var "$res0")))))))
+
+/-- setrlimit sets a resource limit.
+    The Setrlimit function is in rlimit.go, and calls this one.
+
+    go: syscall_linux.go:1300:6 -/
+noncomputable def setrlimit.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "resource"
+  (Lam "rlim"
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Let "$res0" (Var "err")
+  (Seq (App (Val exceptionDo)
+  (Let "rlim" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Rlimit.ty)))) (Var "rlim"))
+  (Let "resource" (App (Val (GoInstruction (GoAlloc go.int))) (Var "resource"))
+  (Let "$r0" (Let "$a0" (Val #(W64 0))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "resource"))
+  (Let "$a2" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Rlimit.ty)))) (Var "rlim"))
+  (Let "$a3" (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType Rlimit.ty)))) (Val UntypedNil))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve prlimit1 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.error))) (Var "$res0")))))))
+
+/-- errnoErr returns common boxed Errno values, to prevent
+    allocations at runtime.
+
+    go: syscall_unix.go:152:6 -/
+noncomputable def errnoErr.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "e"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "e" (App (Val (GoInstruction (GoAlloc Errno.ty))) (Var "e"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert Errno.ty go.error))) (App (Val (GoInstruction (GoLoad Errno.ty))) (Var "e")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$sw" (App (Val (GoInstruction (GoLoad Errno.ty))) (Var "e"))
+  (If (App (Val (GoInstruction (GoOp GoEquals Errno.ty))) (Pair (Var "$sw") (Val #(W64 0))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0"))))))
+  (If (App (Val (GoInstruction (GoOp GoEquals Errno.ty))) (Pair (Var "$sw") (Val EAGAIN)))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr errEAGAIN))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0"))))))
+  (If (App (Val (GoInstruction (GoOp GoEquals Errno.ty))) (Pair (Var "$sw") (Val EINVAL)))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr errEINVAL))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0"))))))
+  (If (App (Val (GoInstruction (GoOp GoEquals Errno.ty))) (Pair (Var "$sw") (Val ENOENT)))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr errENOENT))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))))))
+  (App (Val (GoInstruction (GoLoad go.error))) (Var "$res0")))))
+
+/-- MODEL: prlimit1 is the prlimit64 system call: Go's body is
+    RawSyscall6(SYS_PRLIMIT64, uintptr(pid), uintptr(resource),
+    uintptr(unsafe.Pointer(newlimit)), uintptr(unsafe.Pointer(old)), 0, 0) and,
+    for a non-zero errno, errnoErr(e1). The conversions of pointers to uintptr
+    and the system call (assembly) have no semantics. The kernel reads
+    *newlimit if newlimit is non-nil, writes *old if old is non-nil and the call
+    succeeds, and returns 0 or an errno; it cannot fault on Go's pointers and
+    cannot panic. The model reads *newlimit (so a concurrent write races, as
+    with the kernel's read), may write arbitrary limits to *old (a superset of
+    the kernel's writes: always on success, never on failure), and returns
+    errnoErr of an arbitrary errno, nil for 0, as Go's stub does with the
+    kernel's. The limits themselves, the process's state, are not modelled.
+
+    go: prlimit.go:21:6 -/
+noncomputable def prlimit1.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "pid"
+  (Lam "resource"
+  (Lam "newlimit"
+  (Lam "old"
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Let "$res0" (Var "err")
+  (Seq (App (Val exceptionDo)
+  (Let "old" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Rlimit.ty)))) (Var "old"))
+  (Let "newlimit" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Rlimit.ty)))) (Var "newlimit"))
+  (Let "resource" (App (Val (GoInstruction (GoAlloc go.int))) (Var "resource"))
+  (Let "pid" (App (Val (GoInstruction (GoAlloc go.int))) (Var "pid"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 Errno.ty))) (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.ChooseUint64 []))) (Val #())) (Val #())))
+  (Let "e1" (App (Val (GoInstruction (GoAlloc Errno.ty))) (App (Val (GoInstruction (GoZeroVal Errno.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals Errno.ty))) (Pair (App (Val (GoInstruction (GoLoad Errno.ty))) (Var "e1")) (Val #(W64 0))))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad Errno.ty))) (Var "e1"))
+  (App (App (Val (GoInstruction (FuncResolve errnoErr []))) (Val #())) (Var "$a0")))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Errno.ty))) (Pair (Var "e1") (Var "$r0")))))))))
+  (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType Rlimit.ty)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Rlimit.ty)))) (Var "old")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType Rlimit.ty)))) (Val UntypedNil))))) (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.Choose []))) (Val #())) (Val #())) (Val #false))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.ChooseUint64 []))) (Val #())) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.ChooseUint64 []))) (Val #())) (Val #()))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef Rlimit.ty go!"Max"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Rlimit.ty)))) (Var "old"))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef Rlimit.ty go!"Cur"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Rlimit.ty)))) (Var "old"))) (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType Rlimit.ty)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Rlimit.ty)))) (Var "newlimit")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType Rlimit.ty)))) (Val UntypedNil))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad Rlimit.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Rlimit.ty)))) (Var "newlimit")))
+  (App (Val doExecute)
+  (Var "$r0")))
+  (App (Val doExecute)
+  (Val #())))))))))
+  (App (Val (GoInstruction (GoLoad go.error))) (Var "$res0")))))))))
+
 noncomputable instance info' : PkgInfo pkg_id.syscall where
-  pkgImportedPkgs := [pkg_id.sync]
+  pkgImportedPkgs := [pkg_id.sync, pkg_id.sync.atomic, pkg_id.internal.gomodel]
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.syscall)) (Lam BAnon
   (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -5751,6 +5976,10 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.sync.initialize') (Val #()))))))
   (App (Val doExecute)
+  (App (Val _root_.Perennial.sync.atomic.initialize') (Val #()))))))
+  (App (Val doExecute)
+  (App (Val _root_.Perennial.internal.gomodel.initialize') (Val #()))))))
+  (App (Val doExecute)
   (App (Val (go.GlobalAlloc env (go.GoType.MapType go.string go.int))) (Val #()))))))
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc envs (go.GoType.SliceType go.string))) (Val #()))))))
@@ -5766,6 +5995,8 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val (go.GlobalAlloc fcntl64Syscall go.uintptr)) (Val #()))))))
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc pageBufPool (go.GoType.PointerType _root_.Perennial.sync.Pool.ty))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc origRlimitNofile (_root_.Perennial.sync.atomic.Pointer.ty Rlimit.ty))) (Val #()))))))
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc mapper (go.GoType.PointerType mmapper.ty))) (Val #()))))))
   (App (Val doExecute)

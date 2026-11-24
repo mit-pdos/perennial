@@ -1,9 +1,11 @@
 /-
-The proof of `runtime.callers` (its trusted model, `TrustedCode/runtime.lean`).
+The proof of `runtime.callers` (its Go model, `goose/model/overlay/runtime`).
 -/
 module
 
 public import Perennial.Spec.runtime.callers_
+public import Perennial.Spec.internal.gomodel.Choose
+public import Perennial.Spec.internal.gomodel.ChooseUint64
 
 @[expose] public section
 
@@ -22,7 +24,9 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : runtime.Assumptions]
 
-theorem runtime.callers.wp_proof :
+theorem runtime.callers.wp_proof
+    (wp_Choose : internal.gomodel.Choose.spec (GF := GF) (hG := hG))
+    (wp_ChooseUint64 : internal.gomodel.ChooseUint64.spec (GF := GF) (hG := hG)) :
     runtime.callers.spec (GF := GF) (hG := hG) := fun skip s xs => by
   wp_start as Hs
   ihave %Hlen := ownSlice_len $$ Hs
@@ -39,21 +43,15 @@ theorem runtime.callers.wp_proof :
   wp_for HI
   ihave %Hlen' := ownSlice_len $$ Hs
   wp_if_destruct
-  · wp_apply wp_ArbitraryInt as %c -
-    by_cases hc : c = W64 0
-    · subst hc
-      rw [show (!decide (W64 0 = W64 0)) = false from rfl]
-      simp only [if_decide_false_eq_true]
-      simp only [decide_eq_true_eq, ↓reduceIte]
-      wp_auto
+  · wp_apply wp_Choose as %c -
+    cases c
+    · wp_auto
       iapply HΦ
       iexists ys
       iframe
       ipureintro; exact Hn
-    · have Hf : (!decide (c = W64 0)) = true := by rw [decide_eq_false hc]; rfl
-      rw [Hf]
-      simp only [decide_eq_true_eq, ↓reduceIte]
-      wp_apply wp_ArbitraryInt as %v -
+    · wp_auto
+      wp_apply wp_ChooseUint64 as %v -
       have hb : 0 ≤ sint.Z n ∧ sint.Z n < sint.Z s.len := ⟨Hn.1, Hif⟩
       have hsl : (ys.length : Int) = sint.Z s.len := by
         rw [Hlen'.1]; show ((sint.Z s.len).toNat : Int) = _; omega

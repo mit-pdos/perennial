@@ -365,6 +365,8 @@ def main():
             "crypto/internal/boring",
             "crypto/internal/boring/sig",
             "crypto/internal/fips140only",
+            "crypto/internal/fips140/drbg",
+            "crypto/internal/rand",
             "crypto/rand",
             "crypto/sha1",
             "hash",

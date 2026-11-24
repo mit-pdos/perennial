@@ -1,8 +1,9 @@
 # internal/gomodel: added to the standard library by its Go model overlay
 # (a whole-package model of a path that does not exist): the choice, stuck and
-# read-lock points of the standard-library models. All four functions are
-# primitive stubs, modelled in Perennial/TrustedCode/internal/gomodel.lean.
-translate = ["!*"]
+# read-lock points of the standard-library models. The four `trusted` functions are
+# primitive stubs, modelled in Perennial/TrustedCode/internal/gomodel.lean; `ChooseString` and
+# `ChooseStrings` (choose.go) are translated Go over `Choose` and `ChooseUint64`.
+translate = ["!*", "ChooseString", "ChooseStrings"]
 trusted = ["Choose", "ChooseUint64", "Stuck", "StartRead"]
 
 [model]

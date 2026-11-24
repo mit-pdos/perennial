@@ -7,7 +7,7 @@ which are not translated by the user's decision (fix-semantics Case 33).
 module
 
 public import Perennial.Golang.Defn.Pre
-public import Perennial.TrustedCode.syscall
+public import Perennial.Code.internal.gomodel
 
 @[expose] public section
 
@@ -21,10 +21,11 @@ variable [GooseExts] [GoGlobalContext]
 
 /-- `runtime_args() []string` (`proc.go`: `func runtime_args() []string // in package
 runtime`): a `go:linkname` with no Go body; the runtime returns a copy of the command-line
-arguments. The model: an arbitrary `[]string` (`syscall.arbitraryStrings`), which covers every
-argument list. -/
+arguments. The model: an arbitrary `[]string`, a call of `internal/gomodel.ChooseStrings`
+(translated Go over `Choose`, `goose/model/overlay/internal/gomodel/choose.go`), which covers
+every argument list. -/
 noncomputable def runtime_args.impl : val :=
-  syscall.arbitraryStrings
+  λ: <>, FuncResolve internal.gomodel.ChooseStrings [] #() #()
 
 /-- `runtime_beforeExit(exitCode int)` (`proc.go`: `func runtime_beforeExit(exitCode int) // implemented
 in runtime`), which `Exit` (translated) calls before `syscall.Exit`: a `go:linkname` with no Go

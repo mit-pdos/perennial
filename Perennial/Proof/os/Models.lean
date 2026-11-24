@@ -1,12 +1,12 @@
 /-
 Specs of the trusted models of `os` (`Perennial/TrustedCode/os.lean`) that `os`'s initializer
-runs: `runtime_args` (an arbitrary `[]string`), and the standard streams' initializers (`Stdout`:
+runs: `runtime_args` (an arbitrary `[]string`, from `internal/gomodel.ChooseStrings`), and the standard streams' initializers (`Stdout`:
 nothing; `Stderr`: the variable holds some pointer; `Stdin` is skipped, not translated). `os`'s initializer is proved by
 its clients (it is names-only here but for its initializers).
 -/
 module
 
-public import Perennial.Proof.syscall.Base
+public import Perennial.Spec.internal.gomodel.ChooseStrings
 public import Perennial.Code.os
 
 @[expose] public section
@@ -25,13 +25,19 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 
-/-- The model of `runtime_args` returns some slice of strings, owned with its capacity. -/
-theorem wp_runtime_args_impl :
+/-- The model of `runtime_args` (a call of `internal/gomodel.ChooseStrings`) returns some slice of
+strings, owned with its capacity. -/
+theorem wp_runtime_args_impl [internal.gomodel.Assumptions]
+    (wp_ChooseStrings : internal.gomodel.ChooseStrings.spec (GF := GF) (hG := hG)) :
     {{ (True : IProp GF) }}
       (App (Val runtime_args.impl) (Val #()))
     {{ (s : GoSlice), RET #s; ∃ xs : List GoString,
-        s ↦* xs ∗ ownSliceCap GoString s (DFrac.own 1) }} :=
-  syscall.wp_arbitraryStrings
+        s ↦* xs ∗ ownSliceCap GoString s (DFrac.own 1) }} := by
+  wp_start
+  wp_auto
+  wp_apply wp_ChooseStrings as %s Hs
+  iapply HΦ
+  iexact Hs
 
 /-- `Stdout`'s initializer (the model) does nothing. -/
 theorem wp_Stdout_init :

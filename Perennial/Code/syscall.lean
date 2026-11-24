@@ -106,8 +106,15 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Termios_instance : Termios.TypeAssumptions
   runtime_envs_unfold : FuncUnfold runtime_envs [] runtime_envs.impl
   «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
+  adjustFileLimit_unfold : FuncUnfold adjustFileLimit [] adjustFileLimit.impl
   Exit_unfold : FuncUnfold Exit [] Exit.impl
+  Getrlimit_unfold : FuncUnfold Getrlimit [] Getrlimit.impl
+  setrlimit_unfold : FuncUnfold setrlimit [] setrlimit.impl
+  errnoErr_unfold : FuncUnfold errnoErr [] errnoErr.impl
+  prlimit1_unfold : FuncUnfold prlimit1 [] prlimit1.impl
   import_sync_Assumption : _root_.Perennial.sync.Assumptions
+  import_atomic_Assumption : _root_.Perennial.sync.atomic.Assumptions
+  import_gomodel_Assumption : _root_.Perennial.internal.gomodel.Assumptions
 
 attribute [instance] Assumptions.SysProcIDMap_instance
   Assumptions.SysProcAttr_instance
@@ -195,8 +202,15 @@ attribute [instance] Assumptions.SysProcIDMap_instance
   Assumptions.Termios_instance
   Assumptions.runtime_envs_unfold
   Assumptions.«init.0_unfold»
+  Assumptions.adjustFileLimit_unfold
   Assumptions.Exit_unfold
+  Assumptions.Getrlimit_unfold
+  Assumptions.setrlimit_unfold
+  Assumptions.errnoErr_unfold
+  Assumptions.prlimit1_unfold
   Assumptions.import_sync_Assumption
+  Assumptions.import_atomic_Assumption
+  Assumptions.import_gomodel_Assumption
 
 end syscall
 

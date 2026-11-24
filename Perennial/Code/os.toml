@@ -5,7 +5,8 @@
 # `ErrNoDeadline`/`ErrDeadlineExceeded` and `CopyFileRange`/`Splice` function values, and `init.0`
 # (`Args = runtime_args()` unless `runtime.GOOS` is "windows", a constant goose emits as its value).
 # Trusted models (TrustedCode/os.lean):
-# * `runtime_args` (a `go:linkname` into the runtime, no Go body): an arbitrary `[]string`;
+# * `runtime_args` (a `go:linkname` into the runtime, no Go body): an arbitrary `[]string`, a call
+#   of `internal/gomodel.ChooseStrings`;
 # * `Stdout`, `Stderr` (`NewFile(uintptr(syscall.Stdout), "/dev/stdout")`, ...): `Stdout` does
 #   nothing (the variable is not allocated, code using it is stuck; it is to get a real model,
 #   perennial#663), `Stderr` allocates its variable and stores a fresh pointer whose

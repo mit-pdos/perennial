@@ -4,6 +4,8 @@ module
 public import Perennial.Proof.ProofPrelude
 public import Perennial.GeneratedProof.errors
 public import Perennial.GeneratedProof.fmt
+public import Perennial.GeneratedProof.internal.byteorder
+public import Perennial.GeneratedProof.math.bits
 public import Perennial.Golang.Theory
 public import Perennial.Code.math.big
 
