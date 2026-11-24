@@ -7,6 +7,9 @@ public import Perennial.Spec.fmt.initialize
 public import Perennial.Spec.sync.initialize
 public import Perennial.Spec.io.initialize
 public import Perennial.Spec.errors.initialize
+public import Perennial.Spec.unicode.utf8.initialize
+public import Perennial.Spec.reflect.initialize
+public import Perennial.Spec.strconv.initialize
 public import Perennial.Spec.errors.New
 
 @[expose] public section
@@ -28,6 +31,9 @@ theorem fmt.initialize'.wp_proof
     (wp_sync_initialize : sync.initialize'.spec (GF := GF) (hG := hG))
     (wp_io_initialize : io.initialize'.spec (GF := GF) (hG := hG))
     (wp_errors_initialize : errors.initialize'.spec (GF := GF) (hG := hG))
+    (wp_utf8_initialize : unicode.utf8.initialize'.spec (GF := GF) (hG := hG))
+    (wp_reflect_initialize : reflect.initialize'.spec (GF := GF) (hG := hG))
+    (wp_strconv_initialize : strconv.initialize'.spec (GF := GF) (hG := hG))
     (wp_New : errors.New.spec (GF := GF) (hG := hG)) :
     fmt.initialize'.spec (GF := GF) (hG := hG) := by
   intro get_is_pkg_init Hinit
@@ -39,9 +45,12 @@ theorem fmt.initialize'.wp_proof
   repeat (wp_apply wp_GlobalAlloc (V := GoInterface) _ go.error as _)
   wp_apply wp_GlobalAlloc (V := sync.Pool) ssFree sync.Pool.ty as _
   wp_apply wp_GlobalAlloc (V := GoSlice) space _ as _
-  wp_apply wp_GlobalAlloc (V := sync.Pool) ppFree sync.Pool.ty as _
-  wp_apply wp_sync_initialize _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #Hsync⟩
-  wp_apply wp_io_initialize _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hio⟩
+  wp_apply wp_GlobalAlloc (V := sync.Pool) ppFree sync.Pool.ty as Hpp
+  wp_apply wp_sync_initialize _ Hinit.2.2.2.2.2.2.1 $$ Hown as ⟨Hown, #Hsync⟩
+  wp_apply wp_reflect_initialize _ Hinit.2.2.2.2.2.1 $$ Hown as ⟨Hown, #Hreflect⟩
+  wp_apply wp_io_initialize _ Hinit.2.2.2.2.1 $$ Hown as ⟨Hown, #Hio⟩
+  wp_apply wp_utf8_initialize _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #Hutf8⟩
+  wp_apply wp_strconv_initialize _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hstrconv⟩
   wp_apply wp_errors_initialize _ Hinit.2.1 $$ Hown as ⟨Hown, #Herrors⟩
   repeat (first
     | (wp_apply wp_New as %_ _)
@@ -52,12 +61,43 @@ theorem fmt.initialize'.wp_proof
   isplitr
   · ipureintro; rfl
   iintro %sl ⟨Hsl, Hcap⟩
+  -- `ppFree` is a `sync.Pool` of printers: its `New` returns a zero `pp`
+  -- (`init_Pool`'s premise `local = nil` is the last goal)
+  imod sync.init_Pool (globalAddr ppFree) _ iprop(True) fmt.ppFreeElem ⊤ ?_ $$ [Hpp] with #Hpool
+  rotate_left
+  · iframe Hpp
+    iapply sync.newSpec_of_true
+    iright
+    wp_start
+    dsimp only
+    wp_auto
+    wp_alloc l as Hl
+    wp_auto
+    iapply HΦ
+    unfold fmt.ppFreeElem
+    iexists l, (zero_val fmt.pp)
+    iframe Hl
+    isplitr
+    · ipureintro; rfl
+    rw [show (zero_val fmt.pp).buf' = slice.nil from rfl,
+      show (zero_val fmt.pp).wrappedErrs' = slice.nil from rfl]
+    isplitl; · iapply ownSlice_nil
+    isplitl; · iapply ownSliceCap_nil
+    isplitl; · iapply ownSlice_nil
+    iapply ownSliceCap_nil
   repeat (first
     | (wp_apply wp_New as %_ _)
     | (rw [recv_eq_func_mk BAnon BAnon]; wp_auto)
     | wp_auto)
   iframe Hown
   is_pkg_init_finish
+  unfold fmt.isInit
+  iexists _
+  iframe #
+  ipureintro
+  simp [func.nil]
+  -- `init_Pool`'s premise: the literal's field `local` is `nil`
+  rfl
 
 end proof
 

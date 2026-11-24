@@ -1,0 +1,12 @@
+translate = ["!*"]
+imports = ["!*"]
+trusted = [
+  "ProphId",
+  "NewProph",
+  "ProphId.ResolveBool",
+  "ProphId.ResolveU64",
+  "ProphId.Resolve",
+]
+[bootstrap]
+enabled = true
+prelude = []

@@ -80,7 +80,7 @@ theorem strconv.appendQuotedWith.wp_proof
       obtain ⟨c, rest, rfl⟩ := List.exists_cons_of_ne_nil hne
       wp_apply wp_DecodeRuneInString as %rv' %wv' %Hw
       have hw : 1 ≤ sint.Z wv' ∧ sint.Z wv' ≤ (c :: rest).length := by
-        rcases Hw with ⟨h, -⟩ | ⟨-, h⟩
+        rcases Hw.1 with ⟨h, -⟩ | ⟨-, h⟩
         · exact absurd h (List.cons_ne_nil _ _)
         · exact h
       repeat' (first

@@ -4,8 +4,13 @@
 # pointer to a non-plain type (no rule: Golang/Defn/Plain.lean), and whose model leaves a reader on
 # `b.addr` once set, so that a copy by value stored back over a used Builder is stuck; and `Reset`,
 # whose model therefore leaves `b.addr` as it is. `grow`'s `bytealg.MakeNoZero` is
-# trusted in its package.
-translate = ["Builder", "Builder.*", "!Builder.String", "!Builder.copyCheck", "!Builder.Reset", "asciiSpace", "HasSuffix", "TrimSuffix", "NewReplacer"]
+# trusted in its package. `TrimLeft` with its ASCII helpers (`trimLeftByte`, `makeASCIISet`,
+# `asciiSet.contains`, `trimLeftASCII`); its non-ASCII path, `trimLeftUnicode`, is not translated
+# (it reaches `IndexRune` and utf8 decoding): a call of `TrimLeft` with a cutset that is not all ASCII
+# has no proof. `LastIndex`, `IndexByte` and `Cut` (over internal/stringslite and internal/bytealg).
+translate = ["Builder", "Builder.*", "!Builder.String", "!Builder.copyCheck", "!Builder.Reset", "asciiSpace", "HasSuffix", "TrimSuffix", "NewReplacer",
+  "LastIndex", "IndexByte", "Cut",
+  "TrimLeft", "trimLeftByte", "trimLeftASCII", "makeASCIISet", "asciiSet.contains"]
 imports = ["!*", "internal/stringslite", "sync", "io", "internal/bytealg", "unicode/utf8"]
 trusted = ["Builder.String", "Builder.copyCheck", "Builder.Reset", "Join", "HasPrefix", "Compare", "TrimPrefix", "Split"]
 

@@ -4,6 +4,7 @@ The proof of `internal.stringslite.initialize'`.
 module
 
 public import Perennial.Spec.internal.stringslite.initialize
+public import Perennial.Spec.internal.bytealg.initialize
 
 @[expose] public section
 
@@ -20,7 +21,8 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : internal.stringslite.Assumptions]
 
-theorem internal.stringslite.initialize'.wp_proof :
+theorem internal.stringslite.initialize'.wp_proof
+    (wp_bytealg_initialize : internal.bytealg.initialize'.spec (GF := GF) (hG := hG)) :
     internal.stringslite.initialize'.spec (GF := GF) (hG := hG) := by
   intro get_is_pkg_init Hinit
   wp_start as Hown
@@ -28,6 +30,7 @@ theorem internal.stringslite.initialize'.wp_proof :
   iframe Hown
   iintro Hown
   wp_auto
+  wp_apply wp_bytealg_initialize _ Hinit.2.1 $$ Hown as ⟨Hown, #Hbytealg⟩
   iframe Hown
   is_pkg_init_finish
 
