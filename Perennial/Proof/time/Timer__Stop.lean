@@ -1,9 +1,10 @@
 /-
-The proof of `time.Timer.Stop` (translated; the runtime's `stopTimer` is modeled in `TrustedCode/time.lean`).
+The proof of `time.Timer.Stop`.
 -/
 module
 
 public import Perennial.Spec.time.Timer__Stop
+public import Perennial.Spec.time.stopTimer
 
 @[expose] public section
 
@@ -20,16 +21,21 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-theorem time.Timer.Stop.wp_proof : time.Timer.Stop.spec (GF := GF) (hG := hG) := by
+theorem time.Timer.Stop.wp_proof
+    (wp_stopTimer : time.stopTimer.spec (GF := GF) (hG := hG)) :
+    time.Timer.Stop.spec (GF := GF) (hG := hG) := by
   intro t
   wp_start as Ht
   unfold isTimer isFuncTimer
-  icases Ht with (⟨%ch, %γ, #HC, #Hinit, #Hrt, #Hch⟩ | ⟨#Hinit, #Hrt⟩)
-  all_goals
-    wp_auto
-    wp_func_call
-    wp_apply wp_stopTimer as %b -
-    all_goals first | iexact Hrt | (unfold isRuntimeTimer; iexists _; iexact Hrt) | skip
+  icases Ht with (⟨%ch, %γ, #HC, #Hinit, ⟨%fire, #Hcell, #Hfire⟩, #Hch⟩ | ⟨#Hinit, #Hrt⟩)
+  · wp_auto
+    wp_apply wp_stopTimer $$ [] as %b -
+    · unfold isRuntimeTimer
+      iexists fire
+      iexact Hcell
+    wp_end
+  · wp_auto
+    wp_apply wp_stopTimer $$ Hrt as %b -
     wp_end
 
 end proof

@@ -22,10 +22,11 @@ variable [package_sem : time.Assumptions]
 
 /-- Spec of `time.NewTicker(d)`: for a positive `d` (Go panics otherwise), a `*Ticker`
 (`isTicker`), one of the runtime's timers (`isRuntimeTimer`), whose channel may yield some time at
-a receive. -/
+a receive. The ticker's goroutine sends `Now()` (`sendTimes`), which reads the package's globals,
+hence `isPkgInit`. -/
 abbrev time.NewTicker.spec : Prop :=
   ∀ (d : time.Duration),
-    {{ ⌜0 < sint.Z d⌝ }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.time ∗ ⌜0 < sint.Z d⌝ }}
       (App (Val (@! time.NewTicker)) (Val #d))
     {{ (t : Loc) (ch : Loc) (γ : ChanNames), RET #t; isTicker (GF := GF) t ch γ }}
 
