@@ -1,0 +1,3 @@
+[model]
+dir = "goose/testdata/models/modellayout_sizeof"
+replaces = ["T"]

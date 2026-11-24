@@ -1,6 +1,7 @@
 package util
 
 import (
+	"go/types"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -411,5 +412,36 @@ func TestModelRefusals(t *testing.T) {
 				t.Errorf("error:\n%v\nwant it to contain %q", err, c.want)
 			}
 		})
+	}
+}
+
+// TestModelLayoutChanged: the types whose gc layout a model changes, and
+// the types that contain one (not through a pointer).
+func TestModelLayoutChanged(t *testing.T) {
+	root := modelModule(t, "package p\n\ntype T struct{ A, b int64 }\n\ntype U struct{ A int64; b int32 }\n",
+		"package p\n\ntype T struct{ A int64 }\n\ntype U struct{ A int64; c int32 }\n",
+		"[model]\ndir = \"model\"\nreplaces = [\"T\", \"U\"]\n", nil)
+	models, err := buildModels(root, "./p")
+	if err != nil {
+		t.Fatal(err)
+	}
+	pkg := types.NewPackage("m/p", "p")
+	named := func(n string) types.Type {
+		return types.NewNamed(types.NewTypeName(0, pkg, n, nil), types.NewStruct(nil, nil), nil)
+	}
+	tt, ut := named("T"), named("U")
+	field := func(ty types.Type) types.Type {
+		return types.NewStruct([]*types.Var{types.NewField(0, nil, "x", ty, false)}, nil)
+	}
+	for _, c := range []struct {
+		ty   types.Type
+		want bool
+	}{
+		{tt, true}, {ut, false}, {types.NewArray(tt, 2), true}, {field(types.NewArray(tt, 1)), true},
+		{field(types.NewPointer(tt)), false}, {field(ut), false},
+	} {
+		if _, got := models.LayoutChanged(c.ty); got != c.want {
+			t.Errorf("LayoutChanged(%v) = %v, want %v", c.ty, got, c.want)
+		}
 	}
 }

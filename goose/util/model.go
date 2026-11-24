@@ -58,6 +58,75 @@ type Models struct {
 	Packages map[string]*PackageModel
 	// modelFiles are the absolute paths of all model files.
 	modelFiles map[string]bool
+	// layoutChanged are the types ("path.Name") of the models' packages
+	// whose layout under gc on linux/amd64 differs from the real
+	// declaration's (LayoutChanged).
+	layoutChanged map[string]bool
+}
+
+// gcSizes are the sizes of gc on linux/amd64, the platform of the model.
+var gcSizes = types.SizesFor("gc", "amd64")
+
+// layout describes a type's layout under gc on linux/amd64: its size, its
+// alignment and its fields' offsets. A generic type has no layout of its
+// own: it is described by its definition.
+func layout(t *types.TypeName) string {
+	if n, ok := t.Type().(*types.Named); ok && n.TypeParams().Len() > 0 {
+		return "generic " + typeString(n.Underlying())
+	}
+	ty := t.Type()
+	s := fmt.Sprintf("size %d align %d", gcSizes.Sizeof(ty), gcSizes.Alignof(ty))
+	if st, ok := ty.Underlying().(*types.Struct); ok {
+		var fs []*types.Var
+		for i := range st.NumFields() {
+			fs = append(fs, st.Field(i))
+		}
+		s += fmt.Sprintf(" offsets %v", gcSizes.Offsetsof(fs))
+	}
+	return s
+}
+
+// LayoutChanged returns a type that t contains (t itself, a field's type
+// or an array's element type, transitively) whose layout a model changes:
+// a named type of a model's package whose size, alignment or field offsets
+// under gc on linux/amd64 differ from the real declaration's (or that the
+// real package does not declare). unsafe.Sizeof, Alignof and Offsetof of
+// such a type are not the model's layout, so goose refuses them.
+func (m *Models) LayoutChanged(t types.Type) (string, bool) {
+	if m == nil || len(m.layoutChanged) == 0 {
+		return "", false
+	}
+	seen := make(map[types.Type]bool)
+	var find func(t types.Type) (string, bool)
+	find = func(t types.Type) (string, bool) {
+		t = types.Unalias(t)
+		if seen[t] {
+			return "", false
+		}
+		seen[t] = true
+		switch t := t.(type) {
+		case *types.Named:
+			if o := t.Obj(); o.Pkg() != nil && m.layoutChanged[o.Pkg().Path()+"."+o.Name()] {
+				return o.Pkg().Path() + "." + o.Name(), true
+			}
+			for i := range t.TypeArgs().Len() {
+				if n, ok := find(t.TypeArgs().At(i)); ok {
+					return n, true
+				}
+			}
+			return find(t.Underlying())
+		case *types.Struct:
+			for i := range t.NumFields() {
+				if n, ok := find(t.Field(i).Type()); ok {
+					return n, true
+				}
+			}
+		case *types.Array:
+			return find(t.Elem())
+		}
+		return "", false
+	}
+	return find(t)
 }
 
 // ModelErrors are the config errors of the models of a load.
@@ -277,7 +346,7 @@ func (m *Models) WriteGoOverlay(opts LoadOptions, dir string) (string, error) {
 // that the model keeps the real package's API (CheckAPI).
 func BuildModels(modDir, configDir string, opts LoadOptions, patterns ...string) (*Models, error) {
 	m := &Models{Overlay: make(map[string][]byte), Packages: make(map[string]*PackageModel),
-		modelFiles: make(map[string]bool)}
+		modelFiles: make(map[string]bool), layoutChanged: make(map[string]bool)}
 	b := &builder{modDir: modDir, configDir: configDir, opts: opts, models: m,
 		real: make(map[string]*packages.Package)}
 	for iter := 0; ; iter++ {
@@ -1203,8 +1272,9 @@ func firstBodyLine(fset *token.FileSet, b *builder, fn *ast.FuncDecl) string {
 }
 
 // check type-checks the overlaid model packages, checks that each
-// names_only entry matches a model declaration, and checks their API
-// against the real packages' (CheckAPI).
+// names_only entry matches a model declaration, records the types whose
+// layout the models change (LayoutChanged), and checks their API against
+// the real packages' (CheckAPI).
 func (b *builder) check() error {
 	merged, err := b.models.merge(b.opts)
 	if err != nil {
@@ -1253,6 +1323,21 @@ func (b *builder) check() error {
 			}
 		}
 		real := b.real[p.PkgPath]
+		if pm != nil {
+			for _, name := range p.Types.Scope().Names() {
+				o, ok := p.Types.Scope().Lookup(name).(*types.TypeName)
+				if !ok || o.IsAlias() {
+					continue
+				}
+				var r *types.TypeName
+				if real != nil {
+					r, _ = real.Types.Scope().Lookup(name).(*types.TypeName)
+				}
+				if r == nil || r.IsAlias() || layout(r) != layout(o) {
+					b.models.layoutChanged[p.PkgPath+"."+name] = true
+				}
+			}
+		}
 		if pm == nil || real == nil {
 			continue
 		}
