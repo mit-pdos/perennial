@@ -70,6 +70,7 @@ globs = [
   "Perennial.Golang.Defn.Pre",
   "Perennial.Golang.Defn.PreLang",
   "Perennial.Golang.Defn.Predeclared",
+  "Perennial.Golang.Defn.Reflect",
   "Perennial.Golang.Defn.Slice",
   "Perennial.Golang.Defn.String",
   "Perennial.Golang.Theory",

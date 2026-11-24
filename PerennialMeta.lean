@@ -45,6 +45,7 @@ public import Perennial.Golang.Defn.PostLang
 public import Perennial.Golang.Defn.Pre
 public import Perennial.Golang.Defn.PreLang
 public import Perennial.Golang.Defn.Predeclared
+public import Perennial.Golang.Defn.Reflect
 public import Perennial.Golang.Defn.Slice
 public import Perennial.Golang.Defn.String
 public import Perennial.Golang.Theory
