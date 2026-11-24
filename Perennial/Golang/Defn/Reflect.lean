@@ -60,10 +60,11 @@ noncomputable def kindOf (u : go.GoType) : Option Nat :=
   | go.PointerType _ => some 22
   | go.SliceType _ => some 23
   | go.StructType _ => some 25
-  | _ => [(go.bool, 1), (go.int, 2), (go.int8, 3), (go.int16, 4), (go.int32, 5), (go.int64, 6),
+  | _ => ([(go.bool, 1), (go.int, 2), (go.int8, 3), (go.int16, 4), (go.int32, 5), (go.int64, 6),
       (go.uint, 7), (go.uint8, 8), (go.uint16, 9), (go.uint32, 10), (go.uint64, 11),
       (go.uintptr, 12), (go.float32, 13), (go.float64, 14), (go.complex64, 15),
-      (go.complex128, 16), (go.string, 24), («unsafe».Pointer, 26)].lookup u
+      (go.complex128, 16), (go.string, 24), («unsafe».Pointer, 26)].find?
+        fun p => decide (p.1 = u)).map (·.2)
 
 /-- `reflect.ChanDir`: `RecvDir` 1, `SendDir` 2, `BothDir` 3. -/
 def chanDirOf : go.ChanDir → Nat
