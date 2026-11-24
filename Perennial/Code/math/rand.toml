@@ -1,5 +1,57 @@
-translate = ["!*"]
-imports = ["!*", "sync"]
+# The top-level functions that draw integers (`Int63`, `Int31`, `Int63n`, `Int31n`, `Intn`), over
+# the global generator (`globalRand`, trusted below) and its runtime source (`runtimeSource`, whose
+# `runtime_rand` is trusted below), and the `Rand` methods they call. The other functions (`Seed`,
+# `Uint64`, `Float64`, `Read`, `Perm`, `Shuffle`, `ExpFloat64`, `NewSource`, ...) are names only:
+# a call of one is stuck.
+translate = [
+  "Int63", "Int31", "Int63n", "Int31n", "Intn",
+  "Rand.Int63", "Rand.Int31", "Rand.Int63n", "Rand.Int31n", "Rand.Intn",
+  "runtimeSource.Int63", "runtimeSource.Uint64",
+  "rngMax", "rngMask",
+  "globalRandGenerator",
+]
+
+imports = ["!*", "sync", "sync/atomic"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true
+
+# `runtime_rand` (`go:linkname runtime_rand runtime.rand`, no Go body); `globalRand`, whose
+# `randautoseed.Value()` reads `internal/godebug`, which is not translated
+# (TrustedCode/math/rand.lean)
+trusted = ["runtime_rand", "globalRand"]
+
+[[skip]]
+names = ["randautoseed"]
+reason = """
+`godebug.New("randautoseed")` (rand.go): `internal/godebug`'s `New(name)` is
+`return &Setting{name: name}`, an allocation: cannot panic, no effect beyond the variable. Read
+only by `globalRand`, whose trusted model does not read it (TrustedCode/math/rand.lean)."""
+
+[[skip]]
+names = ["randseednop"]
+reason = """
+`godebug.New("randseednop")` (rand.go): `internal/godebug`'s `New(name)` is
+`return &Setting{name: name}`, an allocation: cannot panic, no effect beyond the variable. Read
+only by `Seed`, which is not translated."""
+
+[[skip]]
+names = ["ke", "we", "fe"]
+reason = """
+The exponential distribution's tables (exp.go): array literals of constants, so the initializers
+store constants, cannot panic and have no effect beyond the variables. Read only by `ExpFloat64`,
+which is not translated."""
+
+[[skip]]
+names = ["kn", "wn", "fn"]
+reason = """
+The normal distribution's tables (normal.go): array literals of constants, so the initializers
+store constants, cannot panic and have no effect beyond the variables. Read only by
+`NormFloat64`, which is not translated."""
+
+[[skip]]
+names = ["rngCooked"]
+reason = """
+The additive lagged Fibonacci generator's seeding table (rng.go): an array literal of constants,
+so the initializer stores constants, cannot panic and has no effect beyond the variable. Read only
+by `rngSource.Seed`, which is not translated."""

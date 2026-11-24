@@ -2,7 +2,9 @@
 module
 
 public import Perennial.Proof.ProofPrelude
+public import Perennial.ManualProof.math.rand
 public import Perennial.GeneratedProof.sync
+public import Perennial.GeneratedProof.sync.atomic
 public import Perennial.Golang.Theory
 public import Perennial.Code.math.rand
 
