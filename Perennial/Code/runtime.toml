@@ -12,12 +12,16 @@ translate_types = true
 # `buildVersion`, which `Version` returns and the linker sets: trusted, `buildVersion.init` stores
 # the opaque `buildVersionValue` (TrustedCode/runtime.lean), which a client's premise about the
 # build can name (an overlay model would make it an arbitrary choice no premise can refer to).
-trusted = ["callers", "buildVersion"]
+# `Gosched` (`mcall(gosched_m)`: assembly and the scheduler): trusted, `Gosched.impl` returns. Not an
+# overlay replacement: a replacement would also replace it for the runtime's own callers in gc builds
+# (`runtime.GC` yields with `Gosched` while it waits for the sweep), so a model body that does not yield
+# hangs gc's GC; trusted, gc keeps the real one.
+trusted = ["Gosched", "callers", "buildVersion"]
 
 # The Go model (goose/model/overlay/runtime): each declaration's MODEL: comment says why it has at
-# least Go's behaviours. `Gosched` (`mcall(gosched_m)`: assembly and the scheduler); `Frames.Next`, the
+# least Go's behaviours. `Frames.Next`, the
 # symbolization of program counters (the binary's tables; arbitrary frames); and the addition
 # `callersModel` (above).
 [model]
 dir = "goose/model/overlay/runtime"
-replaces = ["Gosched", "Frames.Next"]
+replaces = ["Frames.Next"]

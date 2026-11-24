@@ -10597,21 +10597,6 @@ noncomputable def Version.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")))))
 
-/-- MODEL: Gosched yields the processor. Go's body is checkTimeouts(), empty on
-    linux (lock_futex.go), and mcall(gosched_m), which switches to the g0 stack
-    (assembly, asm_amd64.s) and puts the goroutine back on the global run queue
-    (the scheduler, which the semantics does not model). The model returns: a
-    yield after which the same goroutine runs on is a schedule Go also has, and
-    the semantics' interleaving gives every other one. Neither can panic.
-
-    go: proc.go:12:6 -/
-noncomputable def Gosched.impl [GooseExts] [GoGlobalContext] : val :=
-  (LamV BAnon
-  (Seq (App (Val exceptionDo)
-  (App (Val doExecute)
-  (Val #())))
-  (Val #())))
-
 /-- CallersFrames takes a slice of PC values returned by [Callers] and
     prepares to return function/file/line information.
     Do not change the slice until you are done with the [Frames].
