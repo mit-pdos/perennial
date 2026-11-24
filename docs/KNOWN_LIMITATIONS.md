@@ -441,6 +441,29 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   (`Ext/Grove/Adequacy.lean`) is fail-stop, and a verified Grove program is verified only
   for executions without crashes.
 
+## Program exit
+
+Not unsound (the model has more executions than Go), but easy to misread. `syscall.Exit`, and
+so `os.Exit` and every logger's `Fatal` that calls it, is modelled as `AngelicExit`
+(`TrustedCode/syscall.lean`; the instruction in `GooseLang/Lang.lean`), which steps to itself
+forever:
+
+- **The other goroutines keep running.** In Go the process ends at the exit; in the model only
+  the exiting goroutine stops, and the program's other goroutines (and other machines) go on. A
+  Go run up to the exit is a prefix of a model run, so the adequacy theorems cover it, and a
+  proof must also show the goroutines that run on in the model safe.
+- **Any exit status is a safe end.** An exiting goroutine is neither stuck nor panicking, whatever
+  its `code`, so `os.Exit(1)` (or `log.Fatal`) on a failed check is a run the adequacy theorems
+  count as safe, exactly as `os.Exit(0)` is. A program meant to check a property (a
+  linearizability checker run beside a system, an assertion) must report a violation by
+  panicking: one that exits on a violation is verified to do nothing about it. In a deployment of
+  several machines, Go's run of a machine that exits is the model's run in which the scheduler
+  stops picking that machine after the exit.
+
+Witness: `goose/model/runtime/exit_test.go` (`TestExitEndsProgram`: after `os.Exit(3)` neither
+the deferred function nor the other goroutine runs, status 3). `README.md`, "Program exit", says
+the same.
+
 ## The step bound of the adequacy theorems
 
 Not unsound, but hard to read. Every adequacy theorem (`goose_adequacy`,
