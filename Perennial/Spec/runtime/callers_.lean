@@ -1,5 +1,5 @@
 /-
-`runtime.callers`'s spec (its trusted model, `TrustedCode/runtime.lean`).
+`runtime.callers`'s spec (its Go model, `goose/model/overlay/runtime`).
 -/
 module
 

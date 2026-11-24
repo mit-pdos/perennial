@@ -1,8 +1,8 @@
 /-
 Shared definitions of the proofs of `runtime`: its `isPkgInit` (the variable `buildVersion`, which
-`Version` returns, holds some string), `ownFrames` (a `*Frames` of `CallersFrames`), and the spec of the trusted model of `buildVersion`'s
-initialization (`Perennial/TrustedCode/runtime.lean`). `runtime`'s initializer is proved by its
-clients (its other variable initializers are names-only here).
+`Version` returns, holds some string) and `ownFrames` (a `*Frames` of `CallersFrames`).
+`runtime`'s initializer is proved by its clients (its other variable initializers are names-only
+here).
 -/
 module
 
@@ -11,7 +11,7 @@ public import Perennial.Code.runtime
 public import Perennial.GeneratedProof.runtime
 public import Perennial.Proof.internal.runtime.atomic.Base
 public import Perennial.Proof.internal.runtime.sys.Base
-public import Perennial.Proof.arbitraryString
+public import Perennial.Proof.internal.gomodel.Base
 
 @[expose] public section
 
@@ -30,8 +30,9 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : runtime.Assumptions]
 
-/-- The package-initialized state (persistent: nothing writes `buildVersion` after the linker,
-`TrustedCode/runtime.lean`): `buildVersion` holds some string, the build's version. -/
+/-- The package-initialized state (persistent: nothing writes `buildVersion` after its
+initializer, the Go model's arbitrary string, `goose/model/overlay/runtime`): `buildVersion` holds
+some string, the build's version. -/
 abbrev isInit : IProp GF :=
   iprop(∃ v : GoString, globalAddr buildVersion ↦□ v)
 
@@ -50,28 +51,6 @@ theorem isInit_access :
   with_unfolding_all exact isPkgInit_access (PROP := IProp GF) pkg_id.runtime
 
 end defns
-
-section wps
-variable [GooseExts] [GooseSemantics] [GooseInterp]
-variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-
-/-- `buildVersion`'s initialization (the model) allocates the variable and stores some string;
-`runtime`'s initializer runs it (its clients prove that initializer, and make the cell
-persistent for `isInit`). -/
-theorem wp_buildVersion_init :
-    {{ (True : IProp GF) }} (App (Val buildVersion.init) (Val #()))
-    {{ RET #(); ∃ v : GoString, globalAddr buildVersion ↦ v }} := by
-  wp_start
-  wp_apply wp_GlobalAlloc (V := GoString) go!"runtime.buildVersion" go.string as Hv
-  wp_apply fmt.wp_arbitraryString as %s -
-  iapply HΦ
-  iexists _
-  unfold buildVersion
-  iexact Hv
-
-end wps
 
 end runtime
 

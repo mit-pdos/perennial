@@ -1,11 +1,18 @@
 
 translate = ["Ldate", "Ltime", "LstdFlags", "bufferPool"]
 
-# `std` needs `os.Stderr` and `init.0` writes `log/internal`'s variable
-# (TrustedCode/log.lean)
-trusted = ["Printf", "Println", "std", "init.0"]
+# `std` needs `os.Stderr` (TrustedCode/log.lean)
+trusted = ["std"]
 
-imports = ["!*", "sync"]
+imports = ["!*", "sync", "fmt", "internal/gomodel"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true
+
+# The Go model (goose/model/overlay/log): each declaration's MODEL: comment says why it has at least
+# Go's behaviours. `Printf` and `Println` (`std.output`, over the untranslated `std`): fmt's
+# formatting of the arguments, or nothing; `init.0` (it writes `log/internal`'s variable, read only
+# by the untranslated `log/slog`): nothing.
+[model]
+dir = "goose/model/overlay/log"
+replaces = ["Printf", "Println", "init.0"]

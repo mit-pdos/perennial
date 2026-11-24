@@ -3,6 +3,7 @@ module
 
 public import Perennial.Code.internal.runtime.sys
 public import Perennial.Code.internal.runtime.atomic
+public import Perennial.Code.internal.gomodel
 public import Perennial.Golang.Defn
 public import Perennial.TrustedCode.runtime
 
@@ -10533,6 +10534,9 @@ noncomputable def vgetrandom [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def writeErr [GooseExts] [GoGlobalContext] : GoString :=
   go!"runtime.writeErr"
 
+noncomputable def callersModel [GooseExts] [GoGlobalContext] : GoString :=
+  go!"runtime.callersModel"
+
 /-- Callers fills the slice pc with the return program counters of function invocations
     on the calling goroutine's stack. The argument skip is the number of stack frames
     to skip before recording in pc, with 0 identifying the frame for Callers itself and
@@ -10593,6 +10597,21 @@ noncomputable def Version.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")))))
 
+/-- MODEL: Gosched yields the processor. Go's body is checkTimeouts(), empty on
+    linux (lock_futex.go), and mcall(gosched_m), which switches to the g0 stack
+    (assembly, asm_amd64.s) and puts the goroutine back on the global run queue
+    (the scheduler, which the semantics does not model). The model returns: a
+    yield after which the same goroutine runs on is a schedule Go also has, and
+    the semantics' interleaving gives every other one. Neither can panic.
+
+    go: proc.go:12:6 -/
+noncomputable def Gosched.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Seq (App (Val exceptionDo)
+  (App (Val doExecute)
+  (Val #())))
+  (Val #())))
+
 /-- CallersFrames takes a slice of PC values returned by [Callers] and
     prepares to return function/file/line information.
     Do not change the slice until you are done with the [Frames].
@@ -10622,8 +10641,133 @@ noncomputable def CallersFrames.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType Frames.ty)))) (Pair (Var "f") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Frames.ty)))) (Var "$res0")))))
 
+/-- MODEL: ci.Next() is the next frame of the program counters ci.callers,
+    symbolized through the binary's tables (findfunc, the inlining tree, the
+    cgo symbolizer; goose: "inc or dec statement with unsupported type
+    uintptr", symtab.go:131), and whether another one follows. Go reads and
+    writes *ci, so a nil ci panics (nil dereference) and a concurrent call on
+    the same Frames races; the model's load and store of ci.callers do both.
+    The model leaves *ci unchanged, where Go advances it, which no caller
+    observes (the fields are unexported). It does not read the words
+    ci.callers points to, which Go does (ci.callers[0]): a concurrent write to
+    them races in Go and not in the model, but Go reads them only to look them
+    up (any value gives some frames, a garbage one is skipped), and the model's
+    frames are arbitrary anyway, so no outcome of that race is missing.
+    Every exported field of the frame and more is arbitrary, a superset of
+    what Go returns (goose/model/runtime/callers_test.go: a nil Func for a frame
+    of a function inlined into its caller, Function/File/Line of the call
+    sites, the zero frame with more false once the frames are exhausted). A
+    non-nil Func is new(Func): Func is zero-size, and the semantics allocates a
+    zero-size value at an arbitrary non-null address that owns no memory, so
+    two results can be equal or not and a proof can read nothing through it, as
+    with Go's pointers into the binary's tables. startLine and Entry are
+    arbitrary too; funcInfo stays zero (unexported, read only by the runtime).
+
+    go: symtab.go:29:19 -/
+noncomputable def Frames.Next.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "ci"
+  (Lam BAnon
+  (Let "frame" (App (Val (GoInstruction (GoAlloc Frame.ty))) (App (Val (GoInstruction (GoZeroVal Frame.ty))) (Val #())))
+  (Let "$res0" (Var "frame")
+  (Let "more" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "$res1" (Var "more")
+  (Seq (App (Val exceptionDo)
+  (Let "ci" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Frames.ty)))) (Var "ci"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uintptr)))) (App (Val (GoInstruction (StructFieldRef Frames.ty go!"callers"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Frames.ty)))) (Var "ci"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.uintptr))) (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.ChooseUint64 []))) (Val #())) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.ChooseString []))) (Val #())) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.ChooseString []))) (Val #())) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.ChooseUint64 []))) (Val #())) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.ChooseUint64 []))) (Val #())) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.uintptr))) (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.ChooseUint64 []))) (Val #())) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.Choose []))) (Val #())) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "more") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uintptr))) (Pair (App (Val (GoInstruction (StructFieldRef Frame.ty go!"Entry"))) (Var "frame")) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef Frame.ty go!"startLine"))) (Var "frame")) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef Frame.ty go!"Line"))) (Var "frame")) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (StructFieldRef Frame.ty go!"File"))) (Var "frame")) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (StructFieldRef Frame.ty go!"Function"))) (Var "frame")) (Var "$r0"))))))))
+  (If (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.Choose []))) (Val #())) (Val #()))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc Func.ty))) (App (Val (GoInstruction (GoZeroVal Func.ty))) (Val #())))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType Func.ty)))) (Pair (App (Val (GoInstruction (StructFieldRef Frame.ty go!"Func"))) (Var "frame")) (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uintptr))) (Pair (App (Val (GoInstruction (StructFieldRef Frame.ty go!"PC"))) (Var "frame")) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uintptr)))) (Pair (App (Val (GoInstruction (StructFieldRef Frames.ty go!"callers"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Frames.ty)))) (Var "ci"))) (Var "$r0"))))))))
+  (Pair (App (Val (GoInstruction (GoLoad Frame.ty))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res1"))))))))))
+
+/-- MODEL: callersModel(skip, pcbuf) is the model of callers(skip, pcbuf), which
+    Callers calls: Go walks the calling
+    goroutine's stack (getg, sys.GetCallerPC/GetCallerSP, compiler intrinsics
+    with no Go body, and the unwinder over the binary's tables) and writes the
+    return program counters of the frames after the first skip into pcbuf[0],
+    pcbuf[1], ..., stopping at the end of the stack or of pcbuf, and returns how
+    many it wrote (tracebackPCs writes pcBuf[n] only for n < len(pcBuf)). It
+    cannot panic: a skip past the stack's depth, or negative, writes fewer
+    entries or the whole buffer. The model writes some prefix of pcbuf with
+    arbitrary words and returns its length, every n from 0 to len(pcbuf) (Go: n
+    < len(pcbuf) when the stack is shallower, 0 when skip is past it,
+    len(pcbuf) when the buffer is too short: goose/model/runtime/callers_test.go).
+    It writes the cells one at a time, as Go does, so a concurrent access to
+    pcbuf races in the model as in Go. (Not a replacement of callers: under gc,
+    gomodel.Choose is false, so this body writes nothing, and the testing
+    package panics when callers finds no frame.)
+
+    go: traceback.go:26:6 -/
+noncomputable def callersModel.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "skip"
+  (Lam "pcbuf"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "pcbuf" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uintptr)))) (Var "pcbuf"))
+  (Let "skip" (App (Val (GoInstruction (GoAlloc go.int))) (Var "skip"))
+  (Let "$r0" (Val #(W64 0))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (App (App (Val doFor) (Lam BAnon
+  (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uintptr)))) (Var "pcbuf"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uintptr)]))) (Val #())) (Var "$a0"))))) (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.Choose []))) (Val #())) (Val #())) (Val #false)))) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.uintptr))) (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.ChooseUint64 []))) (Val #())) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1)))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uintptr))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uintptr)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uintptr)))) (Var "pcbuf")) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))) (Var "$r0"))))))))
+  (Lam BAnon
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
+
 noncomputable instance info' : PkgInfo pkg_id.runtime where
-  pkgImportedPkgs := [pkg_id.internal.runtime.sys, pkg_id.internal.runtime.atomic]
+  pkgImportedPkgs := [pkg_id.internal.runtime.sys, pkg_id.internal.runtime.atomic, pkg_id.internal.gomodel]
 
 opaque «_».init [GooseExts] [GoGlobalContext] : val
 
@@ -10638,6 +10782,9 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.ChooseString []))) (Val #())) (Val #()))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -10933,6 +11080,8 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val fastlog2Table.init) (Val #()))))))
   (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (GlobalVarAddr buildVersion))) (Val #())) (Var "$r0"))))))))
+  (App (Val doExecute)
   (App (Val boundsNegErrorFmts.init) (Val #()))))))
   (App (Val doExecute)
   (App (Val boundsErrorFmts.init) (Val #()))))))
@@ -10947,7 +11096,9 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.internal.runtime.atomic.initialize') (Val #()))))))
   (App (Val doExecute)
-  (App (Val buildVersion.init) (Val #()))))))))
+  (App (Val _root_.Perennial.internal.gomodel.initialize') (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc buildVersion go.string)) (Val #()))))))))
 
 structure userArena [GooseExts] where
   mk ::

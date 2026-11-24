@@ -37,6 +37,18 @@
 #            TestTimerGC              allocation counts: a model timer's
 #                                     goroutine keeps it alive until it fires
 # internal/stringslite has no tests; bytes and internal/bytealg run in full.
+# runtime, syscall, log: models that are choices (gomodel.Choose/ChooseUint64/ChooseString),
+# whose Go bodies take one value (false, 0, ""): Frames.Next's frames are empty (no function,
+# file or line), Gosched does not yield, log.Printf/Println print nothing, and prlimit1 neither
+# reads nor sets a limit. Run with their overlay (every package above runs with runtime's too):
+#   syscall  TestPrlimitFileLimit     prlimit1's model leaves the limit unchanged
+#   log      TestAll                  Printf/Println's model prints nothing
+#            TestCallDepth, ExampleLogger, ExampleLogger_Output
+#                                     the file and line of Lshortfile come from
+#                                     Frames.Next's model (empty)
+#   os, sort, runtime/debug           in full
+# runtime's own tests are not run. (os.runtime_args, syscall.runtime_envs, runtime.callers and
+# internal/synctest are not models: trusted, with the runtime's real bodies under gc.)
 #
 # usage: etc/model-tests.sh
 set -euo pipefail
@@ -47,10 +59,18 @@ cd "$ROOT/goose"
 go build -o "$OUT/goose" ./cmd/goose
 "$OUT/goose" model-overlay -configdir "$ROOT/Perennial/Code" -dir . -tags purego -o "$OUT/ov" \
   strings bytes errors internal/stringslite internal/bytealg time
+# the choice models, in an overlay of their own
+"$OUT/goose" model-overlay -configdir "$ROOT/Perennial/Code" -dir . -tags purego -o "$OUT/ovc" \
+  runtime syscall log
 # go vet does not find the overlay-added internal/gomodel (it changes into the package's directory)
 run() { go test -vet=off -timeout 300s -overlay "$OUT/ov/overlay.json" -tags purego,goose "$@"; }
 run strings -skip '^(TestSplit|ExampleSplit|TestBuilderGrow|TestBuilderAllocs|TestBuilderGrowSizeclasses|TestReplace|TestBuilderCopyPanic)$'
 run errors -skip '^TestIs$'
 run bytes internal/stringslite internal/bytealg
 run time -skip '^(TestAfterStop|TestTimerStopStress|TestChan|TestTicker|TestReset|TestTimerModifiedEarlier|TestAdjustTimers|TestTimerGC)$'
+runc() { go test -vet=off -timeout 300s -overlay "$OUT/ovc/overlay.json" -tags purego,goose "$@"; }
+runc syscall -skip '^TestPrlimitFileLimit$'
+runc log -skip '^(TestAll|TestCallDepth|ExampleLogger|ExampleLogger_Output)$'
+runc os sort runtime/debug
+go build -overlay "$OUT/ovc/overlay.json" -tags purego,goose runtime internal/synctest
 echo "model-tests: ok"

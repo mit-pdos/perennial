@@ -3,7 +3,9 @@ module
 
 public import Perennial.Proof.ProofPrelude
 public import Perennial.ManualProof.syscall
+public import Perennial.GeneratedProof.internal.gomodel
 public import Perennial.GeneratedProof.sync
+public import Perennial.GeneratedProof.sync.atomic
 public import Perennial.Golang.Theory
 public import Perennial.Code.syscall
 public import Perennial.GeneratedProof.syscall.chunk1

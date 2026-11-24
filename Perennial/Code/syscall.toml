@@ -1,12 +1,14 @@
-# syscall: the types, and the package-level variable initializers (what importing syscall runs).
-# Two pieces have no Go body or no modelled effect; they are trusted models
-# (TrustedCode/syscall.lean):
-# * `runtime_envs` (`env_unix.go`, a `go:linkname` into the runtime): an arbitrary `[]string`;
-# * `init.0` (`rlimit.go`: raises the soft RLIMIT_NOFILE through the raw `prlimit` system call):
-#   a no-op. The changed limit is only observable by `exec` (and `Getrlimit`), which Perennial
-#   does not model (the user's decision, fix-semantics Case 33);
-# * `Exit` (`syscall.go`, a body-less declaration the runtime provides, `syscall_Exit`): the
-#   process exits, `AngelicExit`.
+# syscall: the types, and the package-level variable initializers and `init` (what importing
+# syscall runs). `init.0` (`rlimit.go`: raises the soft RLIMIT_NOFILE to its hard limit minus one,
+# and records the original in `origRlimitNofile`) is translated, with `Getrlimit` and `setrlimit`,
+# over the model of the system call `prlimit1` (below). Trusted models (TrustedCode/syscall.lean) of
+# two body-less declarations the runtime provides (go:linkname pushes): `runtime_envs`
+# (`env_unix.go`): an arbitrary `[]string`, a call of `internal/gomodel.ChooseStrings`; `Exit`
+# (`syscall.go`, `syscall_Exit`): the process exits, `AngelicExit`.
+# `Setenv`, `Unsetenv`, `Clearenv` and the runtime's hooks `runtimeSetenv`/`runtimeUnsetenv`/
+# `runtimeClearenv` stay untranslated (a call is stuck). Keep it so, or make them stuck on the key
+# "GODEBUG": gc's runtime re-reads GODEBUG there, and the Go models that read a GODEBUG setting once
+# (time's `makeTimerChan`; docs/KNOWN_LIMITATIONS.md, "time") rely on it not changing mid-run.
 translate = ["!*",
   "envs", "env", "copyenv",
   "none", "slash", "forceClone3", "fcntl64Syscall",
@@ -14,12 +16,20 @@ translate = ["!*",
   "Stdin", "Stdout", "Stderr",
   "errEAGAIN", "errEINVAL", "errENOENT",
   "errors", "signals", "_",
+  "init.0", "origRlimitNofile", "Getrlimit", "setrlimit", "adjustFileLimit", "errnoErr",
   # the constants these initializers use
-  "SYS_FCNTL", "EAGAIN", "EINVAL", "ENOENT",
+  "SYS_FCNTL", "EAGAIN", "EINVAL", "ENOENT", "RLIMIT_NOFILE",
 ]
-trusted = ["runtime_envs", "init.0", "Exit"]
+trusted = ["runtime_envs", "Exit"]
 
-imports = ["!*", "sync"]
+imports = ["!*", "sync", "sync/atomic", "internal/gomodel"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true
+
+# The Go model (goose/model/overlay/syscall): each declaration's MODEL: comment says why it has at
+# least Go's behaviours. `prlimit1` (`zsyscall_linux_amd64.go`, the `prlimit64` system call through `RawSyscall6` of `uintptr(unsafe.Pointer(...))` arguments): reads
+# `*newlimit`, may write arbitrary limits to `*old`, returns an arbitrary errno's error.
+[model]
+dir = "goose/model/overlay/syscall"
+replaces = ["prlimit1"]
