@@ -28,6 +28,27 @@ the type's method set (its package's `Assumptions`). -/
 def AsTarget [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType) : Prop :=
   (∃ elems, underlying T = go.InterfaceType elems) ∨ go.typeSetContains T go.error = true
 
+/-- Whether `As` finds the error `ii` assignable to the element type `T` of its target
+(`reflectlite.TypeOf(err).AssignableTo(T)`, the semantics' `AsAssign`): for an interface `T`,
+whether `ii`'s dynamic type implements it; otherwise whether it is `T`. -/
+noncomputable def asAssignable [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType)
+    (ii : GoInterfaceOk) : Bool :=
+  if go.isInterfaceType (underlying T) then go.typeSetContains ii.ty T else decide (ii.ty = T)
+
+/-- The value `As` stores into its target `*T` when `ii` is assignable to `T`: the interface
+value for an interface `T`, else the dynamic value. -/
+def asStored [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType)
+    (ii : GoInterfaceOk) : val :=
+  if go.isInterfaceType (underlying T) then #(interface.ok ii) else ii.v
+
+/-- The model of `As` decides whether `ii` is assignable to `T` (`AsAssign` has semantics):
+unless `T` is an interface type or `ii`'s dynamic type is `T`, their underlying types differ.
+(Go also assigns a type to a non-interface type of the same underlying type when one of the two
+is unnamed, which the model does not follow.) -/
+def AsDecided [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType)
+    (ii : GoInterfaceOk) : Prop :=
+  go.isInterfaceType (underlying T) = false → ii.ty ≠ T → underlying ii.ty ≠ underlying T
+
 /-- A non-nil target that Go's `err == target` compares, without panicking, with the errors of the
 tree `S`: its dynamic type's `==` is defined (`CheckComparable` steps) and is the equality of the
 values of some Lean type `V` (with an injective `#`), of which its value, and the values of the
@@ -240,6 +261,25 @@ def isLeafError [GoSemanticsFunctions] (ii : GoInterfaceOk) : Prop :=
   methodSet ii.ty !! go!"As" ≠ some (go.Signature [go.any] false [go.bool]) ∧
   methodSet ii.ty !! go!"Unwrap" ≠ some (go.Signature [] false [go.error]) ∧
   methodSet ii.ty !! go!"Unwrap" ≠ some (go.Signature [] false [go.GoType.SliceType go.error])
+
+/-- **An error at which `As` stops without a match against `T`**: `nil`, or a leaf error
+(`isLeafError`) not assignable to `T` (`asAssignable`, decided: `AsDecided`). -/
+def asNoMatchLeaf [GoSemanticsFunctions] (T : go.GoType) (e : GoError) : Prop :=
+  e = interface.nil ∨ ∃ ii : GoInterfaceOk, e = interface.ok ii ∧ isLeafError ii ∧
+    asAssignable T ii = false ∧ AsDecided T ii
+
+/-- **An error whose walk by `As` ends without a match against `T` after at most `n` calls of
+`Unwrap`**: an `asNoMatchLeaf`, or (for `n + 1`) a wrapper not assignable to `T`, with no
+`As(any) bool` method and an `Unwrap() error` method, whose `Unwrap()` (called once, its WP
+consumed) returns such an error for `n`. -/
+def asNoMatch (T : go.GoType) : Nat → GoError → IProp GF
+  | 0, e => iprop(⌜asNoMatchLeaf T e⌝)
+  | n + 1, e => iprop(⌜asNoMatchLeaf T e⌝ ∨ ∃ ii : GoInterfaceOk,
+      ⌜e = interface.ok ii ∧ asAssignable T ii = false ∧ AsDecided T ii ∧
+        methodSet ii.ty !! go!"As" ≠ some (go.Signature [go.any] false [go.bool]) ∧
+        methodSet ii.ty !! go!"Unwrap" = some (go.Signature [] false [go.error])⌝ ∗
+      ∀ Φ : val → IProp GF, (∀ e' : GoError, asNoMatch T n e' -∗ Φ #e') -∗
+        WP (App (Val #(methods ii.ty go!"Unwrap" ii.v)) (Val #())) {{ Φ }})
 
 /-- A leaf error (whose value has the Lean type of the target's Go type when its own type is the
 target's, `AsTypeTyped`) is a one-error tree. -/

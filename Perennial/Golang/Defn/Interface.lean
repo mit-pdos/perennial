@@ -125,6 +125,28 @@ class InterfaceSemantics : Prop where
       | interface.ok ii1, interface.ok ii2 => decide (ii1.ty = ii2.ty)
       | _, _ => false)
 
+  /-- `AsAssign` (the reflection of `errors.As`, `src/errors/wrap.go`: `as`'s
+  `if reflectlite.TypeOf(err).AssignableTo(targetType) { targetVal.Elem().Set(reflectlite.ValueOf(err)); return true }`)
+  on a non-`nil` error `ii` and a target `*T` holding a non-null pointer `l`, for a `T` that is an
+  interface type or implements `error` (`As` panics on any other target, before `as` runs; the
+  operation has no semantics there). Whether `ii`'s dynamic type is assignable to `T`: for an
+  interface `T`, whether it implements `T` (its type set contains it), the interface value then
+  stored into `*l`; for another `T`, whether it is `T`, its value then stored. Go also assigns a
+  type of the same underlying type as a non-interface `T` when one of them is unnamed (and a
+  bidirectional channel type to a channel type of the same element type, one of them unnamed, which
+  two types implementing `error` never are: an unnamed channel type has no methods); the operation
+  has no semantics when `ii`'s type is not `T` but has `T`'s underlying type, so it is never more
+  defined than Go, and it is `false` when the underlying types differ. Only `errors.As`'s model
+  (`TrustedCode/errors.lean`) uses it, with an `err` of Go type `error`. -/
+  as_assign_step (ii : GoInterfaceOk) (T : go.GoType) (l : Loc) (hl : l ≠ Loc.null)
+    (hT : isInterfaceType (underlying T) = true ∨ typeSetContains T go.error = true)
+    (hdec : isInterfaceType (underlying T) = false → ii.ty ≠ T → underlying ii.ty ≠ underlying T) :
+    ⟦AsAssign, (#(interface.ok ii), #(interface.mkOk (go.PointerType T) #l))⟧ ⤳
+    (if isInterfaceType (underlying T) then
+       (if typeSetContains ii.ty T then gl(GoStore T (#l, #(interface.ok ii)) ;; #true) else #false)
+     else
+       (if ii.ty = T then gl(GoStore T (#l, ii.v) ;; #true) else #false))
+
   method_interface_ok (m : GoString) {t : go.GoType} {elems : List go.InterfaceElem}
     [t ≤u go.InterfaceType elems] (i : GoInterface) :
     ⟦MethodResolve t m, #i⟧ ⤳
