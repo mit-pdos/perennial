@@ -1,6 +1,6 @@
 package fmt_test
 
-// The model of fmt.Sprintf, fmt.Printf and fmt.Errorf (Perennial/TrustedCode/fmt.lean), as the Go
+// The model of fmt.Sprintf, fmt.Printf, fmt.Fprintf, fmt.Fprint and fmt.Errorf (Perennial/TrustedCode/fmt.lean), as the Go
 // its docstrings quote, for the differential tests of model_diff_test.go. Only tests: nothing here
 // is translated. arbitrary, arbitraryString, underlyingAs and notModelled stand for the model's
 // primitives (ArbitraryInt, an arbitrary string, TypeAssertUnderlying2, the stuck points).
@@ -707,6 +707,16 @@ func modelPrintf(format string, a ...any) (int, error) {
 func modelFprintf(w io.Writer, format string, a ...any) (int, error) {
 	s, _, _ := doPrintf(format, a, false)
 	b := printerBuf(s)
+	n, err := w.Write(b)
+	retire(b)
+	return n, err
+}
+
+func modelFprint(w io.Writer, a ...any) (int, error) {
+	for _, x := range a {
+		visitArg(x, 'v', false, false)
+	}
+	b := printerBuf(arbitraryString())
 	n, err := w.Write(b)
 	retire(b)
 	return n, err
