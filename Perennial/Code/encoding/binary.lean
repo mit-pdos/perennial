@@ -2622,6 +2622,42 @@ class nativeEndian.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext
   set_littleEndian : ∀ (x : nativeEndian) (y : littleEndian), go.IsGoStepPureDetTagged under (StructFieldSet nativeEndian.underlying go!"littleEndian") (PairV #x #y) (Val #(({ x with littleEndian' := y } : nativeEndian)))
   method_set : go.MethodSetIs nativeEndian.ty [(go!"AppendUint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false [(go.GoType.SliceType go.byte)]))), (go!"AppendUint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false [(go.GoType.SliceType go.byte)]))), (go!"AppendUint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false [(go.GoType.SliceType go.byte)]))), (go!"GoString", (some (go.signature.Signature [] false [go.string]))), (go!"PutUint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false []))), (go!"PutUint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false []))), (go!"PutUint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false []))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Uint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint16]))), (go!"Uint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint32]))), (go!"Uint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint64])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType nativeEndian.ty) [(go!"AppendUint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false [(go.GoType.SliceType go.byte)]))), (go!"AppendUint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false [(go.GoType.SliceType go.byte)]))), (go!"AppendUint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false [(go.GoType.SliceType go.byte)]))), (go!"GoString", (some (go.signature.Signature [] false [go.string]))), (go!"PutUint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false []))), (go!"PutUint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false []))), (go!"PutUint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false []))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Uint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint16]))), (go!"Uint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint32]))), (go!"Uint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint64])))]
+  AppendUint16_unfold : MethodUnfold nativeEndian.ty go!"AppendUint16" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve littleEndian.ty go!"AppendUint16"))) (App (Val (GoInstruction (StructFieldGet nativeEndian.ty go!"littleEndian"))) (Var "$r"))))
+  AppendUint32_unfold : MethodUnfold nativeEndian.ty go!"AppendUint32" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve littleEndian.ty go!"AppendUint32"))) (App (Val (GoInstruction (StructFieldGet nativeEndian.ty go!"littleEndian"))) (Var "$r"))))
+  AppendUint64_unfold : MethodUnfold nativeEndian.ty go!"AppendUint64" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve littleEndian.ty go!"AppendUint64"))) (App (Val (GoInstruction (StructFieldGet nativeEndian.ty go!"littleEndian"))) (Var "$r"))))
+  PutUint16_unfold : MethodUnfold nativeEndian.ty go!"PutUint16" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve littleEndian.ty go!"PutUint16"))) (App (Val (GoInstruction (StructFieldGet nativeEndian.ty go!"littleEndian"))) (Var "$r"))))
+  PutUint32_unfold : MethodUnfold nativeEndian.ty go!"PutUint32" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve littleEndian.ty go!"PutUint32"))) (App (Val (GoInstruction (StructFieldGet nativeEndian.ty go!"littleEndian"))) (Var "$r"))))
+  PutUint64_unfold : MethodUnfold nativeEndian.ty go!"PutUint64" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve littleEndian.ty go!"PutUint64"))) (App (Val (GoInstruction (StructFieldGet nativeEndian.ty go!"littleEndian"))) (Var "$r"))))
+  Uint16_unfold : MethodUnfold nativeEndian.ty go!"Uint16" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve littleEndian.ty go!"Uint16"))) (App (Val (GoInstruction (StructFieldGet nativeEndian.ty go!"littleEndian"))) (Var "$r"))))
+  Uint32_unfold : MethodUnfold nativeEndian.ty go!"Uint32" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve littleEndian.ty go!"Uint32"))) (App (Val (GoInstruction (StructFieldGet nativeEndian.ty go!"littleEndian"))) (Var "$r"))))
+  Uint64_unfold : MethodUnfold nativeEndian.ty go!"Uint64" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve littleEndian.ty go!"Uint64"))) (App (Val (GoInstruction (StructFieldGet nativeEndian.ty go!"littleEndian"))) (Var "$r"))))
+  ptr_AppendUint16_unfold : MethodUnfold (go.GoType.PointerType nativeEndian.ty) go!"AppendUint16" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType littleEndian.ty) go!"AppendUint16"))) (App (Val (GoInstruction (StructFieldRef nativeEndian.ty go!"littleEndian"))) (Var "$r"))))
+  ptr_AppendUint32_unfold : MethodUnfold (go.GoType.PointerType nativeEndian.ty) go!"AppendUint32" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType littleEndian.ty) go!"AppendUint32"))) (App (Val (GoInstruction (StructFieldRef nativeEndian.ty go!"littleEndian"))) (Var "$r"))))
+  ptr_AppendUint64_unfold : MethodUnfold (go.GoType.PointerType nativeEndian.ty) go!"AppendUint64" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType littleEndian.ty) go!"AppendUint64"))) (App (Val (GoInstruction (StructFieldRef nativeEndian.ty go!"littleEndian"))) (Var "$r"))))
+  ptr_PutUint16_unfold : MethodUnfold (go.GoType.PointerType nativeEndian.ty) go!"PutUint16" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType littleEndian.ty) go!"PutUint16"))) (App (Val (GoInstruction (StructFieldRef nativeEndian.ty go!"littleEndian"))) (Var "$r"))))
+  ptr_PutUint32_unfold : MethodUnfold (go.GoType.PointerType nativeEndian.ty) go!"PutUint32" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType littleEndian.ty) go!"PutUint32"))) (App (Val (GoInstruction (StructFieldRef nativeEndian.ty go!"littleEndian"))) (Var "$r"))))
+  ptr_PutUint64_unfold : MethodUnfold (go.GoType.PointerType nativeEndian.ty) go!"PutUint64" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType littleEndian.ty) go!"PutUint64"))) (App (Val (GoInstruction (StructFieldRef nativeEndian.ty go!"littleEndian"))) (Var "$r"))))
+  ptr_Uint16_unfold : MethodUnfold (go.GoType.PointerType nativeEndian.ty) go!"Uint16" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType littleEndian.ty) go!"Uint16"))) (App (Val (GoInstruction (StructFieldRef nativeEndian.ty go!"littleEndian"))) (Var "$r"))))
+  ptr_Uint32_unfold : MethodUnfold (go.GoType.PointerType nativeEndian.ty) go!"Uint32" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType littleEndian.ty) go!"Uint32"))) (App (Val (GoInstruction (StructFieldRef nativeEndian.ty go!"littleEndian"))) (Var "$r"))))
+  ptr_Uint64_unfold : MethodUnfold (go.GoType.PointerType nativeEndian.ty) go!"Uint64" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType littleEndian.ty) go!"Uint64"))) (App (Val (GoInstruction (StructFieldRef nativeEndian.ty go!"littleEndian"))) (Var "$r"))))
 
 attribute [instance] nativeEndian.TypeAssumptions.type_repr
   nativeEndian.TypeAssumptions.underlying
@@ -2629,6 +2665,24 @@ attribute [instance] nativeEndian.TypeAssumptions.type_repr
   nativeEndian.TypeAssumptions.set_littleEndian
   nativeEndian.TypeAssumptions.method_set
   nativeEndian.TypeAssumptions.ptr_method_set
+  nativeEndian.TypeAssumptions.AppendUint16_unfold
+  nativeEndian.TypeAssumptions.AppendUint32_unfold
+  nativeEndian.TypeAssumptions.AppendUint64_unfold
+  nativeEndian.TypeAssumptions.PutUint16_unfold
+  nativeEndian.TypeAssumptions.PutUint32_unfold
+  nativeEndian.TypeAssumptions.PutUint64_unfold
+  nativeEndian.TypeAssumptions.Uint16_unfold
+  nativeEndian.TypeAssumptions.Uint32_unfold
+  nativeEndian.TypeAssumptions.Uint64_unfold
+  nativeEndian.TypeAssumptions.ptr_AppendUint16_unfold
+  nativeEndian.TypeAssumptions.ptr_AppendUint32_unfold
+  nativeEndian.TypeAssumptions.ptr_AppendUint64_unfold
+  nativeEndian.TypeAssumptions.ptr_PutUint16_unfold
+  nativeEndian.TypeAssumptions.ptr_PutUint32_unfold
+  nativeEndian.TypeAssumptions.ptr_PutUint64_unfold
+  nativeEndian.TypeAssumptions.ptr_Uint16_unfold
+  nativeEndian.TypeAssumptions.ptr_Uint32_unfold
+  nativeEndian.TypeAssumptions.ptr_Uint64_unfold
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ByteOrder_instance : ByteOrder.TypeAssumptions

@@ -264,6 +264,9 @@ noncomputable def elem [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def TypeOf [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.TypeOf"
 
+noncomputable def isModelRType [GooseExts] [GoGlobalContext] : GoString :=
+  go!"reflect.isModelRType"
+
 noncomputable def stringFor [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.stringFor"
 
@@ -272,6 +275,9 @@ noncomputable def toType [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def isDirectIface [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.isDirectIface"
+
+noncomputable def isZeroSize [GooseExts] [GoGlobalContext] : GoString :=
+  go!"reflect.isZeroSize"
 
 noncomputable def DeepEqual [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.DeepEqual"
@@ -390,7 +396,7 @@ noncomputable def flag.panicNotMap.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType flag.ty) go!"mustBe"))) (Var "f")) (Var "$a0"))))))
   (Val #()))))
 
-/-- go: type.go:336:16 -/
+/-- go: type.go:337:16 -/
 noncomputable def rtype.tok.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
@@ -407,7 +413,7 @@ noncomputable def rtype.tok.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- String returns the name of k.
 
-    go: type.go:350:15 -/
+    go: type.go:351:15 -/
 noncomputable def Kind.String.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "k"
   (Lam BAnon
@@ -434,7 +440,7 @@ noncomputable def Kind.String.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
   (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
 
-/-- go: type.go:387:16 -/
+/-- go: type.go:388:16 -/
 noncomputable def rtype.Kind.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
@@ -450,7 +456,7 @@ noncomputable def rtype.Kind.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore Kind.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad Kind.ty))) (Var "$res0"))))))
 
-/-- go: type.go:389:6 -/
+/-- go: type.go:390:6 -/
 noncomputable def toRType.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc rtype.ty))) (App (Val (GoInstruction (GoZeroVal rtype.ty))) (Val #())))
@@ -468,7 +474,7 @@ noncomputable def toRType.impl [GooseExts] [GoGlobalContext] : val :=
 /-- MODEL: the element type of an array, channel, map, pointer or slice type
     (abi.Type.Elem), else real's panic.
 
-    go: type.go:395:6 -/
+    go: type.go:396:6 -/
 noncomputable def elem.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
@@ -493,7 +499,7 @@ noncomputable def elem.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))))))
   (App (Val (GoInstruction (GoLoad go.any))) (Var "$res0")))))
 
-/-- go: type.go:403:16 -/
+/-- go: type.go:404:16 -/
 noncomputable def rtype.Elem.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
@@ -510,7 +516,7 @@ noncomputable def rtype.Elem.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore Type'.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad Type'.ty))) (Var "$res0"))))))
 
-/-- go: type.go:407:18 -/
+/-- go: type.go:408:18 -/
 noncomputable def ChanDir.String.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "d"
   (Lam BAnon
@@ -554,21 +560,33 @@ noncomputable def ChanDir.String.impl [GooseExts] [GoGlobalContext] : val :=
 /-- TypeOf returns the reflection [Type] that represents the dynamic type of i.
     If i is a nil interface value, TypeOf returns nil.
 
-    go: type.go:421:6 -/
+    go: type.go:422:6 -/
 noncomputable def TypeOf.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "i"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc Type'.ty))) (App (Val (GoInstruction (GoZeroVal Type'.ty))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "i" (App (Val (GoInstruction (GoAlloc go.any))) (Var "i"))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert rtype.ty Type'.ty))) (Let "$a0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "i"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "i"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.reflectcore.TokOf []))) (Val #())) (Var "$a0")))
+  (Let "t" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert rtype.ty Type'.ty))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "t"))
   (App (App (Val (GoInstruction (FuncResolve toRType []))) (Val #())) (Var "$a0"))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Type'.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "t"))
+  (App (App (Val (GoInstruction (FuncResolve isModelRType []))) (Val #())) (Var "$a0")))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.Stuck []))) (Val #())) (Val #())))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "t") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (Var "i")) (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil)))))
   (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil Type'.ty))) (Val UntypedNil))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -580,7 +598,26 @@ noncomputable def TypeOf.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
   (App (Val (GoInstruction (GoLoad Type'.ty))) (Var "$res0")))))
 
-/-- go: type.go:428:6 -/
+/-- MODEL: whether t is the token of the model's rtype. Real's Type values
+    are *rtype, the model's are rtype values: reflection on them is not
+    modelled.
+
+    go: type.go:436:6 -/
+noncomputable def isModelRType.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "t"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc go.any))) (Var "t"))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (Var "t")) (Let "$a0" (App (Val (GoInstruction (Convert rtype.ty go.any))) (App (Val (GoInstruction (CompositeLiteral rtype.ty))) (LiteralValue [])))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.reflectcore.TokOf []))) (Val #())) (Var "$a0")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: type.go:440:6 -/
 noncomputable def stringFor.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
@@ -601,7 +638,7 @@ noncomputable def stringFor.impl [GooseExts] [GoGlobalContext] : val :=
     function takes care of ensuring that multiple *rtype for the same
     type are coalesced into a single Type.
 
-    go: type.go:437:6 -/
+    go: type.go:449:6 -/
 noncomputable def toType.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc Type'.ty))) (App (Val (GoInstruction (GoZeroVal Type'.ty))) (Val #())))
@@ -627,12 +664,14 @@ noncomputable def toType.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad Type'.ty))) (Var "$res0")))))
 
 /-- MODEL: whether an interface holding a value of t's type stores the value
-    in its data word (abi.Type.IsDirectIface; gc's types.IsDirectIface): a
-    pointer, channel, map, function or unsafe.Pointer type, or an array of one
-    element or a struct of one field of such a type (no type of the model is
-    not-in-heap).
+    in its data word (abi.Type.IsDirectIface): gc's types.IsDirectIface, a type
+    of one pointer word (size and pointer-data size PtrSize). That is a pointer,
+    channel, map, function or unsafe.Pointer type; an array of one element of
+    such a type; or a struct whose last field has such a type and whose other
+    fields are zero-size (a zero-size last field pads the struct). No type of
+    the model is not-in-heap.
 
-    go: type.go:449:6 -/
+    go: type.go:463:6 -/
 noncomputable def isDirectIface.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -665,18 +704,119 @@ noncomputable def isDirectIface.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
   (If (App (Val (GoInstruction (GoOp GoEquals Kind.ty))) (Pair (Var "$sw") (Val Struct)))
-  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "t"))
-  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.reflectcore.TypeNumField []))) (Val #())) (Var "$a0"))) (Val #(W64 1)))) (Let "$a0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "t"))
-  (Let "$a1" (Val #(W64 0))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "t"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.reflectcore.TypeNumField []))) (Val #())) (Var "$a0")))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$r0" (Val #(W64 0))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1)))))))) (Lam BAnon
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "t"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.reflectcore.TypeFieldType []))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (App (App (Val (GoInstruction (FuncResolve isDirectIface []))) (Val #())) (Var "$a0"))) (Val #false))
+  (App (App (Val (GoInstruction (FuncResolve isZeroSize []))) (Val #())) (Var "$a0"))))
+  (Let "$r0" (Val #false)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
   (App (Val doExecute)
+  (Val #())))))
+  (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))
+  (If (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 0)))) (Val #true) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "t"))
+  (Let "$a1" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1))))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.reflectcore.TypeFieldType []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val (GoInstruction (FuncResolve isDirectIface []))) (Val #())) (Var "$a0")))))
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))
+  (App (Val doExecute)
   (Val #())))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- MODEL: whether t's type has size zero: an array of length zero or of a
+    zero-size element, or a struct of zero-size fields.
+
+    go: type.go:486:6 -/
+noncomputable def isZeroSize.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "t"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc go.any))) (Var "t"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$sw" (App (Val (GoInstruction (Convert go.int Kind.ty))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "t"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.reflectcore.TypeKind []))) (Val #())) (Var "$a0"))))
+  (If (App (Val (GoInstruction (GoOp GoEquals Kind.ty))) (Pair (Var "$sw") (Val Array)))
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "t"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.reflectcore.TypeLen []))) (Val #())) (Var "$a0"))) (Val #(W64 0)))) (Val #true) (Let "$a0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "t"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.reflectcore.TypeElem []))) (Val #())) (Var "$a0")))
+  (App (App (Val (GoInstruction (FuncResolve isZeroSize []))) (Val #())) (Var "$a0"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (If (App (Val (GoInstruction (GoOp GoEquals Kind.ty))) (Pair (Var "$sw") (Val Struct)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$r0" (Val #(W64 0))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "t"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.reflectcore.TypeNumField []))) (Val #())) (Var "$a0"))))))) (Lam BAnon
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "t"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.reflectcore.TypeFieldType []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val (GoInstruction (FuncResolve isZeroSize []))) (Val #())) (Var "$a0"))))
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Val #()))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- go: value.go:84:15 -/
@@ -822,6 +962,7 @@ noncomputable def unpackEface.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.reflectcore.TokOf []))) (Val #())) (Var "$a0")))
   (Let "t" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (Convert go.int flag.ty))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "t"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.reflectcore.TypeKind []))) (Val #())) (Var "$a0"))))
   (Let "f" (App (Val (GoInstruction (GoAlloc flag.ty))) (App (Val (GoInstruction (GoZeroVal flag.ty))) (Val #())))
@@ -855,6 +996,12 @@ noncomputable def unpackEface.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore flag.ty))) (Pair (Var "f") (Var "$r0")))))))))
+  (If (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "t"))
+  (App (App (Val (GoInstruction (FuncResolve isModelRType []))) (Val #())) (Var "$a0")))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.Stuck []))) (Val #())) (Val #())))
+  (App (Val doExecute)
+  (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "t") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (Var "i")) (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil)))))
@@ -868,7 +1015,7 @@ noncomputable def unpackEface.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
   (App (Val (GoInstruction (GoLoad Value.ty))) (Var "$res0")))))
 
-/-- go: value.go:157:22 -/
+/-- go: value.go:160:22 -/
 noncomputable def ValueError.Error.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam BAnon
@@ -900,7 +1047,7 @@ noncomputable def ValueError.Error.impl [GooseExts] [GoGlobalContext] : val :=
     v.flag.mustBe(Bool), which will only bother to copy the
     single important word for the receiver.
 
-    go: value.go:180:15 -/
+    go: value.go:183:15 -/
 noncomputable def flag.mustBe.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam "expected"
@@ -920,7 +1067,7 @@ noncomputable def flag.mustBe.impl [GooseExts] [GoGlobalContext] : val :=
 /-- mustBeExported panics if f records that the value was obtained using
     an unexported field.
 
-    go: value.go:189:15 -/
+    go: value.go:192:15 -/
 noncomputable def flag.mustBeExported.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam BAnon
@@ -933,7 +1080,7 @@ noncomputable def flag.mustBeExported.impl [GooseExts] [GoGlobalContext] : val :
   (Val #())))))
   (Val #()))))
 
-/-- go: value.go:195:15 -/
+/-- go: value.go:198:15 -/
 noncomputable def flag.mustBeExportedSlow.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam BAnon
@@ -960,7 +1107,7 @@ noncomputable def flag.mustBeExportedSlow.impl [GooseExts] [GoGlobalContext] : v
     which is to say that either it was obtained using an unexported field
     or it is not addressable.
 
-    go: value.go:207:15 -/
+    go: value.go:210:15 -/
 noncomputable def flag.mustBeAssignable.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam BAnon
@@ -973,7 +1120,7 @@ noncomputable def flag.mustBeAssignable.impl [GooseExts] [GoGlobalContext] : val
   (Val #())))))
   (Val #()))))
 
-/-- go: value.go:213:15 -/
+/-- go: value.go:216:15 -/
 noncomputable def flag.mustBeAssignableSlow.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam BAnon
@@ -1009,7 +1156,7 @@ noncomputable def flag.mustBeAssignableSlow.impl [GooseExts] [GoGlobalContext] :
     a field of an addressable struct, or the result of dereferencing a pointer.
     If CanAddr returns false, calling [Value.Addr] will panic.
 
-    go: value.go:231:16 -/
+    go: value.go:234:16 -/
 noncomputable def Value.CanAddr.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -1030,7 +1177,7 @@ noncomputable def Value.CanAddr.impl [GooseExts] [GoGlobalContext] : val :=
     If CanSet returns false, calling [Value.Set] or any type-specific
     setter (e.g., [Value.SetBool], [Value.SetInt]) will panic.
 
-    go: value.go:240:16 -/
+    go: value.go:243:16 -/
 noncomputable def Value.CanSet.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -1050,7 +1197,7 @@ noncomputable def Value.CanSet.impl [GooseExts] [GoGlobalContext] : val :=
     It panics if v's Kind is not [Interface] or [Pointer].
     It returns the zero Value if v is nil.
 
-    go: value.go:248:16 -/
+    go: value.go:251:16 -/
 noncomputable def Value.Elem.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -1147,7 +1294,7 @@ noncomputable def Value.Elem.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- CanInterface reports whether [Value.Interface] can be used without panicking.
 
-    go: value.go:275:16 -/
+    go: value.go:278:16 -/
 noncomputable def Value.CanInterface.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -1179,7 +1326,7 @@ noncomputable def Value.CanInterface.impl [GooseExts] [GoGlobalContext] : val :=
     It panics if the Value was obtained by accessing
     unexported struct fields.
 
-    go: value.go:289:16 -/
+    go: value.go:292:16 -/
 noncomputable def Value.Interface.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -1197,7 +1344,7 @@ noncomputable def Value.Interface.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.any))) (Var "$res0")))))))
 
-/-- go: value.go:293:6 -/
+/-- go: value.go:296:6 -/
 noncomputable def valueInterface.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam "safe"
@@ -1256,7 +1403,7 @@ noncomputable def valueInterface.impl [GooseExts] [GoGlobalContext] : val :=
 
     MODEL: the interface value *v.ptr, converted to any (for both layouts).
 
-    go: value.go:320:6 -/
+    go: value.go:323:6 -/
 noncomputable def packIfaceValueIntoEmptyIface.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
@@ -1279,7 +1426,7 @@ noncomputable def packIfaceValueIntoEmptyIface.impl [GooseExts] [GoGlobalContext
     i==nil will be true but v.IsNil will panic as v will be the zero
     Value.
 
-    go: value.go:331:16 -/
+    go: value.go:334:16 -/
 noncomputable def Value.IsNil.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -1356,7 +1503,7 @@ noncomputable def Value.IsNil.impl [GooseExts] [GoGlobalContext] : val :=
     Most functions and methods never return an invalid Value.
     If one does, its documentation states the conditions explicitly.
 
-    go: value.go:358:16 -/
+    go: value.go:361:16 -/
 noncomputable def Value.IsValid.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -1374,7 +1521,7 @@ noncomputable def Value.IsValid.impl [GooseExts] [GoGlobalContext] : val :=
 /-- Kind returns v's Kind.
     If v is the zero Value ([Value.IsValid] returns false), Kind returns Invalid.
 
-    go: value.go:364:16 -/
+    go: value.go:367:16 -/
 noncomputable def Value.Kind.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -1391,7 +1538,7 @@ noncomputable def Value.Kind.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- Type returns v's type.
 
-    go: value.go:369:16 -/
+    go: value.go:372:16 -/
 noncomputable def Value.«Type».impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -1417,7 +1564,7 @@ noncomputable def Value.«Type».impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
   (App (Val (GoInstruction (GoLoad Type'.ty))) (Var "$res0"))))))
 
-/-- go: value.go:376:16 -/
+/-- go: value.go:379:16 -/
 noncomputable def Value.typeSlow.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -1433,7 +1580,7 @@ noncomputable def Value.typeSlow.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore Type'.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad Type'.ty))) (Var "$res0"))))))
 
-/-- go: value.go:380:16 -/
+/-- go: value.go:383:16 -/
 noncomputable def Value.abiTypeSlow.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -1471,7 +1618,7 @@ noncomputable def Value.abiTypeSlow.impl [GooseExts] [GoGlobalContext] : val :=
     If v is a nil pointer, Indirect returns a zero Value.
     If v is not a pointer, Indirect returns v.
 
-    go: value.go:400:6 -/
+    go: value.go:403:6 -/
 noncomputable def Indirect.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc Value.ty))) (App (Val (GoInstruction (GoZeroVal Value.ty))) (Val #())))
@@ -1498,7 +1645,7 @@ noncomputable def Indirect.impl [GooseExts] [GoGlobalContext] : val :=
 /-- ValueOf returns a new Value initialized to the concrete value
     stored in the interface i. ValueOf(nil) returns the zero Value.
 
-    go: value.go:409:6 -/
+    go: value.go:412:6 -/
 noncomputable def ValueOf.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "i"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc Value.ty))) (App (Val (GoInstruction (GoZeroVal Value.ty))) (Val #())))
@@ -1934,6 +2081,22 @@ class Value.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSe
   Kind_unfold : MethodUnfold Value.ty go!"Kind" Value.Kind.impl
   Type_unfold : MethodUnfold Value.ty go!"Type" Value.«Type».impl
   abiTypeSlow_unfold : MethodUnfold Value.ty go!"abiTypeSlow" Value.abiTypeSlow.impl
+  kind_unfold : MethodUnfold Value.ty go!"kind" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve flag.ty go!"kind"))) (App (Val (GoInstruction (StructFieldGet Value.ty go!"flag"))) (Var "$r"))))
+  mustBe_unfold : MethodUnfold Value.ty go!"mustBe" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve flag.ty go!"mustBe"))) (App (Val (GoInstruction (StructFieldGet Value.ty go!"flag"))) (Var "$r"))))
+  mustBeAssignable_unfold : MethodUnfold Value.ty go!"mustBeAssignable" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve flag.ty go!"mustBeAssignable"))) (App (Val (GoInstruction (StructFieldGet Value.ty go!"flag"))) (Var "$r"))))
+  mustBeAssignableSlow_unfold : MethodUnfold Value.ty go!"mustBeAssignableSlow" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve flag.ty go!"mustBeAssignableSlow"))) (App (Val (GoInstruction (StructFieldGet Value.ty go!"flag"))) (Var "$r"))))
+  mustBeExported_unfold : MethodUnfold Value.ty go!"mustBeExported" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve flag.ty go!"mustBeExported"))) (App (Val (GoInstruction (StructFieldGet Value.ty go!"flag"))) (Var "$r"))))
+  mustBeExportedSlow_unfold : MethodUnfold Value.ty go!"mustBeExportedSlow" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve flag.ty go!"mustBeExportedSlow"))) (App (Val (GoInstruction (StructFieldGet Value.ty go!"flag"))) (Var "$r"))))
+  panicNotMap_unfold : MethodUnfold Value.ty go!"panicNotMap" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve flag.ty go!"panicNotMap"))) (App (Val (GoInstruction (StructFieldGet Value.ty go!"flag"))) (Var "$r"))))
+  ro_unfold : MethodUnfold Value.ty go!"ro" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve flag.ty go!"ro"))) (App (Val (GoInstruction (StructFieldGet Value.ty go!"flag"))) (Var "$r"))))
   typ_unfold : MethodUnfold Value.ty go!"typ" Value.typ.impl
   typeSlow_unfold : MethodUnfold Value.ty go!"typeSlow" Value.typeSlow.impl
   ptr_CanAddr_unfold : MethodUnfold (go.GoType.PointerType Value.ty) go!"CanAddr" (LamV "$r"
@@ -1956,6 +2119,22 @@ class Value.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSe
 (App (Val (GoInstruction (MethodResolve Value.ty go!"Type"))) (App (Val (GoInstruction (GoLoad Value.ty))) (Var "$r"))))
   ptr_abiTypeSlow_unfold : MethodUnfold (go.GoType.PointerType Value.ty) go!"abiTypeSlow" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Value.ty go!"abiTypeSlow"))) (App (Val (GoInstruction (GoLoad Value.ty))) (Var "$r"))))
+  ptr_kind_unfold : MethodUnfold (go.GoType.PointerType Value.ty) go!"kind" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType flag.ty) go!"kind"))) (App (Val (GoInstruction (StructFieldRef Value.ty go!"flag"))) (Var "$r"))))
+  ptr_mustBe_unfold : MethodUnfold (go.GoType.PointerType Value.ty) go!"mustBe" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType flag.ty) go!"mustBe"))) (App (Val (GoInstruction (StructFieldRef Value.ty go!"flag"))) (Var "$r"))))
+  ptr_mustBeAssignable_unfold : MethodUnfold (go.GoType.PointerType Value.ty) go!"mustBeAssignable" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType flag.ty) go!"mustBeAssignable"))) (App (Val (GoInstruction (StructFieldRef Value.ty go!"flag"))) (Var "$r"))))
+  ptr_mustBeAssignableSlow_unfold : MethodUnfold (go.GoType.PointerType Value.ty) go!"mustBeAssignableSlow" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType flag.ty) go!"mustBeAssignableSlow"))) (App (Val (GoInstruction (StructFieldRef Value.ty go!"flag"))) (Var "$r"))))
+  ptr_mustBeExported_unfold : MethodUnfold (go.GoType.PointerType Value.ty) go!"mustBeExported" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType flag.ty) go!"mustBeExported"))) (App (Val (GoInstruction (StructFieldRef Value.ty go!"flag"))) (Var "$r"))))
+  ptr_mustBeExportedSlow_unfold : MethodUnfold (go.GoType.PointerType Value.ty) go!"mustBeExportedSlow" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType flag.ty) go!"mustBeExportedSlow"))) (App (Val (GoInstruction (StructFieldRef Value.ty go!"flag"))) (Var "$r"))))
+  ptr_panicNotMap_unfold : MethodUnfold (go.GoType.PointerType Value.ty) go!"panicNotMap" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType flag.ty) go!"panicNotMap"))) (App (Val (GoInstruction (StructFieldRef Value.ty go!"flag"))) (Var "$r"))))
+  ptr_ro_unfold : MethodUnfold (go.GoType.PointerType Value.ty) go!"ro" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType flag.ty) go!"ro"))) (App (Val (GoInstruction (StructFieldRef Value.ty go!"flag"))) (Var "$r"))))
   ptr_typ_unfold : MethodUnfold (go.GoType.PointerType Value.ty) go!"typ" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Value.ty go!"typ"))) (App (Val (GoInstruction (GoLoad Value.ty))) (Var "$r"))))
   ptr_typeSlow_unfold : MethodUnfold (go.GoType.PointerType Value.ty) go!"typeSlow" (LamV "$r"
@@ -1981,6 +2160,14 @@ attribute [instance] Value.TypeAssumptions.type_repr
   Value.TypeAssumptions.Kind_unfold
   Value.TypeAssumptions.Type_unfold
   Value.TypeAssumptions.abiTypeSlow_unfold
+  Value.TypeAssumptions.kind_unfold
+  Value.TypeAssumptions.mustBe_unfold
+  Value.TypeAssumptions.mustBeAssignable_unfold
+  Value.TypeAssumptions.mustBeAssignableSlow_unfold
+  Value.TypeAssumptions.mustBeExported_unfold
+  Value.TypeAssumptions.mustBeExportedSlow_unfold
+  Value.TypeAssumptions.panicNotMap_unfold
+  Value.TypeAssumptions.ro_unfold
   Value.TypeAssumptions.typ_unfold
   Value.TypeAssumptions.typeSlow_unfold
   Value.TypeAssumptions.ptr_CanAddr_unfold
@@ -1993,6 +2180,14 @@ attribute [instance] Value.TypeAssumptions.type_repr
   Value.TypeAssumptions.ptr_Kind_unfold
   Value.TypeAssumptions.ptr_Type_unfold
   Value.TypeAssumptions.ptr_abiTypeSlow_unfold
+  Value.TypeAssumptions.ptr_kind_unfold
+  Value.TypeAssumptions.ptr_mustBe_unfold
+  Value.TypeAssumptions.ptr_mustBeAssignable_unfold
+  Value.TypeAssumptions.ptr_mustBeAssignableSlow_unfold
+  Value.TypeAssumptions.ptr_mustBeExported_unfold
+  Value.TypeAssumptions.ptr_mustBeExportedSlow_unfold
+  Value.TypeAssumptions.ptr_panicNotMap_unfold
+  Value.TypeAssumptions.ptr_ro_unfold
   Value.TypeAssumptions.ptr_typ_unfold
   Value.TypeAssumptions.ptr_typeSlow_unfold
 
@@ -2058,9 +2253,11 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   toRType_unfold : FuncUnfold toRType [] toRType.impl
   elem_unfold : FuncUnfold elem [] elem.impl
   TypeOf_unfold : FuncUnfold TypeOf [] TypeOf.impl
+  isModelRType_unfold : FuncUnfold isModelRType [] isModelRType.impl
   stringFor_unfold : FuncUnfold stringFor [] stringFor.impl
   toType_unfold : FuncUnfold toType [] toType.impl
   isDirectIface_unfold : FuncUnfold isDirectIface [] isDirectIface.impl
+  isZeroSize_unfold : FuncUnfold isZeroSize [] isZeroSize.impl
   packEface_unfold : FuncUnfold packEface [] packEface.impl
   packEfaceData_unfold : FuncUnfold packEfaceData [] packEfaceData.impl
   unpackEface_unfold : FuncUnfold unpackEface [] unpackEface.impl
@@ -2092,9 +2289,11 @@ attribute [instance] Assumptions.Type_instance
   Assumptions.toRType_unfold
   Assumptions.elem_unfold
   Assumptions.TypeOf_unfold
+  Assumptions.isModelRType_unfold
   Assumptions.stringFor_unfold
   Assumptions.toType_unfold
   Assumptions.isDirectIface_unfold
+  Assumptions.isZeroSize_unfold
   Assumptions.packEface_unfold
   Assumptions.packEfaceData_unfold
   Assumptions.unpackEface_unfold
