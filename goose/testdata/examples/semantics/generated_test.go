@@ -143,6 +143,18 @@ func (suite *GoTestSuite) TestCompareLE() {
 	suite.Equal(true, testCompareLE())
 }
 
+func (suite *GoTestSuite) TestTypeSwitchComplex() {
+	suite.Equal(true, testTypeSwitchComplex())
+}
+
+func (suite *GoTestSuite) TestAssertComplexFails() {
+	suite.Equal(true, testAssertComplexFails())
+}
+
+func (suite *GoTestSuite) TestComplexZeroValue() {
+	suite.Equal(true, testComplexZeroValue())
+}
+
 func (suite *GoTestSuite) TestConstantCalls() {
 	suite.Equal(true, testConstantCalls())
 }
