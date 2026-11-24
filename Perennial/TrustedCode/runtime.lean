@@ -1,5 +1,5 @@
 /-
-Trusted code for `runtime`: the stack walk behind `Callers` (`callers.impl`) and the linker-set
+Trusted code for `runtime`: `Gosched.impl`, the stack walk behind `Callers` (`callers.impl`) and the linker-set
 `buildVersion` (`buildVersion.init`), in namespace
 `runtime`, as the generated package.
 -/
@@ -26,6 +26,16 @@ opaque buildVersionValue : GoString
 
 section code
 variable [GooseExts] [GoGlobalContext]
+
+/-- `Gosched()` (`proc.go`): yields the processor (`checkTimeouts()`, empty on linux, then
+`mcall(gosched_m)`: assembly and the scheduler, which the semantics does not model). The model
+returns: a yield after which the same goroutine runs on is a schedule Go also has, and the
+semantics' interleaving gives every other one; neither can panic. Trusted rather than a Go model
+in the overlay: an overlay replacement would also be what the runtime's own callers run in gc
+builds, and `runtime.GC` loops on `Gosched` while it waits for the sweep. -/
+def Gosched.impl : val :=
+  λ: <>,
+    #()
 
 /-- The initialization of `buildVersion` (`runtime/extern.go`), the string `Version` returns:
 
