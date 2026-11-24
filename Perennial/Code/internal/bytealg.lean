@@ -381,7 +381,7 @@ noncomputable def Cutover.impl [GooseExts] [GoGlobalContext] : val :=
     result outside it is not specified, so there the model does not terminate
     (less defined than Go, never more).
 
-    go: index_native.go:38:6 -/
+    go: index_native.go:40:6 -/
 noncomputable def IndexString.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam "b"
@@ -401,9 +401,9 @@ noncomputable def IndexString.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
-  (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "b"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "a"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))))))) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "a"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "b"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))))))))) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "a"))
   (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "b"))
   (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))))))) (App (Val (GoInstruction (GoLoad go.string))) (Var "b")))))

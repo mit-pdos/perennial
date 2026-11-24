@@ -36,7 +36,22 @@ theorem internal.bytealg.initialize'.wp_proof :
   wp_call
   iunfold MaxLen at HMaxLen
   wp_apply wp_ArbitraryInt as %c -
-  wp_if_destruct <;> (iframe Hown; is_pkg_init_finish)
+  iapply wp_fupd
+  wp_if_destruct <;>
+  · ipersist HMaxLen
+    iframe Hown
+    is_pkg_init_finish
+    isplitr
+    · ipureintro; simp
+    imodintro
+    isplitr
+    · itrivial
+    imodintro
+    unfold internal.bytealg.isInit MaxLen
+    iexists _
+    iframe HMaxLen
+    ipureintro
+    simp
 
 end proof
 

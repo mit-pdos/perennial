@@ -69,6 +69,66 @@ example : splitFields helloWorldWs = [go!"hello", go!"world"] := by decide
 example : splitFields go!"  hello\tthere\ngeneral\rkenobi " =
     [go!"hello", go!"there", go!"general", go!"kenobi"] := by decide
 
+/-! ### `LastIndex` -/
+
+/-- The last index at or below `j` at which `sep` occurs in `s`, or `-1`. -/
+def lastIndexFrom (s sep : GoString) : Nat → Int
+  | 0 => if sep <+: s then 0 else -1
+  | j + 1 => if sep <+: s.drop (j + 1) then ((j + 1 : Nat) : Int) else lastIndexFrom s sep j
+
+/-- What `strings.LastIndex(s, substr)` returns: the last index at which `substr` occurs in `s`,
+or `-1` (`len(s)` for an empty `substr`). -/
+def lastIndex (s sep : GoString) : Int := lastIndexFrom s sep s.length
+
+theorem lastIndexFrom_eq_neg (s sep : GoString) :
+    ∀ j, (∀ k ≤ j, ¬ sep <+: s.drop k) → lastIndexFrom s sep j = -1
+  | 0, h => by simp [lastIndexFrom, show ¬ sep <+: s from by simpa using h 0 (Nat.le_refl 0)]
+  | j + 1, h => by
+    simp only [lastIndexFrom, h (j + 1) (Nat.le_refl _), ↓reduceIte]
+    exact lastIndexFrom_eq_neg s sep j (fun k hk => h k (by omega))
+
+theorem lastIndexFrom_eq_of (s sep : GoString) (i : Nat) (h : sep <+: s.drop i)
+    (hmax : ∀ k, i < k → k ≤ s.length → ¬ sep <+: s.drop k) :
+    ∀ j, i ≤ j → j ≤ s.length → lastIndexFrom s sep j = i
+  | 0, hj, _ => by
+    have : i = 0 := by omega
+    subst this; simp [lastIndexFrom, show sep <+: s from by simpa using h]
+  | j + 1, hj, hjs => by
+    rcases Nat.lt_or_ge i (j + 1) with hij | hij
+    · simp only [lastIndexFrom, hmax (j + 1) hij hjs, ↓reduceIte]
+      exact lastIndexFrom_eq_of s sep i h hmax j (by omega) (by omega)
+    · have : i = j + 1 := by omega
+      subst this; simp [lastIndexFrom, h]
+
+theorem lastIndexFrom_nil (s : GoString) : ∀ j, lastIndexFrom s [] j = j
+  | 0 => by simp [lastIndexFrom]
+  | j + 1 => by simp [lastIndexFrom]
+
+/-- An empty `sep` occurs last at the end: `lastIndex s [] = len(s)`. -/
+theorem lastIndex_nil (s : GoString) : lastIndex s [] = s.length := lastIndexFrom_nil s _
+
+/-- `sep` occurs at `i` and nowhere after: `lastIndex s sep = i`. -/
+theorem lastIndex_eq_of (s sep : GoString) (i : Nat) (hi : i ≤ s.length) (h : sep <+: s.drop i)
+    (hmax : ∀ k, i < k → k ≤ s.length → ¬ sep <+: s.drop k) : lastIndex s sep = i :=
+  lastIndexFrom_eq_of s sep i h hmax s.length hi (Nat.le_refl _)
+
+/-- `sep` occurs nowhere in `s`: `lastIndex s sep = -1`. -/
+theorem lastIndex_eq_neg (s sep : GoString) (h : ∀ k, k ≤ s.length → ¬ sep <+: s.drop k) :
+    lastIndex s sep = -1 :=
+  lastIndexFrom_eq_neg s sep s.length h
+
+/-! ### `TrimLeft` -/
+
+/-- What `strings.TrimLeft(s, cutset)` returns: `s` without its longest prefix of bytes of
+`cutset`. Go's `TrimLeft` removes Unicode code points; for an ASCII `cutset` (every byte below
+128, the only case `wp_TrimLeft` covers) it removes bytes (`trimLeftByte`, `trimLeftASCII`). -/
+def trimLeft (s cutset : GoString) : GoString := s.dropWhile (fun b => decide (b ∈ cutset))
+
+/-- Whether the `asciiSet` `aset` (`[8]uint32`, a bit per byte value) has `c`: bit `c % 32` of word
+`c / 32` (`(*asciiSet).contains`). -/
+def asciiSetHas (aset : GoArray w32 8) (c : w8) : Bool :=
+  !decide (aset.arr.getD (c.toNat / 32) 0 &&& W32 1 <<< W64 (uint.Z (c % W8 32)) = W32 0)
+
 section wps
 variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]

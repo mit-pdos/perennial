@@ -9,7 +9,9 @@
 // assembly (index_amd64.s). Go has no generic body for them (index_generic.go
 // panics, on the architectures whose MaxLen is 0, where they are never
 // called), so the bodies here are what their doc comments state, as a naive
-// search. Evidence: ../../../bytealgdiff (a difftest against the real package,
+// search. The loop bound is `i <= len(a)-len(b)`, not `i+len(b) <= len(a)`: the
+// latter overflows for len(a) near the largest int, where the model would then
+// slice out of range; len(a)-len(b) cannot overflow. Evidence: ../../../bytealgdiff (a difftest against the real package,
 // through strings).
 
 package bytealg
@@ -23,7 +25,7 @@ func Index(a, b []byte) int {
 		for {
 		}
 	}
-	for i := 0; i+len(b) <= len(a); i++ {
+	for i := 0; i <= len(a)-len(b); i++ {
 		if string(a[i:i+len(b)]) == string(b) {
 			return i
 		}
@@ -40,7 +42,7 @@ func IndexString(a, b string) int {
 		for {
 		}
 	}
-	for i := 0; i+len(b) <= len(a); i++ {
+	for i := 0; i <= len(a)-len(b); i++ {
 		if a[i:i+len(b)] == b {
 			return i
 		}
