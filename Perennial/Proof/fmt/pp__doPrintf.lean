@@ -22,85 +22,6 @@ namespace Perennial
 
 open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 
-namespace fmt
--- TMP-LEMMAS-BEGIN
-/-- The scan for the next `%` at `j`, inside the literal bytes `L` or right after them. -/
-theorem scan_byte {format L R : GoString} {i j : Nat} {b : w8} (hs : format.drop i = L ++ R)
-    (hL : W8 37 ∉ L) (hR : ∀ c, R.head? = some c → c = W8 37) (hij : i ≤ j)
-    (hj : j ≤ i + L.length) (hb : format[j]? = some b) :
-    (!decide (b = W8 37)) = decide (j < i + L.length) := by
-  have hk := getElem?_of_drop_append (k := j - i) hs
-  rw [show i + (j - i) = j by omega, hb] at hk
-  by_cases h : j < i + L.length
-  · rw [List.getElem?_append_left (by omega)] at hk
-    have hmem : b ∈ L := List.mem_of_getElem? hk.symm
-    have : b ≠ W8 37 := fun e => hL (e ▸ hmem)
-    rw [decide_eq_false this, decide_eq_true h]; rfl
-  · rw [List.getElem?_append_right (by omega), show j - i - L.length = 0 by omega] at hk
-    have hR0 : R.head? = some b := by cases R <;> simp_all
-    have := hR b hR0
-    rw [decide_eq_true this, decide_eq_false h]; rfl
-
-theorem Fits_dir_inv {zw : Option Nat} {v : w8} {ps : List Piece} {args : List Arg}
-    (h : Fits (.dir zw v :: ps) args) :
-    ∃ a args', args = a :: args' ∧ DirOk zw v a ∧ Fits ps args' := by
-  cases h with
-  | dir _ _ a _ args' hd hf => exact ⟨a, args', rfl, hd, hf⟩
-
-/-- The verbs of the verified subset. -/
-theorem DirOk_verb {zw : Option Nat} {v : w8} {a : Arg} (h : DirOk zw v a) :
-    v = verb_d ∨ v = verb_s ∨ v = verb_v ∨ v = verb_x := by
-  by_cases h1 : v = verb_d; · exact Or.inl h1
-  by_cases h2 : v = verb_s; · exact Or.inr (Or.inl h2)
-  by_cases h3 : v = verb_v; · exact Or.inr (Or.inr (Or.inl h3))
-  by_cases h4 : v = verb_x; · exact Or.inr (Or.inr (Or.inr h4))
-  exfalso
-  cases zw <;> cases a <;> simp_all [DirOk]
-
-/-- What the format loop checks of a verb: not a flag, a lowercase letter, not `w`. -/
-theorem verb_bytes {v : w8} (h : v = verb_d ∨ v = verb_s ∨ v = verb_v ∨ v = verb_x) :
-    v ≠ W8 35 ∧ v ≠ W8 48 ∧ v ≠ W8 43 ∧ v ≠ W8 45 ∧ v ≠ W8 32 ∧ v ≠ W8 119 ∧ v ≠ W8 37 ∧
-      v ≠ W8 46 ∧ v ≠ W8 42 ∧ v ≠ W8 91 ∧ uint.Z (W8 97) ≤ uint.Z v ∧ uint.Z v ≤ uint.Z (W8 122) ∧
-      uint.Z v < 128 ∧ ¬ IsDigit v := by
-  rcases h with rfl | rfl | rfl | rfl <;> (unfold IsDigit; decide)
-
-theorem DirOk_some_width {N : Nat} {v : w8} {a : Arg} (h : DirOk (some N) v a) :
-    1 ≤ N ∧ N ≤ 1000000 := by
-  cases a <;> simp only [DirOk, ZeroWidthOk] at h
-  exact h.2
-
-/-- The first digit of a positive number is not `0`. -/
-theorem decimalNat_head {N : Nat} (h : 1 ≤ N) :
-    ∃ d ds, decimalNat N = d :: ds ∧ IsDigit d ∧ d ≠ W8 48 := by
-  induction N using Nat.strongRecOn with
-  | _ n ih =>
-    by_cases h10 : n < 10
-    · rw [decimalNat_of_lt h10]
-      refine ⟨_, [], rfl, ?_, ?_⟩
-      · have := decimalNat_isDigit n (digitByte n) (by rw [decimalNat_of_lt h10]; simp)
-        exact this
-      · unfold digitByte; intro e
-        have : (W8 (48 + n : Int)).toNat = (W8 48).toNat := by rw [e]
-        simp [W8] at this; omega
-    · obtain ⟨d, ds, he, hd, h0⟩ := ih (n / 10) (by omega) (by omega)
-      exact ⟨d, ds ++ [digitByte (n % 10)], by rw [decimalNat_of_ge (by omega), he]; rfl, hd, h0⟩
-
-/-- What the format loop checks of a digit: not a flag (but `0`), not lowercase, not `[` or `*`. -/
-theorem digit_bytes {d : w8} (h : IsDigit d) :
-    d ≠ W8 35 ∧ d ≠ W8 43 ∧ d ≠ W8 45 ∧ d ≠ W8 32 ∧ ¬ uint.Z (W8 97) ≤ uint.Z d ∧
-      d ≠ W8 91 ∧ d ≠ W8 42 := by
-  unfold IsDigit at h
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> word
-
-/-- The verbs as runes: not `%` or `w`. -/
-theorem verb_runes {v : w8} (h : v = verb_d ∨ v = verb_s ∨ v = verb_v ∨ v = verb_x) :
-    W32 (uint.nat v : Int) ≠ W32 37 ∧ W32 (uint.nat v : Int) ≠ W32 119 ∧
-      (W32 (uint.nat v : Int) = W32 118 ↔ v = W8 118) := by
-  rcases h with rfl | rfl | rfl | rfl <;> decide
-
--- TMP-LEMMAS-END
-end fmt
-
 section proof
 variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
@@ -522,12 +443,14 @@ theorem fmt.pp.doPrintf.wp_proof
           obtain ⟨rfl, rfl⟩ := Hd.2 _ _ rfl h128
           obtain ⟨hw37, hw119, hw118⟩ := fmt.verb_runes (fmt.DirOk_verb hdok)
           have hanz : sint.Z argNum < sint.Z args_sl.len := by word
-          rw [decide_eq_false (show ¬ (true = decide (W32 (uint.nat v : Int) = W32 37)) from fun h => hw37 (of_decide_eq_true h.symm))]
+          rw [decide_eq_false (show ¬ (true = decide (W32 (uint.nat v : Int) = W32 37)) from
+            fun h => hw37 (of_decide_eq_true h.symm))]
           wp_auto
           rw [decide_eq_false (show ¬ (true = decide (sint.Z args_sl.len ≤ sint.Z argNum)) by
             simp; word)]
           wp_auto
-          rw [decide_eq_false (show ¬ (true = decide (W32 (uint.nat v : Int) = W32 119)) from fun h => hw119 (of_decide_eq_true h.symm))]
+          rw [decide_eq_false (show ¬ (true = decide (W32 (uint.nat v : Int) = W32 119)) from
+            fun h => hw119 (of_decide_eq_true h.symm))]
           wp_auto
           by_cases hv : v = W8 118
           · rw [decide_eq_true (show true = decide (W32 (uint.nat v : Int) = W32 118) by
