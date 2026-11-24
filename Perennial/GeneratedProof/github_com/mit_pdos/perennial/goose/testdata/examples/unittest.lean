@@ -5,6 +5,7 @@ public import Perennial.Proof.ProofPrelude
 public import Perennial.GeneratedProof.fmt
 public import Perennial.GeneratedProof.github_com.goose_lang.primitive
 public import Perennial.GeneratedProof.github_com.goose_lang.std
+public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.proph
 public import Perennial.GeneratedProof.log
 public import Perennial.GeneratedProof.sync
 public import Perennial.Golang.Theory
@@ -877,6 +878,63 @@ noncomputable instance typing_access_store_proph (l : Loc) (v : github_com.mit_p
 
 end def_
 end typing
+
+namespace prophEvent
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions]
+
+noncomputable instance prophEvent_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.prophEvent where
+  typedPointstoDef l v dq := iprop(
+    "kind" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.prophEvent go!"kind" l) v.kind' dq ∗
+    "val" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.prophEvent go!"val" l) v.val' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance prophEvent_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.prophEvent github_com.mit_pdos.perennial.goose.testdata.examples.unittest.prophEvent.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance prophEvent_access_load_kind (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.prophEvent) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.prophEvent go!"kind" l) v.kind' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.prophEvent go!"kind" l) v.kind' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance prophEvent_access_store_kind (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.prophEvent) (kind' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.prophEvent go!"kind" l) v.kind' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.prophEvent go!"kind" l) kind' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with kind' := kind' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.prophEvent) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance prophEvent_access_load_val (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.prophEvent) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.prophEvent go!"val" l) v.val' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.prophEvent go!"val" l) v.val' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance prophEvent_access_store_val (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.prophEvent) (val' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.prophEvent go!"val" l) v.val' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.prophEvent go!"val" l) val' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with val' := val' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.prophEvent) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end prophEvent
 
 namespace composite
 section def_
