@@ -46,6 +46,29 @@ translation writes for it) and its `TypeAssumptions` class, once per package
 Each function is translated to a GooseLang `val` (`noncomputable def Open.impl ... : val`),
 printed as plain constructor applications of `Perennial/GooseLang/Lang.lean`.
 
+### Lean names of Go identifiers
+
+One rule per kind of name (`GoName` in `glang/syntax.go`):
+
+- a struct field `F` is the projection `F'`, and a type parameter `P`'s value
+  type is the binder `P'`;
+- every other Go name `X` (type, function, global, method's receiver type, a type
+  parameter's `go.GoType` binder) is `X`, or `X''` when `X` is reserved: a
+  framework name the output refers to unqualified (`Val`, `Pair`, `Index`, `Int`,
+  `Bool`, `Set`, `list`, ...), a name goose or Lean declares under a type's or
+  function's namespace (`ty`, `underlying`, `fields`, `impl`, `mk`, `rec`,
+  `eq_def`, ...), a generated member shape (`get_F`, `set_F`, `M_unfold`,
+  `T_instance`, ...), or a binder of the generated code (`x`, `y`, `l`, `GF`, ...);
+- a name that is not a plain Lean identifier (a Lean keyword, non-ASCII) is
+  written in guillemets, which does not change the name: Go `type Type int64` is
+  `«Type»`, its field `Type` is `Type'`.
+
+Go identifiers contain no `'`, so a name ending in exactly one `'` is always a
+field projection (or a value binder), and nothing else Go-derived ends that way:
+a projection `S.F'` cannot capture a type, function or global referenced inside
+namespace `S`. `testdata/examples/unittest/names` has a case for each kind of
+capture.
+
 ## Running goose
 
 The usual way to run goose is `etc/update-goose-new.py` (see its `--help`),
