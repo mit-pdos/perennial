@@ -34,9 +34,24 @@ script enforces the review.
    skill): commit everything; `etc/land.sh prepare` (merges `origin/lean`
    into the branch, builds the changed modules, runs goose's tests if goose
    changed); the trusted-base review of `.agents/skills/review-trusted/SKILL.md`
-   in fix mode, committing its fixes, which records an OK verdict with
-   `etc/land.sh mark-reviewed`; then `etc/land.sh push`, which refuses
-   without that record and fast-forwards `origin/lean`. Nothing else pushes
+   in fix mode, committing its fixes, which checks every criterion of
+   `.agents/skills/review-trusted/CRITERIA.md`, writes a verdict file and
+   records an OK verdict with `etc/land.sh mark-reviewed`; then
+   `etc/land.sh push`, which refuses without that record and fast-forwards
+   `origin/lean`. **The witness gate:** when the branch adds to the model of
+   Go (an added tier-0 line with a step rule, a semantics class or instance, a
+   `GoInstruction` constructor, an `assume`, an `AngelicExit`, an `axiom`, an
+   extension's semantics, a trusted `.impl`, or a Go model overlay's table,
+   replaced names or choice points: `etc/trusted-delta.py --witness-gate`),
+   `push` also refuses unless a commit of the branch carries the trailers
+   `Semantics-Witness: <path>` (a goose example under
+   `goose/testdata/examples/`, a `Perennial/ProgramLogic/*Test.lean` or a
+   `Perennial/Proof/` file, existing at HEAD; land.sh builds or runs it) and
+   `Real-use: <repo>:<package>.<function>`, or
+   `Semantics-Witness: none (narrowing: <reason>)` for a change that only
+   removes trust or makes the model stuck in more places.
+   `etc/land.sh witness-check [A..B]` is the dry run;
+   `etc/trusted-delta.py --self-test` tests the gate. Nothing else pushes
    to `lean`: no `git push origin lean`, no `HEAD:lean`, no force pushes, no
    `--no-verify`. Once landed, delete the branch: its worktree, the local
    branch (`git branch -d`) and its remote copy if it was pushed
