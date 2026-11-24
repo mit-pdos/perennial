@@ -21,8 +21,26 @@ variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.gokv.grove_ffi.Assumptions]
 
 theorem github_com.mit_pdos.gokv.grove_ffi.Connect.wp_proof :
-    github_com.mit_pdos.gokv.grove_ffi.Connect.spec (GF := GF) (hG := hG) := by
-  sorry
+    github_com.mit_pdos.gokv.grove_ffi.Connect.spec (GF := GF) (hG := hG) := fun c_r => by
+  wp_start
+  wp_bind (ExternalOp _ _ _)
+  wp_apply wp_ConnectOp c_r with %err %c_l Hc
+  rw [named_ConnectRet, named_Connection]
+  cases err
+  · iapply wp_fupd
+    wp_auto
+    wp_apply wp_alloc_untyped _ (by simp [val.isPanic]) with %c Hconn
+    ipersist Hconn
+    imodintro
+    iapply HΦ $$ %false %c
+    simp only [Bool.false_eq_true, ↓reduceIte]
+    iexists c_l
+    unfold isConnection
+    iframe Hc Hconn Hpkg
+  · wp_auto
+    iapply HΦ $$ %true %null
+    simp only [↓reduceIte]
+    ipureintro; trivial
 
 end proof
 

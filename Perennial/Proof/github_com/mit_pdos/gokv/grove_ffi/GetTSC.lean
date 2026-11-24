@@ -4,6 +4,7 @@ The proof of `github.com/mit-pdos/gokv/grove_ffi.GetTSC`.
 module
 
 public import Perennial.Spec.github_com.mit_pdos.gokv.grove_ffi.GetTSC
+public import Perennial.Proof.github_com.mit_pdos.gokv.grove_ffi.AtomicOps
 
 @[expose] public section
 
@@ -22,7 +23,11 @@ variable [package_sem : github_com.mit_pdos.gokv.grove_ffi.Assumptions]
 
 theorem github_com.mit_pdos.gokv.grove_ffi.GetTSC.wp_proof :
     github_com.mit_pdos.gokv.grove_ffi.GetTSC.spec (GF := GF) (hG := hG) := by
-  sorry
+  iintro %Φ HAU
+  wp_func_call
+  unfold GetTSC.impl
+  wp_pures
+  iapply wp_GetTscOp_atomic $$ HAU
 
 end proof
 

@@ -4,6 +4,7 @@ The proof of `github.com/mit-pdos/gokv/grove_ffi.FileAppend`.
 module
 
 public import Perennial.Spec.github_com.mit_pdos.gokv.grove_ffi.FileAppend
+public import Perennial.Proof.github_com.mit_pdos.gokv.grove_ffi.AtomicOps
 
 @[expose] public section
 
@@ -21,8 +22,22 @@ variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.gokv.grove_ffi.Assumptions]
 
 theorem github_com.mit_pdos.gokv.grove_ffi.FileAppend.wp_proof :
-    github_com.mit_pdos.gokv.grove_ffi.FileAppend.spec (GF := GF) (hG := hG) := by
-  sorry
+    github_com.mit_pdos.gokv.grove_ffi.FileAppend.spec (GF := GF) (hG := hG) := fun f s dq data => by
+  iintro %Φ Hs HAU
+  wp_func_call
+  unfold FileAppend.impl
+  wp_pures
+  wp_apply wp_bytes_to_string s data dq $$ Hs with Hs
+  try wp_pures
+  iapply wp_FileAppendOp_atomic f data
+  imod HAU with ⟨%old, Hf, Hclose⟩
+  imodintro
+  iexists old
+  iframe Hf
+  iintro Hf
+  imod Hclose $$ Hf with HΦ
+  imodintro
+  iapply HΦ $$ Hs
 
 end proof
 

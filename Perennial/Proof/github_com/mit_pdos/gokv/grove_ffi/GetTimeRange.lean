@@ -22,7 +22,11 @@ variable [package_sem : github_com.mit_pdos.gokv.grove_ffi.Assumptions]
 
 theorem github_com.mit_pdos.gokv.grove_ffi.GetTimeRange.wp_proof :
     github_com.mit_pdos.gokv.grove_ffi.GetTimeRange.spec (GF := GF) (hG := hG) := by
-  sorry
+  iintro %Φ HΦ
+  wp_func_call
+  unfold GetTimeRange.impl
+  wp_pures
+  iapply wp_GetTimeRangeOp $$ HΦ
 
 end proof
 

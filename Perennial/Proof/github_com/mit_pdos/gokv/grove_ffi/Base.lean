@@ -20,6 +20,25 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 
 namespace github_com.mit_pdos.gokv.grove_ffi
 
+section types
+variable [GooseExts] [GoGlobalContext]
+
+/-- The trusted models name the package's types as `go.Named` (`ConnectRet`, `ReceiveRet`,
+`Connection`); these rewrite them to the translated types, whose semantics instances apply. -/
+theorem named_ConnectRet :
+    go.Named go!"github.com/mit-pdos/gokv/grove_ffi.ConnectRet" [] = ConnectRet.ty := by
+  unfold ConnectRet.ty; rfl
+
+theorem named_ReceiveRet :
+    go.Named go!"github.com/mit-pdos/gokv/grove_ffi.ReceiveRet" [] = ReceiveRet.ty := by
+  unfold ReceiveRet.ty; rfl
+
+theorem named_Connection :
+    go.Named go!"github.com/mit-pdos/gokv/grove_ffi.Connection" [] = Connection.ty := by
+  unfold Connection.ty; rfl
+
+end types
+
 section wps
 variable [GooseExts] [GooseSemantics] [GooseInterp] [HasExt groveExt]
 variable [go_gctx : GoGlobalContext]
