@@ -45,7 +45,7 @@ theorem fmt.wp_Fprintf_bytes :
   subst Hw
   wp_auto
   wp_apply fmt.wp_newPrinter as %p Hp
-  have hdo := fmt.wp_doPrintfB internal.gomodel.wp_ChooseUint64 B dqb format args_sl xs dq false
+  have hdo := fmt.wp_doPrintfB (internal.gomodel.wp_ChooseUint64 (GF := GF) (hG := hG)) B dqb format args_sl xs dq false
   rw [fmt.modeVerbs_false] at hdo
   wp_apply hdo $$ [$Hsl $Hown $Hok] as %s %wsl %unk ⟨Hsl, Hown, %Hs, -⟩
   try wp_auto

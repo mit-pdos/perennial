@@ -76,11 +76,7 @@ theorem fmt.wp_pp_doPrint
     iapply HΦ
     iexists s
     iframe
-    unfold fmt.isPrinterAny fmt.isPrinter fmt.isPrinterA
-    isplitr
-    · ipureintro; exact hnn
-    iexists F, wid, prec, x'
-    iframe
+    ipureintro; exact hnn
 
 theorem fmt.Fprint.wp_proof
     (wp_newPrinter : fmt.newPrinter.spec (GF := GF) (hG := hG))
@@ -114,7 +110,7 @@ theorem fmt.Fprint.wp_proof
     · ipureintro; exact hnn
     iexists F, wid, prec, x'
     iframe
-  wp_auto
+  try wp_auto
   iapply HΦ
   iframe
 

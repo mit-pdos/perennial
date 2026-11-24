@@ -410,6 +410,7 @@ theorem fmt.Errorf.wp_proof
       isplitr
       · iexact HErr
       rw [fmt.fmtDirectives_noPct format hnp]
+      dsimp only [fmt.wrapArgs, fmt.wrapArgsFrom]
       iexists x
       isplitr
       · ipureintro; rfl
