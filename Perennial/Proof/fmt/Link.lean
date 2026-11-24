@@ -11,9 +11,42 @@ public import Perennial.Proof.fmt.Fprint
 public import Perennial.Proof.fmt.Fprintf
 public import Perennial.Proof.fmt.Printf
 public import Perennial.Proof.fmt.Sprintf
+public import Perennial.Proof.fmt.buffer__write
+public import Perennial.Proof.fmt.buffer__writeByte
+public import Perennial.Proof.fmt.buffer__writeString
+public import Perennial.Proof.fmt.fmt__clearflags
+public import Perennial.Proof.fmt.fmt__fmtBoolean
+public import Perennial.Proof.fmt.fmt__fmtBs
+public import Perennial.Proof.fmt.fmt__fmtBx
+public import Perennial.Proof.fmt.fmt__fmtInteger
+public import Perennial.Proof.fmt.fmt__fmtS
+public import Perennial.Proof.fmt.fmt__fmtSbx
+public import Perennial.Proof.fmt.fmt__fmtSx
+public import Perennial.Proof.fmt.fmt__init
+public import Perennial.Proof.fmt.fmt__pad
+public import Perennial.Proof.fmt.fmt__padString
+public import Perennial.Proof.fmt.fmt__truncate
+public import Perennial.Proof.fmt.fmt__truncateString
+public import Perennial.Proof.fmt.fmt__writePadding
 public import Perennial.Proof.fmt.initialize
+public import Perennial.Proof.fmt.newPrinter
+public import Perennial.Proof.fmt.parsenum
+public import Perennial.Proof.fmt.pp__argNumber
+public import Perennial.Proof.fmt.pp__catchPanic'deferred
+public import Perennial.Proof.fmt.pp__doPrintf
+public import Perennial.Proof.fmt.pp__fmtBool
+public import Perennial.Proof.fmt.pp__fmtBytes
+public import Perennial.Proof.fmt.pp__fmtInteger
+public import Perennial.Proof.fmt.pp__fmtString
+public import Perennial.Proof.fmt.pp__free
+public import Perennial.Proof.fmt.pp__handleMethods
+public import Perennial.Proof.fmt.pp__printArg
+public import Perennial.Proof.fmt.tooLarge
 public import Perennial.Proof.io.Link
+public import Perennial.Proof.reflect.Link
+public import Perennial.Proof.strconv.Link
 public import Perennial.Proof.sync.Link
+public import Perennial.Proof.unicode.utf8.Link
 
 @[expose] public section
 
@@ -40,11 +73,101 @@ theorem fmt.wp_Fprintf : fmt.Fprintf.spec (GF := GF) (hG := hG) :=
 theorem fmt.wp_Printf : fmt.Printf.spec (GF := GF) (hG := hG) :=
   fmt.Printf.wp_proof
 
+theorem fmt.fmt.wp_clearflags : fmt.fmt.clearflags.spec (GF := GF) (hG := hG) :=
+  fmt.fmt.clearflags.wp_proof
+
+theorem fmt.fmt.wp_init : fmt.fmt.init.spec (GF := GF) (hG := hG) :=
+  fmt.fmt.init.wp_proof fmt.fmt.wp_clearflags
+
+theorem fmt.wp_newPrinter : fmt.newPrinter.spec (GF := GF) (hG := hG) :=
+  fmt.newPrinter.wp_proof sync.Pool.wp_Get fmt.fmt.wp_init
+
+theorem fmt.buffer.wp_writeString : fmt.buffer.writeString.spec (GF := GF) (hG := hG) :=
+  fmt.buffer.writeString.wp_proof
+
+theorem fmt.buffer.wp_writeByte : fmt.buffer.writeByte.spec (GF := GF) (hG := hG) :=
+  fmt.buffer.writeByte.wp_proof
+
+theorem fmt.pp.wp_argNumber : fmt.pp.argNumber.spec (GF := GF) (hG := hG) :=
+  fmt.pp.argNumber.wp_proof
+
+theorem fmt.wp_tooLarge : fmt.tooLarge.spec (GF := GF) (hG := hG) :=
+  fmt.tooLarge.wp_proof
+
+theorem fmt.wp_parsenum : fmt.parsenum.spec (GF := GF) (hG := hG) :=
+  fmt.parsenum.wp_proof fmt.wp_tooLarge
+
+theorem fmt.fmt.wp_padString : fmt.fmt.padString.spec (GF := GF) (hG := hG) :=
+  fmt.fmt.padString.wp_proof fmt.buffer.wp_writeString
+
+theorem fmt.fmt.wp_fmtBoolean : fmt.fmt.fmtBoolean.spec (GF := GF) (hG := hG) :=
+  fmt.fmt.fmtBoolean.wp_proof fmt.fmt.wp_padString
+
+theorem fmt.pp.wp_fmtBool : fmt.pp.fmtBool.spec (GF := GF) (hG := hG) :=
+  fmt.pp.fmtBool.wp_proof fmt.fmt.wp_fmtBoolean
+
+theorem fmt.buffer.wp_write : fmt.buffer.write.spec (GF := GF) (hG := hG) :=
+  fmt.buffer.write.wp_proof
+
+theorem fmt.fmt.wp_writePadding : fmt.fmt.writePadding.spec (GF := GF) (hG := hG) :=
+  fmt.fmt.writePadding.wp_proof
+
+theorem fmt.fmt.wp_pad : fmt.fmt.pad.spec (GF := GF) (hG := hG) :=
+  fmt.fmt.pad.wp_proof fmt.buffer.wp_write fmt.fmt.wp_writePadding unicode.utf8.wp_RuneCount
+
+theorem fmt.fmt.wp_fmtInteger : fmt.fmt.fmtInteger.spec (GF := GF) (hG := hG) :=
+  fmt.fmt.fmtInteger.wp_proof fmt.fmt.wp_pad
+
+theorem fmt.pp.wp_fmtInteger : fmt.pp.fmtInteger.spec (GF := GF) (hG := hG) :=
+  fmt.pp.fmtInteger.wp_proof fmt.fmt.wp_fmtInteger
+
+theorem fmt.fmt.wp_truncateString : fmt.fmt.truncateString.spec (GF := GF) (hG := hG) :=
+  fmt.fmt.truncateString.wp_proof
+
+theorem fmt.fmt.wp_fmtS : fmt.fmt.fmtS.spec (GF := GF) (hG := hG) :=
+  fmt.fmt.fmtS.wp_proof fmt.fmt.wp_truncateString fmt.fmt.wp_padString
+
+theorem fmt.fmt.wp_fmtSbx : fmt.fmt.fmtSbx.spec (GF := GF) (hG := hG) :=
+  fmt.fmt.fmtSbx.wp_proof
+
+theorem fmt.fmt.wp_fmtSx : fmt.fmt.fmtSx.spec (GF := GF) (hG := hG) :=
+  fmt.fmt.fmtSx.wp_proof fmt.fmt.wp_fmtSbx
+
+theorem fmt.pp.wp_fmtString : fmt.pp.fmtString.spec (GF := GF) (hG := hG) :=
+  fmt.pp.fmtString.wp_proof fmt.fmt.wp_fmtS fmt.fmt.wp_fmtSx
+
+theorem fmt.fmt.wp_truncate : fmt.fmt.truncate.spec (GF := GF) (hG := hG) :=
+  fmt.fmt.truncate.wp_proof
+
+theorem fmt.fmt.wp_fmtBs : fmt.fmt.fmtBs.spec (GF := GF) (hG := hG) :=
+  fmt.fmt.fmtBs.wp_proof fmt.fmt.wp_truncate fmt.fmt.wp_pad
+
+theorem fmt.fmt.wp_fmtBx : fmt.fmt.fmtBx.spec (GF := GF) (hG := hG) :=
+  fmt.fmt.fmtBx.wp_proof fmt.fmt.wp_fmtSbx
+
+theorem fmt.pp.wp_fmtBytes : fmt.pp.fmtBytes.spec (GF := GF) (hG := hG) :=
+  fmt.pp.fmtBytes.wp_proof fmt.fmt.wp_fmtInteger fmt.fmt.wp_fmtBs fmt.fmt.wp_fmtBx fmt.buffer.wp_writeByte
+
+theorem fmt.pp.wp_catchPanic'deferred : fmt.pp.catchPanic'deferred.spec (GF := GF) (hG := hG) :=
+  fmt.pp.catchPanic'deferred.wp_proof
+
+theorem fmt.pp.wp_handleMethods : fmt.pp.handleMethods.spec (GF := GF) (hG := hG) :=
+  fmt.pp.handleMethods.wp_proof fmt.pp.wp_fmtString fmt.pp.wp_catchPanic'deferred
+
+theorem fmt.pp.wp_printArg : fmt.pp.printArg.spec (GF := GF) (hG := hG) :=
+  fmt.pp.printArg.wp_proof fmt.pp.wp_fmtBool fmt.pp.wp_fmtInteger fmt.pp.wp_fmtString fmt.pp.wp_fmtBytes fmt.pp.wp_handleMethods fmt.fmt.wp_padString
+
+theorem fmt.pp.wp_doPrintf : fmt.pp.doPrintf.spec (GF := GF) (hG := hG) :=
+  fmt.pp.doPrintf.wp_proof fmt.buffer.wp_writeString fmt.buffer.wp_writeByte fmt.fmt.wp_clearflags fmt.pp.wp_argNumber fmt.wp_parsenum unicode.utf8.wp_DecodeRuneInString fmt.pp.wp_printArg
+
+theorem fmt.pp.wp_free : fmt.pp.free.spec (GF := GF) (hG := hG) :=
+  fmt.pp.free.wp_proof sync.Pool.wp_Put
+
 theorem fmt.wp_Sprintf : fmt.Sprintf.spec (GF := GF) (hG := hG) :=
-  fmt.Sprintf.wp_proof
+  fmt.Sprintf.wp_proof fmt.wp_newPrinter fmt.pp.wp_doPrintf fmt.pp.wp_free
 
 theorem fmt.wp_initialize' : fmt.initialize'.spec (GF := GF) (hG := hG) :=
-  fmt.initialize'.wp_proof sync.wp_initialize' io.wp_initialize' errors.wp_initialize' errors.wp_New
+  fmt.initialize'.wp_proof sync.wp_initialize' io.wp_initialize' errors.wp_initialize' unicode.utf8.wp_initialize' reflect.wp_initialize' strconv.wp_initialize' errors.wp_New
 
 end link
 

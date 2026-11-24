@@ -17,10 +17,9 @@ namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 
 section pure
-variable [GooseExts]
 
 /-- The flags of `%verb` and `%0Nverb` are in `fmt.fmtInteger`'s precondition. -/
-theorem fmt.dirFlags_int (zw : Option Nat) (hzw : fmt.ZeroWidthOk zw) :
+theorem fmt.dirFlags_int [GooseExts] (zw : Option Nat) (hzw : fmt.ZeroWidthOk zw) :
     (fmt.dirFlags zw).sharp' = false ∧ (fmt.dirFlags zw).plus' = false ∧
     (fmt.dirFlags zw).space' = false ∧ (fmt.dirFlags zw).minus' = false ∧
     (fmt.dirFlags zw).precPresent' = false ∧ (fmt.dirFlags zw).sharpV' = false ∧
