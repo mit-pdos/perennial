@@ -387,6 +387,7 @@ def main():
             "slices",
             "reflect",
             "internal/abi",
+            "internal/reflectlite",
             "strconv",
             "internal/strconv",
             "internal/stringslite",

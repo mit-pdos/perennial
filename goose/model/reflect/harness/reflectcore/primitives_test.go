@@ -34,7 +34,7 @@ func TestShapeArgs(t *testing.T) {
 		{Shape{Kind: ShapeChan, Dir: reflect.RecvDir}, reflect.TypeFor[<-chan int](), []reflect.Type{reflect.TypeFor[<-chan int](), ty}},
 		{DerefSelf, reflect.TypeFor[*myInt](), []reflect.Type{reflect.TypeFor[myInt]()}},
 		{DerefSelf, reflect.TypeFor[**int](), []reflect.Type{reflect.TypeFor[*int]()}},
-		{DerefSelf, reflect.TypeFor[myPtr](), nil},  // named: not syntactically *T
+		{DerefSelf, reflect.TypeFor[myPtr](), nil},     // named: not syntactically *T
 		{DerefSelf, reflect.TypeFor[GPtr[int]](), nil}, // a generic named pointer
 		{DerefSelf, ty, nil},
 		{Shape{Kind: ShapeDeref, Inner: &Shape{Kind: ShapeSlice}}, reflect.TypeFor[*mySlice](), []reflect.Type{reflect.TypeFor[mySlice](), ty}},
@@ -348,4 +348,56 @@ func TestPointerOfAtEmptySlices(t *testing.T) {
 	if PointerOfAt(s[2:]) != unsafe.Pointer(&s[0]) || PointerOfAt(s[1:1]) != unsafe.Pointer(&s[1]) {
 		t.Errorf("gc: s[len:] (cap 0) not at &s[0], or s[1:1] (cap 1) not at &s[1]")
 	}
+}
+
+// Store(p, x) is store at p's element type T: *p = x.(T), and the zero T for a nil x (an interface
+// T); a failed assertion panics before the nil dereference, as in Go. AssertOk(t, x) is assertOk
+// at t's type T: whether x.(T) succeeds, for concrete and interface T.
+func TestStoreAssertOk(t *testing.T) {
+	es := corpus()
+	for _, e := range es {
+		for _, f := range es {
+			if f.x == nil {
+				continue
+			}
+			ok := AssertOk(e.tok, f.x)
+			if ok != e.assertOk(f.x) || ok != AssertOk(e.addr(), f.x) {
+				t.Errorf("AssertOk(%v, %T) = %v, assertOk = %v", e.typ, f.x, ok, e.assertOk(f.x))
+			}
+			p, q := e.addr(), e.addr()
+			p1, ok1 := catch(func() { Store(p, f.x) })
+			p2, ok2 := catch(func() { e.store(q, f.x) })
+			if ok1 != ok2 || ok1 == ok {
+				t.Errorf("Store(*%v, %T): panicked %v (%v), store %v (%v)", e.typ, f.x, ok1, p1, ok2, p2)
+				continue
+			}
+			if !ok1 && (!same(Load(p), Load(q)) || !same(Load(p), f.x)) {
+				t.Errorf("Store(*%v, %T): %#v, store %#v", e.typ, f.x, Load(p), Load(q))
+			}
+		}
+		if !e.ptrOK {
+			// a nil x into an interface: the zero (nil) interface
+			p, q := e.addr(), e.addr()
+			Store(p, nil)
+			e.store(q, nil)
+			if Load(p) != nil || Load(q) != nil {
+				t.Errorf("Store(*%v, nil) = %#v, store %#v", e.typ, Load(p), Load(q))
+			}
+		}
+		if AssertOk(e.tok, nil) || e.assertOk(nil) {
+			t.Errorf("AssertOk(%v, nil)", e.typ)
+		}
+		// a nil *T: the assertion first, then Go's nil dereference
+		if e.ptrOK {
+			p1, ok1 := catch(func() { Store(e.tok, e.x) })
+			p2, ok2 := catch(func() { e.store(e.tok, e.x) })
+			if !ok1 || !ok2 || !isRuntimeError(p1) || !isRuntimeError(p2) {
+				t.Errorf("Store into a nil *%v: %v %v, store: %v %v", e.typ, ok1, p1, ok2, p2)
+			}
+		}
+	}
+	mustStuck(t, "Store on nil", func() { Store(nil, 1) })
+	mustStuck(t, "Store on a named pointer", func() { Store(myPtr(&anInt), 1) })
+	mustStuck(t, "AssertOk on nil", func() { AssertOk(nil, 1) })
+	mustStuck(t, "AssertOk on an int", func() { AssertOk(3, 1) })
 }

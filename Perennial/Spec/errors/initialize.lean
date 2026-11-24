@@ -21,7 +21,7 @@ variable [sem : go.Semantics]
 variable [package_sem : errors.Assumptions]
 
 /-- The package's `initialize'`: allocate `ErrUnsupported` (an `errors.New` error).
-(`errorType` is skipped: not translated.) -/
+(and `errorType`, from `internal/reflectlite`; the proof is to be redone for it.) -/
 abbrev errors.initialize'.spec : Prop :=
   ∀ (get_is_pkg_init : GoString → IProp GF),
   GetIsPkgInitProp pkg_id.errors get_is_pkg_init →

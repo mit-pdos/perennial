@@ -42,6 +42,14 @@ def Alloc.impl : val :=
 def PtrTok.impl : val :=
   λ: "t", (FuncResolveAt [go.Shape.deref go.Shape.self] go!"internal/reflectcore.ptrTok" "t") "t"
 
+/-- `Store(p, x)`: `store[T](p, x)` for `p`'s dynamic type `*T`. -/
+def Store.impl : val :=
+  λ: "p" "x", (FuncResolveAt [go.Shape.deref go.Shape.self] go!"internal/reflectcore.store" "p") "p" "x"
+
+/-- `AssertOk(t, x)`: `assertOk[T](x)` for `t`'s dynamic type `*T`. -/
+def AssertOk.impl : val :=
+  λ: "t" "x", (FuncResolveAt [go.Shape.deref go.Shape.self] go!"internal/reflectcore.assertOk" "t") "x"
+
 /-- `ConvertAt(x, t)`: the instruction `ConvertAt`. -/
 def ConvertAt.impl : val :=
   λ: "x" "t", ConvertAt ("x", "t")
@@ -81,6 +89,14 @@ def TypeNumField.impl : val :=
 /-- `TypeFieldType(t, i)`: the instruction `TypeQuery .fieldType`. -/
 def TypeFieldType.impl : val :=
   λ: "t" "i", TypeQuery go.TypeQ.fieldType ("t", "i")
+
+/-- `TypeUnderlying(t)`: the instruction `TypeQuery .underlying`. -/
+def TypeUnderlying.impl : val :=
+  λ: "t", TypeQuery go.TypeQ.underlying ("t", #(W64 0))
+
+/-- `TypeIdentByName(t)`: the instruction `TypeQuery .identByName`. -/
+def TypeIdentByName.impl : val :=
+  λ: "t", TypeQuery go.TypeQ.identByName ("t", #(W64 0))
 
 end code
 end internal.reflectcore

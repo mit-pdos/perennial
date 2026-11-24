@@ -48,6 +48,19 @@ func PtrTok(t any) any {
 	panic("reflectcore: primitive stub")
 }
 
+// Store stores x's dynamic value into *p for a pointer-any p (x is nil only
+// when p's element type is an interface type, which then gets nil): store at
+// p's element type.
+func Store(p, x any) {
+	panic("reflectcore: primitive stub")
+}
+
+// AssertOk is whether the type assertion x.(T) succeeds, for t a token (or
+// pointer-any) of T: assertOk at T.
+func AssertOk(t, x any) bool {
+	panic("reflectcore: primitive stub")
+}
+
 // ConvertAt is the conversion U(x) of x's dynamic value to t's type U (t a
 // token or pointer-any of U), boxed in any.
 func ConvertAt(x, t any) any {
@@ -101,5 +114,16 @@ func TypeNumField(t any) int {
 // TypeFieldType is the token of the type of field i of t's type, a struct
 // type.
 func TypeFieldType(t any, i int) any {
+	panic("reflectcore: primitive stub")
+}
+
+// TypeUnderlying is the token of the underlying type of t's type.
+func TypeUnderlying(t any) any {
+	panic("reflectcore: primitive stub")
+}
+
+// TypeIdentByName is whether t's type is a defined type without type
+// arguments, or a pointer to one.
+func TypeIdentByName(t any) bool {
 	panic("reflectcore: primitive stub")
 }

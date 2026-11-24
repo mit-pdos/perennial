@@ -157,13 +157,13 @@ def TypeQ.toNat : TypeQ → Nat
   | .len => 6 | .chanDir => 7 | .numField => 8 | .fieldName => 9 | .fieldType => 10
   | .fieldTag => 11 | .fieldEmbedded => 12 | .fieldPkg => 13 | .numIn => 14 | .inType => 15
   | .numOut => 16 | .outType => 17 | .variadic => 18 | .numMethod => 19 | .methodId => 20
-  | .methodType => 21 | .arrayOf => 22
+  | .methodType => 21 | .arrayOf => 22 | .underlying => 23 | .identByName => 24
 def TypeQ.fromNat : Nat → TypeQ
   | 0 => .kind | 1 => .name | 2 => .numTypeArgs | 3 => .pkgName | 4 => .elem | 5 => .key
   | 6 => .len | 7 => .chanDir | 8 => .numField | 9 => .fieldName | 10 => .fieldType
   | 11 => .fieldTag | 12 => .fieldEmbedded | 13 => .fieldPkg | 14 => .numIn | 15 => .inType
   | 16 => .numOut | 17 => .outType | 18 => .variadic | 19 => .numMethod | 20 => .methodId
-  | 21 => .methodType | _ => .arrayOf
+  | 21 => .methodType | 22 => .arrayOf | 23 => .underlying | _ => .identByName
 instance TypeQ.countable : Pos.Countable TypeQ :=
   countableOfLeftInverse TypeQ.toNat TypeQ.fromNat (by intro x; cases x <;> rfl)
 
@@ -380,7 +380,6 @@ def GoInstruction.toTree : GoInstruction → GenTree
   | .EqNilAt => node 51 []
   | .PointerOfAt => node 52 []
   | .TypeQuery x0 => node 53 [of x0]
-  | .AsAssign => node 54 []
 def GoInstruction.ofTree : GenTree → GoInstruction
   | node 0 [] => .AngelicExit
   | node 1 [x0, x1] => .Convert (decLeaf x0) (decLeaf x1)
@@ -436,7 +435,6 @@ def GoInstruction.ofTree : GenTree → GoInstruction
   | node 51 [] => .EqNilAt
   | node 52 [] => .PointerOfAt
   | node 53 [x0] => .TypeQuery (decLeaf x0)
-  | node 54 [] => .AsAssign
   | _ => default
 instance GoInstruction.countable : Pos.Countable GoInstruction :=
   countableOfLeftInverse GoInstruction.toTree GoInstruction.ofTree

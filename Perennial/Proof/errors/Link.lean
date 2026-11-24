@@ -11,9 +11,7 @@ public import Perennial.Proof.errors.Is
 public import Perennial.Proof.errors.Join
 public import Perennial.Proof.errors.New
 public import Perennial.Proof.errors.Unwrap
-public import Perennial.Proof.errors.asAssign
 public import Perennial.Proof.errors.asType_
-public import Perennial.Proof.errors.asWalk
 public import Perennial.Proof.errors.initialize
 public import Perennial.Proof.errors.is_
 
@@ -30,14 +28,8 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : errors.Assumptions]
 
-theorem errors.wp_asAssign : errors.asAssign.spec (GF := GF) (hG := hG) :=
-  errors.asAssign.wp_proof
-
-theorem errors.wp_asWalk : errors.asWalk.spec (GF := GF) (hG := hG) :=
-  errors.asWalk.wp_proof errors.wp_asAssign
-
 theorem errors.wp_As : errors.As.spec (GF := GF) (hG := hG) :=
-  errors.As.wp_proof errors.wp_asWalk
+  errors.As.wp_proof
 
 theorem errors.wp_asType : errors.asType.spec (GF := GF) (hG := hG) :=
   errors.asType.wp_proof

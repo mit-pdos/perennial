@@ -24,3 +24,17 @@ func alloc[T any](t any) any {
 func ptrTok[T any](t any) any {
 	return (**T)(nil)
 }
+
+func store[T any](p any, x any) {
+	if x == nil {
+		var zero T
+		*p.(*T) = zero
+		return
+	}
+	*p.(*T) = x.(T)
+}
+
+func assertOk[T any](x any) bool {
+	_, ok := x.(T)
+	return ok
+}

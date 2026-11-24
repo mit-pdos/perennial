@@ -1,11 +1,10 @@
 /-
-The proof of `errors.As` (its Go model, `goose/model/overlay/errors/wrap.go`: Go's `As`, its tree
-walk `asWalk`).
+The proof of `errors.As` (the real `wrap.go`: `As` and its tree walk `as`, over the Go model of
+`internal/reflectlite`).
 -/
 module
 
 public import Perennial.Spec.errors.As
-public import Perennial.Spec.errors.asWalk
 
 @[expose] public section
 
@@ -22,44 +21,13 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : errors.Assumptions]
 
-theorem errors.As.wp_proof
-    (wp_asWalk : errors.asWalk.spec (GF := GF) (hG := hG)) :
+/- SORRY (reflect S0.5): `As` is now the real `wrap.go` over the model of `internal/reflectlite`
+(the semantics' `AsAssign` and the Go model's `asWalk`/`asAssign` are retired); its proof over
+`internal.reflectlite`'s specs (`ValueOf`, `Value.{Type,IsNil,Elem,Set}`,
+`rtype.{Kind,Elem,Implements,AssignableTo}`) and `as`'s is to be redone. -/
+theorem errors.As.wp_proof :
     errors.As.spec (GF := GF) (hG := hG) := by
-  refine ⟨?_, ?_, ?_⟩
-  · intro S err l T' _ _ T _ v hT hdec
-    wp_start as ⟨#Htree, %HS, Hl⟩
-    wp_auto
-    cases err with
-    | nil =>
-      wp_auto
-      iapply HΦ
-      iframe
-    | ok ii =>
-      wp_auto
-      wp_apply wp_asWalk.1 S ii l v hT hdec $$ [Hl] as %b %v' Hl
-      · iframe; iframe #; ipureintro; exact HS
-      iapply HΦ
-      iframe
-  · intro ii l T' _ _ T _ v hT hdec hA htyped
-    wp_start as Hl
-    wp_auto
-    wp_apply wp_asWalk.2.1 ii l v hT hdec hA htyped $$ [$Hl] as %x ⟨Hl, %Hx⟩
-    iapply HΦ
-    iframe
-    ipureintro; exact Hx
-  · intro n err l T' _ _ T _ v hT
-    wp_start as ⟨Hl, Hm⟩
-    wp_auto
-    cases err with
-    | nil =>
-      wp_auto
-      iapply HΦ
-      iframe
-    | ok ii =>
-      wp_auto
-      wp_apply wp_asWalk.2.2 n ii l v hT $$ [$Hl $Hm] as Hl
-      iapply HΦ
-      iframe
+  sorry
 
 end proof
 

@@ -147,24 +147,28 @@ type entry struct {
 	tok   any          // any((*T)(nil))
 	ptrOK bool         // T is not an interface type
 	// the helpers at T
-	tokOf  func(any) any
-	box    func(any) any
-	load   func(any) any
-	alloc  func(any) any
-	ptrTok func(any) any
-	addr   func() any // any(&v) for a fresh v := x
+	tokOf    func(any) any
+	box      func(any) any
+	load     func(any) any
+	alloc    func(any) any
+	ptrTok   func(any) any
+	store    func(any, any)
+	assertOk func(any) bool
+	addr     func() any // any(&v) for a fresh v := x
 }
 
 func ent[T any](x T) entry {
 	return entry{
 		x: any(x), typ: reflect.TypeFor[T](), tok: tok[T](),
-		ptrOK:  reflect.TypeFor[T]().Kind() != reflect.Interface,
-		tokOf:  tokOf[T],
-		box:    box[T],
-		load:   load[T],
-		alloc:  alloc[T],
-		ptrTok: ptrTok[T],
-		addr:   func() any { v := x; return &v },
+		ptrOK:    reflect.TypeFor[T]().Kind() != reflect.Interface,
+		tokOf:    tokOf[T],
+		box:      box[T],
+		load:     load[T],
+		alloc:    alloc[T],
+		ptrTok:   ptrTok[T],
+		store:    store[T],
+		assertOk: assertOk[T],
+		addr:     func() any { v := x; return &v },
 	}
 }
 

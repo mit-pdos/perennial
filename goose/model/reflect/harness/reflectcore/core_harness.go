@@ -148,6 +148,42 @@ func PtrTok(t any) any {
 	return Token(reflect.PointerTo(e))
 }
 
+// assertible is whether the type assertion x.(T) succeeds.
+func assertible(x any, T reflect.Type) bool {
+	if x == nil {
+		return false
+	}
+	if T.Kind() == reflect.Interface {
+		return reflect.TypeOf(x).Implements(T)
+	}
+	return reflect.TypeOf(x) == T
+}
+
+// Store is FuncResolveAt [deref self] store: store[T](p, x) = *p.(*T) = zero T for a nil x, else
+// *p.(*T) = x.(T), for p's dynamic type *T.
+func Store(p, x any) {
+	e := FuncResolveAt([]Shape{DerefSelf}, "store", p)[0]
+	pv := reflect.ValueOf(p)
+	if x != nil && !assertible(x, e) {
+		panic(fmt.Sprintf("interface conversion: interface {} is %v, not %v", reflect.TypeOf(x), e))
+	}
+	if pv.IsNil() {
+		nilDeref()
+	}
+	if x == nil {
+		pv.Elem().SetZero()
+		return
+	}
+	pv.Elem().Set(reflect.ValueOf(x))
+}
+
+// AssertOk is FuncResolveAt [deref self] assertOk: assertOk[T](x) = _, ok := x.(T); ok for t's
+// dynamic type *T.
+func AssertOk(t, x any) bool {
+	e := FuncResolveAt([]Shape{DerefSelf}, "assertOk", t)[0]
+	return assertible(x, e)
+}
+
 // target is U for a token or pointer-any of dynamic type the unnamed *U; stuck otherwise.
 func target(t any, what string) reflect.Type {
 	if t == nil {
@@ -278,12 +314,14 @@ const (
 	QMethodId
 	QMethodType
 	QArrayOf
+	QUnderlying
+	QIdentByName
 )
 
 var typeQNames = [...]string{"kind", "name", "numTypeArgs", "pkgName", "elem", "key", "len",
 	"chanDir", "numField", "fieldName", "fieldType", "fieldTag", "fieldEmbedded", "fieldPkg",
 	"numIn", "inType", "numOut", "outType", "variadic", "numMethod", "methodId", "methodType",
-	"arrayOf"}
+	"arrayOf", "underlying", "identByName"}
 
 func (q TypeQ) String() string { return typeQNames[q] }
 
@@ -395,6 +433,10 @@ func TypeQuery(q TypeQ, t any, i int) any {
 		if 0 <= i && (i <= 1 || IsPlain(T) && uint64(i) <= (1<<64-1)/uint64(T.Size())) {
 			return Token(reflect.ArrayOf(i, T))
 		}
+	case QUnderlying:
+		return Token(Underlying(T))
+	case QIdentByName:
+		return IdentByName(T)
 	}
 	no()
 	return nil
@@ -414,3 +456,84 @@ func TypeNumField(t any) int { return TypeQuery(QNumField, t, 0).(int) }
 
 // TypeFieldType is TypeQuery fieldType.
 func TypeFieldType(t any, i int) any { return TypeQuery(QFieldType, t, i) }
+
+// TypeUnderlying is TypeQuery underlying.
+func TypeUnderlying(t any) any { return TypeQuery(QUnderlying, t, 0) }
+
+// TypeIdentByName is TypeQuery identByName.
+func TypeIdentByName(t any) bool { return TypeQuery(QIdentByName, t, 0).(bool) }
+
+var errorType = reflect.TypeFor[error]()
+
+// predeclared is the predeclared type of each basic kind.
+var predeclared = map[reflect.Kind]reflect.Type{
+	reflect.Bool: reflect.TypeFor[bool](), reflect.Int: reflect.TypeFor[int](),
+	reflect.Int8: reflect.TypeFor[int8](), reflect.Int16: reflect.TypeFor[int16](),
+	reflect.Int32: reflect.TypeFor[int32](), reflect.Int64: reflect.TypeFor[int64](),
+	reflect.Uint: reflect.TypeFor[uint](), reflect.Uint8: reflect.TypeFor[uint8](),
+	reflect.Uint16: reflect.TypeFor[uint16](), reflect.Uint32: reflect.TypeFor[uint32](),
+	reflect.Uint64: reflect.TypeFor[uint64](), reflect.Uintptr: reflect.TypeFor[uintptr](),
+	reflect.Float32: reflect.TypeFor[float32](), reflect.Float64: reflect.TypeFor[float64](),
+	reflect.Complex64: reflect.TypeFor[complex64](), reflect.Complex128: reflect.TypeFor[complex128](),
+	reflect.String: reflect.TypeFor[string](), reflect.UnsafePointer: reflect.TypeFor[unsafe.Pointer](),
+}
+
+// Underlying is the underlying type as Lean has it (underlying): Go's, except that the fields of a
+// defined struct type's underlying type have no tags (goose's structType). It panics (not stuck)
+// for a defined interface type and for a defined struct type with unexported fields, which reflect
+// cannot construct.
+func Underlying(T reflect.Type) reflect.Type {
+	switch k := T.Kind(); k {
+	case reflect.Pointer:
+		return reflect.PointerTo(T.Elem())
+	case reflect.Slice:
+		return reflect.SliceOf(T.Elem())
+	case reflect.Array:
+		return reflect.ArrayOf(T.Len(), T.Elem())
+	case reflect.Map:
+		return reflect.MapOf(T.Key(), T.Elem())
+	case reflect.Chan:
+		return reflect.ChanOf(T.ChanDir(), T.Elem())
+	case reflect.Func:
+		var in, out []reflect.Type
+		for i := 0; i < T.NumIn(); i++ {
+			in = append(in, T.In(i))
+		}
+		for i := 0; i < T.NumOut(); i++ {
+			out = append(out, T.Out(i))
+		}
+		return reflect.FuncOf(in, out, T.IsVariadic())
+	case reflect.Interface:
+		if T.Name() == "" || T == errorType {
+			return T
+		}
+		panic("harness: the underlying type of a defined interface type")
+	case reflect.Struct:
+		if T.Name() == "" {
+			return T
+		}
+		var fs []reflect.StructField
+		for i := 0; i < T.NumField(); i++ {
+			f := T.Field(i)
+			if f.PkgPath != "" {
+				panic("harness: the underlying type of a defined struct type with unexported fields")
+			}
+			fs = append(fs, reflect.StructField{Name: f.Name, Type: f.Type, Anonymous: f.Anonymous})
+		}
+		return reflect.StructOf(fs)
+	default:
+		return predeclared[k]
+	}
+}
+
+// isDefined is whether T is a defined type without type arguments (Lean's go.Named n []): a
+// named type other than error (an interface type literal in Lean) and a generic instance.
+func isDefined(T reflect.Type) bool {
+	return T.Name() != "" && T != errorType && !strings.Contains(T.Name(), "[")
+}
+
+// IdentByName is identByName (Perennial/Golang/Defn/Interface.lean): T is a defined type without
+// type arguments or the unnamed pointer to one.
+func IdentByName(T reflect.Type) bool {
+	return isDefined(T) || T.Kind() == reflect.Pointer && T.Name() == "" && isDefined(T.Elem())
+}

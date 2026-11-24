@@ -2,7 +2,7 @@
 module
 
 public import Perennial.Proof.ProofPrelude
-public import Perennial.ManualProof.errors
+public import Perennial.GeneratedProof.internal.reflectlite
 public import Perennial.Golang.Theory
 public import Perennial.Code.errors
 

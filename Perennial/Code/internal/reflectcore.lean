@@ -37,6 +37,12 @@ noncomputable def Alloc [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def PtrTok [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/reflectcore.PtrTok"
 
+noncomputable def Store [GooseExts] [GoGlobalContext] : GoString :=
+  go!"internal/reflectcore.Store"
+
+noncomputable def AssertOk [GooseExts] [GoGlobalContext] : GoString :=
+  go!"internal/reflectcore.AssertOk"
+
 noncomputable def ConvertAt [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/reflectcore.ConvertAt"
 
@@ -67,6 +73,12 @@ noncomputable def TypeNumField [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def TypeFieldType [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/reflectcore.TypeFieldType"
 
+noncomputable def TypeUnderlying [GooseExts] [GoGlobalContext] : GoString :=
+  go!"internal/reflectcore.TypeUnderlying"
+
+noncomputable def TypeIdentByName [GooseExts] [GoGlobalContext] : GoString :=
+  go!"internal/reflectcore.TypeIdentByName"
+
 noncomputable def tokOf [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/reflectcore.tokOf"
 
@@ -81,6 +93,12 @@ noncomputable def alloc [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def ptrTok [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/reflectcore.ptrTok"
+
+noncomputable def store [GooseExts] [GoGlobalContext] : GoString :=
+  go!"internal/reflectcore.store"
+
+noncomputable def assertOk [GooseExts] [GoGlobalContext] : GoString :=
+  go!"internal/reflectcore.assertOk"
 
 /-- go: helpers.go:6:6 -/
 noncomputable def tokOf.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
@@ -161,6 +179,55 @@ noncomputable def ptrTok.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : va
   (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.any))) (Var "$res0")))))
 
+/-- go: helpers.go:28:6 -/
+noncomputable def store.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
+  (LamV "p"
+  (Lam "x"
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (Var "x"))
+  (Let "p" (App (Val (GoInstruction (GoAlloc go.any))) (Var "p"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (TypeAssert T))) (App (Val (GoInstruction (GoLoad go.any))) (Var "x")))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (TypeAssert (go.GoType.PointerType T)))) (App (Val (GoInstruction (GoLoad go.any))) (Var "p"))) (Var "$r0")))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil)))))
+  (Let "zero" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (Var "zero"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (TypeAssert (go.GoType.PointerType T)))) (App (Val (GoInstruction (GoLoad go.any))) (Var "p"))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (Val #()))))
+
+/-- go: helpers.go:37:6 -/
+noncomputable def assertOk.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
+  (LamV "x"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (Var "x"))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 T))) (App (Val (GoInstruction (GoLoad go.any))) (Var "x")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
+  (App (Val doExecute)
+  (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
 noncomputable instance info' : PkgInfo pkg_id.internal.reflectcore where
   pkgImportedPkgs := [pkg_id.«unsafe»]
 
@@ -179,6 +246,8 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Load_unfold : FuncUnfold Load [] Load.impl
   Alloc_unfold : FuncUnfold Alloc [] Alloc.impl
   PtrTok_unfold : FuncUnfold PtrTok [] PtrTok.impl
+  Store_unfold : FuncUnfold Store [] Store.impl
+  AssertOk_unfold : FuncUnfold AssertOk [] AssertOk.impl
   ConvertAt_unfold : FuncUnfold ConvertAt [] ConvertAt.impl
   FieldRefAt_unfold : FuncUnfold FieldRefAt [] FieldRefAt.impl
   ArraySliceAt_unfold : FuncUnfold ArraySliceAt [] ArraySliceAt.impl
@@ -189,11 +258,15 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   TypeLen_unfold : FuncUnfold TypeLen [] TypeLen.impl
   TypeNumField_unfold : FuncUnfold TypeNumField [] TypeNumField.impl
   TypeFieldType_unfold : FuncUnfold TypeFieldType [] TypeFieldType.impl
+  TypeUnderlying_unfold : FuncUnfold TypeUnderlying [] TypeUnderlying.impl
+  TypeIdentByName_unfold : FuncUnfold TypeIdentByName [] TypeIdentByName.impl
   tokOf_unfold : ∀ (T : go.GoType), FuncUnfold tokOf [T] (tokOf.impl T)
   box_unfold : ∀ (T : go.GoType), FuncUnfold box [T] (box.impl T)
   load_unfold : ∀ (T : go.GoType), FuncUnfold load [T] (load.impl T)
   alloc_unfold : ∀ (T : go.GoType), FuncUnfold alloc [T] (alloc.impl T)
   ptrTok_unfold : ∀ (T : go.GoType), FuncUnfold ptrTok [T] (ptrTok.impl T)
+  store_unfold : ∀ (T : go.GoType), FuncUnfold store [T] (store.impl T)
+  assertOk_unfold : ∀ (T : go.GoType), FuncUnfold assertOk [T] (assertOk.impl T)
   import_unsafe_Assumption : _root_.Perennial.«unsafe».Assumptions
 
 attribute [instance] Assumptions.TokOf_unfold
@@ -201,6 +274,8 @@ attribute [instance] Assumptions.TokOf_unfold
   Assumptions.Load_unfold
   Assumptions.Alloc_unfold
   Assumptions.PtrTok_unfold
+  Assumptions.Store_unfold
+  Assumptions.AssertOk_unfold
   Assumptions.ConvertAt_unfold
   Assumptions.FieldRefAt_unfold
   Assumptions.ArraySliceAt_unfold
@@ -211,11 +286,15 @@ attribute [instance] Assumptions.TokOf_unfold
   Assumptions.TypeLen_unfold
   Assumptions.TypeNumField_unfold
   Assumptions.TypeFieldType_unfold
+  Assumptions.TypeUnderlying_unfold
+  Assumptions.TypeIdentByName_unfold
   Assumptions.tokOf_unfold
   Assumptions.box_unfold
   Assumptions.load_unfold
   Assumptions.alloc_unfold
   Assumptions.ptrTok_unfold
+  Assumptions.store_unfold
+  Assumptions.assertOk_unfold
   Assumptions.import_unsafe_Assumption
 
 end internal.reflectcore

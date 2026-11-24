@@ -18,6 +18,7 @@ import (
 	"unsafe"
 
 	"github.com/mit-pdos/perennial/goose/model/reflect/harness/reflectcore"
+	rlm "github.com/mit-pdos/perennial/goose/model/reflect/harness/reflectlitemodel"
 	rm "github.com/mit-pdos/perennial/goose/model/reflect/harness/reflectmodel"
 )
 
@@ -41,6 +42,9 @@ func run(f func() any) (o outcome) {
 				o.vErr, o.method, o.vKind, o.pv = true, e.Method, uint(e.Kind), e.Error()
 			case *rm.ValueError:
 				o.vErr, o.method, o.vKind, o.pv = true, e.Method, uint(e.Kind), e.Error()
+			case *rlm.ValueError:
+				// reflectlite's Methods name reflectlite where reflect's name reflect
+				o.vErr, o.method, o.vKind, o.pv = true, strings.Replace(e.Method, "reflectlite.", "reflect.", 1), uint(e.Kind), e.Error()
 			case string:
 				o.stuck = reflectcore.IsStuck(p)
 				o.pv = e
@@ -353,7 +357,7 @@ func TestKindString(t *testing.T) {
 // The specreq shapes.
 
 // etcd's txn.isNil: msg == nil || reflect.ValueOf(msg).IsNil().
-func isNilReal(msg myIface) bool { return msg == nil || reflect.ValueOf(msg).IsNil() }
+func isNilReal(msg myIface) bool  { return msg == nil || reflect.ValueOf(msg).IsNil() }
 func isNilModel(msg myIface) bool { return msg == nil || rm.ValueOf(msg).IsNil() }
 
 // apimachinery's conversion.EnforcePtr, with the error naming the Kind instead of the Type

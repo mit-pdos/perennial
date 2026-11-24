@@ -9,31 +9,18 @@ translate = [
   "is",
   "Join",
   "As",
-  "asWalk",
+  "as",
+  "errorType",
 ]
 
-# `asAssign`, a function of the model of `As` (below): its Go body is `As`'s reflection
-# (`internal/reflectlite`, not translated), modeled in TrustedCode/errors.lean by the
-# semantics' `AsAssign`.
-trusted = ["asAssign"]
-imports = ["!*"]
+imports = ["!*", "internal/reflectlite"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true
 
-[[skip]]
-names = ["errorType"]
-reason = """
-`reflectlite.TypeOf((*error)(nil)).Elem()` (wrap.go): reads the static runtime type descriptor
-of `error` (`abi.TypeOf`, through `unsafe`), which the semantics cannot represent; it allocates
-nothing the program can see, cannot panic and has no other effect. Read only by `asAssign` (the
-model of `As`'s reflection), which is trusted."""
-
-# `Is` calls `reflectlite.TypeOf(target).Comparable()` (`internal/reflectlite` is not
-# translated): a Go model (goose/model/overlay/errors) with that call replaced by `true`
+# `Is` calls `reflectlite.TypeOf(target).Comparable()`, which the model of internal/reflectlite
+# does not model: a Go model (goose/model/overlay/errors) with that call replaced by `true`
 # (documented there: the model is stuck where Go skips comparing an uncomparable target).
-# `As` and `as` use reflection throughout: a Go model (the same file) of `As`, whose tree walk
-# `asWalk` is `as` with the reflection moved into one function, `asAssign` (trusted, above).
 [model]
 dir = "goose/model/overlay/errors"
-replaces = ["Is", "As"]
+replaces = ["Is"]

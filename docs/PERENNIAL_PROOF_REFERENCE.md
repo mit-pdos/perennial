@@ -660,12 +660,9 @@ gives its results (`sort.wp_Search`, `sort.wp_SearchInts`, `sort.wp_Find`, the
 ### Interfaces and method sets (`Golang/Defn/MethodSet.lean`, `Golang/Theory/TypeSet.lean`)
 
 A conversion to an interface, a type assertion `x.(I)` / `x.(I)` with `ok`, and
-`errors.As`'s target check depend on `go.typeSetContains t I`: whether the dynamic type
-`t` implements `I`. So does `errors.As`'s match (its Go model's one reflection operation,
-`AsAssign`, `go.InterfaceSemantics.as_assign_step`): an error matches an interface target type
-it implements; a non-interface target type `T`, only when its type is `T`, which the semantics
-decides for a named `T` or a pointer to one (`go.identByName`), or when the underlying types
-differ (no match); elsewhere it is stuck. Its method elements are decided by `methodSet t`, which the semantics
+`errors.As`'s target check and match (the model of `internal/reflectlite`'s `Implements` and
+`AssignableTo`, a type assertion through `internal/reflectcore.AssertOk`) depend on
+`go.typeSetContains t I`: whether the dynamic type `t` implements `I`. Its method elements are decided by `methodSet t`, which the semantics
 constrains by `go.MethodSetIs t ms` facts: goose emits, for every named type `T` of a
 translated package (translated, types-only or axiomatized alike), the method sets of `T`
 and `*T` as the Go type checker computes them (fields `method_set`, `ptr_method_set` of

@@ -1,3 +1,5 @@
 # written by gen.sh from goose/model/overlay
 /reflectcore/helpers.go
 /reflectmodel/
+/reflectlitemodel/
+/errorsmodel/

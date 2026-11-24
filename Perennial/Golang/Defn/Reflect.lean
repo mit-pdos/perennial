@@ -109,6 +109,8 @@ noncomputable def typeQuery (q : TypeQ) (t : go.GoType) (i : Int) : Option val :
     open Classical in
     if 0 ≤ i ∧ (i ≤ 1 ∨ ∃ s, IsPlain t s ∧ i * s < 2 ^ 64) then some #(tok (go.ArrayType i t))
     else none
+  | .underlying, u => some #(tok u)
+  | .identByName, _ => some #(identByName t)
   | _, _ => none
 
 /-- The underlying types at which `EqNilAt` compares with `nil`. -/

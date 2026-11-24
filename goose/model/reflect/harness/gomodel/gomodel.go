@@ -17,3 +17,6 @@ func ChooseUint64() uint64 {
 func Stuck() {
 	panic("stuck")
 }
+
+// StartRead does nothing, as in the overlay's Go body.
+func StartRead[T any](p *T) {}

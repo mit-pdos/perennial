@@ -171,3 +171,85 @@ func TestTypeQueryRows(t *testing.T) {
 		mustStuck(t, q.String()+" (none in S0)", func() { TypeQuery(q, tok[S](), 0) })
 	}
 }
+
+// TypeQuery underlying is the token of the underlying type, without the tags of a defined struct
+// type's fields (Lean's underlying); identByName holds of the defined types without type arguments
+// and the unnamed pointers to them, not of type literals (struct literals among them), error or
+// generic instances.
+func TestTypeUnderlyingIdentByName(t *testing.T) {
+	type tagged struct {
+		A int `json:"a"`
+	}
+	rows := []struct {
+		tok   any
+		under any // nil: not checked (reflect cannot build it)
+		ident bool
+	}{
+		{tok[int](), tok[int](), true}, {tok[myInt](), tok[int](), true},
+		{tok[*myInt](), tok[*myInt](), true}, {tok[**myInt](), tok[**myInt](), false},
+		{tok[*int](), tok[*int](), true}, {tok[string](), tok[string](), true},
+		{tok[myString](), tok[string](), true}, {tok[unsafe.Pointer](), tok[unsafe.Pointer](), true},
+		{tok[myUnsafe](), tok[unsafe.Pointer](), true},
+		{tok[myPtr](), tok[*int](), true}, {tok[PS1](), tok[*S](), true}, {tok[*PS1](), tok[*PS1](), true},
+		{tok[mySlice](), tok[[]int](), true}, {tok[[]int](), tok[[]int](), false},
+		{tok[myMap](), tok[map[string]int](), true}, {tok[map[string]int](), tok[map[string]int](), false},
+		{tok[myArr](), tok[[3]int](), true}, {tok[myFunc](), tok[func(int) string](), true},
+		{tok[fn](), tok[func(int, ...string) (bool, error)](), true},
+		{tok[myChan](), tok[chan int](), true}, {tok[myRecvChan](), tok[<-chan int](), true},
+		{tok[Emb](), tok[struct{ X int }](), true}, {tok[*Emb](), tok[*Emb](), true},
+		{tok[Tagged](), tok[struct{ A int }](), true}, {tok[tagged](), tok[struct{ A int }](), true},
+		{tok[struct {
+			A int `json:"a"`
+		}](), tok[struct {
+			A int `json:"a"`
+		}](), false},
+		{tok[struct{ X, y int }](), tok[struct{ X, y int }](), false}, {tok[struct{}](), tok[struct{}](), false},
+		{tok[*struct{ X int }](), tok[*struct{ X int }](), false},
+		{tok[G[int]](), tok[struct{ V int }](), false}, {tok[*G[int]](), tok[*G[int]](), false},
+		{tok[GSlice[int]](), tok[[]int](), false},
+		{tok[any](), tok[any](), false}, {tok[error](), tok[error](), false},
+		{tok[myIface](), nil, true}, {tok[myAny](), nil, true}, {tok[S](), nil, true},
+		{tok[*myIface](), tok[*myIface](), true},
+	}
+	for _, r := range rows {
+		T := reflect.TypeOf(r.tok).Elem()
+		if r.under != nil {
+			if got := TypeUnderlying(r.tok); got != r.under {
+				t.Errorf("TypeUnderlying(%v) = %v, want %v", T, reflect.TypeOf(got).Elem(), reflect.TypeOf(r.under).Elem())
+			}
+			if got := TypeUnderlying(TypeUnderlying(r.tok)); got != r.under {
+				t.Errorf("TypeUnderlying of the underlying type of %v", T)
+			}
+			U := reflect.TypeOf(r.under).Elem()
+			if U.Kind() != T.Kind() || !T.ConvertibleTo(U) || !IdenticalUnderlying(T, U) {
+				t.Errorf("TypeUnderlying(%v) = %v: not its underlying type", T, U)
+			}
+		}
+		if got := TypeIdentByName(r.tok); got != r.ident {
+			t.Errorf("TypeIdentByName(%v) = %v, want %v", T, got, r.ident)
+		}
+	}
+	// reflect's answers, for the corpus: a defined type (and the unnamed pointer to one) has a
+	// name and no type arguments; the underlying type is unnamed or predeclared
+	defined := func(T reflect.Type) bool { return T.Name() != "" && T != errorType && NumTypeArgs(T) == 0 }
+	for _, e := range corpus() {
+		T := e.typ
+		want := defined(T) || T.Kind() == reflect.Pointer && T.Name() == "" && defined(T.Elem())
+		if TypeIdentByName(e.tok) != want {
+			t.Errorf("TypeIdentByName(%v)", T)
+		}
+		if TypeIdentByName(PtrTok(e.tok)) != defined(T) {
+			t.Errorf("TypeIdentByName(*%v)", T)
+		}
+		if p, ok := catch(func() { Underlying(T) }); ok {
+			t.Logf("TypeUnderlying(%v): %v", T, p)
+			continue
+		}
+		U := reflect.TypeOf(TypeUnderlying(e.tok)).Elem()
+		if U.Kind() != T.Kind() || !IdenticalUnderlying(T, U) || U.Name() != "" && U.PkgPath() != "" && U != reflect.TypeFor[unsafe.Pointer]() {
+			t.Errorf("TypeUnderlying(%v) = %v", T, U)
+		}
+	}
+	mustStuck(t, "TypeUnderlying nil", func() { TypeUnderlying(nil) })
+	mustStuck(t, "TypeIdentByName of a value", func() { TypeIdentByName(3) })
+}
