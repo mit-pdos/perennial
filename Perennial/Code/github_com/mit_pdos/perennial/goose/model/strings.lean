@@ -343,15 +343,15 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  StringToByteSlice_unfold : FuncUnfold StringToByteSlice [] StringToByteSlice.impl
-  ByteSliceToString_unfold : FuncUnfold ByteSliceToString [] ByteSliceToString.impl
-  DecodeRune_unfold : FuncUnfold DecodeRune [] DecodeRune.impl
-  decoderune_unfold : FuncUnfold decoderune [] decoderune.impl
+  unfold'StringToByteSlice : FuncUnfold StringToByteSlice [] StringToByteSlice.impl
+  unfold'ByteSliceToString : FuncUnfold ByteSliceToString [] ByteSliceToString.impl
+  unfold'DecodeRune : FuncUnfold DecodeRune [] DecodeRune.impl
+  unfold'decoderune : FuncUnfold decoderune [] decoderune.impl
 
-attribute [instance] Assumptions.StringToByteSlice_unfold
-  Assumptions.ByteSliceToString_unfold
-  Assumptions.DecodeRune_unfold
-  Assumptions.decoderune_unfold
+attribute [instance] Assumptions.unfold'StringToByteSlice
+  Assumptions.unfold'ByteSliceToString
+  Assumptions.unfold'DecodeRune
+  Assumptions.unfold'decoderune
 
 end github_com.mit_pdos.perennial.goose.model.strings
 

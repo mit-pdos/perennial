@@ -118,15 +118,15 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  send_unfold : FuncUnfold send [] send.impl
-  recv_unfold : FuncUnfold recv [] recv.impl
-  Send_unfold : FuncUnfold Send [] Send.impl
-  Recv_unfold : FuncUnfold Recv [] Recv.impl
+  unfold'send : FuncUnfold send [] send.impl
+  unfold'recv : FuncUnfold recv [] recv.impl
+  unfold'Send : FuncUnfold Send [] Send.impl
+  unfold'Recv : FuncUnfold Recv [] Recv.impl
 
-attribute [instance] Assumptions.send_unfold
-  Assumptions.recv_unfold
-  Assumptions.Send_unfold
-  Assumptions.Recv_unfold
+attribute [instance] Assumptions.unfold'send
+  Assumptions.unfold'recv
+  Assumptions.unfold'Send
+  Assumptions.unfold'Recv
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.netfs.netext
 

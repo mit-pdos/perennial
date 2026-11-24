@@ -55,13 +55,13 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.b.v1.initialize') (Val #()))))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  AddBoth_unfold : FuncUnfold AddBoth [] AddBoth.impl
-  import_a_v1_Assumption : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.a.v1.Assumptions
-  import_b_v1_Assumption : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.b.v1.Assumptions
+  unfold'AddBoth : FuncUnfold AddBoth [] AddBoth.impl
+  import'a_v1 : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.a.v1.Assumptions
+  import'b_v1 : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.b.v1.Assumptions
 
-attribute [instance] Assumptions.AddBoth_unfold
-  Assumptions.import_a_v1_Assumption
-  Assumptions.import_b_v1_Assumption
+attribute [instance] Assumptions.unfold'AddBoth
+  Assumptions.import'a_v1
+  Assumptions.import'b_v1
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports
 

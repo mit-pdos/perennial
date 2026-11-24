@@ -173,7 +173,7 @@ noncomputable instance Counter.zero_val [GooseExts] : ZeroVal Counter :=
 @[irreducible] noncomputable def Counter.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Counter.fieldsUnsealed
 
-noncomputable instance equals_unfold_Counter [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Counter [GooseExts] [GoGlobalContext] :
     EqualsUnfold Counter.fields Counter.fieldsUnsealed :=
   ⟨by unfold Counter.fields; rfl⟩
 
@@ -183,42 +183,42 @@ noncomputable instance equals_unfold_Counter [GooseExts] [GoGlobalContext] :
 class Counter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Counter.underlying Counter
   underlying : go.UnderlyingDirectedEq Counter.ty Counter.underlying
-  get_mu : ∀ (x : Counter), go.IsGoStepPureDetTagged under (StructFieldGet Counter.underlying go!"mu") #x (Val #(x.mu'))
-  set_mu : ∀ (x : Counter) (y : _root_.Perennial.github_com.goose_lang.primitive.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet Counter.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : Counter)))
-  get_n : ∀ (x : Counter), go.IsGoStepPureDetTagged under (StructFieldGet Counter.underlying go!"n") #x (Val #(x.n'))
-  set_n : ∀ (x : Counter) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Counter.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : Counter)))
+  get'mu : ∀ (x : Counter), go.IsGoStepPureDetTagged under (StructFieldGet Counter.underlying go!"mu") #x (Val #(x.mu'))
+  set'mu : ∀ (x : Counter) (y : _root_.Perennial.github_com.goose_lang.primitive.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet Counter.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : Counter)))
+  get'n : ∀ (x : Counter), go.IsGoStepPureDetTagged under (StructFieldGet Counter.underlying go!"n") #x (Val #(x.n'))
+  set'n : ∀ (x : Counter) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Counter.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : Counter)))
   method_set : go.MethodSetIs Counter.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Counter.ty) [(go!"Get", (some (go.signature.Signature [] false [go.uint64]))), (go!"Inc", (some (go.signature.Signature [] false [])))]
-  ptr_Get_unfold : MethodUnfold (go.GoType.PointerType Counter.ty) go!"Get" Counter.Get.impl
-  ptr_Inc_unfold : MethodUnfold (go.GoType.PointerType Counter.ty) go!"Inc" Counter.Inc.impl
+  ptr_unfold'Get : MethodUnfold (go.GoType.PointerType Counter.ty) go!"Get" Counter.Get.impl
+  ptr_unfold'Inc : MethodUnfold (go.GoType.PointerType Counter.ty) go!"Inc" Counter.Inc.impl
 
 attribute [instance] Counter.TypeAssumptions.type_repr
   Counter.TypeAssumptions.underlying
-  Counter.TypeAssumptions.get_mu
-  Counter.TypeAssumptions.set_mu
-  Counter.TypeAssumptions.get_n
-  Counter.TypeAssumptions.set_n
+  Counter.TypeAssumptions.get'mu
+  Counter.TypeAssumptions.set'mu
+  Counter.TypeAssumptions.get'n
+  Counter.TypeAssumptions.set'n
   Counter.TypeAssumptions.method_set
   Counter.TypeAssumptions.ptr_method_set
-  Counter.TypeAssumptions.ptr_Get_unfold
-  Counter.TypeAssumptions.ptr_Inc_unfold
+  Counter.TypeAssumptions.ptr_unfold'Get
+  Counter.TypeAssumptions.ptr_unfold'Inc
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Counter_instance : Counter.TypeAssumptions
-  «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
-  «init.1_unfold» : FuncUnfold init.«1» [] init.«1».impl
-  bump_unfold : FuncUnfold bump [] bump.impl
-  choose_unfold : FuncUnfold choose [] choose.impl
-  import_primitive_Assumption : _root_.Perennial.github_com.goose_lang.primitive.Assumptions
-  import_atomic_Assumption : _root_.Perennial.sync.atomic.Assumptions
+  instance'Counter : Counter.TypeAssumptions
+  «unfold'init.0» : FuncUnfold init.«0» [] init.«0».impl
+  «unfold'init.1» : FuncUnfold init.«1» [] init.«1».impl
+  unfold'bump : FuncUnfold bump [] bump.impl
+  unfold'choose : FuncUnfold choose [] choose.impl
+  import'primitive : _root_.Perennial.github_com.goose_lang.primitive.Assumptions
+  import'atomic : _root_.Perennial.sync.atomic.Assumptions
 
-attribute [instance] Assumptions.Counter_instance
-  Assumptions.«init.0_unfold»
-  Assumptions.«init.1_unfold»
-  Assumptions.bump_unfold
-  Assumptions.choose_unfold
-  Assumptions.import_primitive_Assumption
-  Assumptions.import_atomic_Assumption
+attribute [instance] Assumptions.instance'Counter
+  Assumptions.«unfold'init.0»
+  Assumptions.«unfold'init.1»
+  Assumptions.unfold'bump
+  Assumptions.unfold'choose
+  Assumptions.import'primitive
+  Assumptions.import'atomic
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay
 

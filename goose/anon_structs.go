@@ -49,7 +49,7 @@ func (ctx *Ctx) anonStructOf(n locatable, t *types.Struct) *anonStruct {
 	ctx.beforeAliases = saved
 	var params []string
 	for _, p := range util.AnonStructParams(t) {
-		params = append(params, p.Obj().Name())
+		params = append(params, glang.BinderName(p.Obj().Name()))
 	}
 	imported := make(map[string]bool)
 	for path := range ctx.importNames {

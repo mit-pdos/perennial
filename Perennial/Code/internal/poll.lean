@@ -451,7 +451,7 @@ noncomputable instance errNetClosing.zero_val [GooseExts] : ZeroVal errNetClosin
 @[irreducible] noncomputable def errNetClosing.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   errNetClosing.fieldsUnsealed
 
-noncomputable instance equals_unfold_errNetClosing [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'errNetClosing [GooseExts] [GoGlobalContext] :
     EqualsUnfold errNetClosing.fields errNetClosing.fieldsUnsealed :=
   ⟨by unfold errNetClosing.fields; rfl⟩
 
@@ -481,7 +481,7 @@ noncomputable instance DeadlineExceededError.zero_val [GooseExts] : ZeroVal Dead
 @[irreducible] noncomputable def DeadlineExceededError.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   DeadlineExceededError.fieldsUnsealed
 
-noncomputable instance equals_unfold_DeadlineExceededError [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'DeadlineExceededError [GooseExts] [GoGlobalContext] :
     EqualsUnfold DeadlineExceededError.fields DeadlineExceededError.fieldsUnsealed :=
   ⟨by unfold DeadlineExceededError.fields; rfl⟩
 
@@ -530,7 +530,7 @@ noncomputable instance fdMutex.zero_val [GooseExts] : ZeroVal fdMutex :=
 @[irreducible] noncomputable def fdMutex.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   fdMutex.fieldsUnsealed
 
-noncomputable instance equals_unfold_fdMutex [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'fdMutex [GooseExts] [GoGlobalContext] :
     EqualsUnfold fdMutex.fields fdMutex.fieldsUnsealed :=
   ⟨by unfold fdMutex.fields; rfl⟩
 
@@ -540,23 +540,23 @@ noncomputable instance equals_unfold_fdMutex [GooseExts] [GoGlobalContext] :
 class fdMutex.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying fdMutex.underlying fdMutex
   underlying : go.UnderlyingDirectedEq fdMutex.ty fdMutex.underlying
-  get_state : ∀ (x : fdMutex), go.IsGoStepPureDetTagged under (StructFieldGet fdMutex.underlying go!"state") #x (Val #(x.state'))
-  set_state : ∀ (x : fdMutex) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet fdMutex.underlying go!"state") (PairV #x #y) (Val #(({ x with state' := y } : fdMutex)))
-  get_rsema : ∀ (x : fdMutex), go.IsGoStepPureDetTagged under (StructFieldGet fdMutex.underlying go!"rsema") #x (Val #(x.rsema'))
-  set_rsema : ∀ (x : fdMutex) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet fdMutex.underlying go!"rsema") (PairV #x #y) (Val #(({ x with rsema' := y } : fdMutex)))
-  get_wsema : ∀ (x : fdMutex), go.IsGoStepPureDetTagged under (StructFieldGet fdMutex.underlying go!"wsema") #x (Val #(x.wsema'))
-  set_wsema : ∀ (x : fdMutex) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet fdMutex.underlying go!"wsema") (PairV #x #y) (Val #(({ x with wsema' := y } : fdMutex)))
+  get'state : ∀ (x : fdMutex), go.IsGoStepPureDetTagged under (StructFieldGet fdMutex.underlying go!"state") #x (Val #(x.state'))
+  set'state : ∀ (x : fdMutex) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet fdMutex.underlying go!"state") (PairV #x #y) (Val #(({ x with state' := y } : fdMutex)))
+  get'rsema : ∀ (x : fdMutex), go.IsGoStepPureDetTagged under (StructFieldGet fdMutex.underlying go!"rsema") #x (Val #(x.rsema'))
+  set'rsema : ∀ (x : fdMutex) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet fdMutex.underlying go!"rsema") (PairV #x #y) (Val #(({ x with rsema' := y } : fdMutex)))
+  get'wsema : ∀ (x : fdMutex), go.IsGoStepPureDetTagged under (StructFieldGet fdMutex.underlying go!"wsema") #x (Val #(x.wsema'))
+  set'wsema : ∀ (x : fdMutex) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet fdMutex.underlying go!"wsema") (PairV #x #y) (Val #(({ x with wsema' := y } : fdMutex)))
   method_set : go.MethodSetIs fdMutex.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType fdMutex.ty) [(go!"internal/poll.decref", (some (go.signature.Signature [] false [go.bool]))), (go!"internal/poll.incref", (some (go.signature.Signature [] false [go.bool]))), (go!"internal/poll.increfAndClose", (some (go.signature.Signature [] false [go.bool]))), (go!"internal/poll.rwlock", (some (go.signature.Signature [go.bool] false [go.bool]))), (go!"internal/poll.rwunlock", (some (go.signature.Signature [go.bool] false [go.bool])))]
 
 attribute [instance] fdMutex.TypeAssumptions.type_repr
   fdMutex.TypeAssumptions.underlying
-  fdMutex.TypeAssumptions.get_state
-  fdMutex.TypeAssumptions.set_state
-  fdMutex.TypeAssumptions.get_rsema
-  fdMutex.TypeAssumptions.set_rsema
-  fdMutex.TypeAssumptions.get_wsema
-  fdMutex.TypeAssumptions.set_wsema
+  fdMutex.TypeAssumptions.get'state
+  fdMutex.TypeAssumptions.set'state
+  fdMutex.TypeAssumptions.get'rsema
+  fdMutex.TypeAssumptions.set'rsema
+  fdMutex.TypeAssumptions.get'wsema
+  fdMutex.TypeAssumptions.set'wsema
   fdMutex.TypeAssumptions.method_set
   fdMutex.TypeAssumptions.ptr_method_set
 
@@ -573,7 +573,7 @@ noncomputable instance pollDesc.zero_val [GooseExts] : ZeroVal pollDesc :=
 @[irreducible] noncomputable def pollDesc.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   pollDesc.fieldsUnsealed
 
-noncomputable instance equals_unfold_pollDesc [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'pollDesc [GooseExts] [GoGlobalContext] :
     EqualsUnfold pollDesc.fields pollDesc.fieldsUnsealed :=
   ⟨by unfold pollDesc.fields; rfl⟩
 
@@ -583,15 +583,15 @@ noncomputable instance equals_unfold_pollDesc [GooseExts] [GoGlobalContext] :
 class pollDesc.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying pollDesc.underlying pollDesc
   underlying : go.UnderlyingDirectedEq pollDesc.ty pollDesc.underlying
-  get_runtimeCtx : ∀ (x : pollDesc), go.IsGoStepPureDetTagged under (StructFieldGet pollDesc.underlying go!"runtimeCtx") #x (Val #(x.runtimeCtx'))
-  set_runtimeCtx : ∀ (x : pollDesc) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pollDesc.underlying go!"runtimeCtx") (PairV #x #y) (Val #(({ x with runtimeCtx' := y } : pollDesc)))
+  get'runtimeCtx : ∀ (x : pollDesc), go.IsGoStepPureDetTagged under (StructFieldGet pollDesc.underlying go!"runtimeCtx") #x (Val #(x.runtimeCtx'))
+  set'runtimeCtx : ∀ (x : pollDesc) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pollDesc.underlying go!"runtimeCtx") (PairV #x #y) (Val #(({ x with runtimeCtx' := y } : pollDesc)))
   method_set : go.MethodSetIs pollDesc.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType pollDesc.ty) [(go!"internal/poll.close", (some (go.signature.Signature [] false []))), (go!"internal/poll.evict", (some (go.signature.Signature [] false []))), (go!"internal/poll.init", (some (go.signature.Signature [(go.GoType.PointerType FD.ty)] false [go.error]))), (go!"internal/poll.pollable", (some (go.signature.Signature [] false [go.bool]))), (go!"internal/poll.prepare", (some (go.signature.Signature [go.int, go.bool] false [go.error]))), (go!"internal/poll.prepareRead", (some (go.signature.Signature [go.bool] false [go.error]))), (go!"internal/poll.prepareWrite", (some (go.signature.Signature [go.bool] false [go.error]))), (go!"internal/poll.wait", (some (go.signature.Signature [go.int, go.bool] false [go.error]))), (go!"internal/poll.waitCanceled", (some (go.signature.Signature [go.int] false []))), (go!"internal/poll.waitRead", (some (go.signature.Signature [go.bool] false [go.error]))), (go!"internal/poll.waitWrite", (some (go.signature.Signature [go.bool] false [go.error])))]
 
 attribute [instance] pollDesc.TypeAssumptions.type_repr
   pollDesc.TypeAssumptions.underlying
-  pollDesc.TypeAssumptions.get_runtimeCtx
-  pollDesc.TypeAssumptions.set_runtimeCtx
+  pollDesc.TypeAssumptions.get'runtimeCtx
+  pollDesc.TypeAssumptions.set'runtimeCtx
   pollDesc.TypeAssumptions.method_set
   pollDesc.TypeAssumptions.ptr_method_set
 
@@ -608,7 +608,7 @@ noncomputable instance SysFile.zero_val [GooseExts] : ZeroVal SysFile :=
 @[irreducible] noncomputable def SysFile.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   SysFile.fieldsUnsealed
 
-noncomputable instance equals_unfold_SysFile [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'SysFile [GooseExts] [GoGlobalContext] :
     EqualsUnfold SysFile.fields SysFile.fieldsUnsealed :=
   ⟨by unfold SysFile.fields; rfl⟩
 
@@ -618,15 +618,15 @@ noncomputable instance equals_unfold_SysFile [GooseExts] [GoGlobalContext] :
 class SysFile.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying SysFile.underlying SysFile
   underlying : go.UnderlyingDirectedEq SysFile.ty SysFile.underlying
-  get_iovecs : ∀ (x : SysFile), go.IsGoStepPureDetTagged under (StructFieldGet SysFile.underlying go!"iovecs") #x (Val #(x.iovecs'))
-  set_iovecs : ∀ (x : SysFile) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet SysFile.underlying go!"iovecs") (PairV #x #y) (Val #(({ x with iovecs' := y } : SysFile)))
+  get'iovecs : ∀ (x : SysFile), go.IsGoStepPureDetTagged under (StructFieldGet SysFile.underlying go!"iovecs") #x (Val #(x.iovecs'))
+  set'iovecs : ∀ (x : SysFile) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet SysFile.underlying go!"iovecs") (PairV #x #y) (Val #(({ x with iovecs' := y } : SysFile)))
   method_set : go.MethodSetIs SysFile.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType SysFile.ty) [(go!"internal/poll.destroy", (some (go.signature.Signature [go.int] false [go.error]))), (go!"internal/poll.init", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] SysFile.TypeAssumptions.type_repr
   SysFile.TypeAssumptions.underlying
-  SysFile.TypeAssumptions.get_iovecs
-  SysFile.TypeAssumptions.set_iovecs
+  SysFile.TypeAssumptions.get'iovecs
+  SysFile.TypeAssumptions.set'iovecs
   SysFile.TypeAssumptions.method_set
   SysFile.TypeAssumptions.ptr_method_set
 
@@ -659,7 +659,7 @@ noncomputable instance FD.zero_val [GooseExts] : ZeroVal FD :=
 @[irreducible] noncomputable def FD.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   FD.fieldsUnsealed
 
-noncomputable instance equals_unfold_FD [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'FD [GooseExts] [GoGlobalContext] :
     EqualsUnfold FD.fields FD.fieldsUnsealed :=
   ⟨by unfold FD.fields; rfl⟩
 
@@ -669,47 +669,47 @@ noncomputable instance equals_unfold_FD [GooseExts] [GoGlobalContext] :
 class FD.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying FD.underlying FD
   underlying : go.UnderlyingDirectedEq FD.ty FD.underlying
-  get_fdmu : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"fdmu") #x (Val #(x.fdmu'))
-  set_fdmu : ∀ (x : FD) (y : fdMutex), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"fdmu") (PairV #x #y) (Val #(({ x with fdmu' := y } : FD)))
-  get_Sysfd : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"Sysfd") #x (Val #(x.Sysfd'))
-  set_Sysfd : ∀ (x : FD) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"Sysfd") (PairV #x #y) (Val #(({ x with Sysfd' := y } : FD)))
-  get_SysFile : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"SysFile") #x (Val #(x.SysFile'))
-  set_SysFile : ∀ (x : FD) (y : SysFile), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"SysFile") (PairV #x #y) (Val #(({ x with SysFile' := y } : FD)))
-  get_pd : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"pd") #x (Val #(x.pd'))
-  set_pd : ∀ (x : FD) (y : pollDesc), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"pd") (PairV #x #y) (Val #(({ x with pd' := y } : FD)))
-  get_csema : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"csema") #x (Val #(x.csema'))
-  set_csema : ∀ (x : FD) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"csema") (PairV #x #y) (Val #(({ x with csema' := y } : FD)))
-  get_isBlocking : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"isBlocking") #x (Val #(x.isBlocking'))
-  set_isBlocking : ∀ (x : FD) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"isBlocking") (PairV #x #y) (Val #(({ x with isBlocking' := y } : FD)))
-  get_IsStream : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"IsStream") #x (Val #(x.IsStream'))
-  set_IsStream : ∀ (x : FD) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"IsStream") (PairV #x #y) (Val #(({ x with IsStream' := y } : FD)))
-  get_ZeroReadIsEOF : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"ZeroReadIsEOF") #x (Val #(x.ZeroReadIsEOF'))
-  set_ZeroReadIsEOF : ∀ (x : FD) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"ZeroReadIsEOF") (PairV #x #y) (Val #(({ x with ZeroReadIsEOF' := y } : FD)))
-  get_isFile : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"isFile") #x (Val #(x.isFile'))
-  set_isFile : ∀ (x : FD) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"isFile") (PairV #x #y) (Val #(({ x with isFile' := y } : FD)))
+  get'fdmu : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"fdmu") #x (Val #(x.fdmu'))
+  set'fdmu : ∀ (x : FD) (y : fdMutex), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"fdmu") (PairV #x #y) (Val #(({ x with fdmu' := y } : FD)))
+  get'Sysfd : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"Sysfd") #x (Val #(x.Sysfd'))
+  set'Sysfd : ∀ (x : FD) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"Sysfd") (PairV #x #y) (Val #(({ x with Sysfd' := y } : FD)))
+  get'SysFile : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"SysFile") #x (Val #(x.SysFile'))
+  set'SysFile : ∀ (x : FD) (y : SysFile), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"SysFile") (PairV #x #y) (Val #(({ x with SysFile' := y } : FD)))
+  get'pd : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"pd") #x (Val #(x.pd'))
+  set'pd : ∀ (x : FD) (y : pollDesc), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"pd") (PairV #x #y) (Val #(({ x with pd' := y } : FD)))
+  get'csema : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"csema") #x (Val #(x.csema'))
+  set'csema : ∀ (x : FD) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"csema") (PairV #x #y) (Val #(({ x with csema' := y } : FD)))
+  get'isBlocking : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"isBlocking") #x (Val #(x.isBlocking'))
+  set'isBlocking : ∀ (x : FD) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"isBlocking") (PairV #x #y) (Val #(({ x with isBlocking' := y } : FD)))
+  get'IsStream : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"IsStream") #x (Val #(x.IsStream'))
+  set'IsStream : ∀ (x : FD) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"IsStream") (PairV #x #y) (Val #(({ x with IsStream' := y } : FD)))
+  get'ZeroReadIsEOF : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"ZeroReadIsEOF") #x (Val #(x.ZeroReadIsEOF'))
+  set'ZeroReadIsEOF : ∀ (x : FD) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"ZeroReadIsEOF") (PairV #x #y) (Val #(({ x with ZeroReadIsEOF' := y } : FD)))
+  get'isFile : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"isFile") #x (Val #(x.isFile'))
+  set'isFile : ∀ (x : FD) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"isFile") (PairV #x #y) (Val #(({ x with isFile' := y } : FD)))
   method_set : go.MethodSetIs FD.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType FD.ty) [(go!"Accept", (some (go.signature.Signature [] false [go.int, _root_.Perennial.syscall.Sockaddr.ty, go.string, go.error]))), (go!"Close", (some (go.signature.Signature [] false [go.error]))), (go!"Dup", (some (go.signature.Signature [] false [go.int, go.string, go.error]))), (go!"Fchdir", (some (go.signature.Signature [] false [go.error]))), (go!"Fchmod", (some (go.signature.Signature [go.uint32] false [go.error]))), (go!"Fchown", (some (go.signature.Signature [go.int, go.int] false [go.error]))), (go!"Fstat", (some (go.signature.Signature [(go.GoType.PointerType _root_.Perennial.syscall.Stat_t.ty)] false [go.error]))), (go!"Fstatat", (some (go.signature.Signature [go.string, (go.GoType.PointerType _root_.Perennial.syscall.Stat_t.ty), go.int] false [go.error]))), (go!"Fsync", (some (go.signature.Signature [] false [go.error]))), (go!"Ftruncate", (some (go.signature.Signature [go.int64] false [go.error]))), (go!"GetsockoptInt", (some (go.signature.Signature [go.int, go.int] false [go.int, go.error]))), (go!"Init", (some (go.signature.Signature [go.string, go.bool] false [go.error]))), (go!"Pread", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"Pwrite", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"RawControl", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [go.uintptr] false []))] false [go.error]))), (go!"RawRead", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [go.uintptr] false [go.bool]))] false [go.error]))), (go!"RawWrite", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [go.uintptr] false [go.bool]))] false [go.error]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"ReadDirent", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"ReadFrom", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, _root_.Perennial.syscall.Sockaddr.ty, go.error]))), (go!"ReadFromInet4", (some (go.signature.Signature [(go.GoType.SliceType go.byte), (go.GoType.PointerType _root_.Perennial.syscall.SockaddrInet4.ty)] false [go.int, go.error]))), (go!"ReadFromInet6", (some (go.signature.Signature [(go.GoType.SliceType go.byte), (go.GoType.PointerType _root_.Perennial.syscall.SockaddrInet6.ty)] false [go.int, go.error]))), (go!"ReadMsg", (some (go.signature.Signature [(go.GoType.SliceType go.byte), (go.GoType.SliceType go.byte), go.int] false [go.int, go.int, go.int, _root_.Perennial.syscall.Sockaddr.ty, go.error]))), (go!"ReadMsgInet4", (some (go.signature.Signature [(go.GoType.SliceType go.byte), (go.GoType.SliceType go.byte), go.int, (go.GoType.PointerType _root_.Perennial.syscall.SockaddrInet4.ty)] false [go.int, go.int, go.int, go.error]))), (go!"ReadMsgInet6", (some (go.signature.Signature [(go.GoType.SliceType go.byte), (go.GoType.SliceType go.byte), go.int, (go.GoType.PointerType _root_.Perennial.syscall.SockaddrInet6.ty)] false [go.int, go.int, go.int, go.error]))), (go!"Seek", (some (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))), (go!"SetBlocking", (some (go.signature.Signature [] false [go.error]))), (go!"SetDeadline", (some (go.signature.Signature [(go.GoType.Named go!"time.Time" [])] false [go.error]))), (go!"SetReadDeadline", (some (go.signature.Signature [(go.GoType.Named go!"time.Time" [])] false [go.error]))), (go!"SetWriteDeadline", (some (go.signature.Signature [(go.GoType.Named go!"time.Time" [])] false [go.error]))), (go!"SetsockoptByte", (some (go.signature.Signature [go.int, go.int, go.byte] false [go.error]))), (go!"SetsockoptIPMreq", (some (go.signature.Signature [go.int, go.int, (go.GoType.PointerType _root_.Perennial.syscall.IPMreq.ty)] false [go.error]))), (go!"SetsockoptIPMreqn", (some (go.signature.Signature [go.int, go.int, (go.GoType.PointerType _root_.Perennial.syscall.IPMreqn.ty)] false [go.error]))), (go!"SetsockoptIPv6Mreq", (some (go.signature.Signature [go.int, go.int, (go.GoType.PointerType _root_.Perennial.syscall.IPv6Mreq.ty)] false [go.error]))), (go!"SetsockoptInet4Addr", (some (go.signature.Signature [go.int, go.int, (go.GoType.ArrayType 4 go.byte)] false [go.error]))), (go!"SetsockoptInt", (some (go.signature.Signature [go.int, go.int, go.int] false [go.error]))), (go!"SetsockoptLinger", (some (go.signature.Signature [go.int, go.int, (go.GoType.PointerType _root_.Perennial.syscall.Linger.ty)] false [go.error]))), (go!"Shutdown", (some (go.signature.Signature [go.int] false [go.error]))), (go!"WaitWrite", (some (go.signature.Signature [] false [go.error]))), (go!"Write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"WriteMsg", (some (go.signature.Signature [(go.GoType.SliceType go.byte), (go.GoType.SliceType go.byte), _root_.Perennial.syscall.Sockaddr.ty] false [go.int, go.int, go.error]))), (go!"WriteMsgInet4", (some (go.signature.Signature [(go.GoType.SliceType go.byte), (go.GoType.SliceType go.byte), (go.GoType.PointerType _root_.Perennial.syscall.SockaddrInet4.ty)] false [go.int, go.int, go.error]))), (go!"WriteMsgInet6", (some (go.signature.Signature [(go.GoType.SliceType go.byte), (go.GoType.SliceType go.byte), (go.GoType.PointerType _root_.Perennial.syscall.SockaddrInet6.ty)] false [go.int, go.int, go.error]))), (go!"WriteOnce", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"WriteTo", (some (go.signature.Signature [(go.GoType.SliceType go.byte), _root_.Perennial.syscall.Sockaddr.ty] false [go.int, go.error]))), (go!"WriteToInet4", (some (go.signature.Signature [(go.GoType.SliceType go.byte), (go.GoType.PointerType _root_.Perennial.syscall.SockaddrInet4.ty)] false [go.int, go.error]))), (go!"WriteToInet6", (some (go.signature.Signature [(go.GoType.SliceType go.byte), (go.GoType.PointerType _root_.Perennial.syscall.SockaddrInet6.ty)] false [go.int, go.error]))), (go!"Writev", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.SliceType (go.GoType.SliceType go.byte)))] false [go.int64, go.error]))), (go!"internal/poll.closing", (some (go.signature.Signature [] false [go.bool]))), (go!"internal/poll.decref", (some (go.signature.Signature [] false [go.error]))), (go!"internal/poll.destroy", (some (go.signature.Signature [] false [go.error]))), (go!"internal/poll.eofError", (some (go.signature.Signature [go.int, go.error] false [go.error]))), (go!"internal/poll.incref", (some (go.signature.Signature [] false [go.error]))), (go!"internal/poll.init", (some (go.signature.Signature [] false []))), (go!"internal/poll.readLock", (some (go.signature.Signature [] false [go.error]))), (go!"internal/poll.readUnlock", (some (go.signature.Signature [] false []))), (go!"internal/poll.readWriteLock", (some (go.signature.Signature [] false [go.error]))), (go!"internal/poll.readWriteUnlock", (some (go.signature.Signature [] false []))), (go!"internal/poll.writeLock", (some (go.signature.Signature [] false [go.error]))), (go!"internal/poll.writeUnlock", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] FD.TypeAssumptions.type_repr
   FD.TypeAssumptions.underlying
-  FD.TypeAssumptions.get_fdmu
-  FD.TypeAssumptions.set_fdmu
-  FD.TypeAssumptions.get_Sysfd
-  FD.TypeAssumptions.set_Sysfd
-  FD.TypeAssumptions.get_SysFile
-  FD.TypeAssumptions.set_SysFile
-  FD.TypeAssumptions.get_pd
-  FD.TypeAssumptions.set_pd
-  FD.TypeAssumptions.get_csema
-  FD.TypeAssumptions.set_csema
-  FD.TypeAssumptions.get_isBlocking
-  FD.TypeAssumptions.set_isBlocking
-  FD.TypeAssumptions.get_IsStream
-  FD.TypeAssumptions.set_IsStream
-  FD.TypeAssumptions.get_ZeroReadIsEOF
-  FD.TypeAssumptions.set_ZeroReadIsEOF
-  FD.TypeAssumptions.get_isFile
-  FD.TypeAssumptions.set_isFile
+  FD.TypeAssumptions.get'fdmu
+  FD.TypeAssumptions.set'fdmu
+  FD.TypeAssumptions.get'Sysfd
+  FD.TypeAssumptions.set'Sysfd
+  FD.TypeAssumptions.get'SysFile
+  FD.TypeAssumptions.set'SysFile
+  FD.TypeAssumptions.get'pd
+  FD.TypeAssumptions.set'pd
+  FD.TypeAssumptions.get'csema
+  FD.TypeAssumptions.set'csema
+  FD.TypeAssumptions.get'isBlocking
+  FD.TypeAssumptions.set'isBlocking
+  FD.TypeAssumptions.get'IsStream
+  FD.TypeAssumptions.set'IsStream
+  FD.TypeAssumptions.get'ZeroReadIsEOF
+  FD.TypeAssumptions.set'ZeroReadIsEOF
+  FD.TypeAssumptions.get'isFile
+  FD.TypeAssumptions.set'isFile
   FD.TypeAssumptions.method_set
   FD.TypeAssumptions.ptr_method_set
 
@@ -730,7 +730,7 @@ noncomputable instance splicePipeFields.zero_val [GooseExts] : ZeroVal splicePip
 @[irreducible] noncomputable def splicePipeFields.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   splicePipeFields.fieldsUnsealed
 
-noncomputable instance equals_unfold_splicePipeFields [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'splicePipeFields [GooseExts] [GoGlobalContext] :
     EqualsUnfold splicePipeFields.fields splicePipeFields.fieldsUnsealed :=
   ⟨by unfold splicePipeFields.fields; rfl⟩
 
@@ -740,23 +740,23 @@ noncomputable instance equals_unfold_splicePipeFields [GooseExts] [GoGlobalConte
 class splicePipeFields.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying splicePipeFields.underlying splicePipeFields
   underlying : go.UnderlyingDirectedEq splicePipeFields.ty splicePipeFields.underlying
-  get_rfd : ∀ (x : splicePipeFields), go.IsGoStepPureDetTagged under (StructFieldGet splicePipeFields.underlying go!"rfd") #x (Val #(x.rfd'))
-  set_rfd : ∀ (x : splicePipeFields) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet splicePipeFields.underlying go!"rfd") (PairV #x #y) (Val #(({ x with rfd' := y } : splicePipeFields)))
-  get_wfd : ∀ (x : splicePipeFields), go.IsGoStepPureDetTagged under (StructFieldGet splicePipeFields.underlying go!"wfd") #x (Val #(x.wfd'))
-  set_wfd : ∀ (x : splicePipeFields) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet splicePipeFields.underlying go!"wfd") (PairV #x #y) (Val #(({ x with wfd' := y } : splicePipeFields)))
-  get_data : ∀ (x : splicePipeFields), go.IsGoStepPureDetTagged under (StructFieldGet splicePipeFields.underlying go!"data") #x (Val #(x.data'))
-  set_data : ∀ (x : splicePipeFields) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet splicePipeFields.underlying go!"data") (PairV #x #y) (Val #(({ x with data' := y } : splicePipeFields)))
+  get'rfd : ∀ (x : splicePipeFields), go.IsGoStepPureDetTagged under (StructFieldGet splicePipeFields.underlying go!"rfd") #x (Val #(x.rfd'))
+  set'rfd : ∀ (x : splicePipeFields) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet splicePipeFields.underlying go!"rfd") (PairV #x #y) (Val #(({ x with rfd' := y } : splicePipeFields)))
+  get'wfd : ∀ (x : splicePipeFields), go.IsGoStepPureDetTagged under (StructFieldGet splicePipeFields.underlying go!"wfd") #x (Val #(x.wfd'))
+  set'wfd : ∀ (x : splicePipeFields) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet splicePipeFields.underlying go!"wfd") (PairV #x #y) (Val #(({ x with wfd' := y } : splicePipeFields)))
+  get'data : ∀ (x : splicePipeFields), go.IsGoStepPureDetTagged under (StructFieldGet splicePipeFields.underlying go!"data") #x (Val #(x.data'))
+  set'data : ∀ (x : splicePipeFields) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet splicePipeFields.underlying go!"data") (PairV #x #y) (Val #(({ x with data' := y } : splicePipeFields)))
   method_set : go.MethodSetIs splicePipeFields.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType splicePipeFields.ty) []
 
 attribute [instance] splicePipeFields.TypeAssumptions.type_repr
   splicePipeFields.TypeAssumptions.underlying
-  splicePipeFields.TypeAssumptions.get_rfd
-  splicePipeFields.TypeAssumptions.set_rfd
-  splicePipeFields.TypeAssumptions.get_wfd
-  splicePipeFields.TypeAssumptions.set_wfd
-  splicePipeFields.TypeAssumptions.get_data
-  splicePipeFields.TypeAssumptions.set_data
+  splicePipeFields.TypeAssumptions.get'rfd
+  splicePipeFields.TypeAssumptions.set'rfd
+  splicePipeFields.TypeAssumptions.get'wfd
+  splicePipeFields.TypeAssumptions.set'wfd
+  splicePipeFields.TypeAssumptions.get'data
+  splicePipeFields.TypeAssumptions.set'data
   splicePipeFields.TypeAssumptions.method_set
   splicePipeFields.TypeAssumptions.ptr_method_set
 
@@ -780,33 +780,33 @@ attribute [instance] splicePipe.TypeAssumptions.type_repr
   splicePipe.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  errNetClosing_instance : errNetClosing.TypeAssumptions
-  DeadlineExceededError_instance : DeadlineExceededError.TypeAssumptions
-  String_instance : String.TypeAssumptions
-  fdMutex_instance : fdMutex.TypeAssumptions
-  pollDesc_instance : pollDesc.TypeAssumptions
-  FD_instance : FD.TypeAssumptions
-  SysFile_instance : SysFile.TypeAssumptions
-  splicePipeFields_instance : splicePipeFields.TypeAssumptions
-  splicePipe_instance : splicePipe.TypeAssumptions
-  import_unix_Assumption : _root_.Perennial.internal.syscall.unix.Assumptions
-  import_sync_Assumption : _root_.Perennial.sync.Assumptions
-  import_syscall_Assumption : _root_.Perennial.syscall.Assumptions
-  import_errors_Assumption : _root_.Perennial.errors.Assumptions
+  instance'errNetClosing : errNetClosing.TypeAssumptions
+  instance'DeadlineExceededError : DeadlineExceededError.TypeAssumptions
+  instance'String : String.TypeAssumptions
+  instance'fdMutex : fdMutex.TypeAssumptions
+  instance'pollDesc : pollDesc.TypeAssumptions
+  instance'FD : FD.TypeAssumptions
+  instance'SysFile : SysFile.TypeAssumptions
+  instance'splicePipeFields : splicePipeFields.TypeAssumptions
+  instance'splicePipe : splicePipe.TypeAssumptions
+  import'unix : _root_.Perennial.internal.syscall.unix.Assumptions
+  import'sync : _root_.Perennial.sync.Assumptions
+  import'syscall : _root_.Perennial.syscall.Assumptions
+  import'errors : _root_.Perennial.errors.Assumptions
 
-attribute [instance] Assumptions.errNetClosing_instance
-  Assumptions.DeadlineExceededError_instance
-  Assumptions.String_instance
-  Assumptions.fdMutex_instance
-  Assumptions.pollDesc_instance
-  Assumptions.FD_instance
-  Assumptions.SysFile_instance
-  Assumptions.splicePipeFields_instance
-  Assumptions.splicePipe_instance
-  Assumptions.import_unix_Assumption
-  Assumptions.import_sync_Assumption
-  Assumptions.import_syscall_Assumption
-  Assumptions.import_errors_Assumption
+attribute [instance] Assumptions.instance'errNetClosing
+  Assumptions.instance'DeadlineExceededError
+  Assumptions.instance'String
+  Assumptions.instance'fdMutex
+  Assumptions.instance'pollDesc
+  Assumptions.instance'FD
+  Assumptions.instance'SysFile
+  Assumptions.instance'splicePipeFields
+  Assumptions.instance'splicePipe
+  Assumptions.import'unix
+  Assumptions.import'sync
+  Assumptions.import'syscall
+  Assumptions.import'errors
 
 end internal.poll
 

@@ -748,7 +748,7 @@ noncomputable instance decimal.zero_val [GooseExts] : ZeroVal decimal :=
 @[irreducible] noncomputable def decimal.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   decimal.fieldsUnsealed
 
-noncomputable instance equals_unfold_decimal [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'decimal [GooseExts] [GoGlobalContext] :
     EqualsUnfold decimal.fields decimal.fieldsUnsealed :=
   ⟨by unfold decimal.fields; rfl⟩
 
@@ -758,19 +758,19 @@ noncomputable instance equals_unfold_decimal [GooseExts] [GoGlobalContext] :
 class decimal.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying decimal.underlying decimal
   underlying : go.UnderlyingDirectedEq decimal.ty decimal.underlying
-  get_mant : ∀ (x : decimal), go.IsGoStepPureDetTagged under (StructFieldGet decimal.underlying go!"mant") #x (Val #(x.mant'))
-  set_mant : ∀ (x : decimal) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet decimal.underlying go!"mant") (PairV #x #y) (Val #(({ x with mant' := y } : decimal)))
-  get_exp : ∀ (x : decimal), go.IsGoStepPureDetTagged under (StructFieldGet decimal.underlying go!"exp") #x (Val #(x.exp'))
-  set_exp : ∀ (x : decimal) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet decimal.underlying go!"exp") (PairV #x #y) (Val #(({ x with exp' := y } : decimal)))
+  get'mant : ∀ (x : decimal), go.IsGoStepPureDetTagged under (StructFieldGet decimal.underlying go!"mant") #x (Val #(x.mant'))
+  set'mant : ∀ (x : decimal) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet decimal.underlying go!"mant") (PairV #x #y) (Val #(({ x with mant' := y } : decimal)))
+  get'exp : ∀ (x : decimal), go.IsGoStepPureDetTagged under (StructFieldGet decimal.underlying go!"exp") #x (Val #(x.exp'))
+  set'exp : ∀ (x : decimal) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet decimal.underlying go!"exp") (PairV #x #y) (Val #(({ x with exp' := y } : decimal)))
   method_set : go.MethodSetIs decimal.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType decimal.ty) [(go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"math/big.at", (some (go.signature.Signature [go.int] false [go.byte]))), (go!"math/big.init", (some (go.signature.Signature [nat.ty, go.int] false []))), (go!"math/big.round", (some (go.signature.Signature [go.int] false []))), (go!"math/big.roundDown", (some (go.signature.Signature [go.int] false []))), (go!"math/big.roundUp", (some (go.signature.Signature [go.int] false [])))]
 
 attribute [instance] decimal.TypeAssumptions.type_repr
   decimal.TypeAssumptions.underlying
-  decimal.TypeAssumptions.get_mant
-  decimal.TypeAssumptions.set_mant
-  decimal.TypeAssumptions.get_exp
-  decimal.TypeAssumptions.set_exp
+  decimal.TypeAssumptions.get'mant
+  decimal.TypeAssumptions.set'mant
+  decimal.TypeAssumptions.get'exp
+  decimal.TypeAssumptions.set'exp
   decimal.TypeAssumptions.method_set
   decimal.TypeAssumptions.ptr_method_set
 
@@ -855,7 +855,7 @@ noncomputable instance Float.zero_val [GooseExts] : ZeroVal Float :=
 @[irreducible] noncomputable def Float.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Float.fieldsUnsealed
 
-noncomputable instance equals_unfold_Float [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Float [GooseExts] [GoGlobalContext] :
     EqualsUnfold Float.fields Float.fieldsUnsealed :=
   ⟨by unfold Float.fields; rfl⟩
 
@@ -865,39 +865,39 @@ noncomputable instance equals_unfold_Float [GooseExts] [GoGlobalContext] :
 class Float.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Float.underlying Float
   underlying : go.UnderlyingDirectedEq Float.ty Float.underlying
-  get_prec : ∀ (x : Float), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"prec") #x (Val #(x.prec'))
-  set_prec : ∀ (x : Float) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Float.underlying go!"prec") (PairV #x #y) (Val #(({ x with prec' := y } : Float)))
-  get_mode : ∀ (x : Float), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"mode") #x (Val #(x.mode'))
-  set_mode : ∀ (x : Float) (y : RoundingMode), go.IsGoStepPureDetTagged under (StructFieldSet Float.underlying go!"mode") (PairV #x #y) (Val #(({ x with mode' := y } : Float)))
-  get_acc : ∀ (x : Float), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"acc") #x (Val #(x.acc'))
-  set_acc : ∀ (x : Float) (y : Accuracy), go.IsGoStepPureDetTagged under (StructFieldSet Float.underlying go!"acc") (PairV #x #y) (Val #(({ x with acc' := y } : Float)))
-  get_form : ∀ (x : Float), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"form") #x (Val #(x.form'))
-  set_form : ∀ (x : Float) (y : form), go.IsGoStepPureDetTagged under (StructFieldSet Float.underlying go!"form") (PairV #x #y) (Val #(({ x with form' := y } : Float)))
-  get_neg : ∀ (x : Float), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"neg") #x (Val #(x.neg'))
-  set_neg : ∀ (x : Float) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Float.underlying go!"neg") (PairV #x #y) (Val #(({ x with neg' := y } : Float)))
-  get_mant : ∀ (x : Float), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"mant") #x (Val #(x.mant'))
-  set_mant : ∀ (x : Float) (y : nat), go.IsGoStepPureDetTagged under (StructFieldSet Float.underlying go!"mant") (PairV #x #y) (Val #(({ x with mant' := y } : Float)))
-  get_exp : ∀ (x : Float), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"exp") #x (Val #(x.exp'))
-  set_exp : ∀ (x : Float) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Float.underlying go!"exp") (PairV #x #y) (Val #(({ x with exp' := y } : Float)))
+  get'prec : ∀ (x : Float), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"prec") #x (Val #(x.prec'))
+  set'prec : ∀ (x : Float) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Float.underlying go!"prec") (PairV #x #y) (Val #(({ x with prec' := y } : Float)))
+  get'mode : ∀ (x : Float), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"mode") #x (Val #(x.mode'))
+  set'mode : ∀ (x : Float) (y : RoundingMode), go.IsGoStepPureDetTagged under (StructFieldSet Float.underlying go!"mode") (PairV #x #y) (Val #(({ x with mode' := y } : Float)))
+  get'acc : ∀ (x : Float), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"acc") #x (Val #(x.acc'))
+  set'acc : ∀ (x : Float) (y : Accuracy), go.IsGoStepPureDetTagged under (StructFieldSet Float.underlying go!"acc") (PairV #x #y) (Val #(({ x with acc' := y } : Float)))
+  get'form : ∀ (x : Float), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"form") #x (Val #(x.form'))
+  set'form : ∀ (x : Float) (y : form), go.IsGoStepPureDetTagged under (StructFieldSet Float.underlying go!"form") (PairV #x #y) (Val #(({ x with form' := y } : Float)))
+  get'neg : ∀ (x : Float), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"neg") #x (Val #(x.neg'))
+  set'neg : ∀ (x : Float) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Float.underlying go!"neg") (PairV #x #y) (Val #(({ x with neg' := y } : Float)))
+  get'mant : ∀ (x : Float), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"mant") #x (Val #(x.mant'))
+  set'mant : ∀ (x : Float) (y : nat), go.IsGoStepPureDetTagged under (StructFieldSet Float.underlying go!"mant") (PairV #x #y) (Val #(({ x with mant' := y } : Float)))
+  get'exp : ∀ (x : Float), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"exp") #x (Val #(x.exp'))
+  set'exp : ∀ (x : Float) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Float.underlying go!"exp") (PairV #x #y) (Val #(({ x with exp' := y } : Float)))
   method_set : go.MethodSetIs Float.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Float.ty) [(go!"Abs", (some (go.signature.Signature [(go.GoType.PointerType Float.ty)] false [(go.GoType.PointerType Float.ty)]))), (go!"Acc", (some (go.signature.Signature [] false [Accuracy.ty]))), (go!"Add", (some (go.signature.Signature [(go.GoType.PointerType Float.ty), (go.GoType.PointerType Float.ty)] false [(go.GoType.PointerType Float.ty)]))), (go!"Append", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.byte, go.int] false [(go.GoType.SliceType go.byte)]))), (go!"AppendText", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Cmp", (some (go.signature.Signature [(go.GoType.PointerType Float.ty)] false [go.int]))), (go!"Copy", (some (go.signature.Signature [(go.GoType.PointerType Float.ty)] false [(go.GoType.PointerType Float.ty)]))), (go!"Float32", (some (go.signature.Signature [] false [go.float32, Accuracy.ty]))), (go!"Float64", (some (go.signature.Signature [] false [go.float64, Accuracy.ty]))), (go!"Format", (some (go.signature.Signature [_root_.Perennial.fmt.State.ty, go.rune] false []))), (go!"GobDecode", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.error]))), (go!"GobEncode", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Int", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty), Accuracy.ty]))), (go!"Int64", (some (go.signature.Signature [] false [go.int64, Accuracy.ty]))), (go!"IsInf", (some (go.signature.Signature [] false [go.bool]))), (go!"IsInt", (some (go.signature.Signature [] false [go.bool]))), (go!"MantExp", (some (go.signature.Signature [(go.GoType.PointerType Float.ty)] false [go.int]))), (go!"MarshalText", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"MinPrec", (some (go.signature.Signature [] false [go.uint]))), (go!"Mode", (some (go.signature.Signature [] false [RoundingMode.ty]))), (go!"Mul", (some (go.signature.Signature [(go.GoType.PointerType Float.ty), (go.GoType.PointerType Float.ty)] false [(go.GoType.PointerType Float.ty)]))), (go!"Neg", (some (go.signature.Signature [(go.GoType.PointerType Float.ty)] false [(go.GoType.PointerType Float.ty)]))), (go!"Parse", (some (go.signature.Signature [go.string, go.int] false [(go.GoType.PointerType Float.ty), go.int, go.error]))), (go!"Prec", (some (go.signature.Signature [] false [go.uint]))), (go!"Quo", (some (go.signature.Signature [(go.GoType.PointerType Float.ty), (go.GoType.PointerType Float.ty)] false [(go.GoType.PointerType Float.ty)]))), (go!"Rat", (some (go.signature.Signature [(go.GoType.PointerType Rat.ty)] false [(go.GoType.PointerType Rat.ty), Accuracy.ty]))), (go!"Scan", (some (go.signature.Signature [_root_.Perennial.fmt.ScanState.ty, go.rune] false [go.error]))), (go!"Set", (some (go.signature.Signature [(go.GoType.PointerType Float.ty)] false [(go.GoType.PointerType Float.ty)]))), (go!"SetFloat64", (some (go.signature.Signature [go.float64] false [(go.GoType.PointerType Float.ty)]))), (go!"SetInf", (some (go.signature.Signature [go.bool] false [(go.GoType.PointerType Float.ty)]))), (go!"SetInt", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Float.ty)]))), (go!"SetInt64", (some (go.signature.Signature [go.int64] false [(go.GoType.PointerType Float.ty)]))), (go!"SetMantExp", (some (go.signature.Signature [(go.GoType.PointerType Float.ty), go.int] false [(go.GoType.PointerType Float.ty)]))), (go!"SetMode", (some (go.signature.Signature [RoundingMode.ty] false [(go.GoType.PointerType Float.ty)]))), (go!"SetPrec", (some (go.signature.Signature [go.uint] false [(go.GoType.PointerType Float.ty)]))), (go!"SetRat", (some (go.signature.Signature [(go.GoType.PointerType Rat.ty)] false [(go.GoType.PointerType Float.ty)]))), (go!"SetString", (some (go.signature.Signature [go.string] false [(go.GoType.PointerType Float.ty), go.bool]))), (go!"SetUint64", (some (go.signature.Signature [go.uint64] false [(go.GoType.PointerType Float.ty)]))), (go!"Sign", (some (go.signature.Signature [] false [go.int]))), (go!"Signbit", (some (go.signature.Signature [] false [go.bool]))), (go!"Sqrt", (some (go.signature.Signature [(go.GoType.PointerType Float.ty)] false [(go.GoType.PointerType Float.ty)]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Sub", (some (go.signature.Signature [(go.GoType.PointerType Float.ty), (go.GoType.PointerType Float.ty)] false [(go.GoType.PointerType Float.ty)]))), (go!"Text", (some (go.signature.Signature [go.byte, go.int] false [go.string]))), (go!"Uint64", (some (go.signature.Signature [] false [go.uint64, Accuracy.ty]))), (go!"UnmarshalText", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.error]))), (go!"math/big.fmtB", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.SliceType go.byte)]))), (go!"math/big.fmtP", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.SliceType go.byte)]))), (go!"math/big.fmtX", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int] false [(go.GoType.SliceType go.byte)]))), (go!"math/big.ord", (some (go.signature.Signature [] false [go.int]))), (go!"math/big.pow5", (some (go.signature.Signature [go.uint64] false [(go.GoType.PointerType Float.ty)]))), (go!"math/big.round", (some (go.signature.Signature [go.uint] false []))), (go!"math/big.scan", (some (go.signature.Signature [(go.GoType.Named go!"io.ByteScanner" []), go.int] false [(go.GoType.PointerType Float.ty), go.int, go.error]))), (go!"math/big.setBits64", (some (go.signature.Signature [go.bool, go.uint64] false [(go.GoType.PointerType Float.ty)]))), (go!"math/big.setExpAndRound", (some (go.signature.Signature [go.int64, go.uint] false []))), (go!"math/big.sqrtInverse", (some (go.signature.Signature [(go.GoType.PointerType Float.ty)] false []))), (go!"math/big.uadd", (some (go.signature.Signature [(go.GoType.PointerType Float.ty), (go.GoType.PointerType Float.ty)] false []))), (go!"math/big.ucmp", (some (go.signature.Signature [(go.GoType.PointerType Float.ty)] false [go.int]))), (go!"math/big.umul", (some (go.signature.Signature [(go.GoType.PointerType Float.ty), (go.GoType.PointerType Float.ty)] false []))), (go!"math/big.uquo", (some (go.signature.Signature [(go.GoType.PointerType Float.ty), (go.GoType.PointerType Float.ty)] false []))), (go!"math/big.usub", (some (go.signature.Signature [(go.GoType.PointerType Float.ty), (go.GoType.PointerType Float.ty)] false []))), (go!"math/big.validate", (some (go.signature.Signature [] false []))), (go!"math/big.validate0", (some (go.signature.Signature [] false [go.string])))]
 
 attribute [instance] Float.TypeAssumptions.type_repr
   Float.TypeAssumptions.underlying
-  Float.TypeAssumptions.get_prec
-  Float.TypeAssumptions.set_prec
-  Float.TypeAssumptions.get_mode
-  Float.TypeAssumptions.set_mode
-  Float.TypeAssumptions.get_acc
-  Float.TypeAssumptions.set_acc
-  Float.TypeAssumptions.get_form
-  Float.TypeAssumptions.set_form
-  Float.TypeAssumptions.get_neg
-  Float.TypeAssumptions.set_neg
-  Float.TypeAssumptions.get_mant
-  Float.TypeAssumptions.set_mant
-  Float.TypeAssumptions.get_exp
-  Float.TypeAssumptions.set_exp
+  Float.TypeAssumptions.get'prec
+  Float.TypeAssumptions.set'prec
+  Float.TypeAssumptions.get'mode
+  Float.TypeAssumptions.set'mode
+  Float.TypeAssumptions.get'acc
+  Float.TypeAssumptions.set'acc
+  Float.TypeAssumptions.get'form
+  Float.TypeAssumptions.set'form
+  Float.TypeAssumptions.get'neg
+  Float.TypeAssumptions.set'neg
+  Float.TypeAssumptions.get'mant
+  Float.TypeAssumptions.set'mant
+  Float.TypeAssumptions.get'exp
+  Float.TypeAssumptions.set'exp
   Float.TypeAssumptions.method_set
   Float.TypeAssumptions.ptr_method_set
 
@@ -914,7 +914,7 @@ noncomputable instance ErrNaN.zero_val [GooseExts] : ZeroVal ErrNaN :=
 @[irreducible] noncomputable def ErrNaN.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   ErrNaN.fieldsUnsealed
 
-noncomputable instance equals_unfold_ErrNaN [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'ErrNaN [GooseExts] [GoGlobalContext] :
     EqualsUnfold ErrNaN.fields ErrNaN.fieldsUnsealed :=
   ⟨by unfold ErrNaN.fields; rfl⟩
 
@@ -924,15 +924,15 @@ noncomputable instance equals_unfold_ErrNaN [GooseExts] [GoGlobalContext] :
 class ErrNaN.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying ErrNaN.underlying ErrNaN
   underlying : go.UnderlyingDirectedEq ErrNaN.ty ErrNaN.underlying
-  get_msg : ∀ (x : ErrNaN), go.IsGoStepPureDetTagged under (StructFieldGet ErrNaN.underlying go!"msg") #x (Val #(x.msg'))
-  set_msg : ∀ (x : ErrNaN) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ErrNaN.underlying go!"msg") (PairV #x #y) (Val #(({ x with msg' := y } : ErrNaN)))
+  get'msg : ∀ (x : ErrNaN), go.IsGoStepPureDetTagged under (StructFieldGet ErrNaN.underlying go!"msg") #x (Val #(x.msg'))
+  set'msg : ∀ (x : ErrNaN) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ErrNaN.underlying go!"msg") (PairV #x #y) (Val #(({ x with msg' := y } : ErrNaN)))
   method_set : go.MethodSetIs ErrNaN.ty [(go!"Error", (some (go.signature.Signature [] false [go.string])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType ErrNaN.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string])))]
 
 attribute [instance] ErrNaN.TypeAssumptions.type_repr
   ErrNaN.TypeAssumptions.underlying
-  ErrNaN.TypeAssumptions.get_msg
-  ErrNaN.TypeAssumptions.set_msg
+  ErrNaN.TypeAssumptions.get'msg
+  ErrNaN.TypeAssumptions.set'msg
   ErrNaN.TypeAssumptions.method_set
   ErrNaN.TypeAssumptions.ptr_method_set
 
@@ -951,7 +951,7 @@ noncomputable instance Int''.zero_val [GooseExts] : ZeroVal Int'' :=
 @[irreducible] noncomputable def Int''.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Int''.fieldsUnsealed
 
-noncomputable instance equals_unfold_Int [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Int [GooseExts] [GoGlobalContext] :
     EqualsUnfold Int''.fields Int''.fieldsUnsealed :=
   ⟨by unfold Int''.fields; rfl⟩
 
@@ -961,23 +961,23 @@ noncomputable instance equals_unfold_Int [GooseExts] [GoGlobalContext] :
 class Int''.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Int''.underlying Int''
   underlying : go.UnderlyingDirectedEq Int''.ty Int''.underlying
-  get_neg : ∀ (x : Int''), go.IsGoStepPureDetTagged under (StructFieldGet Int''.underlying go!"neg") #x (Val #(x.neg'))
-  set_neg : ∀ (x : Int'') (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Int''.underlying go!"neg") (PairV #x #y) (Val #(({ x with neg' := y } : Int'')))
-  get_abs : ∀ (x : Int''), go.IsGoStepPureDetTagged under (StructFieldGet Int''.underlying go!"abs") #x (Val #(x.abs'))
-  set_abs : ∀ (x : Int'') (y : nat), go.IsGoStepPureDetTagged under (StructFieldSet Int''.underlying go!"abs") (PairV #x #y) (Val #(({ x with abs' := y } : Int'')))
+  get'neg : ∀ (x : Int''), go.IsGoStepPureDetTagged under (StructFieldGet Int''.underlying go!"neg") #x (Val #(x.neg'))
+  set'neg : ∀ (x : Int'') (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Int''.underlying go!"neg") (PairV #x #y) (Val #(({ x with neg' := y } : Int'')))
+  get'abs : ∀ (x : Int''), go.IsGoStepPureDetTagged under (StructFieldGet Int''.underlying go!"abs") #x (Val #(x.abs'))
+  set'abs : ∀ (x : Int'') (y : nat), go.IsGoStepPureDetTagged under (StructFieldSet Int''.underlying go!"abs") (PairV #x #y) (Val #(({ x with abs' := y } : Int'')))
   method_set : go.MethodSetIs Int''.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Int''.ty) [(go!"Abs", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"Add", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"And", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"AndNot", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"Append", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int] false [(go.GoType.SliceType go.byte)]))), (go!"AppendText", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Binomial", (some (go.signature.Signature [go.int64, go.int64] false [(go.GoType.PointerType Int''.ty)]))), (go!"Bit", (some (go.signature.Signature [go.int] false [go.uint]))), (go!"BitLen", (some (go.signature.Signature [] false [go.int]))), (go!"Bits", (some (go.signature.Signature [] false [(go.GoType.SliceType Word.ty)]))), (go!"Bytes", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"Cmp", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty)] false [go.int]))), (go!"CmpAbs", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty)] false [go.int]))), (go!"Div", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"DivMod", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)]))), (go!"Exp", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"FillBytes", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.SliceType go.byte)]))), (go!"Float64", (some (go.signature.Signature [] false [go.float64, Accuracy.ty]))), (go!"Format", (some (go.signature.Signature [_root_.Perennial.fmt.State.ty, go.rune] false []))), (go!"GCD", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"GobDecode", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.error]))), (go!"GobEncode", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Int64", (some (go.signature.Signature [] false [go.int64]))), (go!"IsInt64", (some (go.signature.Signature [] false [go.bool]))), (go!"IsUint64", (some (go.signature.Signature [] false [go.bool]))), (go!"Lsh", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), go.uint] false [(go.GoType.PointerType Int''.ty)]))), (go!"MarshalJSON", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"MarshalText", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Mod", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"ModInverse", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"ModSqrt", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"Mul", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"MulRange", (some (go.signature.Signature [go.int64, go.int64] false [(go.GoType.PointerType Int''.ty)]))), (go!"Neg", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"Not", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"Or", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"ProbablyPrime", (some (go.signature.Signature [go.int] false [go.bool]))), (go!"Quo", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"QuoRem", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)]))), (go!"Rand", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.Named go!"math/rand.Rand" [])), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"Rem", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"Rsh", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), go.uint] false [(go.GoType.PointerType Int''.ty)]))), (go!"Scan", (some (go.signature.Signature [_root_.Perennial.fmt.ScanState.ty, go.rune] false [go.error]))), (go!"Set", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"SetBit", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), go.int, go.uint] false [(go.GoType.PointerType Int''.ty)]))), (go!"SetBits", (some (go.signature.Signature [(go.GoType.SliceType Word.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"SetBytes", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.PointerType Int''.ty)]))), (go!"SetInt64", (some (go.signature.Signature [go.int64] false [(go.GoType.PointerType Int''.ty)]))), (go!"SetString", (some (go.signature.Signature [go.string, go.int] false [(go.GoType.PointerType Int''.ty), go.bool]))), (go!"SetUint64", (some (go.signature.Signature [go.uint64] false [(go.GoType.PointerType Int''.ty)]))), (go!"Sign", (some (go.signature.Signature [] false [go.int]))), (go!"Sqrt", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Sub", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"Text", (some (go.signature.Signature [go.int] false [go.string]))), (go!"TrailingZeroBits", (some (go.signature.Signature [] false [go.uint]))), (go!"Uint64", (some (go.signature.Signature [] false [go.uint64]))), (go!"UnmarshalJSON", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.error]))), (go!"UnmarshalText", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.error]))), (go!"Xor", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"math/big.exp", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty), go.bool] false [(go.GoType.PointerType Int''.ty)]))), (go!"math/big.expSlow", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"math/big.lehmerGCD", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"math/big.modSqrt3Mod4Prime", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"math/big.modSqrt5Mod8Prime", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"math/big.modSqrtTonelliShanks", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Int''.ty)]))), (go!"math/big.mul", (some (go.signature.Signature [(go.GoType.PointerType stack.ty), (go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false []))), (go!"math/big.scaleDenom", (some (go.signature.Signature [(go.GoType.PointerType stack.ty), (go.GoType.PointerType Int''.ty), nat.ty] false []))), (go!"math/big.scan", (some (go.signature.Signature [(go.GoType.Named go!"io.ByteScanner" []), go.int] false [(go.GoType.PointerType Int''.ty), go.int, go.error]))), (go!"math/big.setFromScanner", (some (go.signature.Signature [(go.GoType.Named go!"io.ByteScanner" []), go.int] false [(go.GoType.PointerType Int''.ty), go.bool])))]
-  ptr_Int64_unfold : MethodUnfold (go.GoType.PointerType Int''.ty) go!"Int64" Int''.Int64.impl
+  ptr_unfold'Int64 : MethodUnfold (go.GoType.PointerType Int''.ty) go!"Int64" Int''.Int64.impl
 
 attribute [instance] Int''.TypeAssumptions.type_repr
   Int''.TypeAssumptions.underlying
-  Int''.TypeAssumptions.get_neg
-  Int''.TypeAssumptions.set_neg
-  Int''.TypeAssumptions.get_abs
-  Int''.TypeAssumptions.set_abs
+  Int''.TypeAssumptions.get'neg
+  Int''.TypeAssumptions.set'neg
+  Int''.TypeAssumptions.get'abs
+  Int''.TypeAssumptions.set'abs
   Int''.TypeAssumptions.method_set
   Int''.TypeAssumptions.ptr_method_set
-  Int''.TypeAssumptions.ptr_Int64_unfold
+  Int''.TypeAssumptions.ptr_unfold'Int64
 
 structure byteReader [GooseExts] where
   mk ::
@@ -992,7 +992,7 @@ noncomputable instance byteReader.zero_val [GooseExts] : ZeroVal byteReader :=
 @[irreducible] noncomputable def byteReader.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   byteReader.fieldsUnsealed
 
-noncomputable instance equals_unfold_byteReader [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'byteReader [GooseExts] [GoGlobalContext] :
     EqualsUnfold byteReader.fields byteReader.fieldsUnsealed :=
   ⟨by unfold byteReader.fields; rfl⟩
 
@@ -1002,15 +1002,15 @@ noncomputable instance equals_unfold_byteReader [GooseExts] [GoGlobalContext] :
 class byteReader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying byteReader.underlying byteReader
   underlying : go.UnderlyingDirectedEq byteReader.ty byteReader.underlying
-  get_ScanState : ∀ (x : byteReader), go.IsGoStepPureDetTagged under (StructFieldGet byteReader.underlying go!"ScanState") #x (Val #(x.ScanState'))
-  set_ScanState : ∀ (x : byteReader) (y : _root_.Perennial.fmt.ScanState), go.IsGoStepPureDetTagged under (StructFieldSet byteReader.underlying go!"ScanState") (PairV #x #y) (Val #(({ x with ScanState' := y } : byteReader)))
+  get'ScanState : ∀ (x : byteReader), go.IsGoStepPureDetTagged under (StructFieldGet byteReader.underlying go!"ScanState") #x (Val #(x.ScanState'))
+  set'ScanState : ∀ (x : byteReader) (y : _root_.Perennial.fmt.ScanState), go.IsGoStepPureDetTagged under (StructFieldSet byteReader.underlying go!"ScanState") (PairV #x #y) (Val #(({ x with ScanState' := y } : byteReader)))
   method_set : go.MethodSetIs byteReader.ty [(go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"ReadByte", (some (go.signature.Signature [] false [go.byte, go.error]))), (go!"ReadRune", (some (go.signature.Signature [] false [go.rune, go.int, go.error]))), (go!"SkipSpace", (some (go.signature.Signature [] false []))), (go!"Token", (some (go.signature.Signature [go.bool, (go.GoType.FunctionType (go.signature.Signature [go.rune] false [go.bool]))] false [(go.GoType.SliceType go.byte), go.error]))), (go!"UnreadByte", (some (go.signature.Signature [] false [go.error]))), (go!"UnreadRune", (some (go.signature.Signature [] false [go.error]))), (go!"Width", (some (go.signature.Signature [] false [go.int, go.bool])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType byteReader.ty) [(go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"ReadByte", (some (go.signature.Signature [] false [go.byte, go.error]))), (go!"ReadRune", (some (go.signature.Signature [] false [go.rune, go.int, go.error]))), (go!"SkipSpace", (some (go.signature.Signature [] false []))), (go!"Token", (some (go.signature.Signature [go.bool, (go.GoType.FunctionType (go.signature.Signature [go.rune] false [go.bool]))] false [(go.GoType.SliceType go.byte), go.error]))), (go!"UnreadByte", (some (go.signature.Signature [] false [go.error]))), (go!"UnreadRune", (some (go.signature.Signature [] false [go.error]))), (go!"Width", (some (go.signature.Signature [] false [go.int, go.bool])))]
 
 attribute [instance] byteReader.TypeAssumptions.type_repr
   byteReader.TypeAssumptions.underlying
-  byteReader.TypeAssumptions.get_ScanState
-  byteReader.TypeAssumptions.set_ScanState
+  byteReader.TypeAssumptions.get'ScanState
+  byteReader.TypeAssumptions.set'ScanState
   byteReader.TypeAssumptions.method_set
   byteReader.TypeAssumptions.ptr_method_set
 
@@ -1027,7 +1027,7 @@ noncomputable instance stack.zero_val [GooseExts] : ZeroVal stack :=
 @[irreducible] noncomputable def stack.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   stack.fieldsUnsealed
 
-noncomputable instance equals_unfold_stack [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'stack [GooseExts] [GoGlobalContext] :
     EqualsUnfold stack.fields stack.fieldsUnsealed :=
   ⟨by unfold stack.fields; rfl⟩
 
@@ -1037,15 +1037,15 @@ noncomputable instance equals_unfold_stack [GooseExts] [GoGlobalContext] :
 class stack.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying stack.underlying stack
   underlying : go.UnderlyingDirectedEq stack.ty stack.underlying
-  get_w : ∀ (x : stack), go.IsGoStepPureDetTagged under (StructFieldGet stack.underlying go!"w") #x (Val #(x.w'))
-  set_w : ∀ (x : stack) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet stack.underlying go!"w") (PairV #x #y) (Val #(({ x with w' := y } : stack)))
+  get'w : ∀ (x : stack), go.IsGoStepPureDetTagged under (StructFieldGet stack.underlying go!"w") #x (Val #(x.w'))
+  set'w : ∀ (x : stack) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet stack.underlying go!"w") (PairV #x #y) (Val #(({ x with w' := y } : stack)))
   method_set : go.MethodSetIs stack.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType stack.ty) [(go!"math/big.free", (some (go.signature.Signature [] false []))), (go!"math/big.nat", (some (go.signature.Signature [go.int] false [nat.ty]))), (go!"math/big.restore", (some (go.signature.Signature [go.int] false []))), (go!"math/big.save", (some (go.signature.Signature [] false [go.int])))]
 
 attribute [instance] stack.TypeAssumptions.type_repr
   stack.TypeAssumptions.underlying
-  stack.TypeAssumptions.get_w
-  stack.TypeAssumptions.set_w
+  stack.TypeAssumptions.get'w
+  stack.TypeAssumptions.set'w
   stack.TypeAssumptions.method_set
   stack.TypeAssumptions.ptr_method_set
 
@@ -1066,7 +1066,7 @@ noncomputable instance divisor.zero_val [GooseExts] : ZeroVal divisor :=
 @[irreducible] noncomputable def divisor.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   divisor.fieldsUnsealed
 
-noncomputable instance equals_unfold_divisor [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'divisor [GooseExts] [GoGlobalContext] :
     EqualsUnfold divisor.fields divisor.fieldsUnsealed :=
   ⟨by unfold divisor.fields; rfl⟩
 
@@ -1076,23 +1076,23 @@ noncomputable instance equals_unfold_divisor [GooseExts] [GoGlobalContext] :
 class divisor.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying divisor.underlying divisor
   underlying : go.UnderlyingDirectedEq divisor.ty divisor.underlying
-  get_bbb : ∀ (x : divisor), go.IsGoStepPureDetTagged under (StructFieldGet divisor.underlying go!"bbb") #x (Val #(x.bbb'))
-  set_bbb : ∀ (x : divisor) (y : nat), go.IsGoStepPureDetTagged under (StructFieldSet divisor.underlying go!"bbb") (PairV #x #y) (Val #(({ x with bbb' := y } : divisor)))
-  get_nbits : ∀ (x : divisor), go.IsGoStepPureDetTagged under (StructFieldGet divisor.underlying go!"nbits") #x (Val #(x.nbits'))
-  set_nbits : ∀ (x : divisor) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet divisor.underlying go!"nbits") (PairV #x #y) (Val #(({ x with nbits' := y } : divisor)))
-  get_ndigits : ∀ (x : divisor), go.IsGoStepPureDetTagged under (StructFieldGet divisor.underlying go!"ndigits") #x (Val #(x.ndigits'))
-  set_ndigits : ∀ (x : divisor) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet divisor.underlying go!"ndigits") (PairV #x #y) (Val #(({ x with ndigits' := y } : divisor)))
+  get'bbb : ∀ (x : divisor), go.IsGoStepPureDetTagged under (StructFieldGet divisor.underlying go!"bbb") #x (Val #(x.bbb'))
+  set'bbb : ∀ (x : divisor) (y : nat), go.IsGoStepPureDetTagged under (StructFieldSet divisor.underlying go!"bbb") (PairV #x #y) (Val #(({ x with bbb' := y } : divisor)))
+  get'nbits : ∀ (x : divisor), go.IsGoStepPureDetTagged under (StructFieldGet divisor.underlying go!"nbits") #x (Val #(x.nbits'))
+  set'nbits : ∀ (x : divisor) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet divisor.underlying go!"nbits") (PairV #x #y) (Val #(({ x with nbits' := y } : divisor)))
+  get'ndigits : ∀ (x : divisor), go.IsGoStepPureDetTagged under (StructFieldGet divisor.underlying go!"ndigits") #x (Val #(x.ndigits'))
+  set'ndigits : ∀ (x : divisor) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet divisor.underlying go!"ndigits") (PairV #x #y) (Val #(({ x with ndigits' := y } : divisor)))
   method_set : go.MethodSetIs divisor.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType divisor.ty) []
 
 attribute [instance] divisor.TypeAssumptions.type_repr
   divisor.TypeAssumptions.underlying
-  divisor.TypeAssumptions.get_bbb
-  divisor.TypeAssumptions.set_bbb
-  divisor.TypeAssumptions.get_nbits
-  divisor.TypeAssumptions.set_nbits
-  divisor.TypeAssumptions.get_ndigits
-  divisor.TypeAssumptions.set_ndigits
+  divisor.TypeAssumptions.get'bbb
+  divisor.TypeAssumptions.set'bbb
+  divisor.TypeAssumptions.get'nbits
+  divisor.TypeAssumptions.set'nbits
+  divisor.TypeAssumptions.get'ndigits
+  divisor.TypeAssumptions.set'ndigits
   divisor.TypeAssumptions.method_set
   divisor.TypeAssumptions.ptr_method_set
 
@@ -1111,7 +1111,7 @@ noncomputable instance Rat.zero_val [GooseExts] : ZeroVal Rat :=
 @[irreducible] noncomputable def Rat.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Rat.fieldsUnsealed
 
-noncomputable instance equals_unfold_Rat [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Rat [GooseExts] [GoGlobalContext] :
     EqualsUnfold Rat.fields Rat.fieldsUnsealed :=
   ⟨by unfold Rat.fields; rfl⟩
 
@@ -1121,58 +1121,58 @@ noncomputable instance equals_unfold_Rat [GooseExts] [GoGlobalContext] :
 class Rat.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Rat.underlying Rat
   underlying : go.UnderlyingDirectedEq Rat.ty Rat.underlying
-  get_a : ∀ (x : Rat), go.IsGoStepPureDetTagged under (StructFieldGet Rat.underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : Rat) (y : Int''), go.IsGoStepPureDetTagged under (StructFieldSet Rat.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : Rat)))
-  get_b : ∀ (x : Rat), go.IsGoStepPureDetTagged under (StructFieldGet Rat.underlying go!"b") #x (Val #(x.b'))
-  set_b : ∀ (x : Rat) (y : Int''), go.IsGoStepPureDetTagged under (StructFieldSet Rat.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Rat)))
+  get'a : ∀ (x : Rat), go.IsGoStepPureDetTagged under (StructFieldGet Rat.underlying go!"a") #x (Val #(x.a'))
+  set'a : ∀ (x : Rat) (y : Int''), go.IsGoStepPureDetTagged under (StructFieldSet Rat.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : Rat)))
+  get'b : ∀ (x : Rat), go.IsGoStepPureDetTagged under (StructFieldGet Rat.underlying go!"b") #x (Val #(x.b'))
+  set'b : ∀ (x : Rat) (y : Int''), go.IsGoStepPureDetTagged under (StructFieldSet Rat.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Rat)))
   method_set : go.MethodSetIs Rat.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Rat.ty) [(go!"Abs", (some (go.signature.Signature [(go.GoType.PointerType Rat.ty)] false [(go.GoType.PointerType Rat.ty)]))), (go!"Add", (some (go.signature.Signature [(go.GoType.PointerType Rat.ty), (go.GoType.PointerType Rat.ty)] false [(go.GoType.PointerType Rat.ty)]))), (go!"AppendText", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Cmp", (some (go.signature.Signature [(go.GoType.PointerType Rat.ty)] false [go.int]))), (go!"Denom", (some (go.signature.Signature [] false [(go.GoType.PointerType Int''.ty)]))), (go!"Float32", (some (go.signature.Signature [] false [go.float32, go.bool]))), (go!"Float64", (some (go.signature.Signature [] false [go.float64, go.bool]))), (go!"FloatPrec", (some (go.signature.Signature [] false [go.int, go.bool]))), (go!"FloatString", (some (go.signature.Signature [go.int] false [go.string]))), (go!"GobDecode", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.error]))), (go!"GobEncode", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Inv", (some (go.signature.Signature [(go.GoType.PointerType Rat.ty)] false [(go.GoType.PointerType Rat.ty)]))), (go!"IsInt", (some (go.signature.Signature [] false [go.bool]))), (go!"MarshalText", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Mul", (some (go.signature.Signature [(go.GoType.PointerType Rat.ty), (go.GoType.PointerType Rat.ty)] false [(go.GoType.PointerType Rat.ty)]))), (go!"Neg", (some (go.signature.Signature [(go.GoType.PointerType Rat.ty)] false [(go.GoType.PointerType Rat.ty)]))), (go!"Num", (some (go.signature.Signature [] false [(go.GoType.PointerType Int''.ty)]))), (go!"Quo", (some (go.signature.Signature [(go.GoType.PointerType Rat.ty), (go.GoType.PointerType Rat.ty)] false [(go.GoType.PointerType Rat.ty)]))), (go!"RatString", (some (go.signature.Signature [] false [go.string]))), (go!"Scan", (some (go.signature.Signature [_root_.Perennial.fmt.ScanState.ty, go.rune] false [go.error]))), (go!"Set", (some (go.signature.Signature [(go.GoType.PointerType Rat.ty)] false [(go.GoType.PointerType Rat.ty)]))), (go!"SetFloat64", (some (go.signature.Signature [go.float64] false [(go.GoType.PointerType Rat.ty)]))), (go!"SetFrac", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty), (go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Rat.ty)]))), (go!"SetFrac64", (some (go.signature.Signature [go.int64, go.int64] false [(go.GoType.PointerType Rat.ty)]))), (go!"SetInt", (some (go.signature.Signature [(go.GoType.PointerType Int''.ty)] false [(go.GoType.PointerType Rat.ty)]))), (go!"SetInt64", (some (go.signature.Signature [go.int64] false [(go.GoType.PointerType Rat.ty)]))), (go!"SetString", (some (go.signature.Signature [go.string] false [(go.GoType.PointerType Rat.ty), go.bool]))), (go!"SetUint64", (some (go.signature.Signature [go.uint64] false [(go.GoType.PointerType Rat.ty)]))), (go!"Sign", (some (go.signature.Signature [] false [go.int]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Sub", (some (go.signature.Signature [(go.GoType.PointerType Rat.ty), (go.GoType.PointerType Rat.ty)] false [(go.GoType.PointerType Rat.ty)]))), (go!"UnmarshalText", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.error]))), (go!"math/big.marshal", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.SliceType go.byte)]))), (go!"math/big.norm", (some (go.signature.Signature [] false [(go.GoType.PointerType Rat.ty)])))]
 
 attribute [instance] Rat.TypeAssumptions.type_repr
   Rat.TypeAssumptions.underlying
-  Rat.TypeAssumptions.get_a
-  Rat.TypeAssumptions.set_a
-  Rat.TypeAssumptions.get_b
-  Rat.TypeAssumptions.set_b
+  Rat.TypeAssumptions.get'a
+  Rat.TypeAssumptions.set'a
+  Rat.TypeAssumptions.get'b
+  Rat.TypeAssumptions.set'b
   Rat.TypeAssumptions.method_set
   Rat.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Word_instance : Word.TypeAssumptions
-  decimal_instance : decimal.TypeAssumptions
-  Float_instance : Float.TypeAssumptions
-  ErrNaN_instance : ErrNaN.TypeAssumptions
-  form_instance : form.TypeAssumptions
-  RoundingMode_instance : RoundingMode.TypeAssumptions
-  Accuracy_instance : Accuracy.TypeAssumptions
-  Int_instance : Int''.TypeAssumptions
-  byteReader_instance : byteReader.TypeAssumptions
-  nat_instance : nat.TypeAssumptions
-  stack_instance : stack.TypeAssumptions
-  divisor_instance : divisor.TypeAssumptions
-  Rat_instance : Rat.TypeAssumptions
-  NewInt_unfold : FuncUnfold NewInt [] NewInt.impl
-  low64_unfold : FuncUnfold low64 [] low64.impl
-  import_fmt_Assumption : _root_.Perennial.fmt.Assumptions
-  import_errors_Assumption : _root_.Perennial.errors.Assumptions
+  instance'Word : Word.TypeAssumptions
+  instance'decimal : decimal.TypeAssumptions
+  instance'Float : Float.TypeAssumptions
+  instance'ErrNaN : ErrNaN.TypeAssumptions
+  instance'form : form.TypeAssumptions
+  instance'RoundingMode : RoundingMode.TypeAssumptions
+  instance'Accuracy : Accuracy.TypeAssumptions
+  instance'Int : Int''.TypeAssumptions
+  instance'byteReader : byteReader.TypeAssumptions
+  instance'nat : nat.TypeAssumptions
+  instance'stack : stack.TypeAssumptions
+  instance'divisor : divisor.TypeAssumptions
+  instance'Rat : Rat.TypeAssumptions
+  unfold'NewInt : FuncUnfold NewInt [] NewInt.impl
+  unfold'low64 : FuncUnfold low64 [] low64.impl
+  import'fmt : _root_.Perennial.fmt.Assumptions
+  import'errors : _root_.Perennial.errors.Assumptions
 
-attribute [instance] Assumptions.Word_instance
-  Assumptions.decimal_instance
-  Assumptions.Float_instance
-  Assumptions.ErrNaN_instance
-  Assumptions.form_instance
-  Assumptions.RoundingMode_instance
-  Assumptions.Accuracy_instance
-  Assumptions.Int_instance
-  Assumptions.byteReader_instance
-  Assumptions.nat_instance
-  Assumptions.stack_instance
-  Assumptions.divisor_instance
-  Assumptions.Rat_instance
-  Assumptions.NewInt_unfold
-  Assumptions.low64_unfold
-  Assumptions.import_fmt_Assumption
-  Assumptions.import_errors_Assumption
+attribute [instance] Assumptions.instance'Word
+  Assumptions.instance'decimal
+  Assumptions.instance'Float
+  Assumptions.instance'ErrNaN
+  Assumptions.instance'form
+  Assumptions.instance'RoundingMode
+  Assumptions.instance'Accuracy
+  Assumptions.instance'Int
+  Assumptions.instance'byteReader
+  Assumptions.instance'nat
+  Assumptions.instance'stack
+  Assumptions.instance'divisor
+  Assumptions.instance'Rat
+  Assumptions.unfold'NewInt
+  Assumptions.unfold'low64
+  Assumptions.import'fmt
+  Assumptions.import'errors
 
 end math.big
 

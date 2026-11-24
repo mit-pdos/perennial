@@ -62,13 +62,13 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.math.big.initialize') (Val #()))))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Int_unfold : FuncUnfold Int'' [] Int''.impl
-  import_io_Assumption : _root_.Perennial.io.Assumptions
-  import_big_Assumption : _root_.Perennial.math.big.Assumptions
+  unfold'Int : FuncUnfold Int'' [] Int''.impl
+  import'io : _root_.Perennial.io.Assumptions
+  import'big : _root_.Perennial.math.big.Assumptions
 
-attribute [instance] Assumptions.Int_unfold
-  Assumptions.import_io_Assumption
-  Assumptions.import_big_Assumption
+attribute [instance] Assumptions.unfold'Int
+  Assumptions.import'io
+  Assumptions.import'big
 
 end crypto.rand
 

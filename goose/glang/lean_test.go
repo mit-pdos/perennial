@@ -47,14 +47,26 @@ func TestLeanIdent(t *testing.T) {
 func TestGoName(t *testing.T) {
 	assert := assert.New(t)
 	for _, x := range []string{"Val", "Int", "x", "ty", "underlying", "impl", "mk",
-		"rec", "eq_def", "eq_1", "eq_23", "get_a", "set_a", "a_unfold", "ptr_a_unfold",
-		"A_instance", "import_p_Assumption", "equals_unfold_S", "Assumptions", "GF",
+		"rec", "eq_def", "eq_1", "eq_23", "fun_cases_unfolding", "Assumptions", "GF",
+		"GoSlice", "GoMap", "GooseExts", "TypedPointsto",
 		"Type", "def", "fun", "at", "end", "Sort", "Prop", "match", "as", "λ"} {
 		assert.Equal(x+"''", GoName(x), x)
 		// idempotent
 		assert.Equal(x+"''", GoName(GoName(x)), x)
 	}
-	for _, x := range []string{"T", "Foo", "eq_", "eq_x", "getter", "unfold", "init"} {
+	// generated member shapes are not reserved: members are tag'x (MemberName)
+	for _, x := range []string{"get_a", "set_a", "a_unfold", "ptr_a_unfold", "A_instance",
+		"import_p_Assumption", "equals_unfold_S", "get", "set", "T", "Foo", "unfolded", "eq_", "eq_x", "getter", "init"} {
 		assert.Equal(x, GoName(x), x)
 	}
+}
+
+func TestMemberAndBinderNames(t *testing.T) {
+	assert := assert.New(t)
+	// field `unfold` vs method `get`; methods `ptr_f` and `f`
+	assert.NotEqual(MemberName("get", "unfold"), MemberName("unfold", "get"))
+	assert.NotEqual(MemberName("unfold", "ptr_f"), MemberName("ptr_unfold", "f"))
+	assert.Equal("get'Type", LeanQuoteComponent(MemberName("get", "Type")))
+	assert.Equal("T₀", LeanIdent(BinderName("T")))
+	assert.Equal("x₀'", LeanIdent(BinderName("x")+"'"))
 }

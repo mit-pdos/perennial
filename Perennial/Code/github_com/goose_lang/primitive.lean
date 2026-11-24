@@ -75,49 +75,49 @@ class Mutex.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSe
   underlying : go.UnderlyingDirectedEq Mutex.ty Mutex.underlying
   method_set : go.MethodSetIs Mutex.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Mutex.ty) [(go!"Lock", (some (go.signature.Signature [] false []))), (go!"Unlock", (some (go.signature.Signature [] false [])))]
-  ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType Mutex.ty) go!"Lock" Mutex.Lock.impl
-  ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType Mutex.ty) go!"Unlock" Mutex.Unlock.impl
+  ptr_unfold'Lock : MethodUnfold (go.GoType.PointerType Mutex.ty) go!"Lock" Mutex.Lock.impl
+  ptr_unfold'Unlock : MethodUnfold (go.GoType.PointerType Mutex.ty) go!"Unlock" Mutex.Unlock.impl
 
 attribute [instance] Mutex.TypeAssumptions.type_repr
   Mutex.TypeAssumptions.underlying
   Mutex.TypeAssumptions.method_set
   Mutex.TypeAssumptions.ptr_method_set
-  Mutex.TypeAssumptions.ptr_Lock_unfold
-  Mutex.TypeAssumptions.ptr_Unlock_unfold
+  Mutex.TypeAssumptions.ptr_unfold'Lock
+  Mutex.TypeAssumptions.ptr_unfold'Unlock
 
 class ProphId.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying ProphId.underlying ProphId
   underlying : go.UnderlyingDirectedEq ProphId.ty ProphId.underlying
   method_set : go.MethodSetIs ProphId.ty [(go!"ResolveBool", (some (go.signature.Signature [go.bool] false []))), (go!"ResolveU64", (some (go.signature.Signature [go.uint64] false [])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType ProphId.ty) [(go!"ResolveBool", (some (go.signature.Signature [go.bool] false []))), (go!"ResolveU64", (some (go.signature.Signature [go.uint64] false [])))]
-  ResolveBool_unfold : MethodUnfold ProphId.ty go!"ResolveBool" ProphId.ResolveBool.impl
-  ResolveU64_unfold : MethodUnfold ProphId.ty go!"ResolveU64" ProphId.ResolveU64.impl
-  ptr_ResolveBool_unfold : MethodUnfold (go.GoType.PointerType ProphId.ty) go!"ResolveBool" (LamV "$r"
+  unfold'ResolveBool : MethodUnfold ProphId.ty go!"ResolveBool" ProphId.ResolveBool.impl
+  unfold'ResolveU64 : MethodUnfold ProphId.ty go!"ResolveU64" ProphId.ResolveU64.impl
+  ptr_unfold'ResolveBool : MethodUnfold (go.GoType.PointerType ProphId.ty) go!"ResolveBool" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve ProphId.ty go!"ResolveBool"))) (App (Val (GoInstruction (GoLoad ProphId.ty))) (Var "$r"))))
-  ptr_ResolveU64_unfold : MethodUnfold (go.GoType.PointerType ProphId.ty) go!"ResolveU64" (LamV "$r"
+  ptr_unfold'ResolveU64 : MethodUnfold (go.GoType.PointerType ProphId.ty) go!"ResolveU64" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve ProphId.ty go!"ResolveU64"))) (App (Val (GoInstruction (GoLoad ProphId.ty))) (Var "$r"))))
 
 attribute [instance] ProphId.TypeAssumptions.type_repr
   ProphId.TypeAssumptions.underlying
   ProphId.TypeAssumptions.method_set
   ProphId.TypeAssumptions.ptr_method_set
-  ProphId.TypeAssumptions.ResolveBool_unfold
-  ProphId.TypeAssumptions.ResolveU64_unfold
-  ProphId.TypeAssumptions.ptr_ResolveBool_unfold
-  ProphId.TypeAssumptions.ptr_ResolveU64_unfold
+  ProphId.TypeAssumptions.unfold'ResolveBool
+  ProphId.TypeAssumptions.unfold'ResolveU64
+  ProphId.TypeAssumptions.ptr_unfold'ResolveBool
+  ProphId.TypeAssumptions.ptr_unfold'ResolveU64
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Mutex_instance : Mutex.TypeAssumptions
-  ProphId_instance : ProphId.TypeAssumptions
-  RandomUint64_unfold : FuncUnfold RandomUint64 [] RandomUint64.impl
-  Assume_unfold : FuncUnfold Assume [] Assume.impl
-  NewProph_unfold : FuncUnfold NewProph [] NewProph.impl
+  instance'Mutex : Mutex.TypeAssumptions
+  instance'ProphId : ProphId.TypeAssumptions
+  unfold'RandomUint64 : FuncUnfold RandomUint64 [] RandomUint64.impl
+  unfold'Assume : FuncUnfold Assume [] Assume.impl
+  unfold'NewProph : FuncUnfold NewProph [] NewProph.impl
 
-attribute [instance] Assumptions.Mutex_instance
-  Assumptions.ProphId_instance
-  Assumptions.RandomUint64_unfold
-  Assumptions.Assume_unfold
-  Assumptions.NewProph_unfold
+attribute [instance] Assumptions.instance'Mutex
+  Assumptions.instance'ProphId
+  Assumptions.unfold'RandomUint64
+  Assumptions.unfold'Assume
+  Assumptions.unfold'NewProph
 
 end github_com.goose_lang.primitive
 

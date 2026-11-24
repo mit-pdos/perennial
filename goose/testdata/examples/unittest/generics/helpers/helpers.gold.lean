@@ -24,10 +24,10 @@ noncomputable def AnyPointer [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics/helpers.AnyPointer"
 
 /-- go: helpers.go:3:6 -/
-noncomputable def AnyPointer.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def AnyPointer.impl [GooseExts] [GoGlobalContext] (T₀ : go.GoType) : val :=
   (LamV "x"
   (Seq (App (Val exceptionDo)
-  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType T)))) (Var "x"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType T₀)))) (Var "x"))
   (App (Val doExecute)
   (Val #()))))
   (Val #())))
@@ -43,9 +43,9 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  AnyPointer_unfold : ∀ (T : go.GoType), FuncUnfold AnyPointer [T] (AnyPointer.impl T)
+  unfold'AnyPointer : ∀ (T₀ : go.GoType), FuncUnfold AnyPointer [T₀] (AnyPointer.impl T₀)
 
-attribute [instance] Assumptions.AnyPointer_unfold
+attribute [instance] Assumptions.unfold'AnyPointer
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers
 

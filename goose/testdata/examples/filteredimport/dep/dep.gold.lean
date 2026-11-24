@@ -61,7 +61,7 @@ noncomputable instance X.zero_val [GooseExts] : ZeroVal X :=
 @[irreducible] noncomputable def X.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   X.fieldsUnsealed
 
-noncomputable instance equals_unfold_X [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'X [GooseExts] [GoGlobalContext] :
     EqualsUnfold X.fields X.fieldsUnsealed :=
   ⟨by unfold X.fields; rfl⟩
 
@@ -94,11 +94,11 @@ attribute [instance] Kind.TypeAssumptions.underlying
   Kind.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  X_instance : X.TypeAssumptions
-  Kind_instance : Kind.TypeAssumptions
+  instance'X : X.TypeAssumptions
+  instance'Kind : Kind.TypeAssumptions
 
-attribute [instance] Assumptions.X_instance
-  Assumptions.Kind_instance
+attribute [instance] Assumptions.instance'X
+  Assumptions.instance'Kind
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport.dep
 

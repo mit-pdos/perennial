@@ -558,7 +558,7 @@ noncomputable instance Rand.zero_val [GooseExts] : ZeroVal Rand :=
 @[irreducible] noncomputable def Rand.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Rand.fieldsUnsealed
 
-noncomputable instance equals_unfold_Rand [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Rand [GooseExts] [GoGlobalContext] :
     EqualsUnfold Rand.fields Rand.fieldsUnsealed :=
   ⟨by unfold Rand.fields; rfl⟩
 
@@ -568,39 +568,39 @@ noncomputable instance equals_unfold_Rand [GooseExts] [GoGlobalContext] :
 class Rand.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Rand.underlying Rand
   underlying : go.UnderlyingDirectedEq Rand.ty Rand.underlying
-  get_src : ∀ (x : Rand), go.IsGoStepPureDetTagged under (StructFieldGet Rand.underlying go!"src") #x (Val #(x.src'))
-  set_src : ∀ (x : Rand) (y : Source), go.IsGoStepPureDetTagged under (StructFieldSet Rand.underlying go!"src") (PairV #x #y) (Val #(({ x with src' := y } : Rand)))
-  get_s64 : ∀ (x : Rand), go.IsGoStepPureDetTagged under (StructFieldGet Rand.underlying go!"s64") #x (Val #(x.s64'))
-  set_s64 : ∀ (x : Rand) (y : Source64), go.IsGoStepPureDetTagged under (StructFieldSet Rand.underlying go!"s64") (PairV #x #y) (Val #(({ x with s64' := y } : Rand)))
-  get_readVal : ∀ (x : Rand), go.IsGoStepPureDetTagged under (StructFieldGet Rand.underlying go!"readVal") #x (Val #(x.readVal'))
-  set_readVal : ∀ (x : Rand) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Rand.underlying go!"readVal") (PairV #x #y) (Val #(({ x with readVal' := y } : Rand)))
-  get_readPos : ∀ (x : Rand), go.IsGoStepPureDetTagged under (StructFieldGet Rand.underlying go!"readPos") #x (Val #(x.readPos'))
-  set_readPos : ∀ (x : Rand) (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet Rand.underlying go!"readPos") (PairV #x #y) (Val #(({ x with readPos' := y } : Rand)))
+  get'src : ∀ (x : Rand), go.IsGoStepPureDetTagged under (StructFieldGet Rand.underlying go!"src") #x (Val #(x.src'))
+  set'src : ∀ (x : Rand) (y : Source), go.IsGoStepPureDetTagged under (StructFieldSet Rand.underlying go!"src") (PairV #x #y) (Val #(({ x with src' := y } : Rand)))
+  get's64 : ∀ (x : Rand), go.IsGoStepPureDetTagged under (StructFieldGet Rand.underlying go!"s64") #x (Val #(x.s64'))
+  set's64 : ∀ (x : Rand) (y : Source64), go.IsGoStepPureDetTagged under (StructFieldSet Rand.underlying go!"s64") (PairV #x #y) (Val #(({ x with s64' := y } : Rand)))
+  get'readVal : ∀ (x : Rand), go.IsGoStepPureDetTagged under (StructFieldGet Rand.underlying go!"readVal") #x (Val #(x.readVal'))
+  set'readVal : ∀ (x : Rand) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Rand.underlying go!"readVal") (PairV #x #y) (Val #(({ x with readVal' := y } : Rand)))
+  get'readPos : ∀ (x : Rand), go.IsGoStepPureDetTagged under (StructFieldGet Rand.underlying go!"readPos") #x (Val #(x.readPos'))
+  set'readPos : ∀ (x : Rand) (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet Rand.underlying go!"readPos") (PairV #x #y) (Val #(({ x with readPos' := y } : Rand)))
   method_set : go.MethodSetIs Rand.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Rand.ty) [(go!"ExpFloat64", (some (go.signature.Signature [] false [go.float64]))), (go!"Float32", (some (go.signature.Signature [] false [go.float32]))), (go!"Float64", (some (go.signature.Signature [] false [go.float64]))), (go!"Int", (some (go.signature.Signature [] false [go.int]))), (go!"Int31", (some (go.signature.Signature [] false [go.int32]))), (go!"Int31n", (some (go.signature.Signature [go.int32] false [go.int32]))), (go!"Int63", (some (go.signature.Signature [] false [go.int64]))), (go!"Int63n", (some (go.signature.Signature [go.int64] false [go.int64]))), (go!"Intn", (some (go.signature.Signature [go.int] false [go.int]))), (go!"NormFloat64", (some (go.signature.Signature [] false [go.float64]))), (go!"Perm", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType go.int)]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"Seed", (some (go.signature.Signature [go.int64] false []))), (go!"Shuffle", (some (go.signature.Signature [go.int, (go.GoType.FunctionType (go.signature.Signature [go.int, go.int] false []))] false []))), (go!"Uint32", (some (go.signature.Signature [] false [go.uint32]))), (go!"Uint64", (some (go.signature.Signature [] false [go.uint64]))), (go!"math/rand.int31n", (some (go.signature.Signature [go.int32] false [go.int32])))]
-  ptr_Int31_unfold : MethodUnfold (go.GoType.PointerType Rand.ty) go!"Int31" Rand.Int31.impl
-  ptr_Int31n_unfold : MethodUnfold (go.GoType.PointerType Rand.ty) go!"Int31n" Rand.Int31n.impl
-  ptr_Int63_unfold : MethodUnfold (go.GoType.PointerType Rand.ty) go!"Int63" Rand.Int63.impl
-  ptr_Int63n_unfold : MethodUnfold (go.GoType.PointerType Rand.ty) go!"Int63n" Rand.Int63n.impl
-  ptr_Intn_unfold : MethodUnfold (go.GoType.PointerType Rand.ty) go!"Intn" Rand.Intn.impl
+  ptr_unfold'Int31 : MethodUnfold (go.GoType.PointerType Rand.ty) go!"Int31" Rand.Int31.impl
+  ptr_unfold'Int31n : MethodUnfold (go.GoType.PointerType Rand.ty) go!"Int31n" Rand.Int31n.impl
+  ptr_unfold'Int63 : MethodUnfold (go.GoType.PointerType Rand.ty) go!"Int63" Rand.Int63.impl
+  ptr_unfold'Int63n : MethodUnfold (go.GoType.PointerType Rand.ty) go!"Int63n" Rand.Int63n.impl
+  ptr_unfold'Intn : MethodUnfold (go.GoType.PointerType Rand.ty) go!"Intn" Rand.Intn.impl
 
 attribute [instance] Rand.TypeAssumptions.type_repr
   Rand.TypeAssumptions.underlying
-  Rand.TypeAssumptions.get_src
-  Rand.TypeAssumptions.set_src
-  Rand.TypeAssumptions.get_s64
-  Rand.TypeAssumptions.set_s64
-  Rand.TypeAssumptions.get_readVal
-  Rand.TypeAssumptions.set_readVal
-  Rand.TypeAssumptions.get_readPos
-  Rand.TypeAssumptions.set_readPos
+  Rand.TypeAssumptions.get'src
+  Rand.TypeAssumptions.set'src
+  Rand.TypeAssumptions.get's64
+  Rand.TypeAssumptions.set's64
+  Rand.TypeAssumptions.get'readVal
+  Rand.TypeAssumptions.set'readVal
+  Rand.TypeAssumptions.get'readPos
+  Rand.TypeAssumptions.set'readPos
   Rand.TypeAssumptions.method_set
   Rand.TypeAssumptions.ptr_method_set
-  Rand.TypeAssumptions.ptr_Int31_unfold
-  Rand.TypeAssumptions.ptr_Int31n_unfold
-  Rand.TypeAssumptions.ptr_Int63_unfold
-  Rand.TypeAssumptions.ptr_Int63n_unfold
-  Rand.TypeAssumptions.ptr_Intn_unfold
+  Rand.TypeAssumptions.ptr_unfold'Int31
+  Rand.TypeAssumptions.ptr_unfold'Int31n
+  Rand.TypeAssumptions.ptr_unfold'Int63
+  Rand.TypeAssumptions.ptr_unfold'Int63n
+  Rand.TypeAssumptions.ptr_unfold'Intn
 
 structure runtimeSource [GooseExts] where
   mk ::
@@ -615,7 +615,7 @@ noncomputable instance runtimeSource.zero_val [GooseExts] : ZeroVal runtimeSourc
 @[irreducible] noncomputable def runtimeSource.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   runtimeSource.fieldsUnsealed
 
-noncomputable instance equals_unfold_runtimeSource [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'runtimeSource [GooseExts] [GoGlobalContext] :
     EqualsUnfold runtimeSource.fields runtimeSource.fieldsUnsealed :=
   ⟨by unfold runtimeSource.fields; rfl⟩
 
@@ -625,21 +625,21 @@ noncomputable instance equals_unfold_runtimeSource [GooseExts] [GoGlobalContext]
 class runtimeSource.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying runtimeSource.underlying runtimeSource
   underlying : go.UnderlyingDirectedEq runtimeSource.ty runtimeSource.underlying
-  get_mu : ∀ (x : runtimeSource), go.IsGoStepPureDetTagged under (StructFieldGet runtimeSource.underlying go!"mu") #x (Val #(x.mu'))
-  set_mu : ∀ (x : runtimeSource) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet runtimeSource.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : runtimeSource)))
+  get'mu : ∀ (x : runtimeSource), go.IsGoStepPureDetTagged under (StructFieldGet runtimeSource.underlying go!"mu") #x (Val #(x.mu'))
+  set'mu : ∀ (x : runtimeSource) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet runtimeSource.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : runtimeSource)))
   method_set : go.MethodSetIs runtimeSource.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType runtimeSource.ty) [(go!"Int63", (some (go.signature.Signature [] false [go.int64]))), (go!"Seed", (some (go.signature.Signature [go.int64] false []))), (go!"Uint64", (some (go.signature.Signature [] false [go.uint64]))), (go!"math/rand.read", (some (go.signature.Signature [(go.GoType.SliceType go.byte), (go.GoType.PointerType go.int64), (go.GoType.PointerType go.int8)] false [go.int, go.error])))]
-  ptr_Int63_unfold : MethodUnfold (go.GoType.PointerType runtimeSource.ty) go!"Int63" runtimeSource.Int63.impl
-  ptr_Uint64_unfold : MethodUnfold (go.GoType.PointerType runtimeSource.ty) go!"Uint64" runtimeSource.Uint64.impl
+  ptr_unfold'Int63 : MethodUnfold (go.GoType.PointerType runtimeSource.ty) go!"Int63" runtimeSource.Int63.impl
+  ptr_unfold'Uint64 : MethodUnfold (go.GoType.PointerType runtimeSource.ty) go!"Uint64" runtimeSource.Uint64.impl
 
 attribute [instance] runtimeSource.TypeAssumptions.type_repr
   runtimeSource.TypeAssumptions.underlying
-  runtimeSource.TypeAssumptions.get_mu
-  runtimeSource.TypeAssumptions.set_mu
+  runtimeSource.TypeAssumptions.get'mu
+  runtimeSource.TypeAssumptions.set'mu
   runtimeSource.TypeAssumptions.method_set
   runtimeSource.TypeAssumptions.ptr_method_set
-  runtimeSource.TypeAssumptions.ptr_Int63_unfold
-  runtimeSource.TypeAssumptions.ptr_Uint64_unfold
+  runtimeSource.TypeAssumptions.ptr_unfold'Int63
+  runtimeSource.TypeAssumptions.ptr_unfold'Uint64
 
 structure lockedSource [GooseExts] where
   mk ::
@@ -656,7 +656,7 @@ noncomputable instance lockedSource.zero_val [GooseExts] : ZeroVal lockedSource 
 @[irreducible] noncomputable def lockedSource.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   lockedSource.fieldsUnsealed
 
-noncomputable instance equals_unfold_lockedSource [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'lockedSource [GooseExts] [GoGlobalContext] :
     EqualsUnfold lockedSource.fields lockedSource.fieldsUnsealed :=
   ⟨by unfold lockedSource.fields; rfl⟩
 
@@ -666,19 +666,19 @@ noncomputable instance equals_unfold_lockedSource [GooseExts] [GoGlobalContext] 
 class lockedSource.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying lockedSource.underlying lockedSource
   underlying : go.UnderlyingDirectedEq lockedSource.ty lockedSource.underlying
-  get_lk : ∀ (x : lockedSource), go.IsGoStepPureDetTagged under (StructFieldGet lockedSource.underlying go!"lk") #x (Val #(x.lk'))
-  set_lk : ∀ (x : lockedSource) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet lockedSource.underlying go!"lk") (PairV #x #y) (Val #(({ x with lk' := y } : lockedSource)))
-  get_s : ∀ (x : lockedSource), go.IsGoStepPureDetTagged under (StructFieldGet lockedSource.underlying go!"s") #x (Val #(x.s'))
-  set_s : ∀ (x : lockedSource) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet lockedSource.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : lockedSource)))
+  get'lk : ∀ (x : lockedSource), go.IsGoStepPureDetTagged under (StructFieldGet lockedSource.underlying go!"lk") #x (Val #(x.lk'))
+  set'lk : ∀ (x : lockedSource) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet lockedSource.underlying go!"lk") (PairV #x #y) (Val #(({ x with lk' := y } : lockedSource)))
+  get's : ∀ (x : lockedSource), go.IsGoStepPureDetTagged under (StructFieldGet lockedSource.underlying go!"s") #x (Val #(x.s'))
+  set's : ∀ (x : lockedSource) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet lockedSource.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : lockedSource)))
   method_set : go.MethodSetIs lockedSource.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType lockedSource.ty) [(go!"Int63", (some (go.signature.Signature [] false [go.int64]))), (go!"Seed", (some (go.signature.Signature [go.int64] false []))), (go!"Uint64", (some (go.signature.Signature [] false [go.uint64]))), (go!"math/rand.read", (some (go.signature.Signature [(go.GoType.SliceType go.byte), (go.GoType.PointerType go.int64), (go.GoType.PointerType go.int8)] false [go.int, go.error]))), (go!"math/rand.seed", (some (go.signature.Signature [go.int64] false []))), (go!"math/rand.seedPos", (some (go.signature.Signature [go.int64, (go.GoType.PointerType go.int8)] false [])))]
 
 attribute [instance] lockedSource.TypeAssumptions.type_repr
   lockedSource.TypeAssumptions.underlying
-  lockedSource.TypeAssumptions.get_lk
-  lockedSource.TypeAssumptions.set_lk
-  lockedSource.TypeAssumptions.get_s
-  lockedSource.TypeAssumptions.set_s
+  lockedSource.TypeAssumptions.get'lk
+  lockedSource.TypeAssumptions.set'lk
+  lockedSource.TypeAssumptions.get's
+  lockedSource.TypeAssumptions.set's
   lockedSource.TypeAssumptions.method_set
   lockedSource.TypeAssumptions.ptr_method_set
 
@@ -699,7 +699,7 @@ noncomputable instance rngSource.zero_val [GooseExts] : ZeroVal rngSource :=
 @[irreducible] noncomputable def rngSource.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   rngSource.fieldsUnsealed
 
-noncomputable instance equals_unfold_rngSource [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'rngSource [GooseExts] [GoGlobalContext] :
     EqualsUnfold rngSource.fields rngSource.fieldsUnsealed :=
   ⟨by unfold rngSource.fields; rfl⟩
 
@@ -709,23 +709,23 @@ noncomputable instance equals_unfold_rngSource [GooseExts] [GoGlobalContext] :
 class rngSource.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying rngSource.underlying rngSource
   underlying : go.UnderlyingDirectedEq rngSource.ty rngSource.underlying
-  get_tap : ∀ (x : rngSource), go.IsGoStepPureDetTagged under (StructFieldGet rngSource.underlying go!"tap") #x (Val #(x.tap'))
-  set_tap : ∀ (x : rngSource) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet rngSource.underlying go!"tap") (PairV #x #y) (Val #(({ x with tap' := y } : rngSource)))
-  get_feed : ∀ (x : rngSource), go.IsGoStepPureDetTagged under (StructFieldGet rngSource.underlying go!"feed") #x (Val #(x.feed'))
-  set_feed : ∀ (x : rngSource) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet rngSource.underlying go!"feed") (PairV #x #y) (Val #(({ x with feed' := y } : rngSource)))
-  get_vec : ∀ (x : rngSource), go.IsGoStepPureDetTagged under (StructFieldGet rngSource.underlying go!"vec") #x (Val #(x.vec'))
-  set_vec : ∀ (x : rngSource) (y : (GoArray w64 607)), go.IsGoStepPureDetTagged under (StructFieldSet rngSource.underlying go!"vec") (PairV #x #y) (Val #(({ x with vec' := y } : rngSource)))
+  get'tap : ∀ (x : rngSource), go.IsGoStepPureDetTagged under (StructFieldGet rngSource.underlying go!"tap") #x (Val #(x.tap'))
+  set'tap : ∀ (x : rngSource) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet rngSource.underlying go!"tap") (PairV #x #y) (Val #(({ x with tap' := y } : rngSource)))
+  get'feed : ∀ (x : rngSource), go.IsGoStepPureDetTagged under (StructFieldGet rngSource.underlying go!"feed") #x (Val #(x.feed'))
+  set'feed : ∀ (x : rngSource) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet rngSource.underlying go!"feed") (PairV #x #y) (Val #(({ x with feed' := y } : rngSource)))
+  get'vec : ∀ (x : rngSource), go.IsGoStepPureDetTagged under (StructFieldGet rngSource.underlying go!"vec") #x (Val #(x.vec'))
+  set'vec : ∀ (x : rngSource) (y : (GoArray w64 607)), go.IsGoStepPureDetTagged under (StructFieldSet rngSource.underlying go!"vec") (PairV #x #y) (Val #(({ x with vec' := y } : rngSource)))
   method_set : go.MethodSetIs rngSource.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType rngSource.ty) [(go!"Int63", (some (go.signature.Signature [] false [go.int64]))), (go!"Seed", (some (go.signature.Signature [go.int64] false []))), (go!"Uint64", (some (go.signature.Signature [] false [go.uint64])))]
 
 attribute [instance] rngSource.TypeAssumptions.type_repr
   rngSource.TypeAssumptions.underlying
-  rngSource.TypeAssumptions.get_tap
-  rngSource.TypeAssumptions.set_tap
-  rngSource.TypeAssumptions.get_feed
-  rngSource.TypeAssumptions.set_feed
-  rngSource.TypeAssumptions.get_vec
-  rngSource.TypeAssumptions.set_vec
+  rngSource.TypeAssumptions.get'tap
+  rngSource.TypeAssumptions.set'tap
+  rngSource.TypeAssumptions.get'feed
+  rngSource.TypeAssumptions.set'feed
+  rngSource.TypeAssumptions.get'vec
+  rngSource.TypeAssumptions.set'vec
   rngSource.TypeAssumptions.method_set
   rngSource.TypeAssumptions.ptr_method_set
 
@@ -758,7 +758,7 @@ noncomputable instance Zipf.zero_val [GooseExts] : ZeroVal Zipf :=
 @[irreducible] noncomputable def Zipf.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Zipf.fieldsUnsealed
 
-noncomputable instance equals_unfold_Zipf [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Zipf [GooseExts] [GoGlobalContext] :
     EqualsUnfold Zipf.fields Zipf.fieldsUnsealed :=
   ⟨by unfold Zipf.fields; rfl⟩
 
@@ -768,84 +768,84 @@ noncomputable instance equals_unfold_Zipf [GooseExts] [GoGlobalContext] :
 class Zipf.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Zipf.underlying Zipf
   underlying : go.UnderlyingDirectedEq Zipf.ty Zipf.underlying
-  get_r : ∀ (x : Zipf), go.IsGoStepPureDetTagged under (StructFieldGet Zipf.underlying go!"r") #x (Val #(x.r'))
-  set_r : ∀ (x : Zipf) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Zipf.underlying go!"r") (PairV #x #y) (Val #(({ x with r' := y } : Zipf)))
-  get_imax : ∀ (x : Zipf), go.IsGoStepPureDetTagged under (StructFieldGet Zipf.underlying go!"imax") #x (Val #(x.imax'))
-  set_imax : ∀ (x : Zipf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Zipf.underlying go!"imax") (PairV #x #y) (Val #(({ x with imax' := y } : Zipf)))
-  get_v : ∀ (x : Zipf), go.IsGoStepPureDetTagged under (StructFieldGet Zipf.underlying go!"v") #x (Val #(x.v'))
-  set_v : ∀ (x : Zipf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Zipf.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Zipf)))
-  get_q : ∀ (x : Zipf), go.IsGoStepPureDetTagged under (StructFieldGet Zipf.underlying go!"q") #x (Val #(x.q'))
-  set_q : ∀ (x : Zipf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Zipf.underlying go!"q") (PairV #x #y) (Val #(({ x with q' := y } : Zipf)))
-  get_s : ∀ (x : Zipf), go.IsGoStepPureDetTagged under (StructFieldGet Zipf.underlying go!"s") #x (Val #(x.s'))
-  set_s : ∀ (x : Zipf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Zipf.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : Zipf)))
-  get_oneminusQ : ∀ (x : Zipf), go.IsGoStepPureDetTagged under (StructFieldGet Zipf.underlying go!"oneminusQ") #x (Val #(x.oneminusQ'))
-  set_oneminusQ : ∀ (x : Zipf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Zipf.underlying go!"oneminusQ") (PairV #x #y) (Val #(({ x with oneminusQ' := y } : Zipf)))
-  get_oneminusQinv : ∀ (x : Zipf), go.IsGoStepPureDetTagged under (StructFieldGet Zipf.underlying go!"oneminusQinv") #x (Val #(x.oneminusQinv'))
-  set_oneminusQinv : ∀ (x : Zipf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Zipf.underlying go!"oneminusQinv") (PairV #x #y) (Val #(({ x with oneminusQinv' := y } : Zipf)))
-  get_hxm : ∀ (x : Zipf), go.IsGoStepPureDetTagged under (StructFieldGet Zipf.underlying go!"hxm") #x (Val #(x.hxm'))
-  set_hxm : ∀ (x : Zipf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Zipf.underlying go!"hxm") (PairV #x #y) (Val #(({ x with hxm' := y } : Zipf)))
-  get_hx0minusHxm : ∀ (x : Zipf), go.IsGoStepPureDetTagged under (StructFieldGet Zipf.underlying go!"hx0minusHxm") #x (Val #(x.hx0minusHxm'))
-  set_hx0minusHxm : ∀ (x : Zipf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Zipf.underlying go!"hx0minusHxm") (PairV #x #y) (Val #(({ x with hx0minusHxm' := y } : Zipf)))
+  get'r : ∀ (x : Zipf), go.IsGoStepPureDetTagged under (StructFieldGet Zipf.underlying go!"r") #x (Val #(x.r'))
+  set'r : ∀ (x : Zipf) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Zipf.underlying go!"r") (PairV #x #y) (Val #(({ x with r' := y } : Zipf)))
+  get'imax : ∀ (x : Zipf), go.IsGoStepPureDetTagged under (StructFieldGet Zipf.underlying go!"imax") #x (Val #(x.imax'))
+  set'imax : ∀ (x : Zipf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Zipf.underlying go!"imax") (PairV #x #y) (Val #(({ x with imax' := y } : Zipf)))
+  get'v : ∀ (x : Zipf), go.IsGoStepPureDetTagged under (StructFieldGet Zipf.underlying go!"v") #x (Val #(x.v'))
+  set'v : ∀ (x : Zipf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Zipf.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Zipf)))
+  get'q : ∀ (x : Zipf), go.IsGoStepPureDetTagged under (StructFieldGet Zipf.underlying go!"q") #x (Val #(x.q'))
+  set'q : ∀ (x : Zipf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Zipf.underlying go!"q") (PairV #x #y) (Val #(({ x with q' := y } : Zipf)))
+  get's : ∀ (x : Zipf), go.IsGoStepPureDetTagged under (StructFieldGet Zipf.underlying go!"s") #x (Val #(x.s'))
+  set's : ∀ (x : Zipf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Zipf.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : Zipf)))
+  get'oneminusQ : ∀ (x : Zipf), go.IsGoStepPureDetTagged under (StructFieldGet Zipf.underlying go!"oneminusQ") #x (Val #(x.oneminusQ'))
+  set'oneminusQ : ∀ (x : Zipf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Zipf.underlying go!"oneminusQ") (PairV #x #y) (Val #(({ x with oneminusQ' := y } : Zipf)))
+  get'oneminusQinv : ∀ (x : Zipf), go.IsGoStepPureDetTagged under (StructFieldGet Zipf.underlying go!"oneminusQinv") #x (Val #(x.oneminusQinv'))
+  set'oneminusQinv : ∀ (x : Zipf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Zipf.underlying go!"oneminusQinv") (PairV #x #y) (Val #(({ x with oneminusQinv' := y } : Zipf)))
+  get'hxm : ∀ (x : Zipf), go.IsGoStepPureDetTagged under (StructFieldGet Zipf.underlying go!"hxm") #x (Val #(x.hxm'))
+  set'hxm : ∀ (x : Zipf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Zipf.underlying go!"hxm") (PairV #x #y) (Val #(({ x with hxm' := y } : Zipf)))
+  get'hx0minusHxm : ∀ (x : Zipf), go.IsGoStepPureDetTagged under (StructFieldGet Zipf.underlying go!"hx0minusHxm") #x (Val #(x.hx0minusHxm'))
+  set'hx0minusHxm : ∀ (x : Zipf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Zipf.underlying go!"hx0minusHxm") (PairV #x #y) (Val #(({ x with hx0minusHxm' := y } : Zipf)))
   method_set : go.MethodSetIs Zipf.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Zipf.ty) [(go!"Uint64", (some (go.signature.Signature [] false [go.uint64]))), (go!"math/rand.h", (some (go.signature.Signature [go.float64] false [go.float64]))), (go!"math/rand.hinv", (some (go.signature.Signature [go.float64] false [go.float64])))]
 
 attribute [instance] Zipf.TypeAssumptions.type_repr
   Zipf.TypeAssumptions.underlying
-  Zipf.TypeAssumptions.get_r
-  Zipf.TypeAssumptions.set_r
-  Zipf.TypeAssumptions.get_imax
-  Zipf.TypeAssumptions.set_imax
-  Zipf.TypeAssumptions.get_v
-  Zipf.TypeAssumptions.set_v
-  Zipf.TypeAssumptions.get_q
-  Zipf.TypeAssumptions.set_q
-  Zipf.TypeAssumptions.get_s
-  Zipf.TypeAssumptions.set_s
-  Zipf.TypeAssumptions.get_oneminusQ
-  Zipf.TypeAssumptions.set_oneminusQ
-  Zipf.TypeAssumptions.get_oneminusQinv
-  Zipf.TypeAssumptions.set_oneminusQinv
-  Zipf.TypeAssumptions.get_hxm
-  Zipf.TypeAssumptions.set_hxm
-  Zipf.TypeAssumptions.get_hx0minusHxm
-  Zipf.TypeAssumptions.set_hx0minusHxm
+  Zipf.TypeAssumptions.get'r
+  Zipf.TypeAssumptions.set'r
+  Zipf.TypeAssumptions.get'imax
+  Zipf.TypeAssumptions.set'imax
+  Zipf.TypeAssumptions.get'v
+  Zipf.TypeAssumptions.set'v
+  Zipf.TypeAssumptions.get'q
+  Zipf.TypeAssumptions.set'q
+  Zipf.TypeAssumptions.get's
+  Zipf.TypeAssumptions.set's
+  Zipf.TypeAssumptions.get'oneminusQ
+  Zipf.TypeAssumptions.set'oneminusQ
+  Zipf.TypeAssumptions.get'oneminusQinv
+  Zipf.TypeAssumptions.set'oneminusQinv
+  Zipf.TypeAssumptions.get'hxm
+  Zipf.TypeAssumptions.set'hxm
+  Zipf.TypeAssumptions.get'hx0minusHxm
+  Zipf.TypeAssumptions.set'hx0minusHxm
   Zipf.TypeAssumptions.method_set
   Zipf.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Source_instance : Source.TypeAssumptions
-  Source64_instance : Source64.TypeAssumptions
-  Rand_instance : Rand.TypeAssumptions
-  runtimeSource_instance : runtimeSource.TypeAssumptions
-  lockedSource_instance : lockedSource.TypeAssumptions
-  rngSource_instance : rngSource.TypeAssumptions
-  Zipf_instance : Zipf.TypeAssumptions
-  globalRand_unfold : FuncUnfold globalRand [] globalRand.impl
-  runtime_rand_unfold : FuncUnfold runtime_rand [] runtime_rand.impl
-  Int63_unfold : FuncUnfold Int63 [] Int63.impl
-  Int31_unfold : FuncUnfold Int31 [] Int31.impl
-  Int63n_unfold : FuncUnfold Int63n [] Int63n.impl
-  Int31n_unfold : FuncUnfold Int31n [] Int31n.impl
-  Intn_unfold : FuncUnfold Intn [] Intn.impl
-  import_sync_Assumption : _root_.Perennial.sync.Assumptions
-  import_atomic_Assumption : _root_.Perennial.sync.atomic.Assumptions
+  instance'Source : Source.TypeAssumptions
+  instance'Source64 : Source64.TypeAssumptions
+  instance'Rand : Rand.TypeAssumptions
+  instance'runtimeSource : runtimeSource.TypeAssumptions
+  instance'lockedSource : lockedSource.TypeAssumptions
+  instance'rngSource : rngSource.TypeAssumptions
+  instance'Zipf : Zipf.TypeAssumptions
+  unfold'globalRand : FuncUnfold globalRand [] globalRand.impl
+  unfold'runtime_rand : FuncUnfold runtime_rand [] runtime_rand.impl
+  unfold'Int63 : FuncUnfold Int63 [] Int63.impl
+  unfold'Int31 : FuncUnfold Int31 [] Int31.impl
+  unfold'Int63n : FuncUnfold Int63n [] Int63n.impl
+  unfold'Int31n : FuncUnfold Int31n [] Int31n.impl
+  unfold'Intn : FuncUnfold Intn [] Intn.impl
+  import'sync : _root_.Perennial.sync.Assumptions
+  import'atomic : _root_.Perennial.sync.atomic.Assumptions
 
-attribute [instance] Assumptions.Source_instance
-  Assumptions.Source64_instance
-  Assumptions.Rand_instance
-  Assumptions.runtimeSource_instance
-  Assumptions.lockedSource_instance
-  Assumptions.rngSource_instance
-  Assumptions.Zipf_instance
-  Assumptions.globalRand_unfold
-  Assumptions.runtime_rand_unfold
-  Assumptions.Int63_unfold
-  Assumptions.Int31_unfold
-  Assumptions.Int63n_unfold
-  Assumptions.Int31n_unfold
-  Assumptions.Intn_unfold
-  Assumptions.import_sync_Assumption
-  Assumptions.import_atomic_Assumption
+attribute [instance] Assumptions.instance'Source
+  Assumptions.instance'Source64
+  Assumptions.instance'Rand
+  Assumptions.instance'runtimeSource
+  Assumptions.instance'lockedSource
+  Assumptions.instance'rngSource
+  Assumptions.instance'Zipf
+  Assumptions.unfold'globalRand
+  Assumptions.unfold'runtime_rand
+  Assumptions.unfold'Int63
+  Assumptions.unfold'Int31
+  Assumptions.unfold'Int63n
+  Assumptions.unfold'Int31n
+  Assumptions.unfold'Intn
+  Assumptions.import'sync
+  Assumptions.import'atomic
 
 end math.rand
 

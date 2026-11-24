@@ -24,7 +24,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : errors.Assumptions]
 
-noncomputable instance errorString_typed_pointsto :
+noncomputable instance typed_pointsto'errorString :
     TypedPointsto (GF := GF) errors.errorString where
   typedPointstoDef l v dq := iprop(
     "s" ∷ typedPointsto (structFieldRef errors.errorString go!"s" l) v.s' dq ∗
@@ -33,11 +33,11 @@ noncomputable instance errorString_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance errorString_into_val_typed :
+noncomputable instance into_val_typed'errorString :
     IntoValTypedUnderlying (GF := GF) errors.errorString errors.errorString.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance errorString_access_load_s (l : Loc) (v : errors.errorString) (dq : DFrac) :
+noncomputable instance access_load'errorString's (l : Loc) (v : errors.errorString) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef errors.errorString go!"s" l) v.s' dq)
       (typedPointsto (structFieldRef errors.errorString go!"s" l) v.s' dq)
@@ -45,7 +45,7 @@ noncomputable instance errorString_access_load_s (l : Loc) (v : errors.errorStri
  by
   solve_pointsto_access_struct
 
-noncomputable instance errorString_access_store_s (l : Loc) (v : errors.errorString) (y : GoString) :
+noncomputable instance access_store'errorString's (l : Loc) (v : errors.errorString) (y : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef errors.errorString go!"s" l) v.s' (DFrac.own 1))
       (typedPointsto (structFieldRef errors.errorString go!"s" l) y (DFrac.own 1))
@@ -64,7 +64,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : errors.Assumptions]
 
-noncomputable instance joinError_typed_pointsto :
+noncomputable instance typed_pointsto'joinError :
     TypedPointsto (GF := GF) errors.joinError where
   typedPointstoDef l v dq := iprop(
     "errs" ∷ typedPointsto (structFieldRef errors.joinError go!"errs" l) v.errs' dq ∗
@@ -73,11 +73,11 @@ noncomputable instance joinError_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance joinError_into_val_typed :
+noncomputable instance into_val_typed'joinError :
     IntoValTypedUnderlying (GF := GF) errors.joinError errors.joinError.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance joinError_access_load_errs (l : Loc) (v : errors.joinError) (dq : DFrac) :
+noncomputable instance access_load'joinError'errs (l : Loc) (v : errors.joinError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef errors.joinError go!"errs" l) v.errs' dq)
       (typedPointsto (structFieldRef errors.joinError go!"errs" l) v.errs' dq)
@@ -85,7 +85,7 @@ noncomputable instance joinError_access_load_errs (l : Loc) (v : errors.joinErro
  by
   solve_pointsto_access_struct
 
-noncomputable instance joinError_access_store_errs (l : Loc) (v : errors.joinError) (y : GoSlice) :
+noncomputable instance access_store'joinError'errs (l : Loc) (v : errors.joinError) (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef errors.joinError go!"errs" l) v.errs' (DFrac.own 1))
       (typedPointsto (structFieldRef errors.joinError go!"errs" l) y (DFrac.own 1))

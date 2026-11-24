@@ -25,32 +25,32 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Assumptions]
 
-noncomputable instance Box_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
-    TypedPointsto (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T') where
+noncomputable instance typed_pointsto'Box {T₀' : Type} [TypedPointsto (GF := GF) T₀'] :
+    TypedPointsto (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T₀') where
   typedPointstoDef l v dq := iprop(
-    "Value" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T') go!"Value" l) v.Value' dq ∗
+    "Value" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T₀') go!"Value" l) v.Value' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance Box_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
-    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box.underlying T) := by
+noncomputable instance into_val_typed'Box (T₀ : go.GoType) {T₀' : Type} [ZeroVal T₀'] [TypedPointsto (GF := GF) T₀'] [IntoValTyped (GF := GF) T₀' T₀] :
+    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T₀') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box.underlying T₀) := by
   solve_into_val_typed_struct
 
-noncomputable instance Box_access_load_Value {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T')) (dq : DFrac) :
+noncomputable instance access_load'Box'Value {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T₀')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T') go!"Value" l) v.Value' dq)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T') go!"Value" l) v.Value' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T₀') go!"Value" l) v.Value' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T₀') go!"Value" l) v.Value' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Box_access_store_Value {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T')) (y : T') :
+noncomputable instance access_store'Box'Value {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T₀')) (y : T₀') :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T') go!"Value" l) v.Value' (DFrac.own 1))
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T') go!"Value" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Value' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T')) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T₀') go!"Value" l) v.Value' (DFrac.own 1))
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T₀') go!"Value" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Value' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box T₀')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -65,83 +65,83 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Assumptions]
 
-noncomputable instance Container_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
-    TypedPointsto (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') where
+noncomputable instance typed_pointsto'Container {T₀' : Type} [TypedPointsto (GF := GF) T₀'] :
+    TypedPointsto (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀') where
   typedPointstoDef l v dq := iprop(
-    "X" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"X" l) v.X' dq ∗
-    "Y" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"Y" l) v.Y' dq ∗
-    "Z" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"Z" l) v.Z' dq ∗
-    "W" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"W" l) v.W' dq ∗
+    "X" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀') go!"X" l) v.X' dq ∗
+    "Y" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀') go!"Y" l) v.Y' dq ∗
+    "Z" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀') go!"Z" l) v.Z' dq ∗
+    "W" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀') go!"W" l) v.W' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance Container_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
-    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container.underlying T) := by
+noncomputable instance into_val_typed'Container (T₀ : go.GoType) {T₀' : Type} [ZeroVal T₀'] [TypedPointsto (GF := GF) T₀'] [IntoValTyped (GF := GF) T₀' T₀] :
+    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container.underlying T₀) := by
   solve_into_val_typed_struct
 
-noncomputable instance Container_access_load_X {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T')) (dq : DFrac) :
+noncomputable instance access_load'Container'X {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"X" l) v.X' dq)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"X" l) v.X' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀') go!"X" l) v.X' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀') go!"X" l) v.X' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Container_access_store_X {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T')) (y : T') :
+noncomputable instance access_store'Container'X {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀')) (y : T₀') :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"X" l) v.X' (DFrac.own 1))
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"X" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with X' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T')) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀') go!"X" l) v.X' (DFrac.own 1))
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀') go!"X" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with X' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Container_access_load_Y {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T')) (dq : DFrac) :
+noncomputable instance access_load'Container'Y {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"Y" l) v.Y' dq)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"Y" l) v.Y' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀') go!"Y" l) v.Y' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀') go!"Y" l) v.Y' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Container_access_store_Y {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T')) (y : GoMap) :
+noncomputable instance access_store'Container'Y {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀')) (y : GoMap) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"Y" l) v.Y' (DFrac.own 1))
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"Y" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Y' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T')) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀') go!"Y" l) v.Y' (DFrac.own 1))
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀') go!"Y" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Y' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Container_access_load_Z {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T')) (dq : DFrac) :
+noncomputable instance access_load'Container'Z {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"Z" l) v.Z' dq)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"Z" l) v.Z' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀') go!"Z" l) v.Z' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀') go!"Z" l) v.Z' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Container_access_store_Z {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T')) (y : Loc) :
+noncomputable instance access_store'Container'Z {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀')) (y : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"Z" l) v.Z' (DFrac.own 1))
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"Z" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Z' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T')) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀') go!"Z" l) v.Z' (DFrac.own 1))
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀') go!"Z" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Z' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Container_access_load_W {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T')) (dq : DFrac) :
+noncomputable instance access_load'Container'W {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"W" l) v.W' dq)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"W" l) v.W' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀') go!"W" l) v.W' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀') go!"W" l) v.W' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Container_access_store_W {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T')) (y : w64) :
+noncomputable instance access_store'Container'W {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀')) (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"W" l) v.W' (DFrac.own 1))
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T') go!"W" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with W' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T')) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀') go!"W" l) v.W' (DFrac.own 1))
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀') go!"W" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with W' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container T₀')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -156,7 +156,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Assumptions]
 
-noncomputable instance UseContainer_typed_pointsto :
+noncomputable instance typed_pointsto'UseContainer :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer where
   typedPointstoDef l v dq := iprop(
     "X" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer go!"X" l) v.X' dq ∗
@@ -165,11 +165,11 @@ noncomputable instance UseContainer_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance UseContainer_into_val_typed :
+noncomputable instance into_val_typed'UseContainer :
     IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance UseContainer_access_load_X (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer) (dq : DFrac) :
+noncomputable instance access_load'UseContainer'X (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer go!"X" l) v.X' dq)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer go!"X" l) v.X' dq)
@@ -177,7 +177,7 @@ noncomputable instance UseContainer_access_load_X (l : Loc) (v : github_com.mit_
  by
   solve_pointsto_access_struct
 
-noncomputable instance UseContainer_access_store_X (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer) (y : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container w64)) :
+noncomputable instance access_store'UseContainer'X (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer) (y : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container w64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer go!"X" l) v.X' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer go!"X" l) y (DFrac.own 1))
@@ -196,49 +196,49 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Assumptions]
 
-noncomputable instance OnlyIndirect_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
-    TypedPointsto (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T') where
+noncomputable instance typed_pointsto'OnlyIndirect {T₀' : Type} [TypedPointsto (GF := GF) T₀'] :
+    TypedPointsto (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T₀') where
   typedPointstoDef l v dq := iprop(
-    "X" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T') go!"X" l) v.X' dq ∗
-    "Y" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T') go!"Y" l) v.Y' dq ∗
+    "X" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T₀') go!"X" l) v.X' dq ∗
+    "Y" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T₀') go!"Y" l) v.Y' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance OnlyIndirect_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
-    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect.underlying T) := by
+noncomputable instance into_val_typed'OnlyIndirect (T₀ : go.GoType) {T₀' : Type} [ZeroVal T₀'] [TypedPointsto (GF := GF) T₀'] [IntoValTyped (GF := GF) T₀' T₀] :
+    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T₀') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect.underlying T₀) := by
   solve_into_val_typed_struct
 
-noncomputable instance OnlyIndirect_access_load_X {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T')) (dq : DFrac) :
+noncomputable instance access_load'OnlyIndirect'X {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T₀')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T') go!"X" l) v.X' dq)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T') go!"X" l) v.X' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T₀') go!"X" l) v.X' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T₀') go!"X" l) v.X' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance OnlyIndirect_access_store_X {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T')) (y : GoSlice) :
+noncomputable instance access_store'OnlyIndirect'X {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T₀')) (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T') go!"X" l) v.X' (DFrac.own 1))
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T') go!"X" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with X' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T')) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T₀') go!"X" l) v.X' (DFrac.own 1))
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T₀') go!"X" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with X' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T₀')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance OnlyIndirect_access_load_Y {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T')) (dq : DFrac) :
+noncomputable instance access_load'OnlyIndirect'Y {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T₀')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T') go!"Y" l) v.Y' dq)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T') go!"Y" l) v.Y' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T₀') go!"Y" l) v.Y' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T₀') go!"Y" l) v.Y' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance OnlyIndirect_access_store_Y {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T')) (y : Loc) :
+noncomputable instance access_store'OnlyIndirect'Y {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T₀')) (y : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T') go!"Y" l) v.Y' (DFrac.own 1))
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T') go!"Y" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Y' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T')) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T₀') go!"Y" l) v.Y' (DFrac.own 1))
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T₀') go!"Y" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Y' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.OnlyIndirect T₀')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -253,49 +253,49 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Assumptions]
 
-noncomputable instance MultiParam_typed_pointsto {A' : Type} [TypedPointsto (GF := GF) A'] {B' : Type} [TypedPointsto (GF := GF) B'] :
-    TypedPointsto (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B') where
+noncomputable instance typed_pointsto'MultiParam {A₀' : Type} [TypedPointsto (GF := GF) A₀'] {B₀' : Type} [TypedPointsto (GF := GF) B₀'] :
+    TypedPointsto (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A₀' B₀') where
   typedPointstoDef l v dq := iprop(
-    "Y" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B') go!"Y" l) v.Y' dq ∗
-    "X" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B') go!"X" l) v.X' dq ∗
+    "Y" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A₀' B₀') go!"Y" l) v.Y' dq ∗
+    "X" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A₀' B₀') go!"X" l) v.X' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance MultiParam_into_val_typed (A : go.GoType) {A' : Type} [ZeroVal A'] [TypedPointsto (GF := GF) A'] [IntoValTyped (GF := GF) A' A] (B : go.GoType) {B' : Type} [ZeroVal B'] [TypedPointsto (GF := GF) B'] [IntoValTyped (GF := GF) B' B] :
-    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam.underlying A B) := by
+noncomputable instance into_val_typed'MultiParam (A₀ : go.GoType) {A₀' : Type} [ZeroVal A₀'] [TypedPointsto (GF := GF) A₀'] [IntoValTyped (GF := GF) A₀' A₀] (B₀ : go.GoType) {B₀' : Type} [ZeroVal B₀'] [TypedPointsto (GF := GF) B₀'] [IntoValTyped (GF := GF) B₀' B₀] :
+    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A₀' B₀') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam.underlying A₀ B₀) := by
   solve_into_val_typed_struct
 
-noncomputable instance MultiParam_access_load_Y {A' : Type} [TypedPointsto (GF := GF) A'] {B' : Type} [TypedPointsto (GF := GF) B'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B')) (dq : DFrac) :
+noncomputable instance access_load'MultiParam'Y {A₀' : Type} [TypedPointsto (GF := GF) A₀'] {B₀' : Type} [TypedPointsto (GF := GF) B₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A₀' B₀')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B') go!"Y" l) v.Y' dq)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B') go!"Y" l) v.Y' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A₀' B₀') go!"Y" l) v.Y' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A₀' B₀') go!"Y" l) v.Y' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance MultiParam_access_store_Y {A' : Type} [TypedPointsto (GF := GF) A'] {B' : Type} [TypedPointsto (GF := GF) B'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B')) (y : B') :
+noncomputable instance access_store'MultiParam'Y {A₀' : Type} [TypedPointsto (GF := GF) A₀'] {B₀' : Type} [TypedPointsto (GF := GF) B₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A₀' B₀')) (y : B₀') :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B') go!"Y" l) v.Y' (DFrac.own 1))
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B') go!"Y" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Y' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B')) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A₀' B₀') go!"Y" l) v.Y' (DFrac.own 1))
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A₀' B₀') go!"Y" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Y' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A₀' B₀')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance MultiParam_access_load_X {A' : Type} [TypedPointsto (GF := GF) A'] {B' : Type} [TypedPointsto (GF := GF) B'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B')) (dq : DFrac) :
+noncomputable instance access_load'MultiParam'X {A₀' : Type} [TypedPointsto (GF := GF) A₀'] {B₀' : Type} [TypedPointsto (GF := GF) B₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A₀' B₀')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B') go!"X" l) v.X' dq)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B') go!"X" l) v.X' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A₀' B₀') go!"X" l) v.X' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A₀' B₀') go!"X" l) v.X' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance MultiParam_access_store_X {A' : Type} [TypedPointsto (GF := GF) A'] {B' : Type} [TypedPointsto (GF := GF) B'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B')) (y : A') :
+noncomputable instance access_store'MultiParam'X {A₀' : Type} [TypedPointsto (GF := GF) A₀'] {B₀' : Type} [TypedPointsto (GF := GF) B₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A₀' B₀')) (y : A₀') :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B') go!"X" l) v.X' (DFrac.own 1))
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B') go!"X" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with X' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A' B')) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A₀' B₀') go!"X" l) v.X' (DFrac.own 1))
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A₀' B₀') go!"X" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with X' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.MultiParam A₀' B₀')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -310,49 +310,49 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Assumptions]
 
-noncomputable instance TypeParamCollision_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] {C' : Type} [TypedPointsto (GF := GF) C'] :
-    TypedPointsto (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C') where
+noncomputable instance typed_pointsto'TypeParamCollision {T₀' : Type} [TypedPointsto (GF := GF) T₀'] {C₀' : Type} [TypedPointsto (GF := GF) C₀'] :
+    TypedPointsto (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T₀' C₀') where
   typedPointstoDef l v dq := iprop(
-    "X" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C') go!"X" l) v.X' dq ∗
-    "Y" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C') go!"Y" l) v.Y' dq ∗
+    "X" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T₀' C₀') go!"X" l) v.X' dq ∗
+    "Y" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T₀' C₀') go!"Y" l) v.Y' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance TypeParamCollision_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] (C : go.GoType) {C' : Type} [ZeroVal C'] [TypedPointsto (GF := GF) C'] [IntoValTyped (GF := GF) C' C] :
-    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision.underlying T C) := by
+noncomputable instance into_val_typed'TypeParamCollision (T₀ : go.GoType) {T₀' : Type} [ZeroVal T₀'] [TypedPointsto (GF := GF) T₀'] [IntoValTyped (GF := GF) T₀' T₀] (C₀ : go.GoType) {C₀' : Type} [ZeroVal C₀'] [TypedPointsto (GF := GF) C₀'] [IntoValTyped (GF := GF) C₀' C₀] :
+    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T₀' C₀') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision.underlying T₀ C₀) := by
   solve_into_val_typed_struct
 
-noncomputable instance TypeParamCollision_access_load_X {T' : Type} [TypedPointsto (GF := GF) T'] {C' : Type} [TypedPointsto (GF := GF) C'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C')) (dq : DFrac) :
+noncomputable instance access_load'TypeParamCollision'X {T₀' : Type} [TypedPointsto (GF := GF) T₀'] {C₀' : Type} [TypedPointsto (GF := GF) C₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T₀' C₀')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C') go!"X" l) v.X' dq)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C') go!"X" l) v.X' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T₀' C₀') go!"X" l) v.X' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T₀' C₀') go!"X" l) v.X' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance TypeParamCollision_access_store_X {T' : Type} [TypedPointsto (GF := GF) T'] {C' : Type} [TypedPointsto (GF := GF) C'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C')) (y : T') :
+noncomputable instance access_store'TypeParamCollision'X {T₀' : Type} [TypedPointsto (GF := GF) T₀'] {C₀' : Type} [TypedPointsto (GF := GF) C₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T₀' C₀')) (y : T₀') :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C') go!"X" l) v.X' (DFrac.own 1))
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C') go!"X" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with X' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C')) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T₀' C₀') go!"X" l) v.X' (DFrac.own 1))
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T₀' C₀') go!"X" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with X' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T₀' C₀')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance TypeParamCollision_access_load_Y {T' : Type} [TypedPointsto (GF := GF) T'] {C' : Type} [TypedPointsto (GF := GF) C'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C')) (dq : DFrac) :
+noncomputable instance access_load'TypeParamCollision'Y {T₀' : Type} [TypedPointsto (GF := GF) T₀'] {C₀' : Type} [TypedPointsto (GF := GF) C₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T₀' C₀')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C') go!"Y" l) v.Y' dq)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C') go!"Y" l) v.Y' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T₀' C₀') go!"Y" l) v.Y' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T₀' C₀') go!"Y" l) v.Y' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance TypeParamCollision_access_store_Y {T' : Type} [TypedPointsto (GF := GF) T'] {C' : Type} [TypedPointsto (GF := GF) C'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C')) (y : C') :
+noncomputable instance access_store'TypeParamCollision'Y {T₀' : Type} [TypedPointsto (GF := GF) T₀'] {C₀' : Type} [TypedPointsto (GF := GF) C₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T₀' C₀')) (y : C₀') :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C') go!"Y" l) v.Y' (DFrac.own 1))
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C') go!"Y" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Y' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T' C')) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T₀' C₀') go!"Y" l) v.Y' (DFrac.own 1))
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T₀' C₀') go!"Y" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Y' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.TypeParamCollision T₀' C₀')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -367,32 +367,32 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Assumptions]
 
-noncomputable instance useNonStructGeneric_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
-    TypedPointsto (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T') where
+noncomputable instance typed_pointsto'useNonStructGeneric {T₀' : Type} [TypedPointsto (GF := GF) T₀'] :
+    TypedPointsto (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T₀') where
   typedPointstoDef l v dq := iprop(
-    "x" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T') go!"x" l) v.x' dq ∗
+    "x" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T₀') go!"x" l) v.x' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance useNonStructGeneric_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
-    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric.underlying T) := by
+noncomputable instance into_val_typed'useNonStructGeneric (T₀ : go.GoType) {T₀' : Type} [ZeroVal T₀'] [TypedPointsto (GF := GF) T₀'] [IntoValTyped (GF := GF) T₀' T₀] :
+    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T₀') (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric.underlying T₀) := by
   solve_into_val_typed_struct
 
-noncomputable instance useNonStructGeneric_access_load_x {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T')) (dq : DFrac) :
+noncomputable instance access_load'useNonStructGeneric'x {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T₀')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T') go!"x" l) v.x' dq)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T') go!"x" l) v.x' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T₀') go!"x" l) v.x' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T₀') go!"x" l) v.x' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance useNonStructGeneric_access_store_x {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T')) (y : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.nonStructGeneric T')) :
+noncomputable instance access_store'useNonStructGeneric'x {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T₀')) (y : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.nonStructGeneric T₀')) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T') go!"x" l) v.x' (DFrac.own 1))
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T') go!"x" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with x' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T')) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T₀') go!"x" l) v.x' (DFrac.own 1))
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T₀') go!"x" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with x' := y } : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T₀')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

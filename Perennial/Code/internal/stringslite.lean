@@ -569,25 +569,25 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.internal.bytealg.initialize') (Val #())))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  HasPrefix_unfold : FuncUnfold HasPrefix [] HasPrefix.impl
-  HasSuffix_unfold : FuncUnfold HasSuffix [] HasSuffix.impl
-  IndexByte_unfold : FuncUnfold IndexByte [] IndexByte.impl
-  Index_unfold : FuncUnfold Index'' [] Index''.impl
-  Cut_unfold : FuncUnfold Cut [] Cut.impl
-  TrimPrefix_unfold : FuncUnfold TrimPrefix [] TrimPrefix.impl
-  TrimSuffix_unfold : FuncUnfold TrimSuffix [] TrimSuffix.impl
-  Clone_unfold : FuncUnfold Clone [] Clone.impl
-  import_bytealg_Assumption : _root_.Perennial.internal.bytealg.Assumptions
+  unfold'HasPrefix : FuncUnfold HasPrefix [] HasPrefix.impl
+  unfold'HasSuffix : FuncUnfold HasSuffix [] HasSuffix.impl
+  unfold'IndexByte : FuncUnfold IndexByte [] IndexByte.impl
+  unfold'Index : FuncUnfold Index'' [] Index''.impl
+  unfold'Cut : FuncUnfold Cut [] Cut.impl
+  unfold'TrimPrefix : FuncUnfold TrimPrefix [] TrimPrefix.impl
+  unfold'TrimSuffix : FuncUnfold TrimSuffix [] TrimSuffix.impl
+  unfold'Clone : FuncUnfold Clone [] Clone.impl
+  import'bytealg : _root_.Perennial.internal.bytealg.Assumptions
 
-attribute [instance] Assumptions.HasPrefix_unfold
-  Assumptions.HasSuffix_unfold
-  Assumptions.IndexByte_unfold
-  Assumptions.Index_unfold
-  Assumptions.Cut_unfold
-  Assumptions.TrimPrefix_unfold
-  Assumptions.TrimSuffix_unfold
-  Assumptions.Clone_unfold
-  Assumptions.import_bytealg_Assumption
+attribute [instance] Assumptions.unfold'HasPrefix
+  Assumptions.unfold'HasSuffix
+  Assumptions.unfold'IndexByte
+  Assumptions.unfold'Index
+  Assumptions.unfold'Cut
+  Assumptions.unfold'TrimPrefix
+  Assumptions.unfold'TrimSuffix
+  Assumptions.unfold'Clone
+  Assumptions.import'bytealg
 
 end internal.stringslite
 

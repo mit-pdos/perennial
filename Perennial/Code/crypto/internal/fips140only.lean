@@ -59,11 +59,11 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.crypto.fips140.initialize') (Val #())))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Enforced_unfold : FuncUnfold Enforced [] Enforced.impl
-  import_fips140_Assumption : _root_.Perennial.crypto.fips140.Assumptions
+  unfold'Enforced : FuncUnfold Enforced [] Enforced.impl
+  import'fips140 : _root_.Perennial.crypto.fips140.Assumptions
 
-attribute [instance] Assumptions.Enforced_unfold
-  Assumptions.import_fips140_Assumption
+attribute [instance] Assumptions.unfold'Enforced
+  Assumptions.import'fips140
 
 end crypto.internal.fips140only
 

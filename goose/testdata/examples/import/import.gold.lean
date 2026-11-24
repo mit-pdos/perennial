@@ -32,9 +32,9 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.sync.atomic.initialize') (Val #())))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  import_atomic_Assumption : _root_.Perennial.sync.atomic.Assumptions
+  import'atomic : _root_.Perennial.sync.atomic.Assumptions
 
-attribute [instance] Assumptions.import_atomic_Assumption
+attribute [instance] Assumptions.import'atomic
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.«import»
 

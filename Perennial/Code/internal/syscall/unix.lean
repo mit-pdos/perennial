@@ -268,7 +268,7 @@ noncomputable instance siErrnoCode.zero_val [GooseExts] : ZeroVal siErrnoCode :=
 @[irreducible] noncomputable def siErrnoCode.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   siErrnoCode.fieldsUnsealed
 
-noncomputable instance equals_unfold_siErrnoCode [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'siErrnoCode [GooseExts] [GoGlobalContext] :
     EqualsUnfold siErrnoCode.fields siErrnoCode.fieldsUnsealed :=
   ⟨by unfold siErrnoCode.fields; rfl⟩
 
@@ -278,19 +278,19 @@ noncomputable instance equals_unfold_siErrnoCode [GooseExts] [GoGlobalContext] :
 class siErrnoCode.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying siErrnoCode.underlying siErrnoCode
   underlying : go.UnderlyingDirectedEq siErrnoCode.ty siErrnoCode.underlying
-  get_Errno : ∀ (x : siErrnoCode), go.IsGoStepPureDetTagged under (StructFieldGet siErrnoCode.underlying go!"Errno") #x (Val #(x.Errno'))
-  set_Errno : ∀ (x : siErrnoCode) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet siErrnoCode.underlying go!"Errno") (PairV #x #y) (Val #(({ x with Errno' := y } : siErrnoCode)))
-  get_Code : ∀ (x : siErrnoCode), go.IsGoStepPureDetTagged under (StructFieldGet siErrnoCode.underlying go!"Code") #x (Val #(x.Code'))
-  set_Code : ∀ (x : siErrnoCode) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet siErrnoCode.underlying go!"Code") (PairV #x #y) (Val #(({ x with Code' := y } : siErrnoCode)))
+  get'Errno : ∀ (x : siErrnoCode), go.IsGoStepPureDetTagged under (StructFieldGet siErrnoCode.underlying go!"Errno") #x (Val #(x.Errno'))
+  set'Errno : ∀ (x : siErrnoCode) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet siErrnoCode.underlying go!"Errno") (PairV #x #y) (Val #(({ x with Errno' := y } : siErrnoCode)))
+  get'Code : ∀ (x : siErrnoCode), go.IsGoStepPureDetTagged under (StructFieldGet siErrnoCode.underlying go!"Code") #x (Val #(x.Code'))
+  set'Code : ∀ (x : siErrnoCode) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet siErrnoCode.underlying go!"Code") (PairV #x #y) (Val #(({ x with Code' := y } : siErrnoCode)))
   method_set : go.MethodSetIs siErrnoCode.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType siErrnoCode.ty) []
 
 attribute [instance] siErrnoCode.TypeAssumptions.type_repr
   siErrnoCode.TypeAssumptions.underlying
-  siErrnoCode.TypeAssumptions.get_Errno
-  siErrnoCode.TypeAssumptions.set_Errno
-  siErrnoCode.TypeAssumptions.get_Code
-  siErrnoCode.TypeAssumptions.set_Code
+  siErrnoCode.TypeAssumptions.get'Errno
+  siErrnoCode.TypeAssumptions.set'Errno
+  siErrnoCode.TypeAssumptions.get'Code
+  siErrnoCode.TypeAssumptions.set'Code
   siErrnoCode.TypeAssumptions.method_set
   siErrnoCode.TypeAssumptions.ptr_method_set
 
@@ -319,7 +319,7 @@ noncomputable instance SiginfoChild.zero_val [GooseExts] : ZeroVal SiginfoChild 
 @[irreducible] noncomputable def SiginfoChild.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   SiginfoChild.fieldsUnsealed
 
-noncomputable instance equals_unfold_SiginfoChild [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'SiginfoChild [GooseExts] [GoGlobalContext] :
     EqualsUnfold SiginfoChild.fields SiginfoChild.fieldsUnsealed :=
   ⟨by unfold SiginfoChild.fields; rfl⟩
 
@@ -329,52 +329,52 @@ noncomputable instance equals_unfold_SiginfoChild [GooseExts] [GoGlobalContext] 
 class SiginfoChild.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying SiginfoChild.underlying SiginfoChild
   underlying : go.UnderlyingDirectedEq SiginfoChild.ty SiginfoChild.underlying
-  get_Signo : ∀ (x : SiginfoChild), go.IsGoStepPureDetTagged under (StructFieldGet SiginfoChild.underlying go!"Signo") #x (Val #(x.Signo'))
-  set_Signo : ∀ (x : SiginfoChild) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet SiginfoChild.underlying go!"Signo") (PairV #x #y) (Val #(({ x with Signo' := y } : SiginfoChild)))
-  get_siErrnoCode : ∀ (x : SiginfoChild), go.IsGoStepPureDetTagged under (StructFieldGet SiginfoChild.underlying go!"siErrnoCode") #x (Val #(x.siErrnoCode'))
-  set_siErrnoCode : ∀ (x : SiginfoChild) (y : siErrnoCode), go.IsGoStepPureDetTagged under (StructFieldSet SiginfoChild.underlying go!"siErrnoCode") (PairV #x #y) (Val #(({ x with siErrnoCode' := y } : SiginfoChild)))
-  «get__#2» : ∀ (x : SiginfoChild), go.IsGoStepPureDetTagged under (StructFieldGet SiginfoChild.underlying go!"_#2") #x (Val #(x.«_#2'»))
-  «set__#2» : ∀ (x : SiginfoChild) (y : (GoArray w32 1)), go.IsGoStepPureDetTagged under (StructFieldSet SiginfoChild.underlying go!"_#2") (PairV #x #y) (Val #(({ x with «_#2'» := y } : SiginfoChild)))
-  get_Pid : ∀ (x : SiginfoChild), go.IsGoStepPureDetTagged under (StructFieldGet SiginfoChild.underlying go!"Pid") #x (Val #(x.Pid'))
-  set_Pid : ∀ (x : SiginfoChild) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet SiginfoChild.underlying go!"Pid") (PairV #x #y) (Val #(({ x with Pid' := y } : SiginfoChild)))
-  get_Uid : ∀ (x : SiginfoChild), go.IsGoStepPureDetTagged under (StructFieldGet SiginfoChild.underlying go!"Uid") #x (Val #(x.Uid'))
-  set_Uid : ∀ (x : SiginfoChild) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet SiginfoChild.underlying go!"Uid") (PairV #x #y) (Val #(({ x with Uid' := y } : SiginfoChild)))
-  get_Status : ∀ (x : SiginfoChild), go.IsGoStepPureDetTagged under (StructFieldGet SiginfoChild.underlying go!"Status") #x (Val #(x.Status'))
-  set_Status : ∀ (x : SiginfoChild) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet SiginfoChild.underlying go!"Status") (PairV #x #y) (Val #(({ x with Status' := y } : SiginfoChild)))
-  «get__#6» : ∀ (x : SiginfoChild), go.IsGoStepPureDetTagged under (StructFieldGet SiginfoChild.underlying go!"_#6") #x (Val #(x.«_#6'»))
-  «set__#6» : ∀ (x : SiginfoChild) (y : (GoArray w8 100)), go.IsGoStepPureDetTagged under (StructFieldSet SiginfoChild.underlying go!"_#6") (PairV #x #y) (Val #(({ x with «_#6'» := y } : SiginfoChild)))
+  get'Signo : ∀ (x : SiginfoChild), go.IsGoStepPureDetTagged under (StructFieldGet SiginfoChild.underlying go!"Signo") #x (Val #(x.Signo'))
+  set'Signo : ∀ (x : SiginfoChild) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet SiginfoChild.underlying go!"Signo") (PairV #x #y) (Val #(({ x with Signo' := y } : SiginfoChild)))
+  get'siErrnoCode : ∀ (x : SiginfoChild), go.IsGoStepPureDetTagged under (StructFieldGet SiginfoChild.underlying go!"siErrnoCode") #x (Val #(x.siErrnoCode'))
+  set'siErrnoCode : ∀ (x : SiginfoChild) (y : siErrnoCode), go.IsGoStepPureDetTagged under (StructFieldSet SiginfoChild.underlying go!"siErrnoCode") (PairV #x #y) (Val #(({ x with siErrnoCode' := y } : SiginfoChild)))
+  «get'_#2» : ∀ (x : SiginfoChild), go.IsGoStepPureDetTagged under (StructFieldGet SiginfoChild.underlying go!"_#2") #x (Val #(x.«_#2'»))
+  «set'_#2» : ∀ (x : SiginfoChild) (y : (GoArray w32 1)), go.IsGoStepPureDetTagged under (StructFieldSet SiginfoChild.underlying go!"_#2") (PairV #x #y) (Val #(({ x with «_#2'» := y } : SiginfoChild)))
+  get'Pid : ∀ (x : SiginfoChild), go.IsGoStepPureDetTagged under (StructFieldGet SiginfoChild.underlying go!"Pid") #x (Val #(x.Pid'))
+  set'Pid : ∀ (x : SiginfoChild) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet SiginfoChild.underlying go!"Pid") (PairV #x #y) (Val #(({ x with Pid' := y } : SiginfoChild)))
+  get'Uid : ∀ (x : SiginfoChild), go.IsGoStepPureDetTagged under (StructFieldGet SiginfoChild.underlying go!"Uid") #x (Val #(x.Uid'))
+  set'Uid : ∀ (x : SiginfoChild) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet SiginfoChild.underlying go!"Uid") (PairV #x #y) (Val #(({ x with Uid' := y } : SiginfoChild)))
+  get'Status : ∀ (x : SiginfoChild), go.IsGoStepPureDetTagged under (StructFieldGet SiginfoChild.underlying go!"Status") #x (Val #(x.Status'))
+  set'Status : ∀ (x : SiginfoChild) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet SiginfoChild.underlying go!"Status") (PairV #x #y) (Val #(({ x with Status' := y } : SiginfoChild)))
+  «get'_#6» : ∀ (x : SiginfoChild), go.IsGoStepPureDetTagged under (StructFieldGet SiginfoChild.underlying go!"_#6") #x (Val #(x.«_#6'»))
+  «set'_#6» : ∀ (x : SiginfoChild) (y : (GoArray w8 100)), go.IsGoStepPureDetTagged under (StructFieldSet SiginfoChild.underlying go!"_#6") (PairV #x #y) (Val #(({ x with «_#6'» := y } : SiginfoChild)))
   method_set : go.MethodSetIs SiginfoChild.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType SiginfoChild.ty) [(go!"WaitStatus", (some (go.signature.Signature [] false [_root_.Perennial.syscall.WaitStatus.ty])))]
 
 attribute [instance] SiginfoChild.TypeAssumptions.type_repr
   SiginfoChild.TypeAssumptions.underlying
-  SiginfoChild.TypeAssumptions.get_Signo
-  SiginfoChild.TypeAssumptions.set_Signo
-  SiginfoChild.TypeAssumptions.get_siErrnoCode
-  SiginfoChild.TypeAssumptions.set_siErrnoCode
-  SiginfoChild.TypeAssumptions.«get__#2»
-  SiginfoChild.TypeAssumptions.«set__#2»
-  SiginfoChild.TypeAssumptions.get_Pid
-  SiginfoChild.TypeAssumptions.set_Pid
-  SiginfoChild.TypeAssumptions.get_Uid
-  SiginfoChild.TypeAssumptions.set_Uid
-  SiginfoChild.TypeAssumptions.get_Status
-  SiginfoChild.TypeAssumptions.set_Status
-  SiginfoChild.TypeAssumptions.«get__#6»
-  SiginfoChild.TypeAssumptions.«set__#6»
+  SiginfoChild.TypeAssumptions.get'Signo
+  SiginfoChild.TypeAssumptions.set'Signo
+  SiginfoChild.TypeAssumptions.get'siErrnoCode
+  SiginfoChild.TypeAssumptions.set'siErrnoCode
+  SiginfoChild.TypeAssumptions.«get'_#2»
+  SiginfoChild.TypeAssumptions.«set'_#2»
+  SiginfoChild.TypeAssumptions.get'Pid
+  SiginfoChild.TypeAssumptions.set'Pid
+  SiginfoChild.TypeAssumptions.get'Uid
+  SiginfoChild.TypeAssumptions.set'Uid
+  SiginfoChild.TypeAssumptions.get'Status
+  SiginfoChild.TypeAssumptions.set'Status
+  SiginfoChild.TypeAssumptions.«get'_#6»
+  SiginfoChild.TypeAssumptions.«set'_#6»
   SiginfoChild.TypeAssumptions.method_set
   SiginfoChild.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  GetRandomFlag_instance : GetRandomFlag.TypeAssumptions
-  SiginfoChild_instance : SiginfoChild.TypeAssumptions
-  siErrnoCode_instance : siErrnoCode.TypeAssumptions
-  import_syscall_Assumption : _root_.Perennial.syscall.Assumptions
+  instance'GetRandomFlag : GetRandomFlag.TypeAssumptions
+  instance'SiginfoChild : SiginfoChild.TypeAssumptions
+  instance'siErrnoCode : siErrnoCode.TypeAssumptions
+  import'syscall : _root_.Perennial.syscall.Assumptions
 
-attribute [instance] Assumptions.GetRandomFlag_instance
-  Assumptions.SiginfoChild_instance
-  Assumptions.siErrnoCode_instance
-  Assumptions.import_syscall_Assumption
+attribute [instance] Assumptions.instance'GetRandomFlag
+  Assumptions.instance'SiginfoChild
+  Assumptions.instance'siErrnoCode
+  Assumptions.import'syscall
 
 end internal.syscall.unix
 

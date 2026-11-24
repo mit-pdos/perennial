@@ -181,17 +181,17 @@ attribute [instance] Logger.TypeAssumptions.type_repr
   Logger.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Logger_instance : Logger.TypeAssumptions
-  «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
-  Printf_unfold : FuncUnfold Printf [] Printf.impl
-  Println_unfold : FuncUnfold Println [] Println.impl
-  import_sync_Assumption : _root_.Perennial.sync.Assumptions
+  instance'Logger : Logger.TypeAssumptions
+  «unfold'init.0» : FuncUnfold init.«0» [] init.«0».impl
+  unfold'Printf : FuncUnfold Printf [] Printf.impl
+  unfold'Println : FuncUnfold Println [] Println.impl
+  import'sync : _root_.Perennial.sync.Assumptions
 
-attribute [instance] Assumptions.Logger_instance
-  Assumptions.«init.0_unfold»
-  Assumptions.Printf_unfold
-  Assumptions.Println_unfold
-  Assumptions.import_sync_Assumption
+attribute [instance] Assumptions.instance'Logger
+  Assumptions.«unfold'init.0»
+  Assumptions.unfold'Printf
+  Assumptions.unfold'Println
+  Assumptions.import'sync
 
 end log
 

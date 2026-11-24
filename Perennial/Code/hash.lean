@@ -127,19 +127,19 @@ attribute [instance] XOF.TypeAssumptions.underlying
   XOF.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Hash_instance : Hash.TypeAssumptions
-  Hash32_instance : Hash32.TypeAssumptions
-  Hash64_instance : Hash64.TypeAssumptions
-  Cloner_instance : Cloner.TypeAssumptions
-  XOF_instance : XOF.TypeAssumptions
-  import_io_Assumption : _root_.Perennial.io.Assumptions
+  instance'Hash : Hash.TypeAssumptions
+  instance'Hash32 : Hash32.TypeAssumptions
+  instance'Hash64 : Hash64.TypeAssumptions
+  instance'Cloner : Cloner.TypeAssumptions
+  instance'XOF : XOF.TypeAssumptions
+  import'io : _root_.Perennial.io.Assumptions
 
-attribute [instance] Assumptions.Hash_instance
-  Assumptions.Hash32_instance
-  Assumptions.Hash64_instance
-  Assumptions.Cloner_instance
-  Assumptions.XOF_instance
-  Assumptions.import_io_Assumption
+attribute [instance] Assumptions.instance'Hash
+  Assumptions.instance'Hash32
+  Assumptions.instance'Hash64
+  Assumptions.instance'Cloner
+  Assumptions.instance'XOF
+  Assumptions.import'io
 
 end hash
 

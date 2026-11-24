@@ -25,11 +25,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.testlog.Assumptions]
 
-noncomputable instance Interface_typed_pointsto :
+noncomputable instance typed_pointsto'Interface :
     TypedPointsto (GF := GF) internal.testlog.Interface :=
   sorry -- axiomatized type
 
-noncomputable instance Interface_into_val_typed :
+noncomputable instance into_val_typed'Interface :
     IntoValTypedUnderlying (GF := GF) internal.testlog.Interface internal.testlog.Interface.underlying :=
   sorry -- axiomatized type
 
@@ -44,7 +44,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.testlog.Assumptions]
 
-noncomputable instance «struct#03d5a6ce_typed_pointsto» :
+noncomputable instance «typed_pointsto'struct#03d5a6ce» :
     TypedPointsto (GF := GF) internal.testlog.«struct#03d5a6ce» where
   typedPointstoDef l v dq := iprop(
     "mu" ∷ typedPointsto (structFieldRef internal.testlog.«struct#03d5a6ce» go!"mu" l) v.mu' dq ∗
@@ -54,11 +54,11 @@ noncomputable instance «struct#03d5a6ce_typed_pointsto» :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance «struct#03d5a6ce_into_val_typed» :
+noncomputable instance «into_val_typed'struct#03d5a6ce» :
     IntoValTypedUnderlying (GF := GF) internal.testlog.«struct#03d5a6ce» internal.testlog.«struct#03d5a6ce».underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance «struct#03d5a6ce_access_load_mu» (l : Loc) (v : internal.testlog.«struct#03d5a6ce») (dq : DFrac) :
+noncomputable instance «access_load'struct#03d5a6ce'mu» (l : Loc) (v : internal.testlog.«struct#03d5a6ce») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.testlog.«struct#03d5a6ce» go!"mu" l) v.mu' dq)
       (typedPointsto (structFieldRef internal.testlog.«struct#03d5a6ce» go!"mu" l) v.mu' dq)
@@ -66,7 +66,7 @@ noncomputable instance «struct#03d5a6ce_access_load_mu» (l : Loc) (v : interna
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#03d5a6ce_access_store_mu» (l : Loc) (v : internal.testlog.«struct#03d5a6ce») (y : _root_.Perennial.sync.Mutex) :
+noncomputable instance «access_store'struct#03d5a6ce'mu» (l : Loc) (v : internal.testlog.«struct#03d5a6ce») (y : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.testlog.«struct#03d5a6ce» go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.testlog.«struct#03d5a6ce» go!"mu" l) y (DFrac.own 1))
@@ -74,7 +74,7 @@ noncomputable instance «struct#03d5a6ce_access_store_mu» (l : Loc) (v : intern
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#03d5a6ce_access_load_val» (l : Loc) (v : internal.testlog.«struct#03d5a6ce») (dq : DFrac) :
+noncomputable instance «access_load'struct#03d5a6ce'val» (l : Loc) (v : internal.testlog.«struct#03d5a6ce») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.testlog.«struct#03d5a6ce» go!"val" l) v.val' dq)
       (typedPointsto (structFieldRef internal.testlog.«struct#03d5a6ce» go!"val" l) v.val' dq)
@@ -82,7 +82,7 @@ noncomputable instance «struct#03d5a6ce_access_load_val» (l : Loc) (v : intern
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#03d5a6ce_access_store_val» (l : Loc) (v : internal.testlog.«struct#03d5a6ce») (y : Bool) :
+noncomputable instance «access_store'struct#03d5a6ce'val» (l : Loc) (v : internal.testlog.«struct#03d5a6ce») (y : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.testlog.«struct#03d5a6ce» go!"val" l) v.val' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.testlog.«struct#03d5a6ce» go!"val" l) y (DFrac.own 1))

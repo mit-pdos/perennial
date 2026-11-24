@@ -1,6 +1,6 @@
 /-
 The methods of `*littleEndian` and `*bigEndian` on the globals `LittleEndian` and `BigEndian`
-(`ptr_Uint64_unfold`, ... in the method sets of the pointer types: load the global, call the
+(`ptr_unfold'Uint64`, ... in the method sets of the pointer types: load the global, call the
 value method), from the value methods' specs. Not Go functions of their own (goose generates
 the wrappers); stated for the linked specs in `Results.lean` (`wp_LittleEndian_Uint64`, ...).
 -/
@@ -35,7 +35,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : encoding.binary.Assumptions]
 
-/-- `(*littleEndian).Uint64` on the global `LittleEndian` (`ptr_Uint64_unfold`:
+/-- `(*littleEndian).Uint64` on the global `LittleEndian` (`ptr_unfold'Uint64`:
 load the global, call the value method), from the value method's spec. -/
 theorem wp_LittleEndian_Uint64_of
     (wp_littleEndian_Uint64 : littleEndian.Uint64.spec (GF := GF) (hG := hG))
@@ -54,7 +54,7 @@ theorem wp_LittleEndian_Uint64_of
   wp_apply wp_littleEndian_Uint64 _ b bs rem dq Hlen $$ [$Hb] as Hb
   iapply HΦ $$ Hb
 
-/-- `(*littleEndian).PutUint64` on the global `LittleEndian` (`ptr_PutUint64_unfold`:
+/-- `(*littleEndian).PutUint64` on the global `LittleEndian` (`ptr_unfold'PutUint64`:
 load the global, call the value method), from the value method's spec. -/
 theorem wp_LittleEndian_PutUint64_of
     (wp_littleEndian_PutUint64 : littleEndian.PutUint64.spec (GF := GF) (hG := hG))
@@ -73,7 +73,7 @@ theorem wp_LittleEndian_PutUint64_of
   wp_apply wp_littleEndian_PutUint64 _ b space rem v Hlen $$ [$Hb] as Hb
   iapply HΦ $$ Hb
 
-/-- `(*littleEndian).Uint32` on the global `LittleEndian` (`ptr_Uint32_unfold`:
+/-- `(*littleEndian).Uint32` on the global `LittleEndian` (`ptr_unfold'Uint32`:
 load the global, call the value method), from the value method's spec. -/
 theorem wp_LittleEndian_Uint32_of
     (wp_littleEndian_Uint32 : littleEndian.Uint32.spec (GF := GF) (hG := hG))
@@ -92,7 +92,7 @@ theorem wp_LittleEndian_Uint32_of
   wp_apply wp_littleEndian_Uint32 _ b bs rem dq Hlen $$ [$Hb] as Hb
   iapply HΦ $$ Hb
 
-/-- `(*littleEndian).PutUint32` on the global `LittleEndian` (`ptr_PutUint32_unfold`:
+/-- `(*littleEndian).PutUint32` on the global `LittleEndian` (`ptr_unfold'PutUint32`:
 load the global, call the value method), from the value method's spec. -/
 theorem wp_LittleEndian_PutUint32_of
     (wp_littleEndian_PutUint32 : littleEndian.PutUint32.spec (GF := GF) (hG := hG))
@@ -111,7 +111,7 @@ theorem wp_LittleEndian_PutUint32_of
   wp_apply wp_littleEndian_PutUint32 _ b space rem v Hlen $$ [$Hb] as Hb
   iapply HΦ $$ Hb
 
-/-- `(*bigEndian).Uint64` on the global `BigEndian` (`ptr_Uint64_unfold`:
+/-- `(*bigEndian).Uint64` on the global `BigEndian` (`ptr_unfold'Uint64`:
 load the global, call the value method), from the value method's spec. -/
 theorem wp_BigEndian_Uint64_of
     (wp_bigEndian_Uint64 : bigEndian.Uint64.spec (GF := GF) (hG := hG))
@@ -131,7 +131,7 @@ theorem wp_BigEndian_Uint64_of
   wp_apply wp_bigEndian_Uint64 _ b bs rem dq Hlen $$ [$Hb] as Hb
   iapply HΦ $$ Hb
 
-/-- `(*bigEndian).PutUint64` on the global `BigEndian` (`ptr_PutUint64_unfold`:
+/-- `(*bigEndian).PutUint64` on the global `BigEndian` (`ptr_unfold'PutUint64`:
 load the global, call the value method), from the value method's spec. -/
 theorem wp_BigEndian_PutUint64_of
     (wp_bigEndian_PutUint64 : bigEndian.PutUint64.spec (GF := GF) (hG := hG))
@@ -151,7 +151,7 @@ theorem wp_BigEndian_PutUint64_of
   wp_apply wp_bigEndian_PutUint64 _ b space rem v Hlen $$ [$Hb] as Hb
   iapply HΦ $$ Hb
 
-/-- `(*bigEndian).Uint32` on the global `BigEndian` (`ptr_Uint32_unfold`:
+/-- `(*bigEndian).Uint32` on the global `BigEndian` (`ptr_unfold'Uint32`:
 load the global, call the value method), from the value method's spec. -/
 theorem wp_BigEndian_Uint32_of
     (wp_bigEndian_Uint32 : bigEndian.Uint32.spec (GF := GF) (hG := hG))
@@ -171,7 +171,7 @@ theorem wp_BigEndian_Uint32_of
   wp_apply wp_bigEndian_Uint32 _ b bs rem dq Hlen $$ [$Hb] as Hb
   iapply HΦ $$ Hb
 
-/-- `(*bigEndian).PutUint32` on the global `BigEndian` (`ptr_PutUint32_unfold`:
+/-- `(*bigEndian).PutUint32` on the global `BigEndian` (`ptr_unfold'PutUint32`:
 load the global, call the value method), from the value method's spec. -/
 theorem wp_BigEndian_PutUint32_of
     (wp_bigEndian_PutUint32 : bigEndian.PutUint32.spec (GF := GF) (hG := hG))

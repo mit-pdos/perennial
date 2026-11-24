@@ -25,8 +25,8 @@ noncomputable def Y.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] Y.ty
 
-noncomputable def Box.ty [GooseExts] [GoGlobalContext] (T : go.GoType) : go.GoType :=
-  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/xpkgalias/dep2.Box" [T])
+noncomputable def Box.ty [GooseExts] [GoGlobalContext] (T₀ : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/xpkgalias/dep2.Box" [T₀])
 
 attribute [irreducible] Box.ty
 
@@ -53,7 +53,7 @@ noncomputable instance Y.zero_val [GooseExts] : ZeroVal Y :=
 @[irreducible] noncomputable def Y.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Y.fieldsUnsealed
 
-noncomputable instance equals_unfold_Y [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Y [GooseExts] [GoGlobalContext] :
     EqualsUnfold Y.fields Y.fieldsUnsealed :=
   ⟨by unfold Y.fields; rfl⟩
 
@@ -63,59 +63,59 @@ noncomputable instance equals_unfold_Y [GooseExts] [GoGlobalContext] :
 class Y.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Y.underlying Y
   underlying : go.UnderlyingDirectedEq Y.ty Y.underlying
-  get_v : ∀ (x : Y), go.IsGoStepPureDetTagged under (StructFieldGet Y.underlying go!"v") #x (Val #(x.v'))
-  set_v : ∀ (x : Y) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Y.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Y)))
+  get'v : ∀ (x : Y), go.IsGoStepPureDetTagged under (StructFieldGet Y.underlying go!"v") #x (Val #(x.v'))
+  set'v : ∀ (x : Y) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Y.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Y)))
   method_set : go.MethodSetIs Y.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Y.ty) []
 
 attribute [instance] Y.TypeAssumptions.type_repr
   Y.TypeAssumptions.underlying
-  Y.TypeAssumptions.get_v
-  Y.TypeAssumptions.set_v
+  Y.TypeAssumptions.get'v
+  Y.TypeAssumptions.set'v
   Y.TypeAssumptions.method_set
   Y.TypeAssumptions.ptr_method_set
 
-structure Box [GooseExts] (T : Type) where
+structure Box [GooseExts] (T₀ : Type) where
   mk ::
-  v' : T
+  v' : T₀
 
-noncomputable instance Box.zero_val [GooseExts] {T : Type} [ZeroVal T] : ZeroVal (Box T) :=
+noncomputable instance Box.zero_val [GooseExts] {T₀ : Type} [ZeroVal T₀] : ZeroVal (Box T₀) :=
   ⟨Box.mk zeroValDef⟩
 
-@[reducible] noncomputable def Box.fieldsUnsealed [GooseExts] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"v" T)]
+@[reducible] noncomputable def Box.fieldsUnsealed [GooseExts] [GoGlobalContext] (T₀ : go.GoType) : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"v" T₀)]
 
-@[irreducible] noncomputable def Box.fields [GooseExts] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
-  (Box.fieldsUnsealed T)
+@[irreducible] noncomputable def Box.fields [GooseExts] [GoGlobalContext] (T₀ : go.GoType) : List go.field_decl :=
+  (Box.fieldsUnsealed T₀)
 
-noncomputable instance equals_unfold_Box [GooseExts] [GoGlobalContext] (T : go.GoType) :
-    EqualsUnfold (Box.fields T) (Box.fieldsUnsealed T) :=
+noncomputable instance equals_unfold'Box [GooseExts] [GoGlobalContext] (T₀ : go.GoType) :
+    EqualsUnfold (Box.fields T₀) (Box.fieldsUnsealed T₀) :=
   ⟨by unfold Box.fields; rfl⟩
 
-@[reducible] noncomputable def Box.underlying [GooseExts] [GoGlobalContext] (T : go.GoType) : go.GoType :=
-  (go.GoType.StructType (Box.fields T))
+@[reducible] noncomputable def Box.underlying [GooseExts] [GoGlobalContext] (T₀ : go.GoType) : go.GoType :=
+  (go.GoType.StructType (Box.fields T₀))
 
 class Box.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (Box.underlying T) (Box T')
-  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Box.ty T) (Box.underlying T)
-  get_v : ∀ (T : go.GoType) (T' : Type) (x : (Box T')), go.IsGoStepPureDetTagged under (StructFieldGet (Box.underlying T) go!"v") #x (Val #(x.v'))
-  set_v : ∀ (T : go.GoType) (T' : Type) (x : (Box T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet (Box.underlying T) go!"v") (PairV #x #y) (Val #(({ x with v' := y } : (Box T'))))
-  method_set : ∀ (T : go.GoType), go.MethodSetIs (Box.ty T) []
-  ptr_method_set : ∀ (T : go.GoType), go.MethodSetIs (go.GoType.PointerType (Box.ty T)) []
+  type_repr : ∀ (T₀ : go.GoType) (T₀' : Type) [ZeroVal T₀'] [TypeRepr T₀ T₀'], go.TypeReprUnderlying (Box.underlying T₀) (Box T₀')
+  underlying : ∀ (T₀ : go.GoType), go.UnderlyingDirectedEq (Box.ty T₀) (Box.underlying T₀)
+  get'v : ∀ (T₀ : go.GoType) (T₀' : Type) (x : (Box T₀')), go.IsGoStepPureDetTagged under (StructFieldGet (Box.underlying T₀) go!"v") #x (Val #(x.v'))
+  set'v : ∀ (T₀ : go.GoType) (T₀' : Type) (x : (Box T₀')) (y : T₀'), go.IsGoStepPureDetTagged under (StructFieldSet (Box.underlying T₀) go!"v") (PairV #x #y) (Val #(({ x with v' := y } : (Box T₀'))))
+  method_set : ∀ (T₀ : go.GoType), go.MethodSetIs (Box.ty T₀) []
+  ptr_method_set : ∀ (T₀ : go.GoType), go.MethodSetIs (go.GoType.PointerType (Box.ty T₀)) []
 
 attribute [instance] Box.TypeAssumptions.type_repr
   Box.TypeAssumptions.underlying
-  Box.TypeAssumptions.get_v
-  Box.TypeAssumptions.set_v
+  Box.TypeAssumptions.get'v
+  Box.TypeAssumptions.set'v
   Box.TypeAssumptions.method_set
   Box.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Y_instance : Y.TypeAssumptions
-  Box_instance : Box.TypeAssumptions
+  instance'Y : Y.TypeAssumptions
+  instance'Box : Box.TypeAssumptions
 
-attribute [instance] Assumptions.Y_instance
-  Assumptions.Box_instance
+attribute [instance] Assumptions.instance'Y
+  Assumptions.instance'Box
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep2
 

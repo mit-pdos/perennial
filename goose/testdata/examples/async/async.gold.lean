@@ -66,13 +66,13 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.github_com.goose_lang.primitive.async_disk.initialize') (Val #())))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  TakesDisk_unfold : FuncUnfold TakesDisk [] TakesDisk.impl
-  UseDisk_unfold : FuncUnfold UseDisk [] UseDisk.impl
-  import_async_disk_Assumption : _root_.Perennial.github_com.goose_lang.primitive.async_disk.Assumptions
+  unfold'TakesDisk : FuncUnfold TakesDisk [] TakesDisk.impl
+  unfold'UseDisk : FuncUnfold UseDisk [] UseDisk.impl
+  import'async_disk : _root_.Perennial.github_com.goose_lang.primitive.async_disk.Assumptions
 
-attribute [instance] Assumptions.TakesDisk_unfold
-  Assumptions.UseDisk_unfold
-  Assumptions.import_async_disk_Assumption
+attribute [instance] Assumptions.unfold'TakesDisk
+  Assumptions.unfold'UseDisk
+  Assumptions.import'async_disk
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.async
 

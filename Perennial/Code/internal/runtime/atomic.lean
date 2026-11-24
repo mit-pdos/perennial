@@ -65,8 +65,8 @@ noncomputable def UnsafePointer.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] UnsafePointer.ty
 
-noncomputable def Pointer.ty [GooseExts] [GoGlobalContext] (T : go.GoType) : go.GoType :=
-  (go.GoType.Named go!"internal/runtime/atomic.Pointer" [T])
+noncomputable def Pointer.ty [GooseExts] [GoGlobalContext] (T₀ : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"internal/runtime/atomic.Pointer" [T₀])
 
 attribute [irreducible] Pointer.ty
 
@@ -263,7 +263,7 @@ noncomputable instance noCopy.zero_val [GooseExts] : ZeroVal noCopy :=
 @[irreducible] noncomputable def noCopy.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   noCopy.fieldsUnsealed
 
-noncomputable instance equals_unfold_noCopy [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'noCopy [GooseExts] [GoGlobalContext] :
     EqualsUnfold noCopy.fields noCopy.fieldsUnsealed :=
   ⟨by unfold noCopy.fields; rfl⟩
 
@@ -296,7 +296,7 @@ noncomputable instance Int32.zero_val [GooseExts] : ZeroVal Int32 :=
 @[irreducible] noncomputable def Int32.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Int32.fieldsUnsealed
 
-noncomputable instance equals_unfold_Int32 [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Int32 [GooseExts] [GoGlobalContext] :
     EqualsUnfold Int32.fields Int32.fieldsUnsealed :=
   ⟨by unfold Int32.fields; rfl⟩
 
@@ -306,19 +306,19 @@ noncomputable instance equals_unfold_Int32 [GooseExts] [GoGlobalContext] :
 class Int32.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Int32.underlying Int32
   underlying : go.UnderlyingDirectedEq Int32.ty Int32.underlying
-  get_noCopy : ∀ (x : Int32), go.IsGoStepPureDetTagged under (StructFieldGet Int32.underlying go!"noCopy") #x (Val #(x.noCopy'))
-  set_noCopy : ∀ (x : Int32) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Int32.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Int32)))
-  get_value : ∀ (x : Int32), go.IsGoStepPureDetTagged under (StructFieldGet Int32.underlying go!"value") #x (Val #(x.value'))
-  set_value : ∀ (x : Int32) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Int32.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Int32)))
+  get'noCopy : ∀ (x : Int32), go.IsGoStepPureDetTagged under (StructFieldGet Int32.underlying go!"noCopy") #x (Val #(x.noCopy'))
+  set'noCopy : ∀ (x : Int32) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Int32.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Int32)))
+  get'value : ∀ (x : Int32), go.IsGoStepPureDetTagged under (StructFieldGet Int32.underlying go!"value") #x (Val #(x.value'))
+  set'value : ∀ (x : Int32) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Int32.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Int32)))
   method_set : go.MethodSetIs Int32.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Int32.ty) [(go!"Add", (some (go.signature.Signature [go.int32] false [go.int32]))), (go!"CompareAndSwap", (some (go.signature.Signature [go.int32, go.int32] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [go.int32]))), (go!"Store", (some (go.signature.Signature [go.int32] false []))), (go!"Swap", (some (go.signature.Signature [go.int32] false [go.int32])))]
 
 attribute [instance] Int32.TypeAssumptions.type_repr
   Int32.TypeAssumptions.underlying
-  Int32.TypeAssumptions.get_noCopy
-  Int32.TypeAssumptions.set_noCopy
-  Int32.TypeAssumptions.get_value
-  Int32.TypeAssumptions.set_value
+  Int32.TypeAssumptions.get'noCopy
+  Int32.TypeAssumptions.set'noCopy
+  Int32.TypeAssumptions.get'value
+  Int32.TypeAssumptions.set'value
   Int32.TypeAssumptions.method_set
   Int32.TypeAssumptions.ptr_method_set
 
@@ -334,7 +334,7 @@ noncomputable instance align64.zero_val [GooseExts] : ZeroVal align64 :=
 @[irreducible] noncomputable def align64.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   align64.fieldsUnsealed
 
-noncomputable instance equals_unfold_align64 [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'align64 [GooseExts] [GoGlobalContext] :
     EqualsUnfold align64.fields align64.fieldsUnsealed :=
   ⟨by unfold align64.fields; rfl⟩
 
@@ -369,7 +369,7 @@ noncomputable instance Int64.zero_val [GooseExts] : ZeroVal Int64 :=
 @[irreducible] noncomputable def Int64.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Int64.fieldsUnsealed
 
-noncomputable instance equals_unfold_Int64 [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Int64 [GooseExts] [GoGlobalContext] :
     EqualsUnfold Int64.fields Int64.fieldsUnsealed :=
   ⟨by unfold Int64.fields; rfl⟩
 
@@ -379,23 +379,23 @@ noncomputable instance equals_unfold_Int64 [GooseExts] [GoGlobalContext] :
 class Int64.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Int64.underlying Int64
   underlying : go.UnderlyingDirectedEq Int64.ty Int64.underlying
-  get_noCopy : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"noCopy") #x (Val #(x.noCopy'))
-  set_noCopy : ∀ (x : Int64) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Int64)))
-  «get__#1» : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"_#1") #x (Val #(x.«_#1'»))
-  «set__#1» : ∀ (x : Int64) (y : align64), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"_#1") (PairV #x #y) (Val #(({ x with «_#1'» := y } : Int64)))
-  get_value : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"value") #x (Val #(x.value'))
-  set_value : ∀ (x : Int64) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Int64)))
+  get'noCopy : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"noCopy") #x (Val #(x.noCopy'))
+  set'noCopy : ∀ (x : Int64) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Int64)))
+  «get'_#1» : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"_#1") #x (Val #(x.«_#1'»))
+  «set'_#1» : ∀ (x : Int64) (y : align64), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"_#1") (PairV #x #y) (Val #(({ x with «_#1'» := y } : Int64)))
+  get'value : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"value") #x (Val #(x.value'))
+  set'value : ∀ (x : Int64) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Int64)))
   method_set : go.MethodSetIs Int64.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Int64.ty) [(go!"Add", (some (go.signature.Signature [go.int64] false [go.int64]))), (go!"CompareAndSwap", (some (go.signature.Signature [go.int64, go.int64] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [go.int64]))), (go!"Store", (some (go.signature.Signature [go.int64] false []))), (go!"Swap", (some (go.signature.Signature [go.int64] false [go.int64])))]
 
 attribute [instance] Int64.TypeAssumptions.type_repr
   Int64.TypeAssumptions.underlying
-  Int64.TypeAssumptions.get_noCopy
-  Int64.TypeAssumptions.set_noCopy
-  Int64.TypeAssumptions.«get__#1»
-  Int64.TypeAssumptions.«set__#1»
-  Int64.TypeAssumptions.get_value
-  Int64.TypeAssumptions.set_value
+  Int64.TypeAssumptions.get'noCopy
+  Int64.TypeAssumptions.set'noCopy
+  Int64.TypeAssumptions.«get'_#1»
+  Int64.TypeAssumptions.«set'_#1»
+  Int64.TypeAssumptions.get'value
+  Int64.TypeAssumptions.set'value
   Int64.TypeAssumptions.method_set
   Int64.TypeAssumptions.ptr_method_set
 
@@ -414,7 +414,7 @@ noncomputable instance Uint8.zero_val [GooseExts] : ZeroVal Uint8 :=
 @[irreducible] noncomputable def Uint8.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Uint8.fieldsUnsealed
 
-noncomputable instance equals_unfold_Uint8 [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Uint8 [GooseExts] [GoGlobalContext] :
     EqualsUnfold Uint8.fields Uint8.fieldsUnsealed :=
   ⟨by unfold Uint8.fields; rfl⟩
 
@@ -424,19 +424,19 @@ noncomputable instance equals_unfold_Uint8 [GooseExts] [GoGlobalContext] :
 class Uint8.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Uint8.underlying Uint8
   underlying : go.UnderlyingDirectedEq Uint8.ty Uint8.underlying
-  get_noCopy : ∀ (x : Uint8), go.IsGoStepPureDetTagged under (StructFieldGet Uint8.underlying go!"noCopy") #x (Val #(x.noCopy'))
-  set_noCopy : ∀ (x : Uint8) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint8.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Uint8)))
-  get_value : ∀ (x : Uint8), go.IsGoStepPureDetTagged under (StructFieldGet Uint8.underlying go!"value") #x (Val #(x.value'))
-  set_value : ∀ (x : Uint8) (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet Uint8.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Uint8)))
+  get'noCopy : ∀ (x : Uint8), go.IsGoStepPureDetTagged under (StructFieldGet Uint8.underlying go!"noCopy") #x (Val #(x.noCopy'))
+  set'noCopy : ∀ (x : Uint8) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint8.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Uint8)))
+  get'value : ∀ (x : Uint8), go.IsGoStepPureDetTagged under (StructFieldGet Uint8.underlying go!"value") #x (Val #(x.value'))
+  set'value : ∀ (x : Uint8) (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet Uint8.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Uint8)))
   method_set : go.MethodSetIs Uint8.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Uint8.ty) [(go!"And", (some (go.signature.Signature [go.uint8] false []))), (go!"Load", (some (go.signature.Signature [] false [go.uint8]))), (go!"Or", (some (go.signature.Signature [go.uint8] false []))), (go!"Store", (some (go.signature.Signature [go.uint8] false [])))]
 
 attribute [instance] Uint8.TypeAssumptions.type_repr
   Uint8.TypeAssumptions.underlying
-  Uint8.TypeAssumptions.get_noCopy
-  Uint8.TypeAssumptions.set_noCopy
-  Uint8.TypeAssumptions.get_value
-  Uint8.TypeAssumptions.set_value
+  Uint8.TypeAssumptions.get'noCopy
+  Uint8.TypeAssumptions.set'noCopy
+  Uint8.TypeAssumptions.get'value
+  Uint8.TypeAssumptions.set'value
   Uint8.TypeAssumptions.method_set
   Uint8.TypeAssumptions.ptr_method_set
 
@@ -453,7 +453,7 @@ noncomputable instance Bool''.zero_val [GooseExts] : ZeroVal Bool'' :=
 @[irreducible] noncomputable def Bool''.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Bool''.fieldsUnsealed
 
-noncomputable instance equals_unfold_Bool [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Bool [GooseExts] [GoGlobalContext] :
     EqualsUnfold Bool''.fields Bool''.fieldsUnsealed :=
   ⟨by unfold Bool''.fields; rfl⟩
 
@@ -463,15 +463,15 @@ noncomputable instance equals_unfold_Bool [GooseExts] [GoGlobalContext] :
 class Bool''.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Bool''.underlying Bool''
   underlying : go.UnderlyingDirectedEq Bool''.ty Bool''.underlying
-  get_u : ∀ (x : Bool''), go.IsGoStepPureDetTagged under (StructFieldGet Bool''.underlying go!"u") #x (Val #(x.u'))
-  set_u : ∀ (x : Bool'') (y : Uint8), go.IsGoStepPureDetTagged under (StructFieldSet Bool''.underlying go!"u") (PairV #x #y) (Val #(({ x with u' := y } : Bool'')))
+  get'u : ∀ (x : Bool''), go.IsGoStepPureDetTagged under (StructFieldGet Bool''.underlying go!"u") #x (Val #(x.u'))
+  set'u : ∀ (x : Bool'') (y : Uint8), go.IsGoStepPureDetTagged under (StructFieldSet Bool''.underlying go!"u") (PairV #x #y) (Val #(({ x with u' := y } : Bool'')))
   method_set : go.MethodSetIs Bool''.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Bool''.ty) [(go!"Load", (some (go.signature.Signature [] false [go.bool]))), (go!"Store", (some (go.signature.Signature [go.bool] false [])))]
 
 attribute [instance] Bool''.TypeAssumptions.type_repr
   Bool''.TypeAssumptions.underlying
-  Bool''.TypeAssumptions.get_u
-  Bool''.TypeAssumptions.set_u
+  Bool''.TypeAssumptions.get'u
+  Bool''.TypeAssumptions.set'u
   Bool''.TypeAssumptions.method_set
   Bool''.TypeAssumptions.ptr_method_set
 
@@ -490,7 +490,7 @@ noncomputable instance Uint32.zero_val [GooseExts] : ZeroVal Uint32 :=
 @[irreducible] noncomputable def Uint32.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Uint32.fieldsUnsealed
 
-noncomputable instance equals_unfold_Uint32 [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Uint32 [GooseExts] [GoGlobalContext] :
     EqualsUnfold Uint32.fields Uint32.fieldsUnsealed :=
   ⟨by unfold Uint32.fields; rfl⟩
 
@@ -500,19 +500,19 @@ noncomputable instance equals_unfold_Uint32 [GooseExts] [GoGlobalContext] :
 class Uint32.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Uint32.underlying Uint32
   underlying : go.UnderlyingDirectedEq Uint32.ty Uint32.underlying
-  get_noCopy : ∀ (x : Uint32), go.IsGoStepPureDetTagged under (StructFieldGet Uint32.underlying go!"noCopy") #x (Val #(x.noCopy'))
-  set_noCopy : ∀ (x : Uint32) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint32.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Uint32)))
-  get_value : ∀ (x : Uint32), go.IsGoStepPureDetTagged under (StructFieldGet Uint32.underlying go!"value") #x (Val #(x.value'))
-  set_value : ∀ (x : Uint32) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Uint32.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Uint32)))
+  get'noCopy : ∀ (x : Uint32), go.IsGoStepPureDetTagged under (StructFieldGet Uint32.underlying go!"noCopy") #x (Val #(x.noCopy'))
+  set'noCopy : ∀ (x : Uint32) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint32.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Uint32)))
+  get'value : ∀ (x : Uint32), go.IsGoStepPureDetTagged under (StructFieldGet Uint32.underlying go!"value") #x (Val #(x.value'))
+  set'value : ∀ (x : Uint32) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Uint32.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Uint32)))
   method_set : go.MethodSetIs Uint32.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Uint32.ty) [(go!"Add", (some (go.signature.Signature [go.int32] false [go.uint32]))), (go!"And", (some (go.signature.Signature [go.uint32] false []))), (go!"CompareAndSwap", (some (go.signature.Signature [go.uint32, go.uint32] false [go.bool]))), (go!"CompareAndSwapRelease", (some (go.signature.Signature [go.uint32, go.uint32] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [go.uint32]))), (go!"LoadAcquire", (some (go.signature.Signature [] false [go.uint32]))), (go!"Or", (some (go.signature.Signature [go.uint32] false []))), (go!"Store", (some (go.signature.Signature [go.uint32] false []))), (go!"StoreRelease", (some (go.signature.Signature [go.uint32] false []))), (go!"Swap", (some (go.signature.Signature [go.uint32] false [go.uint32])))]
 
 attribute [instance] Uint32.TypeAssumptions.type_repr
   Uint32.TypeAssumptions.underlying
-  Uint32.TypeAssumptions.get_noCopy
-  Uint32.TypeAssumptions.set_noCopy
-  Uint32.TypeAssumptions.get_value
-  Uint32.TypeAssumptions.set_value
+  Uint32.TypeAssumptions.get'noCopy
+  Uint32.TypeAssumptions.set'noCopy
+  Uint32.TypeAssumptions.get'value
+  Uint32.TypeAssumptions.set'value
   Uint32.TypeAssumptions.method_set
   Uint32.TypeAssumptions.ptr_method_set
 
@@ -533,7 +533,7 @@ noncomputable instance Uint64.zero_val [GooseExts] : ZeroVal Uint64 :=
 @[irreducible] noncomputable def Uint64.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Uint64.fieldsUnsealed
 
-noncomputable instance equals_unfold_Uint64 [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Uint64 [GooseExts] [GoGlobalContext] :
     EqualsUnfold Uint64.fields Uint64.fieldsUnsealed :=
   ⟨by unfold Uint64.fields; rfl⟩
 
@@ -543,23 +543,23 @@ noncomputable instance equals_unfold_Uint64 [GooseExts] [GoGlobalContext] :
 class Uint64.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Uint64.underlying Uint64
   underlying : go.UnderlyingDirectedEq Uint64.ty Uint64.underlying
-  get_noCopy : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"noCopy") #x (Val #(x.noCopy'))
-  set_noCopy : ∀ (x : Uint64) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Uint64)))
-  «get__#1» : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"_#1") #x (Val #(x.«_#1'»))
-  «set__#1» : ∀ (x : Uint64) (y : align64), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"_#1") (PairV #x #y) (Val #(({ x with «_#1'» := y } : Uint64)))
-  get_value : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"value") #x (Val #(x.value'))
-  set_value : ∀ (x : Uint64) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Uint64)))
+  get'noCopy : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"noCopy") #x (Val #(x.noCopy'))
+  set'noCopy : ∀ (x : Uint64) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Uint64)))
+  «get'_#1» : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"_#1") #x (Val #(x.«_#1'»))
+  «set'_#1» : ∀ (x : Uint64) (y : align64), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"_#1") (PairV #x #y) (Val #(({ x with «_#1'» := y } : Uint64)))
+  get'value : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"value") #x (Val #(x.value'))
+  set'value : ∀ (x : Uint64) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Uint64)))
   method_set : go.MethodSetIs Uint64.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Uint64.ty) [(go!"Add", (some (go.signature.Signature [go.int64] false [go.uint64]))), (go!"CompareAndSwap", (some (go.signature.Signature [go.uint64, go.uint64] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [go.uint64]))), (go!"LoadAcquire", (some (go.signature.Signature [] false [go.uint64]))), (go!"Store", (some (go.signature.Signature [go.uint64] false []))), (go!"StoreRelease", (some (go.signature.Signature [go.uint64] false []))), (go!"Swap", (some (go.signature.Signature [go.uint64] false [go.uint64])))]
 
 attribute [instance] Uint64.TypeAssumptions.type_repr
   Uint64.TypeAssumptions.underlying
-  Uint64.TypeAssumptions.get_noCopy
-  Uint64.TypeAssumptions.set_noCopy
-  Uint64.TypeAssumptions.«get__#1»
-  Uint64.TypeAssumptions.«set__#1»
-  Uint64.TypeAssumptions.get_value
-  Uint64.TypeAssumptions.set_value
+  Uint64.TypeAssumptions.get'noCopy
+  Uint64.TypeAssumptions.set'noCopy
+  Uint64.TypeAssumptions.«get'_#1»
+  Uint64.TypeAssumptions.«set'_#1»
+  Uint64.TypeAssumptions.get'value
+  Uint64.TypeAssumptions.set'value
   Uint64.TypeAssumptions.method_set
   Uint64.TypeAssumptions.ptr_method_set
 
@@ -578,7 +578,7 @@ noncomputable instance Uintptr.zero_val [GooseExts] : ZeroVal Uintptr :=
 @[irreducible] noncomputable def Uintptr.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Uintptr.fieldsUnsealed
 
-noncomputable instance equals_unfold_Uintptr [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Uintptr [GooseExts] [GoGlobalContext] :
     EqualsUnfold Uintptr.fields Uintptr.fieldsUnsealed :=
   ⟨by unfold Uintptr.fields; rfl⟩
 
@@ -588,19 +588,19 @@ noncomputable instance equals_unfold_Uintptr [GooseExts] [GoGlobalContext] :
 class Uintptr.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Uintptr.underlying Uintptr
   underlying : go.UnderlyingDirectedEq Uintptr.ty Uintptr.underlying
-  get_noCopy : ∀ (x : Uintptr), go.IsGoStepPureDetTagged under (StructFieldGet Uintptr.underlying go!"noCopy") #x (Val #(x.noCopy'))
-  set_noCopy : ∀ (x : Uintptr) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uintptr.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Uintptr)))
-  get_value : ∀ (x : Uintptr), go.IsGoStepPureDetTagged under (StructFieldGet Uintptr.underlying go!"value") #x (Val #(x.value'))
-  set_value : ∀ (x : Uintptr) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Uintptr.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Uintptr)))
+  get'noCopy : ∀ (x : Uintptr), go.IsGoStepPureDetTagged under (StructFieldGet Uintptr.underlying go!"noCopy") #x (Val #(x.noCopy'))
+  set'noCopy : ∀ (x : Uintptr) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uintptr.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Uintptr)))
+  get'value : ∀ (x : Uintptr), go.IsGoStepPureDetTagged under (StructFieldGet Uintptr.underlying go!"value") #x (Val #(x.value'))
+  set'value : ∀ (x : Uintptr) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Uintptr.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Uintptr)))
   method_set : go.MethodSetIs Uintptr.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Uintptr.ty) [(go!"Add", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"CompareAndSwap", (some (go.signature.Signature [go.uintptr, go.uintptr] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [go.uintptr]))), (go!"LoadAcquire", (some (go.signature.Signature [] false [go.uintptr]))), (go!"Store", (some (go.signature.Signature [go.uintptr] false []))), (go!"StoreRelease", (some (go.signature.Signature [go.uintptr] false []))), (go!"Swap", (some (go.signature.Signature [go.uintptr] false [go.uintptr])))]
 
 attribute [instance] Uintptr.TypeAssumptions.type_repr
   Uintptr.TypeAssumptions.underlying
-  Uintptr.TypeAssumptions.get_noCopy
-  Uintptr.TypeAssumptions.set_noCopy
-  Uintptr.TypeAssumptions.get_value
-  Uintptr.TypeAssumptions.set_value
+  Uintptr.TypeAssumptions.get'noCopy
+  Uintptr.TypeAssumptions.set'noCopy
+  Uintptr.TypeAssumptions.get'value
+  Uintptr.TypeAssumptions.set'value
   Uintptr.TypeAssumptions.method_set
   Uintptr.TypeAssumptions.ptr_method_set
 
@@ -617,7 +617,7 @@ noncomputable instance Float64.zero_val [GooseExts] : ZeroVal Float64 :=
 @[irreducible] noncomputable def Float64.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Float64.fieldsUnsealed
 
-noncomputable instance equals_unfold_Float64 [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Float64 [GooseExts] [GoGlobalContext] :
     EqualsUnfold Float64.fields Float64.fieldsUnsealed :=
   ⟨by unfold Float64.fields; rfl⟩
 
@@ -627,15 +627,15 @@ noncomputable instance equals_unfold_Float64 [GooseExts] [GoGlobalContext] :
 class Float64.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Float64.underlying Float64
   underlying : go.UnderlyingDirectedEq Float64.ty Float64.underlying
-  get_u : ∀ (x : Float64), go.IsGoStepPureDetTagged under (StructFieldGet Float64.underlying go!"u") #x (Val #(x.u'))
-  set_u : ∀ (x : Float64) (y : Uint64), go.IsGoStepPureDetTagged under (StructFieldSet Float64.underlying go!"u") (PairV #x #y) (Val #(({ x with u' := y } : Float64)))
+  get'u : ∀ (x : Float64), go.IsGoStepPureDetTagged under (StructFieldGet Float64.underlying go!"u") #x (Val #(x.u'))
+  set'u : ∀ (x : Float64) (y : Uint64), go.IsGoStepPureDetTagged under (StructFieldSet Float64.underlying go!"u") (PairV #x #y) (Val #(({ x with u' := y } : Float64)))
   method_set : go.MethodSetIs Float64.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Float64.ty) [(go!"Load", (some (go.signature.Signature [] false [go.float64]))), (go!"Store", (some (go.signature.Signature [go.float64] false [])))]
 
 attribute [instance] Float64.TypeAssumptions.type_repr
   Float64.TypeAssumptions.underlying
-  Float64.TypeAssumptions.get_u
-  Float64.TypeAssumptions.set_u
+  Float64.TypeAssumptions.get'u
+  Float64.TypeAssumptions.set'u
   Float64.TypeAssumptions.method_set
   Float64.TypeAssumptions.ptr_method_set
 
@@ -654,7 +654,7 @@ noncomputable instance UnsafePointer.zero_val [GooseExts] : ZeroVal UnsafePointe
 @[irreducible] noncomputable def UnsafePointer.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   UnsafePointer.fieldsUnsealed
 
-noncomputable instance equals_unfold_UnsafePointer [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'UnsafePointer [GooseExts] [GoGlobalContext] :
     EqualsUnfold UnsafePointer.fields UnsafePointer.fieldsUnsealed :=
   ⟨by unfold UnsafePointer.fields; rfl⟩
 
@@ -664,83 +664,83 @@ noncomputable instance equals_unfold_UnsafePointer [GooseExts] [GoGlobalContext]
 class UnsafePointer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying UnsafePointer.underlying UnsafePointer
   underlying : go.UnderlyingDirectedEq UnsafePointer.ty UnsafePointer.underlying
-  get_noCopy : ∀ (x : UnsafePointer), go.IsGoStepPureDetTagged under (StructFieldGet UnsafePointer.underlying go!"noCopy") #x (Val #(x.noCopy'))
-  set_noCopy : ∀ (x : UnsafePointer) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet UnsafePointer.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : UnsafePointer)))
-  get_value : ∀ (x : UnsafePointer), go.IsGoStepPureDetTagged under (StructFieldGet UnsafePointer.underlying go!"value") #x (Val #(x.value'))
-  set_value : ∀ (x : UnsafePointer) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet UnsafePointer.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : UnsafePointer)))
+  get'noCopy : ∀ (x : UnsafePointer), go.IsGoStepPureDetTagged under (StructFieldGet UnsafePointer.underlying go!"noCopy") #x (Val #(x.noCopy'))
+  set'noCopy : ∀ (x : UnsafePointer) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet UnsafePointer.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : UnsafePointer)))
+  get'value : ∀ (x : UnsafePointer), go.IsGoStepPureDetTagged under (StructFieldGet UnsafePointer.underlying go!"value") #x (Val #(x.value'))
+  set'value : ∀ (x : UnsafePointer) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet UnsafePointer.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : UnsafePointer)))
   method_set : go.MethodSetIs UnsafePointer.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType UnsafePointer.ty) [(go!"CompareAndSwap", (some (go.signature.Signature [«unsafe».Pointer, «unsafe».Pointer] false [go.bool]))), (go!"CompareAndSwapNoWB", (some (go.signature.Signature [«unsafe».Pointer, «unsafe».Pointer] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [«unsafe».Pointer]))), (go!"Store", (some (go.signature.Signature [«unsafe».Pointer] false []))), (go!"StoreNoWB", (some (go.signature.Signature [«unsafe».Pointer] false [])))]
 
 attribute [instance] UnsafePointer.TypeAssumptions.type_repr
   UnsafePointer.TypeAssumptions.underlying
-  UnsafePointer.TypeAssumptions.get_noCopy
-  UnsafePointer.TypeAssumptions.set_noCopy
-  UnsafePointer.TypeAssumptions.get_value
-  UnsafePointer.TypeAssumptions.set_value
+  UnsafePointer.TypeAssumptions.get'noCopy
+  UnsafePointer.TypeAssumptions.set'noCopy
+  UnsafePointer.TypeAssumptions.get'value
+  UnsafePointer.TypeAssumptions.set'value
   UnsafePointer.TypeAssumptions.method_set
   UnsafePointer.TypeAssumptions.ptr_method_set
 
-structure Pointer [GooseExts] (T : Type) where
+structure Pointer [GooseExts] (T₀ : Type) where
   mk ::
   u' : UnsafePointer
 
-noncomputable instance Pointer.zero_val [GooseExts] {T : Type} [ZeroVal T] : ZeroVal (Pointer T) :=
+noncomputable instance Pointer.zero_val [GooseExts] {T₀ : Type} [ZeroVal T₀] : ZeroVal (Pointer T₀) :=
   ⟨Pointer.mk zeroValDef⟩
 
-@[reducible] noncomputable def Pointer.fieldsUnsealed [GooseExts] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+@[reducible] noncomputable def Pointer.fieldsUnsealed [GooseExts] [GoGlobalContext] (T₀ : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"u" UnsafePointer.ty)]
 
-@[irreducible] noncomputable def Pointer.fields [GooseExts] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
-  (Pointer.fieldsUnsealed T)
+@[irreducible] noncomputable def Pointer.fields [GooseExts] [GoGlobalContext] (T₀ : go.GoType) : List go.field_decl :=
+  (Pointer.fieldsUnsealed T₀)
 
-noncomputable instance equals_unfold_Pointer [GooseExts] [GoGlobalContext] (T : go.GoType) :
-    EqualsUnfold (Pointer.fields T) (Pointer.fieldsUnsealed T) :=
+noncomputable instance equals_unfold'Pointer [GooseExts] [GoGlobalContext] (T₀ : go.GoType) :
+    EqualsUnfold (Pointer.fields T₀) (Pointer.fieldsUnsealed T₀) :=
   ⟨by unfold Pointer.fields; rfl⟩
 
-@[reducible] noncomputable def Pointer.underlying [GooseExts] [GoGlobalContext] (T : go.GoType) : go.GoType :=
-  (go.GoType.StructType (Pointer.fields T))
+@[reducible] noncomputable def Pointer.underlying [GooseExts] [GoGlobalContext] (T₀ : go.GoType) : go.GoType :=
+  (go.GoType.StructType (Pointer.fields T₀))
 
 class Pointer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (Pointer.underlying T) (Pointer T')
-  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Pointer.ty T) (Pointer.underlying T)
-  get_u : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')), go.IsGoStepPureDetTagged under (StructFieldGet (Pointer.underlying T) go!"u") #x (Val #(x.u'))
-  set_u : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')) (y : UnsafePointer), go.IsGoStepPureDetTagged under (StructFieldSet (Pointer.underlying T) go!"u") (PairV #x #y) (Val #(({ x with u' := y } : (Pointer T'))))
-  method_set : ∀ (T : go.GoType), go.MethodSetIs (Pointer.ty T) []
-  ptr_method_set : ∀ (T : go.GoType), go.MethodSetIs (go.GoType.PointerType (Pointer.ty T)) [(go!"CompareAndSwap", (some (go.signature.Signature [(go.GoType.PointerType T), (go.GoType.PointerType T)] false [go.bool]))), (go!"CompareAndSwapNoWB", (some (go.signature.Signature [(go.GoType.PointerType T), (go.GoType.PointerType T)] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [(go.GoType.PointerType T)]))), (go!"Store", (some (go.signature.Signature [(go.GoType.PointerType T)] false []))), (go!"StoreNoWB", (some (go.signature.Signature [(go.GoType.PointerType T)] false [])))]
+  type_repr : ∀ (T₀ : go.GoType) (T₀' : Type) [ZeroVal T₀'] [TypeRepr T₀ T₀'], go.TypeReprUnderlying (Pointer.underlying T₀) (Pointer T₀')
+  underlying : ∀ (T₀ : go.GoType), go.UnderlyingDirectedEq (Pointer.ty T₀) (Pointer.underlying T₀)
+  get'u : ∀ (T₀ : go.GoType) (T₀' : Type) (x : (Pointer T₀')), go.IsGoStepPureDetTagged under (StructFieldGet (Pointer.underlying T₀) go!"u") #x (Val #(x.u'))
+  set'u : ∀ (T₀ : go.GoType) (T₀' : Type) (x : (Pointer T₀')) (y : UnsafePointer), go.IsGoStepPureDetTagged under (StructFieldSet (Pointer.underlying T₀) go!"u") (PairV #x #y) (Val #(({ x with u' := y } : (Pointer T₀'))))
+  method_set : ∀ (T₀ : go.GoType), go.MethodSetIs (Pointer.ty T₀) []
+  ptr_method_set : ∀ (T₀ : go.GoType), go.MethodSetIs (go.GoType.PointerType (Pointer.ty T₀)) [(go!"CompareAndSwap", (some (go.signature.Signature [(go.GoType.PointerType T₀), (go.GoType.PointerType T₀)] false [go.bool]))), (go!"CompareAndSwapNoWB", (some (go.signature.Signature [(go.GoType.PointerType T₀), (go.GoType.PointerType T₀)] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [(go.GoType.PointerType T₀)]))), (go!"Store", (some (go.signature.Signature [(go.GoType.PointerType T₀)] false []))), (go!"StoreNoWB", (some (go.signature.Signature [(go.GoType.PointerType T₀)] false [])))]
 
 attribute [instance] Pointer.TypeAssumptions.type_repr
   Pointer.TypeAssumptions.underlying
-  Pointer.TypeAssumptions.get_u
-  Pointer.TypeAssumptions.set_u
+  Pointer.TypeAssumptions.get'u
+  Pointer.TypeAssumptions.set'u
   Pointer.TypeAssumptions.method_set
   Pointer.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Int32_instance : Int32.TypeAssumptions
-  Int64_instance : Int64.TypeAssumptions
-  Uint8_instance : Uint8.TypeAssumptions
-  Bool_instance : Bool''.TypeAssumptions
-  Uint32_instance : Uint32.TypeAssumptions
-  Uint64_instance : Uint64.TypeAssumptions
-  Uintptr_instance : Uintptr.TypeAssumptions
-  Float64_instance : Float64.TypeAssumptions
-  UnsafePointer_instance : UnsafePointer.TypeAssumptions
-  Pointer_instance : Pointer.TypeAssumptions
-  noCopy_instance : noCopy.TypeAssumptions
-  align64_instance : align64.TypeAssumptions
+  instance'Int32 : Int32.TypeAssumptions
+  instance'Int64 : Int64.TypeAssumptions
+  instance'Uint8 : Uint8.TypeAssumptions
+  instance'Bool : Bool''.TypeAssumptions
+  instance'Uint32 : Uint32.TypeAssumptions
+  instance'Uint64 : Uint64.TypeAssumptions
+  instance'Uintptr : Uintptr.TypeAssumptions
+  instance'Float64 : Float64.TypeAssumptions
+  instance'UnsafePointer : UnsafePointer.TypeAssumptions
+  instance'Pointer : Pointer.TypeAssumptions
+  instance'noCopy : noCopy.TypeAssumptions
+  instance'align64 : align64.TypeAssumptions
 
-attribute [instance] Assumptions.Int32_instance
-  Assumptions.Int64_instance
-  Assumptions.Uint8_instance
-  Assumptions.Bool_instance
-  Assumptions.Uint32_instance
-  Assumptions.Uint64_instance
-  Assumptions.Uintptr_instance
-  Assumptions.Float64_instance
-  Assumptions.UnsafePointer_instance
-  Assumptions.Pointer_instance
-  Assumptions.noCopy_instance
-  Assumptions.align64_instance
+attribute [instance] Assumptions.instance'Int32
+  Assumptions.instance'Int64
+  Assumptions.instance'Uint8
+  Assumptions.instance'Bool
+  Assumptions.instance'Uint32
+  Assumptions.instance'Uint64
+  Assumptions.instance'Uintptr
+  Assumptions.instance'Float64
+  Assumptions.instance'UnsafePointer
+  Assumptions.instance'Pointer
+  Assumptions.instance'noCopy
+  Assumptions.instance'align64
 
 end internal.runtime.atomic
 

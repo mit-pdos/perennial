@@ -287,81 +287,81 @@ noncomputable def rotateOrdered [GooseExts] [GoGlobalContext] : GoString :=
     If seq is empty, the result preserves the nilness of s.
 
     go: iter.go:50:6 -/
-noncomputable def AppendSeq.impl [GooseExts] [GoGlobalContext] (Slice'' E : go.GoType) : val :=
+noncomputable def AppendSeq.impl [GooseExts] [GoGlobalContext] (Slice₀ E₀ : go.GoType) : val :=
   (LamV "s"
   (Lam "seq"
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc Slice''))) (App (Val (GoInstruction (GoZeroVal Slice''))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Slice₀))) (App (Val (GoInstruction (GoZeroVal Slice₀))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "seq" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq''.ty E)))) (Var "seq"))
-  (Let "s" (App (Val (GoInstruction (GoAlloc Slice''))) (Var "s"))
+  (Let "seq" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq''.ty E₀)))) (Var "seq"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc Slice₀))) (Var "s"))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad Slice''))) (Var "s"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad Slice₀))) (Var "s"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore Slice''))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (Let "$range" (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq''.ty E)))) (Var "seq"))
-  (Let "v" (App (Val (GoInstruction (GoAlloc E))) (App (Val (GoInstruction (GoZeroVal E))) (Val #())))
+  (App (Val (GoInstruction (GoStore Slice₀))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq''.ty E₀)))) (Var "seq"))
+  (Let "v" (App (Val (GoInstruction (GoAlloc E₀))) (App (Val (GoInstruction (GoZeroVal E₀))) (Val #())))
   (App (App (Val (func.forRange 1)) (Var "$range"))
   (Lam "$key"
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad Slice''))) (Var "s"))
-  (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (GoLoad E))) (Var "v"))
-  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType E)))) (LiteralValue [(KeyedElement none (ElementExpression E (Var "$sl0")))])))
-  (App (App (App (Val (GoInstruction (FuncResolve go.append [Slice'']))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad Slice₀))) (Var "s"))
+  (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (GoLoad E₀))) (Var "v"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType E₀)))) (LiteralValue [(KeyedElement none (ElementExpression E₀ (Var "$sl0")))])))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [Slice₀]))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore Slice''))) (Pair (Var "s") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoStore Slice₀))) (Pair (Var "s") (Var "$r0")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "v") (Var "$key")))))))))))))
-  (App (Val (GoInstruction (GoLoad Slice''))) (Var "$res0"))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "v") (Var "$key")))))))))))))
+  (App (Val (GoInstruction (GoLoad Slice₀))) (Var "$res0"))))))
 
 /-- Collect collects values from seq into a new slice and returns it.
     If seq is empty, the result is nil.
 
     go: iter.go:59:6 -/
-noncomputable def Collect.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def Collect.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "seq"
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType E)))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType E₀)))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "seq" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq''.ty E)))) (Var "seq"))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType E)))) (Val UntypedNil))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq''.ty E)))) (Var "seq"))
-  (App (App (App (Val (GoInstruction (FuncResolve AppendSeq [(go.GoType.SliceType E), E]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (Let "seq" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq''.ty E₀)))) (Var "seq"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType E₀)))) (Val UntypedNil))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq''.ty E₀)))) (Var "seq"))
+  (App (App (App (Val (GoInstruction (FuncResolve AppendSeq [(go.GoType.SliceType E₀), E₀]))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType E)))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "$res0")))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType E₀)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "$res0")))))
 
 /-- Sorted collects values from seq into a new slice, sorts the slice,
     and returns it.
     If seq is empty, the result is nil.
 
     go: iter.go:66:6 -/
-noncomputable def Sorted.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def Sorted.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "seq"
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType E)))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType E₀)))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "seq" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq''.ty E)))) (Var "seq"))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq''.ty E)))) (Var "seq"))
-  (App (App (Val (GoInstruction (FuncResolve Collect [E]))) (Val #())) (Var "$a0")))
-  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType E)))) (Val #())))
+  (Let "seq" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq''.ty E₀)))) (Var "seq"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq''.ty E₀)))) (Var "seq"))
+  (App (App (Val (GoInstruction (FuncResolve Collect [E₀]))) (Val #())) (Var "$a0")))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType E₀)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "s"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "s"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType E)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType E₀)))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "s"))
-  (App (App (Val (GoInstruction (FuncResolve Sort'' [(go.GoType.SliceType E), E]))) (Val #())) (Var "$a0")))))))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve Sort'' [(go.GoType.SliceType E₀), E₀]))) (Val #())) (Var "$a0")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType E)))) (Pair (Var "s") (Var "$r0")))))))))
-  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "$res0")))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType E₀)))) (Pair (Var "s") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "$res0")))))
 
 /-- Clone returns a copy of the slice.
     The elements are copied using assignment, so this is a shallow clone.
@@ -369,30 +369,30 @@ noncomputable def Sorted.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : va
     The result preserves the nilness of s.
 
     go: slices.go:353:6 -/
-noncomputable def Clone.impl [GooseExts] [GoGlobalContext] (S E : go.GoType) : val :=
+noncomputable def Clone.impl [GooseExts] [GoGlobalContext] (S₀ E₀ : go.GoType) : val :=
   (LamV "s"
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc S))) (App (Val (GoInstruction (GoZeroVal S))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc S₀))) (App (Val (GoInstruction (GoZeroVal S₀))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "s" (App (Val (GoInstruction (GoAlloc S))) (Var "s"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc S₀))) (Var "s"))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (CompositeLiteral S))) (LiteralValue []))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad S))) (Var "s"))
-  (App (App (App (Val (GoInstruction (FuncResolve go.append [S]))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore S))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals S))) (Pair (App (Val (GoInstruction (GoLoad S))) (Var "s")) (App (Val (GoInstruction (Convert go.untypedNil S))) (Val UntypedNil)))))
-  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil S))) (Val UntypedNil))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (CompositeLiteral S₀))) (LiteralValue []))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad S₀))) (Var "s"))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [S₀]))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore S))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val (GoInstruction (GoStore S₀))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals S₀))) (Pair (App (Val (GoInstruction (GoLoad S₀))) (Var "s")) (App (Val (GoInstruction (Convert go.untypedNil S₀))) (Val UntypedNil)))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil S₀))) (Val UntypedNil))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore S₀))) (Pair (Var "$res0") (Var "$r0"))))))
   (App (Val doExecute)
   (Val #()))))))
-  (App (Val (GoInstruction (GoLoad S))) (Var "$res0")))))
+  (App (Val (GoInstruction (GoLoad S₀))) (Var "$res0")))))
 
 /-- Grow increases the slice's capacity, if necessary, to guarantee space for
     another n elements. After Grow(n), at least n elements can be appended
@@ -401,92 +401,92 @@ noncomputable def Clone.impl [GooseExts] [GoGlobalContext] (S E : go.GoType) : v
     The result preserves the nilness of s.
 
     go: slices.go:420:6 -/
-noncomputable def Grow.impl [GooseExts] [GoGlobalContext] (S E : go.GoType) : val :=
+noncomputable def Grow.impl [GooseExts] [GoGlobalContext] (S₀ E₀ : go.GoType) : val :=
   (LamV "s"
   (Lam "n"
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc S))) (App (Val (GoInstruction (GoZeroVal S))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc S₀))) (App (Val (GoInstruction (GoZeroVal S₀))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (Var "n"))
-  (Let "s" (App (Val (GoInstruction (GoAlloc S))) (Var "s"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc S₀))) (Var "s"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad S))) (Var "s"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad S₀))) (Var "s"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore S))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore S₀))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 0)))))
-  (Let "$r0" (Let "$s" (Let "$a0" (Let "$s" (App (Val (GoInstruction (GoLoad S))) (Var "s"))
-  (App (Val (GoInstruction (Slice S))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Let "$a0" (App (Val (GoInstruction (GoLoad S))) (Var "s"))
-  (App (App (Val (GoInstruction (FuncResolve go.cap [S]))) (Val #())) (Var "$a0"))))))
-  (Let "$a1" (App (Val (GoInstruction (Convert (go.GoType.SliceType E) S))) (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType E)]))) (Val #())) (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))))
-  (App (App (App (Val (GoInstruction (FuncResolve go.append [S]))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (App (Val (GoInstruction (Slice S))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Let "$a0" (App (Val (GoInstruction (GoLoad S))) (Var "s"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [S]))) (Val #())) (Var "$a0"))))))
+  (Let "$r0" (Let "$s" (Let "$a0" (Let "$s" (App (Val (GoInstruction (GoLoad S₀))) (Var "s"))
+  (App (Val (GoInstruction (Slice S₀))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Let "$a0" (App (Val (GoInstruction (GoLoad S₀))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.cap [S₀]))) (Val #())) (Var "$a0"))))))
+  (Let "$a1" (App (Val (GoInstruction (Convert (go.GoType.SliceType E₀) S₀))) (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType E₀)]))) (Val #())) (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [S₀]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (Val (GoInstruction (Slice S₀))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Let "$a0" (App (Val (GoInstruction (GoLoad S₀))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [S₀]))) (Val #())) (Var "$a0"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore S))) (Pair (Var "s") (Var "$r0")))))
+  (App (Val (GoInstruction (GoStore S₀))) (Pair (Var "s") (Var "$r0")))))
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad S))) (Var "s"))
-  (App (App (Val (GoInstruction (FuncResolve go.cap [S]))) (Val #())) (Var "$a0"))) (Let "$a0" (App (Val (GoInstruction (GoLoad S))) (Var "s"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [S]))) (Val #())) (Var "$a0"))))))))))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad S₀))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.cap [S₀]))) (Val #())) (Var "$a0"))) (Let "$a0" (App (Val (GoInstruction (GoLoad S₀))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [S₀]))) (Val #())) (Var "$a0"))))))))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 0)))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"cannot be negative")))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
   (App (Val doExecute)
   (Val #())))))))
-  (App (Val (GoInstruction (GoLoad S))) (Var "$res0"))))))
+  (App (Val (GoInstruction (GoLoad S₀))) (Var "$res0"))))))
 
 /-- Concat returns a new slice concatenating the passed in slices.
     If the concatenation is empty, the result is nil.
 
     go: slices.go:489:6 -/
-noncomputable def Concat.impl [GooseExts] [GoGlobalContext] (S E : go.GoType) : val :=
+noncomputable def Concat.impl [GooseExts] [GoGlobalContext] (S₀ E₀ : go.GoType) : val :=
   (LamV "slices"
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc S))) (App (Val (GoInstruction (GoZeroVal S))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc S₀))) (App (Val (GoInstruction (GoZeroVal S₀))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "slices" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType S)))) (Var "slices"))
+  (Let "slices" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType S₀)))) (Var "slices"))
   (Let "$r0" (Val #(W64 0))
   (Let "size" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert go.untypedNil S))) (Val UntypedNil))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert go.untypedNil S₀))) (Val UntypedNil))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "size"))
-  (App (App (App (Val (GoInstruction (FuncResolve Grow [S, E]))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (Let "newslice" (App (Val (GoInstruction (GoAlloc S))) (App (Val (GoInstruction (GoZeroVal S))) (Val #())))
+  (App (App (App (Val (GoInstruction (FuncResolve Grow [S₀, E₀]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (Let "newslice" (App (Val (GoInstruction (GoAlloc S₀))) (App (Val (GoInstruction (GoZeroVal S₀))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad S))) (Var "newslice"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad S₀))) (Var "newslice"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore S))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType S)))) (Var "slices"))
-  (Let "s" (App (Val (GoInstruction (GoAlloc S))) (App (Val (GoInstruction (GoZeroVal S))) (Val #())))
-  (App (App (Val (slice.forRange S)) (Var "$range"))
+  (App (Val (GoInstruction (GoStore S₀))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType S₀)))) (Var "slices"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc S₀))) (App (Val (GoInstruction (GoZeroVal S₀))) (Val #())))
+  (App (App (Val (slice.forRange S₀)) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad S))) (Var "newslice"))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad S))) (Var "s"))
-  (App (App (App (Val (GoInstruction (FuncResolve go.append [S]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad S₀))) (Var "newslice"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad S₀))) (Var "s"))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [S₀]))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore S))) (Pair (Var "newslice") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoStore S₀))) (Pair (Var "newslice") (Var "$r0")))))))
   (App (Val doExecute)
   (Var "$key")))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore S))) (Pair (Var "s") (Var "$value")))))))))))))
+  (App (Val (GoInstruction (GoStore S₀))) (Pair (Var "s") (Var "$value")))))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore S))) (Pair (Var "newslice") (Var "$r0")))))))))
-  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType S)))) (Var "slices"))
-  (Let "s" (App (Val (GoInstruction (GoAlloc S))) (App (Val (GoInstruction (GoZeroVal S))) (Val #())))
-  (App (App (Val (slice.forRange S)) (Var "$range"))
+  (App (Val (GoInstruction (GoStore S₀))) (Pair (Var "newslice") (Var "$r0")))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType S₀)))) (Var "slices"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc S₀))) (App (Val (GoInstruction (GoZeroVal S₀))) (Val #())))
+  (App (App (Val (slice.forRange S₀)) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -499,35 +499,35 @@ noncomputable def Concat.impl [GooseExts] [GoGlobalContext] (S E : go.GoType) : 
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "size")) (Let "$a0" (App (Val (GoInstruction (GoLoad S))) (Var "s"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [S]))) (Val #())) (Var "$a0")))))))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "size")) (Let "$a0" (App (Val (GoInstruction (GoLoad S₀))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [S₀]))) (Val #())) (Var "$a0")))))))))))
   (App (Val doExecute)
   (Var "$key")))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore S))) (Pair (Var "s") (Var "$value")))))))))))))
+  (App (Val (GoInstruction (GoStore S₀))) (Pair (Var "s") (Var "$value")))))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (Var "$r0")))))))))
-  (App (Val (GoInstruction (GoLoad S))) (Var "$res0")))))
+  (App (Val (GoInstruction (GoLoad S₀))) (Var "$res0")))))
 
 /-- Sort sorts a slice of any ordered type in ascending order.
     When sorting floating-point numbers, NaNs are ordered before other values.
 
     go: sort.go:16:6 -/
-noncomputable def Sort''.impl [GooseExts] [GoGlobalContext] (S E : go.GoType) : val :=
+noncomputable def Sort''.impl [GooseExts] [GoGlobalContext] (S₀ E₀ : go.GoType) : val :=
   (LamV "x"
   (Seq (App (Val exceptionDo)
-  (Let "x" (App (Val (GoInstruction (GoAlloc S))) (Var "x"))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad S))) (Var "x"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [S]))) (Val #())) (Var "$a0")))
+  (Let "x" (App (Val (GoInstruction (GoAlloc S₀))) (Var "x"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad S₀))) (Var "x"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [S₀]))) (Val #())) (Var "$a0")))
   (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert S (go.GoType.SliceType E)))) (App (Val (GoInstruction (GoLoad S))) (Var "x")))
+  (Let "$a0" (App (Val (GoInstruction (Convert S₀ (go.GoType.SliceType E₀)))) (App (Val (GoInstruction (GoLoad S₀))) (Var "x")))
   (Let "$a1" (Val #(W64 0))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
   (Let "$a3" (Let "$a0" (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.math.bits.Len []))) (Val #())) (Var "$a0")))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve pdqsortOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve pdqsortOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))))
   (Val #())))
@@ -543,24 +543,24 @@ noncomputable def Sort''.impl [GooseExts] [GoGlobalContext] (S E : go.GoType) : 
     The function should return 0 for incomparable items.
 
     go: sort.go:30:6 -/
-noncomputable def SortFunc.impl [GooseExts] [GoGlobalContext] (S E : go.GoType) : val :=
+noncomputable def SortFunc.impl [GooseExts] [GoGlobalContext] (S₀ E₀ : go.GoType) : val :=
   (LamV "x"
   (Lam "cmp"
   (Seq (App (Val exceptionDo)
-  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (Let "x" (App (Val (GoInstruction (GoAlloc S))) (Var "x"))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad S))) (Var "x"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [S]))) (Val #())) (Var "$a0")))
+  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc S₀))) (Var "x"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad S₀))) (Var "x"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [S₀]))) (Val #())) (Var "$a0")))
   (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert S (go.GoType.SliceType E)))) (App (Val (GoInstruction (GoLoad S))) (Var "x")))
+  (Let "$a0" (App (Val (GoInstruction (Convert S₀ (go.GoType.SliceType E₀)))) (App (Val (GoInstruction (GoLoad S₀))) (Var "x")))
   (Let "$a1" (Val #(W64 0))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
   (Let "$a3" (Let "$a0" (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.math.bits.Len []))) (Val #())) (Var "$a0")))
-  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve pdqsortCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4"))))))))))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve pdqsortCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4"))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0"))))))))))
   (Val #()))))
@@ -607,16 +607,16 @@ noncomputable def nextPowerOfTwo.impl [GooseExts] [GoGlobalContext] : val :=
 /-- insertionSortCmpFunc sorts data[a:b] using insertion sort.
 
     go: zsortanyfunc.go:10:6 -/
-noncomputable def insertionSortCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def insertionSortCmpFunc.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
   (Lam "cmp"
   (Seq (App (Val exceptionDo)
-  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
+  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 1))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -626,18 +626,18 @@ noncomputable def insertionSortCmpFunc.impl [GooseExts] [GoGlobalContext] (E : g
   (Let "j" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
-  (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
-  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0)))) (Val #false)))) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
+  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0)))) (Val #false)))) (Lam BAnon
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1"))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
   (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "j") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))))))
@@ -654,18 +654,18 @@ noncomputable def insertionSortCmpFunc.impl [GooseExts] [GoGlobalContext] (E : g
     first is an offset into the array where the root of the heap lies.
 
     go: zsortanyfunc.go:20:6 -/
-noncomputable def siftDownCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def siftDownCmpFunc.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "lo"
   (Lam "hi"
   (Lam "first"
   (Lam "cmp"
   (Seq (App (Val exceptionDo)
-  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
+  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
   (Let "first" (App (Val (GoInstruction (GoAlloc go.int))) (Var "first"))
   (Let "hi" (App (Val (GoInstruction (GoAlloc go.int))) (Var "hi"))
   (Let "lo" (App (Val (GoInstruction (GoAlloc go.int))) (Var "lo"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "lo"))
   (Let "root" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -677,29 +677,29 @@ noncomputable def siftDownCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoT
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "root"))))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "child"))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "child")))))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "root")))))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "root"))))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "child"))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "child")))))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "root")))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "child"))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "root") (Var "$r0")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "root")))))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "child")))))))
-  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "root")))))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "child")))))))
+  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))))
   (App (Val doReturn)
   (Val #()))
   (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "child")) (Val #(W64 1)))) (App (Val (GoInstruction (GoLoad go.int))) (Var "hi")))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "child")))))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "child")))) (Val #(W64 1)))))))
-  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0)))) (Val #false)))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "child")) (Val #(W64 1)))) (App (Val (GoInstruction (GoLoad go.int))) (Var "hi")))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "child")))))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "child")))) (Val #(W64 1)))))))
+  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0)))) (Val #false)))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "child") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "child")) (Val #(W64 1)))))))
   (App (Val doExecute)
@@ -717,16 +717,16 @@ noncomputable def siftDownCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoT
   (Val #())))))))
 
 /-- go: zsortanyfunc.go:38:6 -/
-noncomputable def heapSortCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def heapSortCmpFunc.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
   (Lam "cmp"
   (Seq (App (Val exceptionDo)
-  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
+  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "first" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -742,23 +742,23 @@ noncomputable def heapSortCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoT
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 0)))))) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "first"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "first")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "first"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "first")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "lo"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "first"))
-  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve siftDownCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4"))))))))))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve siftDownCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4"))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
   (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))))
@@ -770,12 +770,12 @@ noncomputable def heapSortCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoT
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 0)))))) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "hi"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "first"))
-  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve siftDownCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4"))))))))))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve siftDownCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4"))))))))))
   (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))))
@@ -797,19 +797,19 @@ noncomputable def heapSortCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoT
     limit is the number of allowed bad (very unbalanced) pivots before falling back to heapsort.
 
     go: zsortanyfunc.go:61:6 -/
-noncomputable def pdqsortCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def pdqsortCmpFunc.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
   (Lam "limit"
   (Lam "cmp"
   (Seq (App (Val exceptionDo)
-  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
+  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
   (Let "limit" (App (Val (GoInstruction (GoAlloc go.int))) (Var "limit"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
-  (let maxInsertion := #(12 : Int);
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
+  (let maxInsertion₀ := #(12 : Int);
   (Let "$r0" (Val #true)
   (Let "wasPartitioned" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -824,11 +824,11 @@ noncomputable def pdqsortCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTy
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
-  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve choosePivotCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
+  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve choosePivotCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
@@ -840,12 +840,12 @@ noncomputable def pdqsortCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTy
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot"))
-  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve partitionCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve partitionCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
@@ -873,12 +873,12 @@ noncomputable def pdqsortCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTy
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "a") (Var "$r0")))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "mid"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "limit"))
-  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve pdqsortCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))))))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve pdqsortCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "wasBalanced") (Var "$r0"))))))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "rightLen")) (App (Val (GoInstruction (GoLoad go.int))) (Var "balanceThreshold"))))
@@ -888,12 +888,12 @@ noncomputable def pdqsortCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTy
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "b") (Var "$r0")))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "mid")) (Val #(W64 1))))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "limit"))
-  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve pdqsortCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))))))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve pdqsortCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "wasBalanced") (Var "$r0")))))))))
   (App (Val doExecute)
@@ -908,15 +908,15 @@ noncomputable def pdqsortCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTy
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "alreadyPartitioned") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "mid") (Var "$r0"))))))))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 0)))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 1)))))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot")))))
-  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))) (Val #false)))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 0)))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 1)))))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot")))))
+  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))) (Val #false)))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot"))
-  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve partitionEqualCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve partitionEqualCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
   (Let "mid" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "mid"))
@@ -929,11 +929,11 @@ noncomputable def pdqsortCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTy
   (App (Val doExecute)
   (Val #()))))))
   (If (If (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "wasBalanced")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "wasPartitioned")) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals sortedHint.ty))) (Pair (App (Val (GoInstruction (GoLoad sortedHint.ty))) (Var "hint")) (Val increasingHint))) (Val #false))
-  (If (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (If (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
-  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve partialInsertionSortCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
+  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve partialInsertionSortCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
   (App (Val doReturn)
   (Val #()))
   (App (Val doExecute)
@@ -950,11 +950,11 @@ noncomputable def pdqsortCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTy
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "pivot") (Var "$r0"))))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
-  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve reverseRangeCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))
+  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve reverseRangeCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
@@ -966,11 +966,11 @@ noncomputable def pdqsortCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTy
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "limit") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "limit")) (Val #(W64 1)))))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
-  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve breakPatternsCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))
+  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve breakPatternsCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))
   (App (Val doExecute)
   (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "limit")) (Val #(W64 0)))))
@@ -978,23 +978,23 @@ noncomputable def pdqsortCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTy
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
-  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve heapSortCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))
+  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve heapSortCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))
   (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "length")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxInsertion)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "length")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxInsertion₀)))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
-  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve insertionSortCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))
+  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve insertionSortCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
@@ -1013,7 +1013,7 @@ noncomputable def pdqsortCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTy
     On return, data[newpivot] = p
 
     go: zsortanyfunc.go:135:6 -/
-noncomputable def partitionCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def partitionCmpFunc.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1024,15 +1024,15 @@ noncomputable def partitionCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.Go
   (Let "alreadyPartitioned" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$res1" (Var "alreadyPartitioned")
   (Seq (App (Val exceptionDo)
-  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
+  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
   (Let "pivot" (App (Val (GoInstruction (GoAlloc go.int))) (Var "pivot"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot"))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot")))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot"))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot")))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 1))))
@@ -1044,19 +1044,19 @@ noncomputable def partitionCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.Go
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))
@@ -1070,18 +1070,18 @@ noncomputable def partitionCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.Go
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
   (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1090,25 +1090,25 @@ noncomputable def partitionCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.Go
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
   (App (Val doBreak) (Val #()))
   (App (Val doExecute)
   (Val #()))))))
   (App (App (App (Val doFor) (Lam BAnon
-  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
-  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))) (Val #false)))) (Lam BAnon
+  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))) (Val #false)))) (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "j") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))))
   (Lam BAnon
   (Val #()))))))
   (App (App (App (Val doFor) (Lam BAnon
-  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
-  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0)))) (Val #false)))) (Lam BAnon
+  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0)))) (Val #false)))) (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))
   (Lam BAnon
@@ -1120,14 +1120,14 @@ noncomputable def partitionCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.Go
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))
@@ -1141,23 +1141,23 @@ noncomputable def partitionCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.Go
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))
   (App (Val doExecute)
   (Val #()))))))
   (App (App (App (Val doFor) (Lam BAnon
-  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
-  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))) (Val #false)))) (Lam BAnon
+  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))) (Val #false)))) (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "j") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))))
   (Lam BAnon
   (Val #()))))))
   (App (App (App (Val doFor) (Lam BAnon
-  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
-  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0)))) (Val #false)))) (Lam BAnon
+  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0)))) (Val #false)))) (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))
   (Lam BAnon
@@ -1167,16 +1167,16 @@ noncomputable def partitionCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.Go
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))))))
   (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res1")))))))))))))
 
 /-- partitionEqualCmpFunc partitions data[a:b] into elements equal to data[pivot] followed by elements greater than data[pivot].
     It assumed that data[a:b] does not contain elements smaller than the data[pivot].
 
     go: zsortanyfunc.go:173:6 -/
-noncomputable def partitionEqualCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def partitionEqualCmpFunc.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1185,15 +1185,15 @@ noncomputable def partitionEqualCmpFunc.impl [GooseExts] [GoGlobalContext] (E : 
   (Let "newpivot" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$res0" (Var "newpivot")
   (Seq (App (Val exceptionDo)
-  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
+  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
   (Let "pivot" (App (Val (GoInstruction (GoAlloc go.int))) (Var "pivot"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot"))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot")))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot"))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot")))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 1))))
@@ -1214,10 +1214,10 @@ noncomputable def partitionEqualCmpFunc.impl [GooseExts] [GoGlobalContext] (E : 
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1226,25 +1226,25 @@ noncomputable def partitionEqualCmpFunc.impl [GooseExts] [GoGlobalContext] (E : 
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
   (App (Val doBreak) (Val #()))
   (App (Val doExecute)
   (Val #()))))))
   (App (App (App (Val doFor) (Lam BAnon
-  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
-  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0)))) (Val #false)))) (Lam BAnon
+  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0)))) (Val #false)))) (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "j") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))))
   (Lam BAnon
   (Val #()))))))
   (App (App (App (Val doFor) (Lam BAnon
-  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
-  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))) (Val #false)))) (Lam BAnon
+  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))) (Val #false)))) (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))
   (Lam BAnon
@@ -1256,27 +1256,27 @@ noncomputable def partitionEqualCmpFunc.impl [GooseExts] [GoGlobalContext] (E : 
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))))))
 
 /-- partialInsertionSortCmpFunc partially sorts a slice, returns true if the slice is sorted at the end.
 
     go: zsortanyfunc.go:195:6 -/
-noncomputable def partialInsertionSortCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def partialInsertionSortCmpFunc.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
   (Lam "cmp"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
+  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
-  (let maxSteps := #(5 : Int);
-  (let shortestShifting := #(50 : Int);
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
+  (let maxSteps₀ := #(5 : Int);
+  (let shortestShifting₀ := #(50 : Int);
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 1))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1291,14 +1291,14 @@ noncomputable def partialInsertionSortCmpFunc.impl [GooseExts] [GoGlobalContext]
   (Let "j" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
-  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxSteps)))))) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxSteps₀)))))) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1309,18 +1309,18 @@ noncomputable def partialInsertionSortCmpFunc.impl [GooseExts] [GoGlobalContext]
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (App (Val (GoInstruction (GoLoad go.int))) (Var "b")))))) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1"))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
-  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
+  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))))
   (App (Val doBreak) (Val #()))
   (App (Val doExecute)
   (Val #()))))))
@@ -1338,18 +1338,18 @@ noncomputable def partialInsertionSortCmpFunc.impl [GooseExts] [GoGlobalContext]
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1"))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
-  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
+  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))))
   (App (Val doBreak) (Val #()))
   (App (Val doExecute)
   (Val #()))))))
@@ -1361,10 +1361,10 @@ noncomputable def partialInsertionSortCmpFunc.impl [GooseExts] [GoGlobalContext]
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val shortestShifting)))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val shortestShifting₀)))))
   (Let "$r0" (Val #false)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -1383,9 +1383,9 @@ noncomputable def partialInsertionSortCmpFunc.impl [GooseExts] [GoGlobalContext]
   (App (Val doExecute)
   (Val #()))))))
   (App (App (App (Val doFor) (Lam BAnon
-  (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "b")))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))
-  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))) (Val #false)))) (Lam BAnon
+  (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "b")))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))
+  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))) (Val #false)))) (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))
   (Lam BAnon
@@ -1403,16 +1403,16 @@ noncomputable def partialInsertionSortCmpFunc.impl [GooseExts] [GoGlobalContext]
     that might cause imbalanced partitions in quicksort.
 
     go: zsortanyfunc.go:240:6 -/
-noncomputable def breakPatternsCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def breakPatternsCmpFunc.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
   (Lam "cmp"
   (Seq (App (Val exceptionDo)
-  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
+  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
   (Let "length" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1433,15 +1433,15 @@ noncomputable def breakPatternsCmpFunc.impl [GooseExts] [GoGlobalContext] (E : g
   (Let "other" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "idx"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "other"))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "other")))))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "idx")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "idx"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "other"))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "other")))))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "idx")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1"))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "other")) (App (Val (GoInstruction (GoLoad go.int))) (Var "length")))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "other") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "other")) (App (Val (GoInstruction (GoLoad go.int))) (Var "length")))))))
@@ -1471,7 +1471,7 @@ noncomputable def breakPatternsCmpFunc.impl [GooseExts] [GoGlobalContext] (E : g
     [shortestNinther,∞): uses the Tukey ninther method.
 
     go: zsortanyfunc.go:261:6 -/
-noncomputable def choosePivotCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def choosePivotCmpFunc.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1481,12 +1481,12 @@ noncomputable def choosePivotCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.
   (Let "hint" (App (Val (GoInstruction (GoAlloc sortedHint.ty))) (App (Val (GoInstruction (GoZeroVal sortedHint.ty))) (Val #())))
   (Let "$res1" (Var "hint")
   (Seq (App (Val exceptionDo)
-  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
+  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
-  (let shortestNinther := #(50 : Int);
-  (let maxSwaps := #(12 : Int);
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
+  (let shortestNinther₀ := #(50 : Int);
+  (let maxSwaps₀ := #(12 : Int);
   (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
   (Let "l" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1513,7 +1513,7 @@ noncomputable def choosePivotCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.
   (App (Val (GoInstruction (GoStore sortedHint.ty))) (Pair (Var "$res1") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
-  (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Var "$sw") (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxSwaps))))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Var "$sw") (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxSwaps₀))))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))
   (Let "$r1" (Val decreasingHint)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1536,33 +1536,33 @@ noncomputable def choosePivotCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "l")) (Val #(W64 8)))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "k"))
   (Let "$a4" (Var "swaps")
-  (Let "$a5" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (App (App (Val (GoInstruction (FuncResolve medianCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5"))))))))
+  (Let "$a5" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (App (App (Val (GoInstruction (FuncResolve medianCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "j") (Var "$r0")))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "l")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val shortestNinther)))))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "l")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val shortestNinther₀)))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
   (Let "$a2" (Var "swaps")
-  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve medianAdjacentCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
+  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve medianAdjacentCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))
   (Let "$a2" (Var "swaps")
-  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve medianAdjacentCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
+  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve medianAdjacentCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "k"))
   (Let "$a2" (Var "swaps")
-  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve medianAdjacentCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
+  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve medianAdjacentCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "k") (Var "$r0")))))))
   (App (Val doExecute)
@@ -1586,7 +1586,7 @@ noncomputable def choosePivotCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.
 /-- order2CmpFunc returns x,y where data[x] <= data[y], where x,y=a,b or x,y=b,a.
 
     go: zsortanyfunc.go:298:6 -/
-noncomputable def order2CmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def order2CmpFunc.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1595,11 +1595,11 @@ noncomputable def order2CmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$res1" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
+  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
   (Let "swaps" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.int)))) (Var "swaps"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$r1" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
@@ -1611,9 +1611,9 @@ noncomputable def order2CmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "b")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
-  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "b")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0)))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
   (Let "$r1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
@@ -1634,7 +1634,7 @@ noncomputable def order2CmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
 /-- medianCmpFunc returns x where data[x] is the median of data[a],data[b],data[c], where x is a, b, or c.
 
     go: zsortanyfunc.go:307:6 -/
-noncomputable def medianCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def medianCmpFunc.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1643,42 +1643,42 @@ noncomputable def medianCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
   (Lam "cmp"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
+  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
   (Let "swaps" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.int)))) (Var "swaps"))
   (Let "c" (App (Val (GoInstruction (GoAlloc go.int))) (Var "c"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.int)))) (Var "swaps"))
-  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve order2CmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve order2CmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "c"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.int)))) (Var "swaps"))
-  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve order2CmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve order2CmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.int)))) (Var "swaps"))
-  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve order2CmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve order2CmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
@@ -1708,24 +1708,24 @@ noncomputable def medianCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
 /-- medianAdjacentCmpFunc finds the median of data[a - 1], data[a], data[a + 1] and stores the index into a.
 
     go: zsortanyfunc.go:315:6 -/
-noncomputable def medianAdjacentCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def medianAdjacentCmpFunc.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "swaps"
   (Lam "cmp"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
+  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
   (Let "swaps" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.int)))) (Var "swaps"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 1))))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a3" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 1))))
   (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.int)))) (Var "swaps"))
-  (Let "$a5" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (App (App (Val (GoInstruction (FuncResolve medianCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5"))))))))
+  (Let "$a5" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (App (App (Val (GoInstruction (FuncResolve medianCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5"))))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -1734,16 +1734,16 @@ noncomputable def medianAdjacentCmpFunc.impl [GooseExts] [GoGlobalContext] (E : 
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))))
 
 /-- go: zsortanyfunc.go:319:6 -/
-noncomputable def reverseRangeCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def reverseRangeCmpFunc.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
   (Lam "cmp"
   (Seq (App (Val exceptionDo)
-  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
+  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1752,10 +1752,10 @@ noncomputable def reverseRangeCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1764,9 +1764,9 @@ noncomputable def reverseRangeCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
   (Lam BAnon
   (Val #())))))
   (App (Val doExecute)
@@ -1776,32 +1776,32 @@ noncomputable def reverseRangeCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go
   (Val #()))))))
 
 /-- go: zsortanyfunc.go:329:6 -/
-noncomputable def swapRangeCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def swapRangeCmpFunc.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
   (Lam "n"
   (Lam "cmp"
   (Seq (App (Val exceptionDo)
-  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
+  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
   (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (Var "n"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$r0" (Val #(W64 0))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))))) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1"))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
   (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))))
@@ -1810,14 +1810,14 @@ noncomputable def swapRangeCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.Go
   (Val #())))))))
 
 /-- go: zsortanyfunc.go:335:6 -/
-noncomputable def stableCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def stableCmpFunc.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "n"
   (Lam "cmp"
   (Seq (App (Val exceptionDo)
-  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
+  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
   (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (Var "n"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$r0" (Val #(W64 20))
   (Let "blockSize" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1844,12 +1844,12 @@ noncomputable def stableCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "m")) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "m"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
-  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve symMergeCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4"))))))))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve symMergeCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4"))))))))
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
@@ -1864,12 +1864,12 @@ noncomputable def stableCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "a") (Var "$r0"))))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "blockSize"))))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
-  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve symMergeCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))))))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve symMergeCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))))))
   (Lam BAnon
   (Val #()))))))
   (App (Val doExecute)
@@ -1879,11 +1879,11 @@ noncomputable def stableCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
   (Lam BAnon
   (Val #())))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
-  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve insertionSortCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))))
+  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve insertionSortCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))))
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))))) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1894,11 +1894,11 @@ noncomputable def stableCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "a") (Var "$r0"))))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
-  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve insertionSortCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))))
+  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve insertionSortCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))))
   (Lam BAnon
   (Val #()))))))
   (App (Val doExecute)
@@ -1930,18 +1930,18 @@ noncomputable def stableCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
     which improves performance.
 
     go: zsortanyfunc.go:378:6 -/
-noncomputable def symMergeCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def symMergeCmpFunc.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "m"
   (Lam "b"
   (Lam "cmp"
   (Seq (App (Val exceptionDo)
-  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
+  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "m" (App (Val (GoInstruction (GoAlloc go.int))) (Var "m"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))))
@@ -1964,32 +1964,32 @@ noncomputable def symMergeCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoT
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "mid")) (App (Val (GoInstruction (GoLoad go.int))) (Var "end")))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "end")) (App (Val (GoInstruction (GoLoad go.int))) (Var "b")))) (Val #false)))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "mid"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "end"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
-  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve symMergeCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4"))))))))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve symMergeCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4"))))))))
   (App (Val doExecute)
   (Val #())))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "start")))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "start")) (App (Val (GoInstruction (GoLoad go.int))) (Var "mid")))) (Val #false)))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "start"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "mid"))
-  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve symMergeCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4"))))))))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve symMergeCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4"))))))))
   (App (Val doExecute)
   (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "start")) (App (Val (GoInstruction (GoLoad go.int))) (Var "m")))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "m")) (App (Val (GoInstruction (GoLoad go.int))) (Var "end")))) (Val #false)))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "start"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "m"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "end"))
-  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve rotateCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4"))))))))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve rotateCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4"))))))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
@@ -1999,9 +1999,9 @@ noncomputable def symMergeCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoT
   (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "start")) (App (Val (GoInstruction (GoLoad go.int))) (Var "r"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))))
   (Let "c" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "p")) (App (Val (GoInstruction (GoLoad go.int))) (Var "c")))))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "c")))))
-  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "p")) (App (Val (GoInstruction (GoLoad go.int))) (Var "c")))))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "c")))))
+  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "c")) (Val #(W64 1))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "start") (Var "$r0")))))
@@ -2049,15 +2049,15 @@ noncomputable def symMergeCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoT
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "k"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 1))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 1)))))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "k")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "k"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 1))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 1)))))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "k")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1"))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
   (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "k") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 1)))))))))))
@@ -2068,9 +2068,9 @@ noncomputable def symMergeCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoT
   (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))))
   (Let "h" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "m")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "h")))))
-  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "m")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "h")))))
+  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "h")) (Val #(W64 1))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))
@@ -2103,15 +2103,15 @@ noncomputable def symMergeCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoT
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "k"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 1))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 1)))))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "k")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "k"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 1))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 1)))))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "k")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1"))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
   (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "k") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 1)))))))))))
@@ -2122,9 +2122,9 @@ noncomputable def symMergeCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoT
   (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))))
   (Let "h" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "h")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
-  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "h")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp")) (Var "$a0")) (Var "$a1")))) (Val #(W64 0)))))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "h")) (Val #(W64 1))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))
@@ -2149,18 +2149,18 @@ noncomputable def symMergeCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoT
     and it assumes non-degenerate arguments: a < m && m < b.
 
     go: zsortanyfunc.go:464:6 -/
-noncomputable def rotateCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def rotateCmpFunc.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "m"
   (Lam "b"
   (Lam "cmp"
   (Seq (App (Val exceptionDo)
-  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
+  (Let "cmp" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "m" (App (Val (GoInstruction (GoAlloc go.int))) (Var "m"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "m")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2169,12 +2169,12 @@ noncomputable def rotateCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "m")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "m"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
-  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve swapRangeCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4"))))))))))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve swapRangeCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4"))))))))))
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))))) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
@@ -2182,22 +2182,22 @@ noncomputable def rotateCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "m")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "m"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))
-  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve swapRangeCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve swapRangeCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "j") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "m")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
   (Let "$a2" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "m")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
-  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E, E] false [go.int]))))) (Var "cmp"))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve swapRangeCmpFunc [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4"))))))))))))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀, E₀] false [go.int]))))) (Var "cmp"))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve swapRangeCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4"))))))))))))
   (Lam BAnon
   (Val #()))))))
   (App (Val doExecute)
@@ -2209,14 +2209,14 @@ noncomputable def rotateCmpFunc.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
 /-- insertionSortOrdered sorts data[a:b] using insertion sort.
 
     go: zsortordered.go:12:6 -/
-noncomputable def insertionSortOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def insertionSortOrdered.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
   (Seq (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 1))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2226,18 +2226,18 @@ noncomputable def insertionSortOrdered.impl [GooseExts] [GoGlobalContext] (E : g
   (Let "j" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
-  (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))) (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
-  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E]))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #false)))) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))) (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #false)))) (Lam BAnon
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1"))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
   (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "j") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))))))
@@ -2254,7 +2254,7 @@ noncomputable def insertionSortOrdered.impl [GooseExts] [GoGlobalContext] (E : g
     first is an offset into the array where the root of the heap lies.
 
     go: zsortordered.go:22:6 -/
-noncomputable def siftDownOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def siftDownOrdered.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "lo"
   (Lam "hi"
@@ -2263,7 +2263,7 @@ noncomputable def siftDownOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoT
   (Let "first" (App (Val (GoInstruction (GoAlloc go.int))) (Var "first"))
   (Let "hi" (App (Val (GoInstruction (GoAlloc go.int))) (Var "hi"))
   (Let "lo" (App (Val (GoInstruction (GoAlloc go.int))) (Var "lo"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "lo"))
   (Let "root" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2275,29 +2275,29 @@ noncomputable def siftDownOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoT
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "root"))))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "child"))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "child")))))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "root")))))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "root"))))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "child"))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "child")))))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "root")))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "child"))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "root") (Var "$r0")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
-  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "root")))))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "child")))))))
-  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E]))) (Val #())) (Var "$a0")) (Var "$a1")))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "root")))))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "child")))))))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")))))
   (App (Val doReturn)
   (Val #()))
   (App (Val doExecute)
   (Val #()))))))
-  (If (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "child")) (Val #(W64 1)))) (App (Val (GoInstruction (GoLoad go.int))) (Var "hi")))) (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "child")))))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "child")))) (Val #(W64 1)))))))
-  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E]))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #false))
+  (If (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "child")) (Val #(W64 1)))) (App (Val (GoInstruction (GoLoad go.int))) (Var "hi")))) (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "child")))))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "child")))) (Val #(W64 1)))))))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #false))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "child") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "child")) (Val #(W64 1)))))))
   (App (Val doExecute)
@@ -2315,14 +2315,14 @@ noncomputable def siftDownOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoT
   (Val #()))))))
 
 /-- go: zsortordered.go:40:6 -/
-noncomputable def heapSortOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def heapSortOrdered.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
   (Seq (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "first" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2338,22 +2338,22 @@ noncomputable def heapSortOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoT
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 0)))))) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "first"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "first")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "first"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "first")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "first")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "lo"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "first"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve siftDownOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve siftDownOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
   (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))))
@@ -2365,11 +2365,11 @@ noncomputable def heapSortOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoT
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 0)))))) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "hi"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "first"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve siftDownOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve siftDownOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))))
   (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))))
@@ -2391,7 +2391,7 @@ noncomputable def heapSortOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoT
     limit is the number of allowed bad (very unbalanced) pivots before falling back to heapsort.
 
     go: zsortordered.go:63:6 -/
-noncomputable def pdqsortOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def pdqsortOrdered.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -2400,8 +2400,8 @@ noncomputable def pdqsortOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTy
   (Let "limit" (App (Val (GoInstruction (GoAlloc go.int))) (Var "limit"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
-  (let maxInsertion := #(12 : Int);
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
+  (let maxInsertion₀ := #(12 : Int);
   (Let "$r0" (Val #true)
   (Let "wasPartitioned" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2416,10 +2416,10 @@ noncomputable def pdqsortOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTy
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
-  (App (App (App (App (Val (GoInstruction (FuncResolve choosePivotOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve choosePivotOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
@@ -2431,11 +2431,11 @@ noncomputable def pdqsortOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTy
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve partitionOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve partitionOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
@@ -2463,11 +2463,11 @@ noncomputable def pdqsortOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTy
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "a") (Var "$r0")))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "mid"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "limit"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve pdqsortOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve pdqsortOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "wasBalanced") (Var "$r0"))))))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "rightLen")) (App (Val (GoInstruction (GoLoad go.int))) (Var "balanceThreshold"))))
@@ -2477,11 +2477,11 @@ noncomputable def pdqsortOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTy
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "b") (Var "$r0")))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "mid")) (Val #(W64 1))))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "limit"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve pdqsortOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve pdqsortOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "wasBalanced") (Var "$r0")))))))))
   (App (Val doExecute)
@@ -2496,14 +2496,14 @@ noncomputable def pdqsortOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTy
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "alreadyPartitioned") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "mid") (Var "$r0"))))))))))))))
-  (If (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 0)))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 1)))))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot")))))
-  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E]))) (Val #())) (Var "$a0")) (Var "$a1"))))) (Val #false))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (If (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 0)))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 1)))))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot")))))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E₀]))) (Val #())) (Var "$a0")) (Var "$a1"))))) (Val #false))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve partitionEqualOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve partitionEqualOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
   (Let "mid" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "mid"))
@@ -2516,10 +2516,10 @@ noncomputable def pdqsortOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTy
   (App (Val doExecute)
   (Val #()))))))
   (If (If (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "wasBalanced")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "wasPartitioned")) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals sortedHint.ty))) (Pair (App (Val (GoInstruction (GoLoad sortedHint.ty))) (Var "hint")) (Val increasingHint))) (Val #false))
-  (If (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (If (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
-  (App (App (App (App (Val (GoInstruction (FuncResolve partialInsertionSortOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve partialInsertionSortOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
   (App (Val doReturn)
   (Val #()))
   (App (Val doExecute)
@@ -2536,10 +2536,10 @@ noncomputable def pdqsortOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTy
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "pivot") (Var "$r0"))))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
-  (App (App (App (App (Val (GoInstruction (FuncResolve reverseRangeOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve reverseRangeOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
@@ -2551,10 +2551,10 @@ noncomputable def pdqsortOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTy
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "limit") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "limit")) (Val #(W64 1)))))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
-  (App (App (App (App (Val (GoInstruction (FuncResolve breakPatternsOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve breakPatternsOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))
   (App (Val doExecute)
   (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "limit")) (Val #(W64 0)))))
@@ -2562,21 +2562,21 @@ noncomputable def pdqsortOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTy
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
-  (App (App (App (App (Val (GoInstruction (FuncResolve heapSortOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve heapSortOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))
   (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "length")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxInsertion)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "length")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxInsertion₀)))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
-  (App (App (App (App (Val (GoInstruction (FuncResolve insertionSortOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve insertionSortOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
@@ -2595,7 +2595,7 @@ noncomputable def pdqsortOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTy
     On return, data[newpivot] = p
 
     go: zsortordered.go:137:6 -/
-noncomputable def partitionOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def partitionOrdered.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -2608,11 +2608,11 @@ noncomputable def partitionOrdered.impl [GooseExts] [GoGlobalContext] (E : go.Go
   (Let "pivot" (App (Val (GoInstruction (GoAlloc go.int))) (Var "pivot"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot"))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot")))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot"))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot")))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 1))))
@@ -2624,19 +2624,19 @@ noncomputable def partitionOrdered.impl [GooseExts] [GoGlobalContext] (E : go.Go
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))
@@ -2650,18 +2650,18 @@ noncomputable def partitionOrdered.impl [GooseExts] [GoGlobalContext] (E : go.Go
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
   (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2670,25 +2670,25 @@ noncomputable def partitionOrdered.impl [GooseExts] [GoGlobalContext] (E : go.Go
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
   (App (Val doBreak) (Val #()))
   (App (Val doExecute)
   (Val #()))))))
   (App (App (App (Val doFor) (Lam BAnon
-  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
-  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E]))) (Val #())) (Var "$a0")) (Var "$a1"))))) (Val #false)))) (Lam BAnon
+  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E₀]))) (Val #())) (Var "$a0")) (Var "$a1"))))) (Val #false)))) (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "j") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))))
   (Lam BAnon
   (Val #()))))))
   (App (App (App (Val doFor) (Lam BAnon
-  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
-  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E]))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #false)))) (Lam BAnon
+  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #false)))) (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))
   (Lam BAnon
@@ -2700,14 +2700,14 @@ noncomputable def partitionOrdered.impl [GooseExts] [GoGlobalContext] (E : go.Go
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))
@@ -2721,23 +2721,23 @@ noncomputable def partitionOrdered.impl [GooseExts] [GoGlobalContext] (E : go.Go
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))
   (App (Val doExecute)
   (Val #()))))))
   (App (App (App (Val doFor) (Lam BAnon
-  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
-  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E]))) (Val #())) (Var "$a0")) (Var "$a1"))))) (Val #false)))) (Lam BAnon
+  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E₀]))) (Val #())) (Var "$a0")) (Var "$a1"))))) (Val #false)))) (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "j") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))))
   (Lam BAnon
   (Val #()))))))
   (App (App (App (Val doFor) (Lam BAnon
-  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
-  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E]))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #false)))) (Lam BAnon
+  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #false)))) (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))
   (Lam BAnon
@@ -2747,16 +2747,16 @@ noncomputable def partitionOrdered.impl [GooseExts] [GoGlobalContext] (E : go.Go
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0"))))))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0"))))))))))))))
   (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res1"))))))))))))
 
 /-- partitionEqualOrdered partitions data[a:b] into elements equal to data[pivot] followed by elements greater than data[pivot].
     It assumed that data[a:b] does not contain elements smaller than the data[pivot].
 
     go: zsortordered.go:175:6 -/
-noncomputable def partitionEqualOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def partitionEqualOrdered.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -2767,11 +2767,11 @@ noncomputable def partitionEqualOrdered.impl [GooseExts] [GoGlobalContext] (E : 
   (Let "pivot" (App (Val (GoInstruction (GoAlloc go.int))) (Var "pivot"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot"))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot")))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot"))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "pivot")))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 1))))
@@ -2792,10 +2792,10 @@ noncomputable def partitionEqualOrdered.impl [GooseExts] [GoGlobalContext] (E : 
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2804,25 +2804,25 @@ noncomputable def partitionEqualOrdered.impl [GooseExts] [GoGlobalContext] (E : 
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
   (App (Val doBreak) (Val #()))
   (App (Val doExecute)
   (Val #()))))))
   (App (App (App (Val doFor) (Lam BAnon
-  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
-  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E]))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #false)))) (Lam BAnon
+  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #false)))) (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "j") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))))
   (Lam BAnon
   (Val #()))))))
   (App (App (App (Val doFor) (Lam BAnon
-  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
-  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E]))) (Val #())) (Var "$a0")) (Var "$a1"))))) (Val #false)))) (Lam BAnon
+  (If (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E₀]))) (Val #())) (Var "$a0")) (Var "$a1"))))) (Val #false)))) (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))
   (Lam BAnon
@@ -2834,15 +2834,15 @@ noncomputable def partitionEqualOrdered.impl [GooseExts] [GoGlobalContext] (E : 
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0"))))))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0"))))))))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))))))
 
 /-- partialInsertionSortOrdered partially sorts a slice, returns true if the slice is sorted at the end.
 
     go: zsortordered.go:197:6 -/
-noncomputable def partialInsertionSortOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def partialInsertionSortOrdered.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -2850,9 +2850,9 @@ noncomputable def partialInsertionSortOrdered.impl [GooseExts] [GoGlobalContext]
   (Seq (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
-  (let maxSteps := #(5 : Int);
-  (let shortestShifting := #(50 : Int);
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
+  (let maxSteps₀ := #(5 : Int);
+  (let shortestShifting₀ := #(50 : Int);
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 1))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2867,14 +2867,14 @@ noncomputable def partialInsertionSortOrdered.impl [GooseExts] [GoGlobalContext]
   (Let "j" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
-  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxSteps)))))) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxSteps₀)))))) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2885,18 +2885,18 @@ noncomputable def partialInsertionSortOrdered.impl [GooseExts] [GoGlobalContext]
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (App (Val (GoInstruction (GoLoad go.int))) (Var "b")))))) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1"))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
-  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
-  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E]))) (Val #())) (Var "$a0")) (Var "$a1")))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")))))
   (App (Val doBreak) (Val #()))
   (App (Val doExecute)
   (Val #()))))))
@@ -2914,18 +2914,18 @@ noncomputable def partialInsertionSortOrdered.impl [GooseExts] [GoGlobalContext]
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1"))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
-  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
-  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E]))) (Val #())) (Var "$a0")) (Var "$a1")))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (Val #(W64 1)))))))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")))))
   (App (Val doBreak) (Val #()))
   (App (Val doExecute)
   (Val #()))))))
@@ -2937,10 +2937,10 @@ noncomputable def partialInsertionSortOrdered.impl [GooseExts] [GoGlobalContext]
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val shortestShifting)))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val shortestShifting₀)))))
   (Let "$r0" (Val #false)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -2959,9 +2959,9 @@ noncomputable def partialInsertionSortOrdered.impl [GooseExts] [GoGlobalContext]
   (App (Val doExecute)
   (Val #()))))))
   (App (App (App (Val doFor) (Lam BAnon
-  (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "b")))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))
-  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E]))) (Val #())) (Var "$a0")) (Var "$a1"))))) (Val #false)))) (Lam BAnon
+  (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "b")))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E₀]))) (Val #())) (Var "$a0")) (Var "$a1"))))) (Val #false)))) (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))
   (Lam BAnon
@@ -2979,14 +2979,14 @@ noncomputable def partialInsertionSortOrdered.impl [GooseExts] [GoGlobalContext]
     that might cause imbalanced partitions in quicksort.
 
     go: zsortordered.go:242:6 -/
-noncomputable def breakPatternsOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def breakPatternsOrdered.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
   (Seq (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
   (Let "length" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -3007,15 +3007,15 @@ noncomputable def breakPatternsOrdered.impl [GooseExts] [GoGlobalContext] (E : g
   (Let "other" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "idx"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "other"))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "other")))))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "idx")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "idx"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "other"))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "other")))))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "idx")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1"))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "other")) (App (Val (GoInstruction (GoLoad go.int))) (Var "length")))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "other") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "other")) (App (Val (GoInstruction (GoLoad go.int))) (Var "length")))))))
@@ -3045,7 +3045,7 @@ noncomputable def breakPatternsOrdered.impl [GooseExts] [GoGlobalContext] (E : g
     [shortestNinther,∞): uses the Tukey ninther method.
 
     go: zsortordered.go:263:6 -/
-noncomputable def choosePivotOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def choosePivotOrdered.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -3056,9 +3056,9 @@ noncomputable def choosePivotOrdered.impl [GooseExts] [GoGlobalContext] (E : go.
   (Seq (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
-  (let shortestNinther := #(50 : Int);
-  (let maxSwaps := #(12 : Int);
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
+  (let shortestNinther₀ := #(50 : Int);
+  (let maxSwaps₀ := #(12 : Int);
   (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
   (Let "l" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -3085,7 +3085,7 @@ noncomputable def choosePivotOrdered.impl [GooseExts] [GoGlobalContext] (E : go.
   (App (Val (GoInstruction (GoStore sortedHint.ty))) (Pair (Var "$res1") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
-  (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Var "$sw") (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxSwaps))))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Var "$sw") (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxSwaps₀))))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))
   (Let "$r1" (Val decreasingHint)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -3108,29 +3108,29 @@ noncomputable def choosePivotOrdered.impl [GooseExts] [GoGlobalContext] (E : go.
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "l")) (Val #(W64 8)))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "k"))
   (Let "$a4" (Var "swaps")
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve medianOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve medianOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "j") (Var "$r0")))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "l")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val shortestNinther)))))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "l")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val shortestNinther₀)))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
   (Let "$a2" (Var "swaps")
-  (App (App (App (App (Val (GoInstruction (FuncResolve medianAdjacentOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve medianAdjacentOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))
   (Let "$a2" (Var "swaps")
-  (App (App (App (App (Val (GoInstruction (FuncResolve medianAdjacentOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve medianAdjacentOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "k"))
   (Let "$a2" (Var "swaps")
-  (App (App (App (App (Val (GoInstruction (FuncResolve medianAdjacentOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve medianAdjacentOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "k") (Var "$r0")))))))
   (App (Val doExecute)
@@ -3154,7 +3154,7 @@ noncomputable def choosePivotOrdered.impl [GooseExts] [GoGlobalContext] (E : go.
 /-- order2Ordered returns x,y where data[x] <= data[y], where x,y=a,b or x,y=b,a.
 
     go: zsortordered.go:300:6 -/
-noncomputable def order2Ordered.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def order2Ordered.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -3165,7 +3165,7 @@ noncomputable def order2Ordered.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
   (Let "swaps" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.int)))) (Var "swaps"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$r1" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
@@ -3177,9 +3177,9 @@ noncomputable def order2Ordered.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))))
-  (If (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "b")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
-  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (If (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "b")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E₀]))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
   (Let "$r1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
@@ -3200,7 +3200,7 @@ noncomputable def order2Ordered.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
 /-- medianOrdered returns x where data[x] is the median of data[a],data[b],data[c], where x is a, b, or c.
 
     go: zsortordered.go:309:6 -/
-noncomputable def medianOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def medianOrdered.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -3212,34 +3212,34 @@ noncomputable def medianOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
   (Let "c" (App (Val (GoInstruction (GoAlloc go.int))) (Var "c"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.int)))) (Var "swaps"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve order2Ordered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve order2Ordered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "c"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.int)))) (Var "swaps"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve order2Ordered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve order2Ordered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.int)))) (Var "swaps"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve order2Ordered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve order2Ordered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
@@ -3269,7 +3269,7 @@ noncomputable def medianOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
 /-- medianAdjacentOrdered finds the median of data[a - 1], data[a], data[a + 1] and stores the index into a.
 
     go: zsortordered.go:317:6 -/
-noncomputable def medianAdjacentOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def medianAdjacentOrdered.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "swaps"
@@ -3277,13 +3277,13 @@ noncomputable def medianAdjacentOrdered.impl [GooseExts] [GoGlobalContext] (E : 
   (Seq (App (Val exceptionDo)
   (Let "swaps" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.int)))) (Var "swaps"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 1))))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a3" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 1))))
   (Let "$a4" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.int)))) (Var "swaps"))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve medianOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve medianOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -3292,14 +3292,14 @@ noncomputable def medianAdjacentOrdered.impl [GooseExts] [GoGlobalContext] (E : 
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))))
 
 /-- go: zsortordered.go:321:6 -/
-noncomputable def reverseRangeOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def reverseRangeOrdered.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
   (Seq (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -3308,10 +3308,10 @@ noncomputable def reverseRangeOrdered.impl [GooseExts] [GoGlobalContext] (E : go
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -3320,9 +3320,9 @@ noncomputable def reverseRangeOrdered.impl [GooseExts] [GoGlobalContext] (E : go
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
   (Lam BAnon
   (Val #())))))
   (App (Val doExecute)
@@ -3332,7 +3332,7 @@ noncomputable def reverseRangeOrdered.impl [GooseExts] [GoGlobalContext] (E : go
   (Val #())))))
 
 /-- go: zsortordered.go:331:6 -/
-noncomputable def swapRangeOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def swapRangeOrdered.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -3341,21 +3341,21 @@ noncomputable def swapRangeOrdered.impl [GooseExts] [GoGlobalContext] (E : go.Go
   (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (Var "n"))
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$r0" (Val #(W64 0))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))))) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1"))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
   (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))))
@@ -3364,12 +3364,12 @@ noncomputable def swapRangeOrdered.impl [GooseExts] [GoGlobalContext] (E : go.Go
   (Val #()))))))
 
 /-- go: zsortordered.go:337:6 -/
-noncomputable def stableOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def stableOrdered.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "n"
   (Seq (App (Val exceptionDo)
   (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (Var "n"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$r0" (Val #(W64 20))
   (Let "blockSize" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -3396,11 +3396,11 @@ noncomputable def stableOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "m")) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "m"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve symMergeOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve symMergeOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
@@ -3415,11 +3415,11 @@ noncomputable def stableOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "a") (Var "$r0"))))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "blockSize"))))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve symMergeOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve symMergeOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))))
   (Lam BAnon
   (Val #()))))))
   (App (Val doExecute)
@@ -3429,10 +3429,10 @@ noncomputable def stableOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
   (Lam BAnon
   (Val #())))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
-  (App (App (App (App (Val (GoInstruction (FuncResolve insertionSortOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve insertionSortOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))))
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))))) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -3443,10 +3443,10 @@ noncomputable def stableOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "a") (Var "$r0"))))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
-  (App (App (App (App (Val (GoInstruction (FuncResolve insertionSortOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve insertionSortOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))))
   (Lam BAnon
   (Val #()))))))
   (App (Val doExecute)
@@ -3478,7 +3478,7 @@ noncomputable def stableOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
     which improves performance.
 
     go: zsortordered.go:380:6 -/
-noncomputable def symMergeOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def symMergeOrdered.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "m"
@@ -3487,7 +3487,7 @@ noncomputable def symMergeOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoT
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "m" (App (Val (GoInstruction (GoAlloc go.int))) (Var "m"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))))
@@ -3510,29 +3510,29 @@ noncomputable def symMergeOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoT
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "mid")) (App (Val (GoInstruction (GoLoad go.int))) (Var "end")))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "end")) (App (Val (GoInstruction (GoLoad go.int))) (Var "b")))) (Val #false)))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "mid"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "end"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve symMergeOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve symMergeOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))
   (App (Val doExecute)
   (Val #())))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "start")))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "start")) (App (Val (GoInstruction (GoLoad go.int))) (Var "mid")))) (Val #false)))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "start"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "mid"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve symMergeOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve symMergeOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))
   (App (Val doExecute)
   (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "start")) (App (Val (GoInstruction (GoLoad go.int))) (Var "m")))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "m")) (App (Val (GoInstruction (GoLoad go.int))) (Var "end")))) (Val #false)))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "start"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "m"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "end"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve rotateOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve rotateOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
@@ -3542,9 +3542,9 @@ noncomputable def symMergeOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoT
   (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "start")) (App (Val (GoInstruction (GoLoad go.int))) (Var "r"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))))
   (Let "c" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "p")) (App (Val (GoInstruction (GoLoad go.int))) (Var "c")))))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "c")))))
-  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E]))) (Val #())) (Var "$a0")) (Var "$a1")))))
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "p")) (App (Val (GoInstruction (GoLoad go.int))) (Var "c")))))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "c")))))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")))))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "c")) (Val #(W64 1))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "start") (Var "$r0")))))
@@ -3592,15 +3592,15 @@ noncomputable def symMergeOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoT
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "k"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 1))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 1)))))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "k")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "k"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 1))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 1)))))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "k")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1"))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
   (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "k") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 1)))))))))))
@@ -3611,9 +3611,9 @@ noncomputable def symMergeOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoT
   (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))))
   (Let "h" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "m")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "h")))))
-  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E]))) (Val #())) (Var "$a0")) (Var "$a1")))))
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "m")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "h")))))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")))))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "h")) (Val #(W64 1))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))
@@ -3646,15 +3646,15 @@ noncomputable def symMergeOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoT
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "k"))))
-  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 1))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 1)))))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "k")))))
+  (Let "$l0" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "k"))))
+  (Let "$l1" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 1))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 1)))))))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "k")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l1") (Var "$r1"))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$l0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
   (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "k") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 1)))))))))))
@@ -3665,9 +3665,9 @@ noncomputable def symMergeOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoT
   (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))))
   (Let "h" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "h")))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
-  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (If (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "h")))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E₀)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.cmp.Less [E₀]))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "h")) (Val #(W64 1))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))
@@ -3692,7 +3692,7 @@ noncomputable def symMergeOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoT
     and it assumes non-degenerate arguments: a < m && m < b.
 
     go: zsortordered.go:466:6 -/
-noncomputable def rotateOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def rotateOrdered.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) : val :=
   (LamV "data"
   (Lam "a"
   (Lam "m"
@@ -3701,7 +3701,7 @@ noncomputable def rotateOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "m" (App (Val (GoInstruction (GoAlloc go.int))) (Var "m"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
-  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E)))) (Var "data"))
+  (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "m")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -3710,11 +3710,11 @@ noncomputable def rotateOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "m")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "m"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve swapRangeOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve swapRangeOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))))
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))))) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))
@@ -3722,20 +3722,20 @@ noncomputable def rotateOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "m")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "m"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve swapRangeOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve swapRangeOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "j") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "m")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
   (Let "$a2" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "m")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
-  (App (App (App (App (App (Val (GoInstruction (FuncResolve swapRangeOrdered [E]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))))))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve swapRangeOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))))))
   (Lam BAnon
   (Val #()))))))
   (App (Val doExecute)
@@ -3785,111 +3785,111 @@ class xorshift.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [G
   underlying : go.UnderlyingDirectedEq xorshift.ty xorshift.underlying
   method_set : go.MethodSetIs xorshift.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType xorshift.ty) [(go!"Next", (some (go.signature.Signature [] false [go.uint64])))]
-  ptr_Next_unfold : MethodUnfold (go.GoType.PointerType xorshift.ty) go!"Next" xorshift.Next.impl
+  ptr_unfold'Next : MethodUnfold (go.GoType.PointerType xorshift.ty) go!"Next" xorshift.Next.impl
 
 attribute [instance] xorshift.TypeAssumptions.underlying
   xorshift.TypeAssumptions.method_set
   xorshift.TypeAssumptions.ptr_method_set
-  xorshift.TypeAssumptions.ptr_Next_unfold
+  xorshift.TypeAssumptions.ptr_unfold'Next
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  sortedHint_instance : sortedHint.TypeAssumptions
-  xorshift_instance : xorshift.TypeAssumptions
-  AppendSeq_unfold : ∀ (Slice'' E : go.GoType), FuncUnfold AppendSeq [Slice'', E] (AppendSeq.impl Slice'' E)
-  Collect_unfold : ∀ (E : go.GoType), FuncUnfold Collect [E] (Collect.impl E)
-  Sorted_unfold : ∀ (E : go.GoType), FuncUnfold Sorted [E] (Sorted.impl E)
-  Clone_unfold : ∀ (S E : go.GoType), FuncUnfold Clone [S, E] (Clone.impl S E)
-  Grow_unfold : ∀ (S E : go.GoType), FuncUnfold Grow [S, E] (Grow.impl S E)
-  Concat_unfold : ∀ (S E : go.GoType), FuncUnfold Concat [S, E] (Concat.impl S E)
-  Sort_unfold : ∀ (S E : go.GoType), FuncUnfold Sort'' [S, E] (Sort''.impl S E)
-  SortFunc_unfold : ∀ (S E : go.GoType), FuncUnfold SortFunc [S, E] (SortFunc.impl S E)
-  nextPowerOfTwo_unfold : FuncUnfold nextPowerOfTwo [] nextPowerOfTwo.impl
-  insertionSortCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold insertionSortCmpFunc [E] (insertionSortCmpFunc.impl E)
-  siftDownCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold siftDownCmpFunc [E] (siftDownCmpFunc.impl E)
-  heapSortCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold heapSortCmpFunc [E] (heapSortCmpFunc.impl E)
-  pdqsortCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold pdqsortCmpFunc [E] (pdqsortCmpFunc.impl E)
-  partitionCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold partitionCmpFunc [E] (partitionCmpFunc.impl E)
-  partitionEqualCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold partitionEqualCmpFunc [E] (partitionEqualCmpFunc.impl E)
-  partialInsertionSortCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold partialInsertionSortCmpFunc [E] (partialInsertionSortCmpFunc.impl E)
-  breakPatternsCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold breakPatternsCmpFunc [E] (breakPatternsCmpFunc.impl E)
-  choosePivotCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold choosePivotCmpFunc [E] (choosePivotCmpFunc.impl E)
-  order2CmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold order2CmpFunc [E] (order2CmpFunc.impl E)
-  medianCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold medianCmpFunc [E] (medianCmpFunc.impl E)
-  medianAdjacentCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold medianAdjacentCmpFunc [E] (medianAdjacentCmpFunc.impl E)
-  reverseRangeCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold reverseRangeCmpFunc [E] (reverseRangeCmpFunc.impl E)
-  swapRangeCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold swapRangeCmpFunc [E] (swapRangeCmpFunc.impl E)
-  stableCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold stableCmpFunc [E] (stableCmpFunc.impl E)
-  symMergeCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold symMergeCmpFunc [E] (symMergeCmpFunc.impl E)
-  rotateCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold rotateCmpFunc [E] (rotateCmpFunc.impl E)
-  insertionSortOrdered_unfold : ∀ (E : go.GoType), FuncUnfold insertionSortOrdered [E] (insertionSortOrdered.impl E)
-  siftDownOrdered_unfold : ∀ (E : go.GoType), FuncUnfold siftDownOrdered [E] (siftDownOrdered.impl E)
-  heapSortOrdered_unfold : ∀ (E : go.GoType), FuncUnfold heapSortOrdered [E] (heapSortOrdered.impl E)
-  pdqsortOrdered_unfold : ∀ (E : go.GoType), FuncUnfold pdqsortOrdered [E] (pdqsortOrdered.impl E)
-  partitionOrdered_unfold : ∀ (E : go.GoType), FuncUnfold partitionOrdered [E] (partitionOrdered.impl E)
-  partitionEqualOrdered_unfold : ∀ (E : go.GoType), FuncUnfold partitionEqualOrdered [E] (partitionEqualOrdered.impl E)
-  partialInsertionSortOrdered_unfold : ∀ (E : go.GoType), FuncUnfold partialInsertionSortOrdered [E] (partialInsertionSortOrdered.impl E)
-  breakPatternsOrdered_unfold : ∀ (E : go.GoType), FuncUnfold breakPatternsOrdered [E] (breakPatternsOrdered.impl E)
-  choosePivotOrdered_unfold : ∀ (E : go.GoType), FuncUnfold choosePivotOrdered [E] (choosePivotOrdered.impl E)
-  order2Ordered_unfold : ∀ (E : go.GoType), FuncUnfold order2Ordered [E] (order2Ordered.impl E)
-  medianOrdered_unfold : ∀ (E : go.GoType), FuncUnfold medianOrdered [E] (medianOrdered.impl E)
-  medianAdjacentOrdered_unfold : ∀ (E : go.GoType), FuncUnfold medianAdjacentOrdered [E] (medianAdjacentOrdered.impl E)
-  reverseRangeOrdered_unfold : ∀ (E : go.GoType), FuncUnfold reverseRangeOrdered [E] (reverseRangeOrdered.impl E)
-  swapRangeOrdered_unfold : ∀ (E : go.GoType), FuncUnfold swapRangeOrdered [E] (swapRangeOrdered.impl E)
-  stableOrdered_unfold : ∀ (E : go.GoType), FuncUnfold stableOrdered [E] (stableOrdered.impl E)
-  symMergeOrdered_unfold : ∀ (E : go.GoType), FuncUnfold symMergeOrdered [E] (symMergeOrdered.impl E)
-  rotateOrdered_unfold : ∀ (E : go.GoType), FuncUnfold rotateOrdered [E] (rotateOrdered.impl E)
-  import_cmp_Assumption : _root_.Perennial.cmp.Assumptions
-  import_iter_Assumption : _root_.Perennial.iter.Assumptions
-  import_bits_Assumption : _root_.Perennial.math.bits.Assumptions
+  instance'sortedHint : sortedHint.TypeAssumptions
+  instance'xorshift : xorshift.TypeAssumptions
+  unfold'AppendSeq : ∀ (Slice₀ E₀ : go.GoType), FuncUnfold AppendSeq [Slice₀, E₀] (AppendSeq.impl Slice₀ E₀)
+  unfold'Collect : ∀ (E₀ : go.GoType), FuncUnfold Collect [E₀] (Collect.impl E₀)
+  unfold'Sorted : ∀ (E₀ : go.GoType), FuncUnfold Sorted [E₀] (Sorted.impl E₀)
+  unfold'Clone : ∀ (S₀ E₀ : go.GoType), FuncUnfold Clone [S₀, E₀] (Clone.impl S₀ E₀)
+  unfold'Grow : ∀ (S₀ E₀ : go.GoType), FuncUnfold Grow [S₀, E₀] (Grow.impl S₀ E₀)
+  unfold'Concat : ∀ (S₀ E₀ : go.GoType), FuncUnfold Concat [S₀, E₀] (Concat.impl S₀ E₀)
+  unfold'Sort : ∀ (S₀ E₀ : go.GoType), FuncUnfold Sort'' [S₀, E₀] (Sort''.impl S₀ E₀)
+  unfold'SortFunc : ∀ (S₀ E₀ : go.GoType), FuncUnfold SortFunc [S₀, E₀] (SortFunc.impl S₀ E₀)
+  unfold'nextPowerOfTwo : FuncUnfold nextPowerOfTwo [] nextPowerOfTwo.impl
+  unfold'insertionSortCmpFunc : ∀ (E₀ : go.GoType), FuncUnfold insertionSortCmpFunc [E₀] (insertionSortCmpFunc.impl E₀)
+  unfold'siftDownCmpFunc : ∀ (E₀ : go.GoType), FuncUnfold siftDownCmpFunc [E₀] (siftDownCmpFunc.impl E₀)
+  unfold'heapSortCmpFunc : ∀ (E₀ : go.GoType), FuncUnfold heapSortCmpFunc [E₀] (heapSortCmpFunc.impl E₀)
+  unfold'pdqsortCmpFunc : ∀ (E₀ : go.GoType), FuncUnfold pdqsortCmpFunc [E₀] (pdqsortCmpFunc.impl E₀)
+  unfold'partitionCmpFunc : ∀ (E₀ : go.GoType), FuncUnfold partitionCmpFunc [E₀] (partitionCmpFunc.impl E₀)
+  unfold'partitionEqualCmpFunc : ∀ (E₀ : go.GoType), FuncUnfold partitionEqualCmpFunc [E₀] (partitionEqualCmpFunc.impl E₀)
+  unfold'partialInsertionSortCmpFunc : ∀ (E₀ : go.GoType), FuncUnfold partialInsertionSortCmpFunc [E₀] (partialInsertionSortCmpFunc.impl E₀)
+  unfold'breakPatternsCmpFunc : ∀ (E₀ : go.GoType), FuncUnfold breakPatternsCmpFunc [E₀] (breakPatternsCmpFunc.impl E₀)
+  unfold'choosePivotCmpFunc : ∀ (E₀ : go.GoType), FuncUnfold choosePivotCmpFunc [E₀] (choosePivotCmpFunc.impl E₀)
+  unfold'order2CmpFunc : ∀ (E₀ : go.GoType), FuncUnfold order2CmpFunc [E₀] (order2CmpFunc.impl E₀)
+  unfold'medianCmpFunc : ∀ (E₀ : go.GoType), FuncUnfold medianCmpFunc [E₀] (medianCmpFunc.impl E₀)
+  unfold'medianAdjacentCmpFunc : ∀ (E₀ : go.GoType), FuncUnfold medianAdjacentCmpFunc [E₀] (medianAdjacentCmpFunc.impl E₀)
+  unfold'reverseRangeCmpFunc : ∀ (E₀ : go.GoType), FuncUnfold reverseRangeCmpFunc [E₀] (reverseRangeCmpFunc.impl E₀)
+  unfold'swapRangeCmpFunc : ∀ (E₀ : go.GoType), FuncUnfold swapRangeCmpFunc [E₀] (swapRangeCmpFunc.impl E₀)
+  unfold'stableCmpFunc : ∀ (E₀ : go.GoType), FuncUnfold stableCmpFunc [E₀] (stableCmpFunc.impl E₀)
+  unfold'symMergeCmpFunc : ∀ (E₀ : go.GoType), FuncUnfold symMergeCmpFunc [E₀] (symMergeCmpFunc.impl E₀)
+  unfold'rotateCmpFunc : ∀ (E₀ : go.GoType), FuncUnfold rotateCmpFunc [E₀] (rotateCmpFunc.impl E₀)
+  unfold'insertionSortOrdered : ∀ (E₀ : go.GoType), FuncUnfold insertionSortOrdered [E₀] (insertionSortOrdered.impl E₀)
+  unfold'siftDownOrdered : ∀ (E₀ : go.GoType), FuncUnfold siftDownOrdered [E₀] (siftDownOrdered.impl E₀)
+  unfold'heapSortOrdered : ∀ (E₀ : go.GoType), FuncUnfold heapSortOrdered [E₀] (heapSortOrdered.impl E₀)
+  unfold'pdqsortOrdered : ∀ (E₀ : go.GoType), FuncUnfold pdqsortOrdered [E₀] (pdqsortOrdered.impl E₀)
+  unfold'partitionOrdered : ∀ (E₀ : go.GoType), FuncUnfold partitionOrdered [E₀] (partitionOrdered.impl E₀)
+  unfold'partitionEqualOrdered : ∀ (E₀ : go.GoType), FuncUnfold partitionEqualOrdered [E₀] (partitionEqualOrdered.impl E₀)
+  unfold'partialInsertionSortOrdered : ∀ (E₀ : go.GoType), FuncUnfold partialInsertionSortOrdered [E₀] (partialInsertionSortOrdered.impl E₀)
+  unfold'breakPatternsOrdered : ∀ (E₀ : go.GoType), FuncUnfold breakPatternsOrdered [E₀] (breakPatternsOrdered.impl E₀)
+  unfold'choosePivotOrdered : ∀ (E₀ : go.GoType), FuncUnfold choosePivotOrdered [E₀] (choosePivotOrdered.impl E₀)
+  unfold'order2Ordered : ∀ (E₀ : go.GoType), FuncUnfold order2Ordered [E₀] (order2Ordered.impl E₀)
+  unfold'medianOrdered : ∀ (E₀ : go.GoType), FuncUnfold medianOrdered [E₀] (medianOrdered.impl E₀)
+  unfold'medianAdjacentOrdered : ∀ (E₀ : go.GoType), FuncUnfold medianAdjacentOrdered [E₀] (medianAdjacentOrdered.impl E₀)
+  unfold'reverseRangeOrdered : ∀ (E₀ : go.GoType), FuncUnfold reverseRangeOrdered [E₀] (reverseRangeOrdered.impl E₀)
+  unfold'swapRangeOrdered : ∀ (E₀ : go.GoType), FuncUnfold swapRangeOrdered [E₀] (swapRangeOrdered.impl E₀)
+  unfold'stableOrdered : ∀ (E₀ : go.GoType), FuncUnfold stableOrdered [E₀] (stableOrdered.impl E₀)
+  unfold'symMergeOrdered : ∀ (E₀ : go.GoType), FuncUnfold symMergeOrdered [E₀] (symMergeOrdered.impl E₀)
+  unfold'rotateOrdered : ∀ (E₀ : go.GoType), FuncUnfold rotateOrdered [E₀] (rotateOrdered.impl E₀)
+  import'cmp : _root_.Perennial.cmp.Assumptions
+  import'iter : _root_.Perennial.iter.Assumptions
+  import'bits : _root_.Perennial.math.bits.Assumptions
 
-attribute [instance] Assumptions.sortedHint_instance
-  Assumptions.xorshift_instance
-  Assumptions.AppendSeq_unfold
-  Assumptions.Collect_unfold
-  Assumptions.Sorted_unfold
-  Assumptions.Clone_unfold
-  Assumptions.Grow_unfold
-  Assumptions.Concat_unfold
-  Assumptions.Sort_unfold
-  Assumptions.SortFunc_unfold
-  Assumptions.nextPowerOfTwo_unfold
-  Assumptions.insertionSortCmpFunc_unfold
-  Assumptions.siftDownCmpFunc_unfold
-  Assumptions.heapSortCmpFunc_unfold
-  Assumptions.pdqsortCmpFunc_unfold
-  Assumptions.partitionCmpFunc_unfold
-  Assumptions.partitionEqualCmpFunc_unfold
-  Assumptions.partialInsertionSortCmpFunc_unfold
-  Assumptions.breakPatternsCmpFunc_unfold
-  Assumptions.choosePivotCmpFunc_unfold
-  Assumptions.order2CmpFunc_unfold
-  Assumptions.medianCmpFunc_unfold
-  Assumptions.medianAdjacentCmpFunc_unfold
-  Assumptions.reverseRangeCmpFunc_unfold
-  Assumptions.swapRangeCmpFunc_unfold
-  Assumptions.stableCmpFunc_unfold
-  Assumptions.symMergeCmpFunc_unfold
-  Assumptions.rotateCmpFunc_unfold
-  Assumptions.insertionSortOrdered_unfold
-  Assumptions.siftDownOrdered_unfold
-  Assumptions.heapSortOrdered_unfold
-  Assumptions.pdqsortOrdered_unfold
-  Assumptions.partitionOrdered_unfold
-  Assumptions.partitionEqualOrdered_unfold
-  Assumptions.partialInsertionSortOrdered_unfold
-  Assumptions.breakPatternsOrdered_unfold
-  Assumptions.choosePivotOrdered_unfold
-  Assumptions.order2Ordered_unfold
-  Assumptions.medianOrdered_unfold
-  Assumptions.medianAdjacentOrdered_unfold
-  Assumptions.reverseRangeOrdered_unfold
-  Assumptions.swapRangeOrdered_unfold
-  Assumptions.stableOrdered_unfold
-  Assumptions.symMergeOrdered_unfold
-  Assumptions.rotateOrdered_unfold
-  Assumptions.import_cmp_Assumption
-  Assumptions.import_iter_Assumption
-  Assumptions.import_bits_Assumption
+attribute [instance] Assumptions.instance'sortedHint
+  Assumptions.instance'xorshift
+  Assumptions.unfold'AppendSeq
+  Assumptions.unfold'Collect
+  Assumptions.unfold'Sorted
+  Assumptions.unfold'Clone
+  Assumptions.unfold'Grow
+  Assumptions.unfold'Concat
+  Assumptions.unfold'Sort
+  Assumptions.unfold'SortFunc
+  Assumptions.unfold'nextPowerOfTwo
+  Assumptions.unfold'insertionSortCmpFunc
+  Assumptions.unfold'siftDownCmpFunc
+  Assumptions.unfold'heapSortCmpFunc
+  Assumptions.unfold'pdqsortCmpFunc
+  Assumptions.unfold'partitionCmpFunc
+  Assumptions.unfold'partitionEqualCmpFunc
+  Assumptions.unfold'partialInsertionSortCmpFunc
+  Assumptions.unfold'breakPatternsCmpFunc
+  Assumptions.unfold'choosePivotCmpFunc
+  Assumptions.unfold'order2CmpFunc
+  Assumptions.unfold'medianCmpFunc
+  Assumptions.unfold'medianAdjacentCmpFunc
+  Assumptions.unfold'reverseRangeCmpFunc
+  Assumptions.unfold'swapRangeCmpFunc
+  Assumptions.unfold'stableCmpFunc
+  Assumptions.unfold'symMergeCmpFunc
+  Assumptions.unfold'rotateCmpFunc
+  Assumptions.unfold'insertionSortOrdered
+  Assumptions.unfold'siftDownOrdered
+  Assumptions.unfold'heapSortOrdered
+  Assumptions.unfold'pdqsortOrdered
+  Assumptions.unfold'partitionOrdered
+  Assumptions.unfold'partitionEqualOrdered
+  Assumptions.unfold'partialInsertionSortOrdered
+  Assumptions.unfold'breakPatternsOrdered
+  Assumptions.unfold'choosePivotOrdered
+  Assumptions.unfold'order2Ordered
+  Assumptions.unfold'medianOrdered
+  Assumptions.unfold'medianAdjacentOrdered
+  Assumptions.unfold'reverseRangeOrdered
+  Assumptions.unfold'swapRangeOrdered
+  Assumptions.unfold'stableOrdered
+  Assumptions.unfold'symMergeOrdered
+  Assumptions.unfold'rotateOrdered
+  Assumptions.import'cmp
+  Assumptions.import'iter
+  Assumptions.import'bits
 
 end slices
 

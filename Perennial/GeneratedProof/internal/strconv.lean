@@ -26,7 +26,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.strconv.Assumptions]
 
-noncomputable instance decimal_typed_pointsto :
+noncomputable instance typed_pointsto'decimal :
     TypedPointsto (GF := GF) internal.strconv.decimal where
   typedPointstoDef l v dq := iprop(
     "d" ∷ typedPointsto (structFieldRef internal.strconv.decimal go!"d" l) v.d' dq ∗
@@ -39,11 +39,11 @@ noncomputable instance decimal_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance decimal_into_val_typed :
+noncomputable instance into_val_typed'decimal :
     IntoValTypedUnderlying (GF := GF) internal.strconv.decimal internal.strconv.decimal.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance decimal_access_load_d (l : Loc) (v : internal.strconv.decimal) (dq : DFrac) :
+noncomputable instance access_load'decimal'd (l : Loc) (v : internal.strconv.decimal) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.decimal go!"d" l) v.d' dq)
       (typedPointsto (structFieldRef internal.strconv.decimal go!"d" l) v.d' dq)
@@ -51,7 +51,7 @@ noncomputable instance decimal_access_load_d (l : Loc) (v : internal.strconv.dec
  by
   solve_pointsto_access_struct
 
-noncomputable instance decimal_access_store_d (l : Loc) (v : internal.strconv.decimal) (y : (GoArray w8 800)) :
+noncomputable instance access_store'decimal'd (l : Loc) (v : internal.strconv.decimal) (y : (GoArray w8 800)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.decimal go!"d" l) v.d' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.strconv.decimal go!"d" l) y (DFrac.own 1))
@@ -59,7 +59,7 @@ noncomputable instance decimal_access_store_d (l : Loc) (v : internal.strconv.de
  by
   solve_pointsto_access_struct
 
-noncomputable instance decimal_access_load_nd (l : Loc) (v : internal.strconv.decimal) (dq : DFrac) :
+noncomputable instance access_load'decimal'nd (l : Loc) (v : internal.strconv.decimal) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.decimal go!"nd" l) v.nd' dq)
       (typedPointsto (structFieldRef internal.strconv.decimal go!"nd" l) v.nd' dq)
@@ -67,7 +67,7 @@ noncomputable instance decimal_access_load_nd (l : Loc) (v : internal.strconv.de
  by
   solve_pointsto_access_struct
 
-noncomputable instance decimal_access_store_nd (l : Loc) (v : internal.strconv.decimal) (y : w64) :
+noncomputable instance access_store'decimal'nd (l : Loc) (v : internal.strconv.decimal) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.decimal go!"nd" l) v.nd' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.strconv.decimal go!"nd" l) y (DFrac.own 1))
@@ -75,7 +75,7 @@ noncomputable instance decimal_access_store_nd (l : Loc) (v : internal.strconv.d
  by
   solve_pointsto_access_struct
 
-noncomputable instance decimal_access_load_dp (l : Loc) (v : internal.strconv.decimal) (dq : DFrac) :
+noncomputable instance access_load'decimal'dp (l : Loc) (v : internal.strconv.decimal) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.decimal go!"dp" l) v.dp' dq)
       (typedPointsto (structFieldRef internal.strconv.decimal go!"dp" l) v.dp' dq)
@@ -83,7 +83,7 @@ noncomputable instance decimal_access_load_dp (l : Loc) (v : internal.strconv.de
  by
   solve_pointsto_access_struct
 
-noncomputable instance decimal_access_store_dp (l : Loc) (v : internal.strconv.decimal) (y : w64) :
+noncomputable instance access_store'decimal'dp (l : Loc) (v : internal.strconv.decimal) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.decimal go!"dp" l) v.dp' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.strconv.decimal go!"dp" l) y (DFrac.own 1))
@@ -91,7 +91,7 @@ noncomputable instance decimal_access_store_dp (l : Loc) (v : internal.strconv.d
  by
   solve_pointsto_access_struct
 
-noncomputable instance decimal_access_load_neg (l : Loc) (v : internal.strconv.decimal) (dq : DFrac) :
+noncomputable instance access_load'decimal'neg (l : Loc) (v : internal.strconv.decimal) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.decimal go!"neg" l) v.neg' dq)
       (typedPointsto (structFieldRef internal.strconv.decimal go!"neg" l) v.neg' dq)
@@ -99,7 +99,7 @@ noncomputable instance decimal_access_load_neg (l : Loc) (v : internal.strconv.d
  by
   solve_pointsto_access_struct
 
-noncomputable instance decimal_access_store_neg (l : Loc) (v : internal.strconv.decimal) (y : Bool) :
+noncomputable instance access_store'decimal'neg (l : Loc) (v : internal.strconv.decimal) (y : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.decimal go!"neg" l) v.neg' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.strconv.decimal go!"neg" l) y (DFrac.own 1))
@@ -107,7 +107,7 @@ noncomputable instance decimal_access_store_neg (l : Loc) (v : internal.strconv.
  by
   solve_pointsto_access_struct
 
-noncomputable instance decimal_access_load_trunc (l : Loc) (v : internal.strconv.decimal) (dq : DFrac) :
+noncomputable instance access_load'decimal'trunc (l : Loc) (v : internal.strconv.decimal) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.decimal go!"trunc" l) v.trunc' dq)
       (typedPointsto (structFieldRef internal.strconv.decimal go!"trunc" l) v.trunc' dq)
@@ -115,7 +115,7 @@ noncomputable instance decimal_access_load_trunc (l : Loc) (v : internal.strconv
  by
   solve_pointsto_access_struct
 
-noncomputable instance decimal_access_store_trunc (l : Loc) (v : internal.strconv.decimal) (y : Bool) :
+noncomputable instance access_store'decimal'trunc (l : Loc) (v : internal.strconv.decimal) (y : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.decimal go!"trunc" l) v.trunc' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.strconv.decimal go!"trunc" l) y (DFrac.own 1))
@@ -134,7 +134,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.strconv.Assumptions]
 
-noncomputable instance leftCheat_typed_pointsto :
+noncomputable instance typed_pointsto'leftCheat :
     TypedPointsto (GF := GF) internal.strconv.leftCheat where
   typedPointstoDef l v dq := iprop(
     "delta" ∷ typedPointsto (structFieldRef internal.strconv.leftCheat go!"delta" l) v.delta' dq ∗
@@ -144,11 +144,11 @@ noncomputable instance leftCheat_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance leftCheat_into_val_typed :
+noncomputable instance into_val_typed'leftCheat :
     IntoValTypedUnderlying (GF := GF) internal.strconv.leftCheat internal.strconv.leftCheat.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance leftCheat_access_load_delta (l : Loc) (v : internal.strconv.leftCheat) (dq : DFrac) :
+noncomputable instance access_load'leftCheat'delta (l : Loc) (v : internal.strconv.leftCheat) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.leftCheat go!"delta" l) v.delta' dq)
       (typedPointsto (structFieldRef internal.strconv.leftCheat go!"delta" l) v.delta' dq)
@@ -156,7 +156,7 @@ noncomputable instance leftCheat_access_load_delta (l : Loc) (v : internal.strco
  by
   solve_pointsto_access_struct
 
-noncomputable instance leftCheat_access_store_delta (l : Loc) (v : internal.strconv.leftCheat) (y : w64) :
+noncomputable instance access_store'leftCheat'delta (l : Loc) (v : internal.strconv.leftCheat) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.leftCheat go!"delta" l) v.delta' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.strconv.leftCheat go!"delta" l) y (DFrac.own 1))
@@ -164,7 +164,7 @@ noncomputable instance leftCheat_access_store_delta (l : Loc) (v : internal.strc
  by
   solve_pointsto_access_struct
 
-noncomputable instance leftCheat_access_load_cutoff (l : Loc) (v : internal.strconv.leftCheat) (dq : DFrac) :
+noncomputable instance access_load'leftCheat'cutoff (l : Loc) (v : internal.strconv.leftCheat) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.leftCheat go!"cutoff" l) v.cutoff' dq)
       (typedPointsto (structFieldRef internal.strconv.leftCheat go!"cutoff" l) v.cutoff' dq)
@@ -172,7 +172,7 @@ noncomputable instance leftCheat_access_load_cutoff (l : Loc) (v : internal.strc
  by
   solve_pointsto_access_struct
 
-noncomputable instance leftCheat_access_store_cutoff (l : Loc) (v : internal.strconv.leftCheat) (y : GoString) :
+noncomputable instance access_store'leftCheat'cutoff (l : Loc) (v : internal.strconv.leftCheat) (y : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.leftCheat go!"cutoff" l) v.cutoff' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.strconv.leftCheat go!"cutoff" l) y (DFrac.own 1))
@@ -191,7 +191,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.strconv.Assumptions]
 
-noncomputable instance floatInfo_typed_pointsto :
+noncomputable instance typed_pointsto'floatInfo :
     TypedPointsto (GF := GF) internal.strconv.floatInfo where
   typedPointstoDef l v dq := iprop(
     "mantbits" ∷ typedPointsto (structFieldRef internal.strconv.floatInfo go!"mantbits" l) v.mantbits' dq ∗
@@ -202,11 +202,11 @@ noncomputable instance floatInfo_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance floatInfo_into_val_typed :
+noncomputable instance into_val_typed'floatInfo :
     IntoValTypedUnderlying (GF := GF) internal.strconv.floatInfo internal.strconv.floatInfo.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance floatInfo_access_load_mantbits (l : Loc) (v : internal.strconv.floatInfo) (dq : DFrac) :
+noncomputable instance access_load'floatInfo'mantbits (l : Loc) (v : internal.strconv.floatInfo) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.floatInfo go!"mantbits" l) v.mantbits' dq)
       (typedPointsto (structFieldRef internal.strconv.floatInfo go!"mantbits" l) v.mantbits' dq)
@@ -214,7 +214,7 @@ noncomputable instance floatInfo_access_load_mantbits (l : Loc) (v : internal.st
  by
   solve_pointsto_access_struct
 
-noncomputable instance floatInfo_access_store_mantbits (l : Loc) (v : internal.strconv.floatInfo) (y : w64) :
+noncomputable instance access_store'floatInfo'mantbits (l : Loc) (v : internal.strconv.floatInfo) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.floatInfo go!"mantbits" l) v.mantbits' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.strconv.floatInfo go!"mantbits" l) y (DFrac.own 1))
@@ -222,7 +222,7 @@ noncomputable instance floatInfo_access_store_mantbits (l : Loc) (v : internal.s
  by
   solve_pointsto_access_struct
 
-noncomputable instance floatInfo_access_load_expbits (l : Loc) (v : internal.strconv.floatInfo) (dq : DFrac) :
+noncomputable instance access_load'floatInfo'expbits (l : Loc) (v : internal.strconv.floatInfo) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.floatInfo go!"expbits" l) v.expbits' dq)
       (typedPointsto (structFieldRef internal.strconv.floatInfo go!"expbits" l) v.expbits' dq)
@@ -230,7 +230,7 @@ noncomputable instance floatInfo_access_load_expbits (l : Loc) (v : internal.str
  by
   solve_pointsto_access_struct
 
-noncomputable instance floatInfo_access_store_expbits (l : Loc) (v : internal.strconv.floatInfo) (y : w64) :
+noncomputable instance access_store'floatInfo'expbits (l : Loc) (v : internal.strconv.floatInfo) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.floatInfo go!"expbits" l) v.expbits' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.strconv.floatInfo go!"expbits" l) y (DFrac.own 1))
@@ -238,7 +238,7 @@ noncomputable instance floatInfo_access_store_expbits (l : Loc) (v : internal.st
  by
   solve_pointsto_access_struct
 
-noncomputable instance floatInfo_access_load_bias (l : Loc) (v : internal.strconv.floatInfo) (dq : DFrac) :
+noncomputable instance access_load'floatInfo'bias (l : Loc) (v : internal.strconv.floatInfo) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.floatInfo go!"bias" l) v.bias' dq)
       (typedPointsto (structFieldRef internal.strconv.floatInfo go!"bias" l) v.bias' dq)
@@ -246,7 +246,7 @@ noncomputable instance floatInfo_access_load_bias (l : Loc) (v : internal.strcon
  by
   solve_pointsto_access_struct
 
-noncomputable instance floatInfo_access_store_bias (l : Loc) (v : internal.strconv.floatInfo) (y : w64) :
+noncomputable instance access_store'floatInfo'bias (l : Loc) (v : internal.strconv.floatInfo) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.floatInfo go!"bias" l) v.bias' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.strconv.floatInfo go!"bias" l) y (DFrac.own 1))
@@ -265,7 +265,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.strconv.Assumptions]
 
-noncomputable instance decimalSlice_typed_pointsto :
+noncomputable instance typed_pointsto'decimalSlice :
     TypedPointsto (GF := GF) internal.strconv.decimalSlice where
   typedPointstoDef l v dq := iprop(
     "d" ∷ typedPointsto (structFieldRef internal.strconv.decimalSlice go!"d" l) v.d' dq ∗
@@ -276,11 +276,11 @@ noncomputable instance decimalSlice_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance decimalSlice_into_val_typed :
+noncomputable instance into_val_typed'decimalSlice :
     IntoValTypedUnderlying (GF := GF) internal.strconv.decimalSlice internal.strconv.decimalSlice.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance decimalSlice_access_load_d (l : Loc) (v : internal.strconv.decimalSlice) (dq : DFrac) :
+noncomputable instance access_load'decimalSlice'd (l : Loc) (v : internal.strconv.decimalSlice) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.decimalSlice go!"d" l) v.d' dq)
       (typedPointsto (structFieldRef internal.strconv.decimalSlice go!"d" l) v.d' dq)
@@ -288,7 +288,7 @@ noncomputable instance decimalSlice_access_load_d (l : Loc) (v : internal.strcon
  by
   solve_pointsto_access_struct
 
-noncomputable instance decimalSlice_access_store_d (l : Loc) (v : internal.strconv.decimalSlice) (y : GoSlice) :
+noncomputable instance access_store'decimalSlice'd (l : Loc) (v : internal.strconv.decimalSlice) (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.decimalSlice go!"d" l) v.d' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.strconv.decimalSlice go!"d" l) y (DFrac.own 1))
@@ -296,7 +296,7 @@ noncomputable instance decimalSlice_access_store_d (l : Loc) (v : internal.strco
  by
   solve_pointsto_access_struct
 
-noncomputable instance decimalSlice_access_load_nd (l : Loc) (v : internal.strconv.decimalSlice) (dq : DFrac) :
+noncomputable instance access_load'decimalSlice'nd (l : Loc) (v : internal.strconv.decimalSlice) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.decimalSlice go!"nd" l) v.nd' dq)
       (typedPointsto (structFieldRef internal.strconv.decimalSlice go!"nd" l) v.nd' dq)
@@ -304,7 +304,7 @@ noncomputable instance decimalSlice_access_load_nd (l : Loc) (v : internal.strco
  by
   solve_pointsto_access_struct
 
-noncomputable instance decimalSlice_access_store_nd (l : Loc) (v : internal.strconv.decimalSlice) (y : w64) :
+noncomputable instance access_store'decimalSlice'nd (l : Loc) (v : internal.strconv.decimalSlice) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.decimalSlice go!"nd" l) v.nd' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.strconv.decimalSlice go!"nd" l) y (DFrac.own 1))
@@ -312,7 +312,7 @@ noncomputable instance decimalSlice_access_store_nd (l : Loc) (v : internal.strc
  by
   solve_pointsto_access_struct
 
-noncomputable instance decimalSlice_access_load_dp (l : Loc) (v : internal.strconv.decimalSlice) (dq : DFrac) :
+noncomputable instance access_load'decimalSlice'dp (l : Loc) (v : internal.strconv.decimalSlice) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.decimalSlice go!"dp" l) v.dp' dq)
       (typedPointsto (structFieldRef internal.strconv.decimalSlice go!"dp" l) v.dp' dq)
@@ -320,7 +320,7 @@ noncomputable instance decimalSlice_access_load_dp (l : Loc) (v : internal.strco
  by
   solve_pointsto_access_struct
 
-noncomputable instance decimalSlice_access_store_dp (l : Loc) (v : internal.strconv.decimalSlice) (y : w64) :
+noncomputable instance access_store'decimalSlice'dp (l : Loc) (v : internal.strconv.decimalSlice) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.decimalSlice go!"dp" l) v.dp' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.strconv.decimalSlice go!"dp" l) y (DFrac.own 1))
@@ -339,7 +339,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.strconv.Assumptions]
 
-noncomputable instance uint128_typed_pointsto :
+noncomputable instance typed_pointsto'uint128 :
     TypedPointsto (GF := GF) internal.strconv.uint128 where
   typedPointstoDef l v dq := iprop(
     "Hi" ∷ typedPointsto (structFieldRef internal.strconv.uint128 go!"Hi" l) v.Hi' dq ∗
@@ -349,11 +349,11 @@ noncomputable instance uint128_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance uint128_into_val_typed :
+noncomputable instance into_val_typed'uint128 :
     IntoValTypedUnderlying (GF := GF) internal.strconv.uint128 internal.strconv.uint128.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance uint128_access_load_Hi (l : Loc) (v : internal.strconv.uint128) (dq : DFrac) :
+noncomputable instance access_load'uint128'Hi (l : Loc) (v : internal.strconv.uint128) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.uint128 go!"Hi" l) v.Hi' dq)
       (typedPointsto (structFieldRef internal.strconv.uint128 go!"Hi" l) v.Hi' dq)
@@ -361,7 +361,7 @@ noncomputable instance uint128_access_load_Hi (l : Loc) (v : internal.strconv.ui
  by
   solve_pointsto_access_struct
 
-noncomputable instance uint128_access_store_Hi (l : Loc) (v : internal.strconv.uint128) (y : w64) :
+noncomputable instance access_store'uint128'Hi (l : Loc) (v : internal.strconv.uint128) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.uint128 go!"Hi" l) v.Hi' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.strconv.uint128 go!"Hi" l) y (DFrac.own 1))
@@ -369,7 +369,7 @@ noncomputable instance uint128_access_store_Hi (l : Loc) (v : internal.strconv.u
  by
   solve_pointsto_access_struct
 
-noncomputable instance uint128_access_load_Lo (l : Loc) (v : internal.strconv.uint128) (dq : DFrac) :
+noncomputable instance access_load'uint128'Lo (l : Loc) (v : internal.strconv.uint128) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.uint128 go!"Lo" l) v.Lo' dq)
       (typedPointsto (structFieldRef internal.strconv.uint128 go!"Lo" l) v.Lo' dq)
@@ -377,7 +377,7 @@ noncomputable instance uint128_access_load_Lo (l : Loc) (v : internal.strconv.ui
  by
   solve_pointsto_access_struct
 
-noncomputable instance uint128_access_store_Lo (l : Loc) (v : internal.strconv.uint128) (y : w64) :
+noncomputable instance access_store'uint128'Lo (l : Loc) (v : internal.strconv.uint128) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.strconv.uint128 go!"Lo" l) v.Lo' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.strconv.uint128 go!"Lo" l) y (DFrac.own 1))

@@ -24,7 +24,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport.Assumptions]
 
-noncomputable instance T_typed_pointsto :
+noncomputable instance typed_pointsto'T :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport.T where
   typedPointstoDef l v dq := iprop(
     "n" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport.T go!"n" l) v.n' dq ∗
@@ -33,11 +33,11 @@ noncomputable instance T_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance T_into_val_typed :
+noncomputable instance into_val_typed'T :
     IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport.T github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport.T.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance T_access_load_n (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport.T) (dq : DFrac) :
+noncomputable instance access_load'T'n (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport.T) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport.T go!"n" l) v.n' dq)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport.T go!"n" l) v.n' dq)
@@ -45,7 +45,7 @@ noncomputable instance T_access_load_n (l : Loc) (v : github_com.mit_pdos.perenn
  by
   solve_pointsto_access_struct
 
-noncomputable instance T_access_store_n (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport.T) (y : w64) :
+noncomputable instance access_store'T'n (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport.T) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport.T go!"n" l) v.n' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport.T go!"n" l) y (DFrac.own 1))
@@ -64,11 +64,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport.Assumptions]
 
-noncomputable instance withDep_typed_pointsto :
+noncomputable instance typed_pointsto'withDep :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport.withDep :=
   sorry -- axiomatized type
 
-noncomputable instance withDep_into_val_typed :
+noncomputable instance into_val_typed'withDep :
     IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport.withDep github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport.withDep.underlying :=
   sorry -- axiomatized type
 

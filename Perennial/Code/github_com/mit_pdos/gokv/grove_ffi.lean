@@ -198,7 +198,7 @@ noncomputable instance ConnectRet.zero_val [GooseExts] : ZeroVal ConnectRet :=
 @[irreducible] noncomputable def ConnectRet.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   ConnectRet.fieldsUnsealed
 
-noncomputable instance equals_unfold_ConnectRet [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'ConnectRet [GooseExts] [GoGlobalContext] :
     EqualsUnfold ConnectRet.fields ConnectRet.fieldsUnsealed :=
   ⟨by unfold ConnectRet.fields; rfl⟩
 
@@ -208,19 +208,19 @@ noncomputable instance equals_unfold_ConnectRet [GooseExts] [GoGlobalContext] :
 class ConnectRet.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying ConnectRet.underlying ConnectRet
   underlying : go.UnderlyingDirectedEq ConnectRet.ty ConnectRet.underlying
-  get_Err : ∀ (x : ConnectRet), go.IsGoStepPureDetTagged under (StructFieldGet ConnectRet.underlying go!"Err") #x (Val #(x.Err'))
-  set_Err : ∀ (x : ConnectRet) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet ConnectRet.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : ConnectRet)))
-  get_Connection : ∀ (x : ConnectRet), go.IsGoStepPureDetTagged under (StructFieldGet ConnectRet.underlying go!"Connection") #x (Val #(x.Connection'))
-  set_Connection : ∀ (x : ConnectRet) (y : Connection), go.IsGoStepPureDetTagged under (StructFieldSet ConnectRet.underlying go!"Connection") (PairV #x #y) (Val #(({ x with Connection' := y } : ConnectRet)))
+  get'Err : ∀ (x : ConnectRet), go.IsGoStepPureDetTagged under (StructFieldGet ConnectRet.underlying go!"Err") #x (Val #(x.Err'))
+  set'Err : ∀ (x : ConnectRet) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet ConnectRet.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : ConnectRet)))
+  get'Connection : ∀ (x : ConnectRet), go.IsGoStepPureDetTagged under (StructFieldGet ConnectRet.underlying go!"Connection") #x (Val #(x.Connection'))
+  set'Connection : ∀ (x : ConnectRet) (y : Connection), go.IsGoStepPureDetTagged under (StructFieldSet ConnectRet.underlying go!"Connection") (PairV #x #y) (Val #(({ x with Connection' := y } : ConnectRet)))
   method_set : go.MethodSetIs ConnectRet.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType ConnectRet.ty) []
 
 attribute [instance] ConnectRet.TypeAssumptions.type_repr
   ConnectRet.TypeAssumptions.underlying
-  ConnectRet.TypeAssumptions.get_Err
-  ConnectRet.TypeAssumptions.set_Err
-  ConnectRet.TypeAssumptions.get_Connection
-  ConnectRet.TypeAssumptions.set_Connection
+  ConnectRet.TypeAssumptions.get'Err
+  ConnectRet.TypeAssumptions.set'Err
+  ConnectRet.TypeAssumptions.get'Connection
+  ConnectRet.TypeAssumptions.set'Connection
   ConnectRet.TypeAssumptions.method_set
   ConnectRet.TypeAssumptions.ptr_method_set
 
@@ -239,7 +239,7 @@ noncomputable instance ReceiveRet.zero_val [GooseExts] : ZeroVal ReceiveRet :=
 @[irreducible] noncomputable def ReceiveRet.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   ReceiveRet.fieldsUnsealed
 
-noncomputable instance equals_unfold_ReceiveRet [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'ReceiveRet [GooseExts] [GoGlobalContext] :
     EqualsUnfold ReceiveRet.fields ReceiveRet.fieldsUnsealed :=
   ⟨by unfold ReceiveRet.fields; rfl⟩
 
@@ -249,56 +249,56 @@ noncomputable instance equals_unfold_ReceiveRet [GooseExts] [GoGlobalContext] :
 class ReceiveRet.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying ReceiveRet.underlying ReceiveRet
   underlying : go.UnderlyingDirectedEq ReceiveRet.ty ReceiveRet.underlying
-  get_Err : ∀ (x : ReceiveRet), go.IsGoStepPureDetTagged under (StructFieldGet ReceiveRet.underlying go!"Err") #x (Val #(x.Err'))
-  set_Err : ∀ (x : ReceiveRet) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet ReceiveRet.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : ReceiveRet)))
-  get_Data : ∀ (x : ReceiveRet), go.IsGoStepPureDetTagged under (StructFieldGet ReceiveRet.underlying go!"Data") #x (Val #(x.Data'))
-  set_Data : ∀ (x : ReceiveRet) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet ReceiveRet.underlying go!"Data") (PairV #x #y) (Val #(({ x with Data' := y } : ReceiveRet)))
+  get'Err : ∀ (x : ReceiveRet), go.IsGoStepPureDetTagged under (StructFieldGet ReceiveRet.underlying go!"Err") #x (Val #(x.Err'))
+  set'Err : ∀ (x : ReceiveRet) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet ReceiveRet.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : ReceiveRet)))
+  get'Data : ∀ (x : ReceiveRet), go.IsGoStepPureDetTagged under (StructFieldGet ReceiveRet.underlying go!"Data") #x (Val #(x.Data'))
+  set'Data : ∀ (x : ReceiveRet) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet ReceiveRet.underlying go!"Data") (PairV #x #y) (Val #(({ x with Data' := y } : ReceiveRet)))
   method_set : go.MethodSetIs ReceiveRet.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType ReceiveRet.ty) []
 
 attribute [instance] ReceiveRet.TypeAssumptions.type_repr
   ReceiveRet.TypeAssumptions.underlying
-  ReceiveRet.TypeAssumptions.get_Err
-  ReceiveRet.TypeAssumptions.set_Err
-  ReceiveRet.TypeAssumptions.get_Data
-  ReceiveRet.TypeAssumptions.set_Data
+  ReceiveRet.TypeAssumptions.get'Err
+  ReceiveRet.TypeAssumptions.set'Err
+  ReceiveRet.TypeAssumptions.get'Data
+  ReceiveRet.TypeAssumptions.set'Data
   ReceiveRet.TypeAssumptions.method_set
   ReceiveRet.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  listener_instance : listener.TypeAssumptions
-  Listener_instance : Listener.TypeAssumptions
-  connection_instance : connection.TypeAssumptions
-  Connection_instance : Connection.TypeAssumptions
-  ConnectRet_instance : ConnectRet.TypeAssumptions
-  ReceiveRet_instance : ReceiveRet.TypeAssumptions
-  FileWrite_unfold : FuncUnfold FileWrite [] FileWrite.impl
-  FileRead_unfold : FuncUnfold FileRead [] FileRead.impl
-  FileAppend_unfold : FuncUnfold FileAppend [] FileAppend.impl
-  Listen_unfold : FuncUnfold Listen [] Listen.impl
-  Accept_unfold : FuncUnfold Accept [] Accept.impl
-  Connect_unfold : FuncUnfold Connect [] Connect.impl
-  Send_unfold : FuncUnfold Send [] Send.impl
-  Receive_unfold : FuncUnfold Receive [] Receive.impl
-  GetTimeRange_unfold : FuncUnfold GetTimeRange [] GetTimeRange.impl
-  GetTSC_unfold : FuncUnfold GetTSC [] GetTSC.impl
+  instance'listener : listener.TypeAssumptions
+  instance'Listener : Listener.TypeAssumptions
+  instance'connection : connection.TypeAssumptions
+  instance'Connection : Connection.TypeAssumptions
+  instance'ConnectRet : ConnectRet.TypeAssumptions
+  instance'ReceiveRet : ReceiveRet.TypeAssumptions
+  unfold'FileWrite : FuncUnfold FileWrite [] FileWrite.impl
+  unfold'FileRead : FuncUnfold FileRead [] FileRead.impl
+  unfold'FileAppend : FuncUnfold FileAppend [] FileAppend.impl
+  unfold'Listen : FuncUnfold Listen [] Listen.impl
+  unfold'Accept : FuncUnfold Accept [] Accept.impl
+  unfold'Connect : FuncUnfold Connect [] Connect.impl
+  unfold'Send : FuncUnfold Send [] Send.impl
+  unfold'Receive : FuncUnfold Receive [] Receive.impl
+  unfold'GetTimeRange : FuncUnfold GetTimeRange [] GetTimeRange.impl
+  unfold'GetTSC : FuncUnfold GetTSC [] GetTSC.impl
 
-attribute [instance] Assumptions.listener_instance
-  Assumptions.Listener_instance
-  Assumptions.connection_instance
-  Assumptions.Connection_instance
-  Assumptions.ConnectRet_instance
-  Assumptions.ReceiveRet_instance
-  Assumptions.FileWrite_unfold
-  Assumptions.FileRead_unfold
-  Assumptions.FileAppend_unfold
-  Assumptions.Listen_unfold
-  Assumptions.Accept_unfold
-  Assumptions.Connect_unfold
-  Assumptions.Send_unfold
-  Assumptions.Receive_unfold
-  Assumptions.GetTimeRange_unfold
-  Assumptions.GetTSC_unfold
+attribute [instance] Assumptions.instance'listener
+  Assumptions.instance'Listener
+  Assumptions.instance'connection
+  Assumptions.instance'Connection
+  Assumptions.instance'ConnectRet
+  Assumptions.instance'ReceiveRet
+  Assumptions.unfold'FileWrite
+  Assumptions.unfold'FileRead
+  Assumptions.unfold'FileAppend
+  Assumptions.unfold'Listen
+  Assumptions.unfold'Accept
+  Assumptions.unfold'Connect
+  Assumptions.unfold'Send
+  Assumptions.unfold'Receive
+  Assumptions.unfold'GetTimeRange
+  Assumptions.unfold'GetTSC
 
 end github_com.mit_pdos.gokv.grove_ffi
 

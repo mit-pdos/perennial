@@ -4,7 +4,7 @@
 // declarations share a name).
 package names
 
-// A Lean keyword as a type name (Type''), and a field of that name
+// A Lean keyword as a type name (Type”), and a field of that name
 // and type (the projection Type'): inside namespace IntOrString, the type
 // must not resolve to the projection.
 type Type int64
@@ -21,7 +21,7 @@ func useIntOrString() Type {
 }
 
 // Other Lean keywords, as a type, function, global, field and method
-// (def'', fun'', at'', match', show''), and a name Lean cannot lex (é).
+// (def”, fun”, at”, match', show”), and a name Lean cannot lex (é).
 type def int64
 
 var at def
@@ -138,3 +138,40 @@ func unbox[Val any](b Box[Val]) Val { return b.Val }
 type Foo_Assumptions struct{ n int }
 
 func useFoo(p Foo_Assumptions) int { return p.n }
+
+// A package type named like a framework value type, used as a field type
+// (the field's Lean type must be this GoSlice, not the framework's).
+type GoSlice struct{ a, b int }
+
+type HoldsGoSlice struct {
+	buf []byte
+	s   GoSlice
+}
+
+// A type parameter named like a package type that an alias makes reachable
+// inside the generic type (the field u has the package type TP).
+type TP struct{ n int }
+
+type AliasTP = TP
+
+type GenBox[TP any] struct {
+	v TP
+	u AliasTP
+}
+
+// Class members derived from names: the field `unfold` and the method `get`;
+// the methods `ptr_f` and `f`.
+type Members struct {
+	unfold int
+}
+
+func (m Members) get() int    { return m.unfold }
+func (m *Members) f() int     { return 1 }
+func (m *Members) ptr_f() int { return 2 }
+
+// A function-local constant named like a framework name.
+func localConst() int {
+	const Val = 3
+	const Pair = Val + 1
+	return Pair
+}

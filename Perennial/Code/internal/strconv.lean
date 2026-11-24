@@ -552,7 +552,7 @@ noncomputable def ParseUint.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "bitSize" (App (Val (GoInstruction (GoAlloc go.int))) (Var "bitSize"))
   (Let "base" (App (Val (GoInstruction (GoAlloc go.int))) (Var "base"))
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
-  (let fnParseUint := #(go!"ParseUint");
+  (let fnParseUint₀ := #(go!"ParseUint");
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "base")) (Val #(W64 0))))
   (Let "base0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -846,7 +846,7 @@ noncomputable def ParseInt.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "bitSize" (App (Val (GoInstruction (GoAlloc go.int))) (Var "bitSize"))
   (Let "base" (App (Val (GoInstruction (GoAlloc go.int))) (Var "base"))
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
-  (let fnParseInt := #(go!"ParseInt");
+  (let fnParseInt₀ := #(go!"ParseInt");
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #false)
   (Let "neg" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -986,7 +986,7 @@ noncomputable def Atoi.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$res1" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
-  (let fnAtoi := #(go!"Atoi");
+  (let fnAtoi₀ := #(go!"Atoi");
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
   (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))
   (Let "sLen" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -2058,15 +2058,15 @@ class Error.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSe
   underlying : go.UnderlyingDirectedEq Error.ty Error.underlying
   method_set : go.MethodSetIs Error.ty [(go!"Error", (some (go.signature.Signature [] false [go.string])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Error.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string])))]
-  Error_unfold : MethodUnfold Error.ty go!"Error" Error.Error.impl
-  ptr_Error_unfold : MethodUnfold (go.GoType.PointerType Error.ty) go!"Error" (LamV "$r"
+  unfold'Error : MethodUnfold Error.ty go!"Error" Error.Error.impl
+  ptr_unfold'Error : MethodUnfold (go.GoType.PointerType Error.ty) go!"Error" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Error.ty go!"Error"))) (App (Val (GoInstruction (GoLoad Error.ty))) (Var "$r"))))
 
 attribute [instance] Error.TypeAssumptions.underlying
   Error.TypeAssumptions.method_set
   Error.TypeAssumptions.ptr_method_set
-  Error.TypeAssumptions.Error_unfold
-  Error.TypeAssumptions.ptr_Error_unfold
+  Error.TypeAssumptions.unfold'Error
+  Error.TypeAssumptions.ptr_unfold'Error
 
 structure decimal [GooseExts] where
   mk ::
@@ -2089,7 +2089,7 @@ noncomputable instance decimal.zero_val [GooseExts] : ZeroVal decimal :=
 @[irreducible] noncomputable def decimal.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   decimal.fieldsUnsealed
 
-noncomputable instance equals_unfold_decimal [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'decimal [GooseExts] [GoGlobalContext] :
     EqualsUnfold decimal.fields decimal.fieldsUnsealed :=
   ⟨by unfold decimal.fields; rfl⟩
 
@@ -2099,31 +2099,31 @@ noncomputable instance equals_unfold_decimal [GooseExts] [GoGlobalContext] :
 class decimal.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying decimal.underlying decimal
   underlying : go.UnderlyingDirectedEq decimal.ty decimal.underlying
-  get_d : ∀ (x : decimal), go.IsGoStepPureDetTagged under (StructFieldGet decimal.underlying go!"d") #x (Val #(x.d'))
-  set_d : ∀ (x : decimal) (y : (GoArray w8 800)), go.IsGoStepPureDetTagged under (StructFieldSet decimal.underlying go!"d") (PairV #x #y) (Val #(({ x with d' := y } : decimal)))
-  get_nd : ∀ (x : decimal), go.IsGoStepPureDetTagged under (StructFieldGet decimal.underlying go!"nd") #x (Val #(x.nd'))
-  set_nd : ∀ (x : decimal) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet decimal.underlying go!"nd") (PairV #x #y) (Val #(({ x with nd' := y } : decimal)))
-  get_dp : ∀ (x : decimal), go.IsGoStepPureDetTagged under (StructFieldGet decimal.underlying go!"dp") #x (Val #(x.dp'))
-  set_dp : ∀ (x : decimal) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet decimal.underlying go!"dp") (PairV #x #y) (Val #(({ x with dp' := y } : decimal)))
-  get_neg : ∀ (x : decimal), go.IsGoStepPureDetTagged under (StructFieldGet decimal.underlying go!"neg") #x (Val #(x.neg'))
-  set_neg : ∀ (x : decimal) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet decimal.underlying go!"neg") (PairV #x #y) (Val #(({ x with neg' := y } : decimal)))
-  get_trunc : ∀ (x : decimal), go.IsGoStepPureDetTagged under (StructFieldGet decimal.underlying go!"trunc") #x (Val #(x.trunc'))
-  set_trunc : ∀ (x : decimal) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet decimal.underlying go!"trunc") (PairV #x #y) (Val #(({ x with trunc' := y } : decimal)))
+  get'd : ∀ (x : decimal), go.IsGoStepPureDetTagged under (StructFieldGet decimal.underlying go!"d") #x (Val #(x.d'))
+  set'd : ∀ (x : decimal) (y : (GoArray w8 800)), go.IsGoStepPureDetTagged under (StructFieldSet decimal.underlying go!"d") (PairV #x #y) (Val #(({ x with d' := y } : decimal)))
+  get'nd : ∀ (x : decimal), go.IsGoStepPureDetTagged under (StructFieldGet decimal.underlying go!"nd") #x (Val #(x.nd'))
+  set'nd : ∀ (x : decimal) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet decimal.underlying go!"nd") (PairV #x #y) (Val #(({ x with nd' := y } : decimal)))
+  get'dp : ∀ (x : decimal), go.IsGoStepPureDetTagged under (StructFieldGet decimal.underlying go!"dp") #x (Val #(x.dp'))
+  set'dp : ∀ (x : decimal) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet decimal.underlying go!"dp") (PairV #x #y) (Val #(({ x with dp' := y } : decimal)))
+  get'neg : ∀ (x : decimal), go.IsGoStepPureDetTagged under (StructFieldGet decimal.underlying go!"neg") #x (Val #(x.neg'))
+  set'neg : ∀ (x : decimal) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet decimal.underlying go!"neg") (PairV #x #y) (Val #(({ x with neg' := y } : decimal)))
+  get'trunc : ∀ (x : decimal), go.IsGoStepPureDetTagged under (StructFieldGet decimal.underlying go!"trunc") #x (Val #(x.trunc'))
+  set'trunc : ∀ (x : decimal) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet decimal.underlying go!"trunc") (PairV #x #y) (Val #(({ x with trunc' := y } : decimal)))
   method_set : go.MethodSetIs decimal.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType decimal.ty) [(go!"Assign", (some (go.signature.Signature [go.uint64] false []))), (go!"Round", (some (go.signature.Signature [go.int] false []))), (go!"RoundDown", (some (go.signature.Signature [go.int] false []))), (go!"RoundUp", (some (go.signature.Signature [go.int] false []))), (go!"RoundedInteger", (some (go.signature.Signature [] false [go.uint64]))), (go!"Shift", (some (go.signature.Signature [go.int] false []))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"internal/strconv.floatBits", (some (go.signature.Signature [(go.GoType.PointerType floatInfo.ty)] false [go.uint64, go.bool]))), (go!"internal/strconv.set", (some (go.signature.Signature [go.string] false [go.bool])))]
 
 attribute [instance] decimal.TypeAssumptions.type_repr
   decimal.TypeAssumptions.underlying
-  decimal.TypeAssumptions.get_d
-  decimal.TypeAssumptions.set_d
-  decimal.TypeAssumptions.get_nd
-  decimal.TypeAssumptions.set_nd
-  decimal.TypeAssumptions.get_dp
-  decimal.TypeAssumptions.set_dp
-  decimal.TypeAssumptions.get_neg
-  decimal.TypeAssumptions.set_neg
-  decimal.TypeAssumptions.get_trunc
-  decimal.TypeAssumptions.set_trunc
+  decimal.TypeAssumptions.get'd
+  decimal.TypeAssumptions.set'd
+  decimal.TypeAssumptions.get'nd
+  decimal.TypeAssumptions.set'nd
+  decimal.TypeAssumptions.get'dp
+  decimal.TypeAssumptions.set'dp
+  decimal.TypeAssumptions.get'neg
+  decimal.TypeAssumptions.set'neg
+  decimal.TypeAssumptions.get'trunc
+  decimal.TypeAssumptions.set'trunc
   decimal.TypeAssumptions.method_set
   decimal.TypeAssumptions.ptr_method_set
 
@@ -2142,7 +2142,7 @@ noncomputable instance leftCheat.zero_val [GooseExts] : ZeroVal leftCheat :=
 @[irreducible] noncomputable def leftCheat.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   leftCheat.fieldsUnsealed
 
-noncomputable instance equals_unfold_leftCheat [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'leftCheat [GooseExts] [GoGlobalContext] :
     EqualsUnfold leftCheat.fields leftCheat.fieldsUnsealed :=
   ⟨by unfold leftCheat.fields; rfl⟩
 
@@ -2152,19 +2152,19 @@ noncomputable instance equals_unfold_leftCheat [GooseExts] [GoGlobalContext] :
 class leftCheat.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying leftCheat.underlying leftCheat
   underlying : go.UnderlyingDirectedEq leftCheat.ty leftCheat.underlying
-  get_delta : ∀ (x : leftCheat), go.IsGoStepPureDetTagged under (StructFieldGet leftCheat.underlying go!"delta") #x (Val #(x.delta'))
-  set_delta : ∀ (x : leftCheat) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet leftCheat.underlying go!"delta") (PairV #x #y) (Val #(({ x with delta' := y } : leftCheat)))
-  get_cutoff : ∀ (x : leftCheat), go.IsGoStepPureDetTagged under (StructFieldGet leftCheat.underlying go!"cutoff") #x (Val #(x.cutoff'))
-  set_cutoff : ∀ (x : leftCheat) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet leftCheat.underlying go!"cutoff") (PairV #x #y) (Val #(({ x with cutoff' := y } : leftCheat)))
+  get'delta : ∀ (x : leftCheat), go.IsGoStepPureDetTagged under (StructFieldGet leftCheat.underlying go!"delta") #x (Val #(x.delta'))
+  set'delta : ∀ (x : leftCheat) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet leftCheat.underlying go!"delta") (PairV #x #y) (Val #(({ x with delta' := y } : leftCheat)))
+  get'cutoff : ∀ (x : leftCheat), go.IsGoStepPureDetTagged under (StructFieldGet leftCheat.underlying go!"cutoff") #x (Val #(x.cutoff'))
+  set'cutoff : ∀ (x : leftCheat) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet leftCheat.underlying go!"cutoff") (PairV #x #y) (Val #(({ x with cutoff' := y } : leftCheat)))
   method_set : go.MethodSetIs leftCheat.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType leftCheat.ty) []
 
 attribute [instance] leftCheat.TypeAssumptions.type_repr
   leftCheat.TypeAssumptions.underlying
-  leftCheat.TypeAssumptions.get_delta
-  leftCheat.TypeAssumptions.set_delta
-  leftCheat.TypeAssumptions.get_cutoff
-  leftCheat.TypeAssumptions.set_cutoff
+  leftCheat.TypeAssumptions.get'delta
+  leftCheat.TypeAssumptions.set'delta
+  leftCheat.TypeAssumptions.get'cutoff
+  leftCheat.TypeAssumptions.set'cutoff
   leftCheat.TypeAssumptions.method_set
   leftCheat.TypeAssumptions.ptr_method_set
 
@@ -2185,7 +2185,7 @@ noncomputable instance floatInfo.zero_val [GooseExts] : ZeroVal floatInfo :=
 @[irreducible] noncomputable def floatInfo.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   floatInfo.fieldsUnsealed
 
-noncomputable instance equals_unfold_floatInfo [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'floatInfo [GooseExts] [GoGlobalContext] :
     EqualsUnfold floatInfo.fields floatInfo.fieldsUnsealed :=
   ⟨by unfold floatInfo.fields; rfl⟩
 
@@ -2195,23 +2195,23 @@ noncomputable instance equals_unfold_floatInfo [GooseExts] [GoGlobalContext] :
 class floatInfo.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying floatInfo.underlying floatInfo
   underlying : go.UnderlyingDirectedEq floatInfo.ty floatInfo.underlying
-  get_mantbits : ∀ (x : floatInfo), go.IsGoStepPureDetTagged under (StructFieldGet floatInfo.underlying go!"mantbits") #x (Val #(x.mantbits'))
-  set_mantbits : ∀ (x : floatInfo) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet floatInfo.underlying go!"mantbits") (PairV #x #y) (Val #(({ x with mantbits' := y } : floatInfo)))
-  get_expbits : ∀ (x : floatInfo), go.IsGoStepPureDetTagged under (StructFieldGet floatInfo.underlying go!"expbits") #x (Val #(x.expbits'))
-  set_expbits : ∀ (x : floatInfo) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet floatInfo.underlying go!"expbits") (PairV #x #y) (Val #(({ x with expbits' := y } : floatInfo)))
-  get_bias : ∀ (x : floatInfo), go.IsGoStepPureDetTagged under (StructFieldGet floatInfo.underlying go!"bias") #x (Val #(x.bias'))
-  set_bias : ∀ (x : floatInfo) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet floatInfo.underlying go!"bias") (PairV #x #y) (Val #(({ x with bias' := y } : floatInfo)))
+  get'mantbits : ∀ (x : floatInfo), go.IsGoStepPureDetTagged under (StructFieldGet floatInfo.underlying go!"mantbits") #x (Val #(x.mantbits'))
+  set'mantbits : ∀ (x : floatInfo) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet floatInfo.underlying go!"mantbits") (PairV #x #y) (Val #(({ x with mantbits' := y } : floatInfo)))
+  get'expbits : ∀ (x : floatInfo), go.IsGoStepPureDetTagged under (StructFieldGet floatInfo.underlying go!"expbits") #x (Val #(x.expbits'))
+  set'expbits : ∀ (x : floatInfo) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet floatInfo.underlying go!"expbits") (PairV #x #y) (Val #(({ x with expbits' := y } : floatInfo)))
+  get'bias : ∀ (x : floatInfo), go.IsGoStepPureDetTagged under (StructFieldGet floatInfo.underlying go!"bias") #x (Val #(x.bias'))
+  set'bias : ∀ (x : floatInfo) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet floatInfo.underlying go!"bias") (PairV #x #y) (Val #(({ x with bias' := y } : floatInfo)))
   method_set : go.MethodSetIs floatInfo.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType floatInfo.ty) []
 
 attribute [instance] floatInfo.TypeAssumptions.type_repr
   floatInfo.TypeAssumptions.underlying
-  floatInfo.TypeAssumptions.get_mantbits
-  floatInfo.TypeAssumptions.set_mantbits
-  floatInfo.TypeAssumptions.get_expbits
-  floatInfo.TypeAssumptions.set_expbits
-  floatInfo.TypeAssumptions.get_bias
-  floatInfo.TypeAssumptions.set_bias
+  floatInfo.TypeAssumptions.get'mantbits
+  floatInfo.TypeAssumptions.set'mantbits
+  floatInfo.TypeAssumptions.get'expbits
+  floatInfo.TypeAssumptions.set'expbits
+  floatInfo.TypeAssumptions.get'bias
+  floatInfo.TypeAssumptions.set'bias
   floatInfo.TypeAssumptions.method_set
   floatInfo.TypeAssumptions.ptr_method_set
 
@@ -2232,7 +2232,7 @@ noncomputable instance decimalSlice.zero_val [GooseExts] : ZeroVal decimalSlice 
 @[irreducible] noncomputable def decimalSlice.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   decimalSlice.fieldsUnsealed
 
-noncomputable instance equals_unfold_decimalSlice [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'decimalSlice [GooseExts] [GoGlobalContext] :
     EqualsUnfold decimalSlice.fields decimalSlice.fieldsUnsealed :=
   ⟨by unfold decimalSlice.fields; rfl⟩
 
@@ -2242,23 +2242,23 @@ noncomputable instance equals_unfold_decimalSlice [GooseExts] [GoGlobalContext] 
 class decimalSlice.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying decimalSlice.underlying decimalSlice
   underlying : go.UnderlyingDirectedEq decimalSlice.ty decimalSlice.underlying
-  get_d : ∀ (x : decimalSlice), go.IsGoStepPureDetTagged under (StructFieldGet decimalSlice.underlying go!"d") #x (Val #(x.d'))
-  set_d : ∀ (x : decimalSlice) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet decimalSlice.underlying go!"d") (PairV #x #y) (Val #(({ x with d' := y } : decimalSlice)))
-  get_nd : ∀ (x : decimalSlice), go.IsGoStepPureDetTagged under (StructFieldGet decimalSlice.underlying go!"nd") #x (Val #(x.nd'))
-  set_nd : ∀ (x : decimalSlice) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet decimalSlice.underlying go!"nd") (PairV #x #y) (Val #(({ x with nd' := y } : decimalSlice)))
-  get_dp : ∀ (x : decimalSlice), go.IsGoStepPureDetTagged under (StructFieldGet decimalSlice.underlying go!"dp") #x (Val #(x.dp'))
-  set_dp : ∀ (x : decimalSlice) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet decimalSlice.underlying go!"dp") (PairV #x #y) (Val #(({ x with dp' := y } : decimalSlice)))
+  get'd : ∀ (x : decimalSlice), go.IsGoStepPureDetTagged under (StructFieldGet decimalSlice.underlying go!"d") #x (Val #(x.d'))
+  set'd : ∀ (x : decimalSlice) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet decimalSlice.underlying go!"d") (PairV #x #y) (Val #(({ x with d' := y } : decimalSlice)))
+  get'nd : ∀ (x : decimalSlice), go.IsGoStepPureDetTagged under (StructFieldGet decimalSlice.underlying go!"nd") #x (Val #(x.nd'))
+  set'nd : ∀ (x : decimalSlice) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet decimalSlice.underlying go!"nd") (PairV #x #y) (Val #(({ x with nd' := y } : decimalSlice)))
+  get'dp : ∀ (x : decimalSlice), go.IsGoStepPureDetTagged under (StructFieldGet decimalSlice.underlying go!"dp") #x (Val #(x.dp'))
+  set'dp : ∀ (x : decimalSlice) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet decimalSlice.underlying go!"dp") (PairV #x #y) (Val #(({ x with dp' := y } : decimalSlice)))
   method_set : go.MethodSetIs decimalSlice.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType decimalSlice.ty) []
 
 attribute [instance] decimalSlice.TypeAssumptions.type_repr
   decimalSlice.TypeAssumptions.underlying
-  decimalSlice.TypeAssumptions.get_d
-  decimalSlice.TypeAssumptions.set_d
-  decimalSlice.TypeAssumptions.get_nd
-  decimalSlice.TypeAssumptions.set_nd
-  decimalSlice.TypeAssumptions.get_dp
-  decimalSlice.TypeAssumptions.set_dp
+  decimalSlice.TypeAssumptions.get'd
+  decimalSlice.TypeAssumptions.set'd
+  decimalSlice.TypeAssumptions.get'nd
+  decimalSlice.TypeAssumptions.set'nd
+  decimalSlice.TypeAssumptions.get'dp
+  decimalSlice.TypeAssumptions.set'dp
   decimalSlice.TypeAssumptions.method_set
   decimalSlice.TypeAssumptions.ptr_method_set
 
@@ -2277,7 +2277,7 @@ noncomputable instance uint128.zero_val [GooseExts] : ZeroVal uint128 :=
 @[irreducible] noncomputable def uint128.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   uint128.fieldsUnsealed
 
-noncomputable instance equals_unfold_uint128 [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'uint128 [GooseExts] [GoGlobalContext] :
     EqualsUnfold uint128.fields uint128.fieldsUnsealed :=
   ⟨by unfold uint128.fields; rfl⟩
 
@@ -2287,66 +2287,66 @@ noncomputable instance equals_unfold_uint128 [GooseExts] [GoGlobalContext] :
 class uint128.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying uint128.underlying uint128
   underlying : go.UnderlyingDirectedEq uint128.ty uint128.underlying
-  get_Hi : ∀ (x : uint128), go.IsGoStepPureDetTagged under (StructFieldGet uint128.underlying go!"Hi") #x (Val #(x.Hi'))
-  set_Hi : ∀ (x : uint128) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet uint128.underlying go!"Hi") (PairV #x #y) (Val #(({ x with Hi' := y } : uint128)))
-  get_Lo : ∀ (x : uint128), go.IsGoStepPureDetTagged under (StructFieldGet uint128.underlying go!"Lo") #x (Val #(x.Lo'))
-  set_Lo : ∀ (x : uint128) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet uint128.underlying go!"Lo") (PairV #x #y) (Val #(({ x with Lo' := y } : uint128)))
+  get'Hi : ∀ (x : uint128), go.IsGoStepPureDetTagged under (StructFieldGet uint128.underlying go!"Hi") #x (Val #(x.Hi'))
+  set'Hi : ∀ (x : uint128) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet uint128.underlying go!"Hi") (PairV #x #y) (Val #(({ x with Hi' := y } : uint128)))
+  get'Lo : ∀ (x : uint128), go.IsGoStepPureDetTagged under (StructFieldGet uint128.underlying go!"Lo") #x (Val #(x.Lo'))
+  set'Lo : ∀ (x : uint128) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet uint128.underlying go!"Lo") (PairV #x #y) (Val #(({ x with Lo' := y } : uint128)))
   method_set : go.MethodSetIs uint128.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType uint128.ty) []
 
 attribute [instance] uint128.TypeAssumptions.type_repr
   uint128.TypeAssumptions.underlying
-  uint128.TypeAssumptions.get_Hi
-  uint128.TypeAssumptions.set_Hi
-  uint128.TypeAssumptions.get_Lo
-  uint128.TypeAssumptions.set_Lo
+  uint128.TypeAssumptions.get'Hi
+  uint128.TypeAssumptions.set'Hi
+  uint128.TypeAssumptions.get'Lo
+  uint128.TypeAssumptions.set'Lo
   uint128.TypeAssumptions.method_set
   uint128.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Error_instance : Error.TypeAssumptions
-  decimal_instance : decimal.TypeAssumptions
-  leftCheat_instance : leftCheat.TypeAssumptions
-  floatInfo_instance : floatInfo.TypeAssumptions
-  decimalSlice_instance : decimalSlice.TypeAssumptions
-  uint128_instance : uint128.TypeAssumptions
-  ParseBool_unfold : FuncUnfold ParseBool [] ParseBool.impl
-  FormatBool_unfold : FuncUnfold FormatBool [] FormatBool.impl
-  lower_unfold : FuncUnfold lower [] lower.impl
-  ParseUint_unfold : FuncUnfold ParseUint [] ParseUint.impl
-  ParseInt_unfold : FuncUnfold ParseInt [] ParseInt.impl
-  Atoi_unfold : FuncUnfold Atoi [] Atoi.impl
-  underscoreOK_unfold : FuncUnfold underscoreOK [] underscoreOK.impl
-  FormatUint_unfold : FuncUnfold FormatUint [] FormatUint.impl
-  FormatInt_unfold : FuncUnfold FormatInt [] FormatInt.impl
-  Itoa_unfold : FuncUnfold Itoa [] Itoa.impl
-  formatBits_unfold : FuncUnfold formatBits [] formatBits.impl
-  isPowerOfTwo_unfold : FuncUnfold isPowerOfTwo [] isPowerOfTwo.impl
-  small_unfold : FuncUnfold small [] small.impl
-  formatBase10_unfold : FuncUnfold formatBase10 [] formatBase10.impl
-  import_bits_Assumption : _root_.Perennial.math.bits.Assumptions
+  instance'Error : Error.TypeAssumptions
+  instance'decimal : decimal.TypeAssumptions
+  instance'leftCheat : leftCheat.TypeAssumptions
+  instance'floatInfo : floatInfo.TypeAssumptions
+  instance'decimalSlice : decimalSlice.TypeAssumptions
+  instance'uint128 : uint128.TypeAssumptions
+  unfold'ParseBool : FuncUnfold ParseBool [] ParseBool.impl
+  unfold'FormatBool : FuncUnfold FormatBool [] FormatBool.impl
+  unfold'lower : FuncUnfold lower [] lower.impl
+  unfold'ParseUint : FuncUnfold ParseUint [] ParseUint.impl
+  unfold'ParseInt : FuncUnfold ParseInt [] ParseInt.impl
+  unfold'Atoi : FuncUnfold Atoi [] Atoi.impl
+  unfold'underscoreOK : FuncUnfold underscoreOK [] underscoreOK.impl
+  unfold'FormatUint : FuncUnfold FormatUint [] FormatUint.impl
+  unfold'FormatInt : FuncUnfold FormatInt [] FormatInt.impl
+  unfold'Itoa : FuncUnfold Itoa [] Itoa.impl
+  unfold'formatBits : FuncUnfold formatBits [] formatBits.impl
+  unfold'isPowerOfTwo : FuncUnfold isPowerOfTwo [] isPowerOfTwo.impl
+  unfold'small : FuncUnfold small [] small.impl
+  unfold'formatBase10 : FuncUnfold formatBase10 [] formatBase10.impl
+  import'bits : _root_.Perennial.math.bits.Assumptions
 
-attribute [instance] Assumptions.Error_instance
-  Assumptions.decimal_instance
-  Assumptions.leftCheat_instance
-  Assumptions.floatInfo_instance
-  Assumptions.decimalSlice_instance
-  Assumptions.uint128_instance
-  Assumptions.ParseBool_unfold
-  Assumptions.FormatBool_unfold
-  Assumptions.lower_unfold
-  Assumptions.ParseUint_unfold
-  Assumptions.ParseInt_unfold
-  Assumptions.Atoi_unfold
-  Assumptions.underscoreOK_unfold
-  Assumptions.FormatUint_unfold
-  Assumptions.FormatInt_unfold
-  Assumptions.Itoa_unfold
-  Assumptions.formatBits_unfold
-  Assumptions.isPowerOfTwo_unfold
-  Assumptions.small_unfold
-  Assumptions.formatBase10_unfold
-  Assumptions.import_bits_Assumption
+attribute [instance] Assumptions.instance'Error
+  Assumptions.instance'decimal
+  Assumptions.instance'leftCheat
+  Assumptions.instance'floatInfo
+  Assumptions.instance'decimalSlice
+  Assumptions.instance'uint128
+  Assumptions.unfold'ParseBool
+  Assumptions.unfold'FormatBool
+  Assumptions.unfold'lower
+  Assumptions.unfold'ParseUint
+  Assumptions.unfold'ParseInt
+  Assumptions.unfold'Atoi
+  Assumptions.unfold'underscoreOK
+  Assumptions.unfold'FormatUint
+  Assumptions.unfold'FormatInt
+  Assumptions.unfold'Itoa
+  Assumptions.unfold'formatBits
+  Assumptions.unfold'isPowerOfTwo
+  Assumptions.unfold'small
+  Assumptions.unfold'formatBase10
+  Assumptions.import'bits
 
 end internal.strconv
 

@@ -21,8 +21,8 @@ end pkg_id
 
 namespace internal.sync
 
-noncomputable def HashTrieMap.ty [GooseExts] [GoGlobalContext] (K : go.GoType) (V : go.GoType) : go.GoType :=
-  (go.GoType.Named go!"internal/sync.HashTrieMap" [K, V])
+noncomputable def HashTrieMap.ty [GooseExts] [GoGlobalContext] (K₀ : go.GoType) (V₀ : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"internal/sync.HashTrieMap" [K₀, V₀])
 
 attribute [irreducible] HashTrieMap.ty
 
@@ -36,18 +36,18 @@ noncomputable def equalFunc.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] equalFunc.ty
 
-noncomputable def indirect.ty [GooseExts] [GoGlobalContext] (K : go.GoType) (V : go.GoType) : go.GoType :=
-  (go.GoType.Named go!"internal/sync.indirect" [K, V])
+noncomputable def indirect.ty [GooseExts] [GoGlobalContext] (K₀ : go.GoType) (V₀ : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"internal/sync.indirect" [K₀, V₀])
 
 attribute [irreducible] indirect.ty
 
-noncomputable def entry.ty [GooseExts] [GoGlobalContext] (K : go.GoType) (V : go.GoType) : go.GoType :=
-  (go.GoType.Named go!"internal/sync.entry" [K, V])
+noncomputable def entry.ty [GooseExts] [GoGlobalContext] (K₀ : go.GoType) (V₀ : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"internal/sync.entry" [K₀, V₀])
 
 attribute [irreducible] entry.ty
 
-noncomputable def node.ty [GooseExts] [GoGlobalContext] (K : go.GoType) (V : go.GoType) : go.GoType :=
-  (go.GoType.Named go!"internal/sync.node" [K, V])
+noncomputable def node.ty [GooseExts] [GoGlobalContext] (K₀ : go.GoType) (V₀ : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"internal/sync.node" [K₀, V₀])
 
 attribute [irreducible] node.ty
 
@@ -56,17 +56,17 @@ noncomputable def Mutex.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] Mutex.ty
 
-opaque HashTrieMap.underlying [GooseExts] [GoGlobalContext] : ∀ (K V : go.GoType), go.GoType
+opaque HashTrieMap.underlying [GooseExts] [GoGlobalContext] : ∀ (K₀ V₀ : go.GoType), go.GoType
 
 opaque hashFunc.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
 opaque equalFunc.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque indirect.underlying [GooseExts] [GoGlobalContext] : ∀ (K V : go.GoType), go.GoType
+opaque indirect.underlying [GooseExts] [GoGlobalContext] : ∀ (K₀ V₀ : go.GoType), go.GoType
 
-opaque entry.underlying [GooseExts] [GoGlobalContext] : ∀ (K V : go.GoType), go.GoType
+opaque entry.underlying [GooseExts] [GoGlobalContext] : ∀ (K₀ V₀ : go.GoType), go.GoType
 
-opaque node.underlying [GooseExts] [GoGlobalContext] : ∀ (K V : go.GoType), go.GoType
+opaque node.underlying [GooseExts] [GoGlobalContext] : ∀ (K₀ V₀ : go.GoType), go.GoType
 
 opaque nChildrenLog2 [GooseExts] [GoGlobalContext] : val
 
@@ -126,18 +126,18 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))))
 
-opaque HashTrieMap.nonempty_type (K V : Type) : NonemptyType.{0}
-def HashTrieMap (K V : Type) : Type := (HashTrieMap.nonempty_type K V).type
-instance HashTrieMap.nonempty {K V : Type} : Nonempty (HashTrieMap K V) := (HashTrieMap.nonempty_type K V).property
-opaque HashTrieMap.zero_val {K V : Type} [ZeroVal K] [ZeroVal V] : ZeroVal (HashTrieMap K V) := ⟨Classical.ofNonempty⟩
+opaque HashTrieMap.nonempty_type (K₀ V₀ : Type) : NonemptyType.{0}
+def HashTrieMap (K₀ V₀ : Type) : Type := (HashTrieMap.nonempty_type K₀ V₀).type
+instance HashTrieMap.nonempty {K₀ V₀ : Type} : Nonempty (HashTrieMap K₀ V₀) := (HashTrieMap.nonempty_type K₀ V₀).property
+opaque HashTrieMap.zero_val {K₀ V₀ : Type} [ZeroVal K₀] [ZeroVal V₀] : ZeroVal (HashTrieMap K₀ V₀) := ⟨Classical.ofNonempty⟩
 attribute [instance] HashTrieMap.zero_val
 
 class HashTrieMap.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : ∀ (K V : go.GoType) (K' V' : Type) [ZeroVal K'] [TypeRepr K K'] [ZeroVal V'] [TypeRepr V V'], go.TypeReprUnderlying (HashTrieMap.underlying K V) (HashTrieMap K' V')
-  underlying : ∀ (K V : go.GoType), go.UnderlyingDirectedEq (HashTrieMap.ty K V) (HashTrieMap.underlying K V)
-  isUnderlying : ∀ (K V : go.GoType), go.IsUnderlying (HashTrieMap.underlying K V) (HashTrieMap.underlying K V)
-  method_set : ∀ (K V : go.GoType), go.MethodSetIs (HashTrieMap.ty K V) []
-  ptr_method_set : ∀ (K V : go.GoType), go.MethodSetIs (go.GoType.PointerType (HashTrieMap.ty K V)) [(go!"All", (some (go.signature.Signature [] false [(go.GoType.FunctionType (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [K, V] false [go.bool]))] false []))]))), (go!"Clear", (some (go.signature.Signature [] false []))), (go!"CompareAndDelete", (some (go.signature.Signature [K, V] false [go.bool]))), (go!"CompareAndSwap", (some (go.signature.Signature [K, V, V] false [go.bool]))), (go!"Delete", (some (go.signature.Signature [K] false []))), (go!"Load", (some (go.signature.Signature [K] false [V, go.bool]))), (go!"LoadAndDelete", (some (go.signature.Signature [K] false [V, go.bool]))), (go!"LoadOrStore", (some (go.signature.Signature [K, V] false [V, go.bool]))), (go!"Range", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [K, V] false [go.bool]))] false []))), (go!"Store", (some (go.signature.Signature [K, V] false []))), (go!"Swap", (some (go.signature.Signature [K, V] false [V, go.bool]))), (go!"internal/sync.expand", (some (go.signature.Signature [(go.GoType.PointerType (entry.ty K V)), (go.GoType.PointerType (entry.ty K V)), go.uintptr, go.uint, (go.GoType.PointerType (indirect.ty K V))] false [(go.GoType.PointerType (node.ty K V))]))), (go!"internal/sync.find", (some (go.signature.Signature [K, go.uintptr, equalFunc.ty, V] false [(go.GoType.PointerType (indirect.ty K V)), go.uint, (go.GoType.PointerType (go.GoType.Named go!"sync/atomic.Pointer" [(node.ty K V)])), (go.GoType.PointerType (node.ty K V))]))), (go!"internal/sync.init", (some (go.signature.Signature [] false []))), (go!"internal/sync.initSlow", (some (go.signature.Signature [] false []))), (go!"internal/sync.iter", (some (go.signature.Signature [(go.GoType.PointerType (indirect.ty K V)), (go.GoType.FunctionType (go.signature.Signature [K, V] false [go.bool]))] false [go.bool])))]
+  type_repr : ∀ (K₀ V₀ : go.GoType) (K₀' V₀' : Type) [ZeroVal K₀'] [TypeRepr K₀ K₀'] [ZeroVal V₀'] [TypeRepr V₀ V₀'], go.TypeReprUnderlying (HashTrieMap.underlying K₀ V₀) (HashTrieMap K₀' V₀')
+  underlying : ∀ (K₀ V₀ : go.GoType), go.UnderlyingDirectedEq (HashTrieMap.ty K₀ V₀) (HashTrieMap.underlying K₀ V₀)
+  isUnderlying : ∀ (K₀ V₀ : go.GoType), go.IsUnderlying (HashTrieMap.underlying K₀ V₀) (HashTrieMap.underlying K₀ V₀)
+  method_set : ∀ (K₀ V₀ : go.GoType), go.MethodSetIs (HashTrieMap.ty K₀ V₀) []
+  ptr_method_set : ∀ (K₀ V₀ : go.GoType), go.MethodSetIs (go.GoType.PointerType (HashTrieMap.ty K₀ V₀)) [(go!"All", (some (go.signature.Signature [] false [(go.GoType.FunctionType (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [K₀, V₀] false [go.bool]))] false []))]))), (go!"Clear", (some (go.signature.Signature [] false []))), (go!"CompareAndDelete", (some (go.signature.Signature [K₀, V₀] false [go.bool]))), (go!"CompareAndSwap", (some (go.signature.Signature [K₀, V₀, V₀] false [go.bool]))), (go!"Delete", (some (go.signature.Signature [K₀] false []))), (go!"Load", (some (go.signature.Signature [K₀] false [V₀, go.bool]))), (go!"LoadAndDelete", (some (go.signature.Signature [K₀] false [V₀, go.bool]))), (go!"LoadOrStore", (some (go.signature.Signature [K₀, V₀] false [V₀, go.bool]))), (go!"Range", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [K₀, V₀] false [go.bool]))] false []))), (go!"Store", (some (go.signature.Signature [K₀, V₀] false []))), (go!"Swap", (some (go.signature.Signature [K₀, V₀] false [V₀, go.bool]))), (go!"internal/sync.expand", (some (go.signature.Signature [(go.GoType.PointerType (entry.ty K₀ V₀)), (go.GoType.PointerType (entry.ty K₀ V₀)), go.uintptr, go.uint, (go.GoType.PointerType (indirect.ty K₀ V₀))] false [(go.GoType.PointerType (node.ty K₀ V₀))]))), (go!"internal/sync.find", (some (go.signature.Signature [K₀, go.uintptr, equalFunc.ty, V₀] false [(go.GoType.PointerType (indirect.ty K₀ V₀)), go.uint, (go.GoType.PointerType (go.GoType.Named go!"sync/atomic.Pointer" [(node.ty K₀ V₀)])), (go.GoType.PointerType (node.ty K₀ V₀))]))), (go!"internal/sync.init", (some (go.signature.Signature [] false []))), (go!"internal/sync.initSlow", (some (go.signature.Signature [] false []))), (go!"internal/sync.iter", (some (go.signature.Signature [(go.GoType.PointerType (indirect.ty K₀ V₀)), (go.GoType.FunctionType (go.signature.Signature [K₀, V₀] false [go.bool]))] false [go.bool])))]
 
 attribute [instance] HashTrieMap.TypeAssumptions.type_repr
   HashTrieMap.TypeAssumptions.underlying
@@ -183,18 +183,18 @@ attribute [instance] equalFunc.TypeAssumptions.type_repr
   equalFunc.TypeAssumptions.method_set
   equalFunc.TypeAssumptions.ptr_method_set
 
-opaque indirect.nonempty_type (K V : Type) : NonemptyType.{0}
-def indirect (K V : Type) : Type := (indirect.nonempty_type K V).type
-instance indirect.nonempty {K V : Type} : Nonempty (indirect K V) := (indirect.nonempty_type K V).property
-opaque indirect.zero_val {K V : Type} [ZeroVal K] [ZeroVal V] : ZeroVal (indirect K V) := ⟨Classical.ofNonempty⟩
+opaque indirect.nonempty_type (K₀ V₀ : Type) : NonemptyType.{0}
+def indirect (K₀ V₀ : Type) : Type := (indirect.nonempty_type K₀ V₀).type
+instance indirect.nonempty {K₀ V₀ : Type} : Nonempty (indirect K₀ V₀) := (indirect.nonempty_type K₀ V₀).property
+opaque indirect.zero_val {K₀ V₀ : Type} [ZeroVal K₀] [ZeroVal V₀] : ZeroVal (indirect K₀ V₀) := ⟨Classical.ofNonempty⟩
 attribute [instance] indirect.zero_val
 
 class indirect.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : ∀ (K V : go.GoType) (K' V' : Type) [ZeroVal K'] [TypeRepr K K'] [ZeroVal V'] [TypeRepr V V'], go.TypeReprUnderlying (indirect.underlying K V) (indirect K' V')
-  underlying : ∀ (K V : go.GoType), go.UnderlyingDirectedEq (indirect.ty K V) (indirect.underlying K V)
-  isUnderlying : ∀ (K V : go.GoType), go.IsUnderlying (indirect.underlying K V) (indirect.underlying K V)
-  method_set : ∀ (K V : go.GoType), go.MethodSetIs (indirect.ty K V) []
-  ptr_method_set : ∀ (K V : go.GoType), go.MethodSetIs (go.GoType.PointerType (indirect.ty K V)) [(go!"internal/sync.empty", (some (go.signature.Signature [] false [go.bool]))), (go!"internal/sync.entry", (some (go.signature.Signature [] false [(go.GoType.PointerType (entry.ty K V))]))), (go!"internal/sync.indirect", (some (go.signature.Signature [] false [(go.GoType.PointerType (indirect.ty K V))])))]
+  type_repr : ∀ (K₀ V₀ : go.GoType) (K₀' V₀' : Type) [ZeroVal K₀'] [TypeRepr K₀ K₀'] [ZeroVal V₀'] [TypeRepr V₀ V₀'], go.TypeReprUnderlying (indirect.underlying K₀ V₀) (indirect K₀' V₀')
+  underlying : ∀ (K₀ V₀ : go.GoType), go.UnderlyingDirectedEq (indirect.ty K₀ V₀) (indirect.underlying K₀ V₀)
+  isUnderlying : ∀ (K₀ V₀ : go.GoType), go.IsUnderlying (indirect.underlying K₀ V₀) (indirect.underlying K₀ V₀)
+  method_set : ∀ (K₀ V₀ : go.GoType), go.MethodSetIs (indirect.ty K₀ V₀) []
+  ptr_method_set : ∀ (K₀ V₀ : go.GoType), go.MethodSetIs (go.GoType.PointerType (indirect.ty K₀ V₀)) [(go!"internal/sync.empty", (some (go.signature.Signature [] false [go.bool]))), (go!"internal/sync.entry", (some (go.signature.Signature [] false [(go.GoType.PointerType (entry.ty K₀ V₀))]))), (go!"internal/sync.indirect", (some (go.signature.Signature [] false [(go.GoType.PointerType (indirect.ty K₀ V₀))])))]
 
 attribute [instance] indirect.TypeAssumptions.type_repr
   indirect.TypeAssumptions.underlying
@@ -202,18 +202,18 @@ attribute [instance] indirect.TypeAssumptions.type_repr
   indirect.TypeAssumptions.method_set
   indirect.TypeAssumptions.ptr_method_set
 
-opaque entry.nonempty_type (K V : Type) : NonemptyType.{0}
-def entry (K V : Type) : Type := (entry.nonempty_type K V).type
-instance entry.nonempty {K V : Type} : Nonempty (entry K V) := (entry.nonempty_type K V).property
-opaque entry.zero_val {K V : Type} [ZeroVal K] [ZeroVal V] : ZeroVal (entry K V) := ⟨Classical.ofNonempty⟩
+opaque entry.nonempty_type (K₀ V₀ : Type) : NonemptyType.{0}
+def entry (K₀ V₀ : Type) : Type := (entry.nonempty_type K₀ V₀).type
+instance entry.nonempty {K₀ V₀ : Type} : Nonempty (entry K₀ V₀) := (entry.nonempty_type K₀ V₀).property
+opaque entry.zero_val {K₀ V₀ : Type} [ZeroVal K₀] [ZeroVal V₀] : ZeroVal (entry K₀ V₀) := ⟨Classical.ofNonempty⟩
 attribute [instance] entry.zero_val
 
 class entry.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : ∀ (K V : go.GoType) (K' V' : Type) [ZeroVal K'] [TypeRepr K K'] [ZeroVal V'] [TypeRepr V V'], go.TypeReprUnderlying (entry.underlying K V) (entry K' V')
-  underlying : ∀ (K V : go.GoType), go.UnderlyingDirectedEq (entry.ty K V) (entry.underlying K V)
-  isUnderlying : ∀ (K V : go.GoType), go.IsUnderlying (entry.underlying K V) (entry.underlying K V)
-  method_set : ∀ (K V : go.GoType), go.MethodSetIs (entry.ty K V) []
-  ptr_method_set : ∀ (K V : go.GoType), go.MethodSetIs (go.GoType.PointerType (entry.ty K V)) [(go!"internal/sync.compareAndDelete", (some (go.signature.Signature [K, V, equalFunc.ty] false [(go.GoType.PointerType (entry.ty K V)), go.bool]))), (go!"internal/sync.compareAndSwap", (some (go.signature.Signature [K, V, V, equalFunc.ty] false [(go.GoType.PointerType (entry.ty K V)), go.bool]))), (go!"internal/sync.entry", (some (go.signature.Signature [] false [(go.GoType.PointerType (entry.ty K V))]))), (go!"internal/sync.indirect", (some (go.signature.Signature [] false [(go.GoType.PointerType (indirect.ty K V))]))), (go!"internal/sync.loadAndDelete", (some (go.signature.Signature [K] false [V, (go.GoType.PointerType (entry.ty K V)), go.bool]))), (go!"internal/sync.lookup", (some (go.signature.Signature [K] false [V, go.bool]))), (go!"internal/sync.lookupWithValue", (some (go.signature.Signature [K, V, equalFunc.ty] false [V, go.bool]))), (go!"internal/sync.swap", (some (go.signature.Signature [K, V] false [(go.GoType.PointerType (entry.ty K V)), V, go.bool])))]
+  type_repr : ∀ (K₀ V₀ : go.GoType) (K₀' V₀' : Type) [ZeroVal K₀'] [TypeRepr K₀ K₀'] [ZeroVal V₀'] [TypeRepr V₀ V₀'], go.TypeReprUnderlying (entry.underlying K₀ V₀) (entry K₀' V₀')
+  underlying : ∀ (K₀ V₀ : go.GoType), go.UnderlyingDirectedEq (entry.ty K₀ V₀) (entry.underlying K₀ V₀)
+  isUnderlying : ∀ (K₀ V₀ : go.GoType), go.IsUnderlying (entry.underlying K₀ V₀) (entry.underlying K₀ V₀)
+  method_set : ∀ (K₀ V₀ : go.GoType), go.MethodSetIs (entry.ty K₀ V₀) []
+  ptr_method_set : ∀ (K₀ V₀ : go.GoType), go.MethodSetIs (go.GoType.PointerType (entry.ty K₀ V₀)) [(go!"internal/sync.compareAndDelete", (some (go.signature.Signature [K₀, V₀, equalFunc.ty] false [(go.GoType.PointerType (entry.ty K₀ V₀)), go.bool]))), (go!"internal/sync.compareAndSwap", (some (go.signature.Signature [K₀, V₀, V₀, equalFunc.ty] false [(go.GoType.PointerType (entry.ty K₀ V₀)), go.bool]))), (go!"internal/sync.entry", (some (go.signature.Signature [] false [(go.GoType.PointerType (entry.ty K₀ V₀))]))), (go!"internal/sync.indirect", (some (go.signature.Signature [] false [(go.GoType.PointerType (indirect.ty K₀ V₀))]))), (go!"internal/sync.loadAndDelete", (some (go.signature.Signature [K₀] false [V₀, (go.GoType.PointerType (entry.ty K₀ V₀)), go.bool]))), (go!"internal/sync.lookup", (some (go.signature.Signature [K₀] false [V₀, go.bool]))), (go!"internal/sync.lookupWithValue", (some (go.signature.Signature [K₀, V₀, equalFunc.ty] false [V₀, go.bool]))), (go!"internal/sync.swap", (some (go.signature.Signature [K₀, V₀] false [(go.GoType.PointerType (entry.ty K₀ V₀)), V₀, go.bool])))]
 
 attribute [instance] entry.TypeAssumptions.type_repr
   entry.TypeAssumptions.underlying
@@ -221,18 +221,18 @@ attribute [instance] entry.TypeAssumptions.type_repr
   entry.TypeAssumptions.method_set
   entry.TypeAssumptions.ptr_method_set
 
-opaque node.nonempty_type (K V : Type) : NonemptyType.{0}
-def node (K V : Type) : Type := (node.nonempty_type K V).type
-instance node.nonempty {K V : Type} : Nonempty (node K V) := (node.nonempty_type K V).property
-opaque node.zero_val {K V : Type} [ZeroVal K] [ZeroVal V] : ZeroVal (node K V) := ⟨Classical.ofNonempty⟩
+opaque node.nonempty_type (K₀ V₀ : Type) : NonemptyType.{0}
+def node (K₀ V₀ : Type) : Type := (node.nonempty_type K₀ V₀).type
+instance node.nonempty {K₀ V₀ : Type} : Nonempty (node K₀ V₀) := (node.nonempty_type K₀ V₀).property
+opaque node.zero_val {K₀ V₀ : Type} [ZeroVal K₀] [ZeroVal V₀] : ZeroVal (node K₀ V₀) := ⟨Classical.ofNonempty⟩
 attribute [instance] node.zero_val
 
 class node.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : ∀ (K V : go.GoType) (K' V' : Type) [ZeroVal K'] [TypeRepr K K'] [ZeroVal V'] [TypeRepr V V'], go.TypeReprUnderlying (node.underlying K V) (node K' V')
-  underlying : ∀ (K V : go.GoType), go.UnderlyingDirectedEq (node.ty K V) (node.underlying K V)
-  isUnderlying : ∀ (K V : go.GoType), go.IsUnderlying (node.underlying K V) (node.underlying K V)
-  method_set : ∀ (K V : go.GoType), go.MethodSetIs (node.ty K V) []
-  ptr_method_set : ∀ (K V : go.GoType), go.MethodSetIs (go.GoType.PointerType (node.ty K V)) [(go!"internal/sync.entry", (some (go.signature.Signature [] false [(go.GoType.PointerType (entry.ty K V))]))), (go!"internal/sync.indirect", (some (go.signature.Signature [] false [(go.GoType.PointerType (indirect.ty K V))])))]
+  type_repr : ∀ (K₀ V₀ : go.GoType) (K₀' V₀' : Type) [ZeroVal K₀'] [TypeRepr K₀ K₀'] [ZeroVal V₀'] [TypeRepr V₀ V₀'], go.TypeReprUnderlying (node.underlying K₀ V₀) (node K₀' V₀')
+  underlying : ∀ (K₀ V₀ : go.GoType), go.UnderlyingDirectedEq (node.ty K₀ V₀) (node.underlying K₀ V₀)
+  isUnderlying : ∀ (K₀ V₀ : go.GoType), go.IsUnderlying (node.underlying K₀ V₀) (node.underlying K₀ V₀)
+  method_set : ∀ (K₀ V₀ : go.GoType), go.MethodSetIs (node.ty K₀ V₀) []
+  ptr_method_set : ∀ (K₀ V₀ : go.GoType), go.MethodSetIs (go.GoType.PointerType (node.ty K₀ V₀)) [(go!"internal/sync.entry", (some (go.signature.Signature [] false [(go.GoType.PointerType (entry.ty K₀ V₀))]))), (go!"internal/sync.indirect", (some (go.signature.Signature [] false [(go.GoType.PointerType (indirect.ty K₀ V₀))])))]
 
 attribute [instance] node.TypeAssumptions.type_repr
   node.TypeAssumptions.underlying
@@ -245,34 +245,34 @@ class Mutex.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSe
   underlying : go.UnderlyingDirectedEq Mutex.ty Mutex.underlying
   method_set : go.MethodSetIs Mutex.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Mutex.ty) [(go!"Lock", (some (go.signature.Signature [] false []))), (go!"TryLock", (some (go.signature.Signature [] false [go.bool]))), (go!"Unlock", (some (go.signature.Signature [] false []))), (go!"internal/sync.lockSlow", (some (go.signature.Signature [] false []))), (go!"internal/sync.unlockSlow", (some (go.signature.Signature [go.int32] false [])))]
-  ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType Mutex.ty) go!"Lock" Mutex.Lock.impl
-  ptr_TryLock_unfold : MethodUnfold (go.GoType.PointerType Mutex.ty) go!"TryLock" Mutex.TryLock.impl
-  ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType Mutex.ty) go!"Unlock" Mutex.Unlock.impl
+  ptr_unfold'Lock : MethodUnfold (go.GoType.PointerType Mutex.ty) go!"Lock" Mutex.Lock.impl
+  ptr_unfold'TryLock : MethodUnfold (go.GoType.PointerType Mutex.ty) go!"TryLock" Mutex.TryLock.impl
+  ptr_unfold'Unlock : MethodUnfold (go.GoType.PointerType Mutex.ty) go!"Unlock" Mutex.Unlock.impl
 
 attribute [instance] Mutex.TypeAssumptions.type_repr
   Mutex.TypeAssumptions.underlying
   Mutex.TypeAssumptions.method_set
   Mutex.TypeAssumptions.ptr_method_set
-  Mutex.TypeAssumptions.ptr_Lock_unfold
-  Mutex.TypeAssumptions.ptr_TryLock_unfold
-  Mutex.TypeAssumptions.ptr_Unlock_unfold
+  Mutex.TypeAssumptions.ptr_unfold'Lock
+  Mutex.TypeAssumptions.ptr_unfold'TryLock
+  Mutex.TypeAssumptions.ptr_unfold'Unlock
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  HashTrieMap_instance : HashTrieMap.TypeAssumptions
-  hashFunc_instance : hashFunc.TypeAssumptions
-  equalFunc_instance : equalFunc.TypeAssumptions
-  indirect_instance : indirect.TypeAssumptions
-  entry_instance : entry.TypeAssumptions
-  node_instance : node.TypeAssumptions
-  Mutex_instance : Mutex.TypeAssumptions
+  instance'HashTrieMap : HashTrieMap.TypeAssumptions
+  instance'hashFunc : hashFunc.TypeAssumptions
+  instance'equalFunc : equalFunc.TypeAssumptions
+  instance'indirect : indirect.TypeAssumptions
+  instance'entry : entry.TypeAssumptions
+  instance'node : node.TypeAssumptions
+  instance'Mutex : Mutex.TypeAssumptions
 
-attribute [instance] Assumptions.HashTrieMap_instance
-  Assumptions.hashFunc_instance
-  Assumptions.equalFunc_instance
-  Assumptions.indirect_instance
-  Assumptions.entry_instance
-  Assumptions.node_instance
-  Assumptions.Mutex_instance
+attribute [instance] Assumptions.instance'HashTrieMap
+  Assumptions.instance'hashFunc
+  Assumptions.instance'equalFunc
+  Assumptions.instance'indirect
+  Assumptions.instance'entry
+  Assumptions.instance'node
+  Assumptions.instance'Mutex
 
 end internal.sync
 

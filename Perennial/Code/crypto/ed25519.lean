@@ -141,13 +141,13 @@ attribute [instance] Options.TypeAssumptions.type_repr
   Options.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  PublicKey_instance : PublicKey.TypeAssumptions
-  PrivateKey_instance : PrivateKey.TypeAssumptions
-  Options_instance : Options.TypeAssumptions
+  instance'PublicKey : PublicKey.TypeAssumptions
+  instance'PrivateKey : PrivateKey.TypeAssumptions
+  instance'Options : Options.TypeAssumptions
 
-attribute [instance] Assumptions.PublicKey_instance
-  Assumptions.PrivateKey_instance
-  Assumptions.Options_instance
+attribute [instance] Assumptions.instance'PublicKey
+  Assumptions.instance'PrivateKey
+  Assumptions.instance'Options
 
 end crypto.ed25519
 

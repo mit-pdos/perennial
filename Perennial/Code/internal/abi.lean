@@ -1088,7 +1088,7 @@ noncomputable instance Type''.zero_val [GooseExts] : ZeroVal Type'' :=
 @[irreducible] noncomputable def Type''.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Type''.fieldsUnsealed
 
-noncomputable instance equals_unfold_Type [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Type [GooseExts] [GoGlobalContext] :
     EqualsUnfold Type''.fields Type''.fieldsUnsealed :=
   ⟨by unfold Type''.fields; rfl⟩
 
@@ -1098,55 +1098,55 @@ noncomputable instance equals_unfold_Type [GooseExts] [GoGlobalContext] :
 class Type''.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Type''.underlying Type''
   underlying : go.UnderlyingDirectedEq Type''.ty Type''.underlying
-  get_Size_ : ∀ (x : Type''), go.IsGoStepPureDetTagged under (StructFieldGet Type''.underlying go!"Size_") #x (Val #(x.Size_'))
-  set_Size_ : ∀ (x : Type'') (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Type''.underlying go!"Size_") (PairV #x #y) (Val #(({ x with Size_' := y } : Type'')))
-  get_PtrBytes : ∀ (x : Type''), go.IsGoStepPureDetTagged under (StructFieldGet Type''.underlying go!"PtrBytes") #x (Val #(x.PtrBytes'))
-  set_PtrBytes : ∀ (x : Type'') (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Type''.underlying go!"PtrBytes") (PairV #x #y) (Val #(({ x with PtrBytes' := y } : Type'')))
-  get_Hash : ∀ (x : Type''), go.IsGoStepPureDetTagged under (StructFieldGet Type''.underlying go!"Hash") #x (Val #(x.Hash'))
-  set_Hash : ∀ (x : Type'') (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Type''.underlying go!"Hash") (PairV #x #y) (Val #(({ x with Hash' := y } : Type'')))
-  get_TFlag : ∀ (x : Type''), go.IsGoStepPureDetTagged under (StructFieldGet Type''.underlying go!"TFlag") #x (Val #(x.TFlag'))
-  set_TFlag : ∀ (x : Type'') (y : TFlag), go.IsGoStepPureDetTagged under (StructFieldSet Type''.underlying go!"TFlag") (PairV #x #y) (Val #(({ x with TFlag' := y } : Type'')))
-  get_Align_ : ∀ (x : Type''), go.IsGoStepPureDetTagged under (StructFieldGet Type''.underlying go!"Align_") #x (Val #(x.Align_'))
-  set_Align_ : ∀ (x : Type'') (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet Type''.underlying go!"Align_") (PairV #x #y) (Val #(({ x with Align_' := y } : Type'')))
-  get_FieldAlign_ : ∀ (x : Type''), go.IsGoStepPureDetTagged under (StructFieldGet Type''.underlying go!"FieldAlign_") #x (Val #(x.FieldAlign_'))
-  set_FieldAlign_ : ∀ (x : Type'') (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet Type''.underlying go!"FieldAlign_") (PairV #x #y) (Val #(({ x with FieldAlign_' := y } : Type'')))
-  get_Kind_ : ∀ (x : Type''), go.IsGoStepPureDetTagged under (StructFieldGet Type''.underlying go!"Kind_") #x (Val #(x.Kind_'))
-  set_Kind_ : ∀ (x : Type'') (y : Kind), go.IsGoStepPureDetTagged under (StructFieldSet Type''.underlying go!"Kind_") (PairV #x #y) (Val #(({ x with Kind_' := y } : Type'')))
-  get_Equal : ∀ (x : Type''), go.IsGoStepPureDetTagged under (StructFieldGet Type''.underlying go!"Equal") #x (Val #(x.Equal'))
-  set_Equal : ∀ (x : Type'') (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet Type''.underlying go!"Equal") (PairV #x #y) (Val #(({ x with Equal' := y } : Type'')))
-  get_GCData : ∀ (x : Type''), go.IsGoStepPureDetTagged under (StructFieldGet Type''.underlying go!"GCData") #x (Val #(x.GCData'))
-  set_GCData : ∀ (x : Type'') (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Type''.underlying go!"GCData") (PairV #x #y) (Val #(({ x with GCData' := y } : Type'')))
-  get_Str : ∀ (x : Type''), go.IsGoStepPureDetTagged under (StructFieldGet Type''.underlying go!"Str") #x (Val #(x.Str'))
-  set_Str : ∀ (x : Type'') (y : NameOff), go.IsGoStepPureDetTagged under (StructFieldSet Type''.underlying go!"Str") (PairV #x #y) (Val #(({ x with Str' := y } : Type'')))
-  get_PtrToThis : ∀ (x : Type''), go.IsGoStepPureDetTagged under (StructFieldGet Type''.underlying go!"PtrToThis") #x (Val #(x.PtrToThis'))
-  set_PtrToThis : ∀ (x : Type'') (y : TypeOff), go.IsGoStepPureDetTagged under (StructFieldSet Type''.underlying go!"PtrToThis") (PairV #x #y) (Val #(({ x with PtrToThis' := y } : Type'')))
+  get'Size_ : ∀ (x : Type''), go.IsGoStepPureDetTagged under (StructFieldGet Type''.underlying go!"Size_") #x (Val #(x.Size_'))
+  set'Size_ : ∀ (x : Type'') (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Type''.underlying go!"Size_") (PairV #x #y) (Val #(({ x with Size_' := y } : Type'')))
+  get'PtrBytes : ∀ (x : Type''), go.IsGoStepPureDetTagged under (StructFieldGet Type''.underlying go!"PtrBytes") #x (Val #(x.PtrBytes'))
+  set'PtrBytes : ∀ (x : Type'') (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Type''.underlying go!"PtrBytes") (PairV #x #y) (Val #(({ x with PtrBytes' := y } : Type'')))
+  get'Hash : ∀ (x : Type''), go.IsGoStepPureDetTagged under (StructFieldGet Type''.underlying go!"Hash") #x (Val #(x.Hash'))
+  set'Hash : ∀ (x : Type'') (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Type''.underlying go!"Hash") (PairV #x #y) (Val #(({ x with Hash' := y } : Type'')))
+  get'TFlag : ∀ (x : Type''), go.IsGoStepPureDetTagged under (StructFieldGet Type''.underlying go!"TFlag") #x (Val #(x.TFlag'))
+  set'TFlag : ∀ (x : Type'') (y : TFlag), go.IsGoStepPureDetTagged under (StructFieldSet Type''.underlying go!"TFlag") (PairV #x #y) (Val #(({ x with TFlag' := y } : Type'')))
+  get'Align_ : ∀ (x : Type''), go.IsGoStepPureDetTagged under (StructFieldGet Type''.underlying go!"Align_") #x (Val #(x.Align_'))
+  set'Align_ : ∀ (x : Type'') (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet Type''.underlying go!"Align_") (PairV #x #y) (Val #(({ x with Align_' := y } : Type'')))
+  get'FieldAlign_ : ∀ (x : Type''), go.IsGoStepPureDetTagged under (StructFieldGet Type''.underlying go!"FieldAlign_") #x (Val #(x.FieldAlign_'))
+  set'FieldAlign_ : ∀ (x : Type'') (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet Type''.underlying go!"FieldAlign_") (PairV #x #y) (Val #(({ x with FieldAlign_' := y } : Type'')))
+  get'Kind_ : ∀ (x : Type''), go.IsGoStepPureDetTagged under (StructFieldGet Type''.underlying go!"Kind_") #x (Val #(x.Kind_'))
+  set'Kind_ : ∀ (x : Type'') (y : Kind), go.IsGoStepPureDetTagged under (StructFieldSet Type''.underlying go!"Kind_") (PairV #x #y) (Val #(({ x with Kind_' := y } : Type'')))
+  get'Equal : ∀ (x : Type''), go.IsGoStepPureDetTagged under (StructFieldGet Type''.underlying go!"Equal") #x (Val #(x.Equal'))
+  set'Equal : ∀ (x : Type'') (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet Type''.underlying go!"Equal") (PairV #x #y) (Val #(({ x with Equal' := y } : Type'')))
+  get'GCData : ∀ (x : Type''), go.IsGoStepPureDetTagged under (StructFieldGet Type''.underlying go!"GCData") #x (Val #(x.GCData'))
+  set'GCData : ∀ (x : Type'') (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Type''.underlying go!"GCData") (PairV #x #y) (Val #(({ x with GCData' := y } : Type'')))
+  get'Str : ∀ (x : Type''), go.IsGoStepPureDetTagged under (StructFieldGet Type''.underlying go!"Str") #x (Val #(x.Str'))
+  set'Str : ∀ (x : Type'') (y : NameOff), go.IsGoStepPureDetTagged under (StructFieldSet Type''.underlying go!"Str") (PairV #x #y) (Val #(({ x with Str' := y } : Type'')))
+  get'PtrToThis : ∀ (x : Type''), go.IsGoStepPureDetTagged under (StructFieldGet Type''.underlying go!"PtrToThis") #x (Val #(x.PtrToThis'))
+  set'PtrToThis : ∀ (x : Type'') (y : TypeOff), go.IsGoStepPureDetTagged under (StructFieldSet Type''.underlying go!"PtrToThis") (PairV #x #y) (Val #(({ x with PtrToThis' := y } : Type'')))
   method_set : go.MethodSetIs Type''.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Type''.ty) [(go!"Align", (some (go.signature.Signature [] false [go.int]))), (go!"ArrayType", (some (go.signature.Signature [] false [(go.GoType.PointerType ArrayType.ty)]))), (go!"ChanDir", (some (go.signature.Signature [] false [ChanDir.ty]))), (go!"Common", (some (go.signature.Signature [] false [(go.GoType.PointerType Type''.ty)]))), (go!"Elem", (some (go.signature.Signature [] false [(go.GoType.PointerType Type''.ty)]))), (go!"ExportedMethods", (some (go.signature.Signature [] false [(go.GoType.SliceType Method.ty)]))), (go!"FieldAlign", (some (go.signature.Signature [] false [go.int]))), (go!"FuncType", (some (go.signature.Signature [] false [(go.GoType.PointerType FuncType.ty)]))), (go!"GcSlice", (some (go.signature.Signature [go.uintptr, go.uintptr] false [(go.GoType.SliceType go.byte)]))), (go!"HasName", (some (go.signature.Signature [] false [go.bool]))), (go!"InterfaceType", (some (go.signature.Signature [] false [(go.GoType.PointerType InterfaceType.ty)]))), (go!"IsDirectIface", (some (go.signature.Signature [] false [go.bool]))), (go!"Key", (some (go.signature.Signature [] false [(go.GoType.PointerType Type''.ty)]))), (go!"Kind", (some (go.signature.Signature [] false [Kind.ty]))), (go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"MapType", (some (go.signature.Signature [] false [(go.GoType.PointerType MapType.ty)]))), (go!"NumMethod", (some (go.signature.Signature [] false [go.int]))), (go!"Pointers", (some (go.signature.Signature [] false [go.bool]))), (go!"Size", (some (go.signature.Signature [] false [go.uintptr]))), (go!"StructType", (some (go.signature.Signature [] false [(go.GoType.PointerType StructType.ty)]))), (go!"Uncommon", (some (go.signature.Signature [] false [(go.GoType.PointerType UncommonType.ty)])))]
 
 attribute [instance] Type''.TypeAssumptions.type_repr
   Type''.TypeAssumptions.underlying
-  Type''.TypeAssumptions.get_Size_
-  Type''.TypeAssumptions.set_Size_
-  Type''.TypeAssumptions.get_PtrBytes
-  Type''.TypeAssumptions.set_PtrBytes
-  Type''.TypeAssumptions.get_Hash
-  Type''.TypeAssumptions.set_Hash
-  Type''.TypeAssumptions.get_TFlag
-  Type''.TypeAssumptions.set_TFlag
-  Type''.TypeAssumptions.get_Align_
-  Type''.TypeAssumptions.set_Align_
-  Type''.TypeAssumptions.get_FieldAlign_
-  Type''.TypeAssumptions.set_FieldAlign_
-  Type''.TypeAssumptions.get_Kind_
-  Type''.TypeAssumptions.set_Kind_
-  Type''.TypeAssumptions.get_Equal
-  Type''.TypeAssumptions.set_Equal
-  Type''.TypeAssumptions.get_GCData
-  Type''.TypeAssumptions.set_GCData
-  Type''.TypeAssumptions.get_Str
-  Type''.TypeAssumptions.set_Str
-  Type''.TypeAssumptions.get_PtrToThis
-  Type''.TypeAssumptions.set_PtrToThis
+  Type''.TypeAssumptions.get'Size_
+  Type''.TypeAssumptions.set'Size_
+  Type''.TypeAssumptions.get'PtrBytes
+  Type''.TypeAssumptions.set'PtrBytes
+  Type''.TypeAssumptions.get'Hash
+  Type''.TypeAssumptions.set'Hash
+  Type''.TypeAssumptions.get'TFlag
+  Type''.TypeAssumptions.set'TFlag
+  Type''.TypeAssumptions.get'Align_
+  Type''.TypeAssumptions.set'Align_
+  Type''.TypeAssumptions.get'FieldAlign_
+  Type''.TypeAssumptions.set'FieldAlign_
+  Type''.TypeAssumptions.get'Kind_
+  Type''.TypeAssumptions.set'Kind_
+  Type''.TypeAssumptions.get'Equal
+  Type''.TypeAssumptions.set'Equal
+  Type''.TypeAssumptions.get'GCData
+  Type''.TypeAssumptions.set'GCData
+  Type''.TypeAssumptions.get'Str
+  Type''.TypeAssumptions.set'Str
+  Type''.TypeAssumptions.get'PtrToThis
+  Type''.TypeAssumptions.set'PtrToThis
   Type''.TypeAssumptions.method_set
   Type''.TypeAssumptions.ptr_method_set
 
@@ -1436,83 +1436,83 @@ attribute [instance] Name.TypeAssumptions.type_repr
   Name.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  RegArgs_instance : RegArgs.TypeAssumptions
-  IntArgRegBitmap_instance : IntArgRegBitmap.TypeAssumptions
-  BoundsErrorCode_instance : BoundsErrorCode.TypeAssumptions
-  ITab_instance : ITab.TypeAssumptions
-  EmptyInterface_instance : EmptyInterface.TypeAssumptions
-  NonEmptyInterface_instance : NonEmptyInterface.TypeAssumptions
-  CommonInterface_instance : CommonInterface.TypeAssumptions
-  MapType_instance : MapType.TypeAssumptions
-  RF_State_instance : RF_State.TypeAssumptions
-  InterfaceSwitch_instance : InterfaceSwitch.TypeAssumptions
-  InterfaceSwitchCache_instance : InterfaceSwitchCache.TypeAssumptions
-  InterfaceSwitchCacheEntry_instance : InterfaceSwitchCacheEntry.TypeAssumptions
-  TypeAssert_instance : TypeAssert''.TypeAssumptions
-  TypeAssertCache_instance : TypeAssertCache.TypeAssumptions
-  TypeAssertCacheEntry_instance : TypeAssertCacheEntry.TypeAssumptions
-  PCLnTabMagic_instance : PCLnTabMagic.TypeAssumptions
-  FuncFlag_instance : FuncFlag.TypeAssumptions
-  FuncID_instance : FuncID.TypeAssumptions
-  Type_instance : Type''.TypeAssumptions
-  Kind_instance : Kind.TypeAssumptions
-  TFlag_instance : TFlag.TypeAssumptions
-  NameOff_instance : NameOff.TypeAssumptions
-  TypeOff_instance : TypeOff.TypeAssumptions
-  TextOff_instance : TextOff.TypeAssumptions
-  Method_instance : Method.TypeAssumptions
-  UncommonType_instance : UncommonType.TypeAssumptions
-  Imethod_instance : Imethod.TypeAssumptions
-  ArrayType_instance : ArrayType.TypeAssumptions
-  ChanDir_instance : ChanDir.TypeAssumptions
-  ChanType_instance : ChanType.TypeAssumptions
-  structTypeUncommon_instance : structTypeUncommon.TypeAssumptions
-  InterfaceType_instance : InterfaceType.TypeAssumptions
-  SliceType_instance : SliceType.TypeAssumptions
-  FuncType_instance : FuncType.TypeAssumptions
-  PtrType_instance : PtrType.TypeAssumptions
-  StructField_instance : StructField.TypeAssumptions
-  StructType_instance : StructType.TypeAssumptions
-  Name_instance : Name.TypeAssumptions
+  instance'RegArgs : RegArgs.TypeAssumptions
+  instance'IntArgRegBitmap : IntArgRegBitmap.TypeAssumptions
+  instance'BoundsErrorCode : BoundsErrorCode.TypeAssumptions
+  instance'ITab : ITab.TypeAssumptions
+  instance'EmptyInterface : EmptyInterface.TypeAssumptions
+  instance'NonEmptyInterface : NonEmptyInterface.TypeAssumptions
+  instance'CommonInterface : CommonInterface.TypeAssumptions
+  instance'MapType : MapType.TypeAssumptions
+  instance'RF_State : RF_State.TypeAssumptions
+  instance'InterfaceSwitch : InterfaceSwitch.TypeAssumptions
+  instance'InterfaceSwitchCache : InterfaceSwitchCache.TypeAssumptions
+  instance'InterfaceSwitchCacheEntry : InterfaceSwitchCacheEntry.TypeAssumptions
+  instance'TypeAssert : TypeAssert''.TypeAssumptions
+  instance'TypeAssertCache : TypeAssertCache.TypeAssumptions
+  instance'TypeAssertCacheEntry : TypeAssertCacheEntry.TypeAssumptions
+  instance'PCLnTabMagic : PCLnTabMagic.TypeAssumptions
+  instance'FuncFlag : FuncFlag.TypeAssumptions
+  instance'FuncID : FuncID.TypeAssumptions
+  instance'Type : Type''.TypeAssumptions
+  instance'Kind : Kind.TypeAssumptions
+  instance'TFlag : TFlag.TypeAssumptions
+  instance'NameOff : NameOff.TypeAssumptions
+  instance'TypeOff : TypeOff.TypeAssumptions
+  instance'TextOff : TextOff.TypeAssumptions
+  instance'Method : Method.TypeAssumptions
+  instance'UncommonType : UncommonType.TypeAssumptions
+  instance'Imethod : Imethod.TypeAssumptions
+  instance'ArrayType : ArrayType.TypeAssumptions
+  instance'ChanDir : ChanDir.TypeAssumptions
+  instance'ChanType : ChanType.TypeAssumptions
+  instance'structTypeUncommon : structTypeUncommon.TypeAssumptions
+  instance'InterfaceType : InterfaceType.TypeAssumptions
+  instance'SliceType : SliceType.TypeAssumptions
+  instance'FuncType : FuncType.TypeAssumptions
+  instance'PtrType : PtrType.TypeAssumptions
+  instance'StructField : StructField.TypeAssumptions
+  instance'StructType : StructType.TypeAssumptions
+  instance'Name : Name.TypeAssumptions
 
-attribute [instance] Assumptions.RegArgs_instance
-  Assumptions.IntArgRegBitmap_instance
-  Assumptions.BoundsErrorCode_instance
-  Assumptions.ITab_instance
-  Assumptions.EmptyInterface_instance
-  Assumptions.NonEmptyInterface_instance
-  Assumptions.CommonInterface_instance
-  Assumptions.MapType_instance
-  Assumptions.RF_State_instance
-  Assumptions.InterfaceSwitch_instance
-  Assumptions.InterfaceSwitchCache_instance
-  Assumptions.InterfaceSwitchCacheEntry_instance
-  Assumptions.TypeAssert_instance
-  Assumptions.TypeAssertCache_instance
-  Assumptions.TypeAssertCacheEntry_instance
-  Assumptions.PCLnTabMagic_instance
-  Assumptions.FuncFlag_instance
-  Assumptions.FuncID_instance
-  Assumptions.Type_instance
-  Assumptions.Kind_instance
-  Assumptions.TFlag_instance
-  Assumptions.NameOff_instance
-  Assumptions.TypeOff_instance
-  Assumptions.TextOff_instance
-  Assumptions.Method_instance
-  Assumptions.UncommonType_instance
-  Assumptions.Imethod_instance
-  Assumptions.ArrayType_instance
-  Assumptions.ChanDir_instance
-  Assumptions.ChanType_instance
-  Assumptions.structTypeUncommon_instance
-  Assumptions.InterfaceType_instance
-  Assumptions.SliceType_instance
-  Assumptions.FuncType_instance
-  Assumptions.PtrType_instance
-  Assumptions.StructField_instance
-  Assumptions.StructType_instance
-  Assumptions.Name_instance
+attribute [instance] Assumptions.instance'RegArgs
+  Assumptions.instance'IntArgRegBitmap
+  Assumptions.instance'BoundsErrorCode
+  Assumptions.instance'ITab
+  Assumptions.instance'EmptyInterface
+  Assumptions.instance'NonEmptyInterface
+  Assumptions.instance'CommonInterface
+  Assumptions.instance'MapType
+  Assumptions.instance'RF_State
+  Assumptions.instance'InterfaceSwitch
+  Assumptions.instance'InterfaceSwitchCache
+  Assumptions.instance'InterfaceSwitchCacheEntry
+  Assumptions.instance'TypeAssert
+  Assumptions.instance'TypeAssertCache
+  Assumptions.instance'TypeAssertCacheEntry
+  Assumptions.instance'PCLnTabMagic
+  Assumptions.instance'FuncFlag
+  Assumptions.instance'FuncID
+  Assumptions.instance'Type
+  Assumptions.instance'Kind
+  Assumptions.instance'TFlag
+  Assumptions.instance'NameOff
+  Assumptions.instance'TypeOff
+  Assumptions.instance'TextOff
+  Assumptions.instance'Method
+  Assumptions.instance'UncommonType
+  Assumptions.instance'Imethod
+  Assumptions.instance'ArrayType
+  Assumptions.instance'ChanDir
+  Assumptions.instance'ChanType
+  Assumptions.instance'structTypeUncommon
+  Assumptions.instance'InterfaceType
+  Assumptions.instance'SliceType
+  Assumptions.instance'FuncType
+  Assumptions.instance'PtrType
+  Assumptions.instance'StructField
+  Assumptions.instance'StructType
+  Assumptions.instance'Name
 
 end internal.abi
 

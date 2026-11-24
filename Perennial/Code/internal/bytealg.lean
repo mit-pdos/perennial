@@ -120,12 +120,12 @@ noncomputable def LastIndexByteString [GooseExts] [GoGlobalContext] : GoString :
     factor for use in Rabin-Karp algorithm.
 
     go: bytealg.go:37:6 -/
-noncomputable def HashStr.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def HashStr.impl [GooseExts] [GoGlobalContext] (T₀ : go.GoType) : val :=
   (LamV "sep"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "$res1" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "sep" (App (Val (GoInstruction (GoAlloc T))) (Var "sep"))
+  (Let "sep" (App (Val (GoInstruction (GoAlloc T₀))) (Var "sep"))
   (Let "$r0" (Val #(W32 0))
   (Let "hash" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -147,8 +147,8 @@ noncomputable def HashStr.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : v
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "$res1") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "$res0") (Var "$r0")))))))))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "sep"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [T]))) (Val #())) (Var "$a0")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad T₀))) (Var "sep"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [T₀]))) (Val #())) (Var "$a0")))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
@@ -174,9 +174,9 @@ noncomputable def HashStr.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : v
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
-  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "sep"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [T]))) (Val #())) (Var "$a0"))))))) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "hash")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val PrimeRK)))) (App (Val (GoInstruction (Convert go.byte go.uint32))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "sep")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))
+  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad T₀))) (Var "sep"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [T₀]))) (Val #())) (Var "$a0"))))))) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "hash")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val PrimeRK)))) (App (Val (GoInstruction (Convert go.byte go.uint32))) (App (Val (GoInstruction (Index T₀))) (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "sep")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "hash") (Var "$r0")))))))
   (Lam BAnon
@@ -192,12 +192,12 @@ noncomputable def HashStr.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : v
     appropriate multiplicative factor for use in Rabin-Karp algorithm.
 
     go: bytealg.go:54:6 -/
-noncomputable def HashStrRev.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def HashStrRev.impl [GooseExts] [GoGlobalContext] (T₀ : go.GoType) : val :=
   (LamV "sep"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Let "$res1" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "sep" (App (Val (GoInstruction (GoAlloc T))) (Var "sep"))
+  (Let "sep" (App (Val (GoInstruction (GoAlloc T₀))) (Var "sep"))
   (Let "$r0" (Val #(W32 0))
   (Let "hash" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -219,8 +219,8 @@ noncomputable def HashStrRev.impl [GooseExts] [GoGlobalContext] (T : go.GoType) 
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "$res1") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "$res0") (Var "$r0")))))))))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "sep"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [T]))) (Val #())) (Var "$a0")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad T₀))) (Var "sep"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [T₀]))) (Val #())) (Var "$a0")))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
@@ -242,13 +242,13 @@ noncomputable def HashStrRev.impl [GooseExts] [GoGlobalContext] (T : go.GoType) 
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "sq") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "pow") (Var "$r0")))))))))))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "sep"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [T]))) (Val #())) (Var "$a0"))) (Val #(W64 1))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad T₀))) (Var "sep"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [T₀]))) (Val #())) (Var "$a0"))) (Val #(W64 1))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 0)))))) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "hash")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val PrimeRK)))) (App (Val (GoInstruction (Convert go.byte go.uint32))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "sep")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "hash")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val PrimeRK)))) (App (Val (GoInstruction (Convert go.byte go.uint32))) (App (Val (GoInstruction (Index T₀))) (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "sep")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "hash") (Var "$r0")))))))
   (Lam BAnon
@@ -264,15 +264,15 @@ noncomputable def HashStrRev.impl [GooseExts] [GoGlobalContext] (T : go.GoType) 
     first occurrence of sep in s, or -1 if not present.
 
     go: bytealg.go:71:6 -/
-noncomputable def IndexRabinKarp.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def IndexRabinKarp.impl [GooseExts] [GoGlobalContext] (T₀ : go.GoType) : val :=
   (LamV "s"
   (Lam "sep"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "sep" (App (Val (GoInstruction (GoAlloc T))) (Var "sep"))
-  (Let "s" (App (Val (GoInstruction (GoAlloc T))) (Var "s"))
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "sep"))
-  (App (App (Val (GoInstruction (FuncResolve HashStr [T]))) (Val #())) (Var "$a0")))
+  (Let "sep" (App (Val (GoInstruction (GoAlloc T₀))) (Var "sep"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc T₀))) (Var "s"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad T₀))) (Var "sep"))
+  (App (App (Val (GoInstruction (FuncResolve HashStr [T₀]))) (Val #())) (Var "$a0")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
@@ -281,8 +281,8 @@ noncomputable def IndexRabinKarp.impl [GooseExts] [GoGlobalContext] (T : go.GoTy
   (Let "hashss" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "sep"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [T]))) (Val #())) (Var "$a0")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad T₀))) (Var "sep"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [T₀]))) (Val #())) (Var "$a0")))
   (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "h" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
@@ -299,14 +299,14 @@ noncomputable def IndexRabinKarp.impl [GooseExts] [GoGlobalContext] (T : go.GoTy
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
-  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "s"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [T]))) (Val #())) (Var "$a0"))))))) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad T₀))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [T₀]))) (Val #())) (Var "$a0"))))))) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "h")) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "hashss")))) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (Convert T go.string))) (Let "$s" (App (Val (GoInstruction (GoLoad T))) (Var "s"))
-  (App (Val (GoInstruction (Slice T))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))) (App (Val (GoInstruction (Convert T go.string))) (App (Val (GoInstruction (GoLoad T))) (Var "sep"))))) (Val #false)))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "h")) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "hashss")))) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (Convert T₀ go.string))) (Let "$s" (App (Val (GoInstruction (GoLoad T₀))) (Var "s"))
+  (App (Val (GoInstruction (Slice T₀))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))) (App (Val (GoInstruction (Convert T₀ go.string))) (App (Val (GoInstruction (GoLoad T₀))) (Var "sep"))))) (Val #false)))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -318,17 +318,17 @@ noncomputable def IndexRabinKarp.impl [GooseExts] [GoGlobalContext] (T : go.GoTy
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "h") (App (Val (GoInstruction (GoOp GoSub go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "h")) (App (Val (GoInstruction (GoOp GoMul go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "pow")) (App (Val (GoInstruction (Convert go.byte go.uint32))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))))))))))))))))
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "h") (App (Val (GoInstruction (GoOp GoSub go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "h")) (App (Val (GoInstruction (GoOp GoMul go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "pow")) (App (Val (GoInstruction (Convert go.byte go.uint32))) (App (Val (GoInstruction (Index T₀))) (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "s")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))))))))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "h") (App (Val (GoInstruction (GoOp GoPlus go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "h")) (App (Val (GoInstruction (Convert go.byte go.uint32))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))))))))
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "h") (App (Val (GoInstruction (GoOp GoPlus go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "h")) (App (Val (GoInstruction (Convert go.byte go.uint32))) (App (Val (GoInstruction (Index T₀))) (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "s")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "h") (App (Val (GoInstruction (GoOp GoMul go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "h")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val PrimeRK))))))))))
   (Lam BAnon
   (Val #())))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "h")) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "hashss")))) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (Convert T go.string))) (Let "$s" (App (Val (GoInstruction (GoLoad T))) (Var "s"))
-  (App (Val (GoInstruction (Slice T))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))))) (App (Val (GoInstruction (Convert T go.string))) (App (Val (GoInstruction (GoLoad T))) (Var "sep"))))) (Val #false)))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "h")) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "hashss")))) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (Convert T₀ go.string))) (Let "$s" (App (Val (GoInstruction (GoLoad T₀))) (Var "s"))
+  (App (Val (GoInstruction (Slice T₀))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))))) (App (Val (GoInstruction (Convert T₀ go.string))) (App (Val (GoInstruction (GoLoad T₀))) (Var "sep"))))) (Val #false)))
   (Let "$r0" (Val #(W64 0))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -342,7 +342,7 @@ noncomputable def IndexRabinKarp.impl [GooseExts] [GoGlobalContext] (T : go.GoTy
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))))) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "h")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val PrimeRK)))) (App (Val (GoInstruction (Convert go.byte go.uint32))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint32))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "h")) (App (Val (GoInstruction (Convert go.untypedInt go.uint32))) (Val PrimeRK)))) (App (Val (GoInstruction (Convert go.byte go.uint32))) (App (Val (GoInstruction (Index T₀))) (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "s")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "h") (Var "$r0")))))))
   (Lam BAnon
@@ -660,33 +660,33 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val (go.GlobalAlloc MaxLen go.int)) (Val #()))))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  HashStr_unfold : ∀ (T : go.GoType), FuncUnfold HashStr [T] (HashStr.impl T)
-  HashStrRev_unfold : ∀ (T : go.GoType), FuncUnfold HashStrRev [T] (HashStrRev.impl T)
-  IndexRabinKarp_unfold : ∀ (T : go.GoType), FuncUnfold IndexRabinKarp [T] (IndexRabinKarp.impl T)
-  MakeNoZero_unfold : FuncUnfold MakeNoZero [] MakeNoZero.impl
-  CompareString_unfold : FuncUnfold CompareString [] CompareString.impl
-  «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
-  Cutover_unfold : FuncUnfold Cutover [] Cutover.impl
-  Index_unfold : FuncUnfold Index'' [] Index''.impl
-  IndexString_unfold : FuncUnfold IndexString [] IndexString.impl
-  IndexByte_unfold : FuncUnfold IndexByte [] IndexByte.impl
-  IndexByteString_unfold : FuncUnfold IndexByteString [] IndexByteString.impl
-  LastIndexByteString_unfold : FuncUnfold LastIndexByteString [] LastIndexByteString.impl
-  import_gomodel_Assumption : _root_.Perennial.internal.gomodel.Assumptions
+  unfold'HashStr : ∀ (T₀ : go.GoType), FuncUnfold HashStr [T₀] (HashStr.impl T₀)
+  unfold'HashStrRev : ∀ (T₀ : go.GoType), FuncUnfold HashStrRev [T₀] (HashStrRev.impl T₀)
+  unfold'IndexRabinKarp : ∀ (T₀ : go.GoType), FuncUnfold IndexRabinKarp [T₀] (IndexRabinKarp.impl T₀)
+  unfold'MakeNoZero : FuncUnfold MakeNoZero [] MakeNoZero.impl
+  unfold'CompareString : FuncUnfold CompareString [] CompareString.impl
+  «unfold'init.0» : FuncUnfold init.«0» [] init.«0».impl
+  unfold'Cutover : FuncUnfold Cutover [] Cutover.impl
+  unfold'Index : FuncUnfold Index'' [] Index''.impl
+  unfold'IndexString : FuncUnfold IndexString [] IndexString.impl
+  unfold'IndexByte : FuncUnfold IndexByte [] IndexByte.impl
+  unfold'IndexByteString : FuncUnfold IndexByteString [] IndexByteString.impl
+  unfold'LastIndexByteString : FuncUnfold LastIndexByteString [] LastIndexByteString.impl
+  import'gomodel : _root_.Perennial.internal.gomodel.Assumptions
 
-attribute [instance] Assumptions.HashStr_unfold
-  Assumptions.HashStrRev_unfold
-  Assumptions.IndexRabinKarp_unfold
-  Assumptions.MakeNoZero_unfold
-  Assumptions.CompareString_unfold
-  Assumptions.«init.0_unfold»
-  Assumptions.Cutover_unfold
-  Assumptions.Index_unfold
-  Assumptions.IndexString_unfold
-  Assumptions.IndexByte_unfold
-  Assumptions.IndexByteString_unfold
-  Assumptions.LastIndexByteString_unfold
-  Assumptions.import_gomodel_Assumption
+attribute [instance] Assumptions.unfold'HashStr
+  Assumptions.unfold'HashStrRev
+  Assumptions.unfold'IndexRabinKarp
+  Assumptions.unfold'MakeNoZero
+  Assumptions.unfold'CompareString
+  Assumptions.«unfold'init.0»
+  Assumptions.unfold'Cutover
+  Assumptions.unfold'Index
+  Assumptions.unfold'IndexString
+  Assumptions.unfold'IndexByte
+  Assumptions.unfold'IndexByteString
+  Assumptions.unfold'LastIndexByteString
+  Assumptions.import'gomodel
 
 end internal.bytealg
 

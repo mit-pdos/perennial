@@ -254,7 +254,7 @@ noncomputable instance LockedStack.zero_val [GooseExts] : ZeroVal LockedStack :=
 @[irreducible] noncomputable def LockedStack.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   LockedStack.fieldsUnsealed
 
-noncomputable instance equals_unfold_LockedStack [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'LockedStack [GooseExts] [GoGlobalContext] :
     EqualsUnfold LockedStack.fields LockedStack.fieldsUnsealed :=
   ⟨by unfold LockedStack.fields; rfl⟩
 
@@ -264,25 +264,25 @@ noncomputable instance equals_unfold_LockedStack [GooseExts] [GoGlobalContext] :
 class LockedStack.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying LockedStack.underlying LockedStack
   underlying : go.UnderlyingDirectedEq LockedStack.ty LockedStack.underlying
-  get_mu : ∀ (x : LockedStack), go.IsGoStepPureDetTagged under (StructFieldGet LockedStack.underlying go!"mu") #x (Val #(x.mu'))
-  set_mu : ∀ (x : LockedStack) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet LockedStack.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : LockedStack)))
-  get_stack : ∀ (x : LockedStack), go.IsGoStepPureDetTagged under (StructFieldGet LockedStack.underlying go!"stack") #x (Val #(x.stack'))
-  set_stack : ∀ (x : LockedStack) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet LockedStack.underlying go!"stack") (PairV #x #y) (Val #(({ x with stack' := y } : LockedStack)))
+  get'mu : ∀ (x : LockedStack), go.IsGoStepPureDetTagged under (StructFieldGet LockedStack.underlying go!"mu") #x (Val #(x.mu'))
+  set'mu : ∀ (x : LockedStack) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet LockedStack.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : LockedStack)))
+  get'stack : ∀ (x : LockedStack), go.IsGoStepPureDetTagged under (StructFieldGet LockedStack.underlying go!"stack") #x (Val #(x.stack'))
+  set'stack : ∀ (x : LockedStack) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet LockedStack.underlying go!"stack") (PairV #x #y) (Val #(({ x with stack' := y } : LockedStack)))
   method_set : go.MethodSetIs LockedStack.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType LockedStack.ty) [(go!"Pop", (some (go.signature.Signature [] false [go.string, go.bool]))), (go!"Push", (some (go.signature.Signature [go.string] false [])))]
-  ptr_Pop_unfold : MethodUnfold (go.GoType.PointerType LockedStack.ty) go!"Pop" LockedStack.Pop.impl
-  ptr_Push_unfold : MethodUnfold (go.GoType.PointerType LockedStack.ty) go!"Push" LockedStack.Push.impl
+  ptr_unfold'Pop : MethodUnfold (go.GoType.PointerType LockedStack.ty) go!"Pop" LockedStack.Pop.impl
+  ptr_unfold'Push : MethodUnfold (go.GoType.PointerType LockedStack.ty) go!"Push" LockedStack.Push.impl
 
 attribute [instance] LockedStack.TypeAssumptions.type_repr
   LockedStack.TypeAssumptions.underlying
-  LockedStack.TypeAssumptions.get_mu
-  LockedStack.TypeAssumptions.set_mu
-  LockedStack.TypeAssumptions.get_stack
-  LockedStack.TypeAssumptions.set_stack
+  LockedStack.TypeAssumptions.get'mu
+  LockedStack.TypeAssumptions.set'mu
+  LockedStack.TypeAssumptions.get'stack
+  LockedStack.TypeAssumptions.set'stack
   LockedStack.TypeAssumptions.method_set
   LockedStack.TypeAssumptions.ptr_method_set
-  LockedStack.TypeAssumptions.ptr_Pop_unfold
-  LockedStack.TypeAssumptions.ptr_Push_unfold
+  LockedStack.TypeAssumptions.ptr_unfold'Pop
+  LockedStack.TypeAssumptions.ptr_unfold'Push
 
 structure EliminationStack [GooseExts] where
   mk ::
@@ -299,7 +299,7 @@ noncomputable instance EliminationStack.zero_val [GooseExts] : ZeroVal Eliminati
 @[irreducible] noncomputable def EliminationStack.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   EliminationStack.fieldsUnsealed
 
-noncomputable instance equals_unfold_EliminationStack [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'EliminationStack [GooseExts] [GoGlobalContext] :
     EqualsUnfold EliminationStack.fields EliminationStack.fieldsUnsealed :=
   ⟨by unfold EliminationStack.fields; rfl⟩
 
@@ -309,40 +309,40 @@ noncomputable instance equals_unfold_EliminationStack [GooseExts] [GoGlobalConte
 class EliminationStack.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying EliminationStack.underlying EliminationStack
   underlying : go.UnderlyingDirectedEq EliminationStack.ty EliminationStack.underlying
-  get_base : ∀ (x : EliminationStack), go.IsGoStepPureDetTagged under (StructFieldGet EliminationStack.underlying go!"base") #x (Val #(x.base'))
-  set_base : ∀ (x : EliminationStack) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet EliminationStack.underlying go!"base") (PairV #x #y) (Val #(({ x with base' := y } : EliminationStack)))
-  get_exchanger : ∀ (x : EliminationStack), go.IsGoStepPureDetTagged under (StructFieldGet EliminationStack.underlying go!"exchanger") #x (Val #(x.exchanger'))
-  set_exchanger : ∀ (x : EliminationStack) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet EliminationStack.underlying go!"exchanger") (PairV #x #y) (Val #(({ x with exchanger' := y } : EliminationStack)))
+  get'base : ∀ (x : EliminationStack), go.IsGoStepPureDetTagged under (StructFieldGet EliminationStack.underlying go!"base") #x (Val #(x.base'))
+  set'base : ∀ (x : EliminationStack) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet EliminationStack.underlying go!"base") (PairV #x #y) (Val #(({ x with base' := y } : EliminationStack)))
+  get'exchanger : ∀ (x : EliminationStack), go.IsGoStepPureDetTagged under (StructFieldGet EliminationStack.underlying go!"exchanger") #x (Val #(x.exchanger'))
+  set'exchanger : ∀ (x : EliminationStack) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet EliminationStack.underlying go!"exchanger") (PairV #x #y) (Val #(({ x with exchanger' := y } : EliminationStack)))
   method_set : go.MethodSetIs EliminationStack.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType EliminationStack.ty) [(go!"Pop", (some (go.signature.Signature [] false [go.string, go.bool]))), (go!"Push", (some (go.signature.Signature [go.string] false [])))]
-  ptr_Pop_unfold : MethodUnfold (go.GoType.PointerType EliminationStack.ty) go!"Pop" EliminationStack.Pop.impl
-  ptr_Push_unfold : MethodUnfold (go.GoType.PointerType EliminationStack.ty) go!"Push" EliminationStack.Push.impl
+  ptr_unfold'Pop : MethodUnfold (go.GoType.PointerType EliminationStack.ty) go!"Pop" EliminationStack.Pop.impl
+  ptr_unfold'Push : MethodUnfold (go.GoType.PointerType EliminationStack.ty) go!"Push" EliminationStack.Push.impl
 
 attribute [instance] EliminationStack.TypeAssumptions.type_repr
   EliminationStack.TypeAssumptions.underlying
-  EliminationStack.TypeAssumptions.get_base
-  EliminationStack.TypeAssumptions.set_base
-  EliminationStack.TypeAssumptions.get_exchanger
-  EliminationStack.TypeAssumptions.set_exchanger
+  EliminationStack.TypeAssumptions.get'base
+  EliminationStack.TypeAssumptions.set'base
+  EliminationStack.TypeAssumptions.get'exchanger
+  EliminationStack.TypeAssumptions.set'exchanger
   EliminationStack.TypeAssumptions.method_set
   EliminationStack.TypeAssumptions.ptr_method_set
-  EliminationStack.TypeAssumptions.ptr_Pop_unfold
-  EliminationStack.TypeAssumptions.ptr_Push_unfold
+  EliminationStack.TypeAssumptions.ptr_unfold'Pop
+  EliminationStack.TypeAssumptions.ptr_unfold'Push
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  LockedStack_instance : LockedStack.TypeAssumptions
-  EliminationStack_instance : EliminationStack.TypeAssumptions
-  NewLockedStack_unfold : FuncUnfold NewLockedStack [] NewLockedStack.impl
-  NewEliminationStack_unfold : FuncUnfold NewEliminationStack [] NewEliminationStack.impl
-  import_sync_Assumption : _root_.Perennial.sync.Assumptions
-  import_time_Assumption : _root_.Perennial.time.Assumptions
+  instance'LockedStack : LockedStack.TypeAssumptions
+  instance'EliminationStack : EliminationStack.TypeAssumptions
+  unfold'NewLockedStack : FuncUnfold NewLockedStack [] NewLockedStack.impl
+  unfold'NewEliminationStack : FuncUnfold NewEliminationStack [] NewEliminationStack.impl
+  import'sync : _root_.Perennial.sync.Assumptions
+  import'time : _root_.Perennial.time.Assumptions
 
-attribute [instance] Assumptions.LockedStack_instance
-  Assumptions.EliminationStack_instance
-  Assumptions.NewLockedStack_unfold
-  Assumptions.NewEliminationStack_unfold
-  Assumptions.import_sync_Assumption
-  Assumptions.import_time_Assumption
+attribute [instance] Assumptions.instance'LockedStack
+  Assumptions.instance'EliminationStack
+  Assumptions.unfold'NewLockedStack
+  Assumptions.unfold'NewEliminationStack
+  Assumptions.import'sync
+  Assumptions.import'time
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack
 

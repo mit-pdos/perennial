@@ -28,7 +28,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : strconv.Assumptions]
 
-noncomputable instance NumError_typed_pointsto :
+noncomputable instance typed_pointsto'NumError :
     TypedPointsto (GF := GF) strconv.NumError where
   typedPointstoDef l v dq := iprop(
     "Func" ∷ typedPointsto (structFieldRef strconv.NumError go!"Func" l) v.Func' dq ∗
@@ -39,11 +39,11 @@ noncomputable instance NumError_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance NumError_into_val_typed :
+noncomputable instance into_val_typed'NumError :
     IntoValTypedUnderlying (GF := GF) strconv.NumError strconv.NumError.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance NumError_access_load_Func (l : Loc) (v : strconv.NumError) (dq : DFrac) :
+noncomputable instance access_load'NumError'Func (l : Loc) (v : strconv.NumError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strconv.NumError go!"Func" l) v.Func' dq)
       (typedPointsto (structFieldRef strconv.NumError go!"Func" l) v.Func' dq)
@@ -51,7 +51,7 @@ noncomputable instance NumError_access_load_Func (l : Loc) (v : strconv.NumError
  by
   solve_pointsto_access_struct
 
-noncomputable instance NumError_access_store_Func (l : Loc) (v : strconv.NumError) (y : GoString) :
+noncomputable instance access_store'NumError'Func (l : Loc) (v : strconv.NumError) (y : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strconv.NumError go!"Func" l) v.Func' (DFrac.own 1))
       (typedPointsto (structFieldRef strconv.NumError go!"Func" l) y (DFrac.own 1))
@@ -59,7 +59,7 @@ noncomputable instance NumError_access_store_Func (l : Loc) (v : strconv.NumErro
  by
   solve_pointsto_access_struct
 
-noncomputable instance NumError_access_load_Num (l : Loc) (v : strconv.NumError) (dq : DFrac) :
+noncomputable instance access_load'NumError'Num (l : Loc) (v : strconv.NumError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strconv.NumError go!"Num" l) v.Num' dq)
       (typedPointsto (structFieldRef strconv.NumError go!"Num" l) v.Num' dq)
@@ -67,7 +67,7 @@ noncomputable instance NumError_access_load_Num (l : Loc) (v : strconv.NumError)
  by
   solve_pointsto_access_struct
 
-noncomputable instance NumError_access_store_Num (l : Loc) (v : strconv.NumError) (y : GoString) :
+noncomputable instance access_store'NumError'Num (l : Loc) (v : strconv.NumError) (y : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strconv.NumError go!"Num" l) v.Num' (DFrac.own 1))
       (typedPointsto (structFieldRef strconv.NumError go!"Num" l) y (DFrac.own 1))
@@ -75,7 +75,7 @@ noncomputable instance NumError_access_store_Num (l : Loc) (v : strconv.NumError
  by
   solve_pointsto_access_struct
 
-noncomputable instance NumError_access_load_Err (l : Loc) (v : strconv.NumError) (dq : DFrac) :
+noncomputable instance access_load'NumError'Err (l : Loc) (v : strconv.NumError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strconv.NumError go!"Err" l) v.Err' dq)
       (typedPointsto (structFieldRef strconv.NumError go!"Err" l) v.Err' dq)
@@ -83,7 +83,7 @@ noncomputable instance NumError_access_load_Err (l : Loc) (v : strconv.NumError)
  by
   solve_pointsto_access_struct
 
-noncomputable instance NumError_access_store_Err (l : Loc) (v : strconv.NumError) (y : GoError) :
+noncomputable instance access_store'NumError'Err (l : Loc) (v : strconv.NumError) (y : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strconv.NumError go!"Err" l) v.Err' (DFrac.own 1))
       (typedPointsto (structFieldRef strconv.NumError go!"Err" l) y (DFrac.own 1))

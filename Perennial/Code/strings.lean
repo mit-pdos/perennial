@@ -1519,7 +1519,7 @@ noncomputable instance Builder.zero_val [GooseExts] : ZeroVal Builder :=
 @[irreducible] noncomputable def Builder.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Builder.fieldsUnsealed
 
-noncomputable instance equals_unfold_Builder [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Builder [GooseExts] [GoGlobalContext] :
     EqualsUnfold Builder.fields Builder.fieldsUnsealed :=
   ⟨by unfold Builder.fields; rfl⟩
 
@@ -1529,43 +1529,43 @@ noncomputable instance equals_unfold_Builder [GooseExts] [GoGlobalContext] :
 class Builder.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Builder.underlying Builder
   underlying : go.UnderlyingDirectedEq Builder.ty Builder.underlying
-  get_addr : ∀ (x : Builder), go.IsGoStepPureDetTagged under (StructFieldGet Builder.underlying go!"addr") #x (Val #(x.addr'))
-  set_addr : ∀ (x : Builder) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Builder.underlying go!"addr") (PairV #x #y) (Val #(({ x with addr' := y } : Builder)))
-  get_buf : ∀ (x : Builder), go.IsGoStepPureDetTagged under (StructFieldGet Builder.underlying go!"buf") #x (Val #(x.buf'))
-  set_buf : ∀ (x : Builder) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Builder.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : Builder)))
+  get'addr : ∀ (x : Builder), go.IsGoStepPureDetTagged under (StructFieldGet Builder.underlying go!"addr") #x (Val #(x.addr'))
+  set'addr : ∀ (x : Builder) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Builder.underlying go!"addr") (PairV #x #y) (Val #(({ x with addr' := y } : Builder)))
+  get'buf : ∀ (x : Builder), go.IsGoStepPureDetTagged under (StructFieldGet Builder.underlying go!"buf") #x (Val #(x.buf'))
+  set'buf : ∀ (x : Builder) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Builder.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : Builder)))
   method_set : go.MethodSetIs Builder.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Builder.ty) [(go!"Cap", (some (go.signature.Signature [] false [go.int]))), (go!"Grow", (some (go.signature.Signature [go.int] false []))), (go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Reset", (some (go.signature.Signature [] false []))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"WriteByte", (some (go.signature.Signature [go.byte] false [go.error]))), (go!"WriteRune", (some (go.signature.Signature [go.rune] false [go.int, go.error]))), (go!"WriteString", (some (go.signature.Signature [go.string] false [go.int, go.error]))), (go!"strings.copyCheck", (some (go.signature.Signature [] false []))), (go!"strings.grow", (some (go.signature.Signature [go.int] false [])))]
-  ptr_Cap_unfold : MethodUnfold (go.GoType.PointerType Builder.ty) go!"Cap" Builder.Cap.impl
-  ptr_Grow_unfold : MethodUnfold (go.GoType.PointerType Builder.ty) go!"Grow" Builder.Grow.impl
-  ptr_Len_unfold : MethodUnfold (go.GoType.PointerType Builder.ty) go!"Len" Builder.Len.impl
-  ptr_Reset_unfold : MethodUnfold (go.GoType.PointerType Builder.ty) go!"Reset" Builder.Reset.impl
-  ptr_String_unfold : MethodUnfold (go.GoType.PointerType Builder.ty) go!"String" Builder.String.impl
-  ptr_Write_unfold : MethodUnfold (go.GoType.PointerType Builder.ty) go!"Write" Builder.Write.impl
-  ptr_WriteByte_unfold : MethodUnfold (go.GoType.PointerType Builder.ty) go!"WriteByte" Builder.WriteByte.impl
-  ptr_WriteRune_unfold : MethodUnfold (go.GoType.PointerType Builder.ty) go!"WriteRune" Builder.WriteRune.impl
-  ptr_WriteString_unfold : MethodUnfold (go.GoType.PointerType Builder.ty) go!"WriteString" Builder.WriteString.impl
-  ptr_copyCheck_unfold : MethodUnfold (go.GoType.PointerType Builder.ty) go!"copyCheck" Builder.copyCheck.impl
-  ptr_grow_unfold : MethodUnfold (go.GoType.PointerType Builder.ty) go!"grow" Builder.grow.impl
+  ptr_unfold'Cap : MethodUnfold (go.GoType.PointerType Builder.ty) go!"Cap" Builder.Cap.impl
+  ptr_unfold'Grow : MethodUnfold (go.GoType.PointerType Builder.ty) go!"Grow" Builder.Grow.impl
+  ptr_unfold'Len : MethodUnfold (go.GoType.PointerType Builder.ty) go!"Len" Builder.Len.impl
+  ptr_unfold'Reset : MethodUnfold (go.GoType.PointerType Builder.ty) go!"Reset" Builder.Reset.impl
+  ptr_unfold'String : MethodUnfold (go.GoType.PointerType Builder.ty) go!"String" Builder.String.impl
+  ptr_unfold'Write : MethodUnfold (go.GoType.PointerType Builder.ty) go!"Write" Builder.Write.impl
+  ptr_unfold'WriteByte : MethodUnfold (go.GoType.PointerType Builder.ty) go!"WriteByte" Builder.WriteByte.impl
+  ptr_unfold'WriteRune : MethodUnfold (go.GoType.PointerType Builder.ty) go!"WriteRune" Builder.WriteRune.impl
+  ptr_unfold'WriteString : MethodUnfold (go.GoType.PointerType Builder.ty) go!"WriteString" Builder.WriteString.impl
+  ptr_unfold'copyCheck : MethodUnfold (go.GoType.PointerType Builder.ty) go!"copyCheck" Builder.copyCheck.impl
+  ptr_unfold'grow : MethodUnfold (go.GoType.PointerType Builder.ty) go!"grow" Builder.grow.impl
 
 attribute [instance] Builder.TypeAssumptions.type_repr
   Builder.TypeAssumptions.underlying
-  Builder.TypeAssumptions.get_addr
-  Builder.TypeAssumptions.set_addr
-  Builder.TypeAssumptions.get_buf
-  Builder.TypeAssumptions.set_buf
+  Builder.TypeAssumptions.get'addr
+  Builder.TypeAssumptions.set'addr
+  Builder.TypeAssumptions.get'buf
+  Builder.TypeAssumptions.set'buf
   Builder.TypeAssumptions.method_set
   Builder.TypeAssumptions.ptr_method_set
-  Builder.TypeAssumptions.ptr_Cap_unfold
-  Builder.TypeAssumptions.ptr_Grow_unfold
-  Builder.TypeAssumptions.ptr_Len_unfold
-  Builder.TypeAssumptions.ptr_Reset_unfold
-  Builder.TypeAssumptions.ptr_String_unfold
-  Builder.TypeAssumptions.ptr_Write_unfold
-  Builder.TypeAssumptions.ptr_WriteByte_unfold
-  Builder.TypeAssumptions.ptr_WriteRune_unfold
-  Builder.TypeAssumptions.ptr_WriteString_unfold
-  Builder.TypeAssumptions.ptr_copyCheck_unfold
-  Builder.TypeAssumptions.ptr_grow_unfold
+  Builder.TypeAssumptions.ptr_unfold'Cap
+  Builder.TypeAssumptions.ptr_unfold'Grow
+  Builder.TypeAssumptions.ptr_unfold'Len
+  Builder.TypeAssumptions.ptr_unfold'Reset
+  Builder.TypeAssumptions.ptr_unfold'String
+  Builder.TypeAssumptions.ptr_unfold'Write
+  Builder.TypeAssumptions.ptr_unfold'WriteByte
+  Builder.TypeAssumptions.ptr_unfold'WriteRune
+  Builder.TypeAssumptions.ptr_unfold'WriteString
+  Builder.TypeAssumptions.ptr_unfold'copyCheck
+  Builder.TypeAssumptions.ptr_unfold'grow
 
 structure Reader [GooseExts] where
   mk ::
@@ -1584,7 +1584,7 @@ noncomputable instance Reader.zero_val [GooseExts] : ZeroVal Reader :=
 @[irreducible] noncomputable def Reader.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Reader.fieldsUnsealed
 
-noncomputable instance equals_unfold_Reader [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Reader [GooseExts] [GoGlobalContext] :
     EqualsUnfold Reader.fields Reader.fieldsUnsealed :=
   ⟨by unfold Reader.fields; rfl⟩
 
@@ -1594,23 +1594,23 @@ noncomputable instance equals_unfold_Reader [GooseExts] [GoGlobalContext] :
 class Reader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Reader.underlying Reader
   underlying : go.UnderlyingDirectedEq Reader.ty Reader.underlying
-  get_s : ∀ (x : Reader), go.IsGoStepPureDetTagged under (StructFieldGet Reader.underlying go!"s") #x (Val #(x.s'))
-  set_s : ∀ (x : Reader) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Reader.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : Reader)))
-  get_i : ∀ (x : Reader), go.IsGoStepPureDetTagged under (StructFieldGet Reader.underlying go!"i") #x (Val #(x.i'))
-  set_i : ∀ (x : Reader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Reader.underlying go!"i") (PairV #x #y) (Val #(({ x with i' := y } : Reader)))
-  get_prevRune : ∀ (x : Reader), go.IsGoStepPureDetTagged under (StructFieldGet Reader.underlying go!"prevRune") #x (Val #(x.prevRune'))
-  set_prevRune : ∀ (x : Reader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Reader.underlying go!"prevRune") (PairV #x #y) (Val #(({ x with prevRune' := y } : Reader)))
+  get's : ∀ (x : Reader), go.IsGoStepPureDetTagged under (StructFieldGet Reader.underlying go!"s") #x (Val #(x.s'))
+  set's : ∀ (x : Reader) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Reader.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : Reader)))
+  get'i : ∀ (x : Reader), go.IsGoStepPureDetTagged under (StructFieldGet Reader.underlying go!"i") #x (Val #(x.i'))
+  set'i : ∀ (x : Reader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Reader.underlying go!"i") (PairV #x #y) (Val #(({ x with i' := y } : Reader)))
+  get'prevRune : ∀ (x : Reader), go.IsGoStepPureDetTagged under (StructFieldGet Reader.underlying go!"prevRune") #x (Val #(x.prevRune'))
+  set'prevRune : ∀ (x : Reader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Reader.underlying go!"prevRune") (PairV #x #y) (Val #(({ x with prevRune' := y } : Reader)))
   method_set : go.MethodSetIs Reader.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Reader.ty) [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"ReadAt", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"ReadByte", (some (go.signature.Signature [] false [go.byte, go.error]))), (go!"ReadRune", (some (go.signature.Signature [] false [go.rune, go.int, go.error]))), (go!"Reset", (some (go.signature.Signature [go.string] false []))), (go!"Seek", (some (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))), (go!"Size", (some (go.signature.Signature [] false [go.int64]))), (go!"UnreadByte", (some (go.signature.Signature [] false [go.error]))), (go!"UnreadRune", (some (go.signature.Signature [] false [go.error]))), (go!"WriteTo", (some (go.signature.Signature [_root_.Perennial.io.Writer.ty] false [go.int64, go.error])))]
 
 attribute [instance] Reader.TypeAssumptions.type_repr
   Reader.TypeAssumptions.underlying
-  Reader.TypeAssumptions.get_s
-  Reader.TypeAssumptions.set_s
-  Reader.TypeAssumptions.get_i
-  Reader.TypeAssumptions.set_i
-  Reader.TypeAssumptions.get_prevRune
-  Reader.TypeAssumptions.set_prevRune
+  Reader.TypeAssumptions.get's
+  Reader.TypeAssumptions.set's
+  Reader.TypeAssumptions.get'i
+  Reader.TypeAssumptions.set'i
+  Reader.TypeAssumptions.get'prevRune
+  Reader.TypeAssumptions.set'prevRune
   Reader.TypeAssumptions.method_set
   Reader.TypeAssumptions.ptr_method_set
 
@@ -1645,7 +1645,7 @@ noncomputable instance Replacer.zero_val [GooseExts] : ZeroVal Replacer :=
 @[irreducible] noncomputable def Replacer.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Replacer.fieldsUnsealed
 
-noncomputable instance equals_unfold_Replacer [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Replacer [GooseExts] [GoGlobalContext] :
     EqualsUnfold Replacer.fields Replacer.fieldsUnsealed :=
   ⟨by unfold Replacer.fields; rfl⟩
 
@@ -1655,23 +1655,23 @@ noncomputable instance equals_unfold_Replacer [GooseExts] [GoGlobalContext] :
 class Replacer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Replacer.underlying Replacer
   underlying : go.UnderlyingDirectedEq Replacer.ty Replacer.underlying
-  get_once : ∀ (x : Replacer), go.IsGoStepPureDetTagged under (StructFieldGet Replacer.underlying go!"once") #x (Val #(x.once'))
-  set_once : ∀ (x : Replacer) (y : _root_.Perennial.sync.Once), go.IsGoStepPureDetTagged under (StructFieldSet Replacer.underlying go!"once") (PairV #x #y) (Val #(({ x with once' := y } : Replacer)))
-  get_r : ∀ (x : Replacer), go.IsGoStepPureDetTagged under (StructFieldGet Replacer.underlying go!"r") #x (Val #(x.r'))
-  set_r : ∀ (x : Replacer) (y : replacer), go.IsGoStepPureDetTagged under (StructFieldSet Replacer.underlying go!"r") (PairV #x #y) (Val #(({ x with r' := y } : Replacer)))
-  get_oldnew : ∀ (x : Replacer), go.IsGoStepPureDetTagged under (StructFieldGet Replacer.underlying go!"oldnew") #x (Val #(x.oldnew'))
-  set_oldnew : ∀ (x : Replacer) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Replacer.underlying go!"oldnew") (PairV #x #y) (Val #(({ x with oldnew' := y } : Replacer)))
+  get'once : ∀ (x : Replacer), go.IsGoStepPureDetTagged under (StructFieldGet Replacer.underlying go!"once") #x (Val #(x.once'))
+  set'once : ∀ (x : Replacer) (y : _root_.Perennial.sync.Once), go.IsGoStepPureDetTagged under (StructFieldSet Replacer.underlying go!"once") (PairV #x #y) (Val #(({ x with once' := y } : Replacer)))
+  get'r : ∀ (x : Replacer), go.IsGoStepPureDetTagged under (StructFieldGet Replacer.underlying go!"r") #x (Val #(x.r'))
+  set'r : ∀ (x : Replacer) (y : replacer), go.IsGoStepPureDetTagged under (StructFieldSet Replacer.underlying go!"r") (PairV #x #y) (Val #(({ x with r' := y } : Replacer)))
+  get'oldnew : ∀ (x : Replacer), go.IsGoStepPureDetTagged under (StructFieldGet Replacer.underlying go!"oldnew") #x (Val #(x.oldnew'))
+  set'oldnew : ∀ (x : Replacer) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Replacer.underlying go!"oldnew") (PairV #x #y) (Val #(({ x with oldnew' := y } : Replacer)))
   method_set : go.MethodSetIs Replacer.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Replacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", (some (go.signature.Signature [_root_.Perennial.io.Writer.ty, go.string] false [go.int, go.error]))), (go!"strings.build", (some (go.signature.Signature [] false [replacer.ty]))), (go!"strings.buildOnce", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] Replacer.TypeAssumptions.type_repr
   Replacer.TypeAssumptions.underlying
-  Replacer.TypeAssumptions.get_once
-  Replacer.TypeAssumptions.set_once
-  Replacer.TypeAssumptions.get_r
-  Replacer.TypeAssumptions.set_r
-  Replacer.TypeAssumptions.get_oldnew
-  Replacer.TypeAssumptions.set_oldnew
+  Replacer.TypeAssumptions.get'once
+  Replacer.TypeAssumptions.set'once
+  Replacer.TypeAssumptions.get'r
+  Replacer.TypeAssumptions.set'r
+  Replacer.TypeAssumptions.get'oldnew
+  Replacer.TypeAssumptions.set'oldnew
   Replacer.TypeAssumptions.method_set
   Replacer.TypeAssumptions.ptr_method_set
 
@@ -1696,7 +1696,7 @@ noncomputable instance trieNode.zero_val [GooseExts] : ZeroVal trieNode :=
 @[irreducible] noncomputable def trieNode.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   trieNode.fieldsUnsealed
 
-noncomputable instance equals_unfold_trieNode [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'trieNode [GooseExts] [GoGlobalContext] :
     EqualsUnfold trieNode.fields trieNode.fieldsUnsealed :=
   ⟨by unfold trieNode.fields; rfl⟩
 
@@ -1706,31 +1706,31 @@ noncomputable instance equals_unfold_trieNode [GooseExts] [GoGlobalContext] :
 class trieNode.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying trieNode.underlying trieNode
   underlying : go.UnderlyingDirectedEq trieNode.ty trieNode.underlying
-  get_value : ∀ (x : trieNode), go.IsGoStepPureDetTagged under (StructFieldGet trieNode.underlying go!"value") #x (Val #(x.value'))
-  set_value : ∀ (x : trieNode) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet trieNode.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : trieNode)))
-  get_priority : ∀ (x : trieNode), go.IsGoStepPureDetTagged under (StructFieldGet trieNode.underlying go!"priority") #x (Val #(x.priority'))
-  set_priority : ∀ (x : trieNode) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet trieNode.underlying go!"priority") (PairV #x #y) (Val #(({ x with priority' := y } : trieNode)))
-  get_prefix : ∀ (x : trieNode), go.IsGoStepPureDetTagged under (StructFieldGet trieNode.underlying go!"prefix") #x (Val #(x.prefix'))
-  set_prefix : ∀ (x : trieNode) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet trieNode.underlying go!"prefix") (PairV #x #y) (Val #(({ x with prefix' := y } : trieNode)))
-  get_next : ∀ (x : trieNode), go.IsGoStepPureDetTagged under (StructFieldGet trieNode.underlying go!"next") #x (Val #(x.next'))
-  set_next : ∀ (x : trieNode) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet trieNode.underlying go!"next") (PairV #x #y) (Val #(({ x with next' := y } : trieNode)))
-  get_table : ∀ (x : trieNode), go.IsGoStepPureDetTagged under (StructFieldGet trieNode.underlying go!"table") #x (Val #(x.table'))
-  set_table : ∀ (x : trieNode) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet trieNode.underlying go!"table") (PairV #x #y) (Val #(({ x with table' := y } : trieNode)))
+  get'value : ∀ (x : trieNode), go.IsGoStepPureDetTagged under (StructFieldGet trieNode.underlying go!"value") #x (Val #(x.value'))
+  set'value : ∀ (x : trieNode) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet trieNode.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : trieNode)))
+  get'priority : ∀ (x : trieNode), go.IsGoStepPureDetTagged under (StructFieldGet trieNode.underlying go!"priority") #x (Val #(x.priority'))
+  set'priority : ∀ (x : trieNode) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet trieNode.underlying go!"priority") (PairV #x #y) (Val #(({ x with priority' := y } : trieNode)))
+  get'prefix : ∀ (x : trieNode), go.IsGoStepPureDetTagged under (StructFieldGet trieNode.underlying go!"prefix") #x (Val #(x.prefix'))
+  set'prefix : ∀ (x : trieNode) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet trieNode.underlying go!"prefix") (PairV #x #y) (Val #(({ x with prefix' := y } : trieNode)))
+  get'next : ∀ (x : trieNode), go.IsGoStepPureDetTagged under (StructFieldGet trieNode.underlying go!"next") #x (Val #(x.next'))
+  set'next : ∀ (x : trieNode) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet trieNode.underlying go!"next") (PairV #x #y) (Val #(({ x with next' := y } : trieNode)))
+  get'table : ∀ (x : trieNode), go.IsGoStepPureDetTagged under (StructFieldGet trieNode.underlying go!"table") #x (Val #(x.table'))
+  set'table : ∀ (x : trieNode) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet trieNode.underlying go!"table") (PairV #x #y) (Val #(({ x with table' := y } : trieNode)))
   method_set : go.MethodSetIs trieNode.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType trieNode.ty) [(go!"strings.add", (some (go.signature.Signature [go.string, go.string, go.int, (go.GoType.PointerType genericReplacer.ty)] false [])))]
 
 attribute [instance] trieNode.TypeAssumptions.type_repr
   trieNode.TypeAssumptions.underlying
-  trieNode.TypeAssumptions.get_value
-  trieNode.TypeAssumptions.set_value
-  trieNode.TypeAssumptions.get_priority
-  trieNode.TypeAssumptions.set_priority
-  trieNode.TypeAssumptions.get_prefix
-  trieNode.TypeAssumptions.set_prefix
-  trieNode.TypeAssumptions.get_next
-  trieNode.TypeAssumptions.set_next
-  trieNode.TypeAssumptions.get_table
-  trieNode.TypeAssumptions.set_table
+  trieNode.TypeAssumptions.get'value
+  trieNode.TypeAssumptions.set'value
+  trieNode.TypeAssumptions.get'priority
+  trieNode.TypeAssumptions.set'priority
+  trieNode.TypeAssumptions.get'prefix
+  trieNode.TypeAssumptions.set'prefix
+  trieNode.TypeAssumptions.get'next
+  trieNode.TypeAssumptions.set'next
+  trieNode.TypeAssumptions.get'table
+  trieNode.TypeAssumptions.set'table
   trieNode.TypeAssumptions.method_set
   trieNode.TypeAssumptions.ptr_method_set
 
@@ -1751,7 +1751,7 @@ noncomputable instance genericReplacer.zero_val [GooseExts] : ZeroVal genericRep
 @[irreducible] noncomputable def genericReplacer.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   genericReplacer.fieldsUnsealed
 
-noncomputable instance equals_unfold_genericReplacer [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'genericReplacer [GooseExts] [GoGlobalContext] :
     EqualsUnfold genericReplacer.fields genericReplacer.fieldsUnsealed :=
   ⟨by unfold genericReplacer.fields; rfl⟩
 
@@ -1761,23 +1761,23 @@ noncomputable instance equals_unfold_genericReplacer [GooseExts] [GoGlobalContex
 class genericReplacer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying genericReplacer.underlying genericReplacer
   underlying : go.UnderlyingDirectedEq genericReplacer.ty genericReplacer.underlying
-  get_root : ∀ (x : genericReplacer), go.IsGoStepPureDetTagged under (StructFieldGet genericReplacer.underlying go!"root") #x (Val #(x.root'))
-  set_root : ∀ (x : genericReplacer) (y : trieNode), go.IsGoStepPureDetTagged under (StructFieldSet genericReplacer.underlying go!"root") (PairV #x #y) (Val #(({ x with root' := y } : genericReplacer)))
-  get_tableSize : ∀ (x : genericReplacer), go.IsGoStepPureDetTagged under (StructFieldGet genericReplacer.underlying go!"tableSize") #x (Val #(x.tableSize'))
-  set_tableSize : ∀ (x : genericReplacer) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet genericReplacer.underlying go!"tableSize") (PairV #x #y) (Val #(({ x with tableSize' := y } : genericReplacer)))
-  get_mapping : ∀ (x : genericReplacer), go.IsGoStepPureDetTagged under (StructFieldGet genericReplacer.underlying go!"mapping") #x (Val #(x.mapping'))
-  set_mapping : ∀ (x : genericReplacer) (y : (GoArray w8 256)), go.IsGoStepPureDetTagged under (StructFieldSet genericReplacer.underlying go!"mapping") (PairV #x #y) (Val #(({ x with mapping' := y } : genericReplacer)))
+  get'root : ∀ (x : genericReplacer), go.IsGoStepPureDetTagged under (StructFieldGet genericReplacer.underlying go!"root") #x (Val #(x.root'))
+  set'root : ∀ (x : genericReplacer) (y : trieNode), go.IsGoStepPureDetTagged under (StructFieldSet genericReplacer.underlying go!"root") (PairV #x #y) (Val #(({ x with root' := y } : genericReplacer)))
+  get'tableSize : ∀ (x : genericReplacer), go.IsGoStepPureDetTagged under (StructFieldGet genericReplacer.underlying go!"tableSize") #x (Val #(x.tableSize'))
+  set'tableSize : ∀ (x : genericReplacer) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet genericReplacer.underlying go!"tableSize") (PairV #x #y) (Val #(({ x with tableSize' := y } : genericReplacer)))
+  get'mapping : ∀ (x : genericReplacer), go.IsGoStepPureDetTagged under (StructFieldGet genericReplacer.underlying go!"mapping") #x (Val #(x.mapping'))
+  set'mapping : ∀ (x : genericReplacer) (y : (GoArray w8 256)), go.IsGoStepPureDetTagged under (StructFieldSet genericReplacer.underlying go!"mapping") (PairV #x #y) (Val #(({ x with mapping' := y } : genericReplacer)))
   method_set : go.MethodSetIs genericReplacer.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType genericReplacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", (some (go.signature.Signature [_root_.Perennial.io.Writer.ty, go.string] false [go.int, go.error]))), (go!"strings.lookup", (some (go.signature.Signature [go.string, go.bool] false [go.string, go.int, go.bool])))]
 
 attribute [instance] genericReplacer.TypeAssumptions.type_repr
   genericReplacer.TypeAssumptions.underlying
-  genericReplacer.TypeAssumptions.get_root
-  genericReplacer.TypeAssumptions.set_root
-  genericReplacer.TypeAssumptions.get_tableSize
-  genericReplacer.TypeAssumptions.set_tableSize
-  genericReplacer.TypeAssumptions.get_mapping
-  genericReplacer.TypeAssumptions.set_mapping
+  genericReplacer.TypeAssumptions.get'root
+  genericReplacer.TypeAssumptions.set'root
+  genericReplacer.TypeAssumptions.get'tableSize
+  genericReplacer.TypeAssumptions.set'tableSize
+  genericReplacer.TypeAssumptions.get'mapping
+  genericReplacer.TypeAssumptions.set'mapping
   genericReplacer.TypeAssumptions.method_set
   genericReplacer.TypeAssumptions.ptr_method_set
 
@@ -1808,7 +1808,7 @@ noncomputable instance stringWriter.zero_val [GooseExts] : ZeroVal stringWriter 
 @[irreducible] noncomputable def stringWriter.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   stringWriter.fieldsUnsealed
 
-noncomputable instance equals_unfold_stringWriter [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'stringWriter [GooseExts] [GoGlobalContext] :
     EqualsUnfold stringWriter.fields stringWriter.fieldsUnsealed :=
   ⟨by unfold stringWriter.fields; rfl⟩
 
@@ -1818,15 +1818,15 @@ noncomputable instance equals_unfold_stringWriter [GooseExts] [GoGlobalContext] 
 class stringWriter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying stringWriter.underlying stringWriter
   underlying : go.UnderlyingDirectedEq stringWriter.ty stringWriter.underlying
-  get_w : ∀ (x : stringWriter), go.IsGoStepPureDetTagged under (StructFieldGet stringWriter.underlying go!"w") #x (Val #(x.w'))
-  set_w : ∀ (x : stringWriter) (y : _root_.Perennial.io.Writer), go.IsGoStepPureDetTagged under (StructFieldSet stringWriter.underlying go!"w") (PairV #x #y) (Val #(({ x with w' := y } : stringWriter)))
+  get'w : ∀ (x : stringWriter), go.IsGoStepPureDetTagged under (StructFieldGet stringWriter.underlying go!"w") #x (Val #(x.w'))
+  set'w : ∀ (x : stringWriter) (y : _root_.Perennial.io.Writer), go.IsGoStepPureDetTagged under (StructFieldSet stringWriter.underlying go!"w") (PairV #x #y) (Val #(({ x with w' := y } : stringWriter)))
   method_set : go.MethodSetIs stringWriter.ty [(go!"WriteString", (some (go.signature.Signature [go.string] false [go.int, go.error])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType stringWriter.ty) [(go!"WriteString", (some (go.signature.Signature [go.string] false [go.int, go.error])))]
 
 attribute [instance] stringWriter.TypeAssumptions.type_repr
   stringWriter.TypeAssumptions.underlying
-  stringWriter.TypeAssumptions.get_w
-  stringWriter.TypeAssumptions.set_w
+  stringWriter.TypeAssumptions.get'w
+  stringWriter.TypeAssumptions.set'w
   stringWriter.TypeAssumptions.method_set
   stringWriter.TypeAssumptions.ptr_method_set
 
@@ -1845,7 +1845,7 @@ noncomputable instance singleStringReplacer.zero_val [GooseExts] : ZeroVal singl
 @[irreducible] noncomputable def singleStringReplacer.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   singleStringReplacer.fieldsUnsealed
 
-noncomputable instance equals_unfold_singleStringReplacer [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'singleStringReplacer [GooseExts] [GoGlobalContext] :
     EqualsUnfold singleStringReplacer.fields singleStringReplacer.fieldsUnsealed :=
   ⟨by unfold singleStringReplacer.fields; rfl⟩
 
@@ -1855,19 +1855,19 @@ noncomputable instance equals_unfold_singleStringReplacer [GooseExts] [GoGlobalC
 class singleStringReplacer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying singleStringReplacer.underlying singleStringReplacer
   underlying : go.UnderlyingDirectedEq singleStringReplacer.ty singleStringReplacer.underlying
-  get_finder : ∀ (x : singleStringReplacer), go.IsGoStepPureDetTagged under (StructFieldGet singleStringReplacer.underlying go!"finder") #x (Val #(x.finder'))
-  set_finder : ∀ (x : singleStringReplacer) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet singleStringReplacer.underlying go!"finder") (PairV #x #y) (Val #(({ x with finder' := y } : singleStringReplacer)))
-  get_value : ∀ (x : singleStringReplacer), go.IsGoStepPureDetTagged under (StructFieldGet singleStringReplacer.underlying go!"value") #x (Val #(x.value'))
-  set_value : ∀ (x : singleStringReplacer) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet singleStringReplacer.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : singleStringReplacer)))
+  get'finder : ∀ (x : singleStringReplacer), go.IsGoStepPureDetTagged under (StructFieldGet singleStringReplacer.underlying go!"finder") #x (Val #(x.finder'))
+  set'finder : ∀ (x : singleStringReplacer) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet singleStringReplacer.underlying go!"finder") (PairV #x #y) (Val #(({ x with finder' := y } : singleStringReplacer)))
+  get'value : ∀ (x : singleStringReplacer), go.IsGoStepPureDetTagged under (StructFieldGet singleStringReplacer.underlying go!"value") #x (Val #(x.value'))
+  set'value : ∀ (x : singleStringReplacer) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet singleStringReplacer.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : singleStringReplacer)))
   method_set : go.MethodSetIs singleStringReplacer.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType singleStringReplacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", (some (go.signature.Signature [_root_.Perennial.io.Writer.ty, go.string] false [go.int, go.error])))]
 
 attribute [instance] singleStringReplacer.TypeAssumptions.type_repr
   singleStringReplacer.TypeAssumptions.underlying
-  singleStringReplacer.TypeAssumptions.get_finder
-  singleStringReplacer.TypeAssumptions.set_finder
-  singleStringReplacer.TypeAssumptions.get_value
-  singleStringReplacer.TypeAssumptions.set_value
+  singleStringReplacer.TypeAssumptions.get'finder
+  singleStringReplacer.TypeAssumptions.set'finder
+  singleStringReplacer.TypeAssumptions.get'value
+  singleStringReplacer.TypeAssumptions.set'value
   singleStringReplacer.TypeAssumptions.method_set
   singleStringReplacer.TypeAssumptions.ptr_method_set
 
@@ -1900,7 +1900,7 @@ noncomputable instance byteStringReplacer.zero_val [GooseExts] : ZeroVal byteStr
 @[irreducible] noncomputable def byteStringReplacer.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   byteStringReplacer.fieldsUnsealed
 
-noncomputable instance equals_unfold_byteStringReplacer [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'byteStringReplacer [GooseExts] [GoGlobalContext] :
     EqualsUnfold byteStringReplacer.fields byteStringReplacer.fieldsUnsealed :=
   ⟨by unfold byteStringReplacer.fields; rfl⟩
 
@@ -1910,19 +1910,19 @@ noncomputable instance equals_unfold_byteStringReplacer [GooseExts] [GoGlobalCon
 class byteStringReplacer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying byteStringReplacer.underlying byteStringReplacer
   underlying : go.UnderlyingDirectedEq byteStringReplacer.ty byteStringReplacer.underlying
-  get_replacements : ∀ (x : byteStringReplacer), go.IsGoStepPureDetTagged under (StructFieldGet byteStringReplacer.underlying go!"replacements") #x (Val #(x.replacements'))
-  set_replacements : ∀ (x : byteStringReplacer) (y : (GoArray GoSlice 256)), go.IsGoStepPureDetTagged under (StructFieldSet byteStringReplacer.underlying go!"replacements") (PairV #x #y) (Val #(({ x with replacements' := y } : byteStringReplacer)))
-  get_toReplace : ∀ (x : byteStringReplacer), go.IsGoStepPureDetTagged under (StructFieldGet byteStringReplacer.underlying go!"toReplace") #x (Val #(x.toReplace'))
-  set_toReplace : ∀ (x : byteStringReplacer) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet byteStringReplacer.underlying go!"toReplace") (PairV #x #y) (Val #(({ x with toReplace' := y } : byteStringReplacer)))
+  get'replacements : ∀ (x : byteStringReplacer), go.IsGoStepPureDetTagged under (StructFieldGet byteStringReplacer.underlying go!"replacements") #x (Val #(x.replacements'))
+  set'replacements : ∀ (x : byteStringReplacer) (y : (GoArray GoSlice 256)), go.IsGoStepPureDetTagged under (StructFieldSet byteStringReplacer.underlying go!"replacements") (PairV #x #y) (Val #(({ x with replacements' := y } : byteStringReplacer)))
+  get'toReplace : ∀ (x : byteStringReplacer), go.IsGoStepPureDetTagged under (StructFieldGet byteStringReplacer.underlying go!"toReplace") #x (Val #(x.toReplace'))
+  set'toReplace : ∀ (x : byteStringReplacer) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet byteStringReplacer.underlying go!"toReplace") (PairV #x #y) (Val #(({ x with toReplace' := y } : byteStringReplacer)))
   method_set : go.MethodSetIs byteStringReplacer.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType byteStringReplacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", (some (go.signature.Signature [_root_.Perennial.io.Writer.ty, go.string] false [go.int, go.error])))]
 
 attribute [instance] byteStringReplacer.TypeAssumptions.type_repr
   byteStringReplacer.TypeAssumptions.underlying
-  byteStringReplacer.TypeAssumptions.get_replacements
-  byteStringReplacer.TypeAssumptions.set_replacements
-  byteStringReplacer.TypeAssumptions.get_toReplace
-  byteStringReplacer.TypeAssumptions.set_toReplace
+  byteStringReplacer.TypeAssumptions.get'replacements
+  byteStringReplacer.TypeAssumptions.set'replacements
+  byteStringReplacer.TypeAssumptions.get'toReplace
+  byteStringReplacer.TypeAssumptions.set'toReplace
   byteStringReplacer.TypeAssumptions.method_set
   byteStringReplacer.TypeAssumptions.ptr_method_set
 
@@ -1943,7 +1943,7 @@ noncomputable instance stringFinder.zero_val [GooseExts] : ZeroVal stringFinder 
 @[irreducible] noncomputable def stringFinder.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   stringFinder.fieldsUnsealed
 
-noncomputable instance equals_unfold_stringFinder [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'stringFinder [GooseExts] [GoGlobalContext] :
     EqualsUnfold stringFinder.fields stringFinder.fieldsUnsealed :=
   ⟨by unfold stringFinder.fields; rfl⟩
 
@@ -1953,23 +1953,23 @@ noncomputable instance equals_unfold_stringFinder [GooseExts] [GoGlobalContext] 
 class stringFinder.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying stringFinder.underlying stringFinder
   underlying : go.UnderlyingDirectedEq stringFinder.ty stringFinder.underlying
-  get_pattern : ∀ (x : stringFinder), go.IsGoStepPureDetTagged under (StructFieldGet stringFinder.underlying go!"pattern") #x (Val #(x.pattern'))
-  set_pattern : ∀ (x : stringFinder) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet stringFinder.underlying go!"pattern") (PairV #x #y) (Val #(({ x with pattern' := y } : stringFinder)))
-  get_badCharSkip : ∀ (x : stringFinder), go.IsGoStepPureDetTagged under (StructFieldGet stringFinder.underlying go!"badCharSkip") #x (Val #(x.badCharSkip'))
-  set_badCharSkip : ∀ (x : stringFinder) (y : (GoArray w64 256)), go.IsGoStepPureDetTagged under (StructFieldSet stringFinder.underlying go!"badCharSkip") (PairV #x #y) (Val #(({ x with badCharSkip' := y } : stringFinder)))
-  get_goodSuffixSkip : ∀ (x : stringFinder), go.IsGoStepPureDetTagged under (StructFieldGet stringFinder.underlying go!"goodSuffixSkip") #x (Val #(x.goodSuffixSkip'))
-  set_goodSuffixSkip : ∀ (x : stringFinder) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet stringFinder.underlying go!"goodSuffixSkip") (PairV #x #y) (Val #(({ x with goodSuffixSkip' := y } : stringFinder)))
+  get'pattern : ∀ (x : stringFinder), go.IsGoStepPureDetTagged under (StructFieldGet stringFinder.underlying go!"pattern") #x (Val #(x.pattern'))
+  set'pattern : ∀ (x : stringFinder) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet stringFinder.underlying go!"pattern") (PairV #x #y) (Val #(({ x with pattern' := y } : stringFinder)))
+  get'badCharSkip : ∀ (x : stringFinder), go.IsGoStepPureDetTagged under (StructFieldGet stringFinder.underlying go!"badCharSkip") #x (Val #(x.badCharSkip'))
+  set'badCharSkip : ∀ (x : stringFinder) (y : (GoArray w64 256)), go.IsGoStepPureDetTagged under (StructFieldSet stringFinder.underlying go!"badCharSkip") (PairV #x #y) (Val #(({ x with badCharSkip' := y } : stringFinder)))
+  get'goodSuffixSkip : ∀ (x : stringFinder), go.IsGoStepPureDetTagged under (StructFieldGet stringFinder.underlying go!"goodSuffixSkip") #x (Val #(x.goodSuffixSkip'))
+  set'goodSuffixSkip : ∀ (x : stringFinder) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet stringFinder.underlying go!"goodSuffixSkip") (PairV #x #y) (Val #(({ x with goodSuffixSkip' := y } : stringFinder)))
   method_set : go.MethodSetIs stringFinder.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType stringFinder.ty) [(go!"strings.next", (some (go.signature.Signature [go.string] false [go.int])))]
 
 attribute [instance] stringFinder.TypeAssumptions.type_repr
   stringFinder.TypeAssumptions.underlying
-  stringFinder.TypeAssumptions.get_pattern
-  stringFinder.TypeAssumptions.set_pattern
-  stringFinder.TypeAssumptions.get_badCharSkip
-  stringFinder.TypeAssumptions.set_badCharSkip
-  stringFinder.TypeAssumptions.get_goodSuffixSkip
-  stringFinder.TypeAssumptions.set_goodSuffixSkip
+  stringFinder.TypeAssumptions.get'pattern
+  stringFinder.TypeAssumptions.set'pattern
+  stringFinder.TypeAssumptions.get'badCharSkip
+  stringFinder.TypeAssumptions.set'badCharSkip
+  stringFinder.TypeAssumptions.get'goodSuffixSkip
+  stringFinder.TypeAssumptions.set'goodSuffixSkip
   stringFinder.TypeAssumptions.method_set
   stringFinder.TypeAssumptions.ptr_method_set
 
@@ -1982,83 +1982,83 @@ class asciiSet.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [G
   underlying : go.UnderlyingDirectedEq asciiSet.ty asciiSet.underlying
   method_set : go.MethodSetIs asciiSet.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType asciiSet.ty) [(go!"strings.contains", (some (go.signature.Signature [go.byte] false [go.bool])))]
-  ptr_contains_unfold : MethodUnfold (go.GoType.PointerType asciiSet.ty) go!"contains" asciiSet.contains.impl
+  ptr_unfold'contains : MethodUnfold (go.GoType.PointerType asciiSet.ty) go!"contains" asciiSet.contains.impl
 
 attribute [instance] asciiSet.TypeAssumptions.underlying
   asciiSet.TypeAssumptions.method_set
   asciiSet.TypeAssumptions.ptr_method_set
-  asciiSet.TypeAssumptions.ptr_contains_unfold
+  asciiSet.TypeAssumptions.ptr_unfold'contains
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Builder_instance : Builder.TypeAssumptions
-  Reader_instance : Reader.TypeAssumptions
-  Replacer_instance : Replacer.TypeAssumptions
-  replacer_instance : replacer.TypeAssumptions
-  trieNode_instance : trieNode.TypeAssumptions
-  genericReplacer_instance : genericReplacer.TypeAssumptions
-  appendSliceWriter_instance : appendSliceWriter.TypeAssumptions
-  stringWriter_instance : stringWriter.TypeAssumptions
-  singleStringReplacer_instance : singleStringReplacer.TypeAssumptions
-  byteReplacer_instance : byteReplacer.TypeAssumptions
-  byteStringReplacer_instance : byteStringReplacer.TypeAssumptions
-  stringFinder_instance : stringFinder.TypeAssumptions
-  asciiSet_instance : asciiSet.TypeAssumptions
-  Compare_unfold : FuncUnfold Compare [] Compare.impl
-  NewReplacer_unfold : FuncUnfold NewReplacer [] NewReplacer.impl
-  LastIndex_unfold : FuncUnfold LastIndex [] LastIndex.impl
-  IndexByte_unfold : FuncUnfold IndexByte [] IndexByte.impl
-  Split_unfold : FuncUnfold Split [] Split.impl
-  Join_unfold : FuncUnfold Join [] Join.impl
-  HasPrefix_unfold : FuncUnfold HasPrefix [] HasPrefix.impl
-  HasSuffix_unfold : FuncUnfold HasSuffix [] HasSuffix.impl
-  makeASCIISet_unfold : FuncUnfold makeASCIISet [] makeASCIISet.impl
-  TrimLeft_unfold : FuncUnfold TrimLeft [] TrimLeft.impl
-  trimLeftByte_unfold : FuncUnfold trimLeftByte [] trimLeftByte.impl
-  trimLeftASCII_unfold : FuncUnfold trimLeftASCII [] trimLeftASCII.impl
-  TrimPrefix_unfold : FuncUnfold TrimPrefix [] TrimPrefix.impl
-  TrimSuffix_unfold : FuncUnfold TrimSuffix [] TrimSuffix.impl
-  Cut_unfold : FuncUnfold Cut [] Cut.impl
-  import_gomodel_Assumption : _root_.Perennial.internal.gomodel.Assumptions
-  import_bytealg_Assumption : _root_.Perennial.internal.bytealg.Assumptions
-  import_utf8_Assumption : _root_.Perennial.unicode.utf8.Assumptions
-  import_stringslite_Assumption : _root_.Perennial.internal.stringslite.Assumptions
-  import_io_Assumption : _root_.Perennial.io.Assumptions
-  import_sync_Assumption : _root_.Perennial.sync.Assumptions
+  instance'Builder : Builder.TypeAssumptions
+  instance'Reader : Reader.TypeAssumptions
+  instance'Replacer : Replacer.TypeAssumptions
+  instance'replacer : replacer.TypeAssumptions
+  instance'trieNode : trieNode.TypeAssumptions
+  instance'genericReplacer : genericReplacer.TypeAssumptions
+  instance'appendSliceWriter : appendSliceWriter.TypeAssumptions
+  instance'stringWriter : stringWriter.TypeAssumptions
+  instance'singleStringReplacer : singleStringReplacer.TypeAssumptions
+  instance'byteReplacer : byteReplacer.TypeAssumptions
+  instance'byteStringReplacer : byteStringReplacer.TypeAssumptions
+  instance'stringFinder : stringFinder.TypeAssumptions
+  instance'asciiSet : asciiSet.TypeAssumptions
+  unfold'Compare : FuncUnfold Compare [] Compare.impl
+  unfold'NewReplacer : FuncUnfold NewReplacer [] NewReplacer.impl
+  unfold'LastIndex : FuncUnfold LastIndex [] LastIndex.impl
+  unfold'IndexByte : FuncUnfold IndexByte [] IndexByte.impl
+  unfold'Split : FuncUnfold Split [] Split.impl
+  unfold'Join : FuncUnfold Join [] Join.impl
+  unfold'HasPrefix : FuncUnfold HasPrefix [] HasPrefix.impl
+  unfold'HasSuffix : FuncUnfold HasSuffix [] HasSuffix.impl
+  unfold'makeASCIISet : FuncUnfold makeASCIISet [] makeASCIISet.impl
+  unfold'TrimLeft : FuncUnfold TrimLeft [] TrimLeft.impl
+  unfold'trimLeftByte : FuncUnfold trimLeftByte [] trimLeftByte.impl
+  unfold'trimLeftASCII : FuncUnfold trimLeftASCII [] trimLeftASCII.impl
+  unfold'TrimPrefix : FuncUnfold TrimPrefix [] TrimPrefix.impl
+  unfold'TrimSuffix : FuncUnfold TrimSuffix [] TrimSuffix.impl
+  unfold'Cut : FuncUnfold Cut [] Cut.impl
+  import'gomodel : _root_.Perennial.internal.gomodel.Assumptions
+  import'bytealg : _root_.Perennial.internal.bytealg.Assumptions
+  import'utf8 : _root_.Perennial.unicode.utf8.Assumptions
+  import'stringslite : _root_.Perennial.internal.stringslite.Assumptions
+  import'io : _root_.Perennial.io.Assumptions
+  import'sync : _root_.Perennial.sync.Assumptions
 
-attribute [instance] Assumptions.Builder_instance
-  Assumptions.Reader_instance
-  Assumptions.Replacer_instance
-  Assumptions.replacer_instance
-  Assumptions.trieNode_instance
-  Assumptions.genericReplacer_instance
-  Assumptions.appendSliceWriter_instance
-  Assumptions.stringWriter_instance
-  Assumptions.singleStringReplacer_instance
-  Assumptions.byteReplacer_instance
-  Assumptions.byteStringReplacer_instance
-  Assumptions.stringFinder_instance
-  Assumptions.asciiSet_instance
-  Assumptions.Compare_unfold
-  Assumptions.NewReplacer_unfold
-  Assumptions.LastIndex_unfold
-  Assumptions.IndexByte_unfold
-  Assumptions.Split_unfold
-  Assumptions.Join_unfold
-  Assumptions.HasPrefix_unfold
-  Assumptions.HasSuffix_unfold
-  Assumptions.makeASCIISet_unfold
-  Assumptions.TrimLeft_unfold
-  Assumptions.trimLeftByte_unfold
-  Assumptions.trimLeftASCII_unfold
-  Assumptions.TrimPrefix_unfold
-  Assumptions.TrimSuffix_unfold
-  Assumptions.Cut_unfold
-  Assumptions.import_gomodel_Assumption
-  Assumptions.import_bytealg_Assumption
-  Assumptions.import_utf8_Assumption
-  Assumptions.import_stringslite_Assumption
-  Assumptions.import_io_Assumption
-  Assumptions.import_sync_Assumption
+attribute [instance] Assumptions.instance'Builder
+  Assumptions.instance'Reader
+  Assumptions.instance'Replacer
+  Assumptions.instance'replacer
+  Assumptions.instance'trieNode
+  Assumptions.instance'genericReplacer
+  Assumptions.instance'appendSliceWriter
+  Assumptions.instance'stringWriter
+  Assumptions.instance'singleStringReplacer
+  Assumptions.instance'byteReplacer
+  Assumptions.instance'byteStringReplacer
+  Assumptions.instance'stringFinder
+  Assumptions.instance'asciiSet
+  Assumptions.unfold'Compare
+  Assumptions.unfold'NewReplacer
+  Assumptions.unfold'LastIndex
+  Assumptions.unfold'IndexByte
+  Assumptions.unfold'Split
+  Assumptions.unfold'Join
+  Assumptions.unfold'HasPrefix
+  Assumptions.unfold'HasSuffix
+  Assumptions.unfold'makeASCIISet
+  Assumptions.unfold'TrimLeft
+  Assumptions.unfold'trimLeftByte
+  Assumptions.unfold'trimLeftASCII
+  Assumptions.unfold'TrimPrefix
+  Assumptions.unfold'TrimSuffix
+  Assumptions.unfold'Cut
+  Assumptions.import'gomodel
+  Assumptions.import'bytealg
+  Assumptions.import'utf8
+  Assumptions.import'stringslite
+  Assumptions.import'io
+  Assumptions.import'sync
 
 end strings
 

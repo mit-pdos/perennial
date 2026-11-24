@@ -2660,8 +2660,8 @@ noncomputable def negUnderflowConsts.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$res4" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
   (Let "$res5" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (let local'' := #(mkRat (-1 : Int) 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
-  (let local32 := #(W32 0);
+  (let local₀ := #(mkRat (-1 : Int) 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
+  (let local32₀ := #(W32 0);
   (Let "$r0" (Val #(W32 0))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2742,7 +2742,7 @@ noncomputable def float32Consts.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.float32)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.float32)))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (let local'' := #(W32 1065353217);
+  (let local₀ := #(W32 1065353217);
   (Let "$r0" (Val #(W32 1065353217))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2822,38 +2822,38 @@ noncomputable def float32Consts.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.float32)))) (Var "$res0")))))
 
 /-- go: float.go:75:6 -/
-noncomputable def float32ConstAt.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def float32ConstAt.impl [GooseExts] [GoGlobalContext] (T₀ : go.GoType) : val :=
   (LamV BAnon
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "$res1" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (Let "$res2" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc T₀))) (App (Val (GoInstruction (GoZeroVal T₀))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc T₀))) (App (Val (GoInstruction (GoZeroVal T₀))) (Val #())))
+  (Let "$res2" (App (Val (GoInstruction (GoAlloc T₀))) (App (Val (GoInstruction (GoZeroVal T₀))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat T))) (Val offTie))
-  (Let "$r1" (App (Val (GoInstruction (Convert go.untypedFloat T))) (Val #(mkRat (1152921573326323713 : Int) 1152921504606846976)))
-  (Let "$r2" (App (Val (GoInstruction (Convert go.untypedFloat T))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val offTie)))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat T₀))) (Val offTie))
+  (Let "$r1" (App (Val (GoInstruction (Convert go.untypedFloat T₀))) (Val #(mkRat (1152921573326323713 : Int) 1152921504606846976)))
+  (Let "$r2" (App (Val (GoInstruction (Convert go.untypedFloat T₀))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val offTie)))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore T))) (Pair (Var "$res2") (Var "$r2")))))))
+  (App (Val (GoInstruction (GoStore T₀))) (Pair (Var "$res2") (Var "$r2")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore T))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore T₀))) (Pair (Var "$res1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore T))) (Pair (Var "$res0") (Var "$r0")))))))))
-  (Pair (Pair (App (Val (GoInstruction (GoLoad T))) (Var "$res0")) (App (Val (GoInstruction (GoLoad T))) (Var "$res1"))) (App (Val (GoInstruction (GoLoad T))) (Var "$res2"))))))))
+  (App (Val (GoInstruction (GoStore T₀))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (Pair (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "$res0")) (App (Val (GoInstruction (GoLoad T₀))) (Var "$res1"))) (App (Val (GoInstruction (GoLoad T₀))) (Var "$res2"))))))))
 
 /-- go: float.go:79:6 -/
-noncomputable def intConstAt.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def intConstAt.impl [GooseExts] [GoGlobalContext] (T₀ : go.GoType) : val :=
   (LamV BAnon
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc T₀))) (App (Val (GoInstruction (GoZeroVal T₀))) (Val #())))
   (Let "$res1" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat go.int64))) (Val bigIntegral))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat T))) (Val bigIntegral))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedFloat T₀))) (Val bigIntegral))
   (Let "$r1" (App (Val (GoInstruction (GoLoad go.int64))) (Var "x"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2862,10 +2862,10 @@ noncomputable def intConstAt.impl [GooseExts] [GoGlobalContext] (T : go.GoType) 
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore T))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore T₀))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "x") (Var "$r0"))))))))
-  (Pair (App (Val (GoInstruction (GoLoad T))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res1")))))))
+  (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res1")))))))
 
 /-- go: for_range.go:5:6 -/
 noncomputable def forRangeNoBinding.impl [GooseExts] [GoGlobalContext] : val :=
@@ -2941,12 +2941,12 @@ noncomputable def forRangeString.impl [GooseExts] [GoGlobalContext] : val :=
   (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.rune))) (Var "$res1")))))))))
 
 /-- go: generic_conversion.go:3:6 -/
-noncomputable def maybeConvert.impl [GooseExts] [GoGlobalContext] (A : go.GoType) : val :=
+noncomputable def maybeConvert.impl [GooseExts] [GoGlobalContext] (A₀ : go.GoType) : val :=
   (LamV "a"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "a" (App (Val (GoInstruction (GoAlloc A))) (Var "a"))
-  (Let "$r0" (App (Val (GoInstruction (Convert A go.uint32))) (App (Val (GoInstruction (GoLoad A))) (Var "a")))
+  (Let "a" (App (Val (GoInstruction (GoAlloc A₀))) (Var "a"))
+  (Let "$r0" (App (Val (GoInstruction (Convert A₀ go.uint32))) (App (Val (GoInstruction (GoLoad A₀))) (Var "a")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -2955,12 +2955,12 @@ noncomputable def maybeConvert.impl [GooseExts] [GoGlobalContext] (A : go.GoType
   (App (Val (GoInstruction (GoLoad go.uint32))) (Var "$res0")))))
 
 /-- go: generic_conversion.go:7:6 -/
-noncomputable def maybeConvertToInterface.impl [GooseExts] [GoGlobalContext] (A : go.GoType) : val :=
+noncomputable def maybeConvertToInterface.impl [GooseExts] [GoGlobalContext] (A₀ : go.GoType) : val :=
   (LamV "a"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "a" (App (Val (GoInstruction (GoAlloc A))) (Var "a"))
-  (Let "$r0" (App (Val (GoInstruction (Convert A go.any))) (App (Val (GoInstruction (GoLoad A))) (Var "a")))
+  (Let "a" (App (Val (GoInstruction (GoAlloc A₀))) (Var "a"))
+  (Let "$r0" (App (Val (GoInstruction (Convert A₀ go.any))) (App (Val (GoInstruction (GoLoad A₀))) (Var "a")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -2969,12 +2969,12 @@ noncomputable def maybeConvertToInterface.impl [GooseExts] [GoGlobalContext] (A 
   (App (Val (GoInstruction (GoLoad go.any))) (Var "$res0")))))
 
 /-- go: generic_conversion.go:11:6 -/
-noncomputable def maybeConvertToString.impl [GooseExts] [GoGlobalContext] (A : go.GoType) : val :=
+noncomputable def maybeConvertToString.impl [GooseExts] [GoGlobalContext] (A₀ : go.GoType) : val :=
   (LamV "a"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "a" (App (Val (GoInstruction (GoAlloc A))) (Var "a"))
-  (Let "$r0" (App (Val (GoInstruction (Convert A go.string))) (App (Val (GoInstruction (GoLoad A))) (Var "a")))
+  (Let "a" (App (Val (GoInstruction (GoAlloc A₀))) (Var "a"))
+  (Let "$r0" (App (Val (GoInstruction (Convert A₀ go.string))) (App (Val (GoInstruction (GoLoad A₀))) (Var "a")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -2983,12 +2983,12 @@ noncomputable def maybeConvertToString.impl [GooseExts] [GoGlobalContext] (A : g
   (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")))))
 
 /-- go: generic_conversion.go:15:6 -/
-noncomputable def maybeConvertFromString.impl [GooseExts] [GoGlobalContext] (A : go.GoType) : val :=
+noncomputable def maybeConvertFromString.impl [GooseExts] [GoGlobalContext] (A₀ : go.GoType) : val :=
   (LamV "a"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "a" (App (Val (GoInstruction (GoAlloc A))) (Var "a"))
-  (Let "$r0" (App (Val (GoInstruction (Convert A (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoLoad A))) (Var "a")))
+  (Let "a" (App (Val (GoInstruction (GoAlloc A₀))) (Var "a"))
+  (Let "$r0" (App (Val (GoInstruction (Convert A₀ (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoLoad A₀))) (Var "a")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -3012,18 +3012,18 @@ noncomputable def assert.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))
 
 /-- go: generic_conversion.go:25:6 -/
-noncomputable def nilConvert.impl [GooseExts] [GoGlobalContext] (A : go.GoType) : val :=
+noncomputable def nilConvert.impl [GooseExts] [GoGlobalContext] (A₀ : go.GoType) : val :=
   (LamV BAnon
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType A)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType A)))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType A₀)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType A₀)))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "$r0" (Let "$v0" (Val UntypedNil)
-  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType A)))) (LiteralValue [(KeyedElement none (ElementExpression go.untypedNil (Var "$v0")))])))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType A₀)))) (LiteralValue [(KeyedElement none (ElementExpression go.untypedNil (Var "$v0")))])))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType A)))) (Pair (Var "$res0") (Var "$r0")))))))
-  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType A)))) (Var "$res0")))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType A₀)))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType A₀)))) (Var "$res0")))))
 
 /-- go: generic_conversion.go:29:6 -/
 noncomputable def genericConversions.impl [GooseExts] [GoGlobalContext] : val :=
@@ -6504,9 +6504,9 @@ noncomputable def LocalConsts.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "x" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$res0" (Var "x")
   (Seq (App (Val exceptionDo)
-  (let c := #(10 : Int);
-  (let d := #(15 : Int);
-  (let e := #(8 : Int);
+  (let c₀ := #(10 : Int);
+  (let d₀ := #(15 : Int);
+  (let e₀ := #(8 : Int);
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "x"))
@@ -6516,9 +6516,9 @@ noncomputable def LocalConsts.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val d))))))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val d₀))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val c))))))))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val c₀))))))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest where
@@ -6621,7 +6621,7 @@ noncomputable instance importantStruct.zero_val [GooseExts] : ZeroVal importantS
 @[irreducible] noncomputable def importantStruct.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   importantStruct.fieldsUnsealed
 
-noncomputable instance equals_unfold_importantStruct [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'importantStruct [GooseExts] [GoGlobalContext] :
     EqualsUnfold importantStruct.fields importantStruct.fieldsUnsealed :=
   ⟨by unfold importantStruct.fields; rfl⟩
 
@@ -6676,12 +6676,12 @@ class numWrapper.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] 
   underlying : go.UnderlyingDirectedEq numWrapper.ty numWrapper.underlying
   method_set : go.MethodSetIs numWrapper.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType numWrapper.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.inc", (some (go.signature.Signature [] false [])))]
-  ptr_inc_unfold : MethodUnfold (go.GoType.PointerType numWrapper.ty) go!"inc" numWrapper.inc.impl
+  ptr_unfold'inc : MethodUnfold (go.GoType.PointerType numWrapper.ty) go!"inc" numWrapper.inc.impl
 
 attribute [instance] numWrapper.TypeAssumptions.underlying
   numWrapper.TypeAssumptions.method_set
   numWrapper.TypeAssumptions.ptr_method_set
-  numWrapper.TypeAssumptions.ptr_inc_unfold
+  numWrapper.TypeAssumptions.ptr_unfold'inc
 
 structure withInterface [GooseExts] where
   mk ::
@@ -6696,7 +6696,7 @@ noncomputable instance withInterface.zero_val [GooseExts] : ZeroVal withInterfac
 @[irreducible] noncomputable def withInterface.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   withInterface.fieldsUnsealed
 
-noncomputable instance equals_unfold_withInterface [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'withInterface [GooseExts] [GoGlobalContext] :
     EqualsUnfold withInterface.fields withInterface.fieldsUnsealed :=
   ⟨by unfold withInterface.fields; rfl⟩
 
@@ -6706,15 +6706,15 @@ noncomputable instance equals_unfold_withInterface [GooseExts] [GoGlobalContext]
 class withInterface.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying withInterface.underlying withInterface
   underlying : go.UnderlyingDirectedEq withInterface.ty withInterface.underlying
-  get_a : ∀ (x : withInterface), go.IsGoStepPureDetTagged under (StructFieldGet withInterface.underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : withInterface) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet withInterface.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : withInterface)))
+  get'a : ∀ (x : withInterface), go.IsGoStepPureDetTagged under (StructFieldGet withInterface.underlying go!"a") #x (Val #(x.a'))
+  set'a : ∀ (x : withInterface) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet withInterface.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : withInterface)))
   method_set : go.MethodSetIs withInterface.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType withInterface.ty) []
 
 attribute [instance] withInterface.TypeAssumptions.type_repr
   withInterface.TypeAssumptions.underlying
-  withInterface.TypeAssumptions.get_a
-  withInterface.TypeAssumptions.set_a
+  withInterface.TypeAssumptions.get'a
+  withInterface.TypeAssumptions.set'a
   withInterface.TypeAssumptions.method_set
   withInterface.TypeAssumptions.ptr_method_set
 
@@ -6731,7 +6731,7 @@ noncomputable instance embedA.zero_val [GooseExts] : ZeroVal embedA :=
 @[irreducible] noncomputable def embedA.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   embedA.fieldsUnsealed
 
-noncomputable instance equals_unfold_embedA [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'embedA [GooseExts] [GoGlobalContext] :
     EqualsUnfold embedA.fields embedA.fieldsUnsealed :=
   ⟨by unfold embedA.fields; rfl⟩
 
@@ -6741,24 +6741,24 @@ noncomputable instance equals_unfold_embedA [GooseExts] [GoGlobalContext] :
 class embedA.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying embedA.underlying embedA
   underlying : go.UnderlyingDirectedEq embedA.ty embedA.underlying
-  get_a : ∀ (x : embedA), go.IsGoStepPureDetTagged under (StructFieldGet embedA.underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : embedA) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet embedA.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : embedA)))
+  get'a : ∀ (x : embedA), go.IsGoStepPureDetTagged under (StructFieldGet embedA.underlying go!"a") #x (Val #(x.a'))
+  set'a : ∀ (x : embedA) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet embedA.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : embedA)))
   method_set : go.MethodSetIs embedA.ty [(go!"Foo", (some (go.signature.Signature [] false [go.string])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType embedA.ty) [(go!"Bar", (some (go.signature.Signature [] false [go.string]))), (go!"Foo", (some (go.signature.Signature [] false [go.string])))]
-  Foo_unfold : MethodUnfold embedA.ty go!"Foo" embedA.Foo.impl
-  ptr_Bar_unfold : MethodUnfold (go.GoType.PointerType embedA.ty) go!"Bar" embedA.Bar.impl
-  ptr_Foo_unfold : MethodUnfold (go.GoType.PointerType embedA.ty) go!"Foo" (LamV "$r"
+  unfold'Foo : MethodUnfold embedA.ty go!"Foo" embedA.Foo.impl
+  ptr_unfold'Bar : MethodUnfold (go.GoType.PointerType embedA.ty) go!"Bar" embedA.Bar.impl
+  ptr_unfold'Foo : MethodUnfold (go.GoType.PointerType embedA.ty) go!"Foo" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve embedA.ty go!"Foo"))) (App (Val (GoInstruction (GoLoad embedA.ty))) (Var "$r"))))
 
 attribute [instance] embedA.TypeAssumptions.type_repr
   embedA.TypeAssumptions.underlying
-  embedA.TypeAssumptions.get_a
-  embedA.TypeAssumptions.set_a
+  embedA.TypeAssumptions.get'a
+  embedA.TypeAssumptions.set'a
   embedA.TypeAssumptions.method_set
   embedA.TypeAssumptions.ptr_method_set
-  embedA.TypeAssumptions.Foo_unfold
-  embedA.TypeAssumptions.ptr_Bar_unfold
-  embedA.TypeAssumptions.ptr_Foo_unfold
+  embedA.TypeAssumptions.unfold'Foo
+  embedA.TypeAssumptions.ptr_unfold'Bar
+  embedA.TypeAssumptions.ptr_unfold'Foo
 
 structure embedB [GooseExts] where
   mk ::
@@ -6773,7 +6773,7 @@ noncomputable instance embedB.zero_val [GooseExts] : ZeroVal embedB :=
 @[irreducible] noncomputable def embedB.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   embedB.fieldsUnsealed
 
-noncomputable instance equals_unfold_embedB [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'embedB [GooseExts] [GoGlobalContext] :
     EqualsUnfold embedB.fields embedB.fieldsUnsealed :=
   ⟨by unfold embedB.fields; rfl⟩
 
@@ -6783,27 +6783,27 @@ noncomputable instance equals_unfold_embedB [GooseExts] [GoGlobalContext] :
 class embedB.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying embedB.underlying embedB
   underlying : go.UnderlyingDirectedEq embedB.ty embedB.underlying
-  get_embedA : ∀ (x : embedB), go.IsGoStepPureDetTagged under (StructFieldGet embedB.underlying go!"embedA") #x (Val #(x.embedA'))
-  set_embedA : ∀ (x : embedB) (y : embedA), go.IsGoStepPureDetTagged under (StructFieldSet embedB.underlying go!"embedA") (PairV #x #y) (Val #(({ x with embedA' := y } : embedB)))
+  get'embedA : ∀ (x : embedB), go.IsGoStepPureDetTagged under (StructFieldGet embedB.underlying go!"embedA") #x (Val #(x.embedA'))
+  set'embedA : ∀ (x : embedB) (y : embedA), go.IsGoStepPureDetTagged under (StructFieldSet embedB.underlying go!"embedA") (PairV #x #y) (Val #(({ x with embedA' := y } : embedB)))
   method_set : go.MethodSetIs embedB.ty [(go!"Foo", (some (go.signature.Signature [] false [go.string])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType embedB.ty) [(go!"Bar", (some (go.signature.Signature [] false [go.string]))), (go!"Car", (some (go.signature.Signature [] false [go.string]))), (go!"Foo", (some (go.signature.Signature [] false [go.string])))]
-  Foo_unfold : MethodUnfold embedB.ty go!"Foo" embedB.Foo.impl
-  ptr_Bar_unfold : MethodUnfold (go.GoType.PointerType embedB.ty) go!"Bar" (LamV "$r"
+  unfold'Foo : MethodUnfold embedB.ty go!"Foo" embedB.Foo.impl
+  ptr_unfold'Bar : MethodUnfold (go.GoType.PointerType embedB.ty) go!"Bar" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedA.ty) go!"Bar"))) (App (Val (GoInstruction (StructFieldRef embedB.ty go!"embedA"))) (Var "$r"))))
-  ptr_Car_unfold : MethodUnfold (go.GoType.PointerType embedB.ty) go!"Car" embedB.Car.impl
-  ptr_Foo_unfold : MethodUnfold (go.GoType.PointerType embedB.ty) go!"Foo" (LamV "$r"
+  ptr_unfold'Car : MethodUnfold (go.GoType.PointerType embedB.ty) go!"Car" embedB.Car.impl
+  ptr_unfold'Foo : MethodUnfold (go.GoType.PointerType embedB.ty) go!"Foo" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve embedB.ty go!"Foo"))) (App (Val (GoInstruction (GoLoad embedB.ty))) (Var "$r"))))
 
 attribute [instance] embedB.TypeAssumptions.type_repr
   embedB.TypeAssumptions.underlying
-  embedB.TypeAssumptions.get_embedA
-  embedB.TypeAssumptions.set_embedA
+  embedB.TypeAssumptions.get'embedA
+  embedB.TypeAssumptions.set'embedA
   embedB.TypeAssumptions.method_set
   embedB.TypeAssumptions.ptr_method_set
-  embedB.TypeAssumptions.Foo_unfold
-  embedB.TypeAssumptions.ptr_Bar_unfold
-  embedB.TypeAssumptions.ptr_Car_unfold
-  embedB.TypeAssumptions.ptr_Foo_unfold
+  embedB.TypeAssumptions.unfold'Foo
+  embedB.TypeAssumptions.ptr_unfold'Bar
+  embedB.TypeAssumptions.ptr_unfold'Car
+  embedB.TypeAssumptions.ptr_unfold'Foo
 
 structure embedC [GooseExts] where
   mk ::
@@ -6818,7 +6818,7 @@ noncomputable instance embedC.zero_val [GooseExts] : ZeroVal embedC :=
 @[irreducible] noncomputable def embedC.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   embedC.fieldsUnsealed
 
-noncomputable instance equals_unfold_embedC [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'embedC [GooseExts] [GoGlobalContext] :
     EqualsUnfold embedC.fields embedC.fieldsUnsealed :=
   ⟨by unfold embedC.fields; rfl⟩
 
@@ -6828,35 +6828,35 @@ noncomputable instance equals_unfold_embedC [GooseExts] [GoGlobalContext] :
 class embedC.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying embedC.underlying embedC
   underlying : go.UnderlyingDirectedEq embedC.ty embedC.underlying
-  get_embedB : ∀ (x : embedC), go.IsGoStepPureDetTagged under (StructFieldGet embedC.underlying go!"embedB") #x (Val #(x.embedB'))
-  set_embedB : ∀ (x : embedC) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet embedC.underlying go!"embedB") (PairV #x #y) (Val #(({ x with embedB' := y } : embedC)))
+  get'embedB : ∀ (x : embedC), go.IsGoStepPureDetTagged under (StructFieldGet embedC.underlying go!"embedB") #x (Val #(x.embedB'))
+  set'embedB : ∀ (x : embedC) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet embedC.underlying go!"embedB") (PairV #x #y) (Val #(({ x with embedB' := y } : embedC)))
   method_set : go.MethodSetIs embedC.ty [(go!"Bar", (some (go.signature.Signature [] false [go.string]))), (go!"Car", (some (go.signature.Signature [] false [go.string]))), (go!"Foo", (some (go.signature.Signature [] false [go.string])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType embedC.ty) [(go!"Bar", (some (go.signature.Signature [] false [go.string]))), (go!"Car", (some (go.signature.Signature [] false [go.string]))), (go!"Foo", (some (go.signature.Signature [] false [go.string])))]
-  Bar_unfold : MethodUnfold embedC.ty go!"Bar" (LamV "$r"
+  unfold'Bar : MethodUnfold embedC.ty go!"Bar" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedB.ty) go!"Bar"))) (App (Val (GoInstruction (StructFieldGet embedC.ty go!"embedB"))) (Var "$r"))))
-  Car_unfold : MethodUnfold embedC.ty go!"Car" (LamV "$r"
+  unfold'Car : MethodUnfold embedC.ty go!"Car" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedB.ty) go!"Car"))) (App (Val (GoInstruction (StructFieldGet embedC.ty go!"embedB"))) (Var "$r"))))
-  Foo_unfold : MethodUnfold embedC.ty go!"Foo" (LamV "$r"
+  unfold'Foo : MethodUnfold embedC.ty go!"Foo" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedB.ty) go!"Foo"))) (App (Val (GoInstruction (StructFieldGet embedC.ty go!"embedB"))) (Var "$r"))))
-  ptr_Bar_unfold : MethodUnfold (go.GoType.PointerType embedC.ty) go!"Bar" (LamV "$r"
+  ptr_unfold'Bar : MethodUnfold (go.GoType.PointerType embedC.ty) go!"Bar" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedB.ty) go!"Bar"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB.ty)))) (App (Val (GoInstruction (StructFieldRef embedC.ty go!"embedB"))) (Var "$r")))))
-  ptr_Car_unfold : MethodUnfold (go.GoType.PointerType embedC.ty) go!"Car" (LamV "$r"
+  ptr_unfold'Car : MethodUnfold (go.GoType.PointerType embedC.ty) go!"Car" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedB.ty) go!"Car"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB.ty)))) (App (Val (GoInstruction (StructFieldRef embedC.ty go!"embedB"))) (Var "$r")))))
-  ptr_Foo_unfold : MethodUnfold (go.GoType.PointerType embedC.ty) go!"Foo" (LamV "$r"
+  ptr_unfold'Foo : MethodUnfold (go.GoType.PointerType embedC.ty) go!"Foo" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedB.ty) go!"Foo"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType embedB.ty)))) (App (Val (GoInstruction (StructFieldRef embedC.ty go!"embedB"))) (Var "$r")))))
 
 attribute [instance] embedC.TypeAssumptions.type_repr
   embedC.TypeAssumptions.underlying
-  embedC.TypeAssumptions.get_embedB
-  embedC.TypeAssumptions.set_embedB
+  embedC.TypeAssumptions.get'embedB
+  embedC.TypeAssumptions.set'embedB
   embedC.TypeAssumptions.method_set
   embedC.TypeAssumptions.ptr_method_set
-  embedC.TypeAssumptions.Bar_unfold
-  embedC.TypeAssumptions.Car_unfold
-  embedC.TypeAssumptions.Foo_unfold
-  embedC.TypeAssumptions.ptr_Bar_unfold
-  embedC.TypeAssumptions.ptr_Car_unfold
-  embedC.TypeAssumptions.ptr_Foo_unfold
+  embedC.TypeAssumptions.unfold'Bar
+  embedC.TypeAssumptions.unfold'Car
+  embedC.TypeAssumptions.unfold'Foo
+  embedC.TypeAssumptions.ptr_unfold'Bar
+  embedC.TypeAssumptions.ptr_unfold'Car
+  embedC.TypeAssumptions.ptr_unfold'Foo
 
 structure embedD [GooseExts] where
   mk ::
@@ -6871,7 +6871,7 @@ noncomputable instance embedD.zero_val [GooseExts] : ZeroVal embedD :=
 @[irreducible] noncomputable def embedD.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   embedD.fieldsUnsealed
 
-noncomputable instance equals_unfold_embedD [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'embedD [GooseExts] [GoGlobalContext] :
     EqualsUnfold embedD.fields embedD.fieldsUnsealed :=
   ⟨by unfold embedD.fields; rfl⟩
 
@@ -6881,35 +6881,35 @@ noncomputable instance equals_unfold_embedD [GooseExts] [GoGlobalContext] :
 class embedD.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying embedD.underlying embedD
   underlying : go.UnderlyingDirectedEq embedD.ty embedD.underlying
-  get_embedC : ∀ (x : embedD), go.IsGoStepPureDetTagged under (StructFieldGet embedD.underlying go!"embedC") #x (Val #(x.embedC'))
-  set_embedC : ∀ (x : embedD) (y : embedC), go.IsGoStepPureDetTagged under (StructFieldSet embedD.underlying go!"embedC") (PairV #x #y) (Val #(({ x with embedC' := y } : embedD)))
+  get'embedC : ∀ (x : embedD), go.IsGoStepPureDetTagged under (StructFieldGet embedD.underlying go!"embedC") #x (Val #(x.embedC'))
+  set'embedC : ∀ (x : embedD) (y : embedC), go.IsGoStepPureDetTagged under (StructFieldSet embedD.underlying go!"embedC") (PairV #x #y) (Val #(({ x with embedC' := y } : embedD)))
   method_set : go.MethodSetIs embedD.ty [(go!"Bar", (some (go.signature.Signature [] false [go.string]))), (go!"Car", (some (go.signature.Signature [] false [go.string]))), (go!"Foo", (some (go.signature.Signature [] false [go.string])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType embedD.ty) [(go!"Bar", (some (go.signature.Signature [] false [go.string]))), (go!"Car", (some (go.signature.Signature [] false [go.string]))), (go!"Foo", (some (go.signature.Signature [] false [go.string])))]
-  Bar_unfold : MethodUnfold embedD.ty go!"Bar" (LamV "$r"
+  unfold'Bar : MethodUnfold embedD.ty go!"Bar" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve embedC.ty go!"Bar"))) (App (Val (GoInstruction (StructFieldGet embedD.ty go!"embedC"))) (Var "$r"))))
-  Car_unfold : MethodUnfold embedD.ty go!"Car" (LamV "$r"
+  unfold'Car : MethodUnfold embedD.ty go!"Car" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve embedC.ty go!"Car"))) (App (Val (GoInstruction (StructFieldGet embedD.ty go!"embedC"))) (Var "$r"))))
-  Foo_unfold : MethodUnfold embedD.ty go!"Foo" (LamV "$r"
+  unfold'Foo : MethodUnfold embedD.ty go!"Foo" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve embedC.ty go!"Foo"))) (App (Val (GoInstruction (StructFieldGet embedD.ty go!"embedC"))) (Var "$r"))))
-  ptr_Bar_unfold : MethodUnfold (go.GoType.PointerType embedD.ty) go!"Bar" (LamV "$r"
+  ptr_unfold'Bar : MethodUnfold (go.GoType.PointerType embedD.ty) go!"Bar" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedC.ty) go!"Bar"))) (App (Val (GoInstruction (StructFieldRef embedD.ty go!"embedC"))) (Var "$r"))))
-  ptr_Car_unfold : MethodUnfold (go.GoType.PointerType embedD.ty) go!"Car" (LamV "$r"
+  ptr_unfold'Car : MethodUnfold (go.GoType.PointerType embedD.ty) go!"Car" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedC.ty) go!"Car"))) (App (Val (GoInstruction (StructFieldRef embedD.ty go!"embedC"))) (Var "$r"))))
-  ptr_Foo_unfold : MethodUnfold (go.GoType.PointerType embedD.ty) go!"Foo" (LamV "$r"
+  ptr_unfold'Foo : MethodUnfold (go.GoType.PointerType embedD.ty) go!"Foo" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType embedC.ty) go!"Foo"))) (App (Val (GoInstruction (StructFieldRef embedD.ty go!"embedC"))) (Var "$r"))))
 
 attribute [instance] embedD.TypeAssumptions.type_repr
   embedD.TypeAssumptions.underlying
-  embedD.TypeAssumptions.get_embedC
-  embedD.TypeAssumptions.set_embedC
+  embedD.TypeAssumptions.get'embedC
+  embedD.TypeAssumptions.set'embedC
   embedD.TypeAssumptions.method_set
   embedD.TypeAssumptions.ptr_method_set
-  embedD.TypeAssumptions.Bar_unfold
-  embedD.TypeAssumptions.Car_unfold
-  embedD.TypeAssumptions.Foo_unfold
-  embedD.TypeAssumptions.ptr_Bar_unfold
-  embedD.TypeAssumptions.ptr_Car_unfold
-  embedD.TypeAssumptions.ptr_Foo_unfold
+  embedD.TypeAssumptions.unfold'Bar
+  embedD.TypeAssumptions.unfold'Car
+  embedD.TypeAssumptions.unfold'Foo
+  embedD.TypeAssumptions.ptr_unfold'Bar
+  embedD.TypeAssumptions.ptr_unfold'Car
+  embedD.TypeAssumptions.ptr_unfold'Foo
 
 abbrev Enum1 [GooseExts] : Type := w64
 
@@ -6952,7 +6952,7 @@ noncomputable instance float32Field.zero_val [GooseExts] : ZeroVal float32Field 
 @[irreducible] noncomputable def float32Field.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   float32Field.fieldsUnsealed
 
-noncomputable instance equals_unfold_float32Field [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'float32Field [GooseExts] [GoGlobalContext] :
     EqualsUnfold float32Field.fields float32Field.fieldsUnsealed :=
   ⟨by unfold float32Field.fields; rfl⟩
 
@@ -6962,15 +6962,15 @@ noncomputable instance equals_unfold_float32Field [GooseExts] [GoGlobalContext] 
 class float32Field.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying float32Field.underlying float32Field
   underlying : go.UnderlyingDirectedEq float32Field.ty float32Field.underlying
-  get_f : ∀ (x : float32Field), go.IsGoStepPureDetTagged under (StructFieldGet float32Field.underlying go!"f") #x (Val #(x.f'))
-  set_f : ∀ (x : float32Field) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet float32Field.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : float32Field)))
+  get'f : ∀ (x : float32Field), go.IsGoStepPureDetTagged under (StructFieldGet float32Field.underlying go!"f") #x (Val #(x.f'))
+  set'f : ∀ (x : float32Field) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet float32Field.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : float32Field)))
   method_set : go.MethodSetIs float32Field.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType float32Field.ty) []
 
 attribute [instance] float32Field.TypeAssumptions.type_repr
   float32Field.TypeAssumptions.underlying
-  float32Field.TypeAssumptions.get_f
-  float32Field.TypeAssumptions.set_f
+  float32Field.TypeAssumptions.get'f
+  float32Field.TypeAssumptions.set'f
   float32Field.TypeAssumptions.method_set
   float32Field.TypeAssumptions.ptr_method_set
 
@@ -7001,7 +7001,7 @@ noncomputable instance concreteFooer.zero_val [GooseExts] : ZeroVal concreteFooe
 @[irreducible] noncomputable def concreteFooer.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   concreteFooer.fieldsUnsealed
 
-noncomputable instance equals_unfold_concreteFooer [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'concreteFooer [GooseExts] [GoGlobalContext] :
     EqualsUnfold concreteFooer.fields concreteFooer.fieldsUnsealed :=
   ⟨by unfold concreteFooer.fields; rfl⟩
 
@@ -7011,19 +7011,19 @@ noncomputable instance equals_unfold_concreteFooer [GooseExts] [GoGlobalContext]
 class concreteFooer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying concreteFooer.underlying concreteFooer
   underlying : go.UnderlyingDirectedEq concreteFooer.ty concreteFooer.underlying
-  get_a : ∀ (x : concreteFooer), go.IsGoStepPureDetTagged under (StructFieldGet concreteFooer.underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : concreteFooer) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet concreteFooer.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : concreteFooer)))
+  get'a : ∀ (x : concreteFooer), go.IsGoStepPureDetTagged under (StructFieldGet concreteFooer.underlying go!"a") #x (Val #(x.a'))
+  set'a : ∀ (x : concreteFooer) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet concreteFooer.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : concreteFooer)))
   method_set : go.MethodSetIs concreteFooer.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType concreteFooer.ty) [(go!"Foo", (some (go.signature.Signature [] false [])))]
-  ptr_Foo_unfold : MethodUnfold (go.GoType.PointerType concreteFooer.ty) go!"Foo" concreteFooer.Foo.impl
+  ptr_unfold'Foo : MethodUnfold (go.GoType.PointerType concreteFooer.ty) go!"Foo" concreteFooer.Foo.impl
 
 attribute [instance] concreteFooer.TypeAssumptions.type_repr
   concreteFooer.TypeAssumptions.underlying
-  concreteFooer.TypeAssumptions.get_a
-  concreteFooer.TypeAssumptions.set_a
+  concreteFooer.TypeAssumptions.get'a
+  concreteFooer.TypeAssumptions.set'a
   concreteFooer.TypeAssumptions.method_set
   concreteFooer.TypeAssumptions.ptr_method_set
-  concreteFooer.TypeAssumptions.ptr_Foo_unfold
+  concreteFooer.TypeAssumptions.ptr_unfold'Foo
 
 structure FooerUser [GooseExts] where
   mk ::
@@ -7038,7 +7038,7 @@ noncomputable instance FooerUser.zero_val [GooseExts] : ZeroVal FooerUser :=
 @[irreducible] noncomputable def FooerUser.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   FooerUser.fieldsUnsealed
 
-noncomputable instance equals_unfold_FooerUser [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'FooerUser [GooseExts] [GoGlobalContext] :
     EqualsUnfold FooerUser.fields FooerUser.fieldsUnsealed :=
   ⟨by unfold FooerUser.fields; rfl⟩
 
@@ -7048,15 +7048,15 @@ noncomputable instance equals_unfold_FooerUser [GooseExts] [GoGlobalContext] :
 class FooerUser.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying FooerUser.underlying FooerUser
   underlying : go.UnderlyingDirectedEq FooerUser.ty FooerUser.underlying
-  get_f : ∀ (x : FooerUser), go.IsGoStepPureDetTagged under (StructFieldGet FooerUser.underlying go!"f") #x (Val #(x.f'))
-  set_f : ∀ (x : FooerUser) (y : Fooer), go.IsGoStepPureDetTagged under (StructFieldSet FooerUser.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : FooerUser)))
+  get'f : ∀ (x : FooerUser), go.IsGoStepPureDetTagged under (StructFieldGet FooerUser.underlying go!"f") #x (Val #(x.f'))
+  set'f : ∀ (x : FooerUser) (y : Fooer), go.IsGoStepPureDetTagged under (StructFieldSet FooerUser.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : FooerUser)))
   method_set : go.MethodSetIs FooerUser.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType FooerUser.ty) []
 
 attribute [instance] FooerUser.TypeAssumptions.type_repr
   FooerUser.TypeAssumptions.underlying
-  FooerUser.TypeAssumptions.get_f
-  FooerUser.TypeAssumptions.set_f
+  FooerUser.TypeAssumptions.get'f
+  FooerUser.TypeAssumptions.set'f
   FooerUser.TypeAssumptions.method_set
   FooerUser.TypeAssumptions.ptr_method_set
 
@@ -7086,7 +7086,7 @@ noncomputable instance concrete1.zero_val [GooseExts] : ZeroVal concrete1 :=
 @[irreducible] noncomputable def concrete1.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   concrete1.fieldsUnsealed
 
-noncomputable instance equals_unfold_concrete1 [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'concrete1 [GooseExts] [GoGlobalContext] :
     EqualsUnfold concrete1.fields concrete1.fieldsUnsealed :=
   ⟨by unfold concrete1.fields; rfl⟩
 
@@ -7098,18 +7098,18 @@ class concrete1.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   underlying : go.UnderlyingDirectedEq concrete1.ty concrete1.underlying
   method_set : go.MethodSetIs concrete1.ty [(go!"Foo", (some (go.signature.Signature [] false [])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType concrete1.ty) [(go!"B", (some (go.signature.Signature [] false []))), (go!"Foo", (some (go.signature.Signature [] false [])))]
-  Foo_unfold : MethodUnfold concrete1.ty go!"Foo" concrete1.Foo.impl
-  ptr_B_unfold : MethodUnfold (go.GoType.PointerType concrete1.ty) go!"B" concrete1.B.impl
-  ptr_Foo_unfold : MethodUnfold (go.GoType.PointerType concrete1.ty) go!"Foo" (LamV "$r"
+  unfold'Foo : MethodUnfold concrete1.ty go!"Foo" concrete1.Foo.impl
+  ptr_unfold'B : MethodUnfold (go.GoType.PointerType concrete1.ty) go!"B" concrete1.B.impl
+  ptr_unfold'Foo : MethodUnfold (go.GoType.PointerType concrete1.ty) go!"Foo" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve concrete1.ty go!"Foo"))) (App (Val (GoInstruction (GoLoad concrete1.ty))) (Var "$r"))))
 
 attribute [instance] concrete1.TypeAssumptions.type_repr
   concrete1.TypeAssumptions.underlying
   concrete1.TypeAssumptions.method_set
   concrete1.TypeAssumptions.ptr_method_set
-  concrete1.TypeAssumptions.Foo_unfold
-  concrete1.TypeAssumptions.ptr_B_unfold
-  concrete1.TypeAssumptions.ptr_Foo_unfold
+  concrete1.TypeAssumptions.unfold'Foo
+  concrete1.TypeAssumptions.ptr_unfold'B
+  concrete1.TypeAssumptions.ptr_unfold'Foo
 
 abbrev my_u32 [GooseExts] : Type := w32
 
@@ -7156,7 +7156,7 @@ noncomputable instance allTheLiterals.zero_val [GooseExts] : ZeroVal allTheLiter
 @[irreducible] noncomputable def allTheLiterals.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   allTheLiterals.fieldsUnsealed
 
-noncomputable instance equals_unfold_allTheLiterals [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'allTheLiterals [GooseExts] [GoGlobalContext] :
     EqualsUnfold allTheLiterals.fields allTheLiterals.fieldsUnsealed :=
   ⟨by unfold allTheLiterals.fields; rfl⟩
 
@@ -7166,23 +7166,23 @@ noncomputable instance equals_unfold_allTheLiterals [GooseExts] [GoGlobalContext
 class allTheLiterals.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying allTheLiterals.underlying allTheLiterals
   underlying : go.UnderlyingDirectedEq allTheLiterals.ty allTheLiterals.underlying
-  get_int : ∀ (x : allTheLiterals), go.IsGoStepPureDetTagged under (StructFieldGet allTheLiterals.underlying go!"int") #x (Val #(x.int'))
-  set_int : ∀ (x : allTheLiterals) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet allTheLiterals.underlying go!"int") (PairV #x #y) (Val #(({ x with int' := y } : allTheLiterals)))
-  get_s : ∀ (x : allTheLiterals), go.IsGoStepPureDetTagged under (StructFieldGet allTheLiterals.underlying go!"s") #x (Val #(x.s'))
-  set_s : ∀ (x : allTheLiterals) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet allTheLiterals.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : allTheLiterals)))
-  get_b : ∀ (x : allTheLiterals), go.IsGoStepPureDetTagged under (StructFieldGet allTheLiterals.underlying go!"b") #x (Val #(x.b'))
-  set_b : ∀ (x : allTheLiterals) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet allTheLiterals.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : allTheLiterals)))
+  get'int : ∀ (x : allTheLiterals), go.IsGoStepPureDetTagged under (StructFieldGet allTheLiterals.underlying go!"int") #x (Val #(x.int'))
+  set'int : ∀ (x : allTheLiterals) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet allTheLiterals.underlying go!"int") (PairV #x #y) (Val #(({ x with int' := y } : allTheLiterals)))
+  get's : ∀ (x : allTheLiterals), go.IsGoStepPureDetTagged under (StructFieldGet allTheLiterals.underlying go!"s") #x (Val #(x.s'))
+  set's : ∀ (x : allTheLiterals) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet allTheLiterals.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : allTheLiterals)))
+  get'b : ∀ (x : allTheLiterals), go.IsGoStepPureDetTagged under (StructFieldGet allTheLiterals.underlying go!"b") #x (Val #(x.b'))
+  set'b : ∀ (x : allTheLiterals) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet allTheLiterals.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : allTheLiterals)))
   method_set : go.MethodSetIs allTheLiterals.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType allTheLiterals.ty) []
 
 attribute [instance] allTheLiterals.TypeAssumptions.type_repr
   allTheLiterals.TypeAssumptions.underlying
-  allTheLiterals.TypeAssumptions.get_int
-  allTheLiterals.TypeAssumptions.set_int
-  allTheLiterals.TypeAssumptions.get_s
-  allTheLiterals.TypeAssumptions.set_s
-  allTheLiterals.TypeAssumptions.get_b
-  allTheLiterals.TypeAssumptions.set_b
+  allTheLiterals.TypeAssumptions.get'int
+  allTheLiterals.TypeAssumptions.set'int
+  allTheLiterals.TypeAssumptions.get's
+  allTheLiterals.TypeAssumptions.set's
+  allTheLiterals.TypeAssumptions.get'b
+  allTheLiterals.TypeAssumptions.set'b
   allTheLiterals.TypeAssumptions.method_set
   allTheLiterals.TypeAssumptions.ptr_method_set
 
@@ -7199,7 +7199,7 @@ noncomputable instance hasCondVar.zero_val [GooseExts] : ZeroVal hasCondVar :=
 @[irreducible] noncomputable def hasCondVar.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   hasCondVar.fieldsUnsealed
 
-noncomputable instance equals_unfold_hasCondVar [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'hasCondVar [GooseExts] [GoGlobalContext] :
     EqualsUnfold hasCondVar.fields hasCondVar.fieldsUnsealed :=
   ⟨by unfold hasCondVar.fields; rfl⟩
 
@@ -7209,15 +7209,15 @@ noncomputable instance equals_unfold_hasCondVar [GooseExts] [GoGlobalContext] :
 class hasCondVar.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying hasCondVar.underlying hasCondVar
   underlying : go.UnderlyingDirectedEq hasCondVar.ty hasCondVar.underlying
-  get_cond : ∀ (x : hasCondVar), go.IsGoStepPureDetTagged under (StructFieldGet hasCondVar.underlying go!"cond") #x (Val #(x.cond'))
-  set_cond : ∀ (x : hasCondVar) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet hasCondVar.underlying go!"cond") (PairV #x #y) (Val #(({ x with cond' := y } : hasCondVar)))
+  get'cond : ∀ (x : hasCondVar), go.IsGoStepPureDetTagged under (StructFieldGet hasCondVar.underlying go!"cond") #x (Val #(x.cond'))
+  set'cond : ∀ (x : hasCondVar) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet hasCondVar.underlying go!"cond") (PairV #x #y) (Val #(({ x with cond' := y } : hasCondVar)))
   method_set : go.MethodSetIs hasCondVar.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType hasCondVar.ty) []
 
 attribute [instance] hasCondVar.TypeAssumptions.type_repr
   hasCondVar.TypeAssumptions.underlying
-  hasCondVar.TypeAssumptions.get_cond
-  hasCondVar.TypeAssumptions.set_cond
+  hasCondVar.TypeAssumptions.get'cond
+  hasCondVar.TypeAssumptions.set'cond
   hasCondVar.TypeAssumptions.method_set
   hasCondVar.TypeAssumptions.ptr_method_set
 
@@ -7264,7 +7264,7 @@ noncomputable instance mapElem.zero_val [GooseExts] : ZeroVal mapElem :=
 @[irreducible] noncomputable def mapElem.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   mapElem.fieldsUnsealed
 
-noncomputable instance equals_unfold_mapElem [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'mapElem [GooseExts] [GoGlobalContext] :
     EqualsUnfold mapElem.fields mapElem.fieldsUnsealed :=
   ⟨by unfold mapElem.fields; rfl⟩
 
@@ -7274,19 +7274,19 @@ noncomputable instance equals_unfold_mapElem [GooseExts] [GoGlobalContext] :
 class mapElem.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying mapElem.underlying mapElem
   underlying : go.UnderlyingDirectedEq mapElem.ty mapElem.underlying
-  get_a : ∀ (x : mapElem), go.IsGoStepPureDetTagged under (StructFieldGet mapElem.underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : mapElem) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet mapElem.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : mapElem)))
-  get_b : ∀ (x : mapElem), go.IsGoStepPureDetTagged under (StructFieldGet mapElem.underlying go!"b") #x (Val #(x.b'))
-  set_b : ∀ (x : mapElem) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet mapElem.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : mapElem)))
+  get'a : ∀ (x : mapElem), go.IsGoStepPureDetTagged under (StructFieldGet mapElem.underlying go!"a") #x (Val #(x.a'))
+  set'a : ∀ (x : mapElem) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet mapElem.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : mapElem)))
+  get'b : ∀ (x : mapElem), go.IsGoStepPureDetTagged under (StructFieldGet mapElem.underlying go!"b") #x (Val #(x.b'))
+  set'b : ∀ (x : mapElem) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet mapElem.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : mapElem)))
   method_set : go.MethodSetIs mapElem.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType mapElem.ty) []
 
 attribute [instance] mapElem.TypeAssumptions.type_repr
   mapElem.TypeAssumptions.underlying
-  mapElem.TypeAssumptions.get_a
-  mapElem.TypeAssumptions.set_a
-  mapElem.TypeAssumptions.get_b
-  mapElem.TypeAssumptions.set_b
+  mapElem.TypeAssumptions.get'a
+  mapElem.TypeAssumptions.set'a
+  mapElem.TypeAssumptions.get'b
+  mapElem.TypeAssumptions.set'b
   mapElem.TypeAssumptions.method_set
   mapElem.TypeAssumptions.ptr_method_set
 
@@ -7330,7 +7330,7 @@ noncomputable instance msLeft.zero_val [GooseExts] : ZeroVal msLeft :=
 @[irreducible] noncomputable def msLeft.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   msLeft.fieldsUnsealed
 
-noncomputable instance equals_unfold_msLeft [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'msLeft [GooseExts] [GoGlobalContext] :
     EqualsUnfold msLeft.fields msLeft.fieldsUnsealed :=
   ⟨by unfold msLeft.fields; rfl⟩
 
@@ -7342,18 +7342,18 @@ class msLeft.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   underlying : go.UnderlyingDirectedEq msLeft.ty msLeft.underlying
   method_set : go.MethodSetIs msLeft.ty [(go!"Name", (some (go.signature.Signature [] false [go.string])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType msLeft.ty) [(go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.tag", (some (go.signature.Signature [] false [go.uint64])))]
-  Name_unfold : MethodUnfold msLeft.ty go!"Name" msLeft.Name.impl
-  ptr_Name_unfold : MethodUnfold (go.GoType.PointerType msLeft.ty) go!"Name" (LamV "$r"
+  unfold'Name : MethodUnfold msLeft.ty go!"Name" msLeft.Name.impl
+  ptr_unfold'Name : MethodUnfold (go.GoType.PointerType msLeft.ty) go!"Name" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve msLeft.ty go!"Name"))) (App (Val (GoInstruction (GoLoad msLeft.ty))) (Var "$r"))))
-  ptr_tag_unfold : MethodUnfold (go.GoType.PointerType msLeft.ty) go!"tag" msLeft.tag.impl
+  ptr_unfold'tag : MethodUnfold (go.GoType.PointerType msLeft.ty) go!"tag" msLeft.tag.impl
 
 attribute [instance] msLeft.TypeAssumptions.type_repr
   msLeft.TypeAssumptions.underlying
   msLeft.TypeAssumptions.method_set
   msLeft.TypeAssumptions.ptr_method_set
-  msLeft.TypeAssumptions.Name_unfold
-  msLeft.TypeAssumptions.ptr_Name_unfold
-  msLeft.TypeAssumptions.ptr_tag_unfold
+  msLeft.TypeAssumptions.unfold'Name
+  msLeft.TypeAssumptions.ptr_unfold'Name
+  msLeft.TypeAssumptions.ptr_unfold'tag
 
 structure msRight [GooseExts] where
   mk ::
@@ -7367,7 +7367,7 @@ noncomputable instance msRight.zero_val [GooseExts] : ZeroVal msRight :=
 @[irreducible] noncomputable def msRight.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   msRight.fieldsUnsealed
 
-noncomputable instance equals_unfold_msRight [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'msRight [GooseExts] [GoGlobalContext] :
     EqualsUnfold msRight.fields msRight.fieldsUnsealed :=
   ⟨by unfold msRight.fields; rfl⟩
 
@@ -7379,16 +7379,16 @@ class msRight.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   underlying : go.UnderlyingDirectedEq msRight.ty msRight.underlying
   method_set : go.MethodSetIs msRight.ty [(go!"Name", (some (go.signature.Signature [] false [go.string])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType msRight.ty) [(go!"Name", (some (go.signature.Signature [] false [go.string])))]
-  Name_unfold : MethodUnfold msRight.ty go!"Name" msRight.Name.impl
-  ptr_Name_unfold : MethodUnfold (go.GoType.PointerType msRight.ty) go!"Name" (LamV "$r"
+  unfold'Name : MethodUnfold msRight.ty go!"Name" msRight.Name.impl
+  ptr_unfold'Name : MethodUnfold (go.GoType.PointerType msRight.ty) go!"Name" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve msRight.ty go!"Name"))) (App (Val (GoInstruction (GoLoad msRight.ty))) (Var "$r"))))
 
 attribute [instance] msRight.TypeAssumptions.type_repr
   msRight.TypeAssumptions.underlying
   msRight.TypeAssumptions.method_set
   msRight.TypeAssumptions.ptr_method_set
-  msRight.TypeAssumptions.Name_unfold
-  msRight.TypeAssumptions.ptr_Name_unfold
+  msRight.TypeAssumptions.unfold'Name
+  msRight.TypeAssumptions.ptr_unfold'Name
 
 structure msBoth [GooseExts] where
   mk ::
@@ -7405,7 +7405,7 @@ noncomputable instance msBoth.zero_val [GooseExts] : ZeroVal msBoth :=
 @[irreducible] noncomputable def msBoth.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   msBoth.fieldsUnsealed
 
-noncomputable instance equals_unfold_msBoth [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'msBoth [GooseExts] [GoGlobalContext] :
     EqualsUnfold msBoth.fields msBoth.fieldsUnsealed :=
   ⟨by unfold msBoth.fields; rfl⟩
 
@@ -7415,24 +7415,24 @@ noncomputable instance equals_unfold_msBoth [GooseExts] [GoGlobalContext] :
 class msBoth.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying msBoth.underlying msBoth
   underlying : go.UnderlyingDirectedEq msBoth.ty msBoth.underlying
-  get_msLeft : ∀ (x : msBoth), go.IsGoStepPureDetTagged under (StructFieldGet msBoth.underlying go!"msLeft") #x (Val #(x.msLeft'))
-  set_msLeft : ∀ (x : msBoth) (y : msLeft), go.IsGoStepPureDetTagged under (StructFieldSet msBoth.underlying go!"msLeft") (PairV #x #y) (Val #(({ x with msLeft' := y } : msBoth)))
-  get_msRight : ∀ (x : msBoth), go.IsGoStepPureDetTagged under (StructFieldGet msBoth.underlying go!"msRight") #x (Val #(x.msRight'))
-  set_msRight : ∀ (x : msBoth) (y : msRight), go.IsGoStepPureDetTagged under (StructFieldSet msBoth.underlying go!"msRight") (PairV #x #y) (Val #(({ x with msRight' := y } : msBoth)))
+  get'msLeft : ∀ (x : msBoth), go.IsGoStepPureDetTagged under (StructFieldGet msBoth.underlying go!"msLeft") #x (Val #(x.msLeft'))
+  set'msLeft : ∀ (x : msBoth) (y : msLeft), go.IsGoStepPureDetTagged under (StructFieldSet msBoth.underlying go!"msLeft") (PairV #x #y) (Val #(({ x with msLeft' := y } : msBoth)))
+  get'msRight : ∀ (x : msBoth), go.IsGoStepPureDetTagged under (StructFieldGet msBoth.underlying go!"msRight") #x (Val #(x.msRight'))
+  set'msRight : ∀ (x : msBoth) (y : msRight), go.IsGoStepPureDetTagged under (StructFieldSet msBoth.underlying go!"msRight") (PairV #x #y) (Val #(({ x with msRight' := y } : msBoth)))
   method_set : go.MethodSetIs msBoth.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType msBoth.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.tag", (some (go.signature.Signature [] false [go.uint64])))]
-  ptr_tag_unfold : MethodUnfold (go.GoType.PointerType msBoth.ty) go!"tag" (LamV "$r"
+  ptr_unfold'tag : MethodUnfold (go.GoType.PointerType msBoth.ty) go!"tag" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType msLeft.ty) go!"tag"))) (App (Val (GoInstruction (StructFieldRef msBoth.ty go!"msLeft"))) (Var "$r"))))
 
 attribute [instance] msBoth.TypeAssumptions.type_repr
   msBoth.TypeAssumptions.underlying
-  msBoth.TypeAssumptions.get_msLeft
-  msBoth.TypeAssumptions.set_msLeft
-  msBoth.TypeAssumptions.get_msRight
-  msBoth.TypeAssumptions.set_msRight
+  msBoth.TypeAssumptions.get'msLeft
+  msBoth.TypeAssumptions.set'msLeft
+  msBoth.TypeAssumptions.get'msRight
+  msBoth.TypeAssumptions.set'msRight
   msBoth.TypeAssumptions.method_set
   msBoth.TypeAssumptions.ptr_method_set
-  msBoth.TypeAssumptions.ptr_tag_unfold
+  msBoth.TypeAssumptions.ptr_unfold'tag
 
 structure msShadow [GooseExts] where
   mk ::
@@ -7449,7 +7449,7 @@ noncomputable instance msShadow.zero_val [GooseExts] : ZeroVal msShadow :=
 @[irreducible] noncomputable def msShadow.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   msShadow.fieldsUnsealed
 
-noncomputable instance equals_unfold_msShadow [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'msShadow [GooseExts] [GoGlobalContext] :
     EqualsUnfold msShadow.fields msShadow.fieldsUnsealed :=
   ⟨by unfold msShadow.fields; rfl⟩
 
@@ -7459,24 +7459,24 @@ noncomputable instance equals_unfold_msShadow [GooseExts] [GoGlobalContext] :
 class msShadow.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying msShadow.underlying msShadow
   underlying : go.UnderlyingDirectedEq msShadow.ty msShadow.underlying
-  get_msLeft : ∀ (x : msShadow), go.IsGoStepPureDetTagged under (StructFieldGet msShadow.underlying go!"msLeft") #x (Val #(x.msLeft'))
-  set_msLeft : ∀ (x : msShadow) (y : msLeft), go.IsGoStepPureDetTagged under (StructFieldSet msShadow.underlying go!"msLeft") (PairV #x #y) (Val #(({ x with msLeft' := y } : msShadow)))
-  get_Name : ∀ (x : msShadow), go.IsGoStepPureDetTagged under (StructFieldGet msShadow.underlying go!"Name") #x (Val #(x.Name'))
-  set_Name : ∀ (x : msShadow) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet msShadow.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : msShadow)))
+  get'msLeft : ∀ (x : msShadow), go.IsGoStepPureDetTagged under (StructFieldGet msShadow.underlying go!"msLeft") #x (Val #(x.msLeft'))
+  set'msLeft : ∀ (x : msShadow) (y : msLeft), go.IsGoStepPureDetTagged under (StructFieldSet msShadow.underlying go!"msLeft") (PairV #x #y) (Val #(({ x with msLeft' := y } : msShadow)))
+  get'Name : ∀ (x : msShadow), go.IsGoStepPureDetTagged under (StructFieldGet msShadow.underlying go!"Name") #x (Val #(x.Name'))
+  set'Name : ∀ (x : msShadow) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet msShadow.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : msShadow)))
   method_set : go.MethodSetIs msShadow.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType msShadow.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.tag", (some (go.signature.Signature [] false [go.uint64])))]
-  ptr_tag_unfold : MethodUnfold (go.GoType.PointerType msShadow.ty) go!"tag" (LamV "$r"
+  ptr_unfold'tag : MethodUnfold (go.GoType.PointerType msShadow.ty) go!"tag" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType msLeft.ty) go!"tag"))) (App (Val (GoInstruction (StructFieldRef msShadow.ty go!"msLeft"))) (Var "$r"))))
 
 attribute [instance] msShadow.TypeAssumptions.type_repr
   msShadow.TypeAssumptions.underlying
-  msShadow.TypeAssumptions.get_msLeft
-  msShadow.TypeAssumptions.set_msLeft
-  msShadow.TypeAssumptions.get_Name
-  msShadow.TypeAssumptions.set_Name
+  msShadow.TypeAssumptions.get'msLeft
+  msShadow.TypeAssumptions.set'msLeft
+  msShadow.TypeAssumptions.get'Name
+  msShadow.TypeAssumptions.set'Name
   msShadow.TypeAssumptions.method_set
   msShadow.TypeAssumptions.ptr_method_set
-  msShadow.TypeAssumptions.ptr_tag_unfold
+  msShadow.TypeAssumptions.ptr_unfold'tag
 
 structure msPtrEmbed [GooseExts] where
   mk ::
@@ -7491,7 +7491,7 @@ noncomputable instance msPtrEmbed.zero_val [GooseExts] : ZeroVal msPtrEmbed :=
 @[irreducible] noncomputable def msPtrEmbed.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   msPtrEmbed.fieldsUnsealed
 
-noncomputable instance equals_unfold_msPtrEmbed [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'msPtrEmbed [GooseExts] [GoGlobalContext] :
     EqualsUnfold msPtrEmbed.fields msPtrEmbed.fieldsUnsealed :=
   ⟨by unfold msPtrEmbed.fields; rfl⟩
 
@@ -7501,29 +7501,29 @@ noncomputable instance equals_unfold_msPtrEmbed [GooseExts] [GoGlobalContext] :
 class msPtrEmbed.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying msPtrEmbed.underlying msPtrEmbed
   underlying : go.UnderlyingDirectedEq msPtrEmbed.ty msPtrEmbed.underlying
-  get_msLeft : ∀ (x : msPtrEmbed), go.IsGoStepPureDetTagged under (StructFieldGet msPtrEmbed.underlying go!"msLeft") #x (Val #(x.msLeft'))
-  set_msLeft : ∀ (x : msPtrEmbed) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet msPtrEmbed.underlying go!"msLeft") (PairV #x #y) (Val #(({ x with msLeft' := y } : msPtrEmbed)))
+  get'msLeft : ∀ (x : msPtrEmbed), go.IsGoStepPureDetTagged under (StructFieldGet msPtrEmbed.underlying go!"msLeft") #x (Val #(x.msLeft'))
+  set'msLeft : ∀ (x : msPtrEmbed) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet msPtrEmbed.underlying go!"msLeft") (PairV #x #y) (Val #(({ x with msLeft' := y } : msPtrEmbed)))
   method_set : go.MethodSetIs msPtrEmbed.ty [(go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.tag", (some (go.signature.Signature [] false [go.uint64])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType msPtrEmbed.ty) [(go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.tag", (some (go.signature.Signature [] false [go.uint64])))]
-  Name_unfold : MethodUnfold msPtrEmbed.ty go!"Name" (LamV "$r"
+  unfold'Name : MethodUnfold msPtrEmbed.ty go!"Name" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType msLeft.ty) go!"Name"))) (App (Val (GoInstruction (StructFieldGet msPtrEmbed.ty go!"msLeft"))) (Var "$r"))))
-  tag_unfold : MethodUnfold msPtrEmbed.ty go!"tag" (LamV "$r"
+  unfold'tag : MethodUnfold msPtrEmbed.ty go!"tag" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType msLeft.ty) go!"tag"))) (App (Val (GoInstruction (StructFieldGet msPtrEmbed.ty go!"msLeft"))) (Var "$r"))))
-  ptr_Name_unfold : MethodUnfold (go.GoType.PointerType msPtrEmbed.ty) go!"Name" (LamV "$r"
+  ptr_unfold'Name : MethodUnfold (go.GoType.PointerType msPtrEmbed.ty) go!"Name" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType msLeft.ty) go!"Name"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType msLeft.ty)))) (App (Val (GoInstruction (StructFieldRef msPtrEmbed.ty go!"msLeft"))) (Var "$r")))))
-  ptr_tag_unfold : MethodUnfold (go.GoType.PointerType msPtrEmbed.ty) go!"tag" (LamV "$r"
+  ptr_unfold'tag : MethodUnfold (go.GoType.PointerType msPtrEmbed.ty) go!"tag" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType msLeft.ty) go!"tag"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType msLeft.ty)))) (App (Val (GoInstruction (StructFieldRef msPtrEmbed.ty go!"msLeft"))) (Var "$r")))))
 
 attribute [instance] msPtrEmbed.TypeAssumptions.type_repr
   msPtrEmbed.TypeAssumptions.underlying
-  msPtrEmbed.TypeAssumptions.get_msLeft
-  msPtrEmbed.TypeAssumptions.set_msLeft
+  msPtrEmbed.TypeAssumptions.get'msLeft
+  msPtrEmbed.TypeAssumptions.set'msLeft
   msPtrEmbed.TypeAssumptions.method_set
   msPtrEmbed.TypeAssumptions.ptr_method_set
-  msPtrEmbed.TypeAssumptions.Name_unfold
-  msPtrEmbed.TypeAssumptions.tag_unfold
-  msPtrEmbed.TypeAssumptions.ptr_Name_unfold
-  msPtrEmbed.TypeAssumptions.ptr_tag_unfold
+  msPtrEmbed.TypeAssumptions.unfold'Name
+  msPtrEmbed.TypeAssumptions.unfold'tag
+  msPtrEmbed.TypeAssumptions.ptr_unfold'Name
+  msPtrEmbed.TypeAssumptions.ptr_unfold'tag
 
 structure containsPointer [GooseExts] where
   mk ::
@@ -7538,7 +7538,7 @@ noncomputable instance containsPointer.zero_val [GooseExts] : ZeroVal containsPo
 @[irreducible] noncomputable def containsPointer.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   containsPointer.fieldsUnsealed
 
-noncomputable instance equals_unfold_containsPointer [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'containsPointer [GooseExts] [GoGlobalContext] :
     EqualsUnfold containsPointer.fields containsPointer.fieldsUnsealed :=
   ⟨by unfold containsPointer.fields; rfl⟩
 
@@ -7548,15 +7548,15 @@ noncomputable instance equals_unfold_containsPointer [GooseExts] [GoGlobalContex
 class containsPointer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying containsPointer.underlying containsPointer
   underlying : go.UnderlyingDirectedEq containsPointer.ty containsPointer.underlying
-  get_s : ∀ (x : containsPointer), go.IsGoStepPureDetTagged under (StructFieldGet containsPointer.underlying go!"s") #x (Val #(x.s'))
-  set_s : ∀ (x : containsPointer) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet containsPointer.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : containsPointer)))
+  get's : ∀ (x : containsPointer), go.IsGoStepPureDetTagged under (StructFieldGet containsPointer.underlying go!"s") #x (Val #(x.s'))
+  set's : ∀ (x : containsPointer) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet containsPointer.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : containsPointer)))
   method_set : go.MethodSetIs containsPointer.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType containsPointer.ty) []
 
 attribute [instance] containsPointer.TypeAssumptions.type_repr
   containsPointer.TypeAssumptions.underlying
-  containsPointer.TypeAssumptions.get_s
-  containsPointer.TypeAssumptions.set_s
+  containsPointer.TypeAssumptions.get's
+  containsPointer.TypeAssumptions.set's
   containsPointer.TypeAssumptions.method_set
   containsPointer.TypeAssumptions.ptr_method_set
 
@@ -7573,7 +7573,7 @@ noncomputable instance wrapExternalStruct.zero_val [GooseExts] : ZeroVal wrapExt
 @[irreducible] noncomputable def wrapExternalStruct.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   wrapExternalStruct.fieldsUnsealed
 
-noncomputable instance equals_unfold_wrapExternalStruct [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'wrapExternalStruct [GooseExts] [GoGlobalContext] :
     EqualsUnfold wrapExternalStruct.fields wrapExternalStruct.fieldsUnsealed :=
   ⟨by unfold wrapExternalStruct.fields; rfl⟩
 
@@ -7583,22 +7583,22 @@ noncomputable instance equals_unfold_wrapExternalStruct [GooseExts] [GoGlobalCon
 class wrapExternalStruct.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying wrapExternalStruct.underlying wrapExternalStruct
   underlying : go.UnderlyingDirectedEq wrapExternalStruct.ty wrapExternalStruct.underlying
-  get_j : ∀ (x : wrapExternalStruct), go.IsGoStepPureDetTagged under (StructFieldGet wrapExternalStruct.underlying go!"j") #x (Val #(x.j'))
-  set_j : ∀ (x : wrapExternalStruct) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet wrapExternalStruct.underlying go!"j") (PairV #x #y) (Val #(({ x with j' := y } : wrapExternalStruct)))
+  get'j : ∀ (x : wrapExternalStruct), go.IsGoStepPureDetTagged under (StructFieldGet wrapExternalStruct.underlying go!"j") #x (Val #(x.j'))
+  set'j : ∀ (x : wrapExternalStruct) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet wrapExternalStruct.underlying go!"j") (PairV #x #y) (Val #(({ x with j' := y } : wrapExternalStruct)))
   method_set : go.MethodSetIs wrapExternalStruct.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.join", (some (go.signature.Signature [] false [])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType wrapExternalStruct.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.join", (some (go.signature.Signature [] false [])))]
-  join_unfold : MethodUnfold wrapExternalStruct.ty go!"join" wrapExternalStruct.join.impl
-  ptr_join_unfold : MethodUnfold (go.GoType.PointerType wrapExternalStruct.ty) go!"join" (LamV "$r"
+  unfold'join : MethodUnfold wrapExternalStruct.ty go!"join" wrapExternalStruct.join.impl
+  ptr_unfold'join : MethodUnfold (go.GoType.PointerType wrapExternalStruct.ty) go!"join" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve wrapExternalStruct.ty go!"join"))) (App (Val (GoInstruction (GoLoad wrapExternalStruct.ty))) (Var "$r"))))
 
 attribute [instance] wrapExternalStruct.TypeAssumptions.type_repr
   wrapExternalStruct.TypeAssumptions.underlying
-  wrapExternalStruct.TypeAssumptions.get_j
-  wrapExternalStruct.TypeAssumptions.set_j
+  wrapExternalStruct.TypeAssumptions.get'j
+  wrapExternalStruct.TypeAssumptions.set'j
   wrapExternalStruct.TypeAssumptions.method_set
   wrapExternalStruct.TypeAssumptions.ptr_method_set
-  wrapExternalStruct.TypeAssumptions.join_unfold
-  wrapExternalStruct.TypeAssumptions.ptr_join_unfold
+  wrapExternalStruct.TypeAssumptions.unfold'join
+  wrapExternalStruct.TypeAssumptions.ptr_unfold'join
 
 structure typing [GooseExts] where
   mk ::
@@ -7613,7 +7613,7 @@ noncomputable instance typing.zero_val [GooseExts] : ZeroVal typing :=
 @[irreducible] noncomputable def typing.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   typing.fieldsUnsealed
 
-noncomputable instance equals_unfold_typing [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'typing [GooseExts] [GoGlobalContext] :
     EqualsUnfold typing.fields typing.fieldsUnsealed :=
   ⟨by unfold typing.fields; rfl⟩
 
@@ -7623,15 +7623,15 @@ noncomputable instance equals_unfold_typing [GooseExts] [GoGlobalContext] :
 class typing.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying typing.underlying typing
   underlying : go.UnderlyingDirectedEq typing.ty typing.underlying
-  get_proph : ∀ (x : typing), go.IsGoStepPureDetTagged under (StructFieldGet typing.underlying go!"proph") #x (Val #(x.proph'))
-  set_proph : ∀ (x : typing) (y : _root_.Perennial.github_com.goose_lang.primitive.ProphId), go.IsGoStepPureDetTagged under (StructFieldSet typing.underlying go!"proph") (PairV #x #y) (Val #(({ x with proph' := y } : typing)))
+  get'proph : ∀ (x : typing), go.IsGoStepPureDetTagged under (StructFieldGet typing.underlying go!"proph") #x (Val #(x.proph'))
+  set'proph : ∀ (x : typing) (y : _root_.Perennial.github_com.goose_lang.primitive.ProphId), go.IsGoStepPureDetTagged under (StructFieldSet typing.underlying go!"proph") (PairV #x #y) (Val #(({ x with proph' := y } : typing)))
   method_set : go.MethodSetIs typing.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType typing.ty) []
 
 attribute [instance] typing.TypeAssumptions.type_repr
   typing.TypeAssumptions.underlying
-  typing.TypeAssumptions.get_proph
-  typing.TypeAssumptions.set_proph
+  typing.TypeAssumptions.get'proph
+  typing.TypeAssumptions.set'proph
   typing.TypeAssumptions.method_set
   typing.TypeAssumptions.ptr_method_set
 
@@ -7650,7 +7650,7 @@ noncomputable instance prophEvent.zero_val [GooseExts] : ZeroVal prophEvent :=
 @[irreducible] noncomputable def prophEvent.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   prophEvent.fieldsUnsealed
 
-noncomputable instance equals_unfold_prophEvent [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'prophEvent [GooseExts] [GoGlobalContext] :
     EqualsUnfold prophEvent.fields prophEvent.fieldsUnsealed :=
   ⟨by unfold prophEvent.fields; rfl⟩
 
@@ -7660,19 +7660,19 @@ noncomputable instance equals_unfold_prophEvent [GooseExts] [GoGlobalContext] :
 class prophEvent.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying prophEvent.underlying prophEvent
   underlying : go.UnderlyingDirectedEq prophEvent.ty prophEvent.underlying
-  get_kind : ∀ (x : prophEvent), go.IsGoStepPureDetTagged under (StructFieldGet prophEvent.underlying go!"kind") #x (Val #(x.kind'))
-  set_kind : ∀ (x : prophEvent) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet prophEvent.underlying go!"kind") (PairV #x #y) (Val #(({ x with kind' := y } : prophEvent)))
-  get_val : ∀ (x : prophEvent), go.IsGoStepPureDetTagged under (StructFieldGet prophEvent.underlying go!"val") #x (Val #(x.val'))
-  set_val : ∀ (x : prophEvent) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet prophEvent.underlying go!"val") (PairV #x #y) (Val #(({ x with val' := y } : prophEvent)))
+  get'kind : ∀ (x : prophEvent), go.IsGoStepPureDetTagged under (StructFieldGet prophEvent.underlying go!"kind") #x (Val #(x.kind'))
+  set'kind : ∀ (x : prophEvent) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet prophEvent.underlying go!"kind") (PairV #x #y) (Val #(({ x with kind' := y } : prophEvent)))
+  get'val : ∀ (x : prophEvent), go.IsGoStepPureDetTagged under (StructFieldGet prophEvent.underlying go!"val") #x (Val #(x.val'))
+  set'val : ∀ (x : prophEvent) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet prophEvent.underlying go!"val") (PairV #x #y) (Val #(({ x with val' := y } : prophEvent)))
   method_set : go.MethodSetIs prophEvent.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType prophEvent.ty) []
 
 attribute [instance] prophEvent.TypeAssumptions.type_repr
   prophEvent.TypeAssumptions.underlying
-  prophEvent.TypeAssumptions.get_kind
-  prophEvent.TypeAssumptions.set_kind
-  prophEvent.TypeAssumptions.get_val
-  prophEvent.TypeAssumptions.set_val
+  prophEvent.TypeAssumptions.get'kind
+  prophEvent.TypeAssumptions.set'kind
+  prophEvent.TypeAssumptions.get'val
+  prophEvent.TypeAssumptions.set'val
   prophEvent.TypeAssumptions.method_set
   prophEvent.TypeAssumptions.ptr_method_set
 
@@ -7691,7 +7691,7 @@ noncomputable instance composite.zero_val [GooseExts] : ZeroVal composite :=
 @[irreducible] noncomputable def composite.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   composite.fieldsUnsealed
 
-noncomputable instance equals_unfold_composite [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'composite [GooseExts] [GoGlobalContext] :
     EqualsUnfold composite.fields composite.fieldsUnsealed :=
   ⟨by unfold composite.fields; rfl⟩
 
@@ -7701,19 +7701,19 @@ noncomputable instance equals_unfold_composite [GooseExts] [GoGlobalContext] :
 class composite.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying composite.underlying composite
   underlying : go.UnderlyingDirectedEq composite.ty composite.underlying
-  get_a : ∀ (x : composite), go.IsGoStepPureDetTagged under (StructFieldGet composite.underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : composite) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet composite.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : composite)))
-  get_b : ∀ (x : composite), go.IsGoStepPureDetTagged under (StructFieldGet composite.underlying go!"b") #x (Val #(x.b'))
-  set_b : ∀ (x : composite) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet composite.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : composite)))
+  get'a : ∀ (x : composite), go.IsGoStepPureDetTagged under (StructFieldGet composite.underlying go!"a") #x (Val #(x.a'))
+  set'a : ∀ (x : composite) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet composite.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : composite)))
+  get'b : ∀ (x : composite), go.IsGoStepPureDetTagged under (StructFieldGet composite.underlying go!"b") #x (Val #(x.b'))
+  set'b : ∀ (x : composite) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet composite.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : composite)))
   method_set : go.MethodSetIs composite.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType composite.ty) []
 
 attribute [instance] composite.TypeAssumptions.type_repr
   composite.TypeAssumptions.underlying
-  composite.TypeAssumptions.get_a
-  composite.TypeAssumptions.set_a
-  composite.TypeAssumptions.get_b
-  composite.TypeAssumptions.set_b
+  composite.TypeAssumptions.get'a
+  composite.TypeAssumptions.set'a
+  composite.TypeAssumptions.get'b
+  composite.TypeAssumptions.set'b
   composite.TypeAssumptions.method_set
   composite.TypeAssumptions.ptr_method_set
 
@@ -7732,7 +7732,7 @@ noncomputable instance pp.zero_val [GooseExts] : ZeroVal pp :=
 @[irreducible] noncomputable def pp.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   pp.fieldsUnsealed
 
-noncomputable instance equals_unfold_pp [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'pp [GooseExts] [GoGlobalContext] :
     EqualsUnfold pp.fields pp.fieldsUnsealed :=
   ⟨by unfold pp.fields; rfl⟩
 
@@ -7742,25 +7742,25 @@ noncomputable instance equals_unfold_pp [GooseExts] [GoGlobalContext] :
 class pp.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying pp.underlying pp
   underlying : go.UnderlyingDirectedEq pp.ty pp.underlying
-  get_buf : ∀ (x : pp), go.IsGoStepPureDetTagged under (StructFieldGet pp.underlying go!"buf") #x (Val #(x.buf'))
-  set_buf : ∀ (x : pp) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet pp.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : pp)))
-  get_panicking : ∀ (x : pp), go.IsGoStepPureDetTagged under (StructFieldGet pp.underlying go!"panicking") #x (Val #(x.panicking'))
-  set_panicking : ∀ (x : pp) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet pp.underlying go!"panicking") (PairV #x #y) (Val #(({ x with panicking' := y } : pp)))
+  get'buf : ∀ (x : pp), go.IsGoStepPureDetTagged under (StructFieldGet pp.underlying go!"buf") #x (Val #(x.buf'))
+  set'buf : ∀ (x : pp) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet pp.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : pp)))
+  get'panicking : ∀ (x : pp), go.IsGoStepPureDetTagged under (StructFieldGet pp.underlying go!"panicking") #x (Val #(x.panicking'))
+  set'panicking : ∀ (x : pp) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet pp.underlying go!"panicking") (PairV #x #y) (Val #(({ x with panicking' := y } : pp)))
   method_set : go.MethodSetIs pp.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType pp.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.catchPanic", (some (go.signature.Signature [go.byte, go.string] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.handleMethods", (some (go.signature.Signature [go.any, go.byte] false [go.bool])))]
-  ptr_catchPanic'deferred_unfold : MethodUnfold (go.GoType.PointerType pp.ty) go!"catchPanic'deferred" pp.catchPanic'deferred.impl
-  ptr_handleMethods_unfold : MethodUnfold (go.GoType.PointerType pp.ty) go!"handleMethods" pp.handleMethods.impl
+  ptr_unfold'catchPanic'deferred : MethodUnfold (go.GoType.PointerType pp.ty) go!"catchPanic'deferred" pp.catchPanic'deferred.impl
+  ptr_unfold'handleMethods : MethodUnfold (go.GoType.PointerType pp.ty) go!"handleMethods" pp.handleMethods.impl
 
 attribute [instance] pp.TypeAssumptions.type_repr
   pp.TypeAssumptions.underlying
-  pp.TypeAssumptions.get_buf
-  pp.TypeAssumptions.set_buf
-  pp.TypeAssumptions.get_panicking
-  pp.TypeAssumptions.set_panicking
+  pp.TypeAssumptions.get'buf
+  pp.TypeAssumptions.set'buf
+  pp.TypeAssumptions.get'panicking
+  pp.TypeAssumptions.set'panicking
   pp.TypeAssumptions.method_set
   pp.TypeAssumptions.ptr_method_set
-  pp.TypeAssumptions.ptr_catchPanic'deferred_unfold
-  pp.TypeAssumptions.ptr_handleMethods_unfold
+  pp.TypeAssumptions.ptr_unfold'catchPanic'deferred
+  pp.TypeAssumptions.ptr_unfold'handleMethods
 
 abbrev stringer [GooseExts] : Type := GoInterface
 
@@ -7788,7 +7788,7 @@ noncomputable instance valCatcher.zero_val [GooseExts] : ZeroVal valCatcher :=
 @[irreducible] noncomputable def valCatcher.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   valCatcher.fieldsUnsealed
 
-noncomputable instance equals_unfold_valCatcher [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'valCatcher [GooseExts] [GoGlobalContext] :
     EqualsUnfold valCatcher.fields valCatcher.fieldsUnsealed :=
   ⟨by unfold valCatcher.fields; rfl⟩
 
@@ -7800,16 +7800,16 @@ class valCatcher.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] 
   underlying : go.UnderlyingDirectedEq valCatcher.ty valCatcher.underlying
   method_set : go.MethodSetIs valCatcher.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.catch", (some (go.signature.Signature [] false [])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType valCatcher.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.catch", (some (go.signature.Signature [] false [])))]
-  catch'deferred_unfold : MethodUnfold valCatcher.ty go!"catch'deferred" valCatcher.catch'deferred.impl
-  ptr_catch'deferred_unfold : MethodUnfold (go.GoType.PointerType valCatcher.ty) go!"catch'deferred" (LamV "$r"
+  unfold'catch'deferred : MethodUnfold valCatcher.ty go!"catch'deferred" valCatcher.catch'deferred.impl
+  ptr_unfold'catch'deferred : MethodUnfold (go.GoType.PointerType valCatcher.ty) go!"catch'deferred" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve valCatcher.ty go!"catch'deferred"))) (App (Val (GoInstruction (GoLoad valCatcher.ty))) (Var "$r"))))
 
 attribute [instance] valCatcher.TypeAssumptions.type_repr
   valCatcher.TypeAssumptions.underlying
   valCatcher.TypeAssumptions.method_set
   valCatcher.TypeAssumptions.ptr_method_set
-  valCatcher.TypeAssumptions.catch'deferred_unfold
-  valCatcher.TypeAssumptions.ptr_catch'deferred_unfold
+  valCatcher.TypeAssumptions.unfold'catch'deferred
+  valCatcher.TypeAssumptions.ptr_unfold'catch'deferred
 
 abbrev catcherI [GooseExts] : Type := GoInterface
 
@@ -7837,7 +7837,7 @@ noncomputable instance R.zero_val [GooseExts] : ZeroVal R :=
 @[irreducible] noncomputable def R.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   R.fieldsUnsealed
 
-noncomputable instance equals_unfold_R [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'R [GooseExts] [GoGlobalContext] :
     EqualsUnfold R.fields R.fieldsUnsealed :=
   ⟨by unfold R.fields; rfl⟩
 
@@ -7849,13 +7849,13 @@ class R.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemant
   underlying : go.UnderlyingDirectedEq R.ty R.underlying
   method_set : go.MethodSetIs R.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType R.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.recurMethod", (some (go.signature.Signature [] false [])))]
-  ptr_recurMethod_unfold : MethodUnfold (go.GoType.PointerType R.ty) go!"recurMethod" R.recurMethod.impl
+  ptr_unfold'recurMethod : MethodUnfold (go.GoType.PointerType R.ty) go!"recurMethod" R.recurMethod.impl
 
 attribute [instance] R.TypeAssumptions.type_repr
   R.TypeAssumptions.underlying
   R.TypeAssumptions.method_set
   R.TypeAssumptions.ptr_method_set
-  R.TypeAssumptions.ptr_recurMethod_unfold
+  R.TypeAssumptions.ptr_unfold'recurMethod
 
 structure Other [GooseExts] where
   mk ::
@@ -7870,7 +7870,7 @@ noncomputable instance Other.zero_val [GooseExts] : ZeroVal Other :=
 @[irreducible] noncomputable def Other.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Other.fieldsUnsealed
 
-noncomputable instance equals_unfold_Other [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Other [GooseExts] [GoGlobalContext] :
     EqualsUnfold Other.fields Other.fieldsUnsealed :=
   ⟨by unfold Other.fields; rfl⟩
 
@@ -7880,23 +7880,23 @@ noncomputable instance equals_unfold_Other [GooseExts] [GoGlobalContext] :
 class Other.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Other.underlying Other
   underlying : go.UnderlyingDirectedEq Other.ty Other.underlying
-  get_RecursiveEmbedded : ∀ (x : Other), go.IsGoStepPureDetTagged under (StructFieldGet Other.underlying go!"RecursiveEmbedded") #x (Val #(x.RecursiveEmbedded'))
-  set_RecursiveEmbedded : ∀ (x : Other) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Other.underlying go!"RecursiveEmbedded") (PairV #x #y) (Val #(({ x with RecursiveEmbedded' := y } : Other)))
+  get'RecursiveEmbedded : ∀ (x : Other), go.IsGoStepPureDetTagged under (StructFieldGet Other.underlying go!"RecursiveEmbedded") #x (Val #(x.RecursiveEmbedded'))
+  set'RecursiveEmbedded : ∀ (x : Other) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Other.underlying go!"RecursiveEmbedded") (PairV #x #y) (Val #(({ x with RecursiveEmbedded' := y } : Other)))
   method_set : go.MethodSetIs Other.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.recurEmbeddedMethod", (some (go.signature.Signature [] false [])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Other.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.recurEmbeddedMethod", (some (go.signature.Signature [] false [])))]
-  recurEmbeddedMethod_unfold : MethodUnfold Other.ty go!"recurEmbeddedMethod" (LamV "$r"
+  unfold'recurEmbeddedMethod : MethodUnfold Other.ty go!"recurEmbeddedMethod" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType RecursiveEmbedded.ty) go!"recurEmbeddedMethod"))) (App (Val (GoInstruction (StructFieldGet Other.ty go!"RecursiveEmbedded"))) (Var "$r"))))
-  ptr_recurEmbeddedMethod_unfold : MethodUnfold (go.GoType.PointerType Other.ty) go!"recurEmbeddedMethod" (LamV "$r"
+  ptr_unfold'recurEmbeddedMethod : MethodUnfold (go.GoType.PointerType Other.ty) go!"recurEmbeddedMethod" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType RecursiveEmbedded.ty) go!"recurEmbeddedMethod"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RecursiveEmbedded.ty)))) (App (Val (GoInstruction (StructFieldRef Other.ty go!"RecursiveEmbedded"))) (Var "$r")))))
 
 attribute [instance] Other.TypeAssumptions.type_repr
   Other.TypeAssumptions.underlying
-  Other.TypeAssumptions.get_RecursiveEmbedded
-  Other.TypeAssumptions.set_RecursiveEmbedded
+  Other.TypeAssumptions.get'RecursiveEmbedded
+  Other.TypeAssumptions.set'RecursiveEmbedded
   Other.TypeAssumptions.method_set
   Other.TypeAssumptions.ptr_method_set
-  Other.TypeAssumptions.recurEmbeddedMethod_unfold
-  Other.TypeAssumptions.ptr_recurEmbeddedMethod_unfold
+  Other.TypeAssumptions.unfold'recurEmbeddedMethod
+  Other.TypeAssumptions.ptr_unfold'recurEmbeddedMethod
 
 structure RecursiveEmbedded [GooseExts] where
   mk ::
@@ -7911,7 +7911,7 @@ noncomputable instance RecursiveEmbedded.zero_val [GooseExts] : ZeroVal Recursiv
 @[irreducible] noncomputable def RecursiveEmbedded.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   RecursiveEmbedded.fieldsUnsealed
 
-noncomputable instance equals_unfold_RecursiveEmbedded [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'RecursiveEmbedded [GooseExts] [GoGlobalContext] :
     EqualsUnfold RecursiveEmbedded.fields RecursiveEmbedded.fieldsUnsealed :=
   ⟨by unfold RecursiveEmbedded.fields; rfl⟩
 
@@ -7921,19 +7921,19 @@ noncomputable instance equals_unfold_RecursiveEmbedded [GooseExts] [GoGlobalCont
 class RecursiveEmbedded.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying RecursiveEmbedded.underlying RecursiveEmbedded
   underlying : go.UnderlyingDirectedEq RecursiveEmbedded.ty RecursiveEmbedded.underlying
-  get_Other : ∀ (x : RecursiveEmbedded), go.IsGoStepPureDetTagged under (StructFieldGet RecursiveEmbedded.underlying go!"Other") #x (Val #(x.Other'))
-  set_Other : ∀ (x : RecursiveEmbedded) (y : Other), go.IsGoStepPureDetTagged under (StructFieldSet RecursiveEmbedded.underlying go!"Other") (PairV #x #y) (Val #(({ x with Other' := y } : RecursiveEmbedded)))
+  get'Other : ∀ (x : RecursiveEmbedded), go.IsGoStepPureDetTagged under (StructFieldGet RecursiveEmbedded.underlying go!"Other") #x (Val #(x.Other'))
+  set'Other : ∀ (x : RecursiveEmbedded) (y : Other), go.IsGoStepPureDetTagged under (StructFieldSet RecursiveEmbedded.underlying go!"Other") (PairV #x #y) (Val #(({ x with Other' := y } : RecursiveEmbedded)))
   method_set : go.MethodSetIs RecursiveEmbedded.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType RecursiveEmbedded.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.recurEmbeddedMethod", (some (go.signature.Signature [] false [])))]
-  ptr_recurEmbeddedMethod_unfold : MethodUnfold (go.GoType.PointerType RecursiveEmbedded.ty) go!"recurEmbeddedMethod" RecursiveEmbedded.recurEmbeddedMethod.impl
+  ptr_unfold'recurEmbeddedMethod : MethodUnfold (go.GoType.PointerType RecursiveEmbedded.ty) go!"recurEmbeddedMethod" RecursiveEmbedded.recurEmbeddedMethod.impl
 
 attribute [instance] RecursiveEmbedded.TypeAssumptions.type_repr
   RecursiveEmbedded.TypeAssumptions.underlying
-  RecursiveEmbedded.TypeAssumptions.get_Other
-  RecursiveEmbedded.TypeAssumptions.set_Other
+  RecursiveEmbedded.TypeAssumptions.get'Other
+  RecursiveEmbedded.TypeAssumptions.set'Other
   RecursiveEmbedded.TypeAssumptions.method_set
   RecursiveEmbedded.TypeAssumptions.ptr_method_set
-  RecursiveEmbedded.TypeAssumptions.ptr_recurEmbeddedMethod_unfold
+  RecursiveEmbedded.TypeAssumptions.ptr_unfold'recurEmbeddedMethod
 
 structure runeStruct [GooseExts] where
   mk ::
@@ -7950,7 +7950,7 @@ noncomputable instance runeStruct.zero_val [GooseExts] : ZeroVal runeStruct :=
 @[irreducible] noncomputable def runeStruct.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   runeStruct.fieldsUnsealed
 
-noncomputable instance equals_unfold_runeStruct [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'runeStruct [GooseExts] [GoGlobalContext] :
     EqualsUnfold runeStruct.fields runeStruct.fieldsUnsealed :=
   ⟨by unfold runeStruct.fields; rfl⟩
 
@@ -7960,19 +7960,19 @@ noncomputable instance equals_unfold_runeStruct [GooseExts] [GoGlobalContext] :
 class runeStruct.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying runeStruct.underlying runeStruct
   underlying : go.UnderlyingDirectedEq runeStruct.ty runeStruct.underlying
-  get_r : ∀ (x : runeStruct), go.IsGoStepPureDetTagged under (StructFieldGet runeStruct.underlying go!"r") #x (Val #(x.r'))
-  set_r : ∀ (x : runeStruct) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet runeStruct.underlying go!"r") (PairV #x #y) (Val #(({ x with r' := y } : runeStruct)))
-  get_n : ∀ (x : runeStruct), go.IsGoStepPureDetTagged under (StructFieldGet runeStruct.underlying go!"n") #x (Val #(x.n'))
-  set_n : ∀ (x : runeStruct) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet runeStruct.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : runeStruct)))
+  get'r : ∀ (x : runeStruct), go.IsGoStepPureDetTagged under (StructFieldGet runeStruct.underlying go!"r") #x (Val #(x.r'))
+  set'r : ∀ (x : runeStruct) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet runeStruct.underlying go!"r") (PairV #x #y) (Val #(({ x with r' := y } : runeStruct)))
+  get'n : ∀ (x : runeStruct), go.IsGoStepPureDetTagged under (StructFieldGet runeStruct.underlying go!"n") #x (Val #(x.n'))
+  set'n : ∀ (x : runeStruct) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet runeStruct.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : runeStruct)))
   method_set : go.MethodSetIs runeStruct.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType runeStruct.ty) []
 
 attribute [instance] runeStruct.TypeAssumptions.type_repr
   runeStruct.TypeAssumptions.underlying
-  runeStruct.TypeAssumptions.get_r
-  runeStruct.TypeAssumptions.set_r
-  runeStruct.TypeAssumptions.get_n
-  runeStruct.TypeAssumptions.set_n
+  runeStruct.TypeAssumptions.get'r
+  runeStruct.TypeAssumptions.set'r
+  runeStruct.TypeAssumptions.get'n
+  runeStruct.TypeAssumptions.set'n
   runeStruct.TypeAssumptions.method_set
   runeStruct.TypeAssumptions.ptr_method_set
 
@@ -8003,7 +8003,7 @@ noncomputable instance thing.zero_val [GooseExts] : ZeroVal thing :=
 @[irreducible] noncomputable def thing.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   thing.fieldsUnsealed
 
-noncomputable instance equals_unfold_thing [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'thing [GooseExts] [GoGlobalContext] :
     EqualsUnfold thing.fields thing.fieldsUnsealed :=
   ⟨by unfold thing.fields; rfl⟩
 
@@ -8013,15 +8013,15 @@ noncomputable instance equals_unfold_thing [GooseExts] [GoGlobalContext] :
 class thing.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying thing.underlying thing
   underlying : go.UnderlyingDirectedEq thing.ty thing.underlying
-  get_x : ∀ (x : thing), go.IsGoStepPureDetTagged under (StructFieldGet thing.underlying go!"x") #x (Val #(x.x'))
-  set_x : ∀ (x : thing) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet thing.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : thing)))
+  get'x : ∀ (x : thing), go.IsGoStepPureDetTagged under (StructFieldGet thing.underlying go!"x") #x (Val #(x.x'))
+  set'x : ∀ (x : thing) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet thing.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : thing)))
   method_set : go.MethodSetIs thing.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType thing.ty) []
 
 attribute [instance] thing.TypeAssumptions.type_repr
   thing.TypeAssumptions.underlying
-  thing.TypeAssumptions.get_x
-  thing.TypeAssumptions.set_x
+  thing.TypeAssumptions.get'x
+  thing.TypeAssumptions.set'x
   thing.TypeAssumptions.method_set
   thing.TypeAssumptions.ptr_method_set
 
@@ -8038,7 +8038,7 @@ noncomputable instance sliceOfThings.zero_val [GooseExts] : ZeroVal sliceOfThing
 @[irreducible] noncomputable def sliceOfThings.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   sliceOfThings.fieldsUnsealed
 
-noncomputable instance equals_unfold_sliceOfThings [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'sliceOfThings [GooseExts] [GoGlobalContext] :
     EqualsUnfold sliceOfThings.fields sliceOfThings.fieldsUnsealed :=
   ⟨by unfold sliceOfThings.fields; rfl⟩
 
@@ -8048,22 +8048,22 @@ noncomputable instance equals_unfold_sliceOfThings [GooseExts] [GoGlobalContext]
 class sliceOfThings.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying sliceOfThings.underlying sliceOfThings
   underlying : go.UnderlyingDirectedEq sliceOfThings.ty sliceOfThings.underlying
-  get_things : ∀ (x : sliceOfThings), go.IsGoStepPureDetTagged under (StructFieldGet sliceOfThings.underlying go!"things") #x (Val #(x.things'))
-  set_things : ∀ (x : sliceOfThings) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet sliceOfThings.underlying go!"things") (PairV #x #y) (Val #(({ x with things' := y } : sliceOfThings)))
+  get'things : ∀ (x : sliceOfThings), go.IsGoStepPureDetTagged under (StructFieldGet sliceOfThings.underlying go!"things") #x (Val #(x.things'))
+  set'things : ∀ (x : sliceOfThings) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet sliceOfThings.underlying go!"things") (PairV #x #y) (Val #(({ x with things' := y } : sliceOfThings)))
   method_set : go.MethodSetIs sliceOfThings.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.getThingRef", (some (go.signature.Signature [go.uint64] false [(go.GoType.PointerType thing.ty)])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType sliceOfThings.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.getThingRef", (some (go.signature.Signature [go.uint64] false [(go.GoType.PointerType thing.ty)])))]
-  getThingRef_unfold : MethodUnfold sliceOfThings.ty go!"getThingRef" sliceOfThings.getThingRef.impl
-  ptr_getThingRef_unfold : MethodUnfold (go.GoType.PointerType sliceOfThings.ty) go!"getThingRef" (LamV "$r"
+  unfold'getThingRef : MethodUnfold sliceOfThings.ty go!"getThingRef" sliceOfThings.getThingRef.impl
+  ptr_unfold'getThingRef : MethodUnfold (go.GoType.PointerType sliceOfThings.ty) go!"getThingRef" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve sliceOfThings.ty go!"getThingRef"))) (App (Val (GoInstruction (GoLoad sliceOfThings.ty))) (Var "$r"))))
 
 attribute [instance] sliceOfThings.TypeAssumptions.type_repr
   sliceOfThings.TypeAssumptions.underlying
-  sliceOfThings.TypeAssumptions.get_things
-  sliceOfThings.TypeAssumptions.set_things
+  sliceOfThings.TypeAssumptions.get'things
+  sliceOfThings.TypeAssumptions.set'things
   sliceOfThings.TypeAssumptions.method_set
   sliceOfThings.TypeAssumptions.ptr_method_set
-  sliceOfThings.TypeAssumptions.getThingRef_unfold
-  sliceOfThings.TypeAssumptions.ptr_getThingRef_unfold
+  sliceOfThings.TypeAssumptions.unfold'getThingRef
+  sliceOfThings.TypeAssumptions.ptr_unfold'getThingRef
 
 structure Point [GooseExts] where
   mk ::
@@ -8080,7 +8080,7 @@ noncomputable instance Point.zero_val [GooseExts] : ZeroVal Point :=
 @[irreducible] noncomputable def Point.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Point.fieldsUnsealed
 
-noncomputable instance equals_unfold_Point [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Point [GooseExts] [GoGlobalContext] :
     EqualsUnfold Point.fields Point.fieldsUnsealed :=
   ⟨by unfold Point.fields; rfl⟩
 
@@ -8090,36 +8090,36 @@ noncomputable instance equals_unfold_Point [GooseExts] [GoGlobalContext] :
 class Point.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Point.underlying Point
   underlying : go.UnderlyingDirectedEq Point.ty Point.underlying
-  get_x : ∀ (x : Point), go.IsGoStepPureDetTagged under (StructFieldGet Point.underlying go!"x") #x (Val #(x.x'))
-  set_x : ∀ (x : Point) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Point.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : Point)))
-  get_y : ∀ (x : Point), go.IsGoStepPureDetTagged under (StructFieldGet Point.underlying go!"y") #x (Val #(x.y'))
-  set_y : ∀ (x : Point) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Point.underlying go!"y") (PairV #x #y) (Val #(({ x with y' := y } : Point)))
+  get'x : ∀ (x : Point), go.IsGoStepPureDetTagged under (StructFieldGet Point.underlying go!"x") #x (Val #(x.x'))
+  set'x : ∀ (x : Point) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Point.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : Point)))
+  get'y : ∀ (x : Point), go.IsGoStepPureDetTagged under (StructFieldGet Point.underlying go!"y") #x (Val #(x.y'))
+  set'y : ∀ (x : Point) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Point.underlying go!"y") (PairV #x #y) (Val #(({ x with y' := y } : Point)))
   method_set : go.MethodSetIs Point.ty [(go!"Add", (some (go.signature.Signature [go.uint64] false [go.uint64]))), (go!"GetField", (some (go.signature.Signature [] false [go.uint64]))), (go!"IgnoreReceiver", (some (go.signature.Signature [] false [go.string])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Point.ty) [(go!"Add", (some (go.signature.Signature [go.uint64] false [go.uint64]))), (go!"GetField", (some (go.signature.Signature [] false [go.uint64]))), (go!"IgnoreReceiver", (some (go.signature.Signature [] false [go.string])))]
-  Add_unfold : MethodUnfold Point.ty go!"Add" Point.Add.impl
-  GetField_unfold : MethodUnfold Point.ty go!"GetField" Point.GetField.impl
-  IgnoreReceiver_unfold : MethodUnfold Point.ty go!"IgnoreReceiver" Point.IgnoreReceiver.impl
-  ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Point.ty) go!"Add" (LamV "$r"
+  unfold'Add : MethodUnfold Point.ty go!"Add" Point.Add.impl
+  unfold'GetField : MethodUnfold Point.ty go!"GetField" Point.GetField.impl
+  unfold'IgnoreReceiver : MethodUnfold Point.ty go!"IgnoreReceiver" Point.IgnoreReceiver.impl
+  ptr_unfold'Add : MethodUnfold (go.GoType.PointerType Point.ty) go!"Add" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Point.ty go!"Add"))) (App (Val (GoInstruction (GoLoad Point.ty))) (Var "$r"))))
-  ptr_GetField_unfold : MethodUnfold (go.GoType.PointerType Point.ty) go!"GetField" (LamV "$r"
+  ptr_unfold'GetField : MethodUnfold (go.GoType.PointerType Point.ty) go!"GetField" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Point.ty go!"GetField"))) (App (Val (GoInstruction (GoLoad Point.ty))) (Var "$r"))))
-  ptr_IgnoreReceiver_unfold : MethodUnfold (go.GoType.PointerType Point.ty) go!"IgnoreReceiver" (LamV "$r"
+  ptr_unfold'IgnoreReceiver : MethodUnfold (go.GoType.PointerType Point.ty) go!"IgnoreReceiver" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Point.ty go!"IgnoreReceiver"))) (App (Val (GoInstruction (GoLoad Point.ty))) (Var "$r"))))
 
 attribute [instance] Point.TypeAssumptions.type_repr
   Point.TypeAssumptions.underlying
-  Point.TypeAssumptions.get_x
-  Point.TypeAssumptions.set_x
-  Point.TypeAssumptions.get_y
-  Point.TypeAssumptions.set_y
+  Point.TypeAssumptions.get'x
+  Point.TypeAssumptions.set'x
+  Point.TypeAssumptions.get'y
+  Point.TypeAssumptions.set'y
   Point.TypeAssumptions.method_set
   Point.TypeAssumptions.ptr_method_set
-  Point.TypeAssumptions.Add_unfold
-  Point.TypeAssumptions.GetField_unfold
-  Point.TypeAssumptions.IgnoreReceiver_unfold
-  Point.TypeAssumptions.ptr_Add_unfold
-  Point.TypeAssumptions.ptr_GetField_unfold
-  Point.TypeAssumptions.ptr_IgnoreReceiver_unfold
+  Point.TypeAssumptions.unfold'Add
+  Point.TypeAssumptions.unfold'GetField
+  Point.TypeAssumptions.unfold'IgnoreReceiver
+  Point.TypeAssumptions.ptr_unfold'Add
+  Point.TypeAssumptions.ptr_unfold'GetField
+  Point.TypeAssumptions.ptr_unfold'IgnoreReceiver
 
 structure TwoInts [GooseExts] where
   mk ::
@@ -8136,7 +8136,7 @@ noncomputable instance TwoInts.zero_val [GooseExts] : ZeroVal TwoInts :=
 @[irreducible] noncomputable def TwoInts.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   TwoInts.fieldsUnsealed
 
-noncomputable instance equals_unfold_TwoInts [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'TwoInts [GooseExts] [GoGlobalContext] :
     EqualsUnfold TwoInts.fields TwoInts.fieldsUnsealed :=
   ⟨by unfold TwoInts.fields; rfl⟩
 
@@ -8146,19 +8146,19 @@ noncomputable instance equals_unfold_TwoInts [GooseExts] [GoGlobalContext] :
 class TwoInts.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying TwoInts.underlying TwoInts
   underlying : go.UnderlyingDirectedEq TwoInts.ty TwoInts.underlying
-  get_x : ∀ (x : TwoInts), go.IsGoStepPureDetTagged under (StructFieldGet TwoInts.underlying go!"x") #x (Val #(x.x'))
-  set_x : ∀ (x : TwoInts) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet TwoInts.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : TwoInts)))
-  get_y : ∀ (x : TwoInts), go.IsGoStepPureDetTagged under (StructFieldGet TwoInts.underlying go!"y") #x (Val #(x.y'))
-  set_y : ∀ (x : TwoInts) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet TwoInts.underlying go!"y") (PairV #x #y) (Val #(({ x with y' := y } : TwoInts)))
+  get'x : ∀ (x : TwoInts), go.IsGoStepPureDetTagged under (StructFieldGet TwoInts.underlying go!"x") #x (Val #(x.x'))
+  set'x : ∀ (x : TwoInts) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet TwoInts.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : TwoInts)))
+  get'y : ∀ (x : TwoInts), go.IsGoStepPureDetTagged under (StructFieldGet TwoInts.underlying go!"y") #x (Val #(x.y'))
+  set'y : ∀ (x : TwoInts) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet TwoInts.underlying go!"y") (PairV #x #y) (Val #(({ x with y' := y } : TwoInts)))
   method_set : go.MethodSetIs TwoInts.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType TwoInts.ty) []
 
 attribute [instance] TwoInts.TypeAssumptions.type_repr
   TwoInts.TypeAssumptions.underlying
-  TwoInts.TypeAssumptions.get_x
-  TwoInts.TypeAssumptions.set_x
-  TwoInts.TypeAssumptions.get_y
-  TwoInts.TypeAssumptions.set_y
+  TwoInts.TypeAssumptions.get'x
+  TwoInts.TypeAssumptions.set'x
+  TwoInts.TypeAssumptions.get'y
+  TwoInts.TypeAssumptions.set'y
   TwoInts.TypeAssumptions.method_set
   TwoInts.TypeAssumptions.ptr_method_set
 
@@ -8179,7 +8179,7 @@ noncomputable instance S.zero_val [GooseExts] : ZeroVal S :=
 @[irreducible] noncomputable def S.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   S.fieldsUnsealed
 
-noncomputable instance equals_unfold_S [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'S [GooseExts] [GoGlobalContext] :
     EqualsUnfold S.fields S.fieldsUnsealed :=
   ⟨by unfold S.fields; rfl⟩
 
@@ -8189,40 +8189,40 @@ noncomputable instance equals_unfold_S [GooseExts] [GoGlobalContext] :
 class S.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying S.underlying S
   underlying : go.UnderlyingDirectedEq S.ty S.underlying
-  get_a : ∀ (x : S), go.IsGoStepPureDetTagged under (StructFieldGet S.underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : S) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet S.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : S)))
-  get_b : ∀ (x : S), go.IsGoStepPureDetTagged under (StructFieldGet S.underlying go!"b") #x (Val #(x.b'))
-  set_b : ∀ (x : S) (y : TwoInts), go.IsGoStepPureDetTagged under (StructFieldSet S.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : S)))
-  get_c : ∀ (x : S), go.IsGoStepPureDetTagged under (StructFieldGet S.underlying go!"c") #x (Val #(x.c'))
-  set_c : ∀ (x : S) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet S.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : S)))
+  get'a : ∀ (x : S), go.IsGoStepPureDetTagged under (StructFieldGet S.underlying go!"a") #x (Val #(x.a'))
+  set'a : ∀ (x : S) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet S.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : S)))
+  get'b : ∀ (x : S), go.IsGoStepPureDetTagged under (StructFieldGet S.underlying go!"b") #x (Val #(x.b'))
+  set'b : ∀ (x : S) (y : TwoInts), go.IsGoStepPureDetTagged under (StructFieldSet S.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : S)))
+  get'c : ∀ (x : S), go.IsGoStepPureDetTagged under (StructFieldGet S.underlying go!"c") #x (Val #(x.c'))
+  set'c : ∀ (x : S) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet S.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : S)))
   method_set : go.MethodSetIs S.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.readBVal", (some (go.signature.Signature [] false [TwoInts.ty])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType S.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.negateC", (some (go.signature.Signature [] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.readA", (some (go.signature.Signature [] false [go.uint64]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.readB", (some (go.signature.Signature [] false [TwoInts.ty]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.readBVal", (some (go.signature.Signature [] false [TwoInts.ty]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.refC", (some (go.signature.Signature [] false [(go.GoType.PointerType go.bool)]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.writeB", (some (go.signature.Signature [TwoInts.ty] false [])))]
-  readBVal_unfold : MethodUnfold S.ty go!"readBVal" S.readBVal.impl
-  ptr_negateC_unfold : MethodUnfold (go.GoType.PointerType S.ty) go!"negateC" S.negateC.impl
-  ptr_readA_unfold : MethodUnfold (go.GoType.PointerType S.ty) go!"readA" S.readA.impl
-  ptr_readB_unfold : MethodUnfold (go.GoType.PointerType S.ty) go!"readB" S.readB.impl
-  ptr_readBVal_unfold : MethodUnfold (go.GoType.PointerType S.ty) go!"readBVal" (LamV "$r"
+  unfold'readBVal : MethodUnfold S.ty go!"readBVal" S.readBVal.impl
+  ptr_unfold'negateC : MethodUnfold (go.GoType.PointerType S.ty) go!"negateC" S.negateC.impl
+  ptr_unfold'readA : MethodUnfold (go.GoType.PointerType S.ty) go!"readA" S.readA.impl
+  ptr_unfold'readB : MethodUnfold (go.GoType.PointerType S.ty) go!"readB" S.readB.impl
+  ptr_unfold'readBVal : MethodUnfold (go.GoType.PointerType S.ty) go!"readBVal" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve S.ty go!"readBVal"))) (App (Val (GoInstruction (GoLoad S.ty))) (Var "$r"))))
-  ptr_refC_unfold : MethodUnfold (go.GoType.PointerType S.ty) go!"refC" S.refC.impl
-  ptr_writeB_unfold : MethodUnfold (go.GoType.PointerType S.ty) go!"writeB" S.writeB.impl
+  ptr_unfold'refC : MethodUnfold (go.GoType.PointerType S.ty) go!"refC" S.refC.impl
+  ptr_unfold'writeB : MethodUnfold (go.GoType.PointerType S.ty) go!"writeB" S.writeB.impl
 
 attribute [instance] S.TypeAssumptions.type_repr
   S.TypeAssumptions.underlying
-  S.TypeAssumptions.get_a
-  S.TypeAssumptions.set_a
-  S.TypeAssumptions.get_b
-  S.TypeAssumptions.set_b
-  S.TypeAssumptions.get_c
-  S.TypeAssumptions.set_c
+  S.TypeAssumptions.get'a
+  S.TypeAssumptions.set'a
+  S.TypeAssumptions.get'b
+  S.TypeAssumptions.set'b
+  S.TypeAssumptions.get'c
+  S.TypeAssumptions.set'c
   S.TypeAssumptions.method_set
   S.TypeAssumptions.ptr_method_set
-  S.TypeAssumptions.readBVal_unfold
-  S.TypeAssumptions.ptr_negateC_unfold
-  S.TypeAssumptions.ptr_readA_unfold
-  S.TypeAssumptions.ptr_readB_unfold
-  S.TypeAssumptions.ptr_readBVal_unfold
-  S.TypeAssumptions.ptr_refC_unfold
-  S.TypeAssumptions.ptr_writeB_unfold
+  S.TypeAssumptions.unfold'readBVal
+  S.TypeAssumptions.ptr_unfold'negateC
+  S.TypeAssumptions.ptr_unfold'readA
+  S.TypeAssumptions.ptr_unfold'readB
+  S.TypeAssumptions.ptr_unfold'readBVal
+  S.TypeAssumptions.ptr_unfold'refC
+  S.TypeAssumptions.ptr_unfold'writeB
 
 structure B [GooseExts] where
   mk ::
@@ -8237,7 +8237,7 @@ noncomputable instance B.zero_val [GooseExts] : ZeroVal B :=
 @[irreducible] noncomputable def B.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   B.fieldsUnsealed
 
-noncomputable instance equals_unfold_B [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'B [GooseExts] [GoGlobalContext] :
     EqualsUnfold B.fields B.fieldsUnsealed :=
   ⟨by unfold B.fields; rfl⟩
 
@@ -8247,15 +8247,15 @@ noncomputable instance equals_unfold_B [GooseExts] [GoGlobalContext] :
 class B.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying B.underlying B
   underlying : go.UnderlyingDirectedEq B.ty B.underlying
-  get_a : ∀ (x : B), go.IsGoStepPureDetTagged under (StructFieldGet B.underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : B) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet B.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : B)))
+  get'a : ∀ (x : B), go.IsGoStepPureDetTagged under (StructFieldGet B.underlying go!"a") #x (Val #(x.a'))
+  set'a : ∀ (x : B) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet B.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : B)))
   method_set : go.MethodSetIs B.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType B.ty) []
 
 attribute [instance] B.TypeAssumptions.type_repr
   B.TypeAssumptions.underlying
-  B.TypeAssumptions.get_a
-  B.TypeAssumptions.set_a
+  B.TypeAssumptions.get'a
+  B.TypeAssumptions.set'a
   B.TypeAssumptions.method_set
   B.TypeAssumptions.ptr_method_set
 
@@ -8271,7 +8271,7 @@ noncomputable instance A.zero_val [GooseExts] : ZeroVal A :=
 @[irreducible] noncomputable def A.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   A.fieldsUnsealed
 
-noncomputable instance equals_unfold_A [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'A [GooseExts] [GoGlobalContext] :
     EqualsUnfold A.fields A.fieldsUnsealed :=
   ⟨by unfold A.fields; rfl⟩
 
@@ -8344,7 +8344,7 @@ noncomputable instance aliasedStruct.zero_val [GooseExts] : ZeroVal aliasedStruc
 @[irreducible] noncomputable def aliasedStruct.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   aliasedStruct.fieldsUnsealed
 
-noncomputable instance equals_unfold_aliasedStruct [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'aliasedStruct [GooseExts] [GoGlobalContext] :
     EqualsUnfold aliasedStruct.fields aliasedStruct.fieldsUnsealed :=
   ⟨by unfold aliasedStruct.fields; rfl⟩
 
@@ -8354,592 +8354,592 @@ noncomputable instance equals_unfold_aliasedStruct [GooseExts] [GoGlobalContext]
 class aliasedStruct.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying aliasedStruct.underlying aliasedStruct
   underlying : go.UnderlyingDirectedEq aliasedStruct.ty aliasedStruct.underlying
-  get_x : ∀ (x : aliasedStruct), go.IsGoStepPureDetTagged under (StructFieldGet aliasedStruct.underlying go!"x") #x (Val #(x.x'))
-  set_x : ∀ (x : aliasedStruct) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet aliasedStruct.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : aliasedStruct)))
+  get'x : ∀ (x : aliasedStruct), go.IsGoStepPureDetTagged under (StructFieldGet aliasedStruct.underlying go!"x") #x (Val #(x.x'))
+  set'x : ∀ (x : aliasedStruct) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet aliasedStruct.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : aliasedStruct)))
   method_set : go.MethodSetIs aliasedStruct.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType aliasedStruct.ty) []
 
 attribute [instance] aliasedStruct.TypeAssumptions.type_repr
   aliasedStruct.TypeAssumptions.underlying
-  aliasedStruct.TypeAssumptions.get_x
-  aliasedStruct.TypeAssumptions.set_x
+  aliasedStruct.TypeAssumptions.get'x
+  aliasedStruct.TypeAssumptions.set'x
   aliasedStruct.TypeAssumptions.method_set
   aliasedStruct.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Foo_instance : Foo.TypeAssumptions
-  importantStruct_instance : importantStruct.TypeAssumptions
-  stringWrapper_instance : stringWrapper.TypeAssumptions
-  Uint32_instance : Uint32.TypeAssumptions
-  numWrapper_instance : numWrapper.TypeAssumptions
-  withInterface_instance : withInterface.TypeAssumptions
-  embedA_instance : embedA.TypeAssumptions
-  embedB_instance : embedB.TypeAssumptions
-  embedC_instance : embedC.TypeAssumptions
-  embedD_instance : embedD.TypeAssumptions
-  Enum1_instance : Enum1.TypeAssumptions
-  Enum2_instance : Enum2.TypeAssumptions
-  float32Field_instance : float32Field.TypeAssumptions
-  Fooer_instance : Fooer.TypeAssumptions
-  concreteFooer_instance : concreteFooer.TypeAssumptions
-  FooerUser_instance : FooerUser.TypeAssumptions
-  PointerInterface_instance : PointerInterface.TypeAssumptions
-  concrete1_instance : concrete1.TypeAssumptions
-  my_u32_instance : my_u32.TypeAssumptions
-  also_u32_instance : also_u32.TypeAssumptions
-  allTheLiterals_instance : allTheLiterals.TypeAssumptions
-  hasCondVar_instance : hasCondVar.TypeAssumptions
-  IntWrapper_instance : IntWrapper.TypeAssumptions
-  MapWrapper_instance : MapWrapper.TypeAssumptions
-  mapElem_instance : mapElem.TypeAssumptions
-  msNamer_instance : msNamer.TypeAssumptions
-  msNamerTagger_instance : msNamerTagger.TypeAssumptions
-  msLeft_instance : msLeft.TypeAssumptions
-  msRight_instance : msRight.TypeAssumptions
-  msBoth_instance : msBoth.TypeAssumptions
-  msShadow_instance : msShadow.TypeAssumptions
-  msPtrEmbed_instance : msPtrEmbed.TypeAssumptions
-  containsPointer_instance : containsPointer.TypeAssumptions
-  wrapExternalStruct_instance : wrapExternalStruct.TypeAssumptions
-  typing_instance : typing.TypeAssumptions
-  prophEvent_instance : prophEvent.TypeAssumptions
-  composite_instance : composite.TypeAssumptions
-  pp_instance : pp.TypeAssumptions
-  stringer_instance : stringer.TypeAssumptions
-  valCatcher_instance : valCatcher.TypeAssumptions
-  catcherI_instance : catcherI.TypeAssumptions
-  R_instance : R.TypeAssumptions
-  Other_instance : Other.TypeAssumptions
-  RecursiveEmbedded_instance : RecursiveEmbedded.TypeAssumptions
-  runeStruct_instance : runeStruct.TypeAssumptions
-  SliceAlias_instance : SliceAlias.TypeAssumptions
-  thing_instance : thing.TypeAssumptions
-  sliceOfThings_instance : sliceOfThings.TypeAssumptions
-  Point_instance : Point.TypeAssumptions
-  TwoInts_instance : TwoInts.TypeAssumptions
-  S_instance : S.TypeAssumptions
-  B_instance : B.TypeAssumptions
-  A_instance : A.TypeAssumptions
-  Timestamp_instance : Timestamp.TypeAssumptions
-  UseTypeAbbrev_instance : UseTypeAbbrev.TypeAssumptions
-  UseNamedType_instance : UseNamedType.TypeAssumptions
-  aliasedStruct_instance : aliasedStruct.TypeAssumptions
-  takesArray_unfold : FuncUnfold takesArray [] takesArray.impl
-  takesPtr_unfold : FuncUnfold takesPtr [] takesPtr.impl
-  usesArrayElemRef_unfold : FuncUnfold usesArrayElemRef [] usesArrayElemRef.impl
-  sum_unfold : FuncUnfold sum [] sum.impl
-  arrayToSlice_unfold : FuncUnfold arrayToSlice [] arrayToSlice.impl
-  arrayLiteralKeyed_unfold : FuncUnfold arrayLiteralKeyed [] arrayLiteralKeyed.impl
-  arrayPointerToSlice_unfold : FuncUnfold arrayPointerToSlice [] arrayPointerToSlice.impl
-  chanBasic_unfold : FuncUnfold chanBasic [] chanBasic.impl
-  f_unfold : FuncUnfold f [] f.impl
-  chanSelect_unfold : FuncUnfold chanSelect [] chanSelect.impl
-  chanDirectional_unfold : FuncUnfold chanDirectional [] chanDirectional.impl
-  chanRange_unfold : FuncUnfold chanRange [] chanRange.impl
-  doSubtleThings_unfold : FuncUnfold doSubtleThings [] doSubtleThings.impl
-  hasStartComment_unfold : FuncUnfold hasStartComment [] hasStartComment.impl
-  hasEndComment_unfold : FuncUnfold hasEndComment [] hasEndComment.impl
-  condvarWrapping_unfold : FuncUnfold condvarWrapping [] condvarWrapping.impl
-  useUntypedInt_unfold : FuncUnfold useUntypedInt [] useUntypedInt.impl
-  useUntypedString_unfold : FuncUnfold useUntypedString [] useUntypedString.impl
-  conditionalReturn_unfold : FuncUnfold conditionalReturn [] conditionalReturn.impl
-  alwaysReturn_unfold : FuncUnfold alwaysReturn [] alwaysReturn.impl
-  alwaysReturnInNestedBranches_unfold : FuncUnfold alwaysReturnInNestedBranches [] alwaysReturnInNestedBranches.impl
-  earlyReturn_unfold : FuncUnfold earlyReturn [] earlyReturn.impl
-  conditionalAssign_unfold : FuncUnfold conditionalAssign [] conditionalAssign.impl
-  elseIf_unfold : FuncUnfold elseIf [] elseIf.impl
-  ifStmtInitialization_unfold : FuncUnfold ifStmtInitialization [] ifStmtInitialization.impl
-  loopLocalCopy_unfold : FuncUnfold loopLocalCopy [] loopLocalCopy.impl
-  rangeInt_unfold : FuncUnfold rangeInt [] rangeInt.impl
-  typedLiteral_unfold : FuncUnfold typedLiteral [] typedLiteral.impl
-  literalCast_unfold : FuncUnfold literalCast [] literalCast.impl
-  castInt_unfold : FuncUnfold castInt [] castInt.impl
-  stringToByteSlice_unfold : FuncUnfold stringToByteSlice [] stringToByteSlice.impl
-  byteSliceToString_unfold : FuncUnfold byteSliceToString [] byteSliceToString.impl
-  stringToStringWrapper_unfold : FuncUnfold stringToStringWrapper [] stringToStringWrapper.impl
-  stringWrapperToString_unfold : FuncUnfold stringWrapperToString [] stringWrapperToString.impl
-  testU32NewtypeLen_unfold : FuncUnfold testU32NewtypeLen [] testU32NewtypeLen.impl
-  testNumWrapper_unfold : FuncUnfold testNumWrapper [] testNumWrapper.impl
-  testConversionLiteral_unfold : FuncUnfold testConversionLiteral [] testConversionLiteral.impl
-  testCopySimple_unfold : FuncUnfold testCopySimple [] testCopySimple.impl
-  testCopyDifferentLengths_unfold : FuncUnfold testCopyDifferentLengths [] testCopyDifferentLengths.impl
-  atomicCreateStub_unfold : FuncUnfold atomicCreateStub [] atomicCreateStub.impl
-  useSlice_unfold : FuncUnfold useSlice [] useSlice.impl
-  useSliceIndexing_unfold : FuncUnfold useSliceIndexing [] useSliceIndexing.impl
-  useMap_unfold : FuncUnfold useMap [] useMap.impl
-  usePtr_unfold : FuncUnfold usePtr [] usePtr.impl
-  iterMapKeysAndValues_unfold : FuncUnfold iterMapKeysAndValues [] iterMapKeysAndValues.impl
-  iterMapKeys_unfold : FuncUnfold iterMapKeys [] iterMapKeys.impl
-  getRandom_unfold : FuncUnfold getRandom [] getRandom.impl
-  returnEmbedVal_unfold : FuncUnfold returnEmbedVal [] returnEmbedVal.impl
-  returnEmbedValWithPointer_unfold : FuncUnfold returnEmbedValWithPointer [] returnEmbedValWithPointer.impl
-  useEmbeddedField_unfold : FuncUnfold useEmbeddedField [] useEmbeddedField.impl
-  useEmbeddedValField_unfold : FuncUnfold useEmbeddedValField [] useEmbeddedValField.impl
-  useEmbeddedMethod_unfold : FuncUnfold useEmbeddedMethod [] useEmbeddedMethod.impl
-  useEmbeddedMethod2_unfold : FuncUnfold useEmbeddedMethod2 [] useEmbeddedMethod2.impl
-  empty_unfold : FuncUnfold empty [] empty.impl
-  emptyReturn_unfold : FuncUnfold emptyReturn [] emptyReturn.impl
-  unnamedParams_unfold : FuncUnfold unnamedParams [] unnamedParams.impl
-  anonymousParam_unfold : FuncUnfold anonymousParam [] anonymousParam.impl
-  useFloat_unfold : FuncUnfold useFloat [] useFloat.impl
-  compareIntFloat_unfold : FuncUnfold compareIntFloat [] compareIntFloat.impl
-  compareFloatInt_unfold : FuncUnfold compareFloatInt [] compareFloatInt.impl
-  negUnderflowConsts_unfold : FuncUnfold negUnderflowConsts [] negUnderflowConsts.impl
-  negUnderflowLiterals_unfold : FuncUnfold negUnderflowLiterals [] negUnderflowLiterals.impl
-  takeFloat32_unfold : FuncUnfold takeFloat32 [] takeFloat32.impl
-  float32Consts_unfold : FuncUnfold float32Consts [] float32Consts.impl
-  float32ConstAt_unfold : ∀ (T : go.GoType), FuncUnfold float32ConstAt [T] (float32ConstAt.impl T)
-  intConstAt_unfold : ∀ (T : go.GoType), FuncUnfold intConstAt [T] (intConstAt.impl T)
-  forRangeNoBinding_unfold : FuncUnfold forRangeNoBinding [] forRangeNoBinding.impl
-  forRangeOldVars_unfold : FuncUnfold forRangeOldVars [] forRangeOldVars.impl
-  forRangeString_unfold : FuncUnfold forRangeString [] forRangeString.impl
-  maybeConvert_unfold : ∀ (A : go.GoType), FuncUnfold maybeConvert [A] (maybeConvert.impl A)
-  maybeConvertToInterface_unfold : ∀ (A : go.GoType), FuncUnfold maybeConvertToInterface [A] (maybeConvertToInterface.impl A)
-  maybeConvertToString_unfold : ∀ (A : go.GoType), FuncUnfold maybeConvertToString [A] (maybeConvertToString.impl A)
-  maybeConvertFromString_unfold : ∀ (A : go.GoType), FuncUnfold maybeConvertFromString [A] (maybeConvertFromString.impl A)
-  assert_unfold : FuncUnfold assert [] assert.impl
-  nilConvert_unfold : ∀ (A : go.GoType), FuncUnfold nilConvert [A] (nilConvert.impl A)
-  genericConversions_unfold : FuncUnfold genericConversions [] genericConversions.impl
-  foo_unfold : FuncUnfold foo [] foo.impl
-  other_unfold : FuncUnfold other [] other.impl
-  bar_unfold : FuncUnfold bar [] bar.impl
-  «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
-  «init.1_unfold» : FuncUnfold init.«1» [] init.«1».impl
-  useUntypedRune_unfold : FuncUnfold useUntypedRune [] useUntypedRune.impl
-  TakesFunctionType_unfold : FuncUnfold TakesFunctionType [] TakesFunctionType.impl
-  FuncVar_unfold : FuncUnfold FuncVar [] FuncVar.impl
-  fooConsumer_unfold : FuncUnfold fooConsumer [] fooConsumer.impl
-  testAssignConcreteToInterface_unfold : FuncUnfold testAssignConcreteToInterface [] testAssignConcreteToInterface.impl
-  testPassConcreteToInterfaceArg_unfold : FuncUnfold testPassConcreteToInterfaceArg [] testPassConcreteToInterfaceArg.impl
-  testPassConcreteToInterfaceArgSpecial_unfold : FuncUnfold testPassConcreteToInterfaceArgSpecial [] testPassConcreteToInterfaceArgSpecial.impl
-  takesVarArgsInterface_unfold : FuncUnfold takesVarArgsInterface [] takesVarArgsInterface.impl
-  test_unfold : FuncUnfold test [] test.impl
-  returnConcrete_unfold : FuncUnfold returnConcrete [] returnConcrete.impl
-  testMultiReturn_unfold : FuncUnfold testMultiReturn [] testMultiReturn.impl
-  testReturnStatment_unfold : FuncUnfold testReturnStatment [] testReturnStatment.impl
-  testConversionInEq_unfold : FuncUnfold testConversionInEq [] testConversionInEq.impl
-  takeMultiple_unfold : FuncUnfold takeMultiple [] takeMultiple.impl
-  giveMultiple_unfold : FuncUnfold giveMultiple [] giveMultiple.impl
-  testConversionInMultipleReturnPassThrough_unfold : FuncUnfold testConversionInMultipleReturnPassThrough [] testConversionInMultipleReturnPassThrough.impl
-  testConversionInMultiplePassThrough_unfold : FuncUnfold testConversionInMultiplePassThrough [] testConversionInMultiplePassThrough.impl
-  testPtrMset_unfold : FuncUnfold testPtrMset [] testPtrMset.impl
-  pointerAny_unfold : FuncUnfold pointerAny [] pointerAny.impl
-  useInts_unfold : FuncUnfold useInts [] useInts.impl
-  signedMidpoint_unfold : FuncUnfold signedMidpoint [] signedMidpoint.impl
-  normalLiterals_unfold : FuncUnfold normalLiterals [] normalLiterals.impl
-  outOfOrderLiteral_unfold : FuncUnfold outOfOrderLiteral [] outOfOrderLiteral.impl
-  specialLiterals_unfold : FuncUnfold specialLiterals [] specialLiterals.impl
-  oddLiterals_unfold : FuncUnfold oddLiterals [] oddLiterals.impl
-  unKeyedLiteral_unfold : FuncUnfold unKeyedLiteral [] unKeyedLiteral.impl
-  useLocks_unfold : FuncUnfold useLocks [] useLocks.impl
-  useCondVar_unfold : FuncUnfold useCondVar [] useCondVar.impl
-  ToBeDebugged_unfold : FuncUnfold ToBeDebugged [] ToBeDebugged.impl
-  DoNothing_unfold : FuncUnfold DoNothing [] DoNothing.impl
-  DoSomething_unfold : FuncUnfold DoSomething [] DoSomething.impl
-  standardForLoop_unfold : FuncUnfold standardForLoop [] standardForLoop.impl
-  conditionalInLoop_unfold : FuncUnfold conditionalInLoop [] conditionalInLoop.impl
-  conditionalInLoopElse_unfold : FuncUnfold conditionalInLoopElse [] conditionalInLoopElse.impl
-  nestedConditionalInLoopImplicitContinue_unfold : FuncUnfold nestedConditionalInLoopImplicitContinue [] nestedConditionalInLoopImplicitContinue.impl
-  ImplicitLoopContinue_unfold : FuncUnfold ImplicitLoopContinue [] ImplicitLoopContinue.impl
-  ImplicitLoopContinue2_unfold : FuncUnfold ImplicitLoopContinue2 [] ImplicitLoopContinue2.impl
-  ImplicitLoopContinueAfterIfBreak_unfold : FuncUnfold ImplicitLoopContinueAfterIfBreak [] ImplicitLoopContinueAfterIfBreak.impl
-  nestedLoops_unfold : FuncUnfold nestedLoops [] nestedLoops.impl
-  nestedGoStyleLoops_unfold : FuncUnfold nestedGoStyleLoops [] nestedGoStyleLoops.impl
-  sumSlice_unfold : FuncUnfold sumSlice [] sumSlice.impl
-  intSliceLoop_unfold : FuncUnfold intSliceLoop [] intSliceLoop.impl
-  breakFromLoop_unfold : FuncUnfold breakFromLoop [] breakFromLoop.impl
-  IterateMapKeys_unfold : FuncUnfold IterateMapKeys [] IterateMapKeys.impl
-  CopyMap_unfold : FuncUnfold CopyMap [] CopyMap.impl
-  MapSize_unfold : FuncUnfold MapSize [] MapSize.impl
-  NamedMapAssignment_unfold : FuncUnfold NamedMapAssignment [] NamedMapAssignment.impl
-  MapTypeAliases_unfold : FuncUnfold MapTypeAliases [] MapTypeAliases.impl
-  StringMap_unfold : FuncUnfold StringMap [] StringMap.impl
-  mapUpdateField_unfold : FuncUnfold mapUpdateField [] mapUpdateField.impl
-  mapGetCall_unfold : FuncUnfold mapGetCall [] mapGetCall.impl
-  mapLiteralTest_unfold : FuncUnfold mapLiteralTest [] mapLiteralTest.impl
-  mapClearTest_unfold : FuncUnfold mapClearTest [] mapClearTest.impl
-  mapLookupConversion_unfold : FuncUnfold mapLookupConversion [] mapLookupConversion.impl
-  msUse_unfold : FuncUnfold msUse [] msUse.impl
-  returnTwo_unfold : FuncUnfold returnTwo [] returnTwo.impl
-  returnTwoWrapper_unfold : FuncUnfold returnTwoWrapper [] returnTwoWrapper.impl
-  multipleVar_unfold : FuncUnfold multipleVar [] multipleVar.impl
-  multiplePassThrough_unfold : FuncUnfold multiplePassThrough [] multiplePassThrough.impl
-  multipleReturnPassThrough_unfold : FuncUnfold multipleReturnPassThrough [] multipleReturnPassThrough.impl
-  AssignNilSlice_unfold : FuncUnfold AssignNilSlice [] AssignNilSlice.impl
-  AssignNilPointer_unfold : FuncUnfold AssignNilPointer [] AssignNilPointer.impl
-  CompareSliceToNil_unfold : FuncUnfold CompareSliceToNil [] CompareSliceToNil.impl
-  ComparePointerToNil_unfold : FuncUnfold ComparePointerToNil [] ComparePointerToNil.impl
-  useNilField_unfold : FuncUnfold useNilField [] useNilField.impl
-  LogicalOperators_unfold : FuncUnfold LogicalOperators [] LogicalOperators.impl
-  LogicalAndEqualityOperators_unfold : FuncUnfold LogicalAndEqualityOperators [] LogicalAndEqualityOperators.impl
-  ArithmeticShifts_unfold : FuncUnfold ArithmeticShifts [] ArithmeticShifts.impl
-  ShiftWideCount_unfold : FuncUnfold ShiftWideCount [] ShiftWideCount.impl
-  ShiftSignedCount_unfold : FuncUnfold ShiftSignedCount [] ShiftSignedCount.impl
-  SignedShiftRight_unfold : FuncUnfold SignedShiftRight [] SignedShiftRight.impl
-  Complement_unfold : FuncUnfold Complement [] Complement.impl
-  BitwiseOps_unfold : FuncUnfold BitwiseOps [] BitwiseOps.impl
-  Comparison_unfold : FuncUnfold Comparison [] Comparison.impl
-  AssignOps_unfold : FuncUnfold AssignOps [] AssignOps.impl
-  AssignOps16_unfold : FuncUnfold AssignOps16 [] AssignOps16.impl
-  BitwiseAndNot_unfold : FuncUnfold BitwiseAndNot [] BitwiseAndNot.impl
-  Negative_unfold : FuncUnfold Negative [] Negative.impl
-  PanicAtTheDisco_unfold : FuncUnfold PanicAtTheDisco [] PanicAtTheDisco.impl
-  Oracle_unfold : FuncUnfold Oracle [] Oracle.impl
-  ResolveEvents_unfold : FuncUnfold ResolveEvents [] ResolveEvents.impl
-  ReassignVars_unfold : FuncUnfold ReassignVars [] ReassignVars.impl
-  deferValueMethod_unfold : FuncUnfold deferValueMethod [] deferValueMethod.impl
-  deferMethodValue_unfold : FuncUnfold deferMethodValue [] deferMethodValue.impl
-  deferInterfaceMethod_unfold : FuncUnfold deferInterfaceMethod [] deferInterfaceMethod.impl
-  directCall_unfold : FuncUnfold directCall [] directCall.impl
-  convertToInterface_unfold : FuncUnfold convertToInterface [] convertToInterface.impl
-  topCatch'deferred_unfold : FuncUnfold topCatch'deferred [] topCatch'deferred.impl
-  deferFuncValue_unfold : FuncUnfold deferFuncValue [] deferFuncValue.impl
-  recur_unfold : FuncUnfold recur [] recur.impl
-  useRenamedImport_unfold : FuncUnfold useRenamedImport [] useRenamedImport.impl
-  ifJoinDemo_unfold : FuncUnfold ifJoinDemo [] ifJoinDemo.impl
-  repeatLocalVars_unfold : FuncUnfold repeatLocalVars [] repeatLocalVars.impl
-  BasicNamedReturn_unfold : FuncUnfold BasicNamedReturn [] BasicNamedReturn.impl
-  NamedReturn_unfold : FuncUnfold NamedReturn [] NamedReturn.impl
-  BasicNamedReturnMany_unfold : FuncUnfold BasicNamedReturnMany [] BasicNamedReturnMany.impl
-  NamedReturnMany_unfold : FuncUnfold NamedReturnMany [] NamedReturnMany.impl
-  NamedReturnOverride_unfold : FuncUnfold NamedReturnOverride [] NamedReturnOverride.impl
-  VoidButEndsWithReturn_unfold : FuncUnfold VoidButEndsWithReturn [] VoidButEndsWithReturn.impl
-  VoidImplicitReturnInBranch_unfold : FuncUnfold VoidImplicitReturnInBranch [] VoidImplicitReturnInBranch.impl
-  useRuneOps_unfold : FuncUnfold useRuneOps [] useRuneOps.impl
-  useRuneStruct_unfold : FuncUnfold useRuneStruct [] useRuneStruct.impl
-  sliceOps_unfold : FuncUnfold sliceOps [] sliceOps.impl
-  makeSingletonSlice_unfold : FuncUnfold makeSingletonSlice [] makeSingletonSlice.impl
-  makeAlias_unfold : FuncUnfold makeAlias [] makeAlias.impl
-  Skip_unfold : FuncUnfold Skip [] Skip.impl
-  simpleSpawn_unfold : FuncUnfold simpleSpawn [] simpleSpawn.impl
-  threadCode_unfold : FuncUnfold threadCode [] threadCode.impl
-  loopSpawn_unfold : FuncUnfold loopSpawn [] loopSpawn.impl
-  stringAppend_unfold : FuncUnfold stringAppend [] stringAppend.impl
-  stringLength_unfold : FuncUnfold stringLength [] stringLength.impl
-  x_unfold : FuncUnfold x'' [] x''.impl
-  appendString_unfold : FuncUnfold appendString [] appendString.impl
-  UseAdd_unfold : FuncUnfold UseAdd [] UseAdd.impl
-  UseAddWithLiteral_unfold : FuncUnfold UseAddWithLiteral [] UseAddWithLiteral.impl
-  NewS_unfold : FuncUnfold NewS [] NewS.impl
-  localSRef_unfold : FuncUnfold localSRef [] localSRef.impl
-  setField_unfold : FuncUnfold setField [] setField.impl
-  testSwitchVal_unfold : FuncUnfold testSwitchVal [] testSwitchVal.impl
-  testSwitchMultiple_unfold : FuncUnfold testSwitchMultiple [] testSwitchMultiple.impl
-  DoSomeLocking_unfold : FuncUnfold DoSomeLocking [] DoSomeLocking.impl
-  makeLock_unfold : FuncUnfold makeLock [] makeLock.impl
-  sleep_unfold : FuncUnfold sleep [] sleep.impl
-  mkInt_unfold : FuncUnfold mkInt [] mkInt.impl
-  mkNothing_unfold : FuncUnfold mkNothing [] mkNothing.impl
-  convertToAlias_unfold : FuncUnfold convertToAlias [] convertToAlias.impl
-  readAliasField_unfold : FuncUnfold readAliasField [] readAliasField.impl
-  readAliasFieldPtr_unfold : FuncUnfold readAliasFieldPtr [] readAliasFieldPtr.impl
-  readPtrAliasField_unfold : FuncUnfold readPtrAliasField [] readPtrAliasField.impl
-  typeAssertInt_unfold : FuncUnfold typeAssertInt [] typeAssertInt.impl
-  wrapUnwrapInt_unfold : FuncUnfold wrapUnwrapInt [] wrapUnwrapInt.impl
-  checkedTypeAssert_unfold : FuncUnfold checkedTypeAssert [] checkedTypeAssert.impl
-  basicTypeSwitch_unfold : FuncUnfold basicTypeSwitch [] basicTypeSwitch.impl
-  fancyTypeSwitch_unfold : FuncUnfold fancyTypeSwitch [] fancyTypeSwitch.impl
-  multiTypeSwitch_unfold : FuncUnfold multiTypeSwitch [] multiTypeSwitch.impl
-  multiTypeSwitchLast_unfold : FuncUnfold multiTypeSwitchLast [] multiTypeSwitchLast.impl
-  variadicFunc_unfold : FuncUnfold variadicFunc [] variadicFunc.impl
-  testVariadicCall_unfold : FuncUnfold testVariadicCall [] testVariadicCall.impl
-  returnMultiple_unfold : FuncUnfold returnMultiple [] returnMultiple.impl
-  testVariadicPassThrough_unfold : FuncUnfold testVariadicPassThrough [] testVariadicPassThrough.impl
-  LocalVars_unfold : FuncUnfold LocalVars [] LocalVars.impl
-  LocalConsts_unfold : FuncUnfold LocalConsts [] LocalConsts.impl
-  import_fmt_Assumption : _root_.Perennial.fmt.Assumptions
-  import_sync_Assumption : _root_.Perennial.sync.Assumptions
-  import_primitive_Assumption : _root_.Perennial.github_com.goose_lang.primitive.Assumptions
-  import_log_Assumption : _root_.Perennial.log.Assumptions
-  import_std_Assumption : _root_.Perennial.github_com.goose_lang.std.Assumptions
-  import_proph_Assumption : _root_.Perennial.github_com.mit_pdos.perennial.proph.Assumptions
+  instance'Foo : Foo.TypeAssumptions
+  instance'importantStruct : importantStruct.TypeAssumptions
+  instance'stringWrapper : stringWrapper.TypeAssumptions
+  instance'Uint32 : Uint32.TypeAssumptions
+  instance'numWrapper : numWrapper.TypeAssumptions
+  instance'withInterface : withInterface.TypeAssumptions
+  instance'embedA : embedA.TypeAssumptions
+  instance'embedB : embedB.TypeAssumptions
+  instance'embedC : embedC.TypeAssumptions
+  instance'embedD : embedD.TypeAssumptions
+  instance'Enum1 : Enum1.TypeAssumptions
+  instance'Enum2 : Enum2.TypeAssumptions
+  instance'float32Field : float32Field.TypeAssumptions
+  instance'Fooer : Fooer.TypeAssumptions
+  instance'concreteFooer : concreteFooer.TypeAssumptions
+  instance'FooerUser : FooerUser.TypeAssumptions
+  instance'PointerInterface : PointerInterface.TypeAssumptions
+  instance'concrete1 : concrete1.TypeAssumptions
+  instance'my_u32 : my_u32.TypeAssumptions
+  instance'also_u32 : also_u32.TypeAssumptions
+  instance'allTheLiterals : allTheLiterals.TypeAssumptions
+  instance'hasCondVar : hasCondVar.TypeAssumptions
+  instance'IntWrapper : IntWrapper.TypeAssumptions
+  instance'MapWrapper : MapWrapper.TypeAssumptions
+  instance'mapElem : mapElem.TypeAssumptions
+  instance'msNamer : msNamer.TypeAssumptions
+  instance'msNamerTagger : msNamerTagger.TypeAssumptions
+  instance'msLeft : msLeft.TypeAssumptions
+  instance'msRight : msRight.TypeAssumptions
+  instance'msBoth : msBoth.TypeAssumptions
+  instance'msShadow : msShadow.TypeAssumptions
+  instance'msPtrEmbed : msPtrEmbed.TypeAssumptions
+  instance'containsPointer : containsPointer.TypeAssumptions
+  instance'wrapExternalStruct : wrapExternalStruct.TypeAssumptions
+  instance'typing : typing.TypeAssumptions
+  instance'prophEvent : prophEvent.TypeAssumptions
+  instance'composite : composite.TypeAssumptions
+  instance'pp : pp.TypeAssumptions
+  instance'stringer : stringer.TypeAssumptions
+  instance'valCatcher : valCatcher.TypeAssumptions
+  instance'catcherI : catcherI.TypeAssumptions
+  instance'R : R.TypeAssumptions
+  instance'Other : Other.TypeAssumptions
+  instance'RecursiveEmbedded : RecursiveEmbedded.TypeAssumptions
+  instance'runeStruct : runeStruct.TypeAssumptions
+  instance'SliceAlias : SliceAlias.TypeAssumptions
+  instance'thing : thing.TypeAssumptions
+  instance'sliceOfThings : sliceOfThings.TypeAssumptions
+  instance'Point : Point.TypeAssumptions
+  instance'TwoInts : TwoInts.TypeAssumptions
+  instance'S : S.TypeAssumptions
+  instance'B : B.TypeAssumptions
+  instance'A : A.TypeAssumptions
+  instance'Timestamp : Timestamp.TypeAssumptions
+  instance'UseTypeAbbrev : UseTypeAbbrev.TypeAssumptions
+  instance'UseNamedType : UseNamedType.TypeAssumptions
+  instance'aliasedStruct : aliasedStruct.TypeAssumptions
+  unfold'takesArray : FuncUnfold takesArray [] takesArray.impl
+  unfold'takesPtr : FuncUnfold takesPtr [] takesPtr.impl
+  unfold'usesArrayElemRef : FuncUnfold usesArrayElemRef [] usesArrayElemRef.impl
+  unfold'sum : FuncUnfold sum [] sum.impl
+  unfold'arrayToSlice : FuncUnfold arrayToSlice [] arrayToSlice.impl
+  unfold'arrayLiteralKeyed : FuncUnfold arrayLiteralKeyed [] arrayLiteralKeyed.impl
+  unfold'arrayPointerToSlice : FuncUnfold arrayPointerToSlice [] arrayPointerToSlice.impl
+  unfold'chanBasic : FuncUnfold chanBasic [] chanBasic.impl
+  unfold'f : FuncUnfold f [] f.impl
+  unfold'chanSelect : FuncUnfold chanSelect [] chanSelect.impl
+  unfold'chanDirectional : FuncUnfold chanDirectional [] chanDirectional.impl
+  unfold'chanRange : FuncUnfold chanRange [] chanRange.impl
+  unfold'doSubtleThings : FuncUnfold doSubtleThings [] doSubtleThings.impl
+  unfold'hasStartComment : FuncUnfold hasStartComment [] hasStartComment.impl
+  unfold'hasEndComment : FuncUnfold hasEndComment [] hasEndComment.impl
+  unfold'condvarWrapping : FuncUnfold condvarWrapping [] condvarWrapping.impl
+  unfold'useUntypedInt : FuncUnfold useUntypedInt [] useUntypedInt.impl
+  unfold'useUntypedString : FuncUnfold useUntypedString [] useUntypedString.impl
+  unfold'conditionalReturn : FuncUnfold conditionalReturn [] conditionalReturn.impl
+  unfold'alwaysReturn : FuncUnfold alwaysReturn [] alwaysReturn.impl
+  unfold'alwaysReturnInNestedBranches : FuncUnfold alwaysReturnInNestedBranches [] alwaysReturnInNestedBranches.impl
+  unfold'earlyReturn : FuncUnfold earlyReturn [] earlyReturn.impl
+  unfold'conditionalAssign : FuncUnfold conditionalAssign [] conditionalAssign.impl
+  unfold'elseIf : FuncUnfold elseIf [] elseIf.impl
+  unfold'ifStmtInitialization : FuncUnfold ifStmtInitialization [] ifStmtInitialization.impl
+  unfold'loopLocalCopy : FuncUnfold loopLocalCopy [] loopLocalCopy.impl
+  unfold'rangeInt : FuncUnfold rangeInt [] rangeInt.impl
+  unfold'typedLiteral : FuncUnfold typedLiteral [] typedLiteral.impl
+  unfold'literalCast : FuncUnfold literalCast [] literalCast.impl
+  unfold'castInt : FuncUnfold castInt [] castInt.impl
+  unfold'stringToByteSlice : FuncUnfold stringToByteSlice [] stringToByteSlice.impl
+  unfold'byteSliceToString : FuncUnfold byteSliceToString [] byteSliceToString.impl
+  unfold'stringToStringWrapper : FuncUnfold stringToStringWrapper [] stringToStringWrapper.impl
+  unfold'stringWrapperToString : FuncUnfold stringWrapperToString [] stringWrapperToString.impl
+  unfold'testU32NewtypeLen : FuncUnfold testU32NewtypeLen [] testU32NewtypeLen.impl
+  unfold'testNumWrapper : FuncUnfold testNumWrapper [] testNumWrapper.impl
+  unfold'testConversionLiteral : FuncUnfold testConversionLiteral [] testConversionLiteral.impl
+  unfold'testCopySimple : FuncUnfold testCopySimple [] testCopySimple.impl
+  unfold'testCopyDifferentLengths : FuncUnfold testCopyDifferentLengths [] testCopyDifferentLengths.impl
+  unfold'atomicCreateStub : FuncUnfold atomicCreateStub [] atomicCreateStub.impl
+  unfold'useSlice : FuncUnfold useSlice [] useSlice.impl
+  unfold'useSliceIndexing : FuncUnfold useSliceIndexing [] useSliceIndexing.impl
+  unfold'useMap : FuncUnfold useMap [] useMap.impl
+  unfold'usePtr : FuncUnfold usePtr [] usePtr.impl
+  unfold'iterMapKeysAndValues : FuncUnfold iterMapKeysAndValues [] iterMapKeysAndValues.impl
+  unfold'iterMapKeys : FuncUnfold iterMapKeys [] iterMapKeys.impl
+  unfold'getRandom : FuncUnfold getRandom [] getRandom.impl
+  unfold'returnEmbedVal : FuncUnfold returnEmbedVal [] returnEmbedVal.impl
+  unfold'returnEmbedValWithPointer : FuncUnfold returnEmbedValWithPointer [] returnEmbedValWithPointer.impl
+  unfold'useEmbeddedField : FuncUnfold useEmbeddedField [] useEmbeddedField.impl
+  unfold'useEmbeddedValField : FuncUnfold useEmbeddedValField [] useEmbeddedValField.impl
+  unfold'useEmbeddedMethod : FuncUnfold useEmbeddedMethod [] useEmbeddedMethod.impl
+  unfold'useEmbeddedMethod2 : FuncUnfold useEmbeddedMethod2 [] useEmbeddedMethod2.impl
+  unfold'empty : FuncUnfold empty [] empty.impl
+  unfold'emptyReturn : FuncUnfold emptyReturn [] emptyReturn.impl
+  unfold'unnamedParams : FuncUnfold unnamedParams [] unnamedParams.impl
+  unfold'anonymousParam : FuncUnfold anonymousParam [] anonymousParam.impl
+  unfold'useFloat : FuncUnfold useFloat [] useFloat.impl
+  unfold'compareIntFloat : FuncUnfold compareIntFloat [] compareIntFloat.impl
+  unfold'compareFloatInt : FuncUnfold compareFloatInt [] compareFloatInt.impl
+  unfold'negUnderflowConsts : FuncUnfold negUnderflowConsts [] negUnderflowConsts.impl
+  unfold'negUnderflowLiterals : FuncUnfold negUnderflowLiterals [] negUnderflowLiterals.impl
+  unfold'takeFloat32 : FuncUnfold takeFloat32 [] takeFloat32.impl
+  unfold'float32Consts : FuncUnfold float32Consts [] float32Consts.impl
+  unfold'float32ConstAt : ∀ (T₀ : go.GoType), FuncUnfold float32ConstAt [T₀] (float32ConstAt.impl T₀)
+  unfold'intConstAt : ∀ (T₀ : go.GoType), FuncUnfold intConstAt [T₀] (intConstAt.impl T₀)
+  unfold'forRangeNoBinding : FuncUnfold forRangeNoBinding [] forRangeNoBinding.impl
+  unfold'forRangeOldVars : FuncUnfold forRangeOldVars [] forRangeOldVars.impl
+  unfold'forRangeString : FuncUnfold forRangeString [] forRangeString.impl
+  unfold'maybeConvert : ∀ (A₀ : go.GoType), FuncUnfold maybeConvert [A₀] (maybeConvert.impl A₀)
+  unfold'maybeConvertToInterface : ∀ (A₀ : go.GoType), FuncUnfold maybeConvertToInterface [A₀] (maybeConvertToInterface.impl A₀)
+  unfold'maybeConvertToString : ∀ (A₀ : go.GoType), FuncUnfold maybeConvertToString [A₀] (maybeConvertToString.impl A₀)
+  unfold'maybeConvertFromString : ∀ (A₀ : go.GoType), FuncUnfold maybeConvertFromString [A₀] (maybeConvertFromString.impl A₀)
+  unfold'assert : FuncUnfold assert [] assert.impl
+  unfold'nilConvert : ∀ (A₀ : go.GoType), FuncUnfold nilConvert [A₀] (nilConvert.impl A₀)
+  unfold'genericConversions : FuncUnfold genericConversions [] genericConversions.impl
+  unfold'foo : FuncUnfold foo [] foo.impl
+  unfold'other : FuncUnfold other [] other.impl
+  unfold'bar : FuncUnfold bar [] bar.impl
+  «unfold'init.0» : FuncUnfold init.«0» [] init.«0».impl
+  «unfold'init.1» : FuncUnfold init.«1» [] init.«1».impl
+  unfold'useUntypedRune : FuncUnfold useUntypedRune [] useUntypedRune.impl
+  unfold'TakesFunctionType : FuncUnfold TakesFunctionType [] TakesFunctionType.impl
+  unfold'FuncVar : FuncUnfold FuncVar [] FuncVar.impl
+  unfold'fooConsumer : FuncUnfold fooConsumer [] fooConsumer.impl
+  unfold'testAssignConcreteToInterface : FuncUnfold testAssignConcreteToInterface [] testAssignConcreteToInterface.impl
+  unfold'testPassConcreteToInterfaceArg : FuncUnfold testPassConcreteToInterfaceArg [] testPassConcreteToInterfaceArg.impl
+  unfold'testPassConcreteToInterfaceArgSpecial : FuncUnfold testPassConcreteToInterfaceArgSpecial [] testPassConcreteToInterfaceArgSpecial.impl
+  unfold'takesVarArgsInterface : FuncUnfold takesVarArgsInterface [] takesVarArgsInterface.impl
+  unfold'test : FuncUnfold test [] test.impl
+  unfold'returnConcrete : FuncUnfold returnConcrete [] returnConcrete.impl
+  unfold'testMultiReturn : FuncUnfold testMultiReturn [] testMultiReturn.impl
+  unfold'testReturnStatment : FuncUnfold testReturnStatment [] testReturnStatment.impl
+  unfold'testConversionInEq : FuncUnfold testConversionInEq [] testConversionInEq.impl
+  unfold'takeMultiple : FuncUnfold takeMultiple [] takeMultiple.impl
+  unfold'giveMultiple : FuncUnfold giveMultiple [] giveMultiple.impl
+  unfold'testConversionInMultipleReturnPassThrough : FuncUnfold testConversionInMultipleReturnPassThrough [] testConversionInMultipleReturnPassThrough.impl
+  unfold'testConversionInMultiplePassThrough : FuncUnfold testConversionInMultiplePassThrough [] testConversionInMultiplePassThrough.impl
+  unfold'testPtrMset : FuncUnfold testPtrMset [] testPtrMset.impl
+  unfold'pointerAny : FuncUnfold pointerAny [] pointerAny.impl
+  unfold'useInts : FuncUnfold useInts [] useInts.impl
+  unfold'signedMidpoint : FuncUnfold signedMidpoint [] signedMidpoint.impl
+  unfold'normalLiterals : FuncUnfold normalLiterals [] normalLiterals.impl
+  unfold'outOfOrderLiteral : FuncUnfold outOfOrderLiteral [] outOfOrderLiteral.impl
+  unfold'specialLiterals : FuncUnfold specialLiterals [] specialLiterals.impl
+  unfold'oddLiterals : FuncUnfold oddLiterals [] oddLiterals.impl
+  unfold'unKeyedLiteral : FuncUnfold unKeyedLiteral [] unKeyedLiteral.impl
+  unfold'useLocks : FuncUnfold useLocks [] useLocks.impl
+  unfold'useCondVar : FuncUnfold useCondVar [] useCondVar.impl
+  unfold'ToBeDebugged : FuncUnfold ToBeDebugged [] ToBeDebugged.impl
+  unfold'DoNothing : FuncUnfold DoNothing [] DoNothing.impl
+  unfold'DoSomething : FuncUnfold DoSomething [] DoSomething.impl
+  unfold'standardForLoop : FuncUnfold standardForLoop [] standardForLoop.impl
+  unfold'conditionalInLoop : FuncUnfold conditionalInLoop [] conditionalInLoop.impl
+  unfold'conditionalInLoopElse : FuncUnfold conditionalInLoopElse [] conditionalInLoopElse.impl
+  unfold'nestedConditionalInLoopImplicitContinue : FuncUnfold nestedConditionalInLoopImplicitContinue [] nestedConditionalInLoopImplicitContinue.impl
+  unfold'ImplicitLoopContinue : FuncUnfold ImplicitLoopContinue [] ImplicitLoopContinue.impl
+  unfold'ImplicitLoopContinue2 : FuncUnfold ImplicitLoopContinue2 [] ImplicitLoopContinue2.impl
+  unfold'ImplicitLoopContinueAfterIfBreak : FuncUnfold ImplicitLoopContinueAfterIfBreak [] ImplicitLoopContinueAfterIfBreak.impl
+  unfold'nestedLoops : FuncUnfold nestedLoops [] nestedLoops.impl
+  unfold'nestedGoStyleLoops : FuncUnfold nestedGoStyleLoops [] nestedGoStyleLoops.impl
+  unfold'sumSlice : FuncUnfold sumSlice [] sumSlice.impl
+  unfold'intSliceLoop : FuncUnfold intSliceLoop [] intSliceLoop.impl
+  unfold'breakFromLoop : FuncUnfold breakFromLoop [] breakFromLoop.impl
+  unfold'IterateMapKeys : FuncUnfold IterateMapKeys [] IterateMapKeys.impl
+  unfold'CopyMap : FuncUnfold CopyMap [] CopyMap.impl
+  unfold'MapSize : FuncUnfold MapSize [] MapSize.impl
+  unfold'NamedMapAssignment : FuncUnfold NamedMapAssignment [] NamedMapAssignment.impl
+  unfold'MapTypeAliases : FuncUnfold MapTypeAliases [] MapTypeAliases.impl
+  unfold'StringMap : FuncUnfold StringMap [] StringMap.impl
+  unfold'mapUpdateField : FuncUnfold mapUpdateField [] mapUpdateField.impl
+  unfold'mapGetCall : FuncUnfold mapGetCall [] mapGetCall.impl
+  unfold'mapLiteralTest : FuncUnfold mapLiteralTest [] mapLiteralTest.impl
+  unfold'mapClearTest : FuncUnfold mapClearTest [] mapClearTest.impl
+  unfold'mapLookupConversion : FuncUnfold mapLookupConversion [] mapLookupConversion.impl
+  unfold'msUse : FuncUnfold msUse [] msUse.impl
+  unfold'returnTwo : FuncUnfold returnTwo [] returnTwo.impl
+  unfold'returnTwoWrapper : FuncUnfold returnTwoWrapper [] returnTwoWrapper.impl
+  unfold'multipleVar : FuncUnfold multipleVar [] multipleVar.impl
+  unfold'multiplePassThrough : FuncUnfold multiplePassThrough [] multiplePassThrough.impl
+  unfold'multipleReturnPassThrough : FuncUnfold multipleReturnPassThrough [] multipleReturnPassThrough.impl
+  unfold'AssignNilSlice : FuncUnfold AssignNilSlice [] AssignNilSlice.impl
+  unfold'AssignNilPointer : FuncUnfold AssignNilPointer [] AssignNilPointer.impl
+  unfold'CompareSliceToNil : FuncUnfold CompareSliceToNil [] CompareSliceToNil.impl
+  unfold'ComparePointerToNil : FuncUnfold ComparePointerToNil [] ComparePointerToNil.impl
+  unfold'useNilField : FuncUnfold useNilField [] useNilField.impl
+  unfold'LogicalOperators : FuncUnfold LogicalOperators [] LogicalOperators.impl
+  unfold'LogicalAndEqualityOperators : FuncUnfold LogicalAndEqualityOperators [] LogicalAndEqualityOperators.impl
+  unfold'ArithmeticShifts : FuncUnfold ArithmeticShifts [] ArithmeticShifts.impl
+  unfold'ShiftWideCount : FuncUnfold ShiftWideCount [] ShiftWideCount.impl
+  unfold'ShiftSignedCount : FuncUnfold ShiftSignedCount [] ShiftSignedCount.impl
+  unfold'SignedShiftRight : FuncUnfold SignedShiftRight [] SignedShiftRight.impl
+  unfold'Complement : FuncUnfold Complement [] Complement.impl
+  unfold'BitwiseOps : FuncUnfold BitwiseOps [] BitwiseOps.impl
+  unfold'Comparison : FuncUnfold Comparison [] Comparison.impl
+  unfold'AssignOps : FuncUnfold AssignOps [] AssignOps.impl
+  unfold'AssignOps16 : FuncUnfold AssignOps16 [] AssignOps16.impl
+  unfold'BitwiseAndNot : FuncUnfold BitwiseAndNot [] BitwiseAndNot.impl
+  unfold'Negative : FuncUnfold Negative [] Negative.impl
+  unfold'PanicAtTheDisco : FuncUnfold PanicAtTheDisco [] PanicAtTheDisco.impl
+  unfold'Oracle : FuncUnfold Oracle [] Oracle.impl
+  unfold'ResolveEvents : FuncUnfold ResolveEvents [] ResolveEvents.impl
+  unfold'ReassignVars : FuncUnfold ReassignVars [] ReassignVars.impl
+  unfold'deferValueMethod : FuncUnfold deferValueMethod [] deferValueMethod.impl
+  unfold'deferMethodValue : FuncUnfold deferMethodValue [] deferMethodValue.impl
+  unfold'deferInterfaceMethod : FuncUnfold deferInterfaceMethod [] deferInterfaceMethod.impl
+  unfold'directCall : FuncUnfold directCall [] directCall.impl
+  unfold'convertToInterface : FuncUnfold convertToInterface [] convertToInterface.impl
+  unfold'topCatch'deferred : FuncUnfold topCatch'deferred [] topCatch'deferred.impl
+  unfold'deferFuncValue : FuncUnfold deferFuncValue [] deferFuncValue.impl
+  unfold'recur : FuncUnfold recur [] recur.impl
+  unfold'useRenamedImport : FuncUnfold useRenamedImport [] useRenamedImport.impl
+  unfold'ifJoinDemo : FuncUnfold ifJoinDemo [] ifJoinDemo.impl
+  unfold'repeatLocalVars : FuncUnfold repeatLocalVars [] repeatLocalVars.impl
+  unfold'BasicNamedReturn : FuncUnfold BasicNamedReturn [] BasicNamedReturn.impl
+  unfold'NamedReturn : FuncUnfold NamedReturn [] NamedReturn.impl
+  unfold'BasicNamedReturnMany : FuncUnfold BasicNamedReturnMany [] BasicNamedReturnMany.impl
+  unfold'NamedReturnMany : FuncUnfold NamedReturnMany [] NamedReturnMany.impl
+  unfold'NamedReturnOverride : FuncUnfold NamedReturnOverride [] NamedReturnOverride.impl
+  unfold'VoidButEndsWithReturn : FuncUnfold VoidButEndsWithReturn [] VoidButEndsWithReturn.impl
+  unfold'VoidImplicitReturnInBranch : FuncUnfold VoidImplicitReturnInBranch [] VoidImplicitReturnInBranch.impl
+  unfold'useRuneOps : FuncUnfold useRuneOps [] useRuneOps.impl
+  unfold'useRuneStruct : FuncUnfold useRuneStruct [] useRuneStruct.impl
+  unfold'sliceOps : FuncUnfold sliceOps [] sliceOps.impl
+  unfold'makeSingletonSlice : FuncUnfold makeSingletonSlice [] makeSingletonSlice.impl
+  unfold'makeAlias : FuncUnfold makeAlias [] makeAlias.impl
+  unfold'Skip : FuncUnfold Skip [] Skip.impl
+  unfold'simpleSpawn : FuncUnfold simpleSpawn [] simpleSpawn.impl
+  unfold'threadCode : FuncUnfold threadCode [] threadCode.impl
+  unfold'loopSpawn : FuncUnfold loopSpawn [] loopSpawn.impl
+  unfold'stringAppend : FuncUnfold stringAppend [] stringAppend.impl
+  unfold'stringLength : FuncUnfold stringLength [] stringLength.impl
+  unfold'x : FuncUnfold x'' [] x''.impl
+  unfold'appendString : FuncUnfold appendString [] appendString.impl
+  unfold'UseAdd : FuncUnfold UseAdd [] UseAdd.impl
+  unfold'UseAddWithLiteral : FuncUnfold UseAddWithLiteral [] UseAddWithLiteral.impl
+  unfold'NewS : FuncUnfold NewS [] NewS.impl
+  unfold'localSRef : FuncUnfold localSRef [] localSRef.impl
+  unfold'setField : FuncUnfold setField [] setField.impl
+  unfold'testSwitchVal : FuncUnfold testSwitchVal [] testSwitchVal.impl
+  unfold'testSwitchMultiple : FuncUnfold testSwitchMultiple [] testSwitchMultiple.impl
+  unfold'DoSomeLocking : FuncUnfold DoSomeLocking [] DoSomeLocking.impl
+  unfold'makeLock : FuncUnfold makeLock [] makeLock.impl
+  unfold'sleep : FuncUnfold sleep [] sleep.impl
+  unfold'mkInt : FuncUnfold mkInt [] mkInt.impl
+  unfold'mkNothing : FuncUnfold mkNothing [] mkNothing.impl
+  unfold'convertToAlias : FuncUnfold convertToAlias [] convertToAlias.impl
+  unfold'readAliasField : FuncUnfold readAliasField [] readAliasField.impl
+  unfold'readAliasFieldPtr : FuncUnfold readAliasFieldPtr [] readAliasFieldPtr.impl
+  unfold'readPtrAliasField : FuncUnfold readPtrAliasField [] readPtrAliasField.impl
+  unfold'typeAssertInt : FuncUnfold typeAssertInt [] typeAssertInt.impl
+  unfold'wrapUnwrapInt : FuncUnfold wrapUnwrapInt [] wrapUnwrapInt.impl
+  unfold'checkedTypeAssert : FuncUnfold checkedTypeAssert [] checkedTypeAssert.impl
+  unfold'basicTypeSwitch : FuncUnfold basicTypeSwitch [] basicTypeSwitch.impl
+  unfold'fancyTypeSwitch : FuncUnfold fancyTypeSwitch [] fancyTypeSwitch.impl
+  unfold'multiTypeSwitch : FuncUnfold multiTypeSwitch [] multiTypeSwitch.impl
+  unfold'multiTypeSwitchLast : FuncUnfold multiTypeSwitchLast [] multiTypeSwitchLast.impl
+  unfold'variadicFunc : FuncUnfold variadicFunc [] variadicFunc.impl
+  unfold'testVariadicCall : FuncUnfold testVariadicCall [] testVariadicCall.impl
+  unfold'returnMultiple : FuncUnfold returnMultiple [] returnMultiple.impl
+  unfold'testVariadicPassThrough : FuncUnfold testVariadicPassThrough [] testVariadicPassThrough.impl
+  unfold'LocalVars : FuncUnfold LocalVars [] LocalVars.impl
+  unfold'LocalConsts : FuncUnfold LocalConsts [] LocalConsts.impl
+  import'fmt : _root_.Perennial.fmt.Assumptions
+  import'sync : _root_.Perennial.sync.Assumptions
+  import'primitive : _root_.Perennial.github_com.goose_lang.primitive.Assumptions
+  import'log : _root_.Perennial.log.Assumptions
+  import'std : _root_.Perennial.github_com.goose_lang.std.Assumptions
+  import'proph : _root_.Perennial.github_com.mit_pdos.perennial.proph.Assumptions
 
-attribute [instance] Assumptions.Foo_instance
-  Assumptions.importantStruct_instance
-  Assumptions.stringWrapper_instance
-  Assumptions.Uint32_instance
-  Assumptions.numWrapper_instance
-  Assumptions.withInterface_instance
-  Assumptions.embedA_instance
-  Assumptions.embedB_instance
-  Assumptions.embedC_instance
-  Assumptions.embedD_instance
-  Assumptions.Enum1_instance
-  Assumptions.Enum2_instance
-  Assumptions.float32Field_instance
-  Assumptions.Fooer_instance
-  Assumptions.concreteFooer_instance
-  Assumptions.FooerUser_instance
-  Assumptions.PointerInterface_instance
-  Assumptions.concrete1_instance
-  Assumptions.my_u32_instance
-  Assumptions.also_u32_instance
-  Assumptions.allTheLiterals_instance
-  Assumptions.hasCondVar_instance
-  Assumptions.IntWrapper_instance
-  Assumptions.MapWrapper_instance
-  Assumptions.mapElem_instance
-  Assumptions.msNamer_instance
-  Assumptions.msNamerTagger_instance
-  Assumptions.msLeft_instance
-  Assumptions.msRight_instance
-  Assumptions.msBoth_instance
-  Assumptions.msShadow_instance
-  Assumptions.msPtrEmbed_instance
-  Assumptions.containsPointer_instance
-  Assumptions.wrapExternalStruct_instance
-  Assumptions.typing_instance
-  Assumptions.prophEvent_instance
-  Assumptions.composite_instance
-  Assumptions.pp_instance
-  Assumptions.stringer_instance
-  Assumptions.valCatcher_instance
-  Assumptions.catcherI_instance
-  Assumptions.R_instance
-  Assumptions.Other_instance
-  Assumptions.RecursiveEmbedded_instance
-  Assumptions.runeStruct_instance
-  Assumptions.SliceAlias_instance
-  Assumptions.thing_instance
-  Assumptions.sliceOfThings_instance
-  Assumptions.Point_instance
-  Assumptions.TwoInts_instance
-  Assumptions.S_instance
-  Assumptions.B_instance
-  Assumptions.A_instance
-  Assumptions.Timestamp_instance
-  Assumptions.UseTypeAbbrev_instance
-  Assumptions.UseNamedType_instance
-  Assumptions.aliasedStruct_instance
-  Assumptions.takesArray_unfold
-  Assumptions.takesPtr_unfold
-  Assumptions.usesArrayElemRef_unfold
-  Assumptions.sum_unfold
-  Assumptions.arrayToSlice_unfold
-  Assumptions.arrayLiteralKeyed_unfold
-  Assumptions.arrayPointerToSlice_unfold
-  Assumptions.chanBasic_unfold
-  Assumptions.f_unfold
-  Assumptions.chanSelect_unfold
-  Assumptions.chanDirectional_unfold
-  Assumptions.chanRange_unfold
-  Assumptions.doSubtleThings_unfold
-  Assumptions.hasStartComment_unfold
-  Assumptions.hasEndComment_unfold
-  Assumptions.condvarWrapping_unfold
-  Assumptions.useUntypedInt_unfold
-  Assumptions.useUntypedString_unfold
-  Assumptions.conditionalReturn_unfold
-  Assumptions.alwaysReturn_unfold
-  Assumptions.alwaysReturnInNestedBranches_unfold
-  Assumptions.earlyReturn_unfold
-  Assumptions.conditionalAssign_unfold
-  Assumptions.elseIf_unfold
-  Assumptions.ifStmtInitialization_unfold
-  Assumptions.loopLocalCopy_unfold
-  Assumptions.rangeInt_unfold
-  Assumptions.typedLiteral_unfold
-  Assumptions.literalCast_unfold
-  Assumptions.castInt_unfold
-  Assumptions.stringToByteSlice_unfold
-  Assumptions.byteSliceToString_unfold
-  Assumptions.stringToStringWrapper_unfold
-  Assumptions.stringWrapperToString_unfold
-  Assumptions.testU32NewtypeLen_unfold
-  Assumptions.testNumWrapper_unfold
-  Assumptions.testConversionLiteral_unfold
-  Assumptions.testCopySimple_unfold
-  Assumptions.testCopyDifferentLengths_unfold
-  Assumptions.atomicCreateStub_unfold
-  Assumptions.useSlice_unfold
-  Assumptions.useSliceIndexing_unfold
-  Assumptions.useMap_unfold
-  Assumptions.usePtr_unfold
-  Assumptions.iterMapKeysAndValues_unfold
-  Assumptions.iterMapKeys_unfold
-  Assumptions.getRandom_unfold
-  Assumptions.returnEmbedVal_unfold
-  Assumptions.returnEmbedValWithPointer_unfold
-  Assumptions.useEmbeddedField_unfold
-  Assumptions.useEmbeddedValField_unfold
-  Assumptions.useEmbeddedMethod_unfold
-  Assumptions.useEmbeddedMethod2_unfold
-  Assumptions.empty_unfold
-  Assumptions.emptyReturn_unfold
-  Assumptions.unnamedParams_unfold
-  Assumptions.anonymousParam_unfold
-  Assumptions.useFloat_unfold
-  Assumptions.compareIntFloat_unfold
-  Assumptions.compareFloatInt_unfold
-  Assumptions.negUnderflowConsts_unfold
-  Assumptions.negUnderflowLiterals_unfold
-  Assumptions.takeFloat32_unfold
-  Assumptions.float32Consts_unfold
-  Assumptions.float32ConstAt_unfold
-  Assumptions.intConstAt_unfold
-  Assumptions.forRangeNoBinding_unfold
-  Assumptions.forRangeOldVars_unfold
-  Assumptions.forRangeString_unfold
-  Assumptions.maybeConvert_unfold
-  Assumptions.maybeConvertToInterface_unfold
-  Assumptions.maybeConvertToString_unfold
-  Assumptions.maybeConvertFromString_unfold
-  Assumptions.assert_unfold
-  Assumptions.nilConvert_unfold
-  Assumptions.genericConversions_unfold
-  Assumptions.foo_unfold
-  Assumptions.other_unfold
-  Assumptions.bar_unfold
-  Assumptions.«init.0_unfold»
-  Assumptions.«init.1_unfold»
-  Assumptions.useUntypedRune_unfold
-  Assumptions.TakesFunctionType_unfold
-  Assumptions.FuncVar_unfold
-  Assumptions.fooConsumer_unfold
-  Assumptions.testAssignConcreteToInterface_unfold
-  Assumptions.testPassConcreteToInterfaceArg_unfold
-  Assumptions.testPassConcreteToInterfaceArgSpecial_unfold
-  Assumptions.takesVarArgsInterface_unfold
-  Assumptions.test_unfold
-  Assumptions.returnConcrete_unfold
-  Assumptions.testMultiReturn_unfold
-  Assumptions.testReturnStatment_unfold
-  Assumptions.testConversionInEq_unfold
-  Assumptions.takeMultiple_unfold
-  Assumptions.giveMultiple_unfold
-  Assumptions.testConversionInMultipleReturnPassThrough_unfold
-  Assumptions.testConversionInMultiplePassThrough_unfold
-  Assumptions.testPtrMset_unfold
-  Assumptions.pointerAny_unfold
-  Assumptions.useInts_unfold
-  Assumptions.signedMidpoint_unfold
-  Assumptions.normalLiterals_unfold
-  Assumptions.outOfOrderLiteral_unfold
-  Assumptions.specialLiterals_unfold
-  Assumptions.oddLiterals_unfold
-  Assumptions.unKeyedLiteral_unfold
-  Assumptions.useLocks_unfold
-  Assumptions.useCondVar_unfold
-  Assumptions.ToBeDebugged_unfold
-  Assumptions.DoNothing_unfold
-  Assumptions.DoSomething_unfold
-  Assumptions.standardForLoop_unfold
-  Assumptions.conditionalInLoop_unfold
-  Assumptions.conditionalInLoopElse_unfold
-  Assumptions.nestedConditionalInLoopImplicitContinue_unfold
-  Assumptions.ImplicitLoopContinue_unfold
-  Assumptions.ImplicitLoopContinue2_unfold
-  Assumptions.ImplicitLoopContinueAfterIfBreak_unfold
-  Assumptions.nestedLoops_unfold
-  Assumptions.nestedGoStyleLoops_unfold
-  Assumptions.sumSlice_unfold
-  Assumptions.intSliceLoop_unfold
-  Assumptions.breakFromLoop_unfold
-  Assumptions.IterateMapKeys_unfold
-  Assumptions.CopyMap_unfold
-  Assumptions.MapSize_unfold
-  Assumptions.NamedMapAssignment_unfold
-  Assumptions.MapTypeAliases_unfold
-  Assumptions.StringMap_unfold
-  Assumptions.mapUpdateField_unfold
-  Assumptions.mapGetCall_unfold
-  Assumptions.mapLiteralTest_unfold
-  Assumptions.mapClearTest_unfold
-  Assumptions.mapLookupConversion_unfold
-  Assumptions.msUse_unfold
-  Assumptions.returnTwo_unfold
-  Assumptions.returnTwoWrapper_unfold
-  Assumptions.multipleVar_unfold
-  Assumptions.multiplePassThrough_unfold
-  Assumptions.multipleReturnPassThrough_unfold
-  Assumptions.AssignNilSlice_unfold
-  Assumptions.AssignNilPointer_unfold
-  Assumptions.CompareSliceToNil_unfold
-  Assumptions.ComparePointerToNil_unfold
-  Assumptions.useNilField_unfold
-  Assumptions.LogicalOperators_unfold
-  Assumptions.LogicalAndEqualityOperators_unfold
-  Assumptions.ArithmeticShifts_unfold
-  Assumptions.ShiftWideCount_unfold
-  Assumptions.ShiftSignedCount_unfold
-  Assumptions.SignedShiftRight_unfold
-  Assumptions.Complement_unfold
-  Assumptions.BitwiseOps_unfold
-  Assumptions.Comparison_unfold
-  Assumptions.AssignOps_unfold
-  Assumptions.AssignOps16_unfold
-  Assumptions.BitwiseAndNot_unfold
-  Assumptions.Negative_unfold
-  Assumptions.PanicAtTheDisco_unfold
-  Assumptions.Oracle_unfold
-  Assumptions.ResolveEvents_unfold
-  Assumptions.ReassignVars_unfold
-  Assumptions.deferValueMethod_unfold
-  Assumptions.deferMethodValue_unfold
-  Assumptions.deferInterfaceMethod_unfold
-  Assumptions.directCall_unfold
-  Assumptions.convertToInterface_unfold
-  Assumptions.topCatch'deferred_unfold
-  Assumptions.deferFuncValue_unfold
-  Assumptions.recur_unfold
-  Assumptions.useRenamedImport_unfold
-  Assumptions.ifJoinDemo_unfold
-  Assumptions.repeatLocalVars_unfold
-  Assumptions.BasicNamedReturn_unfold
-  Assumptions.NamedReturn_unfold
-  Assumptions.BasicNamedReturnMany_unfold
-  Assumptions.NamedReturnMany_unfold
-  Assumptions.NamedReturnOverride_unfold
-  Assumptions.VoidButEndsWithReturn_unfold
-  Assumptions.VoidImplicitReturnInBranch_unfold
-  Assumptions.useRuneOps_unfold
-  Assumptions.useRuneStruct_unfold
-  Assumptions.sliceOps_unfold
-  Assumptions.makeSingletonSlice_unfold
-  Assumptions.makeAlias_unfold
-  Assumptions.Skip_unfold
-  Assumptions.simpleSpawn_unfold
-  Assumptions.threadCode_unfold
-  Assumptions.loopSpawn_unfold
-  Assumptions.stringAppend_unfold
-  Assumptions.stringLength_unfold
-  Assumptions.x_unfold
-  Assumptions.appendString_unfold
-  Assumptions.UseAdd_unfold
-  Assumptions.UseAddWithLiteral_unfold
-  Assumptions.NewS_unfold
-  Assumptions.localSRef_unfold
-  Assumptions.setField_unfold
-  Assumptions.testSwitchVal_unfold
-  Assumptions.testSwitchMultiple_unfold
-  Assumptions.DoSomeLocking_unfold
-  Assumptions.makeLock_unfold
-  Assumptions.sleep_unfold
-  Assumptions.mkInt_unfold
-  Assumptions.mkNothing_unfold
-  Assumptions.convertToAlias_unfold
-  Assumptions.readAliasField_unfold
-  Assumptions.readAliasFieldPtr_unfold
-  Assumptions.readPtrAliasField_unfold
-  Assumptions.typeAssertInt_unfold
-  Assumptions.wrapUnwrapInt_unfold
-  Assumptions.checkedTypeAssert_unfold
-  Assumptions.basicTypeSwitch_unfold
-  Assumptions.fancyTypeSwitch_unfold
-  Assumptions.multiTypeSwitch_unfold
-  Assumptions.multiTypeSwitchLast_unfold
-  Assumptions.variadicFunc_unfold
-  Assumptions.testVariadicCall_unfold
-  Assumptions.returnMultiple_unfold
-  Assumptions.testVariadicPassThrough_unfold
-  Assumptions.LocalVars_unfold
-  Assumptions.LocalConsts_unfold
-  Assumptions.import_fmt_Assumption
-  Assumptions.import_sync_Assumption
-  Assumptions.import_primitive_Assumption
-  Assumptions.import_log_Assumption
-  Assumptions.import_std_Assumption
-  Assumptions.import_proph_Assumption
+attribute [instance] Assumptions.instance'Foo
+  Assumptions.instance'importantStruct
+  Assumptions.instance'stringWrapper
+  Assumptions.instance'Uint32
+  Assumptions.instance'numWrapper
+  Assumptions.instance'withInterface
+  Assumptions.instance'embedA
+  Assumptions.instance'embedB
+  Assumptions.instance'embedC
+  Assumptions.instance'embedD
+  Assumptions.instance'Enum1
+  Assumptions.instance'Enum2
+  Assumptions.instance'float32Field
+  Assumptions.instance'Fooer
+  Assumptions.instance'concreteFooer
+  Assumptions.instance'FooerUser
+  Assumptions.instance'PointerInterface
+  Assumptions.instance'concrete1
+  Assumptions.instance'my_u32
+  Assumptions.instance'also_u32
+  Assumptions.instance'allTheLiterals
+  Assumptions.instance'hasCondVar
+  Assumptions.instance'IntWrapper
+  Assumptions.instance'MapWrapper
+  Assumptions.instance'mapElem
+  Assumptions.instance'msNamer
+  Assumptions.instance'msNamerTagger
+  Assumptions.instance'msLeft
+  Assumptions.instance'msRight
+  Assumptions.instance'msBoth
+  Assumptions.instance'msShadow
+  Assumptions.instance'msPtrEmbed
+  Assumptions.instance'containsPointer
+  Assumptions.instance'wrapExternalStruct
+  Assumptions.instance'typing
+  Assumptions.instance'prophEvent
+  Assumptions.instance'composite
+  Assumptions.instance'pp
+  Assumptions.instance'stringer
+  Assumptions.instance'valCatcher
+  Assumptions.instance'catcherI
+  Assumptions.instance'R
+  Assumptions.instance'Other
+  Assumptions.instance'RecursiveEmbedded
+  Assumptions.instance'runeStruct
+  Assumptions.instance'SliceAlias
+  Assumptions.instance'thing
+  Assumptions.instance'sliceOfThings
+  Assumptions.instance'Point
+  Assumptions.instance'TwoInts
+  Assumptions.instance'S
+  Assumptions.instance'B
+  Assumptions.instance'A
+  Assumptions.instance'Timestamp
+  Assumptions.instance'UseTypeAbbrev
+  Assumptions.instance'UseNamedType
+  Assumptions.instance'aliasedStruct
+  Assumptions.unfold'takesArray
+  Assumptions.unfold'takesPtr
+  Assumptions.unfold'usesArrayElemRef
+  Assumptions.unfold'sum
+  Assumptions.unfold'arrayToSlice
+  Assumptions.unfold'arrayLiteralKeyed
+  Assumptions.unfold'arrayPointerToSlice
+  Assumptions.unfold'chanBasic
+  Assumptions.unfold'f
+  Assumptions.unfold'chanSelect
+  Assumptions.unfold'chanDirectional
+  Assumptions.unfold'chanRange
+  Assumptions.unfold'doSubtleThings
+  Assumptions.unfold'hasStartComment
+  Assumptions.unfold'hasEndComment
+  Assumptions.unfold'condvarWrapping
+  Assumptions.unfold'useUntypedInt
+  Assumptions.unfold'useUntypedString
+  Assumptions.unfold'conditionalReturn
+  Assumptions.unfold'alwaysReturn
+  Assumptions.unfold'alwaysReturnInNestedBranches
+  Assumptions.unfold'earlyReturn
+  Assumptions.unfold'conditionalAssign
+  Assumptions.unfold'elseIf
+  Assumptions.unfold'ifStmtInitialization
+  Assumptions.unfold'loopLocalCopy
+  Assumptions.unfold'rangeInt
+  Assumptions.unfold'typedLiteral
+  Assumptions.unfold'literalCast
+  Assumptions.unfold'castInt
+  Assumptions.unfold'stringToByteSlice
+  Assumptions.unfold'byteSliceToString
+  Assumptions.unfold'stringToStringWrapper
+  Assumptions.unfold'stringWrapperToString
+  Assumptions.unfold'testU32NewtypeLen
+  Assumptions.unfold'testNumWrapper
+  Assumptions.unfold'testConversionLiteral
+  Assumptions.unfold'testCopySimple
+  Assumptions.unfold'testCopyDifferentLengths
+  Assumptions.unfold'atomicCreateStub
+  Assumptions.unfold'useSlice
+  Assumptions.unfold'useSliceIndexing
+  Assumptions.unfold'useMap
+  Assumptions.unfold'usePtr
+  Assumptions.unfold'iterMapKeysAndValues
+  Assumptions.unfold'iterMapKeys
+  Assumptions.unfold'getRandom
+  Assumptions.unfold'returnEmbedVal
+  Assumptions.unfold'returnEmbedValWithPointer
+  Assumptions.unfold'useEmbeddedField
+  Assumptions.unfold'useEmbeddedValField
+  Assumptions.unfold'useEmbeddedMethod
+  Assumptions.unfold'useEmbeddedMethod2
+  Assumptions.unfold'empty
+  Assumptions.unfold'emptyReturn
+  Assumptions.unfold'unnamedParams
+  Assumptions.unfold'anonymousParam
+  Assumptions.unfold'useFloat
+  Assumptions.unfold'compareIntFloat
+  Assumptions.unfold'compareFloatInt
+  Assumptions.unfold'negUnderflowConsts
+  Assumptions.unfold'negUnderflowLiterals
+  Assumptions.unfold'takeFloat32
+  Assumptions.unfold'float32Consts
+  Assumptions.unfold'float32ConstAt
+  Assumptions.unfold'intConstAt
+  Assumptions.unfold'forRangeNoBinding
+  Assumptions.unfold'forRangeOldVars
+  Assumptions.unfold'forRangeString
+  Assumptions.unfold'maybeConvert
+  Assumptions.unfold'maybeConvertToInterface
+  Assumptions.unfold'maybeConvertToString
+  Assumptions.unfold'maybeConvertFromString
+  Assumptions.unfold'assert
+  Assumptions.unfold'nilConvert
+  Assumptions.unfold'genericConversions
+  Assumptions.unfold'foo
+  Assumptions.unfold'other
+  Assumptions.unfold'bar
+  Assumptions.«unfold'init.0»
+  Assumptions.«unfold'init.1»
+  Assumptions.unfold'useUntypedRune
+  Assumptions.unfold'TakesFunctionType
+  Assumptions.unfold'FuncVar
+  Assumptions.unfold'fooConsumer
+  Assumptions.unfold'testAssignConcreteToInterface
+  Assumptions.unfold'testPassConcreteToInterfaceArg
+  Assumptions.unfold'testPassConcreteToInterfaceArgSpecial
+  Assumptions.unfold'takesVarArgsInterface
+  Assumptions.unfold'test
+  Assumptions.unfold'returnConcrete
+  Assumptions.unfold'testMultiReturn
+  Assumptions.unfold'testReturnStatment
+  Assumptions.unfold'testConversionInEq
+  Assumptions.unfold'takeMultiple
+  Assumptions.unfold'giveMultiple
+  Assumptions.unfold'testConversionInMultipleReturnPassThrough
+  Assumptions.unfold'testConversionInMultiplePassThrough
+  Assumptions.unfold'testPtrMset
+  Assumptions.unfold'pointerAny
+  Assumptions.unfold'useInts
+  Assumptions.unfold'signedMidpoint
+  Assumptions.unfold'normalLiterals
+  Assumptions.unfold'outOfOrderLiteral
+  Assumptions.unfold'specialLiterals
+  Assumptions.unfold'oddLiterals
+  Assumptions.unfold'unKeyedLiteral
+  Assumptions.unfold'useLocks
+  Assumptions.unfold'useCondVar
+  Assumptions.unfold'ToBeDebugged
+  Assumptions.unfold'DoNothing
+  Assumptions.unfold'DoSomething
+  Assumptions.unfold'standardForLoop
+  Assumptions.unfold'conditionalInLoop
+  Assumptions.unfold'conditionalInLoopElse
+  Assumptions.unfold'nestedConditionalInLoopImplicitContinue
+  Assumptions.unfold'ImplicitLoopContinue
+  Assumptions.unfold'ImplicitLoopContinue2
+  Assumptions.unfold'ImplicitLoopContinueAfterIfBreak
+  Assumptions.unfold'nestedLoops
+  Assumptions.unfold'nestedGoStyleLoops
+  Assumptions.unfold'sumSlice
+  Assumptions.unfold'intSliceLoop
+  Assumptions.unfold'breakFromLoop
+  Assumptions.unfold'IterateMapKeys
+  Assumptions.unfold'CopyMap
+  Assumptions.unfold'MapSize
+  Assumptions.unfold'NamedMapAssignment
+  Assumptions.unfold'MapTypeAliases
+  Assumptions.unfold'StringMap
+  Assumptions.unfold'mapUpdateField
+  Assumptions.unfold'mapGetCall
+  Assumptions.unfold'mapLiteralTest
+  Assumptions.unfold'mapClearTest
+  Assumptions.unfold'mapLookupConversion
+  Assumptions.unfold'msUse
+  Assumptions.unfold'returnTwo
+  Assumptions.unfold'returnTwoWrapper
+  Assumptions.unfold'multipleVar
+  Assumptions.unfold'multiplePassThrough
+  Assumptions.unfold'multipleReturnPassThrough
+  Assumptions.unfold'AssignNilSlice
+  Assumptions.unfold'AssignNilPointer
+  Assumptions.unfold'CompareSliceToNil
+  Assumptions.unfold'ComparePointerToNil
+  Assumptions.unfold'useNilField
+  Assumptions.unfold'LogicalOperators
+  Assumptions.unfold'LogicalAndEqualityOperators
+  Assumptions.unfold'ArithmeticShifts
+  Assumptions.unfold'ShiftWideCount
+  Assumptions.unfold'ShiftSignedCount
+  Assumptions.unfold'SignedShiftRight
+  Assumptions.unfold'Complement
+  Assumptions.unfold'BitwiseOps
+  Assumptions.unfold'Comparison
+  Assumptions.unfold'AssignOps
+  Assumptions.unfold'AssignOps16
+  Assumptions.unfold'BitwiseAndNot
+  Assumptions.unfold'Negative
+  Assumptions.unfold'PanicAtTheDisco
+  Assumptions.unfold'Oracle
+  Assumptions.unfold'ResolveEvents
+  Assumptions.unfold'ReassignVars
+  Assumptions.unfold'deferValueMethod
+  Assumptions.unfold'deferMethodValue
+  Assumptions.unfold'deferInterfaceMethod
+  Assumptions.unfold'directCall
+  Assumptions.unfold'convertToInterface
+  Assumptions.unfold'topCatch'deferred
+  Assumptions.unfold'deferFuncValue
+  Assumptions.unfold'recur
+  Assumptions.unfold'useRenamedImport
+  Assumptions.unfold'ifJoinDemo
+  Assumptions.unfold'repeatLocalVars
+  Assumptions.unfold'BasicNamedReturn
+  Assumptions.unfold'NamedReturn
+  Assumptions.unfold'BasicNamedReturnMany
+  Assumptions.unfold'NamedReturnMany
+  Assumptions.unfold'NamedReturnOverride
+  Assumptions.unfold'VoidButEndsWithReturn
+  Assumptions.unfold'VoidImplicitReturnInBranch
+  Assumptions.unfold'useRuneOps
+  Assumptions.unfold'useRuneStruct
+  Assumptions.unfold'sliceOps
+  Assumptions.unfold'makeSingletonSlice
+  Assumptions.unfold'makeAlias
+  Assumptions.unfold'Skip
+  Assumptions.unfold'simpleSpawn
+  Assumptions.unfold'threadCode
+  Assumptions.unfold'loopSpawn
+  Assumptions.unfold'stringAppend
+  Assumptions.unfold'stringLength
+  Assumptions.unfold'x
+  Assumptions.unfold'appendString
+  Assumptions.unfold'UseAdd
+  Assumptions.unfold'UseAddWithLiteral
+  Assumptions.unfold'NewS
+  Assumptions.unfold'localSRef
+  Assumptions.unfold'setField
+  Assumptions.unfold'testSwitchVal
+  Assumptions.unfold'testSwitchMultiple
+  Assumptions.unfold'DoSomeLocking
+  Assumptions.unfold'makeLock
+  Assumptions.unfold'sleep
+  Assumptions.unfold'mkInt
+  Assumptions.unfold'mkNothing
+  Assumptions.unfold'convertToAlias
+  Assumptions.unfold'readAliasField
+  Assumptions.unfold'readAliasFieldPtr
+  Assumptions.unfold'readPtrAliasField
+  Assumptions.unfold'typeAssertInt
+  Assumptions.unfold'wrapUnwrapInt
+  Assumptions.unfold'checkedTypeAssert
+  Assumptions.unfold'basicTypeSwitch
+  Assumptions.unfold'fancyTypeSwitch
+  Assumptions.unfold'multiTypeSwitch
+  Assumptions.unfold'multiTypeSwitchLast
+  Assumptions.unfold'variadicFunc
+  Assumptions.unfold'testVariadicCall
+  Assumptions.unfold'returnMultiple
+  Assumptions.unfold'testVariadicPassThrough
+  Assumptions.unfold'LocalVars
+  Assumptions.unfold'LocalConsts
+  Assumptions.import'fmt
+  Assumptions.import'sync
+  Assumptions.import'primitive
+  Assumptions.import'log
+  Assumptions.import'std
+  Assumptions.import'proph
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.unittest
 

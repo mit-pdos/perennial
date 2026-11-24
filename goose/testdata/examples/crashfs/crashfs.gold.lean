@@ -66,11 +66,11 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.initialize') (Val #())))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Main_unfold : FuncUnfold Main [] Main.impl
-  import_fsext_Assumption : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.Assumptions
+  unfold'Main : FuncUnfold Main [] Main.impl
+  import'fsext : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.Assumptions
 
-attribute [instance] Assumptions.Main_unfold
-  Assumptions.import_fsext_Assumption
+attribute [instance] Assumptions.unfold'Main
+  Assumptions.import'fsext
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.crashfs
 

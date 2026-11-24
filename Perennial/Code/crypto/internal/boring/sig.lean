@@ -43,9 +43,9 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  StandardCrypto_unfold : FuncUnfold StandardCrypto [] StandardCrypto.impl
+  unfold'StandardCrypto : FuncUnfold StandardCrypto [] StandardCrypto.impl
 
-attribute [instance] Assumptions.StandardCrypto_unfold
+attribute [instance] Assumptions.unfold'StandardCrypto
 
 end crypto.internal.boring.sig
 

@@ -29,7 +29,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : testing.Assumptions]
 
-noncomputable instance «struct#b304a786_typed_pointsto» :
+noncomputable instance «typed_pointsto'struct#b304a786» :
     TypedPointsto (GF := GF) testing.«struct#b304a786» where
   typedPointstoDef l v dq := iprop(
     "Parent" ∷ typedPointsto (structFieldRef testing.«struct#b304a786» go!"Parent" l) v.Parent' dq ∗
@@ -43,11 +43,11 @@ noncomputable instance «struct#b304a786_typed_pointsto» :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance «struct#b304a786_into_val_typed» :
+noncomputable instance «into_val_typed'struct#b304a786» :
     IntoValTypedUnderlying (GF := GF) testing.«struct#b304a786» testing.«struct#b304a786».underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance «struct#b304a786_access_load_Parent» (l : Loc) (v : testing.«struct#b304a786») (dq : DFrac) :
+noncomputable instance «access_load'struct#b304a786'Parent» (l : Loc) (v : testing.«struct#b304a786») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Parent" l) v.Parent' dq)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Parent" l) v.Parent' dq)
@@ -55,7 +55,7 @@ noncomputable instance «struct#b304a786_access_load_Parent» (l : Loc) (v : tes
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#b304a786_access_store_Parent» (l : Loc) (v : testing.«struct#b304a786») (y : GoString) :
+noncomputable instance «access_store'struct#b304a786'Parent» (l : Loc) (v : testing.«struct#b304a786») (y : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Parent" l) v.Parent' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Parent" l) y (DFrac.own 1))
@@ -63,7 +63,7 @@ noncomputable instance «struct#b304a786_access_store_Parent» (l : Loc) (v : te
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#b304a786_access_load_Path» (l : Loc) (v : testing.«struct#b304a786») (dq : DFrac) :
+noncomputable instance «access_load'struct#b304a786'Path» (l : Loc) (v : testing.«struct#b304a786») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Path" l) v.Path' dq)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Path" l) v.Path' dq)
@@ -71,7 +71,7 @@ noncomputable instance «struct#b304a786_access_load_Path» (l : Loc) (v : testi
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#b304a786_access_store_Path» (l : Loc) (v : testing.«struct#b304a786») (y : GoString) :
+noncomputable instance «access_store'struct#b304a786'Path» (l : Loc) (v : testing.«struct#b304a786») (y : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Path" l) v.Path' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Path" l) y (DFrac.own 1))
@@ -79,7 +79,7 @@ noncomputable instance «struct#b304a786_access_store_Path» (l : Loc) (v : test
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#b304a786_access_load_Data» (l : Loc) (v : testing.«struct#b304a786») (dq : DFrac) :
+noncomputable instance «access_load'struct#b304a786'Data» (l : Loc) (v : testing.«struct#b304a786») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Data" l) v.Data' dq)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Data" l) v.Data' dq)
@@ -87,7 +87,7 @@ noncomputable instance «struct#b304a786_access_load_Data» (l : Loc) (v : testi
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#b304a786_access_store_Data» (l : Loc) (v : testing.«struct#b304a786») (y : GoSlice) :
+noncomputable instance «access_store'struct#b304a786'Data» (l : Loc) (v : testing.«struct#b304a786») (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Data" l) v.Data' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Data" l) y (DFrac.own 1))
@@ -95,7 +95,7 @@ noncomputable instance «struct#b304a786_access_store_Data» (l : Loc) (v : test
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#b304a786_access_load_Values» (l : Loc) (v : testing.«struct#b304a786») (dq : DFrac) :
+noncomputable instance «access_load'struct#b304a786'Values» (l : Loc) (v : testing.«struct#b304a786») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Values" l) v.Values' dq)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Values" l) v.Values' dq)
@@ -103,7 +103,7 @@ noncomputable instance «struct#b304a786_access_load_Values» (l : Loc) (v : tes
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#b304a786_access_store_Values» (l : Loc) (v : testing.«struct#b304a786») (y : GoSlice) :
+noncomputable instance «access_store'struct#b304a786'Values» (l : Loc) (v : testing.«struct#b304a786») (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Values" l) v.Values' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Values" l) y (DFrac.own 1))
@@ -111,7 +111,7 @@ noncomputable instance «struct#b304a786_access_store_Values» (l : Loc) (v : te
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#b304a786_access_load_Generation» (l : Loc) (v : testing.«struct#b304a786») (dq : DFrac) :
+noncomputable instance «access_load'struct#b304a786'Generation» (l : Loc) (v : testing.«struct#b304a786») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Generation" l) v.Generation' dq)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Generation" l) v.Generation' dq)
@@ -119,7 +119,7 @@ noncomputable instance «struct#b304a786_access_load_Generation» (l : Loc) (v :
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#b304a786_access_store_Generation» (l : Loc) (v : testing.«struct#b304a786») (y : w64) :
+noncomputable instance «access_store'struct#b304a786'Generation» (l : Loc) (v : testing.«struct#b304a786») (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Generation" l) v.Generation' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Generation" l) y (DFrac.own 1))
@@ -127,7 +127,7 @@ noncomputable instance «struct#b304a786_access_store_Generation» (l : Loc) (v 
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#b304a786_access_load_IsSeed» (l : Loc) (v : testing.«struct#b304a786») (dq : DFrac) :
+noncomputable instance «access_load'struct#b304a786'IsSeed» (l : Loc) (v : testing.«struct#b304a786») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"IsSeed" l) v.IsSeed' dq)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"IsSeed" l) v.IsSeed' dq)
@@ -135,7 +135,7 @@ noncomputable instance «struct#b304a786_access_load_IsSeed» (l : Loc) (v : tes
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#b304a786_access_store_IsSeed» (l : Loc) (v : testing.«struct#b304a786») (y : Bool) :
+noncomputable instance «access_store'struct#b304a786'IsSeed» (l : Loc) (v : testing.«struct#b304a786») (y : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"IsSeed" l) v.IsSeed' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"IsSeed" l) y (DFrac.own 1))

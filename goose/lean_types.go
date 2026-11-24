@@ -63,7 +63,7 @@ func (ctx *Ctx) namedTypeParams(spec *ast.TypeSpec) []string {
 	var params []string
 	if tps := namedType.TypeParams(); tps != nil {
 		for i := range tps.Len() {
-			params = append(params, tps.At(i).Obj().Name())
+			params = append(params, glang.BinderName(tps.At(i).Obj().Name()))
 		}
 	}
 	return params
@@ -190,7 +190,7 @@ func (ctx *Ctx) leanFdsDecl(name string, params []string, ty glang.StructType) s
 	fmt.Fprintf(w, "\n@[irreducible] noncomputable def %s [GooseExts] [GoGlobalContext]%s : List go.field_decl :=\n  %s\n",
 		fds, binders, leanApplied(fdsU, params))
 	fmt.Fprintf(w, "\nnoncomputable instance %s [GooseExts] [GoGlobalContext]%s :\n    EqualsUnfold %s %s :=\n  ⟨by unfold %s; rfl⟩",
-		glang.LeanQuoteComponent("equals_unfold_"+name), binders, leanApplied(fds, params),
+		glang.LeanQuoteComponent(glang.MemberName("equals_unfold", name)), binders, leanApplied(fds, params),
 		leanApplied(fdsU, params), fds)
 	return w.String()
 }
@@ -238,7 +238,7 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) typeAssumptionsDe
 	if t.TypeParams() != nil {
 		var targs []types.Type
 		for i := range t.TypeParams().Len() {
-			params = append(params, t.TypeParams().At(i).Obj().Name())
+			params = append(params, glang.BinderName(t.TypeParams().At(i).Obj().Name()))
 			targs = append(targs, t.TypeParams().At(i))
 		}
 		inst, _ := types.Instantiate(nil, t, targs, false)
@@ -323,7 +323,7 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) typeAssumptionsDe
 							glang.IdentExpr("$r"))),
 				}.LeanVal()
 			}
-			add(methodName+"_unfold",
+			add(glang.MemberName("unfold", methodName),
 				leanForall(goBinders, fmt.Sprintf("MethodUnfold %s %s %s", ty, glang.LeanStringLit(methodName), lparenS(impl))))
 		}
 
@@ -375,7 +375,7 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) typeAssumptionsDe
 						ctx.glangType(field, fieldType), glang.StringLiteral{Value: methodName}, fieldExpr),
 				}.LeanVal()
 			}
-			add("ptr_"+methodName+"_unfold",
+			add(glang.MemberName("ptr_unfold", methodName),
 				leanForall(goBinders, fmt.Sprintf("MethodUnfold %s %s %s", ptrTy, glang.LeanStringLit(methodName), lparenS(impl))))
 		}
 	}
@@ -423,10 +423,10 @@ func (ctx *Ctx) structFieldAssumptions(l locatable, st *types.Struct, valTy, imp
 		if xBinder != "" {
 			xBinder += " "
 		}
-		add("get_"+fieldName, fmt.Sprintf(
+		add(glang.MemberName("get", fieldName), fmt.Sprintf(
 			"∀ %s(x : %s), go.IsGoStepPureDetTagged under (StructFieldGet %s %s) #x (Val #(x.%s))",
 			xBinder, valTy, implTy, glang.LeanStringLit(fieldName), projName))
-		add("set_"+fieldName, fmt.Sprintf(
+		add(glang.MemberName("set", fieldName), fmt.Sprintf(
 			"∀ %s(x : %s) (y : %s), go.IsGoStepPureDetTagged under (StructFieldSet %s %s) (PairV #x #y) (Val #(({ x with %s := y } : %s)))",
 			xBinder, valTy, fieldTy, implTy, glang.LeanStringLit(fieldName), projName, valTy))
 	}
@@ -601,9 +601,9 @@ func (ctx *Ctx) toLeanTypeP(l locatable, t types.Type, primed bool) string {
 		return baseName
 	case *types.TypeParam:
 		if primed {
-			return glang.LeanIdent(t.String() + "'")
+			return glang.LeanIdent(glang.BinderName(t.Obj().Name()) + "'")
 		}
-		return glang.LeanIdent(t.String())
+		return glang.LeanIdent(glang.BinderName(t.Obj().Name()))
 	case *types.Struct:
 		if t.NumFields() == 0 {
 			return "Unit"
@@ -627,11 +627,11 @@ func (ctx *Ctx) toLeanTypeP(l locatable, t types.Type, primed bool) string {
 func (ctx *Ctx) leanPackagePropClass(typeSpecs []*ast.TypeSpec) string {
 	var fields []leanClassField
 	for _, t := range typeSpecs {
-		fields = append(fields, leanClassField{name: t.Name.Name + "_instance",
+		fields = append(fields, leanClassField{name: glang.MemberName("instance", t.Name.Name),
 			ty: glang.LeanEncodedName(t.Name.Name + "'assumptions")})
 	}
 	for _, a := range ctx.anonStructOrder {
-		fields = append(fields, leanClassField{name: a.name + "_instance",
+		fields = append(fields, leanClassField{name: glang.MemberName("instance", a.name),
 			ty: glang.LeanEncodedName(a.name + "'assumptions")})
 	}
 	for _, f := range ctx.functions {
@@ -643,7 +643,7 @@ func (ctx *Ctx) leanPackagePropClass(typeSpecs []*ast.TypeSpec) string {
 		if f.Type.TypeParams != nil {
 			for _, p := range f.Type.TypeParams.List {
 				for _, name := range p.Names {
-					params = append(params, name.Name)
+					params = append(params, glang.BinderName(name.Name))
 				}
 			}
 		}
@@ -656,7 +656,7 @@ func (ctx *Ctx) leanPackagePropClass(typeSpecs []*ast.TypeSpec) string {
 			name += "'deferred"
 		}
 		impl := leanApplied(glang.LeanIdent(glang.FuncImpl(name)), params)
-		fields = append(fields, leanClassField{name: name + "_unfold",
+		fields = append(fields, leanClassField{name: glang.MemberName("unfold", name),
 			ty: leanForall(leanTypeParamBinders(params, "go.GoType"),
 				fmt.Sprintf("FuncUnfold %s [%s] %s", glang.LeanIdent(name),
 					strings.Join(typeArgs, ", "), impl))})

@@ -100,11 +100,11 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.initialize') (Val #())))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Run_unfold : FuncUnfold Run [] Run.impl
-  import_grove_ffi_Assumption : _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.Assumptions
+  unfold'Run : FuncUnfold Run [] Run.impl
+  import'grove_ffi : _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.Assumptions
 
-attribute [instance] Assumptions.Run_unfold
-  Assumptions.import_grove_ffi_Assumption
+attribute [instance] Assumptions.unfold'Run
+  Assumptions.import'grove_ffi
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.grovefile
 

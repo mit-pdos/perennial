@@ -25,11 +25,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.gokv.grove_ffi.Assumptions]
 
-noncomputable instance listener_typed_pointsto :
+noncomputable instance typed_pointsto'listener :
     TypedPointsto (GF := GF) github_com.mit_pdos.gokv.grove_ffi.listener :=
   sorry -- axiomatized type
 
-noncomputable instance listener_into_val_typed :
+noncomputable instance into_val_typed'listener :
     IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.gokv.grove_ffi.listener github_com.mit_pdos.gokv.grove_ffi.listener.underlying :=
   sorry -- axiomatized type
 
@@ -44,11 +44,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.gokv.grove_ffi.Assumptions]
 
-noncomputable instance connection_typed_pointsto :
+noncomputable instance typed_pointsto'connection :
     TypedPointsto (GF := GF) github_com.mit_pdos.gokv.grove_ffi.connection :=
   sorry -- axiomatized type
 
-noncomputable instance connection_into_val_typed :
+noncomputable instance into_val_typed'connection :
     IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.gokv.grove_ffi.connection github_com.mit_pdos.gokv.grove_ffi.connection.underlying :=
   sorry -- axiomatized type
 
@@ -63,7 +63,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.gokv.grove_ffi.Assumptions]
 
-noncomputable instance ConnectRet_typed_pointsto :
+noncomputable instance typed_pointsto'ConnectRet :
     TypedPointsto (GF := GF) github_com.mit_pdos.gokv.grove_ffi.ConnectRet where
   typedPointstoDef l v dq := iprop(
     "Err" ∷ typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Err" l) v.Err' dq ∗
@@ -73,11 +73,11 @@ noncomputable instance ConnectRet_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance ConnectRet_into_val_typed :
+noncomputable instance into_val_typed'ConnectRet :
     IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.gokv.grove_ffi.ConnectRet github_com.mit_pdos.gokv.grove_ffi.ConnectRet.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance ConnectRet_access_load_Err (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (dq : DFrac) :
+noncomputable instance access_load'ConnectRet'Err (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Err" l) v.Err' dq)
       (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Err" l) v.Err' dq)
@@ -85,7 +85,7 @@ noncomputable instance ConnectRet_access_load_Err (l : Loc) (v : github_com.mit_
  by
   solve_pointsto_access_struct
 
-noncomputable instance ConnectRet_access_store_Err (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (y : Bool) :
+noncomputable instance access_store'ConnectRet'Err (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (y : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Err" l) v.Err' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Err" l) y (DFrac.own 1))
@@ -93,7 +93,7 @@ noncomputable instance ConnectRet_access_store_Err (l : Loc) (v : github_com.mit
  by
   solve_pointsto_access_struct
 
-noncomputable instance ConnectRet_access_load_Connection (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (dq : DFrac) :
+noncomputable instance access_load'ConnectRet'Connection (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Connection" l) v.Connection' dq)
       (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Connection" l) v.Connection' dq)
@@ -101,7 +101,7 @@ noncomputable instance ConnectRet_access_load_Connection (l : Loc) (v : github_c
  by
   solve_pointsto_access_struct
 
-noncomputable instance ConnectRet_access_store_Connection (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (y : github_com.mit_pdos.gokv.grove_ffi.Connection) :
+noncomputable instance access_store'ConnectRet'Connection (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (y : github_com.mit_pdos.gokv.grove_ffi.Connection) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Connection" l) v.Connection' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Connection" l) y (DFrac.own 1))
@@ -120,7 +120,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.gokv.grove_ffi.Assumptions]
 
-noncomputable instance ReceiveRet_typed_pointsto :
+noncomputable instance typed_pointsto'ReceiveRet :
     TypedPointsto (GF := GF) github_com.mit_pdos.gokv.grove_ffi.ReceiveRet where
   typedPointstoDef l v dq := iprop(
     "Err" ∷ typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Err" l) v.Err' dq ∗
@@ -130,11 +130,11 @@ noncomputable instance ReceiveRet_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance ReceiveRet_into_val_typed :
+noncomputable instance into_val_typed'ReceiveRet :
     IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.gokv.grove_ffi.ReceiveRet github_com.mit_pdos.gokv.grove_ffi.ReceiveRet.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance ReceiveRet_access_load_Err (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (dq : DFrac) :
+noncomputable instance access_load'ReceiveRet'Err (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Err" l) v.Err' dq)
       (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Err" l) v.Err' dq)
@@ -142,7 +142,7 @@ noncomputable instance ReceiveRet_access_load_Err (l : Loc) (v : github_com.mit_
  by
   solve_pointsto_access_struct
 
-noncomputable instance ReceiveRet_access_store_Err (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (y : Bool) :
+noncomputable instance access_store'ReceiveRet'Err (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (y : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Err" l) v.Err' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Err" l) y (DFrac.own 1))
@@ -150,7 +150,7 @@ noncomputable instance ReceiveRet_access_store_Err (l : Loc) (v : github_com.mit
  by
   solve_pointsto_access_struct
 
-noncomputable instance ReceiveRet_access_load_Data (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (dq : DFrac) :
+noncomputable instance access_load'ReceiveRet'Data (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Data" l) v.Data' dq)
       (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Data" l) v.Data' dq)
@@ -158,7 +158,7 @@ noncomputable instance ReceiveRet_access_load_Data (l : Loc) (v : github_com.mit
  by
   solve_pointsto_access_struct
 
-noncomputable instance ReceiveRet_access_store_Data (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (y : GoSlice) :
+noncomputable instance access_store'ReceiveRet'Data (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Data" l) v.Data' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Data" l) y (DFrac.own 1))

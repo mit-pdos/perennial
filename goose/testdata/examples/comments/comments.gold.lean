@@ -54,7 +54,7 @@ noncomputable instance Foo.zero_val [GooseExts] : ZeroVal Foo :=
 @[irreducible] noncomputable def Foo.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Foo.fieldsUnsealed
 
-noncomputable instance equals_unfold_Foo [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Foo [GooseExts] [GoGlobalContext] :
     EqualsUnfold Foo.fields Foo.fieldsUnsealed :=
   ⟨by unfold Foo.fields; rfl⟩
 
@@ -64,22 +64,22 @@ noncomputable instance equals_unfold_Foo [GooseExts] [GoGlobalContext] :
 class Foo.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Foo.underlying Foo
   underlying : go.UnderlyingDirectedEq Foo.ty Foo.underlying
-  get_a : ∀ (x : Foo), go.IsGoStepPureDetTagged under (StructFieldGet Foo.underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : Foo) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Foo.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : Foo)))
+  get'a : ∀ (x : Foo), go.IsGoStepPureDetTagged under (StructFieldGet Foo.underlying go!"a") #x (Val #(x.a'))
+  set'a : ∀ (x : Foo) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Foo.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : Foo)))
   method_set : go.MethodSetIs Foo.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Foo.ty) []
 
 attribute [instance] Foo.TypeAssumptions.type_repr
   Foo.TypeAssumptions.underlying
-  Foo.TypeAssumptions.get_a
-  Foo.TypeAssumptions.set_a
+  Foo.TypeAssumptions.get'a
+  Foo.TypeAssumptions.set'a
   Foo.TypeAssumptions.method_set
   Foo.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Foo_instance : Foo.TypeAssumptions
+  instance'Foo : Foo.TypeAssumptions
 
-attribute [instance] Assumptions.Foo_instance
+attribute [instance] Assumptions.instance'Foo
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.comments
 

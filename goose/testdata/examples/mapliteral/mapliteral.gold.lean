@@ -100,7 +100,7 @@ noncomputable instance Nested.zero_val [GooseExts] : ZeroVal Nested :=
 @[irreducible] noncomputable def Nested.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Nested.fieldsUnsealed
 
-noncomputable instance equals_unfold_Nested [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Nested [GooseExts] [GoGlobalContext] :
     EqualsUnfold Nested.fields Nested.fieldsUnsealed :=
   ⟨by unfold Nested.fields; rfl⟩
 
@@ -110,28 +110,28 @@ noncomputable instance equals_unfold_Nested [GooseExts] [GoGlobalContext] :
 class Nested.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Nested.underlying Nested
   underlying : go.UnderlyingDirectedEq Nested.ty Nested.underlying
-  get_X : ∀ (x : Nested), go.IsGoStepPureDetTagged under (StructFieldGet Nested.underlying go!"X") #x (Val #(x.X'))
-  set_X : ∀ (x : Nested) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Nested.underlying go!"X") (PairV #x #y) (Val #(({ x with X' := y } : Nested)))
+  get'X : ∀ (x : Nested), go.IsGoStepPureDetTagged under (StructFieldGet Nested.underlying go!"X") #x (Val #(x.X'))
+  set'X : ∀ (x : Nested) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Nested.underlying go!"X") (PairV #x #y) (Val #(({ x with X' := y } : Nested)))
   method_set : go.MethodSetIs Nested.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Nested.ty) []
 
 attribute [instance] Nested.TypeAssumptions.type_repr
   Nested.TypeAssumptions.underlying
-  Nested.TypeAssumptions.get_X
-  Nested.TypeAssumptions.set_X
+  Nested.TypeAssumptions.get'X
+  Nested.TypeAssumptions.set'X
   Nested.TypeAssumptions.method_set
   Nested.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Nested_instance : Nested.TypeAssumptions
-  f_unfold : FuncUnfold f [] f.impl
-  mapliteral_unfold : FuncUnfold mapliteral [] mapliteral.impl
-  nestedMapLiteral_unfold : FuncUnfold nestedMapLiteral [] nestedMapLiteral.impl
+  instance'Nested : Nested.TypeAssumptions
+  unfold'f : FuncUnfold f [] f.impl
+  unfold'mapliteral : FuncUnfold mapliteral [] mapliteral.impl
+  unfold'nestedMapLiteral : FuncUnfold nestedMapLiteral [] nestedMapLiteral.impl
 
-attribute [instance] Assumptions.Nested_instance
-  Assumptions.f_unfold
-  Assumptions.mapliteral_unfold
-  Assumptions.nestedMapLiteral_unfold
+attribute [instance] Assumptions.instance'Nested
+  Assumptions.unfold'f
+  Assumptions.unfold'mapliteral
+  Assumptions.unfold'nestedMapLiteral
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.mapliteral
 

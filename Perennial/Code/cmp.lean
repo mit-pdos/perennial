@@ -42,16 +42,16 @@ noncomputable def Or [GooseExts] [GoGlobalContext] : GoString :=
     and -0.0 is not less than (is equal to) 0.0.
 
     go: cmp.go:28:6 -/
-noncomputable def Less.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Less.impl [GooseExts] [GoGlobalContext] (T₀ : go.GoType) : val :=
   (LamV "x"
   (Lam "y"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "y" (App (Val (GoInstruction (GoAlloc T))) (Var "y"))
-  (Let "x" (App (Val (GoInstruction (GoAlloc T))) (Var "x"))
-  (Let "$r0" (If (If (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "x"))
-  (App (App (Val (GoInstruction (FuncResolve isNaN [T]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "y"))
-  (App (App (Val (GoInstruction (FuncResolve isNaN [T]))) (Val #())) (Var "$a0")))) (Val #false)) (Val #true) (App (Val (GoInstruction (GoOp GoLt T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "x")) (App (Val (GoInstruction (GoLoad T))) (Var "y")))))
+  (Let "y" (App (Val (GoInstruction (GoAlloc T₀))) (Var "y"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc T₀))) (Var "x"))
+  (Let "$r0" (If (If (Let "$a0" (App (Val (GoInstruction (GoLoad T₀))) (Var "x"))
+  (App (App (Val (GoInstruction (FuncResolve isNaN [T₀]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad T₀))) (Var "y"))
+  (App (App (Val (GoInstruction (FuncResolve isNaN [T₀]))) (Val #())) (Var "$a0")))) (Val #false)) (Val #true) (App (Val (GoInstruction (GoOp GoLt T₀))) (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "x")) (App (Val (GoInstruction (GoLoad T₀))) (Var "y")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -69,19 +69,19 @@ noncomputable def Less.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val 
     a NaN is considered equal to a NaN, and -0.0 is equal to 0.0.
 
     go: cmp.go:40:6 -/
-noncomputable def Compare.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Compare.impl [GooseExts] [GoGlobalContext] (T₀ : go.GoType) : val :=
   (LamV "x"
   (Lam "y"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "y" (App (Val (GoInstruction (GoAlloc T))) (Var "y"))
-  (Let "x" (App (Val (GoInstruction (GoAlloc T))) (Var "x"))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "x"))
-  (App (App (Val (GoInstruction (FuncResolve isNaN [T]))) (Val #())) (Var "$a0")))
+  (Let "y" (App (Val (GoInstruction (GoAlloc T₀))) (Var "y"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc T₀))) (Var "x"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad T₀))) (Var "x"))
+  (App (App (Val (GoInstruction (FuncResolve isNaN [T₀]))) (Val #())) (Var "$a0")))
   (Let "xNaN" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "y"))
-  (App (App (Val (GoInstruction (FuncResolve isNaN [T]))) (Val #())) (Var "$a0")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad T₀))) (Var "y"))
+  (App (App (Val (GoInstruction (FuncResolve isNaN [T₀]))) (Val #())) (Var "$a0")))
   (Let "yNaN" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -94,7 +94,7 @@ noncomputable def Compare.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : v
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "x")) (App (Val (GoInstruction (GoLoad T))) (Var "y")))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt T₀))) (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "x")) (App (Val (GoInstruction (GoLoad T₀))) (Var "y")))))
   (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoPos go.untypedInt))) (Val #(1 : Int))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -103,7 +103,7 @@ noncomputable def Compare.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : v
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
   (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "x")) (App (Val (GoInstruction (GoLoad T))) (Var "y")))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt T₀))) (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "x")) (App (Val (GoInstruction (GoLoad T₀))) (Var "y")))))
   (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -150,12 +150,12 @@ noncomputable def Compare.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : v
     This will always return false if T is not floating-point.
 
     go: cmp.go:63:6 -/
-noncomputable def isNaN.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def isNaN.impl [GooseExts] [GoGlobalContext] (T₀ : go.GoType) : val :=
   (LamV "x"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "x" (App (Val (GoInstruction (GoAlloc T))) (Var "x"))
-  (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "x")) (App (Val (GoInstruction (GoLoad T))) (Var "x")))))
+  (Let "x" (App (Val (GoInstruction (GoAlloc T₀))) (Var "x"))
+  (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals T₀))) (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "x")) (App (Val (GoInstruction (GoLoad T₀))) (Var "x")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -167,40 +167,40 @@ noncomputable def isNaN.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val
     If no argument is non-zero, it returns the zero value.
 
     go: cmp.go:69:6 -/
-noncomputable def Or.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Or.impl [GooseExts] [GoGlobalContext] (T₀ : go.GoType) : val :=
   (LamV "vals"
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc T₀))) (App (Val (GoInstruction (GoZeroVal T₀))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "vals" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType T)))) (Var "vals"))
-  (Let "zero" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
+  (Let "vals" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType T₀)))) (Var "vals"))
+  (Let "zero" (App (Val (GoInstruction (GoAlloc T₀))) (App (Val (GoInstruction (GoZeroVal T₀))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (Var "zero"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad T₀))) (Var "zero"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore T))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (Var "vals"))
-  (Let "val" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
-  (App (App (Val (slice.forRange T)) (Var "$range"))
+  (App (Val (GoInstruction (GoStore T₀))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T₀)))) (Var "vals"))
+  (Let "val" (App (Val (GoInstruction (GoAlloc T₀))) (App (Val (GoInstruction (GoZeroVal T₀))) (Val #())))
+  (App (App (Val (slice.forRange T₀)) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "val")) (App (Val (GoInstruction (GoLoad T))) (Var "zero"))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (Var "val"))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals T₀))) (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "val")) (App (Val (GoInstruction (GoLoad T₀))) (Var "zero"))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad T₀))) (Var "val"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore T))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val (GoInstruction (GoStore T₀))) (Pair (Var "$res0") (Var "$r0"))))))
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
   (Var "$key")))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore T))) (Pair (Var "val") (Var "$value"))))))))))))))
-  (App (Val (GoInstruction (GoLoad T))) (Var "$res0")))))
+  (App (Val (GoInstruction (GoStore T₀))) (Pair (Var "val") (Var "$value"))))))))))))))
+  (App (Val (GoInstruction (GoLoad T₀))) (Var "$res0")))))
 
 noncomputable instance info' : PkgInfo pkg_id.cmp where
   pkgImportedPkgs := []
@@ -227,17 +227,17 @@ attribute [instance] Ordered.TypeAssumptions.underlying
   Ordered.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Ordered_instance : Ordered.TypeAssumptions
-  Less_unfold : ∀ (T : go.GoType), FuncUnfold Less [T] (Less.impl T)
-  Compare_unfold : ∀ (T : go.GoType), FuncUnfold Compare [T] (Compare.impl T)
-  isNaN_unfold : ∀ (T : go.GoType), FuncUnfold isNaN [T] (isNaN.impl T)
-  Or_unfold : ∀ (T : go.GoType), FuncUnfold Or [T] (Or.impl T)
+  instance'Ordered : Ordered.TypeAssumptions
+  unfold'Less : ∀ (T₀ : go.GoType), FuncUnfold Less [T₀] (Less.impl T₀)
+  unfold'Compare : ∀ (T₀ : go.GoType), FuncUnfold Compare [T₀] (Compare.impl T₀)
+  unfold'isNaN : ∀ (T₀ : go.GoType), FuncUnfold isNaN [T₀] (isNaN.impl T₀)
+  unfold'Or : ∀ (T₀ : go.GoType), FuncUnfold Or [T₀] (Or.impl T₀)
 
-attribute [instance] Assumptions.Ordered_instance
-  Assumptions.Less_unfold
-  Assumptions.Compare_unfold
-  Assumptions.isNaN_unfold
-  Assumptions.Or_unfold
+attribute [instance] Assumptions.instance'Ordered
+  Assumptions.unfold'Less
+  Assumptions.unfold'Compare
+  Assumptions.unfold'isNaN
+  Assumptions.unfold'Or
 
 end cmp
 

@@ -1913,23 +1913,23 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val (go.GlobalAlloc mPi4 (go.GoType.ArrayType 20 go.uint64))) (Val #()))))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Abs_unfold : FuncUnfold Abs [] Abs.impl
-  NaN_unfold : FuncUnfold NaN [] NaN.impl
-  IsNaN_unfold : FuncUnfold IsNaN [] IsNaN.impl
-  IsInf_unfold : FuncUnfold IsInf [] IsInf.impl
-  Sqrt_unfold : FuncUnfold Sqrt [] Sqrt.impl
-  sqrt_unfold : FuncUnfold sqrt [] sqrt.impl
-  Float64bits_unfold : FuncUnfold Float64bits [] Float64bits.impl
-  Float64frombits_unfold : FuncUnfold Float64frombits [] Float64frombits.impl
+  unfold'Abs : FuncUnfold Abs [] Abs.impl
+  unfold'NaN : FuncUnfold NaN [] NaN.impl
+  unfold'IsNaN : FuncUnfold IsNaN [] IsNaN.impl
+  unfold'IsInf : FuncUnfold IsInf [] IsInf.impl
+  unfold'Sqrt : FuncUnfold Sqrt [] Sqrt.impl
+  unfold'sqrt : FuncUnfold sqrt [] sqrt.impl
+  unfold'Float64bits : FuncUnfold Float64bits [] Float64bits.impl
+  unfold'Float64frombits : FuncUnfold Float64frombits [] Float64frombits.impl
 
-attribute [instance] Assumptions.Abs_unfold
-  Assumptions.NaN_unfold
-  Assumptions.IsNaN_unfold
-  Assumptions.IsInf_unfold
-  Assumptions.Sqrt_unfold
-  Assumptions.sqrt_unfold
-  Assumptions.Float64bits_unfold
-  Assumptions.Float64frombits_unfold
+attribute [instance] Assumptions.unfold'Abs
+  Assumptions.unfold'NaN
+  Assumptions.unfold'IsNaN
+  Assumptions.unfold'IsInf
+  Assumptions.unfold'Sqrt
+  Assumptions.unfold'sqrt
+  Assumptions.unfold'Float64bits
+  Assumptions.unfold'Float64frombits
 
 end math
 

@@ -644,7 +644,7 @@ noncomputable instance leafPageElement.zero_val [GooseExts] : ZeroVal leafPageEl
 @[irreducible] noncomputable def leafPageElement.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   leafPageElement.fieldsUnsealed
 
-noncomputable instance equals_unfold_leafPageElement [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'leafPageElement [GooseExts] [GoGlobalContext] :
     EqualsUnfold leafPageElement.fields leafPageElement.fieldsUnsealed :=
   ⟨by unfold leafPageElement.fields; rfl⟩
 
@@ -654,27 +654,27 @@ noncomputable instance equals_unfold_leafPageElement [GooseExts] [GoGlobalContex
 class leafPageElement.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying leafPageElement.underlying leafPageElement
   underlying : go.UnderlyingDirectedEq leafPageElement.ty leafPageElement.underlying
-  get_flags : ∀ (x : leafPageElement), go.IsGoStepPureDetTagged under (StructFieldGet leafPageElement.underlying go!"flags") #x (Val #(x.flags'))
-  set_flags : ∀ (x : leafPageElement) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet leafPageElement.underlying go!"flags") (PairV #x #y) (Val #(({ x with flags' := y } : leafPageElement)))
-  get_pos : ∀ (x : leafPageElement), go.IsGoStepPureDetTagged under (StructFieldGet leafPageElement.underlying go!"pos") #x (Val #(x.pos'))
-  set_pos : ∀ (x : leafPageElement) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet leafPageElement.underlying go!"pos") (PairV #x #y) (Val #(({ x with pos' := y } : leafPageElement)))
-  get_ksize : ∀ (x : leafPageElement), go.IsGoStepPureDetTagged under (StructFieldGet leafPageElement.underlying go!"ksize") #x (Val #(x.ksize'))
-  set_ksize : ∀ (x : leafPageElement) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet leafPageElement.underlying go!"ksize") (PairV #x #y) (Val #(({ x with ksize' := y } : leafPageElement)))
-  get_vsize : ∀ (x : leafPageElement), go.IsGoStepPureDetTagged under (StructFieldGet leafPageElement.underlying go!"vsize") #x (Val #(x.vsize'))
-  set_vsize : ∀ (x : leafPageElement) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet leafPageElement.underlying go!"vsize") (PairV #x #y) (Val #(({ x with vsize' := y } : leafPageElement)))
+  get'flags : ∀ (x : leafPageElement), go.IsGoStepPureDetTagged under (StructFieldGet leafPageElement.underlying go!"flags") #x (Val #(x.flags'))
+  set'flags : ∀ (x : leafPageElement) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet leafPageElement.underlying go!"flags") (PairV #x #y) (Val #(({ x with flags' := y } : leafPageElement)))
+  get'pos : ∀ (x : leafPageElement), go.IsGoStepPureDetTagged under (StructFieldGet leafPageElement.underlying go!"pos") #x (Val #(x.pos'))
+  set'pos : ∀ (x : leafPageElement) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet leafPageElement.underlying go!"pos") (PairV #x #y) (Val #(({ x with pos' := y } : leafPageElement)))
+  get'ksize : ∀ (x : leafPageElement), go.IsGoStepPureDetTagged under (StructFieldGet leafPageElement.underlying go!"ksize") #x (Val #(x.ksize'))
+  set'ksize : ∀ (x : leafPageElement) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet leafPageElement.underlying go!"ksize") (PairV #x #y) (Val #(({ x with ksize' := y } : leafPageElement)))
+  get'vsize : ∀ (x : leafPageElement), go.IsGoStepPureDetTagged under (StructFieldGet leafPageElement.underlying go!"vsize") #x (Val #(x.vsize'))
+  set'vsize : ∀ (x : leafPageElement) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet leafPageElement.underlying go!"vsize") (PairV #x #y) (Val #(({ x with vsize' := y } : leafPageElement)))
   method_set : go.MethodSetIs leafPageElement.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType leafPageElement.ty) []
 
 attribute [instance] leafPageElement.TypeAssumptions.type_repr
   leafPageElement.TypeAssumptions.underlying
-  leafPageElement.TypeAssumptions.get_flags
-  leafPageElement.TypeAssumptions.set_flags
-  leafPageElement.TypeAssumptions.get_pos
-  leafPageElement.TypeAssumptions.set_pos
-  leafPageElement.TypeAssumptions.get_ksize
-  leafPageElement.TypeAssumptions.set_ksize
-  leafPageElement.TypeAssumptions.get_vsize
-  leafPageElement.TypeAssumptions.set_vsize
+  leafPageElement.TypeAssumptions.get'flags
+  leafPageElement.TypeAssumptions.set'flags
+  leafPageElement.TypeAssumptions.get'pos
+  leafPageElement.TypeAssumptions.set'pos
+  leafPageElement.TypeAssumptions.get'ksize
+  leafPageElement.TypeAssumptions.set'ksize
+  leafPageElement.TypeAssumptions.get'vsize
+  leafPageElement.TypeAssumptions.set'vsize
   leafPageElement.TypeAssumptions.method_set
   leafPageElement.TypeAssumptions.ptr_method_set
 
@@ -693,7 +693,7 @@ noncomputable instance padded.zero_val [GooseExts] : ZeroVal padded :=
 @[irreducible] noncomputable def padded.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   padded.fieldsUnsealed
 
-noncomputable instance equals_unfold_padded [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'padded [GooseExts] [GoGlobalContext] :
     EqualsUnfold padded.fields padded.fieldsUnsealed :=
   ⟨by unfold padded.fields; rfl⟩
 
@@ -703,19 +703,19 @@ noncomputable instance equals_unfold_padded [GooseExts] [GoGlobalContext] :
 class padded.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying padded.underlying padded
   underlying : go.UnderlyingDirectedEq padded.ty padded.underlying
-  get_a : ∀ (x : padded), go.IsGoStepPureDetTagged under (StructFieldGet padded.underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : padded) (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet padded.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : padded)))
-  get_b : ∀ (x : padded), go.IsGoStepPureDetTagged under (StructFieldGet padded.underlying go!"b") #x (Val #(x.b'))
-  set_b : ∀ (x : padded) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet padded.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : padded)))
+  get'a : ∀ (x : padded), go.IsGoStepPureDetTagged under (StructFieldGet padded.underlying go!"a") #x (Val #(x.a'))
+  set'a : ∀ (x : padded) (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet padded.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : padded)))
+  get'b : ∀ (x : padded), go.IsGoStepPureDetTagged under (StructFieldGet padded.underlying go!"b") #x (Val #(x.b'))
+  set'b : ∀ (x : padded) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet padded.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : padded)))
   method_set : go.MethodSetIs padded.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType padded.ty) []
 
 attribute [instance] padded.TypeAssumptions.type_repr
   padded.TypeAssumptions.underlying
-  padded.TypeAssumptions.get_a
-  padded.TypeAssumptions.set_a
-  padded.TypeAssumptions.get_b
-  padded.TypeAssumptions.set_b
+  padded.TypeAssumptions.get'a
+  padded.TypeAssumptions.set'a
+  padded.TypeAssumptions.get'b
+  padded.TypeAssumptions.set'b
   padded.TypeAssumptions.method_set
   padded.TypeAssumptions.ptr_method_set
 
@@ -738,7 +738,7 @@ noncomputable instance mixed.zero_val [GooseExts] : ZeroVal mixed :=
 @[irreducible] noncomputable def mixed.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   mixed.fieldsUnsealed
 
-noncomputable instance equals_unfold_mixed [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'mixed [GooseExts] [GoGlobalContext] :
     EqualsUnfold mixed.fields mixed.fieldsUnsealed :=
   ⟨by unfold mixed.fields; rfl⟩
 
@@ -748,27 +748,27 @@ noncomputable instance equals_unfold_mixed [GooseExts] [GoGlobalContext] :
 class mixed.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying mixed.underlying mixed
   underlying : go.UnderlyingDirectedEq mixed.ty mixed.underlying
-  get_x : ∀ (x : mixed), go.IsGoStepPureDetTagged under (StructFieldGet mixed.underlying go!"x") #x (Val #(x.x'))
-  set_x : ∀ (x : mixed) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet mixed.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : mixed)))
-  get_z : ∀ (x : mixed), go.IsGoStepPureDetTagged under (StructFieldGet mixed.underlying go!"z") #x (Val #(x.z'))
-  set_z : ∀ (x : mixed) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet mixed.underlying go!"z") (PairV #x #y) (Val #(({ x with z' := y } : mixed)))
-  get_y : ∀ (x : mixed), go.IsGoStepPureDetTagged under (StructFieldGet mixed.underlying go!"y") #x (Val #(x.y'))
-  set_y : ∀ (x : mixed) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet mixed.underlying go!"y") (PairV #x #y) (Val #(({ x with y' := y } : mixed)))
-  get_p : ∀ (x : mixed), go.IsGoStepPureDetTagged under (StructFieldGet mixed.underlying go!"p") #x (Val #(x.p'))
-  set_p : ∀ (x : mixed) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet mixed.underlying go!"p") (PairV #x #y) (Val #(({ x with p' := y } : mixed)))
+  get'x : ∀ (x : mixed), go.IsGoStepPureDetTagged under (StructFieldGet mixed.underlying go!"x") #x (Val #(x.x'))
+  set'x : ∀ (x : mixed) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet mixed.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : mixed)))
+  get'z : ∀ (x : mixed), go.IsGoStepPureDetTagged under (StructFieldGet mixed.underlying go!"z") #x (Val #(x.z'))
+  set'z : ∀ (x : mixed) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet mixed.underlying go!"z") (PairV #x #y) (Val #(({ x with z' := y } : mixed)))
+  get'y : ∀ (x : mixed), go.IsGoStepPureDetTagged under (StructFieldGet mixed.underlying go!"y") #x (Val #(x.y'))
+  set'y : ∀ (x : mixed) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet mixed.underlying go!"y") (PairV #x #y) (Val #(({ x with y' := y } : mixed)))
+  get'p : ∀ (x : mixed), go.IsGoStepPureDetTagged under (StructFieldGet mixed.underlying go!"p") #x (Val #(x.p'))
+  set'p : ∀ (x : mixed) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet mixed.underlying go!"p") (PairV #x #y) (Val #(({ x with p' := y } : mixed)))
   method_set : go.MethodSetIs mixed.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType mixed.ty) []
 
 attribute [instance] mixed.TypeAssumptions.type_repr
   mixed.TypeAssumptions.underlying
-  mixed.TypeAssumptions.get_x
-  mixed.TypeAssumptions.set_x
-  mixed.TypeAssumptions.get_z
-  mixed.TypeAssumptions.set_z
-  mixed.TypeAssumptions.get_y
-  mixed.TypeAssumptions.set_y
-  mixed.TypeAssumptions.get_p
-  mixed.TypeAssumptions.set_p
+  mixed.TypeAssumptions.get'x
+  mixed.TypeAssumptions.set'x
+  mixed.TypeAssumptions.get'z
+  mixed.TypeAssumptions.set'z
+  mixed.TypeAssumptions.get'y
+  mixed.TypeAssumptions.set'y
+  mixed.TypeAssumptions.get'p
+  mixed.TypeAssumptions.set'p
   mixed.TypeAssumptions.method_set
   mixed.TypeAssumptions.ptr_method_set
 
@@ -787,7 +787,7 @@ noncomputable instance twoPointers.zero_val [GooseExts] : ZeroVal twoPointers :=
 @[irreducible] noncomputable def twoPointers.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   twoPointers.fieldsUnsealed
 
-noncomputable instance equals_unfold_twoPointers [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'twoPointers [GooseExts] [GoGlobalContext] :
     EqualsUnfold twoPointers.fields twoPointers.fieldsUnsealed :=
   ⟨by unfold twoPointers.fields; rfl⟩
 
@@ -797,19 +797,19 @@ noncomputable instance equals_unfold_twoPointers [GooseExts] [GoGlobalContext] :
 class twoPointers.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying twoPointers.underlying twoPointers
   underlying : go.UnderlyingDirectedEq twoPointers.ty twoPointers.underlying
-  get_p : ∀ (x : twoPointers), go.IsGoStepPureDetTagged under (StructFieldGet twoPointers.underlying go!"p") #x (Val #(x.p'))
-  set_p : ∀ (x : twoPointers) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet twoPointers.underlying go!"p") (PairV #x #y) (Val #(({ x with p' := y } : twoPointers)))
-  get_q : ∀ (x : twoPointers), go.IsGoStepPureDetTagged under (StructFieldGet twoPointers.underlying go!"q") #x (Val #(x.q'))
-  set_q : ∀ (x : twoPointers) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet twoPointers.underlying go!"q") (PairV #x #y) (Val #(({ x with q' := y } : twoPointers)))
+  get'p : ∀ (x : twoPointers), go.IsGoStepPureDetTagged under (StructFieldGet twoPointers.underlying go!"p") #x (Val #(x.p'))
+  set'p : ∀ (x : twoPointers) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet twoPointers.underlying go!"p") (PairV #x #y) (Val #(({ x with p' := y } : twoPointers)))
+  get'q : ∀ (x : twoPointers), go.IsGoStepPureDetTagged under (StructFieldGet twoPointers.underlying go!"q") #x (Val #(x.q'))
+  set'q : ∀ (x : twoPointers) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet twoPointers.underlying go!"q") (PairV #x #y) (Val #(({ x with q' := y } : twoPointers)))
   method_set : go.MethodSetIs twoPointers.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType twoPointers.ty) []
 
 attribute [instance] twoPointers.TypeAssumptions.type_repr
   twoPointers.TypeAssumptions.underlying
-  twoPointers.TypeAssumptions.get_p
-  twoPointers.TypeAssumptions.set_p
-  twoPointers.TypeAssumptions.get_q
-  twoPointers.TypeAssumptions.set_q
+  twoPointers.TypeAssumptions.get'p
+  twoPointers.TypeAssumptions.set'p
+  twoPointers.TypeAssumptions.get'q
+  twoPointers.TypeAssumptions.set'q
   twoPointers.TypeAssumptions.method_set
   twoPointers.TypeAssumptions.ptr_method_set
 
@@ -825,7 +825,7 @@ noncomputable instance readerWriter.zero_val [GooseExts] : ZeroVal readerWriter 
 @[irreducible] noncomputable def readerWriter.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   readerWriter.fieldsUnsealed
 
-noncomputable instance equals_unfold_readerWriter [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'readerWriter [GooseExts] [GoGlobalContext] :
     EqualsUnfold readerWriter.fields readerWriter.fieldsUnsealed :=
   ⟨by unfold readerWriter.fields; rfl⟩
 
@@ -837,21 +837,21 @@ class readerWriter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext
   underlying : go.UnderlyingDirectedEq readerWriter.ty readerWriter.underlying
   method_set : go.MethodSetIs readerWriter.ty [(go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"Write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType readerWriter.ty) [(go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"Write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error])))]
-  Read_unfold : MethodUnfold readerWriter.ty go!"Read" readerWriter.Read.impl
-  Write_unfold : MethodUnfold readerWriter.ty go!"Write" readerWriter.Write.impl
-  ptr_Read_unfold : MethodUnfold (go.GoType.PointerType readerWriter.ty) go!"Read" (LamV "$r"
+  unfold'Read : MethodUnfold readerWriter.ty go!"Read" readerWriter.Read.impl
+  unfold'Write : MethodUnfold readerWriter.ty go!"Write" readerWriter.Write.impl
+  ptr_unfold'Read : MethodUnfold (go.GoType.PointerType readerWriter.ty) go!"Read" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve readerWriter.ty go!"Read"))) (App (Val (GoInstruction (GoLoad readerWriter.ty))) (Var "$r"))))
-  ptr_Write_unfold : MethodUnfold (go.GoType.PointerType readerWriter.ty) go!"Write" (LamV "$r"
+  ptr_unfold'Write : MethodUnfold (go.GoType.PointerType readerWriter.ty) go!"Write" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve readerWriter.ty go!"Write"))) (App (Val (GoInstruction (GoLoad readerWriter.ty))) (Var "$r"))))
 
 attribute [instance] readerWriter.TypeAssumptions.type_repr
   readerWriter.TypeAssumptions.underlying
   readerWriter.TypeAssumptions.method_set
   readerWriter.TypeAssumptions.ptr_method_set
-  readerWriter.TypeAssumptions.Read_unfold
-  readerWriter.TypeAssumptions.Write_unfold
-  readerWriter.TypeAssumptions.ptr_Read_unfold
-  readerWriter.TypeAssumptions.ptr_Write_unfold
+  readerWriter.TypeAssumptions.unfold'Read
+  readerWriter.TypeAssumptions.unfold'Write
+  readerWriter.TypeAssumptions.ptr_unfold'Read
+  readerWriter.TypeAssumptions.ptr_unfold'Write
 
 structure withBlank [GooseExts] where
   mk ::
@@ -868,7 +868,7 @@ noncomputable instance withBlank.zero_val [GooseExts] : ZeroVal withBlank :=
 @[irreducible] noncomputable def withBlank.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   withBlank.fieldsUnsealed
 
-noncomputable instance equals_unfold_withBlank [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'withBlank [GooseExts] [GoGlobalContext] :
     EqualsUnfold withBlank.fields withBlank.fieldsUnsealed :=
   ⟨by unfold withBlank.fields; rfl⟩
 
@@ -878,76 +878,76 @@ noncomputable instance equals_unfold_withBlank [GooseExts] [GoGlobalContext] :
 class withBlank.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying withBlank.underlying withBlank
   underlying : go.UnderlyingDirectedEq withBlank.ty withBlank.underlying
-  get_a : ∀ (x : withBlank), go.IsGoStepPureDetTagged under (StructFieldGet withBlank.underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : withBlank) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet withBlank.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : withBlank)))
-  «get__#1» : ∀ (x : withBlank), go.IsGoStepPureDetTagged under (StructFieldGet withBlank.underlying go!"_#1") #x (Val #(x.«_#1'»))
-  «set__#1» : ∀ (x : withBlank) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet withBlank.underlying go!"_#1") (PairV #x #y) (Val #(({ x with «_#1'» := y } : withBlank)))
+  get'a : ∀ (x : withBlank), go.IsGoStepPureDetTagged under (StructFieldGet withBlank.underlying go!"a") #x (Val #(x.a'))
+  set'a : ∀ (x : withBlank) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet withBlank.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : withBlank)))
+  «get'_#1» : ∀ (x : withBlank), go.IsGoStepPureDetTagged under (StructFieldGet withBlank.underlying go!"_#1") #x (Val #(x.«_#1'»))
+  «set'_#1» : ∀ (x : withBlank) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet withBlank.underlying go!"_#1") (PairV #x #y) (Val #(({ x with «_#1'» := y } : withBlank)))
   method_set : go.MethodSetIs withBlank.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType withBlank.ty) []
 
 attribute [instance] withBlank.TypeAssumptions.type_repr
   withBlank.TypeAssumptions.underlying
-  withBlank.TypeAssumptions.get_a
-  withBlank.TypeAssumptions.set_a
-  withBlank.TypeAssumptions.«get__#1»
-  withBlank.TypeAssumptions.«set__#1»
+  withBlank.TypeAssumptions.get'a
+  withBlank.TypeAssumptions.set'a
+  withBlank.TypeAssumptions.«get'_#1»
+  withBlank.TypeAssumptions.«set'_#1»
   withBlank.TypeAssumptions.method_set
   withBlank.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Pgid_instance : Pgid.TypeAssumptions
-  leafPageElement_instance : leafPageElement.TypeAssumptions
-  padded_instance : padded.TypeAssumptions
-  mixed_instance : mixed.TypeAssumptions
-  twoPointers_instance : twoPointers.TypeAssumptions
-  readerWriter_instance : readerWriter.TypeAssumptions
-  withBlank_instance : withBlank.TypeAssumptions
-  unsafeAdd_unfold : FuncUnfold unsafeAdd [] unsafeAdd.impl
-  testOriginalUnsafeAdd_unfold : FuncUnfold testOriginalUnsafeAdd [] testOriginalUnsafeAdd.impl
-  testOriginalPos_unfold : FuncUnfold testOriginalPos [] testOriginalPos.impl
-  testSlicePastEnd_unfold : FuncUnfold testSlicePastEnd [] testSlicePastEnd.impl
-  testPointerFromBytes_unfold : FuncUnfold testPointerFromBytes [] testPointerFromBytes.impl
-  testBytesOverPointer_unfold : FuncUnfold testBytesOverPointer [] testBytesOverPointer.impl
-  testPaddedView_unfold : FuncUnfold testPaddedView [] testPaddedView.impl
-  testByteSliceAligned_unfold : FuncUnfold testByteSliceAligned [] testByteSliceAligned.impl
-  testFieldResidue_unfold : FuncUnfold testFieldResidue [] testFieldResidue.impl
-  testZeroSizeDistinct_unfold : FuncUnfold testZeroSizeDistinct [] testZeroSizeDistinct.impl
-  testStringOverPointer_unfold : FuncUnfold testStringOverPointer [] testStringOverPointer.impl
-  testMapPun_unfold : FuncUnfold testMapPun [] testMapPun.impl
-  testInterfacePun_unfold : FuncUnfold testInterfacePun [] testInterfacePun.impl
-  testAtomicPointerIntoBytes_unfold : FuncUnfold testAtomicPointerIntoBytes [] testAtomicPointerIntoBytes.impl
-  testPastEndAddress_unfold : FuncUnfold testPastEndAddress [] testPastEndAddress.impl
-  testBlankFieldEq_unfold : FuncUnfold testBlankFieldEq [] testBlankFieldEq.impl
-  import_io_Assumption : _root_.Perennial.io.Assumptions
-  import_atomic_Assumption : _root_.Perennial.sync.atomic.Assumptions
-  import_unsafe_Assumption : _root_.Perennial.«unsafe».Assumptions
+  instance'Pgid : Pgid.TypeAssumptions
+  instance'leafPageElement : leafPageElement.TypeAssumptions
+  instance'padded : padded.TypeAssumptions
+  instance'mixed : mixed.TypeAssumptions
+  instance'twoPointers : twoPointers.TypeAssumptions
+  instance'readerWriter : readerWriter.TypeAssumptions
+  instance'withBlank : withBlank.TypeAssumptions
+  unfold'unsafeAdd : FuncUnfold unsafeAdd [] unsafeAdd.impl
+  unfold'testOriginalUnsafeAdd : FuncUnfold testOriginalUnsafeAdd [] testOriginalUnsafeAdd.impl
+  unfold'testOriginalPos : FuncUnfold testOriginalPos [] testOriginalPos.impl
+  unfold'testSlicePastEnd : FuncUnfold testSlicePastEnd [] testSlicePastEnd.impl
+  unfold'testPointerFromBytes : FuncUnfold testPointerFromBytes [] testPointerFromBytes.impl
+  unfold'testBytesOverPointer : FuncUnfold testBytesOverPointer [] testBytesOverPointer.impl
+  unfold'testPaddedView : FuncUnfold testPaddedView [] testPaddedView.impl
+  unfold'testByteSliceAligned : FuncUnfold testByteSliceAligned [] testByteSliceAligned.impl
+  unfold'testFieldResidue : FuncUnfold testFieldResidue [] testFieldResidue.impl
+  unfold'testZeroSizeDistinct : FuncUnfold testZeroSizeDistinct [] testZeroSizeDistinct.impl
+  unfold'testStringOverPointer : FuncUnfold testStringOverPointer [] testStringOverPointer.impl
+  unfold'testMapPun : FuncUnfold testMapPun [] testMapPun.impl
+  unfold'testInterfacePun : FuncUnfold testInterfacePun [] testInterfacePun.impl
+  unfold'testAtomicPointerIntoBytes : FuncUnfold testAtomicPointerIntoBytes [] testAtomicPointerIntoBytes.impl
+  unfold'testPastEndAddress : FuncUnfold testPastEndAddress [] testPastEndAddress.impl
+  unfold'testBlankFieldEq : FuncUnfold testBlankFieldEq [] testBlankFieldEq.impl
+  import'io : _root_.Perennial.io.Assumptions
+  import'atomic : _root_.Perennial.sync.atomic.Assumptions
+  import'unsafe : _root_.Perennial.«unsafe».Assumptions
 
-attribute [instance] Assumptions.Pgid_instance
-  Assumptions.leafPageElement_instance
-  Assumptions.padded_instance
-  Assumptions.mixed_instance
-  Assumptions.twoPointers_instance
-  Assumptions.readerWriter_instance
-  Assumptions.withBlank_instance
-  Assumptions.unsafeAdd_unfold
-  Assumptions.testOriginalUnsafeAdd_unfold
-  Assumptions.testOriginalPos_unfold
-  Assumptions.testSlicePastEnd_unfold
-  Assumptions.testPointerFromBytes_unfold
-  Assumptions.testBytesOverPointer_unfold
-  Assumptions.testPaddedView_unfold
-  Assumptions.testByteSliceAligned_unfold
-  Assumptions.testFieldResidue_unfold
-  Assumptions.testZeroSizeDistinct_unfold
-  Assumptions.testStringOverPointer_unfold
-  Assumptions.testMapPun_unfold
-  Assumptions.testInterfacePun_unfold
-  Assumptions.testAtomicPointerIntoBytes_unfold
-  Assumptions.testPastEndAddress_unfold
-  Assumptions.testBlankFieldEq_unfold
-  Assumptions.import_io_Assumption
-  Assumptions.import_atomic_Assumption
-  Assumptions.import_unsafe_Assumption
+attribute [instance] Assumptions.instance'Pgid
+  Assumptions.instance'leafPageElement
+  Assumptions.instance'padded
+  Assumptions.instance'mixed
+  Assumptions.instance'twoPointers
+  Assumptions.instance'readerWriter
+  Assumptions.instance'withBlank
+  Assumptions.unfold'unsafeAdd
+  Assumptions.unfold'testOriginalUnsafeAdd
+  Assumptions.unfold'testOriginalPos
+  Assumptions.unfold'testSlicePastEnd
+  Assumptions.unfold'testPointerFromBytes
+  Assumptions.unfold'testBytesOverPointer
+  Assumptions.unfold'testPaddedView
+  Assumptions.unfold'testByteSliceAligned
+  Assumptions.unfold'testFieldResidue
+  Assumptions.unfold'testZeroSizeDistinct
+  Assumptions.unfold'testStringOverPointer
+  Assumptions.unfold'testMapPun
+  Assumptions.unfold'testInterfacePun
+  Assumptions.unfold'testAtomicPointerIntoBytes
+  Assumptions.unfold'testPastEndAddress
+  Assumptions.unfold'testBlankFieldEq
+  Assumptions.import'io
+  Assumptions.import'atomic
+  Assumptions.import'unsafe
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.stuck
 

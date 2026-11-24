@@ -20,13 +20,13 @@ end pkg_id
 
 namespace iter
 
-noncomputable def Seq''.ty [GooseExts] [GoGlobalContext] (V : go.GoType) : go.GoType :=
-  (go.GoType.Named go!"iter.Seq" [V])
+noncomputable def Seq''.ty [GooseExts] [GoGlobalContext] (V₀ : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"iter.Seq" [V₀])
 
 attribute [irreducible] Seq''.ty
 
-noncomputable def Seq2.ty [GooseExts] [GoGlobalContext] (K : go.GoType) (V : go.GoType) : go.GoType :=
-  (go.GoType.Named go!"iter.Seq2" [K, V])
+noncomputable def Seq2.ty [GooseExts] [GoGlobalContext] (K₀ : go.GoType) (V₀ : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"iter.Seq2" [K₀, V₀])
 
 attribute [irreducible] Seq2.ty
 
@@ -66,29 +66,29 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc goexitPanicValue go.any)) (Val #()))))))))
 
-abbrev Seq'' [GooseExts] (V : Type) : Type := GoFunc
+abbrev Seq'' [GooseExts] (V₀ : Type) : Type := GoFunc
 
-@[reducible] noncomputable def Seq''.underlying [GooseExts] [GoGlobalContext] (V : go.GoType) : go.GoType :=
-  (go.GoType.FunctionType (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [V] false [go.bool]))] false []))
+@[reducible] noncomputable def Seq''.underlying [GooseExts] [GoGlobalContext] (V₀ : go.GoType) : go.GoType :=
+  (go.GoType.FunctionType (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [V₀] false [go.bool]))] false []))
 
 class Seq''.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : ∀ (V : go.GoType), go.UnderlyingDirectedEq (Seq''.ty V) (Seq''.underlying V)
-  method_set : ∀ (V : go.GoType), go.MethodSetIs (Seq''.ty V) []
-  ptr_method_set : ∀ (V : go.GoType), go.MethodSetIs (go.GoType.PointerType (Seq''.ty V)) []
+  underlying : ∀ (V₀ : go.GoType), go.UnderlyingDirectedEq (Seq''.ty V₀) (Seq''.underlying V₀)
+  method_set : ∀ (V₀ : go.GoType), go.MethodSetIs (Seq''.ty V₀) []
+  ptr_method_set : ∀ (V₀ : go.GoType), go.MethodSetIs (go.GoType.PointerType (Seq''.ty V₀)) []
 
 attribute [instance] Seq''.TypeAssumptions.underlying
   Seq''.TypeAssumptions.method_set
   Seq''.TypeAssumptions.ptr_method_set
 
-abbrev Seq2 [GooseExts] (K V : Type) : Type := GoFunc
+abbrev Seq2 [GooseExts] (K₀ V₀ : Type) : Type := GoFunc
 
-@[reducible] noncomputable def Seq2.underlying [GooseExts] [GoGlobalContext] (K : go.GoType) (V : go.GoType) : go.GoType :=
-  (go.GoType.FunctionType (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [K, V] false [go.bool]))] false []))
+@[reducible] noncomputable def Seq2.underlying [GooseExts] [GoGlobalContext] (K₀ : go.GoType) (V₀ : go.GoType) : go.GoType :=
+  (go.GoType.FunctionType (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [K₀, V₀] false [go.bool]))] false []))
 
 class Seq2.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : ∀ (K V : go.GoType), go.UnderlyingDirectedEq (Seq2.ty K V) (Seq2.underlying K V)
-  method_set : ∀ (K V : go.GoType), go.MethodSetIs (Seq2.ty K V) []
-  ptr_method_set : ∀ (K V : go.GoType), go.MethodSetIs (go.GoType.PointerType (Seq2.ty K V)) []
+  underlying : ∀ (K₀ V₀ : go.GoType), go.UnderlyingDirectedEq (Seq2.ty K₀ V₀) (Seq2.underlying K₀ V₀)
+  method_set : ∀ (K₀ V₀ : go.GoType), go.MethodSetIs (Seq2.ty K₀ V₀) []
+  ptr_method_set : ∀ (K₀ V₀ : go.GoType), go.MethodSetIs (go.GoType.PointerType (Seq2.ty K₀ V₀)) []
 
 attribute [instance] Seq2.TypeAssumptions.underlying
   Seq2.TypeAssumptions.method_set
@@ -106,7 +106,7 @@ noncomputable instance coro.zero_val [GooseExts] : ZeroVal coro :=
 @[irreducible] noncomputable def coro.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   coro.fieldsUnsealed
 
-noncomputable instance equals_unfold_coro [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'coro [GooseExts] [GoGlobalContext] :
     EqualsUnfold coro.fields coro.fieldsUnsealed :=
   ⟨by unfold coro.fields; rfl⟩
 
@@ -125,13 +125,13 @@ attribute [instance] coro.TypeAssumptions.type_repr
   coro.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Seq_instance : Seq''.TypeAssumptions
-  Seq2_instance : Seq2.TypeAssumptions
-  coro_instance : coro.TypeAssumptions
+  instance'Seq : Seq''.TypeAssumptions
+  instance'Seq2 : Seq2.TypeAssumptions
+  instance'coro : coro.TypeAssumptions
 
-attribute [instance] Assumptions.Seq_instance
-  Assumptions.Seq2_instance
-  Assumptions.coro_instance
+attribute [instance] Assumptions.instance'Seq
+  Assumptions.instance'Seq2
+  Assumptions.instance'coro
 
 end iter
 
