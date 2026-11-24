@@ -6,7 +6,11 @@ module
 public import Perennial.Proof.ProofPrelude
 public import Perennial.Code.reflect
 public import Perennial.GeneratedProof.reflect
-public import Perennial.Proof.internal.abi.Base
+public import Perennial.Proof.internal.gomodel.Base
+public import Perennial.Proof.internal.reflectcore.Base
+public import Perennial.Proof.iter.Base
+public import Perennial.Proof.strconv.Base
+public import Perennial.Proof.«unsafe».Base
 
 @[expose] public section
 

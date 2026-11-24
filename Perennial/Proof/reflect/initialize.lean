@@ -4,7 +4,11 @@ The proof of `reflect.initialize'`.
 module
 
 public import Perennial.Spec.reflect.initialize
-public import Perennial.Spec.internal.abi.initialize
+public import Perennial.Spec.internal.gomodel.initialize
+public import Perennial.Spec.internal.reflectcore.initialize
+public import Perennial.Spec.iter.initialize
+public import Perennial.Spec.strconv.initialize
+public import Perennial.Spec.unsafe.initialize
 
 @[expose] public section
 
@@ -22,7 +26,11 @@ variable [sem : go.Semantics]
 variable [package_sem : reflect.Assumptions]
 
 theorem reflect.initialize'.wp_proof
-    (wp_abi_initialize : internal.abi.initialize'.spec (GF := GF) (hG := hG)) :
+    (wp_gomodel_initialize : internal.gomodel.initialize'.spec (GF := GF) (hG := hG))
+    (wp_reflectcore_initialize : internal.reflectcore.initialize'.spec (GF := GF) (hG := hG))
+    (wp_iter_initialize : iter.initialize'.spec (GF := GF) (hG := hG))
+    (wp_strconv_initialize : strconv.initialize'.spec (GF := GF) (hG := hG))
+    (wp_unsafe_initialize : «unsafe».initialize'.spec (GF := GF) (hG := hG)) :
     reflect.initialize'.spec (GF := GF) (hG := hG) := by
   intro get_is_pkg_init Hinit
   wp_start as Hown
@@ -31,10 +39,11 @@ theorem reflect.initialize'.wp_proof
   iintro Hown
   wp_auto
   wp_apply wp_GlobalAlloc (V := GoSlice) kindNames (go.GoType.SliceType go.string) as Hk
-  wp_apply wp_GlobalAlloc (V := w64) floatRegSize go.uintptr as Hfs
-  wp_apply wp_GlobalAlloc (V := w64) floatArgRegs go.int as Hfa
-  wp_apply wp_GlobalAlloc (V := w64) intArgRegs go.int as Hia
-  wp_apply wp_abi_initialize _ Hinit.2.1 $$ Hown with ⟨Hown, #Habi⟩
+  wp_apply wp_unsafe_initialize _ Hinit.2.2.2.2.2.1 $$ Hown as ⟨Hown, #_⟩
+  wp_apply wp_strconv_initialize _ Hinit.2.2.2.2.1 $$ Hown as ⟨Hown, #_⟩
+  wp_apply wp_iter_initialize _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #_⟩
+  wp_apply wp_reflectcore_initialize _ Hinit.2.2.1 $$ Hown as ⟨Hown, #_⟩
+  wp_apply wp_gomodel_initialize _ Hinit.2.1 $$ Hown as ⟨Hown, #_⟩
   -- kindNames
   wp_apply wp_slice_literal (V := GoString) (t := go.string) _
   isplitr
