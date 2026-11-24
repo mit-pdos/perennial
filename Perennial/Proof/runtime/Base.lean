@@ -66,7 +66,6 @@ theorem wp_buildVersion_init :
     {{ RET #(); globalAddr buildVersion ↦ buildVersionValue }} := by
   wp_start
   wp_apply wp_GlobalAlloc (V := GoString) go!"runtime.buildVersion" go.string as Hv
-  wp_auto
   iapply HΦ
   unfold buildVersion
   iexact Hv
