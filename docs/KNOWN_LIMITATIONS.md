@@ -305,6 +305,22 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   d := grove_ffi.FileRead("f") // Go: nil or a prefix; the model: the file's contents
   ```
 
+- **A node's `durable/` directory is assumed private, writable and unaliased (environment
+  assumption).** The model keeps each valid file name's contents independently
+  (`groveNodeFiles`, `Ext/Grove/Impl.lean`). Go's files are `durable/<name>` in the working
+  directory, so names alias when `durable/` holds symbolic or hard links, is on a
+  case-insensitive filesystem, or is shared with another process or another node started in
+  the same directory; and `FileAppend` panics (recoverably) when the file or filesystem is
+  read-only. The model assumes none of this happens. Rarely (two concurrent `FileWrite`s of
+  one name drawing the same random temporary name, probability about 2^-64), Go's
+  `FileWrite` can also rename another call's half-written temporary file; the model writes
+  atomically.
+
+  ```go
+  // durable/s is a symbolic link to durable/a
+  grove_ffi.FileAppend("s", []byte("2")) // Go: FileRead("a") changes too; the model: only "s"
+  ```
+
 - **`FileAppend` is assumed to write all of its data (environment assumption).** Go's
   `grove_ffi.FileAppend` ignores the result of `f.Write(data)`: on a full disk (`ENOSPC`)
   the write may stop part-way, and the file then ends with a prefix of `data` (the `Sync`
@@ -321,7 +337,8 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   port range (environment assumption).** `Listen` is stuck on an endpoint it does not
   accept (`ListenEndpoint`: not `ValidEndpoint`, that is bits 48-63 set, which
   `AddressToStr` ignores, IP `0.0.0.0` or port 0; or a port below 1024, which needs
-  privilege to bind), on one the program already listens on, and on the local endpoint of
+  privilege to bind on Linux's default `net.ipv4.ip_unprivileged_port_start`; the model also
+  assumes that sysctl is at least 1024), on one the program already listens on, and on the local endpoint of
   a connection (`Connect` picks a local endpoint that is not a key of `groveListen`,
   `IsFreshChan`; `Listen` is stuck on an endpoint that is not a key) (`IsGroveStep`
   "Listen", `Ext/Grove/Impl.lean`). Otherwise Go's `grove_ffi.Listen` panics when
