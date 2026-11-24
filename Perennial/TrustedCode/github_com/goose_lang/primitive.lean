@@ -21,7 +21,10 @@ set_option linter.iris.style.nameCheck false
 namespace Perennial
 
 /-! A spin lock on a boolean location (`false` is unlocked), the model of `primitive.Mutex`'s
-`Lock` and `Unlock`. -/
+`Lock` and `Unlock`. `lock` spins where Go's `Lock` parks: a goroutine that never gets the lock
+spins forever where Go's parks forever (partial correctness), and Go's deadlock detector (a global
+deadlock becomes the fatal throw "all goroutines are asleep") is not modelled
+(`docs/KNOWN_LIMITATIONS.md`, "Blocking and deadlock"). -/
 section lockcode
 variable [GooseExts] [GoGlobalContext]
 

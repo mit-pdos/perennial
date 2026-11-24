@@ -23,7 +23,10 @@ import (
 // succeeds: Lock returns exactly when it takes the mutex, as in Go; a
 // spinning model goroutine where Go's parks is a schedule with the same
 // results (the model has no fairness and no starvation mode, which only
-// order waiters).
+// order waiters). A goroutine that never gets the mutex spins forever where
+// Go's parks forever: spinning for parking is partial correctness, and Go's
+// deadlock detector (a global deadlock becomes the fatal throw "all
+// goroutines are asleep") is not modelled (docs/KNOWN_LIMITATIONS.md).
 func (m *Mutex) Lock() {
 	for !atomic.CompareAndSwapInt32(&m.state, 0, mutexLocked) {
 	}

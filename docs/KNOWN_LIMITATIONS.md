@@ -25,6 +25,32 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   There a proof can claim "no panic" for an `unsafe.Slice` that gc rejects. See
   `README.md`, "Platform".
 
+## Blocking and deadlock
+
+- **A goroutine that blocks forever spins forever in the model; Go's deadlock detector is
+  not modelled (partial correctness, sound).** Go parks a goroutine that waits on a
+  `sync.Mutex`, a semaphore (`WaitGroup.Wait`, `RWMutex`), a `sync.Cond` or a
+  `primitive.Mutex`; the models spin instead (`goose/model/overlay/internal/sync`'s
+  `Mutex.Lock`, `goose/model/overlay/sync`'s `runtime_Semacquire*` and
+  `runtime_notifyListWait`, the spin lock `lock.lock` of
+  `TrustedCode/github_com/goose_lang/primitive.lean`). They return in exactly the
+  schedules where Go's return. When every goroutine is blocked, gc's runtime ends the
+  program with the fatal error `all goroutines are asleep - deadlock!`; the model has no
+  such step, so the program diverges. Perennial's specs are partial correctness, which
+  says nothing about a program that never returns, so no proof is wrong; but a proof does
+  not show that a program does not deadlock (or crash on the detector). Witness:
+
+  ```go
+  func main() {
+  	var mu sync.Mutex
+  	c := sync.NewCond(&mu)
+  	mu.Lock()
+  	c.Wait() // gc: fatal error: all goroutines are asleep - deadlock!
+  }
+  ```
+
+  (the model spins in `runtime_notifyListWait` forever).
+
 ## Maps
 
 - **A key that `==` cannot test fully is accepted (unsound).** Go hashes every component

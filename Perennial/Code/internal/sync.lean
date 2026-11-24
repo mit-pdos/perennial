@@ -130,9 +130,12 @@ noncomputable def fatal [GooseExts] [GoGlobalContext] : GoString :=
     succeeds: Lock returns exactly when it takes the mutex, as in Go; a
     spinning model goroutine where Go's parks is a schedule with the same
     results (the model has no fairness and no starvation mode, which only
-    order waiters).
+    order waiters). A goroutine that never gets the mutex spins forever where
+    Go's parks forever: spinning for parking is partial correctness, and Go's
+    deadlock detector (a global deadlock becomes the fatal throw "all
+    goroutines are asleep") is not modelled (docs/KNOWN_LIMITATIONS.md).
 
-    go: mutex.go:27:17 -/
+    go: mutex.go:30:17 -/
 noncomputable def Mutex.Lock.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
@@ -157,7 +160,7 @@ noncomputable def Mutex.Lock.impl [GooseExts] [GoGlobalContext] : val :=
     compare-and-swap of 0 to mutexLocked. It thus returns false in every case
     Go does, and true only when it took the mutex, as in Go.
 
-    go: mutex.go:39:17 -/
+    go: mutex.go:42:17 -/
 noncomputable def Mutex.TryLock.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
@@ -192,7 +195,7 @@ noncomputable def Mutex.TryLock.impl [GooseExts] [GoGlobalContext] : val :=
     mutexLocked to 0, and fatal where it fails, that is where the mutex is not
     locked.
 
-    go: mutex.go:52:17 -/
+    go: mutex.go:55:17 -/
 noncomputable def Mutex.Unlock.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
@@ -213,7 +216,7 @@ noncomputable def Mutex.Unlock.impl [GooseExts] [GoGlobalContext] : val :=
     and ends the program, and recover cannot catch it. The model has no
     behaviour there (gomodel.Stuck): a verified program never calls it.
 
-    go: mutex.go:61:6 -/
+    go: mutex.go:64:6 -/
 noncomputable def fatal.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Seq (App (Val exceptionDo)
