@@ -71,6 +71,7 @@ public import Perennial.Golang.Theory.PostLifting
 public import Perennial.Golang.Theory.Pre
 public import Perennial.Golang.Theory.Predeclared
 public import Perennial.Golang.Theory.ProofMode
+public import Perennial.Golang.Theory.Reflect
 public import Perennial.Golang.Theory.SimpAttr
 public import Perennial.Golang.Theory.Slice
 public import Perennial.Golang.Theory.String

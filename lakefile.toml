@@ -96,6 +96,7 @@ globs = [
   "Perennial.Golang.Theory.Pre",
   "Perennial.Golang.Theory.Predeclared",
   "Perennial.Golang.Theory.ProofMode",
+  "Perennial.Golang.Theory.Reflect",
   "Perennial.Golang.Theory.SimpAttr",
   "Perennial.Golang.Theory.Slice",
   "Perennial.Golang.Theory.String",

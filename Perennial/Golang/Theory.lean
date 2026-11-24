@@ -34,6 +34,7 @@ public import Perennial.Golang.Defn
 public import Perennial.Golang.Theory.Pre
 public import Perennial.Golang.Theory.String
 public import Perennial.Golang.Theory.Join
+public import Perennial.Golang.Theory.Reflect
 public import Perennial.Ghost
 
 @[expose] public section
