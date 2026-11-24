@@ -44,11 +44,8 @@ theorem elemFlag_bits (k : Nat) (hk : k < 27) :
     (W64 k ||| W64 128 ||| W64 256) &&& W64 512 = W64 0 := by
   revert k; decide
 
-section defs
-variable [GooseExts] [GooseSemantics] [GooseInterp]
-variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
+section vocab
+variable [GooseExts] [go_gctx : GoGlobalContext] [GoSemanticsFunctions]
 
 /-- `rt` is the `reflect.Type` of `T`: the interface holding the model's `rtype` of `T`'s token. -/
 def reflType (rt : reflect.Type') (T : go.GoType) : Prop :=
@@ -64,6 +61,14 @@ def reflElem (v : reflect.Value) (T : go.GoType) (p : Loc) : Prop :=
   ∃ k : Nat, go.kindOf (GoSemanticsFunctions.underlying T) = some k ∧
     v = reflect.Value.mk (go.tok T) (interface.mkOk (go.PointerType T) #p)
       (W64 k ||| W64 128 ||| W64 256)
+
+end vocab
+
+section defs
+variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
 
 /-- The zero `T` at `p`: its typed points-to at each Lean type `V` that represents `T`. -/
 def reflNew (T : go.GoType) (p : Loc) : IProp GF :=

@@ -18,24 +18,24 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 
 namespace reflect
 
-/-- A kind is below 32 (it fits the kind bits of a flag). -/
-theorem kindOf_lt {u : go.GoType} [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] {k : Nat}
-    (h : go.kindOf u = some k) : k < 27 := by
-  unfold go.kindOf at h
-  split at h <;> try (cases h; omega)
-  simp only [List.find?] at h
-  repeat (first | (split at h <;> try (cases h; omega)) | (simp at h; omega))
-  all_goals simp_all
+/-- The flag bits of a `reflPtr`: kind `Pointer` (22), no other bit. -/
+theorem ptrFlag_bits :
+    W64 22 &&& W64 31 = W64 22 ∧ W64 22 ≠ W64 0 ∧ W64 22 &&& W64 256 = W64 0 ∧
+    W64 22 &&& W64 352 ≠ W64 256 ∧ W64 22 &&& W64 96 = W64 0 ∧ W64 22 &&& W64 512 = W64 0 ∧
+    W64 22 &&& W64 640 = W64 0 ∧ W64 22 &&& W64 736 = W64 0 ∧ W64 22 &&& W64 128 = W64 0 := by
+  decide
 
-/-- The flag bits of a `reflElem`: kind `k`, `flagIndir` and `flagAddr`. -/
-theorem elemFlag_bits (k : Nat) (hk : k < 27) :
-    (W64 k ||| W64 128 ||| W64 256) &&& W64 31 = W64 k ∧
-    (W64 k ||| W64 128 ||| W64 256) ≠ W64 0 ∧
-    (W64 k ||| W64 128 ||| W64 256) &&& W64 256 ≠ W64 0 ∧
-    (W64 k ||| W64 128 ||| W64 256) &&& W64 352 = W64 256 ∧
-    (W64 k ||| W64 128 ||| W64 256) &&& W64 96 = W64 0 ∧
-    (W64 k ||| W64 128 ||| W64 256) &&& W64 512 = W64 0 := by
-  interval_cases k <;> decide
+/-- `Elem()`'s flag on a `reflPtr`: a `reflElem`'s. -/
+theorem elemOfPtr_flag (k : Nat) (hk : k < 27) :
+    W64 22 &&& W64 96 ||| W64 128 ||| W64 256 ||| W64 k = W64 k ||| W64 128 ||| W64 256 := by
+  revert k; decide
+
+/-- The kinds at which `IsNil` panics. -/
+theorem isNil_panic_kinds :
+    W64 0 ∉ [W64 18, W64 19, W64 20, W64 21, W64 22, W64 23, W64 26] ∧
+    W64 25 ∉ [W64 18, W64 19, W64 20, W64 21, W64 22, W64 23, W64 26] ∧
+    W64 0 &&& W64 31 = W64 0 := by
+  decide
 
 section results
 variable [GooseExts] [GooseSemantics] [GooseInterp]
@@ -44,34 +44,78 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : reflect.Assumptions]
 
+/-! ## `ValueOf` and `TypeOf` -/
+
+omit [GooseSemantics] [GooseInterp] in
+theorem pointerType_ne_rtype (T : go.GoType) : go.PointerType T ≠ rtype.ty := by
+  unfold rtype.ty; simp
+
+/-- `ValueOf(any(p))` for `p : *T`: a `reflPtr`. -/
+theorem wp_ValueOf_reflPtr (T : go.GoType) (p : Loc) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
+      (App (Val (@! ValueOf)) (Val #(interface.mkOk (go.PointerType T) #p)))
+    {{ (w : Value), RET #w; ⌜reflPtr w T p⌝ }} := by
+  iintro %Φ #Hinit HΦ
+  wp_apply (reflect.wp_ValueOf (GF := GF) (hG := hG)).1 (t := go.PointerType T)
+    (u := go.PointerType T) 22 #p (by simp [go.kindOf]) (pointerType_ne_rtype T) (by omega)
+  iapply HΦ
+  ipureintro
+  rfl
+
+/-- `ValueOf(nil)`: the zero `Value`. -/
+theorem wp_ValueOf_nil :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
+      (App (Val (@! ValueOf)) (Val #(interface.nil : GoInterface)))
+    {{ RET #(_root_.Perennial.zero_val reflect.Value); True }} :=
+  (reflect.wp_ValueOf (GF := GF) (hG := hG)).2.2
+
+/-- `TypeOf(i)` for `i` holding a value of type `t` (not the model's `rtype`): a `reflType`. -/
+theorem wp_TypeOf_reflType (t : go.GoType) (v : val) (ht : t ≠ rtype.ty) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
+      (App (Val (@! TypeOf)) (Val #(interface.mkOk t v)))
+    {{ (rt : Type'), RET #rt; ⌜reflType rt t⌝ }} := by
+  iintro %Φ #Hinit HΦ
+  wp_apply (reflect.wp_TypeOf (GF := GF) (hG := hG)).1 t v ht
+  iapply HΦ
+  ipureintro
+  rfl
+
+/-- `TypeOf(nil)`: the nil `Type`. -/
+theorem wp_TypeOf_nil :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
+      (App (Val (@! TypeOf)) (Val #(interface.nil : GoInterface)))
+    {{ RET #(interface.nil : GoInterface); True }} :=
+  (reflect.wp_TypeOf (GF := GF) (hG := hG)).2
+
 /-! ## `Value.Kind` -/
 
 theorem Value.wp_Kind_reflPtr (w : Value) (T : go.GoType) (p : Loc) (h : reflPtr w T p) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (w @!! Value.ty @!! go!"Kind")) (Val #()))
     {{ RET #(W64 22); True }} := by
-  subst h
-  exact reflect.Value.wp_Kind _
+  have hf : w.flag' = W64 22 := by rw [h]
+  have h := (reflect.Value.wp_Kind : reflect.Value.Kind.spec (GF := GF) (hG := hG)) w
+  rwa [hf, ptrFlag_bits.1] at h
 
 theorem Value.wp_Kind_reflElem (v : Value) (T : go.GoType) (p : Loc) (k : Nat)
-    (h : reflElem v T p) (hk : go.kindOf (go.underlying T) = some k) :
+    (h : reflElem v T p) (hk : go.kindOf (GoSemanticsFunctions.underlying T) = some k) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (v @!! Value.ty @!! go!"Kind")) (Val #()))
     {{ RET #(W64 k); True }} := by
-  obtain ⟨k', hk', rfl⟩ := h
+  obtain ⟨k', hk', hv⟩ := h
   rw [hk] at hk'
   cases hk'
-  have := (elemFlag_bits k (kindOf_lt hk)).1
-  have h := reflect.Value.wp_Kind (GF := GF) (hG := hG)
-    (Value.mk (go.tok T) (interface.mkOk (go.PointerType T) #p) (W64 k ||| W64 128 ||| W64 256))
-  simp only [this] at h
-  exact h
+  have hf : v.flag' = W64 k ||| W64 128 ||| W64 256 := by rw [hv]
+  have h := (reflect.Value.wp_Kind : reflect.Value.Kind.spec (GF := GF) (hG := hG)) v
+  rwa [hf, (elemFlag_bits k (kindOf_lt hk)).1] at h
 
 theorem Value.wp_Kind_zero :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
-      (App (Val ((zero_val Value) @!! Value.ty @!! go!"Kind")) (Val #()))
-    {{ RET #(W64 0); True }} :=
-  reflect.Value.wp_Kind _
+      (App (Val ((_root_.Perennial.zero_val reflect.Value) @!! Value.ty @!! go!"Kind")) (Val #()))
+    {{ RET #(W64 0); True }} := by
+  have hf : (_root_.Perennial.zero_val reflect.Value).flag' = W64 0 := rfl
+  have h := (reflect.Value.wp_Kind : reflect.Value.Kind.spec (GF := GF) (hG := hG)) (_root_.Perennial.zero_val reflect.Value)
+  rwa [hf, isNil_panic_kinds.2.2] at h
 
 /-! ## `Value.IsValid`, `CanAddr`, `CanSet`, `CanInterface` -/
 
@@ -79,88 +123,82 @@ theorem Value.wp_IsValid_reflPtr (w : Value) (T : go.GoType) (p : Loc) (h : refl
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (w @!! Value.ty @!! go!"IsValid")) (Val #()))
     {{ RET #true; True }} := by
-  subst h
-  have h := reflect.Value.wp_IsValid (GF := GF) (hG := hG)
-    (Value.mk (go.tok (go.PointerType T)) (interface.mkOk (go.PointerType T) #p) (W64 22))
-  simpa using h
+  have hf : w.flag' = W64 22 := by rw [h]
+  have h := (reflect.Value.wp_IsValid : reflect.Value.IsValid.spec (GF := GF) (hG := hG)) w
+  rwa [hf, decide_eq_true ptrFlag_bits.2.1] at h
 
 theorem Value.wp_IsValid_reflElem (v : Value) (T : go.GoType) (p : Loc) (h : reflElem v T p) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (v @!! Value.ty @!! go!"IsValid")) (Val #()))
     {{ RET #true; True }} := by
-  obtain ⟨k, hk, rfl⟩ := h
-  have hb := (elemFlag_bits k (kindOf_lt hk)).2.1
-  have h := reflect.Value.wp_IsValid (GF := GF) (hG := hG)
-    (Value.mk (go.tok T) (interface.mkOk (go.PointerType T) #p) (W64 k ||| W64 128 ||| W64 256))
-  simpa [hb] using h
+  obtain ⟨k, hk, hv⟩ := h
+  have hf : v.flag' = W64 k ||| W64 128 ||| W64 256 := by rw [hv]
+  have h := (reflect.Value.wp_IsValid : reflect.Value.IsValid.spec (GF := GF) (hG := hG)) v
+  rwa [hf, decide_eq_true (elemFlag_bits k (kindOf_lt hk)).2.1] at h
 
 theorem Value.wp_IsValid_zero :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
-      (App (Val ((zero_val Value) @!! Value.ty @!! go!"IsValid")) (Val #()))
+      (App (Val ((_root_.Perennial.zero_val reflect.Value) @!! Value.ty @!! go!"IsValid"))
+        (Val #()))
     {{ RET #false; True }} := by
-  have h := reflect.Value.wp_IsValid (GF := GF) (hG := hG) (zero_val Value)
-  simpa using h
+  have hf : (_root_.Perennial.zero_val reflect.Value).flag' = W64 0 := rfl
+  have h := (reflect.Value.wp_IsValid : reflect.Value.IsValid.spec (GF := GF) (hG := hG)) (_root_.Perennial.zero_val reflect.Value)
+  rwa [hf, decide_eq_false (fun h => h rfl)] at h
 
 theorem Value.wp_CanAddr_reflPtr (w : Value) (T : go.GoType) (p : Loc) (h : reflPtr w T p) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (w @!! Value.ty @!! go!"CanAddr")) (Val #()))
     {{ RET #false; True }} := by
-  subst h
-  have h := reflect.Value.wp_CanAddr (GF := GF) (hG := hG)
-    (Value.mk (go.tok (go.PointerType T)) (interface.mkOk (go.PointerType T) #p) (W64 22))
-  simpa using h
+  have hf : w.flag' = W64 22 := by rw [h]
+  have h := (reflect.Value.wp_CanAddr : reflect.Value.CanAddr.spec (GF := GF) (hG := hG)) w
+  rwa [hf, decide_eq_false (fun h => h ptrFlag_bits.2.2.1)] at h
 
 theorem Value.wp_CanAddr_reflElem (v : Value) (T : go.GoType) (p : Loc) (h : reflElem v T p) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (v @!! Value.ty @!! go!"CanAddr")) (Val #()))
     {{ RET #true; True }} := by
-  obtain ⟨k, hk, rfl⟩ := h
-  have hb := (elemFlag_bits k (kindOf_lt hk)).2.2.1
-  have h := reflect.Value.wp_CanAddr (GF := GF) (hG := hG)
-    (Value.mk (go.tok T) (interface.mkOk (go.PointerType T) #p) (W64 k ||| W64 128 ||| W64 256))
-  simpa [hb] using h
+  obtain ⟨k, hk, hv⟩ := h
+  have hf : v.flag' = W64 k ||| W64 128 ||| W64 256 := by rw [hv]
+  have h := (reflect.Value.wp_CanAddr : reflect.Value.CanAddr.spec (GF := GF) (hG := hG)) v
+  rwa [hf, decide_eq_true (elemFlag_bits k (kindOf_lt hk)).2.2.1] at h
 
 theorem Value.wp_CanSet_reflPtr (w : Value) (T : go.GoType) (p : Loc) (h : reflPtr w T p) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (w @!! Value.ty @!! go!"CanSet")) (Val #()))
     {{ RET #false; True }} := by
-  subst h
-  have h := reflect.Value.wp_CanSet (GF := GF) (hG := hG)
-    (Value.mk (go.tok (go.PointerType T)) (interface.mkOk (go.PointerType T) #p) (W64 22))
-  simpa using h
+  have hf : w.flag' = W64 22 := by rw [h]
+  have h := (reflect.Value.wp_CanSet : reflect.Value.CanSet.spec (GF := GF) (hG := hG)) w
+  rwa [hf, decide_eq_false ptrFlag_bits.2.2.2.1] at h
 
 theorem Value.wp_CanSet_reflElem (v : Value) (T : go.GoType) (p : Loc) (h : reflElem v T p) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (v @!! Value.ty @!! go!"CanSet")) (Val #()))
     {{ RET #true; True }} := by
-  obtain ⟨k, hk, rfl⟩ := h
-  have hb := (elemFlag_bits k (kindOf_lt hk)).2.2.2.1
-  have h := reflect.Value.wp_CanSet (GF := GF) (hG := hG)
-    (Value.mk (go.tok T) (interface.mkOk (go.PointerType T) #p) (W64 k ||| W64 128 ||| W64 256))
-  simpa [hb] using h
+  obtain ⟨k, hk, hv⟩ := h
+  have hf : v.flag' = W64 k ||| W64 128 ||| W64 256 := by rw [hv]
+  have h := (reflect.Value.wp_CanSet : reflect.Value.CanSet.spec (GF := GF) (hG := hG)) v
+  rwa [hf, decide_eq_true (elemFlag_bits k (kindOf_lt hk)).2.2.2.1] at h
 
 theorem Value.wp_CanInterface_reflPtr (w : Value) (T : go.GoType) (p : Loc)
     (h : reflPtr w T p) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (w @!! Value.ty @!! go!"CanInterface")) (Val #()))
     {{ RET #true; True }} := by
-  subst h
-  have h := reflect.Value.wp_CanInterface (GF := GF) (hG := hG)
-    (Value.mk (go.tok (go.PointerType T)) (interface.mkOk (go.PointerType T) #p) (W64 22))
-    (by decide)
-  simpa using h
+  have hf : w.flag' = W64 22 := by rw [h]
+  have h := (reflect.Value.wp_CanInterface : reflect.Value.CanInterface.spec (GF := GF) (hG := hG)) w
+    (by rw [hf]; exact ptrFlag_bits.2.1)
+  rwa [hf, decide_eq_true ptrFlag_bits.2.2.2.2.1] at h
 
 theorem Value.wp_CanInterface_reflElem (v : Value) (T : go.GoType) (p : Loc)
     (h : reflElem v T p) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (v @!! Value.ty @!! go!"CanInterface")) (Val #()))
     {{ RET #true; True }} := by
-  obtain ⟨k, hk, rfl⟩ := h
+  obtain ⟨k, hk, hv⟩ := h
   have hb := elemFlag_bits k (kindOf_lt hk)
-  have h := reflect.Value.wp_CanInterface (GF := GF) (hG := hG)
-    (Value.mk (go.tok T) (interface.mkOk (go.PointerType T) #p) (W64 k ||| W64 128 ||| W64 256))
-    hb.2.1
-  simpa [hb.2.2.2.2.1] using h
+  have hf : v.flag' = W64 k ||| W64 128 ||| W64 256 := by rw [hv]
+  have h := (reflect.Value.wp_CanInterface : reflect.Value.CanInterface.spec (GF := GF) (hG := hG)) v (by rw [hf]; exact hb.2.1)
+  rwa [hf, decide_eq_true hb.2.2.2.2.1] at h
 
 /-! ## `Value.Type` -/
 
@@ -168,24 +206,131 @@ theorem Value.wp_Type_reflPtr (w : Value) (T : go.GoType) (p : Loc) (h : reflPtr
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (w @!! Value.ty @!! go!"Type")) (Val #()))
     {{ (rt : Type'), RET #rt; ⌜reflType rt (go.PointerType T)⌝ }} := by
-  subst h
+  have hf : w.flag' = W64 22 := by rw [h]
+  have ht : w.typ_' = go.tok (go.PointerType T) := by rw [h]
   iintro %Φ #Hinit HΦ
-  wp_apply reflect.Value.wp_Type _ (by decide) (by decide) $$ [$Hinit]
+  wp_apply reflect.Value.wp_Type w (by rw [hf]; exact ptrFlag_bits.2.1)
+    (by rw [hf]; exact ptrFlag_bits.2.2.2.2.2.1)
   iapply HΦ
   ipureintro
+  rw [ht]
   rfl
 
 theorem Value.wp_Type_reflElem (v : Value) (T : go.GoType) (p : Loc) (h : reflElem v T p) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (v @!! Value.ty @!! go!"Type")) (Val #()))
     {{ (rt : Type'), RET #rt; ⌜reflType rt T⌝ }} := by
-  obtain ⟨k, hk, rfl⟩ := h
+  obtain ⟨k, hk, hv⟩ := h
   have hb := elemFlag_bits k (kindOf_lt hk)
+  have hf : v.flag' = W64 k ||| W64 128 ||| W64 256 := by rw [hv]
+  have ht : v.typ_' = go.tok T := by rw [hv]
   iintro %Φ #Hinit HΦ
-  wp_apply reflect.Value.wp_Type _ hb.2.1 hb.2.2.2.2.2 $$ [$Hinit]
+  wp_apply reflect.Value.wp_Type v (by rw [hf]; exact hb.2.1) (by rw [hf]; exact hb.2.2.2.2.2)
   iapply HΦ
   ipureintro
+  rw [ht]
   rfl
+
+/-! ## `Value.Interface` -/
+
+/-- `w.Interface()` of a `reflPtr`: `any(p)`. -/
+theorem Value.wp_Interface_reflPtr (w : Value) (T : go.GoType) (p : Loc) (h : reflPtr w T p) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
+      (App (Val (w @!! Value.ty @!! go!"Interface")) (Val #()))
+    {{ RET #(interface.mkOk (go.PointerType T) #p); True }} := by
+  have hf : w.flag' = W64 22 := by rw [h]
+  exact reflect.Value.wp_Interface w T p (by rw [h]) (by rw [h]) (by rw [hf]; exact ptrFlag_bits.1)
+    (by rw [hf]; exact ptrFlag_bits.2.2.2.2.2.2.2.1)
+
+/-! ## `Value.Elem` -/
+
+/-- `w.Elem()` of a `reflPtr` for a non-nil `p`: a `reflElem`. -/
+theorem Value.wp_Elem_reflPtr (w : Value) (T : go.GoType) (p : Loc) (k : Nat)
+    (h : reflPtr w T p) (hk : go.kindOf (GoSemanticsFunctions.underlying T) = some k)
+    (hp : p ≠ null) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
+      (App (Val (w @!! Value.ty @!! go!"Elem")) (Val #()))
+    {{ (e : Value), RET #e; ⌜reflElem e T p⌝ }} := by
+  have hf : w.flag' = W64 22 := by rw [h]
+  iintro %Φ #Hinit HΦ
+  wp_apply reflect.Value.wp_Elem w T k p hk (by rw [h]) (by rw [h])
+    (by rw [hf]; exact ptrFlag_bits.1) (by rw [hf]; exact ptrFlag_bits.2.2.2.2.2.2.2.2)
+  rw [ite_eq_right hp, hf, elemOfPtr_flag k (kindOf_lt hk)]
+  iapply HΦ
+  ipureintro
+  exact ⟨k, hk, rfl⟩
+
+/-- `w.Elem()` of a `reflPtr` for a nil `p`: the zero `Value`. -/
+theorem Value.wp_Elem_reflPtr_nil (w : Value) (T : go.GoType) (k : Nat)
+    (h : reflPtr w T null) (hk : go.kindOf (GoSemanticsFunctions.underlying T) = some k) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
+      (App (Val (w @!! Value.ty @!! go!"Elem")) (Val #()))
+    {{ RET #(_root_.Perennial.zero_val reflect.Value); True }} := by
+  have hf : w.flag' = W64 22 := by rw [h]
+  have h := (reflect.Value.wp_Elem : reflect.Value.Elem.spec (GF := GF) (hG := hG)) w T k null hk (by rw [h]) (by rw [h])
+    (by rw [hf]; exact ptrFlag_bits.1) (by rw [hf]; exact ptrFlag_bits.2.2.2.2.2.2.2.2)
+  rwa [ite_eq_left rfl] at h
+
+/-! ## `Value.IsNil` -/
+
+/-- `w.IsNil()` of a `reflPtr`: whether `p` is nil. -/
+theorem Value.wp_IsNil_reflPtr (w : Value) (T : go.GoType) (p : Loc) (h : reflPtr w T p) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
+      (App (Val (w @!! Value.ty @!! go!"IsNil")) (Val #()))
+    {{ RET #(decide (p = null)); True }} := by
+  have hf : w.flag' = W64 22 := by rw [h]
+  exact (reflect.Value.wp_IsNil : reflect.Value.IsNil.spec (GF := GF) (hG := hG)).1 w (t := go.PointerType T) (e := T) p
+    (by rw [hf]; exact ptrFlag_bits.1) (by rw [hf]; exact ptrFlag_bits.2.2.2.2.2.2.1) (by rw [h])
+
+/-- `v.IsNil()` of a `reflElem` of a slice variable `p`: whether the slice `*p` is nil. -/
+theorem Value.wp_IsNil_reflElem_slice (v : Value) (T : go.GoType) (p : Loc) (dq : DFrac)
+    (s : GoSlice) (h : reflElem v (go.SliceType T) p) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.reflect ∗ p ↦{dq} s }}
+      (App (Val (v @!! Value.ty @!! go!"IsNil")) (Val #()))
+    {{ RET #(decide (s = slice.nil)); p ↦{dq} s }} := by
+  obtain ⟨k, hk, hv⟩ := h
+  have hk23 : k = 23 := by
+    have : go.kindOf (go.SliceType T) = some 23 := by simp [go.kindOf]
+    rw [show GoSemanticsFunctions.underlying (go.SliceType T) = go.SliceType T from
+      go.is_underlying, this] at hk
+    cases hk; rfl
+  subst hk23
+  have hf : v.flag' = W64 23 ||| W64 128 ||| W64 256 := by rw [hv]; rfl
+  exact (reflect.Value.wp_IsNil : reflect.Value.IsNil.spec (GF := GF) (hG := hG)).2.1 v (t := go.SliceType T) (e := T) p dq s
+    (by rw [hf]; exact (elemFlag_bits 23 (by omega)).1) (by rw [hv])
+
+/-- `IsNil()` of the zero `Value`: Go's panic `&ValueError{"reflect.Value.IsNil", Invalid}`. -/
+theorem Value.wp_IsNil_zero (Φ : val → IProp GF) :
+    isPkgInit (PROP := IProp GF) pkg_id.reflect ∗
+      (∀ l : Loc, l ↦ ValueError.mk go!"reflect.Value.IsNil" (W64 0) -∗
+        Φ (PanicV #(interface.mkOk (go.PointerType ValueError.ty) #l))) ⊢
+      WP (App (Val ((_root_.Perennial.zero_val reflect.Value) @!! Value.ty @!! go!"IsNil"))
+        (Val #())) {{ Φ }} := by
+  have hf : (_root_.Perennial.zero_val reflect.Value).flag' &&& W64 31 = W64 0 := by
+    rw [show (_root_.Perennial.zero_val reflect.Value).flag' = W64 0 from rfl]
+    exact isNil_panic_kinds.2.2
+  have h := (reflect.Value.wp_IsNil : reflect.Value.IsNil.spec (GF := GF) (hG := hG)).2.2
+    (_root_.Perennial.zero_val reflect.Value) Φ (by rw [hf]; exact isNil_panic_kinds.1)
+  rwa [hf] at h
+
+/-- `v.IsNil()` of a `reflElem` of a struct variable: Go's panic
+`&ValueError{"reflect.Value.IsNil", Struct}`. -/
+theorem Value.wp_IsNil_reflElem_struct (v : Value) (T : go.GoType) (p : Loc)
+    (h : reflElem v T p) (hk : go.kindOf (GoSemanticsFunctions.underlying T) = some 25)
+    (Φ : val → IProp GF) :
+    isPkgInit (PROP := IProp GF) pkg_id.reflect ∗
+      (∀ l : Loc, l ↦ ValueError.mk go!"reflect.Value.IsNil" (W64 25) -∗
+        Φ (PanicV #(interface.mkOk (go.PointerType ValueError.ty) #l))) ⊢
+      WP (App (Val (v @!! Value.ty @!! go!"IsNil")) (Val #())) {{ Φ }} := by
+  obtain ⟨k, hk', hv⟩ := h
+  rw [hk] at hk'
+  cases hk'
+  have hf : v.flag' &&& W64 31 = W64 25 := by
+    rw [show v.flag' = W64 25 ||| W64 128 ||| W64 256 by rw [hv]; rfl]
+    exact (elemFlag_bits 25 (by omega)).1
+  have h := (reflect.Value.wp_IsNil : reflect.Value.IsNil.spec (GF := GF) (hG := hG)).2.2 v Φ
+    (by rw [hf]; exact isNil_panic_kinds.2.1)
+  rwa [hf] at h
 
 /-! ## `Type.Elem` and `Type.Kind`, through the interface `reflect.Type` -/
 
@@ -199,6 +344,7 @@ theorem Type.wp_Elem (rt : Type') (T e : go.GoType) {u : go.GoType} [T ↓u u]
   subst h
   iintro %Φ #Hinit HΦ
   wp_pures
+  unfold go.tok
   wp_apply reflect.rtype.wp_Elem e null he $$ [$Hinit]
   iapply HΦ
   ipureintro
@@ -225,6 +371,7 @@ theorem Type.wp_Kind (rt : Type') (T : go.GoType) {u : go.GoType} [T ↓u u] (k 
   subst h
   iintro %Φ #Hinit HΦ
   wp_pures
+  unfold go.tok
   wp_apply reflect.rtype.wp_Kind k null hk $$ [$Hinit]
   iapply HΦ
   itrivial
