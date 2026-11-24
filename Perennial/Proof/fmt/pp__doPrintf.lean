@@ -184,8 +184,36 @@ theorem fmt.pp.doPrintf.wp_proof
         rw [← List.append_assoc]
         iframe
         ipureintro; exact ⟨hOut, Hpnn⟩
-    trace_state
-    sorry
+    -- a `%`: `%%` or a directive
+    have hdropj : format.drop (sint.nat j) = encode (fmt.leadLits rest).2 := by
+      rw [hjL, ← List.drop_drop, hsplit, List.drop_left]
+    have hjlt : sint.nat j < format.length := by word
+    wp_apply wp_clearflags $$ Hfmt as Hfmt
+    rcases fmt.leadLits_rest rest with hR | ⟨R', hR⟩ | ⟨zw, v, R', hR⟩
+    · exfalso; rw [hR] at hdropj
+      have := congrArg List.length hdropj
+      simp [encode] at this; omega
+    · -- `%%`
+      rw [hR] at hdropj hfl
+      simp only [fmt.encode_cons, Piece.encode, List.cons_append, List.nil_append] at hdropj
+      have hf0 : format[sint.nat j]? = some (W8 37) := by
+        rw [← Nat.add_zero (sint.nat j), ← List.getElem?_drop, hdropj]; rfl
+      have hf1 : format[sint.nat j + 1]? = some (W8 37) := by
+        rw [← List.getElem?_drop, hdropj]; rfl
+      have hlen2 : sint.nat j + 2 ≤ format.length := by
+        have := congrArg List.length hdropj
+        simp only [List.length_drop, List.length_cons] at this; omega
+      have hj1 : sint.nat (j + W64 1) = sint.nat j + 1 := by word
+      have hj1z : 0 ≤ sint.Z (j + W64 1) := by word
+      wp_for
+      wp_if_destruct; rotate_left
+      · exfalso; word
+      simp only [hj1z, ite_true, hj1, hf1]
+      wp_auto
+      trace_state
+      sorry
+    · -- a directive
+      sorry
   · -- the end of the format
     have hie : sint.nat i = format.length := by word
     rw [hie, List.drop_length] at hdrop
