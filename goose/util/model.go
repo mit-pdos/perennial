@@ -321,7 +321,61 @@ func BuildModels(modDir, configDir string, opts LoadOptions, patterns ...string)
 	if len(m.Packages) == 0 {
 		return m, nil
 	}
+	if err := b.dropPushLinknames(); err != nil {
+		return nil, err
+	}
 	return m, b.check()
+}
+
+// dropPushLinknames overlays each file of package runtime that pushes a
+// definition into a replaced function (`//go:linkname local P.F`, the
+// runtime defining P's bodyless F: sync.runtime_Semacquire,
+// internal/bytealg.MakeNoZero) with that directive blanked, so that gc links
+// the model's body of F instead of refusing a duplicated definition. The
+// runtime's function stays, unexported and unlinked. Goose is unaffected: a
+// directive is not translated. The file keeps its offsets (the directive
+// becomes spaces), and a file another model already overlays is edited in
+// that overlay.
+func (b *builder) dropPushLinknames() error {
+	targets := make(map[string]bool)
+	for _, pm := range b.models.Packages {
+		for _, n := range pm.Config.Replaces {
+			if n != "*" && !strings.HasPrefix(n, "init.") {
+				targets[pm.PkgPath+"."+n] = true
+			}
+		}
+	}
+	if len(targets) == 0 {
+		return nil
+	}
+	pkgs, err := packages.Load(b.pkgConfig(packages.NeedName|packages.NeedFiles, b.opts), "runtime")
+	if err != nil {
+		return err
+	}
+	for _, pkg := range pkgs {
+		for _, path := range pkg.GoFiles {
+			src, ok := b.models.Overlay[path]
+			if !ok {
+				if src, err = b.source(path); err != nil {
+					return err
+				}
+			}
+			lines := strings.SplitAfter(string(src), "\n")
+			changed := false
+			for i, line := range lines {
+				fields := strings.Fields(line)
+				if len(fields) == 3 && fields[0] == "//go:linkname" && targets[fields[2]] {
+					lines[i] = strings.Repeat(" ", len(strings.TrimRight(line, "\n"))) +
+						line[len(strings.TrimRight(line, "\n")):]
+					changed = true
+				}
+			}
+			if changed {
+				b.models.Overlay[path] = []byte(strings.Join(lines, ""))
+			}
+		}
+	}
+	return nil
 }
 
 type builder struct {
