@@ -1,0 +1,10 @@
+# internal/gomodel: added to the standard library by its Go model overlay
+# (a whole-package model of a path that does not exist): the choice and stuck
+# points of the standard-library models. All three functions are primitive
+# stubs, modelled in Perennial/TrustedCode/internal/gomodel.lean.
+translate = ["!*"]
+trusted = ["Choose", "ChooseUint64", "Stuck"]
+
+[model]
+dir = "goose/model/overlay/internal/gomodel"
+replaces = ["*"]

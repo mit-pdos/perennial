@@ -434,9 +434,12 @@ type FuncDecl struct {
 	// Method receiver name (nil if not a method)
 	RecvArg  *Binder
 	TypeArgs []TermIdent
-	Args     []Binder
-	Body     Expr
-	Comment  string
+	// the function takes the cell recover() reads as a parameter `$recover`,
+	// after the receiver
+	RecoverArg bool
+	Args       []Binder
+	Body       Expr
+	Comment    string
 }
 
 type ConstDecl struct {

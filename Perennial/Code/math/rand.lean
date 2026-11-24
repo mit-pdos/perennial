@@ -2,7 +2,9 @@
 module
 
 public import Perennial.Code.sync
+public import Perennial.Code.sync.atomic
 public import Perennial.Golang.Defn
+public import Perennial.TrustedCode.math.rand
 
 @[expose] public section
 
@@ -64,59 +66,16 @@ opaque rngLen [GooseExts] [GoGlobalContext] : val
 
 opaque rngTap [GooseExts] [GoGlobalContext] : val
 
-opaque rngMax [GooseExts] [GoGlobalContext] : val
+@[reducible] noncomputable def rngMax [GooseExts] [GoGlobalContext] : val :=
+  #(9223372036854775808 : Int)
 
-opaque rngMask [GooseExts] [GoGlobalContext] : val
+@[reducible] noncomputable def rngMask [GooseExts] [GoGlobalContext] : val :=
+  #(9223372036854775807 : Int)
 
 opaque int32max [GooseExts] [GoGlobalContext] : val
 
-noncomputable def ke [GooseExts] [GoGlobalContext] : GoString :=
-  go!"math/rand.ke"
-
-opaque ke.init [GooseExts] [GoGlobalContext] : val
-
-noncomputable def we [GooseExts] [GoGlobalContext] : GoString :=
-  go!"math/rand.we"
-
-opaque we.init [GooseExts] [GoGlobalContext] : val
-
-noncomputable def fe [GooseExts] [GoGlobalContext] : GoString :=
-  go!"math/rand.fe"
-
-opaque fe.init [GooseExts] [GoGlobalContext] : val
-
-noncomputable def kn [GooseExts] [GoGlobalContext] : GoString :=
-  go!"math/rand.kn"
-
-opaque kn.init [GooseExts] [GoGlobalContext] : val
-
-noncomputable def wn [GooseExts] [GoGlobalContext] : GoString :=
-  go!"math/rand.wn"
-
-opaque wn.init [GooseExts] [GoGlobalContext] : val
-
-noncomputable def fn [GooseExts] [GoGlobalContext] : GoString :=
-  go!"math/rand.fn"
-
-opaque fn.init [GooseExts] [GoGlobalContext] : val
-
 noncomputable def globalRandGenerator [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.globalRandGenerator"
-
-noncomputable def randautoseed [GooseExts] [GoGlobalContext] : GoString :=
-  go!"math/rand.randautoseed"
-
-opaque randautoseed.init [GooseExts] [GoGlobalContext] : val
-
-noncomputable def randseednop [GooseExts] [GoGlobalContext] : GoString :=
-  go!"math/rand.randseednop"
-
-opaque randseednop.init [GooseExts] [GoGlobalContext] : val
-
-noncomputable def rngCooked [GooseExts] [GoGlobalContext] : GoString :=
-  go!"math/rand.rngCooked"
-
-opaque rngCooked.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def absInt32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.absInt32"
@@ -193,8 +152,349 @@ noncomputable def seedrand [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def NewZipf [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.NewZipf"
 
+/-- Int63 returns a non-negative pseudo-random 63-bit integer as an int64.
+
+    go: rand.go:96:16 -/
+noncomputable def Rand.Int63.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "r"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Rand.ty)))) (Var "r"))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve Source.ty go!"Int63"))) (App (Val (GoInstruction (GoLoad Source.ty))) (App (Val (GoInstruction (StructFieldRef Rand.ty go!"src"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Rand.ty)))) (Var "r"))))) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0"))))))
+
+/-- Int31 returns a non-negative pseudo-random 31-bit integer as an int32.
+
+    go: rand.go:110:16 -/
+noncomputable def Rand.Int31.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "r"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Rand.ty)))) (Var "r"))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.int64 go.int32))) (App (Val (GoInstruction (GoOp GoShiftr go.int64))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Rand.ty) go!"Int63"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Rand.ty)))) (Var "r"))) (Val #())) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.int32))) (Var "$res0"))))))
+
+/-- Int63n returns, as an int64, a non-negative pseudo-random number in the half-open interval [0,n).
+    It panics if n <= 0.
+
+    go: rand.go:120:16 -/
+noncomputable def Rand.Int63n.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "r"
+  (Lam "n"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Rand.ty)))) (Var "r"))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "n"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.int64))) (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (Val #(W64 9223372036854775807)) (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (Val #(W64 9223372036854775808)) (App (Val (GoInstruction (Convert go.int64 go.uint64))) (App (Val (GoInstruction (GoLoad go.int64))) (Var "n"))))))))
+  (Let "max" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Rand.ty) go!"Int63"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Rand.ty)))) (Var "r"))) (Val #()))
+  (Let "v" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoRemainder go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "v")) (App (Val (GoInstruction (GoLoad go.int64))) (Var "n"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoGt go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "v")) (App (Val (GoInstruction (GoLoad go.int64))) (Var "max")))))) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Rand.ty) go!"Int63"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Rand.ty)))) (Var "r"))) (Val #()))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "v") (Var "$r0")))))))
+  (Lam BAnon
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "v") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "max") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "n")) (App (Val (GoInstruction (GoOp GoSub go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "n")) (Val #(W64 1)))))) (Val #(W64 0)))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoAnd go.int64))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Rand.ty) go!"Int63"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Rand.ty)))) (Var "r"))) (Val #())) (App (Val (GoInstruction (GoOp GoSub go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "n")) (Val #(W64 1))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "n")) (Val #(W64 0)))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"invalid argument to Int63n")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0"))))))
+
+/-- Int31n returns, as an int32, a non-negative pseudo-random number in the half-open interval [0,n).
+    It panics if n <= 0.
+
+    go: rand.go:137:16 -/
+noncomputable def Rand.Int31n.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "r"
+  (Lam "n"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Rand.ty)))) (Var "r"))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int32))) (Var "n"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint32 go.int32))) (App (Val (GoInstruction (GoOp GoSub go.uint32))) (Pair (Val #(W32 2147483647)) (App (Val (GoInstruction (GoOp GoRemainder go.uint32))) (Pair (Val #(W32 2147483648)) (App (Val (GoInstruction (Convert go.int32 go.uint32))) (App (Val (GoInstruction (GoLoad go.int32))) (Var "n"))))))))
+  (Let "max" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Rand.ty) go!"Int31"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Rand.ty)))) (Var "r"))) (Val #()))
+  (Let "v" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoRemainder go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "v")) (App (Val (GoInstruction (GoLoad go.int32))) (Var "n"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoGt go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "v")) (App (Val (GoInstruction (GoLoad go.int32))) (Var "max")))))) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Rand.ty) go!"Int31"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Rand.ty)))) (Var "r"))) (Val #()))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "v") (Var "$r0")))))))
+  (Lam BAnon
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "v") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "max") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int32))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "n")) (App (Val (GoInstruction (GoOp GoSub go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "n")) (Val #(W32 1)))))) (Val #(W32 0)))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoAnd go.int32))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Rand.ty) go!"Int31"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Rand.ty)))) (Var "r"))) (Val #())) (App (Val (GoInstruction (GoOp GoSub go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "n")) (Val #(W32 1))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "n")) (Val #(W32 0)))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"invalid argument to Int31n")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val (GoInstruction (GoLoad go.int32))) (Var "$res0"))))))
+
+/-- Intn returns, as an int, a non-negative pseudo-random number in the half-open interval [0,n).
+    It panics if n <= 0.
+
+    go: rand.go:178:16 -/
+noncomputable def Rand.Intn.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "r"
+  (Lam "n"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Rand.ty)))) (Var "r"))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (Var "n"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.int64 go.int))) (Let "$a0" (App (Val (GoInstruction (Convert go.int go.int64))) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Rand.ty) go!"Int63n"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Rand.ty)))) (Var "r"))) (Var "$a0"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 2147483647)))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.int32 go.int))) (Let "$a0" (App (Val (GoInstruction (Convert go.int go.int32))) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Rand.ty) go!"Int31n"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Rand.ty)))) (Var "r"))) (Var "$a0"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 0)))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"invalid argument to Intn")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
+
+/-- go: rand.go:362:23 -/
+noncomputable def runtimeSource.Int63.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.int64))) (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve runtime_rand []))) (Val #())) (Val #())) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val rngMask)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0"))))))
+
+/-- go: rand.go:370:23 -/
+noncomputable def runtimeSource.Uint64.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve runtime_rand []))) (Val #())) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0"))))))
+
+/-- Int63 returns a non-negative pseudo-random 63-bit integer as an int64
+    from the default [Source].
+
+    go: rand.go:434:6 -/
+noncomputable def Int63.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Rand.ty) go!"Int63"))) (App (App (Val (GoInstruction (FuncResolve globalRand []))) (Val #())) (Val #()))) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0")))))
+
+/-- Int31 returns a non-negative pseudo-random 31-bit integer as an int32
+    from the default [Source].
+
+    go: rand.go:446:6 -/
+noncomputable def Int31.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Rand.ty) go!"Int31"))) (App (App (Val (GoInstruction (FuncResolve globalRand []))) (Val #())) (Val #()))) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.int32))) (Var "$res0")))))
+
+/-- Int63n returns, as an int64, a non-negative pseudo-random number in the half-open interval [0,n)
+    from the default [Source].
+    It panics if n <= 0.
+
+    go: rand.go:454:6 -/
+noncomputable def Int63n.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "n"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "n"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.int64))) (Var "n"))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Rand.ty) go!"Int63n"))) (App (App (Val (GoInstruction (FuncResolve globalRand []))) (Val #())) (Val #()))) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0")))))
+
+/-- Int31n returns, as an int32, a non-negative pseudo-random number in the half-open interval [0,n)
+    from the default [Source].
+    It panics if n <= 0.
+
+    go: rand.go:459:6 -/
+noncomputable def Int31n.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "n"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int32))) (Var "n"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.int32))) (Var "n"))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Rand.ty) go!"Int31n"))) (App (App (Val (GoInstruction (FuncResolve globalRand []))) (Val #())) (Val #()))) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.int32))) (Var "$res0")))))
+
+/-- Intn returns, as an int, a non-negative pseudo-random number in the half-open interval [0,n)
+    from the default [Source].
+    It panics if n <= 0.
+
+    go: rand.go:464:6 -/
+noncomputable def Intn.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "n"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (Var "n"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Rand.ty) go!"Intn"))) (App (App (Val (GoInstruction (FuncResolve globalRand []))) (Val #())) (Val #()))) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
+
+/-- The package variables goose does not translate (the `skip` entries of the package's
+goose config): no Lean name, allocation or initialization step, so no translated code names
+them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot
+panic, and has no effect beyond the variable), for the reason given.
+
+- `ke` (`var ke = [256]uint32{ 0xe290a139, 0x0, 0x9beadebc, 0xc377ac71, 0xd4ddb990, 0xde893fb8, 0xe4a8e87c, 0xe8dff16a, 0xebf2dea … [sha256:5fbaaf8ae8cb6f2e]`): The exponential distribution's tables (exp.go): array literals of constants, so the initializers
+store constants, cannot panic and have no effect beyond the variables. Read only by `ExpFloat64`,
+which is not translated.
+- `we` (`var we = [256]float32{ 2.0249555e-09, 1.486674e-11, 2.4409617e-11, 3.1968806e-11, 3.844677e-11, 4.4228204e-11, 4.9516443 … [sha256:bd8071250fee6a0a]`): The exponential distribution's tables (exp.go): array literals of constants, so the initializers
+store constants, cannot panic and have no effect beyond the variables. Read only by `ExpFloat64`,
+which is not translated.
+- `fe` (`var fe = [256]float32{ 1, 0.9381437, 0.90046996, 0.87170434, 0.8477855, 0.8269933, 0.8084217, 0.7915276, 0.77595687, 0.7 … [sha256:e9872e3b2a1557bd]`): The exponential distribution's tables (exp.go): array literals of constants, so the initializers
+store constants, cannot panic and have no effect beyond the variables. Read only by `ExpFloat64`,
+which is not translated.
+- `kn` (`var kn = [128]uint32{ 0x76ad2212, 0x0, 0x600f1b53, 0x6ce447a6, 0x725b46a2, 0x7560051d, 0x774921eb, 0x789a25bd, 0x799045c … [sha256:34de2a12c7fbbc39]`): The normal distribution's tables (normal.go): array literals of constants, so the initializers
+store constants, cannot panic and have no effect beyond the variables. Read only by
+`NormFloat64`, which is not translated.
+- `wn` (`var wn = [128]float32{ 1.7290405e-09, 1.2680929e-10, 1.6897518e-10, 1.9862688e-10, 2.2232431e-10, 2.4244937e-10, 2.60161 … [sha256:73a066376527a0be]`): The normal distribution's tables (normal.go): array literals of constants, so the initializers
+store constants, cannot panic and have no effect beyond the variables. Read only by
+`NormFloat64`, which is not translated.
+- `fn` (`var fn = [128]float32{ 1, 0.9635997, 0.9362827, 0.9130436, 0.89228165, 0.87324303, 0.8555006, 0.8387836, 0.8229072, 0.80 … [sha256:5ba7c0b122dd3351]`): The normal distribution's tables (normal.go): array literals of constants, so the initializers
+store constants, cannot panic and have no effect beyond the variables. Read only by
+`NormFloat64`, which is not translated.
+- `randautoseed` (`var randautoseed = godebug.New("randautoseed")`): `godebug.New("randautoseed")` (rand.go): `internal/godebug`'s `New(name)` is
+`return &Setting{name: name}`, an allocation: cannot panic, no effect beyond the variable. Read
+only by `globalRand`, whose trusted model does not read it (TrustedCode/math/rand.lean).
+- `randseednop` (`var randseednop = godebug.New("randseednop")`): `godebug.New("randseednop")` (rand.go): `internal/godebug`'s `New(name)` is
+`return &Setting{name: name}`, an allocation: cannot panic, no effect beyond the variable. Read
+only by `Seed`, which is not translated.
+- `rngCooked` (`var // rngCooked used for seeding. See gen_cooked.go for details. rngCooked [rngLen]int64 = [...]int64{ -418179214213375 … [sha256:6033a1889988ebeb]`): The additive lagged Fibonacci generator's seeding table (rng.go): an array literal of constants,
+so the initializer stores constants, cannot panic and has no effect beyond the variable. Read only
+by `rngSource.Seed`, which is not translated.
+-/
+noncomputable def skipped' : List go.SkippedVar := [
+  ⟨"math/rand.ke", "The exponential distribution's tables (exp.go): array literals of constants, so the initializers\nstore constants, cannot panic and have no effect beyond the variables. Read only by `ExpFloat64`,\nwhich is not translated.", "var ke = [256]uint32{ 0xe290a139, 0x0, 0x9beadebc, 0xc377ac71, 0xd4ddb990, 0xde893fb8, 0xe4a8e87c, 0xe8dff16a, 0xebf2dea … [sha256:5fbaaf8ae8cb6f2e]"⟩,
+  ⟨"math/rand.we", "The exponential distribution's tables (exp.go): array literals of constants, so the initializers\nstore constants, cannot panic and have no effect beyond the variables. Read only by `ExpFloat64`,\nwhich is not translated.", "var we = [256]float32{ 2.0249555e-09, 1.486674e-11, 2.4409617e-11, 3.1968806e-11, 3.844677e-11, 4.4228204e-11, 4.9516443 … [sha256:bd8071250fee6a0a]"⟩,
+  ⟨"math/rand.fe", "The exponential distribution's tables (exp.go): array literals of constants, so the initializers\nstore constants, cannot panic and have no effect beyond the variables. Read only by `ExpFloat64`,\nwhich is not translated.", "var fe = [256]float32{ 1, 0.9381437, 0.90046996, 0.87170434, 0.8477855, 0.8269933, 0.8084217, 0.7915276, 0.77595687, 0.7 … [sha256:e9872e3b2a1557bd]"⟩,
+  ⟨"math/rand.kn", "The normal distribution's tables (normal.go): array literals of constants, so the initializers\nstore constants, cannot panic and have no effect beyond the variables. Read only by\n`NormFloat64`, which is not translated.", "var kn = [128]uint32{ 0x76ad2212, 0x0, 0x600f1b53, 0x6ce447a6, 0x725b46a2, 0x7560051d, 0x774921eb, 0x789a25bd, 0x799045c … [sha256:34de2a12c7fbbc39]"⟩,
+  ⟨"math/rand.wn", "The normal distribution's tables (normal.go): array literals of constants, so the initializers\nstore constants, cannot panic and have no effect beyond the variables. Read only by\n`NormFloat64`, which is not translated.", "var wn = [128]float32{ 1.7290405e-09, 1.2680929e-10, 1.6897518e-10, 1.9862688e-10, 2.2232431e-10, 2.4244937e-10, 2.60161 … [sha256:73a066376527a0be]"⟩,
+  ⟨"math/rand.fn", "The normal distribution's tables (normal.go): array literals of constants, so the initializers\nstore constants, cannot panic and have no effect beyond the variables. Read only by\n`NormFloat64`, which is not translated.", "var fn = [128]float32{ 1, 0.9635997, 0.9362827, 0.9130436, 0.89228165, 0.87324303, 0.8555006, 0.8387836, 0.8229072, 0.80 … [sha256:5ba7c0b122dd3351]"⟩,
+  ⟨"math/rand.randautoseed", "`godebug.New(\"randautoseed\")` (rand.go): `internal/godebug`'s `New(name)` is\n`return &Setting{name: name}`, an allocation: cannot panic, no effect beyond the variable. Read\nonly by `globalRand`, whose trusted model does not read it (TrustedCode/math/rand.lean).", "var randautoseed = godebug.New(\"randautoseed\")"⟩,
+  ⟨"math/rand.randseednop", "`godebug.New(\"randseednop\")` (rand.go): `internal/godebug`'s `New(name)` is\n`return &Setting{name: name}`, an allocation: cannot panic, no effect beyond the variable. Read\nonly by `Seed`, which is not translated.", "var randseednop = godebug.New(\"randseednop\")"⟩,
+  ⟨"math/rand.rngCooked", "The additive lagged Fibonacci generator's seeding table (rng.go): an array literal of constants,\nso the initializer stores constants, cannot panic and has no effect beyond the variable. Read only\nby `rngSource.Seed`, which is not translated.", "var // rngCooked used for seeding. See gen_cooked.go for details. rngCooked [rngLen]int64 = [...]int64{ -418179214213375 … [sha256:6033a1889988ebeb]"⟩]
+
 noncomputable instance info' : PkgInfo pkg_id.math.rand where
-  pkgImportedPkgs := [pkg_id.sync]
+  pkgImportedPkgs := [pkg_id.sync, pkg_id.sync.atomic]
 
 opaque «_».init [GooseExts] [GoGlobalContext] : val
 
@@ -204,33 +504,12 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val rngCooked.init) (Val #())))))
+  (App (Val _root_.Perennial.sync.initialize') (Val #())))))
   (App (Val doExecute)
-  (App (Val randseednop.init) (Val #()))))))
+  (App (Val _root_.Perennial.sync.atomic.initialize') (Val #()))))))
   (App (Val doExecute)
-  (App (Val randautoseed.init) (Val #()))))))
-  (App (Val doExecute)
-  (App (Val fn.init) (Val #()))))))
-  (App (Val doExecute)
-  (App (Val wn.init) (Val #()))))))
-  (App (Val doExecute)
-  (App (Val kn.init) (Val #()))))))
-  (App (Val doExecute)
-  (App (Val fe.init) (Val #()))))))
-  (App (Val doExecute)
-  (App (Val we.init) (Val #()))))))
-  (App (Val doExecute)
-  (App (Val ke.init) (Val #()))))))
-  (App (Val doExecute)
-  (App (Val _root_.Perennial.sync.initialize') (Val #()))))))))
+  (App (Val (go.GlobalAlloc globalRandGenerator (_root_.Perennial.sync.atomic.Pointer.ty Rand.ty))) (Val #()))))))))
 
 abbrev Source [GooseExts] : Type := GoInterface
 
@@ -299,6 +578,11 @@ class Rand.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
   set_readPos : ∀ (x : Rand) (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet Rand.underlying go!"readPos") (PairV #x #y) (Val #(({ x with readPos' := y } : Rand)))
   method_set : go.MethodSetIs Rand.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Rand.ty) [(go!"ExpFloat64", (some (go.signature.Signature [] false [go.float64]))), (go!"Float32", (some (go.signature.Signature [] false [go.float32]))), (go!"Float64", (some (go.signature.Signature [] false [go.float64]))), (go!"Int", (some (go.signature.Signature [] false [go.int]))), (go!"Int31", (some (go.signature.Signature [] false [go.int32]))), (go!"Int31n", (some (go.signature.Signature [go.int32] false [go.int32]))), (go!"Int63", (some (go.signature.Signature [] false [go.int64]))), (go!"Int63n", (some (go.signature.Signature [go.int64] false [go.int64]))), (go!"Intn", (some (go.signature.Signature [go.int] false [go.int]))), (go!"NormFloat64", (some (go.signature.Signature [] false [go.float64]))), (go!"Perm", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType go.int)]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"Seed", (some (go.signature.Signature [go.int64] false []))), (go!"Shuffle", (some (go.signature.Signature [go.int, (go.GoType.FunctionType (go.signature.Signature [go.int, go.int] false []))] false []))), (go!"Uint32", (some (go.signature.Signature [] false [go.uint32]))), (go!"Uint64", (some (go.signature.Signature [] false [go.uint64]))), (go!"math/rand.int31n", (some (go.signature.Signature [go.int32] false [go.int32])))]
+  ptr_Int31_unfold : MethodUnfold (go.GoType.PointerType Rand.ty) go!"Int31" Rand.Int31.impl
+  ptr_Int31n_unfold : MethodUnfold (go.GoType.PointerType Rand.ty) go!"Int31n" Rand.Int31n.impl
+  ptr_Int63_unfold : MethodUnfold (go.GoType.PointerType Rand.ty) go!"Int63" Rand.Int63.impl
+  ptr_Int63n_unfold : MethodUnfold (go.GoType.PointerType Rand.ty) go!"Int63n" Rand.Int63n.impl
+  ptr_Intn_unfold : MethodUnfold (go.GoType.PointerType Rand.ty) go!"Intn" Rand.Intn.impl
 
 attribute [instance] Rand.TypeAssumptions.type_repr
   Rand.TypeAssumptions.underlying
@@ -312,6 +596,11 @@ attribute [instance] Rand.TypeAssumptions.type_repr
   Rand.TypeAssumptions.set_readPos
   Rand.TypeAssumptions.method_set
   Rand.TypeAssumptions.ptr_method_set
+  Rand.TypeAssumptions.ptr_Int31_unfold
+  Rand.TypeAssumptions.ptr_Int31n_unfold
+  Rand.TypeAssumptions.ptr_Int63_unfold
+  Rand.TypeAssumptions.ptr_Int63n_unfold
+  Rand.TypeAssumptions.ptr_Intn_unfold
 
 structure runtimeSource [GooseExts] where
   mk ::
@@ -340,6 +629,8 @@ class runtimeSource.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContex
   set_mu : ∀ (x : runtimeSource) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet runtimeSource.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : runtimeSource)))
   method_set : go.MethodSetIs runtimeSource.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType runtimeSource.ty) [(go!"Int63", (some (go.signature.Signature [] false [go.int64]))), (go!"Seed", (some (go.signature.Signature [go.int64] false []))), (go!"Uint64", (some (go.signature.Signature [] false [go.uint64]))), (go!"math/rand.read", (some (go.signature.Signature [(go.GoType.SliceType go.byte), (go.GoType.PointerType go.int64), (go.GoType.PointerType go.int8)] false [go.int, go.error])))]
+  ptr_Int63_unfold : MethodUnfold (go.GoType.PointerType runtimeSource.ty) go!"Int63" runtimeSource.Int63.impl
+  ptr_Uint64_unfold : MethodUnfold (go.GoType.PointerType runtimeSource.ty) go!"Uint64" runtimeSource.Uint64.impl
 
 attribute [instance] runtimeSource.TypeAssumptions.type_repr
   runtimeSource.TypeAssumptions.underlying
@@ -347,6 +638,8 @@ attribute [instance] runtimeSource.TypeAssumptions.type_repr
   runtimeSource.TypeAssumptions.set_mu
   runtimeSource.TypeAssumptions.method_set
   runtimeSource.TypeAssumptions.ptr_method_set
+  runtimeSource.TypeAssumptions.ptr_Int63_unfold
+  runtimeSource.TypeAssumptions.ptr_Uint64_unfold
 
 structure lockedSource [GooseExts] where
   mk ::
@@ -527,7 +820,15 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   lockedSource_instance : lockedSource.TypeAssumptions
   rngSource_instance : rngSource.TypeAssumptions
   Zipf_instance : Zipf.TypeAssumptions
+  globalRand_unfold : FuncUnfold globalRand [] globalRand.impl
+  runtime_rand_unfold : FuncUnfold runtime_rand [] runtime_rand.impl
+  Int63_unfold : FuncUnfold Int63 [] Int63.impl
+  Int31_unfold : FuncUnfold Int31 [] Int31.impl
+  Int63n_unfold : FuncUnfold Int63n [] Int63n.impl
+  Int31n_unfold : FuncUnfold Int31n [] Int31n.impl
+  Intn_unfold : FuncUnfold Intn [] Intn.impl
   import_sync_Assumption : _root_.Perennial.sync.Assumptions
+  import_atomic_Assumption : _root_.Perennial.sync.atomic.Assumptions
 
 attribute [instance] Assumptions.Source_instance
   Assumptions.Source64_instance
@@ -536,7 +837,15 @@ attribute [instance] Assumptions.Source_instance
   Assumptions.lockedSource_instance
   Assumptions.rngSource_instance
   Assumptions.Zipf_instance
+  Assumptions.globalRand_unfold
+  Assumptions.runtime_rand_unfold
+  Assumptions.Int63_unfold
+  Assumptions.Int31_unfold
+  Assumptions.Int63n_unfold
+  Assumptions.Int31n_unfold
+  Assumptions.Intn_unfold
   Assumptions.import_sync_Assumption
+  Assumptions.import_atomic_Assumption
 
 end math.rand
 

@@ -242,6 +242,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   note_instance : note.TypeAssumptions
   mOS_instance : mOS.TypeAssumptions
   perThreadSyscallArgs_instance : perThreadSyscallArgs.TypeAssumptions
+  kernelVersion_instance : kernelVersion.TypeAssumptions
   sigset_instance : sigset.TypeAssumptions
   throwType_instance : throwType.TypeAssumptions
   PanicNilError_instance : PanicNilError.TypeAssumptions
@@ -629,6 +630,7 @@ attribute [instance] Assumptions.userArena_instance
   Assumptions.note_instance
   Assumptions.mOS_instance
   Assumptions.perThreadSyscallArgs_instance
+  Assumptions.kernelVersion_instance
   Assumptions.sigset_instance
   Assumptions.throwType_instance
   Assumptions.PanicNilError_instance

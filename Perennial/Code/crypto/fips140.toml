@@ -1,0 +1,12 @@
+# What `crypto/sha1` reaches: `Enforced` (`enabled && !isBypassed()`, enforcement.go).
+translate = ["Enforced"]
+imports = ["!*"]
+
+trusted = [
+  # `var enabled = godebug.New("fips140").Value() == "only"`: the value comes from the
+  # runtime (GODEBUG and the binary's default, through `internal/godebug`'s
+  # `go:linkname`ed `setUpdate`); modelled as the run's setting `godebugFips140`
+  # (TrustedCode/crypto/fips140.lean)
+  "enabled",
+  "isBypassed", # go:linkname isBypassed (the runtime's per-goroutine bypass flag)
+]

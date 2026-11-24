@@ -6,7 +6,7 @@ package recover_nested
 func f() {
 	defer func() {
 		g := func() {
-			recover() // ERROR recover() is supported only directly in a function literal deferred by a defer statement
+			recover() // ERROR recover() is supported only directly in a function or method declaration or in a function literal deferred by a defer statement
 		}
 		g()
 	}()

@@ -1461,3 +1461,117 @@ instantiation decides what the conversion does, which is the semantics' job.
 
 **Why.** Proposed in etcd-grove's `notes/perennial-changes.md` (zap pool entry); the change asked
 for by the owner's coordinator, 2026-11-23.
+
+## Case 46 — ACCEPTED: `recover()` in a function or method called by `defer`: `F'deferred` takes the cell (branch `goose-deferred-recover`)
+
+**Symptom.** Incomplete. Goose translated `recover()` only directly in a function literal that is
+the operand of `defer` (it reads the deferring function's `$panic` cell lexically) and refused it in
+a named function or method, whose body cannot see that cell. Go recovers when the deferred function
+is a named function, a method or a method value (spec, "Handling panics"); `fmt`'s
+`handleMethods` defers `p.catchPanic(p.arg, verb, "Error")` (#671 stage 0, item 2).
+
+**Witness.** `func (c *catcher) catch(res *uint64) { if r := recover(); r != nil { *res =
+r.(uint64) } }; func methodRecover() (x uint64) { c := &catcher{}; defer c.catch(&x);
+panic(uint64(7)) }` (Go: 7); `semantics/recover_deferred.go`.
+
+**Taken.** No GooseLang definition or rule. Goose: each translated function or method `F` whose own
+body calls `recover()` (`recoveringFuncs`, outside nested literals) is emitted only as `F'deferred`
+(its own `GoString`/`FuncUnfold`, or a `MethodUnfold` in place of `F`'s for every method-set entry of
+`F`, including the pointer-receiver wrapper and promotions; the method sets themselves are unchanged),
+which takes the cell as an extra parameter `$recover` after the receiver, and its `recover()` is
+`recoverPanic $recover`. The ordinary `F` keeps its `GoString` and method-set entries but has no
+declaration and no `FuncUnfold`/`MethodUnfold`: a direct call or a dynamic `defer` of it is
+translated but unprovable (Go recovers under a dynamic `defer f()`, so `nil` would be unsound; a
+refusal would also reject packages that only mention `F` as a value or a method-set entry). `defer F(args)`
+/ `defer x.M(args)`, with `F` a function of the package or `M` a method of a concrete type in that
+set, defers `$f $panic args` with `$f` the `'deferred` function or method value, and marks the
+function `with_defer_recover:`. A deferred literal that itself defers a recovering literal or
+`F'deferred` binds its own `$panic` (its `with_defer_recover:`), which shadowed the deferring
+function's cell, so its `recover()` read `nil` (unsound, found by the trusted review; the
+literal-only form predates this change): such a literal, if it also calls `recover()` itself (so
+the deferring function binds `$panic`), is now `let: "$recover" := "$panic"` around its body, and its
+`recover()` reads `$recover`, as an `F'deferred` does (`defersRecovering`; semantics tests
+`outerSeenByLiteral`, and `defersOnlyRecovering` for a literal that only defers one). A function value, method value or interface method is deferred as
+today and reaches the undeclared `F` (`KNOWN_LIMITATIONS.md`). Functions without `recover()` translate
+byte-for-byte as before: every other gold file and the regenerated std-lib and model output
+(go1.26.0) are unchanged. No translated function of the std-lib, the models or etcd-grove (all 71
+projects of its `etc/goose.py`, translated with this branch) calls `recover()` outside a deferred
+literal, so only the goose semantics and unittest examples have an `F'deferred`, and no proof uses
+an ordinary `F`. The negative test `recover_indirect` (a deferred named helper) is deleted,
+since that program now translates. Proof side: no new lemma; `F'deferred`'s spec takes the cell's
+points-to, its proof reads it with `wp_recoverPanic`, and the caller passes `pnc` from
+`wp_with_defer_recover`. Semantics tests (Go-checked and proved): a deferred method and a deferred
+function that recover the value, a re-panic, an `F'deferred` with its own recovering literal (two
+cells), and a deferred function when nothing panics; unittest gold `recover_deferred.go` with the
+`handleMethods`/`catchPanic` shape, value receivers, an interface conversion, and the unprovable
+shapes (method value, interface method, function value, direct call). Cost: 0 definitions, 0 rules, 1 `deferStmt` branch, 1 new kind of generated
+declaration, about 100 goose lines.
+
+**Not taken.** (B) The goroutine's panic state and the running deferred frame in the semantics:
+faithful also for dynamic `defer f()`, but a large semantics change. (C) Inlining `F` into a deferred
+literal: not compositional, fails on recursion. `recover()` in the ordinary `F` as `nil`: Go's value
+for a direct call, but unsound under a dynamic `defer`.
+
+**Why.** Approved by the owner (upamanyus), 2026-11-22 (#671 stage-0 plan, part 2, design A), with a
+refinement: functions with no `recover()` get no second version and translate exactly as today.
+The owner then chose to emit only `F'deferred` (option (b), 2026-11-23), instead of also a stuck
+ordinary `F`, on the condition that no proof in Perennial or etcd-grove uses the ordinary `F` of a
+recovering function; none does.
+## Case 47 — ACCEPTED: an index read of a slice passes `IndexRef` its operands in order (branch `fix-index-slice-operands`, issue #643)
+
+**Symptom.** Incomplete (stuck where Go runs). `index_slice` stepped `⟦Index (go.SliceType e), (#s, #i)⟧`
+to `GoLoad e (IndexRef (go.SliceType e) (#i, #s))`, and no rule takes `IndexRef` of a slice type with
+the index first (`index_ref_slice` takes `(#s, #i)`), so the read stopped there. Goose emits `Index`
+on a slice only when the operand's type is a type parameter (a read of a slice-typed operand is
+`IndexRef` and a load), so only generic code instantiated at a slice type met it. Reported from a
+proof of `unicode/utf8.Valid`.
+
+**Witness.**
+
+```go
+func first[S ~[]byte | ~string](s S) byte { return s[0] }
+// first([]byte{1}): Go returns 1; the model was stuck.
+```
+
+**Taken.** The operands in `index_slice`'s right-hand side swapped to `(#s, #i)`. Cost: 1 changed
+semantics line, 0 new rules, 0 goose changes. Semantics tests `testIndexGenericBytes`,
+`testIndexGenericNamedBytes` (a named byte-slice type) and `testIndexGenericString` (the string
+instantiation, which never used the rule), all proved; the two slice proofs do not go through with
+the operands reversed.
+
+**Siblings.** None: `index_array`, `string_index`, `index_ref_array` and every use of `IndexRef` in
+`Golang/Defn` take the container first.
+
+**Why.** The user, on the issue's proposed one-line diff: "I think [it] is valid issue. Fix it in a
+branch, so I can make a PR. Also add a regression test for it."
+
+## Case 48 — ACCEPTED: Go model overlays, the mechanism (branch `goose-model-overlay-s0`, issue #692, stage S0)
+
+**Symptom.** Trust in the wrong place. A package's trusted parts were hand-written GooseLang
+(`TrustedCode/*.lean`, much of it pasted goose output of Go quoted in a docstring), a separate Go
+model package called from Lean glue (`goose/model/pool`), or a whole file added by `-overlay`.
+Nothing replaced one declaration of a real package by Go, and nothing tied a model to the real
+package's API.
+
+**Witness.** `internal/sync.Mutex.Lock` is a hand-written `.impl` over `lock.lock`, and its type's
+layout `Mutex.underlying := go.bool` is trusted too, although Go's own `state int32` and a CAS loop
+express it.
+
+**Taken.** One mechanism (D1): a `[model]` table in the package's config, with `dir` and an explicit
+`replaces` list checked both ways (D2). One builder in `goose/util` that every command loads
+through: it splices each model declaration in the place of the real one between `//line`
+directives (keeping initialization order), adds the model's other declarations in
+`zz_gomodel_<file>.go`, and refuses a model that changes the real package's API (D5). Whole-package
+models (`["*"]`) and additions only (`[]`) are the same table. The standard-library models' choice
+and stuck points are calls of `internal/gomodel` (D3), a package only the overlay adds; its three
+functions are primitive stubs. Cost: a builder of about 1500 lines (`goose/util/model.go`) and its tests, 0 semantics rules,
+0 changed translations; the trusted text of a model becomes its Go, reviewed side by side with the
+real source (`review-trusted` R12).
+
+**Not taken.** Keeping Lean models plus #692's `[layouts]` table for layouts (more hand-written Lean,
+a second mechanism); detecting replacements by shared names (a model could shadow a real
+declaration silently).
+
+**Why.** The plan "Go model overlays" (#692), decisions D1–D7 approved by the owner as recommended,
+2026-11-23. The toolchain check found that go1.26.0's `go list` does not find a standard-library
+package added by an overlay through `go/packages`; go1.26.11 and go1.27 do.

@@ -11,6 +11,7 @@ public import Perennial.Spec.reflect.initialize
 public import Perennial.Spec.io.initialize
 public import Perennial.Spec.errors.initialize
 public import Perennial.Spec.errors.New
+public import Perennial.Proof.errors.NewVar
 
 @[expose] public section
 
@@ -43,7 +44,7 @@ theorem encoding.binary.initialize'.wp_proof
   iframe Hown
   iintro Hown
   wp_auto
-  wp_apply wp_GlobalAlloc (V := GoInterface) errOverflow go.error as _
+  wp_apply wp_GlobalAlloc (V := GoInterface) errOverflow go.error as HO
   wp_apply wp_GlobalAlloc (V := bigEndian) BigEndian bigEndian.ty as Hbig
   ipersist Hbig
   wp_apply wp_GlobalAlloc (V := littleEndian) LittleEndian littleEndian.ty as Hlit
@@ -55,12 +56,24 @@ theorem encoding.binary.initialize'.wp_proof
   wp_apply wp_math_initialize _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #H3⟩
   wp_apply wp_io_initialize _ Hinit.2.2.1 $$ Hown as ⟨Hown, #H4⟩
   wp_apply wp_errors_initialize _ Hinit.2.1 $$ Hown as ⟨Hown, #H5⟩
+  -- the stores into `errOverflow` and `errBufferTooSmall` end the initializer: keep an update to
+  -- make `errOverflow`'s cell persistent afterwards
+  iapply wp_fupd
   wp_apply wp_New as %_ _
-  wp_apply wp_New as %_ _
+  wp_apply (errors.wp_New_errorString go!"binary: varint overflows a 64-bit integer") as %xO #EO
+  ipersist HO
+  ihave #NO : errors.newVar (GF := GF) errOverflow _ $$ []
+  · iunfold errors.newVar
+    iexists _
+    iframe HO EO
+  imodintro
+  isplitr
+  · ipureintro; exact isPanic_intoVal ()
   iframe Hown
   is_pkg_init_finish
   imodintro
-  isplitl [] <;> iassumption
+  iunfold isInit
+  iframe Hlit Hbig NO
 
 end proof
 

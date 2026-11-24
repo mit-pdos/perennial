@@ -43,6 +43,104 @@ type FilterConfig struct {
 	TranslateTypesExceptStructs bool `toml:"translate_types_except_structs"`
 	// Package variables that are not translated at all: see [SkipEntry].
 	Skip []SkipEntry `toml:"skip"`
+	// The package's Go model overlay, if any: see [ModelConfig].
+	Model *ModelConfig `toml:"model"`
+}
+
+// A ModelConfig is the [model] table of a package's config: Go model files
+// that are compiled and translated as part of the package (util.BuildModels).
+//
+//	[model]
+//	dir = "goose/model/overlay/internal/sync"
+//	replaces = ["Mutex.Lock", "Mutex.TryLock", "Mutex.Unlock"]
+//
+// The model files are the non-test .go files of dir, a directory relative to
+// the repository root, in the package's own package clause. Each name in
+// Replaces is a declaration of the real package (a function `f`, a method
+// `T.m`, a type `T`, a package variable `X`, or the N-th init function
+// `init.N`) that the model declares under the same name: the real one is
+// deleted and the model's is put in its place. Replaces = ["*"] replaces
+// every real file (a whole-package model, which may also add a
+// standard-library package that does not exist); Replaces = [] only adds.
+// Every other declaration of the model is an addition; an addition that
+// the config lists in trusted is a primitive stub (its Go body is for gc
+// builds only), and every other model declaration is translated.
+type ModelConfig struct {
+	// The directory of the model files, relative to the repository root.
+	Dir string `toml:"dir"`
+	// The real declarations the model replaces (required; may be empty).
+	Replaces []string `toml:"replaces"`
+	// Patterns (as in translate) of the methods the model may add to the
+	// real package's types, which change their method sets: `T.m` or
+	// `*.PbModel*`.
+	AddedMethods []string `toml:"added_methods"`
+}
+
+// WholePackage says whether the model replaces every real file.
+func (m *ModelConfig) WholePackage() bool {
+	return len(m.Replaces) == 1 && m.Replaces[0] == "*"
+}
+
+// CheckModel returns the errors of the config's [model] table that the
+// config alone shows: no dir, no replaces (an empty list must be written),
+// an empty, pattern or repeated replaces entry, "*" together with names, a
+// replaced name that is also an exact trusted entry, an exact "!Name" of
+// translate or a skip name, and an added_methods entry that is not `T.m`.
+// The errors that need the packages are util.BuildModels'.
+func (c FilterConfig) CheckModel() []error {
+	m := c.Model
+	if m == nil {
+		return nil
+	}
+	var errs []error
+	if strings.TrimSpace(m.Dir) == "" {
+		errs = append(errs, fmt.Errorf("[model] has no dir"))
+	}
+	if m.Replaces == nil {
+		errs = append(errs, fmt.Errorf(`[model] has no replaces: list the replaced declarations `+
+			`(replaces = [] for a model that only adds, ["*"] for a whole-package model)`))
+	}
+	seen := make(map[string]bool)
+	skipped := make(map[string]bool)
+	for _, e := range c.Skip {
+		for _, n := range e.Names {
+			skipped[n] = true
+		}
+	}
+	for _, n := range m.Replaces {
+		switch {
+		case n == "*":
+			if len(m.Replaces) != 1 {
+				errs = append(errs, fmt.Errorf(`[model] replaces "*" (a whole-package model) together with names`))
+			}
+		case strings.TrimSpace(n) == "":
+			errs = append(errs, fmt.Errorf("[model] replaces an empty name"))
+		case isGlob(n):
+			errs = append(errs, fmt.Errorf("[model] replaces %q: a pattern; "+
+				`replaced names are exact (or a lone "*")`, n))
+		case seen[n]:
+			errs = append(errs, fmt.Errorf("[model] replaces %q twice", n))
+		case slices.Contains(c.Trusted, n):
+			errs = append(errs, fmt.Errorf("[model] replaces %q, which is also listed in trusted", n))
+		case slices.Contains(c.ToTranslate, "!"+n):
+			errs = append(errs, fmt.Errorf(`[model] replaces %q, which translate excludes ("!%s")`, n, n))
+		case skipped[n]:
+			errs = append(errs, fmt.Errorf("[model] replaces %q, which is also a skip name", n))
+		}
+		seen[n] = true
+	}
+	for _, p := range m.AddedMethods {
+		if t, f, ok := strings.Cut(p, "."); !ok || t == "" || f == "" || strings.Contains(f, ".") {
+			errs = append(errs, fmt.Errorf("[model] added_methods %q: not of the form T.m", p))
+		}
+	}
+	return errs
+}
+
+// MatchesAny says whether name is in the set the patterns describe (the
+// syntax of translate: globs, and "!p" removes).
+func MatchesAny(patterns []string, name string) bool {
+	return newStringSet(patterns).contains(name)
 }
 
 // A SkipEntry lists package variables of the package that goose does not

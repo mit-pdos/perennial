@@ -59,6 +59,10 @@ script enforces the review.
    one bug at a time, the smallest change that completes an existing scheme
    rather than adding a carve-out, and a plan the user signs off before any
    trusted file changes. Its `examples.md` holds the user's past decisions.
+6. **Regenerating the translations** (`etc/update-goose-new.py`) uses the
+   pinned Go toolchain, go1.26.11, first on `PATH` with `GOTOOLCHAIN=local`:
+   the standard library is translated from that toolchain's sources, and the
+   script refuses another version (`--any-go` overrides).
 
 `.claude/settings.json` adds Claude Code conveniences on top (a reminder to
 land at the end of a turn, a check of a new worktree's base); nothing in the
