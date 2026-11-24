@@ -147,3 +147,60 @@ reason = "r"`, `is named "_@file.go:L"`},
 		}
 	}
 }
+
+func TestModelNamesOnly(t *testing.T) {
+	c := mustParse(t, `
+translate = ["*", "!Stub"]
+trusted = ["Stub"]
+[model]
+dir = "m"
+replaces = ["*"]
+names_only = ["Value.Call*", "Unmodelled"]
+`)
+	if errs := c.CheckModel(); len(errs) != 0 {
+		t.Fatalf("unexpected errors: %v", errs)
+	}
+	if !MatchesAny(c.Model.NamesOnly, "Value.CallSlice") || MatchesAny(c.Model.NamesOnly, "Value.Kind") {
+		t.Errorf("names_only patterns match as translate's")
+	}
+	df := WithNamesOnly(WithTranslated(New(c), map[string]bool{"Unmodelled": true, "F": true}),
+		map[string]bool{"Unmodelled": true})
+	if df.GetAction("Unmodelled") != Axiomatize || !df.NamesOnly("Unmodelled") {
+		t.Errorf("a names-only declaration is axiomatized, whatever translate says")
+	}
+	if df.GetAction("F") != Translate || df.NamesOnly("F") {
+		t.Errorf("F should be translated")
+	}
+	// translate_types (WithTranslated over the filter) sees NamesOnly
+	if !WithTranslated(df, map[string]bool{"G": true}).NamesOnly("Unmodelled") {
+		t.Errorf("NamesOnly should pass through WithTranslated")
+	}
+}
+
+func TestModelNamesOnlyErrors(t *testing.T) {
+	for _, tc := range []struct{ cfg, want string }{
+		{`[model]
+dir = "m"
+replaces = ["F"]
+names_only = ["F"]`, "which the model replaces"},
+		{`[model]
+dir = "m"
+replaces = ["T.m"]
+names_only = ["T.*"]`, "which the model replaces"},
+		{`translate = ["!Stub"]
+trusted = ["Stub"]
+[model]
+dir = "m"
+replaces = ["*"]
+names_only = ["St*"]`, "listed in trusted"},
+		{`[model]
+dir = "m"
+replaces = ["*"]
+names_only = [" "]`, "empty entry"},
+	} {
+		errs := mustParse(t, tc.cfg).CheckModel()
+		if len(errs) != 1 || !strings.Contains(errs[0].Error(), tc.want) {
+			t.Errorf("config\n%s\nerrors %v, want one containing %q", tc.cfg, errs, tc.want)
+		}
+	}
+}

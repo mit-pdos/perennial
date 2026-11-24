@@ -207,7 +207,7 @@ func ExtendFilter(pkg *packages.Package, config declfilter.FilterConfig, df decl
 		for _, d := range TypeDecls(f) {
 			for _, spec := range d.Specs {
 				spec := spec.(*ast.TypeSpec)
-				if df.GetAction(spec.Name.Name) != declfilter.Axiomatize {
+				if df.GetAction(spec.Name.Name) != declfilter.Axiomatize || df.NamesOnly(spec.Name.Name) {
 					continue
 				}
 				// an alias's descriptor is always its target's (goose's typeDecl)

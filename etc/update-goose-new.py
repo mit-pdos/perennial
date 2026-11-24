@@ -395,8 +395,10 @@ def main():
             "fmt",
             "log",
             "encoding/binary",
-            # added by its Go model overlay (Perennial/Code/internal/gomodel.toml)
+            # added by their Go model overlays (Perennial/Code/internal/gomodel.toml,
+            # Perennial/Code/internal/reflectcore.toml)
             "internal/gomodel",
+            "internal/reflectcore",
             tags=std_tags,
         )
 

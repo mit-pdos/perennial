@@ -2,7 +2,11 @@
 module
 
 public import Perennial.Proof.ProofPrelude
-public import Perennial.GeneratedProof.internal.abi
+public import Perennial.GeneratedProof.internal.gomodel
+public import Perennial.GeneratedProof.internal.reflectcore
+public import Perennial.GeneratedProof.iter
+public import Perennial.GeneratedProof.strconv
+public import Perennial.GeneratedProof.«unsafe»
 public import Perennial.Golang.Theory
 public import Perennial.Code.reflect
 
@@ -17,7 +21,7 @@ open Iris Iris.BI
 noncomputable section
 namespace reflect
 
-namespace abiStep
+namespace rtype
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -25,149 +29,37 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance abiStep_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.abiStep :=
-  sorry -- axiomatized type
+noncomputable instance rtype_typed_pointsto :
+    TypedPointsto (GF := GF) reflect.rtype where
+  typedPointstoDef l v dq := iprop(
+    "t" ∷ typedPointsto (structFieldRef reflect.rtype go!"t" l) v.t' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance abiStep_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.abiStep reflect.abiStep.underlying :=
-  sorry -- axiomatized type
+noncomputable instance rtype_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) reflect.rtype reflect.rtype.underlying := by
+  solve_into_val_typed_struct
 
-end def_
-end abiStep
+noncomputable instance rtype_access_load_t (l : Loc) (v : reflect.rtype) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef reflect.rtype go!"t" l) v.t' dq)
+      (typedPointsto (structFieldRef reflect.rtype go!"t" l) v.t' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
 
-namespace abiStepKind
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance abiStepKind_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.abiStepKind :=
-  sorry -- axiomatized type
-
-noncomputable instance abiStepKind_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.abiStepKind reflect.abiStepKind.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end abiStepKind
-
-namespace abiSeq
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance abiSeq_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.abiSeq :=
-  sorry -- axiomatized type
-
-noncomputable instance abiSeq_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.abiSeq reflect.abiSeq.underlying :=
-  sorry -- axiomatized type
+noncomputable instance rtype_access_store_t (l : Loc) (v : reflect.rtype) (t' : GoInterface) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef reflect.rtype go!"t" l) v.t' (DFrac.own 1))
+      (typedPointsto (structFieldRef reflect.rtype go!"t" l) t' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with t' := t' } : reflect.rtype) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
-end abiSeq
-
-namespace abiDesc
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance abiDesc_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.abiDesc :=
-  sorry -- axiomatized type
-
-noncomputable instance abiDesc_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.abiDesc reflect.abiDesc.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end abiDesc
-
-namespace visit
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance visit_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.visit :=
-  sorry -- axiomatized type
-
-noncomputable instance visit_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.visit reflect.visit.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end visit
-
-namespace makeFuncImpl
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance makeFuncImpl_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.makeFuncImpl :=
-  sorry -- axiomatized type
-
-noncomputable instance makeFuncImpl_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.makeFuncImpl reflect.makeFuncImpl.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end makeFuncImpl
-
-namespace methodValue
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance methodValue_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.methodValue :=
-  sorry -- axiomatized type
-
-noncomputable instance methodValue_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.methodValue reflect.methodValue.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end methodValue
-
-namespace makeFuncCtxt
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance makeFuncCtxt_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.makeFuncCtxt :=
-  sorry -- axiomatized type
-
-noncomputable instance makeFuncCtxt_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.makeFuncCtxt reflect.makeFuncCtxt.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end makeFuncCtxt
+end rtype
 
 namespace MapIter
 section def_
@@ -187,139 +79,6 @@ noncomputable instance MapIter_into_val_typed :
 
 end def_
 end MapIter
-
-namespace common
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance common_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.common :=
-  sorry -- axiomatized type
-
-noncomputable instance common_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.common reflect.common.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end common
-
-namespace rtype
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance rtype_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.rtype :=
-  sorry -- axiomatized type
-
-noncomputable instance rtype_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.rtype reflect.rtype.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end rtype
-
-namespace ChanDir
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance ChanDir_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.ChanDir :=
-  sorry -- axiomatized type
-
-noncomputable instance ChanDir_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.ChanDir reflect.ChanDir.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end ChanDir
-
-namespace interfaceType
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance interfaceType_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.interfaceType :=
-  sorry -- axiomatized type
-
-noncomputable instance interfaceType_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.interfaceType reflect.interfaceType.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end interfaceType
-
-namespace ptrType
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance ptrType_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.ptrType :=
-  sorry -- axiomatized type
-
-noncomputable instance ptrType_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.ptrType reflect.ptrType.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end ptrType
-
-namespace sliceType
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance sliceType_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.sliceType :=
-  sorry -- axiomatized type
-
-noncomputable instance sliceType_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.sliceType reflect.sliceType.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end sliceType
-
-namespace structType
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance structType_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.structType :=
-  sorry -- axiomatized type
-
-noncomputable instance structType_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.structType reflect.structType.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end structType
 
 namespace Method
 section def_
@@ -378,232 +137,6 @@ noncomputable instance StructTag_into_val_typed :
 end def_
 end StructTag
 
-namespace fieldScan
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance fieldScan_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.fieldScan :=
-  sorry -- axiomatized type
-
-noncomputable instance fieldScan_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.fieldScan reflect.fieldScan.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end fieldScan
-
-namespace cacheKey
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance cacheKey_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.cacheKey :=
-  sorry -- axiomatized type
-
-noncomputable instance cacheKey_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.cacheKey reflect.cacheKey.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end cacheKey
-
-namespace structTypeUncommon
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance structTypeUncommon_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.structTypeUncommon :=
-  sorry -- axiomatized type
-
-noncomputable instance structTypeUncommon_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.structTypeUncommon reflect.structTypeUncommon.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end structTypeUncommon
-
-namespace layoutKey
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance layoutKey_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.layoutKey :=
-  sorry -- axiomatized type
-
-noncomputable instance layoutKey_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.layoutKey reflect.layoutKey.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end layoutKey
-
-namespace layoutType
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance layoutType_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.layoutType :=
-  sorry -- axiomatized type
-
-noncomputable instance layoutType_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.layoutType reflect.layoutType.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end layoutType
-
-namespace bitVector
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance bitVector_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.bitVector :=
-  sorry -- axiomatized type
-
-noncomputable instance bitVector_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.bitVector reflect.bitVector.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end bitVector
-
-namespace Value
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance Value_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.Value where
-  typedPointstoDef l v dq := iprop(
-    "typ_" ∷ typedPointsto (structFieldRef reflect.Value go!"typ_" l) v.typ_' dq ∗
-    "ptr" ∷ typedPointsto (structFieldRef reflect.Value go!"ptr" l) v.ptr' dq ∗
-    "flag" ∷ typedPointsto (structFieldRef reflect.Value go!"flag" l) v.flag' dq ∗
-    "_" ∷ True)
-  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
-  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
-  typedPointsto_agree := by solve_typed_pointsto_agree
-
-noncomputable instance Value_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.Value reflect.Value.underlying := by
-  solve_into_val_typed_struct
-
-noncomputable instance Value_access_load_typ_ (l : Loc) (v : reflect.Value) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef reflect.Value go!"typ_" l) v.typ_' dq)
-      (typedPointsto (structFieldRef reflect.Value go!"typ_" l) v.typ_' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance Value_access_store_typ_ (l : Loc) (v : reflect.Value) (typ_' : Loc) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef reflect.Value go!"typ_" l) v.typ_' (DFrac.own 1))
-      (typedPointsto (structFieldRef reflect.Value go!"typ_" l) typ_' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with typ_' := typ_' } : reflect.Value) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance Value_access_load_ptr (l : Loc) (v : reflect.Value) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef reflect.Value go!"ptr" l) v.ptr' dq)
-      (typedPointsto (structFieldRef reflect.Value go!"ptr" l) v.ptr' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance Value_access_store_ptr (l : Loc) (v : reflect.Value) (ptr' : Loc) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef reflect.Value go!"ptr" l) v.ptr' (DFrac.own 1))
-      (typedPointsto (structFieldRef reflect.Value go!"ptr" l) ptr' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ptr' := ptr' } : reflect.Value) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance Value_access_load_flag (l : Loc) (v : reflect.Value) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef reflect.Value go!"flag" l) v.flag' dq)
-      (typedPointsto (structFieldRef reflect.Value go!"flag" l) v.flag' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance Value_access_store_flag (l : Loc) (v : reflect.Value) (flag' : reflect.flag) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef reflect.Value go!"flag" l) v.flag' (DFrac.own 1))
-      (typedPointsto (structFieldRef reflect.Value go!"flag" l) flag' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with flag' := flag' } : reflect.Value) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-end def_
-end Value
-
-namespace ValueError
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance ValueError_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.ValueError :=
-  sorry -- axiomatized type
-
-noncomputable instance ValueError_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.ValueError reflect.ValueError.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end ValueError
-
-namespace nonEmptyInterface
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance nonEmptyInterface_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.nonEmptyInterface :=
-  sorry -- axiomatized type
-
-noncomputable instance nonEmptyInterface_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.nonEmptyInterface reflect.nonEmptyInterface.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end nonEmptyInterface
-
 namespace StringHeader
 section def_
 
@@ -641,25 +174,6 @@ noncomputable instance SliceHeader_into_val_typed :
 
 end def_
 end SliceHeader
-
-namespace runtimeSelect
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance runtimeSelect_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.runtimeSelect :=
-  sorry -- axiomatized type
-
-noncomputable instance runtimeSelect_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.runtimeSelect reflect.runtimeSelect.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end runtimeSelect
 
 namespace SelectDir
 section def_
@@ -699,7 +213,7 @@ noncomputable instance SelectCase_into_val_typed :
 end def_
 end SelectCase
 
-namespace visibleFieldsWalker
+namespace Value
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -707,16 +221,128 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance visibleFieldsWalker_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.visibleFieldsWalker :=
-  sorry -- axiomatized type
+noncomputable instance Value_typed_pointsto :
+    TypedPointsto (GF := GF) reflect.Value where
+  typedPointstoDef l v dq := iprop(
+    "typ_" ∷ typedPointsto (structFieldRef reflect.Value go!"typ_" l) v.typ_' dq ∗
+    "ptr" ∷ typedPointsto (structFieldRef reflect.Value go!"ptr" l) v.ptr' dq ∗
+    "flag" ∷ typedPointsto (structFieldRef reflect.Value go!"flag" l) v.flag' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance visibleFieldsWalker_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.visibleFieldsWalker reflect.visibleFieldsWalker.underlying :=
-  sorry -- axiomatized type
+noncomputable instance Value_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) reflect.Value reflect.Value.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance Value_access_load_typ_ (l : Loc) (v : reflect.Value) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef reflect.Value go!"typ_" l) v.typ_' dq)
+      (typedPointsto (structFieldRef reflect.Value go!"typ_" l) v.typ_' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance Value_access_store_typ_ (l : Loc) (v : reflect.Value) (typ_' : GoInterface) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef reflect.Value go!"typ_" l) v.typ_' (DFrac.own 1))
+      (typedPointsto (structFieldRef reflect.Value go!"typ_" l) typ_' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with typ_' := typ_' } : reflect.Value) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance Value_access_load_ptr (l : Loc) (v : reflect.Value) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef reflect.Value go!"ptr" l) v.ptr' dq)
+      (typedPointsto (structFieldRef reflect.Value go!"ptr" l) v.ptr' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance Value_access_store_ptr (l : Loc) (v : reflect.Value) (ptr' : GoInterface) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef reflect.Value go!"ptr" l) v.ptr' (DFrac.own 1))
+      (typedPointsto (structFieldRef reflect.Value go!"ptr" l) ptr' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ptr' := ptr' } : reflect.Value) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance Value_access_load_flag (l : Loc) (v : reflect.Value) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef reflect.Value go!"flag" l) v.flag' dq)
+      (typedPointsto (structFieldRef reflect.Value go!"flag" l) v.flag' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance Value_access_store_flag (l : Loc) (v : reflect.Value) (flag' : reflect.flag) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef reflect.Value go!"flag" l) v.flag' (DFrac.own 1))
+      (typedPointsto (structFieldRef reflect.Value go!"flag" l) flag' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with flag' := flag' } : reflect.Value) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
-end visibleFieldsWalker
+end Value
+
+namespace ValueError
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : reflect.Assumptions]
+
+noncomputable instance ValueError_typed_pointsto :
+    TypedPointsto (GF := GF) reflect.ValueError where
+  typedPointstoDef l v dq := iprop(
+    "Method" ∷ typedPointsto (structFieldRef reflect.ValueError go!"Method" l) v.Method' dq ∗
+    "Kind" ∷ typedPointsto (structFieldRef reflect.ValueError go!"Kind" l) v.Kind' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance ValueError_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) reflect.ValueError reflect.ValueError.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance ValueError_access_load_Method (l : Loc) (v : reflect.ValueError) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef reflect.ValueError go!"Method" l) v.Method' dq)
+      (typedPointsto (structFieldRef reflect.ValueError go!"Method" l) v.Method' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance ValueError_access_store_Method (l : Loc) (v : reflect.ValueError) (Method' : GoString) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef reflect.ValueError go!"Method" l) v.Method' (DFrac.own 1))
+      (typedPointsto (structFieldRef reflect.ValueError go!"Method" l) Method' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Method' := Method' } : reflect.ValueError) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance ValueError_access_load_Kind (l : Loc) (v : reflect.ValueError) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef reflect.ValueError go!"Kind" l) v.Kind' dq)
+      (typedPointsto (structFieldRef reflect.ValueError go!"Kind" l) v.Kind' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance ValueError_access_store_Kind (l : Loc) (v : reflect.ValueError) (Kind' : reflect.Kind) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef reflect.ValueError go!"Kind" l) v.Kind' (DFrac.own 1))
+      (typedPointsto (structFieldRef reflect.ValueError go!"Kind" l) Kind' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Kind' := Kind' } : reflect.ValueError) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end ValueError
 
 end reflect
 end

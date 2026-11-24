@@ -265,6 +265,34 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   1)`) get sequentially consistent byte semantics, which Intel does not promise when they
   are concurrent (assumption A3 of `docs/design/unsafe-memory.md`).
 
+## `reflect`
+
+`reflect` is a whole-package Go model (`goose/model/overlay/reflect`, from the real files) over
+the reflection primitives of `internal/reflectcore` (`TrustedCode/internal/reflectcore.lean`).
+
+- **Most of `reflect` has no behaviour yet (incomplete, sound).** Only `TypeOf`, `ValueOf`,
+  `Indirect`, `Kind.String`, `ChanDir.String`, `Type.Kind`, `Type.Elem` and
+  `Value.{Kind, Type, IsValid, IsNil, Elem, Interface, CanInterface, CanAddr, CanSet}` are
+  translated. Every other function and method, and every exported type other than `Kind`,
+  `ChanDir`, `Type`, `Value` and `ValueError`, is names-only (`unmodelled.go`, `names_only` in
+  `Perennial/Code/reflect.toml`): a call has no semantics, so no proof gets past it.
+  - `Type.String` is names-only, so `Type.Elem` of a type with no element (real: `panic("reflect:
+    Elem of invalid type " + t.String())`) does not reach its panic.
+  - `valueMethodName` is names-only (real's walks the stack with `runtime.Callers`; `reflect`
+    does not import `runtime`, whose initializer is not modelled), so the panics of
+    `flag.mustBe`, `mustBeExported` and `mustBeAssignable` are not reached either. The panics
+    with a literal method name (`Value.IsNil` and `Value.Elem` of a wrong kind, `Value.Type` and
+    `Value.Interface` of the zero Value) are modelled.
+  - Method values (`flagMethod`, from `Value.Method`) are not modelled: `Value.Type` and
+    `Value.Interface` of one are stuck.
+- **`==` on `Value`s that hold indirect values is false where gc may say true (sound).** gc's
+  `Value ==` compares the implementation's fields, and for a value stored indirectly (not a
+  pointer, map, channel, func or unsafe.Pointer, or a one-element array or one-field struct of
+  one) the data pointer depends on gc's allocation: two `ValueOf(x)` of the same small integer
+  may share `runtime.staticuint64s`. The model's `ValueOf` boxes each indirect value in a new
+  variable, so two such `Value`s are never `==`. The documentation of `Value` says that `==`
+  does not compare the underlying values. Direct values (pointers) compare as in gc.
+
 ## Floats
 
 - **Fused multiply-add (unsound).** The Go spec ("Floating-point operators") lets an

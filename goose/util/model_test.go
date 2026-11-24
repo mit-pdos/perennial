@@ -225,6 +225,8 @@ func (t *T) M() {}
 		{"trusted", "func F(x int) int { return 0 }", `"F"`, "", `replaces "F", which is also listed in trusted`},
 		{"star-and-names", "func F(x int) int { return 0 }", `"*", "F"`, "", `replaces "*" (a whole-package model) together with names`},
 		{"glob", "func F(x int) int { return 0 }", `"F*"`, "", `replaces "F*": a pattern`},
+		{"names-only-unmatched", "func F(x int) int { return 0 }\nfunc G() {}", `"F"`, `names_only = ["G", "H*"]`,
+			`names_only "H*" matches no model declaration`},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			model := "package p\n\n" + c.model + "\n"
@@ -279,6 +281,53 @@ func TestModelWholePackage(t *testing.T) {
 	}
 	if _, ok := models.Overlay[filepath.Join(root, "p", ModelFilePrefix+"m.go")]; !ok {
 		t.Errorf("no %sm.go in the overlay", ModelFilePrefix)
+	}
+}
+
+// TestModelWholePackageAPI: a whole-package model keeps the exported API;
+// its unexported declarations, the unexported methods of an interface that
+// has some, and the order of methods are its own.
+func TestModelWholePackageAPI(t *testing.T) {
+	const real = `package p
+
+type I interface {
+	M() int
+	m()
+}
+
+type impl struct{ x []int }
+
+func (*impl) M() int { return 0 }
+func (*impl) m()     {}
+
+type T struct{ X int }
+
+func (T) A() {}
+func (T) B() {}
+
+func h(x int) int { return x }
+`
+	for _, c := range []struct{ name, iface, want string }{
+		{"ok", "M() int\n\ttok() any", ""},
+		{"no-unexported", "M() int", "I: the model changes whether the interface has unexported methods"},
+		{"exported-method", "M() string\n\ttok() any", "I: method M of I has type"},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			model := "package p\n\ntype I interface {\n\t" + c.iface + "\n}\n\n" +
+				"type impl struct{ t any }\n\nfunc (impl) M() int { return 0 }\nfunc (impl) tok() any { return nil }\n\n" +
+				"type T struct{ X int }\n\nfunc (T) B() {}\nfunc (T) A() {}\n\nfunc h() {}\n"
+			if c.name == "exported-method" {
+				model = strings.Replace(model, "func (impl) M() int { return 0 }", "func (impl) M() string { return \"\" }", 1)
+			}
+			root := modelModule(t, real, model, "[model]\ndir = \"model\"\nreplaces = [\"*\"]\n", nil)
+			_, err := buildModels(root, "./p")
+			switch {
+			case c.want == "" && err != nil:
+				t.Errorf("error %v, want none", err)
+			case c.want != "" && (err == nil || !strings.Contains(err.Error(), c.want)):
+				t.Errorf("error:\n%v\nwant it to contain %q", err, c.want)
+			}
+		})
 	}
 }
 

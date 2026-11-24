@@ -64,7 +64,8 @@ type FilterConfig struct {
 // standard-library package that does not exist); Replaces = [] only adds.
 // Every other declaration of the model is an addition; an addition that
 // the config lists in trusted is a primitive stub (its Go body is for gc
-// builds only), and every other model declaration is translated.
+// builds only), a model declaration that NamesOnly matches is translated
+// names-only, and every other model declaration is translated.
 type ModelConfig struct {
 	// The directory of the model files, relative to the repository root.
 	Dir string `toml:"dir"`
@@ -74,6 +75,15 @@ type ModelConfig struct {
 	// real package's types, which change their method sets: `T.m` or
 	// `*.PbModel*`.
 	AddedMethods []string `toml:"added_methods"`
+	// Patterns (as in translate) of the model declarations that are
+	// translated names-only, whatever translate says: axiomatized (a name,
+	// and for a type no definition; no body and no FuncUnfold), as goose
+	// translates a real declaration that translate excludes. A whole-package
+	// model declares the real package's whole API so that its callers
+	// type-check; the declarations it does not model are names-only. Every
+	// entry matches some model declaration (util.BuildModels), none is
+	// trusted or replaced.
+	NamesOnly []string `toml:"names_only"`
 }
 
 // WholePackage says whether the model replaces every real file.
@@ -85,8 +95,9 @@ func (m *ModelConfig) WholePackage() bool {
 // config alone shows: no dir, no replaces (an empty list must be written),
 // an empty, pattern or repeated replaces entry, "*" together with names, a
 // replaced name that is also an exact trusted entry, an exact "!Name" of
-// translate or a skip name, and an added_methods entry that is not `T.m`.
-// The errors that need the packages are util.BuildModels'.
+// translate or a skip name, an added_methods entry that is not `T.m`, and
+// an empty names_only entry or one that matches a replaced name or an exact
+// trusted entry. The errors that need the packages are util.BuildModels'.
 func (c FilterConfig) CheckModel() []error {
 	m := c.Model
 	if m == nil {
@@ -132,6 +143,26 @@ func (c FilterConfig) CheckModel() []error {
 	for _, p := range m.AddedMethods {
 		if t, f, ok := strings.Cut(p, "."); !ok || t == "" || f == "" || strings.Contains(f, ".") {
 			errs = append(errs, fmt.Errorf("[model] added_methods %q: not of the form T.m", p))
+		}
+	}
+	for _, p := range m.NamesOnly {
+		if strings.TrimSpace(strings.TrimPrefix(p, "!")) == "" {
+			errs = append(errs, fmt.Errorf("[model] names_only has an empty entry"))
+			continue
+		}
+		if strings.HasPrefix(p, "!") {
+			continue
+		}
+		for _, n := range m.Replaces {
+			if n != "*" && MatchesAny([]string{p}, n) {
+				errs = append(errs, fmt.Errorf("[model] names_only %q matches %q, which the model replaces "+
+					"(a replaced declaration is translated)", p, n))
+			}
+		}
+		for _, n := range c.Trusted {
+			if !isGlob(n) && MatchesAny([]string{p}, n) {
+				errs = append(errs, fmt.Errorf("[model] names_only %q matches %q, which is listed in trusted", p, n))
+			}
 		}
 	}
 	return errs
@@ -270,6 +301,9 @@ type DeclFilter interface {
 	// SkipReason returns the reason of a skipped name, and whether it is
 	// skipped.
 	SkipReason(string) (string, bool)
+	// NamesOnly says whether a declaration is a model declaration translated
+	// names-only (ModelConfig.NamesOnly), which nothing translates.
+	NamesOnly(string) bool
 }
 
 // GetAction returns how a declaration is treated. The precedence is skip >
@@ -305,6 +339,10 @@ func (df *declFilter) TrustProofGen() bool {
 func (df *declFilter) SkipReason(name string) (string, bool) {
 	r, ok := df.skip[name]
 	return r, ok
+}
+
+func (df *declFilter) NamesOnly(string) bool {
+	return false
 }
 
 // isGlob says whether a name in a skip entry is a pattern rather than an
@@ -419,6 +457,32 @@ func WithTranslated(df DeclFilter, names map[string]bool) DeclFilter {
 		return df
 	}
 	return withTranslated{DeclFilter: df, names: names}
+}
+
+// withNamesOnly overrides a filter to axiomatize the given names.
+type withNamesOnly struct {
+	DeclFilter
+	names map[string]bool
+}
+
+func (df withNamesOnly) GetAction(name string) Action {
+	if df.names[name] && df.DeclFilter.GetAction(name) != Skip {
+		return Axiomatize
+	}
+	return df.DeclFilter.GetAction(name)
+}
+
+func (df withNamesOnly) NamesOnly(name string) bool {
+	return df.names[name] || df.DeclFilter.NamesOnly(name)
+}
+
+// WithNamesOnly returns df, except that the given names are translated
+// names-only (axiomatized), and NamesOnly says so.
+func WithNamesOnly(df DeclFilter, names map[string]bool) DeclFilter {
+	if len(names) == 0 {
+		return df
+	}
+	return withNamesOnly{DeclFilter: df, names: names}
 }
 
 var AxiomatizeConfig FilterConfig = FilterConfig{
