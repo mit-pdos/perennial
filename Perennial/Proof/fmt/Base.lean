@@ -1302,9 +1302,9 @@ def ppFreeElem (x : GoAny) : IProp GF :=
     v.wrappedErrs' ↦* ([] : List w64) ∗ ownSliceCap w64 v.wrappedErrs' (DFrac.own 1))
 
 /-- The package-initialized state: `ppFree` is a `sync.Pool` of printers (`ppFreeElem`), whose
-`New` needs nothing. -/
+`New` is not `nil` and needs nothing. -/
 def isInit : IProp GF :=
-  iprop(∃ f : GoFunc, sync.isPool (globalAddr ppFree) f iprop(True) ppFreeElem)
+  iprop(∃ f : GoFunc, ⌜f ≠ func.nil⌝ ∗ sync.isPool (globalAddr ppFree) f iprop(True) ppFreeElem)
 
 instance isInit_persistent : Persistent (isInit (GF := GF)) := by
   unfold isInit; infer_instance

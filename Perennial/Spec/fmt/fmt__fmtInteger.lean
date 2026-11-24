@@ -21,7 +21,7 @@ variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
 
 /-- `f.fmtInteger(u, base, isSigned, verb, ldigits)` in base 10 or 16, with no flag but `zero`
-and a width (at most `10^6`) for zero padding, and no precision: appends `intOut base w z`, `z`
+and a width (at most `10^6`, the precision field 0) for zero padding, and no precision: appends `intOut base w z`, `z`
 being `u` as a signed or unsigned integer and `w` the width of zero padding (0 if none). A width
 without `zero` (padding with spaces) and the flags `#`, `+`, `-`, ` ` are not in the spec. -/
 abbrev fmt.fmt.fmtInteger.spec : Prop :=
@@ -30,7 +30,8 @@ abbrev fmt.fmt.fmtInteger.spec : Prop :=
     (base = W64 10 ∨ base = W64 16) → verb ≠ W32 79 →
     F.sharp' = false → F.plus' = false → F.space' = false → F.minus' = false →
     F.precPresent' = false →
-    (F.widPresent' = true → F.zero' = true ∧ 0 ≤ sint.Z wid ∧ sint.Z wid ≤ 1000000) →
+    (F.widPresent' = true → F.zero' = true ∧ 0 ≤ sint.Z wid ∧ sint.Z wid ≤ 1000000 ∧
+      prec = W64 0) →
     {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ fmtOwn (GF := GF) f b F wid prec ∗ bufferOwn b bs }}
       (App (App (App (App (App (Val (f @!! go.GoType.PointerType fmt.fmt.ty @!! go!"fmtInteger")) (Val #u)) (Val #base))
         (Val #isSigned)) (Val #verb)) (Val #(hexDigits false)))
