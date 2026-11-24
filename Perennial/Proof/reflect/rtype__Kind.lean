@@ -23,10 +23,12 @@ variable [package_sem : reflect.Assumptions]
 
 theorem reflect.rtype.Kind.wp_proof
     (wp_TypeKind : internal.reflectcore.TypeKind.spec (GF := GF) (hG := hG)) :
-    reflect.rtype.Kind.spec (GF := GF) (hG := hG) := fun k l h => by
+    reflect.rtype.Kind.spec (GF := GF) (hG := hG) := @fun T u _ k l h => by
   wp_start as #Hinit
   wp_auto
-  done
+  wp_apply wp_TypeKind k l h
+  iapply HΦ
+  itrivial
 
 end proof
 

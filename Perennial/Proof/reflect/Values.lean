@@ -25,6 +25,25 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 
 namespace reflect
 
+/-- A kind is below 32 (it fits the kind bits of a flag). -/
+theorem kindOf_lt {u : go.GoType} [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] {k : Nat}
+    (h : go.kindOf u = some k) : k < 27 := by
+  unfold go.kindOf at h
+  split at h <;> try (cases h; omega)
+  simp only [List.find?] at h
+  repeat (first | (split at h <;> try (cases h; omega)) | (simp at h; omega))
+  all_goals simp_all
+
+/-- The flag bits of a `reflElem`: kind `k`, `flagIndir` and `flagAddr`. -/
+theorem elemFlag_bits (k : Nat) (hk : k < 27) :
+    (W64 k ||| W64 128 ||| W64 256) &&& W64 31 = W64 k ∧
+    (W64 k ||| W64 128 ||| W64 256) ≠ W64 0 ∧
+    (W64 k ||| W64 128 ||| W64 256) &&& W64 256 ≠ W64 0 ∧
+    (W64 k ||| W64 128 ||| W64 256) &&& W64 352 = W64 256 ∧
+    (W64 k ||| W64 128 ||| W64 256) &&& W64 96 = W64 0 ∧
+    (W64 k ||| W64 128 ||| W64 256) &&& W64 512 = W64 0 := by
+  revert k; decide
+
 section defs
 variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
@@ -42,7 +61,7 @@ def reflPtr (w : reflect.Value) (T : go.GoType) (p : Loc) : Prop :=
 /-- `v` is the addressable `reflect.Value` of the `T` at `p` (`Elem()` of a `reflPtr`): it holds
 `any(p)`, and its flag is `T`'s kind with `flagIndir` (128) and `flagAddr` (256). -/
 def reflElem (v : reflect.Value) (T : go.GoType) (p : Loc) : Prop :=
-  ∃ k : Nat, go.kindOf (go.underlying T) = some k ∧
+  ∃ k : Nat, go.kindOf (GoSemanticsFunctions.underlying T) = some k ∧
     v = reflect.Value.mk (go.tok T) (interface.mkOk (go.PointerType T) #p)
       (W64 k ||| W64 128 ||| W64 256)
 
@@ -54,9 +73,10 @@ def reflNew (T : go.GoType) (p : Loc) : IProp GF :=
 theorem reflNew_pointsto (T : go.GoType) (p : Loc) {V : Type} [ZeroVal V]
     [TypedPointsto (GF := GF) V] [IntoValTyped (GF := GF) V T] :
     reflNew (GF := GF) T p ⊢ p ↦ (zero_val V) := by
-  iintro H
   unfold reflNew
-  iapply H
+  iintro H
+  ispecialize H $$ %V %inferInstance %inferInstance %inferInstance
+  iexact H
 
 end defs
 

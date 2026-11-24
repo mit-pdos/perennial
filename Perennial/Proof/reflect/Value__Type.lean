@@ -26,7 +26,13 @@ theorem reflect.Value.Type.wp_proof
     reflect.Value.Type.spec (GF := GF) (hG := hG) := fun v hv hm => by
   wp_start as #Hinit
   wp_auto
-  done
+  wp_if_destruct
+  · exact absurd Hif hv
+  wp_if_destruct
+  · wp_apply wp_toRType
+    iapply HΦ
+    itrivial
+  · exact absurd hm Hif
 
 end proof
 

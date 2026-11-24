@@ -24,7 +24,10 @@ theorem reflect.Value.CanInterface.wp_proof :
     reflect.Value.CanInterface.spec (GF := GF) (hG := hG) := fun v hv => by
   wp_start
   wp_auto
-  done
+  wp_if_destruct
+  · exact absurd Hif hv
+  iapply HΦ
+  itrivial
 
 end proof
 

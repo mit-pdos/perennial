@@ -25,10 +25,21 @@ variable [package_sem : reflect.Assumptions]
 theorem reflect.elem.wp_proof
     (wp_TypeKind : internal.reflectcore.TypeKind.spec (GF := GF) (hG := hG))
     (wp_TypeElem : internal.reflectcore.TypeElem.spec (GF := GF) (hG := hG)) :
-    reflect.elem.spec (GF := GF) (hG := hG) := fun e l h => by
+    reflect.elem.spec (GF := GF) (hG := hG) := @fun T u hu e l h => by
+  obtain ⟨k, hk, hk'⟩ : ∃ k, go.kindOf u = some k ∧
+      (k = 17 ∨ k = 18 ∨ k = 21 ∨ k = 22 ∨ k = 23) := by
+    have hu' := hu.is_underlying
+    unfold go.typeQuery at h
+    rw [hu'] at h
+    cases u <;> simp_all [go.kindOf]
   wp_start as #Hinit
   wp_auto
-  done
+  wp_apply wp_TypeKind k l hk
+  rcases hk' with rfl | rfl | rfl | rfl | rfl <;>
+  · wp_auto
+    wp_apply wp_TypeElem T l _ h
+    iapply HΦ
+    itrivial
 
 end proof
 

@@ -24,9 +24,20 @@ variable [package_sem : reflect.Assumptions]
 theorem reflect.toType.wp_proof
     (wp_toRType : reflect.toRType.spec (GF := GF) (hG := hG)) :
     reflect.toType.spec (GF := GF) (hG := hG) := fun t => by
-  wp_start as #Hinit
-  wp_auto
-  done
+  cases t with
+  | nil =>
+    simp only [↓reduceIte]
+    wp_start as #Hinit
+    wp_auto
+    iapply HΦ
+    itrivial
+  | ok i =>
+    simp only [reduceCtorEq, ↓reduceIte]
+    wp_start as #Hinit
+    wp_auto
+    wp_apply wp_toRType
+    iapply HΦ
+    itrivial
 
 end proof
 

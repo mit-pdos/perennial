@@ -22,9 +22,11 @@ variable [package_sem : reflect.Assumptions]
 
 theorem reflect.Value.CanAddr.wp_proof :
     reflect.Value.CanAddr.spec (GF := GF) (hG := hG) := fun v => by
+  simp only [ne_eq, decide_not]
   wp_start
   wp_auto
-  done
+  iapply HΦ
+  itrivial
 
 end proof
 

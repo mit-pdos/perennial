@@ -25,12 +25,12 @@ variable [package_sem : reflect.Assumptions]
 `flagIndir`, `flagAddr` and `T`'s kind), which holds `any(l)`. -/
 abbrev reflect.Value.Elem.spec : Prop :=
   ∀ (v : Value) (T : go.GoType) (k : Nat) (l : Loc),
-  go.kindOf (go.underlying T) = some k →
+  go.kindOf (GoSemanticsFunctions.underlying T) = some k →
   v.typ_' = go.tok (go.PointerType T) → v.ptr' = interface.mkOk (go.PointerType T) #l →
   v.flag' &&& W64 31 = W64 22 → v.flag' &&& W64 128 = W64 0 →
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (v @!! Value.ty @!! go!"Elem")) (Val #()))
-    {{ RET #(if l = null then (zero_val Value) else
+    {{ RET #(if l = null then (_root_.Perennial.zero_val reflect.Value) else
         Value.mk (go.tok T) (interface.mkOk (go.PointerType T) #l)
           (v.flag' &&& W64 96 ||| W64 128 ||| W64 256 ||| W64 k)); True }}
 

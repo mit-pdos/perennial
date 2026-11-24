@@ -24,7 +24,8 @@ theorem reflect.flag.kind.wp_proof :
     reflect.flag.kind.spec (GF := GF) (hG := hG) := fun f => by
   wp_start
   wp_auto
-  done
+  iapply HΦ
+  itrivial
 
 end proof
 

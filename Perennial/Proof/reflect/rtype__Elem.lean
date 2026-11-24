@@ -25,10 +25,14 @@ variable [package_sem : reflect.Assumptions]
 theorem reflect.rtype.Elem.wp_proof
     (wp_elem : reflect.elem.spec (GF := GF) (hG := hG))
     (wp_toType : reflect.toType.spec (GF := GF) (hG := hG)) :
-    reflect.rtype.Elem.spec (GF := GF) (hG := hG) := fun e l h => by
+    reflect.rtype.Elem.spec (GF := GF) (hG := hG) := @fun T u hu e l h => by
   wp_start as #Hinit
   wp_auto
-  done
+  wp_apply wp_elem e l h
+  wp_apply wp_toType
+  simp only [go.tok, reduceCtorEq, ↓reduceIte]
+  iapply HΦ
+  itrivial
 
 end proof
 

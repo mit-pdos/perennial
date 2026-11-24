@@ -24,7 +24,9 @@ theorem reflect.Value.CanSet.wp_proof :
     reflect.Value.CanSet.spec (GF := GF) (hG := hG) := fun v => by
   wp_start
   wp_auto
-  done
+  rw [show (W64 256 ||| W64 96) = W64 352 by decide]
+  iapply HΦ
+  itrivial
 
 end proof
 
