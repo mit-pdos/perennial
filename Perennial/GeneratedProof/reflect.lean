@@ -23,14 +23,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'abiStep :
-    TypedPointsto (GF := GF) reflect.abiStep :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.abiStep :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'abiStep :
-    IntoValTypedUnderlying (GF := GF) reflect.abiStep reflect.abiStep.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.abiStep _root_.Perennial.reflect.abiStep.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -42,14 +42,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'abiStepKind :
-    TypedPointsto (GF := GF) reflect.abiStepKind :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.abiStepKind :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'abiStepKind :
-    IntoValTypedUnderlying (GF := GF) reflect.abiStepKind reflect.abiStepKind.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.abiStepKind _root_.Perennial.reflect.abiStepKind.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -61,14 +61,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'abiSeq :
-    TypedPointsto (GF := GF) reflect.abiSeq :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.abiSeq :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'abiSeq :
-    IntoValTypedUnderlying (GF := GF) reflect.abiSeq reflect.abiSeq.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.abiSeq _root_.Perennial.reflect.abiSeq.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -80,14 +80,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'abiDesc :
-    TypedPointsto (GF := GF) reflect.abiDesc :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.abiDesc :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'abiDesc :
-    IntoValTypedUnderlying (GF := GF) reflect.abiDesc reflect.abiDesc.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.abiDesc _root_.Perennial.reflect.abiDesc.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -99,14 +99,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'visit :
-    TypedPointsto (GF := GF) reflect.visit :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.visit :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'visit :
-    IntoValTypedUnderlying (GF := GF) reflect.visit reflect.visit.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.visit _root_.Perennial.reflect.visit.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -118,14 +118,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'makeFuncImpl :
-    TypedPointsto (GF := GF) reflect.makeFuncImpl :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.makeFuncImpl :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'makeFuncImpl :
-    IntoValTypedUnderlying (GF := GF) reflect.makeFuncImpl reflect.makeFuncImpl.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.makeFuncImpl _root_.Perennial.reflect.makeFuncImpl.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -137,14 +137,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'methodValue :
-    TypedPointsto (GF := GF) reflect.methodValue :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.methodValue :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'methodValue :
-    IntoValTypedUnderlying (GF := GF) reflect.methodValue reflect.methodValue.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.methodValue _root_.Perennial.reflect.methodValue.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -156,14 +156,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'makeFuncCtxt :
-    TypedPointsto (GF := GF) reflect.makeFuncCtxt :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.makeFuncCtxt :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'makeFuncCtxt :
-    IntoValTypedUnderlying (GF := GF) reflect.makeFuncCtxt reflect.makeFuncCtxt.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.makeFuncCtxt _root_.Perennial.reflect.makeFuncCtxt.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -175,14 +175,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'MapIter :
-    TypedPointsto (GF := GF) reflect.MapIter :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.MapIter :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'MapIter :
-    IntoValTypedUnderlying (GF := GF) reflect.MapIter reflect.MapIter.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.MapIter _root_.Perennial.reflect.MapIter.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -194,14 +194,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'common :
-    TypedPointsto (GF := GF) reflect.common :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.common :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'common :
-    IntoValTypedUnderlying (GF := GF) reflect.common reflect.common.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.common _root_.Perennial.reflect.common.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -213,14 +213,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'rtype :
-    TypedPointsto (GF := GF) reflect.rtype :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.rtype :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'rtype :
-    IntoValTypedUnderlying (GF := GF) reflect.rtype reflect.rtype.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.rtype _root_.Perennial.reflect.rtype.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -232,14 +232,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'ChanDir :
-    TypedPointsto (GF := GF) reflect.ChanDir :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.ChanDir :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'ChanDir :
-    IntoValTypedUnderlying (GF := GF) reflect.ChanDir reflect.ChanDir.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.ChanDir _root_.Perennial.reflect.ChanDir.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -251,14 +251,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'interfaceType :
-    TypedPointsto (GF := GF) reflect.interfaceType :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.interfaceType :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'interfaceType :
-    IntoValTypedUnderlying (GF := GF) reflect.interfaceType reflect.interfaceType.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.interfaceType _root_.Perennial.reflect.interfaceType.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -270,14 +270,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'ptrType :
-    TypedPointsto (GF := GF) reflect.ptrType :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.ptrType :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'ptrType :
-    IntoValTypedUnderlying (GF := GF) reflect.ptrType reflect.ptrType.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.ptrType _root_.Perennial.reflect.ptrType.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -289,14 +289,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'sliceType :
-    TypedPointsto (GF := GF) reflect.sliceType :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.sliceType :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'sliceType :
-    IntoValTypedUnderlying (GF := GF) reflect.sliceType reflect.sliceType.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.sliceType _root_.Perennial.reflect.sliceType.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -308,14 +308,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'structType :
-    TypedPointsto (GF := GF) reflect.structType :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.structType :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'structType :
-    IntoValTypedUnderlying (GF := GF) reflect.structType reflect.structType.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.structType _root_.Perennial.reflect.structType.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -327,14 +327,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'Method :
-    TypedPointsto (GF := GF) reflect.Method :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.Method :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'Method :
-    IntoValTypedUnderlying (GF := GF) reflect.Method reflect.Method.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.Method _root_.Perennial.reflect.Method.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -346,14 +346,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'StructField :
-    TypedPointsto (GF := GF) reflect.StructField :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.StructField :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'StructField :
-    IntoValTypedUnderlying (GF := GF) reflect.StructField reflect.StructField.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.StructField _root_.Perennial.reflect.StructField.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -365,14 +365,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'StructTag :
-    TypedPointsto (GF := GF) reflect.StructTag :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.StructTag :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'StructTag :
-    IntoValTypedUnderlying (GF := GF) reflect.StructTag reflect.StructTag.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.StructTag _root_.Perennial.reflect.StructTag.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -384,14 +384,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'fieldScan :
-    TypedPointsto (GF := GF) reflect.fieldScan :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.fieldScan :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'fieldScan :
-    IntoValTypedUnderlying (GF := GF) reflect.fieldScan reflect.fieldScan.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.fieldScan _root_.Perennial.reflect.fieldScan.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -403,14 +403,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'cacheKey :
-    TypedPointsto (GF := GF) reflect.cacheKey :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.cacheKey :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'cacheKey :
-    IntoValTypedUnderlying (GF := GF) reflect.cacheKey reflect.cacheKey.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.cacheKey _root_.Perennial.reflect.cacheKey.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -422,14 +422,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'structTypeUncommon :
-    TypedPointsto (GF := GF) reflect.structTypeUncommon :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.structTypeUncommon :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'structTypeUncommon :
-    IntoValTypedUnderlying (GF := GF) reflect.structTypeUncommon reflect.structTypeUncommon.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.structTypeUncommon _root_.Perennial.reflect.structTypeUncommon.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -441,14 +441,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'layoutKey :
-    TypedPointsto (GF := GF) reflect.layoutKey :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.layoutKey :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'layoutKey :
-    IntoValTypedUnderlying (GF := GF) reflect.layoutKey reflect.layoutKey.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.layoutKey _root_.Perennial.reflect.layoutKey.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -460,14 +460,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'layoutType :
-    TypedPointsto (GF := GF) reflect.layoutType :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.layoutType :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'layoutType :
-    IntoValTypedUnderlying (GF := GF) reflect.layoutType reflect.layoutType.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.layoutType _root_.Perennial.reflect.layoutType.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -479,14 +479,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'bitVector :
-    TypedPointsto (GF := GF) reflect.bitVector :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.bitVector :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'bitVector :
-    IntoValTypedUnderlying (GF := GF) reflect.bitVector reflect.bitVector.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.bitVector _root_.Perennial.reflect.bitVector.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -498,68 +498,68 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'Value :
-    TypedPointsto (GF := GF) reflect.Value where
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.Value where
   typedPointstoDef l v dq := iprop(
-    "typ_" ∷ typedPointsto (structFieldRef reflect.Value go!"typ_" l) v.typ_' dq ∗
-    "ptr" ∷ typedPointsto (structFieldRef reflect.Value go!"ptr" l) v.ptr' dq ∗
-    "flag" ∷ typedPointsto (structFieldRef reflect.Value go!"flag" l) v.flag' dq ∗
+    "typ_" ∷ typedPointsto (structFieldRef _root_.Perennial.reflect.Value go!"typ_" l) v.typ_' dq ∗
+    "ptr" ∷ typedPointsto (structFieldRef _root_.Perennial.reflect.Value go!"ptr" l) v.ptr' dq ∗
+    "flag" ∷ typedPointsto (structFieldRef _root_.Perennial.reflect.Value go!"flag" l) v.flag' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'Value :
-    IntoValTypedUnderlying (GF := GF) reflect.Value reflect.Value.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.Value _root_.Perennial.reflect.Value.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'Value'typ_ (l : Loc) (v : reflect.Value) (dq : DFrac) :
+noncomputable instance access_load'Value'typ_ (l : Loc) (v : _root_.Perennial.reflect.Value) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef reflect.Value go!"typ_" l) v.typ_' dq)
-      (typedPointsto (structFieldRef reflect.Value go!"typ_" l) v.typ_' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.reflect.Value go!"typ_" l) v.typ_' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.reflect.Value go!"typ_" l) v.typ_' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Value'typ_ (l : Loc) (v : reflect.Value) (y : Loc) :
+noncomputable instance access_store'Value'typ_ (l : Loc) (v : _root_.Perennial.reflect.Value) (y : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef reflect.Value go!"typ_" l) v.typ_' (DFrac.own 1))
-      (typedPointsto (structFieldRef reflect.Value go!"typ_" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with typ_' := y } : reflect.Value) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.reflect.Value go!"typ_" l) v.typ_' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.reflect.Value go!"typ_" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with typ_' := y } : _root_.Perennial.reflect.Value) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Value'ptr (l : Loc) (v : reflect.Value) (dq : DFrac) :
+noncomputable instance access_load'Value'ptr (l : Loc) (v : _root_.Perennial.reflect.Value) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef reflect.Value go!"ptr" l) v.ptr' dq)
-      (typedPointsto (structFieldRef reflect.Value go!"ptr" l) v.ptr' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.reflect.Value go!"ptr" l) v.ptr' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.reflect.Value go!"ptr" l) v.ptr' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Value'ptr (l : Loc) (v : reflect.Value) (y : Loc) :
+noncomputable instance access_store'Value'ptr (l : Loc) (v : _root_.Perennial.reflect.Value) (y : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef reflect.Value go!"ptr" l) v.ptr' (DFrac.own 1))
-      (typedPointsto (structFieldRef reflect.Value go!"ptr" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ptr' := y } : reflect.Value) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.reflect.Value go!"ptr" l) v.ptr' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.reflect.Value go!"ptr" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ptr' := y } : _root_.Perennial.reflect.Value) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Value'flag (l : Loc) (v : reflect.Value) (dq : DFrac) :
+noncomputable instance access_load'Value'flag (l : Loc) (v : _root_.Perennial.reflect.Value) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef reflect.Value go!"flag" l) v.flag' dq)
-      (typedPointsto (structFieldRef reflect.Value go!"flag" l) v.flag' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.reflect.Value go!"flag" l) v.flag' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.reflect.Value go!"flag" l) v.flag' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Value'flag (l : Loc) (v : reflect.Value) (y : reflect.flag) :
+noncomputable instance access_store'Value'flag (l : Loc) (v : _root_.Perennial.reflect.Value) (y : _root_.Perennial.reflect.flag) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef reflect.Value go!"flag" l) v.flag' (DFrac.own 1))
-      (typedPointsto (structFieldRef reflect.Value go!"flag" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with flag' := y } : reflect.Value) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.reflect.Value go!"flag" l) v.flag' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.reflect.Value go!"flag" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with flag' := y } : _root_.Perennial.reflect.Value) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -572,14 +572,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'ValueError :
-    TypedPointsto (GF := GF) reflect.ValueError :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.ValueError :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'ValueError :
-    IntoValTypedUnderlying (GF := GF) reflect.ValueError reflect.ValueError.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.ValueError _root_.Perennial.reflect.ValueError.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -591,14 +591,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'nonEmptyInterface :
-    TypedPointsto (GF := GF) reflect.nonEmptyInterface :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.nonEmptyInterface :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'nonEmptyInterface :
-    IntoValTypedUnderlying (GF := GF) reflect.nonEmptyInterface reflect.nonEmptyInterface.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.nonEmptyInterface _root_.Perennial.reflect.nonEmptyInterface.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -610,14 +610,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'StringHeader :
-    TypedPointsto (GF := GF) reflect.StringHeader :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.StringHeader :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'StringHeader :
-    IntoValTypedUnderlying (GF := GF) reflect.StringHeader reflect.StringHeader.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.StringHeader _root_.Perennial.reflect.StringHeader.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -629,14 +629,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'SliceHeader :
-    TypedPointsto (GF := GF) reflect.SliceHeader :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.SliceHeader :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'SliceHeader :
-    IntoValTypedUnderlying (GF := GF) reflect.SliceHeader reflect.SliceHeader.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.SliceHeader _root_.Perennial.reflect.SliceHeader.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -648,14 +648,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'runtimeSelect :
-    TypedPointsto (GF := GF) reflect.runtimeSelect :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.runtimeSelect :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'runtimeSelect :
-    IntoValTypedUnderlying (GF := GF) reflect.runtimeSelect reflect.runtimeSelect.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.runtimeSelect _root_.Perennial.reflect.runtimeSelect.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -667,14 +667,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'SelectDir :
-    TypedPointsto (GF := GF) reflect.SelectDir :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.SelectDir :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'SelectDir :
-    IntoValTypedUnderlying (GF := GF) reflect.SelectDir reflect.SelectDir.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.SelectDir _root_.Perennial.reflect.SelectDir.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -686,14 +686,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'SelectCase :
-    TypedPointsto (GF := GF) reflect.SelectCase :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.SelectCase :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'SelectCase :
-    IntoValTypedUnderlying (GF := GF) reflect.SelectCase reflect.SelectCase.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.SelectCase _root_.Perennial.reflect.SelectCase.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -705,14 +705,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
+variable [package_sem' : _root_.Perennial.reflect.Assumptions]
 
 noncomputable instance typed_pointsto'visibleFieldsWalker :
-    TypedPointsto (GF := GF) reflect.visibleFieldsWalker :=
+    TypedPointsto (GF := GF) _root_.Perennial.reflect.visibleFieldsWalker :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'visibleFieldsWalker :
-    IntoValTypedUnderlying (GF := GF) reflect.visibleFieldsWalker reflect.visibleFieldsWalker.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.reflect.visibleFieldsWalker _root_.Perennial.reflect.visibleFieldsWalker.underlying :=
   sorry -- axiomatized type
 
 end def_

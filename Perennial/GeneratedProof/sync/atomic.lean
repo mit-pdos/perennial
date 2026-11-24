@@ -23,10 +23,10 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : sync.atomic.Assumptions]
+variable [package_sem' : _root_.Perennial.sync.atomic.Assumptions]
 
 noncomputable instance typed_pointsto'noCopy :
-    TypedPointsto (GF := GF) sync.atomic.noCopy where
+    TypedPointsto (GF := GF) _root_.Perennial.sync.atomic.noCopy where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -34,7 +34,7 @@ noncomputable instance typed_pointsto'noCopy :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'noCopy :
-    IntoValTypedUnderlying (GF := GF) sync.atomic.noCopy sync.atomic.noCopy.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.sync.atomic.noCopy _root_.Perennial.sync.atomic.noCopy.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -46,51 +46,51 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : sync.atomic.Assumptions]
+variable [package_sem' : _root_.Perennial.sync.atomic.Assumptions]
 
 noncomputable instance typed_pointsto'Bool :
-    TypedPointsto (GF := GF) sync.atomic.Bool'' where
+    TypedPointsto (GF := GF) _root_.Perennial.sync.atomic.Bool'' where
   typedPointstoDef l v dq := iprop(
-    "«_#0»" ∷ typedPointsto (structFieldRef sync.atomic.Bool'' go!"_#0" l) v.«_#0'» dq ∗
-    "v" ∷ typedPointsto (structFieldRef sync.atomic.Bool'' go!"v" l) v.v' dq ∗
+    "«_#0»" ∷ typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Bool'' go!"_#0" l) v.«_#0'» dq ∗
+    "v" ∷ typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Bool'' go!"v" l) v.v' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'Bool :
-    IntoValTypedUnderlying (GF := GF) sync.atomic.Bool'' sync.atomic.Bool''.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.sync.atomic.Bool'' _root_.Perennial.sync.atomic.Bool''.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance «access_load'Bool'_#0» (l : Loc) (v : sync.atomic.Bool'') (dq : DFrac) :
+noncomputable instance «access_load'Bool'_#0» (l : Loc) (v : _root_.Perennial.sync.atomic.Bool'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Bool'' go!"_#0" l) v.«_#0'» dq)
-      (typedPointsto (structFieldRef sync.atomic.Bool'' go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Bool'' go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Bool'' go!"_#0" l) v.«_#0'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'Bool'_#0» (l : Loc) (v : sync.atomic.Bool'') (y : sync.atomic.noCopy) :
+noncomputable instance «access_store'Bool'_#0» (l : Loc) (v : _root_.Perennial.sync.atomic.Bool'') (y : _root_.Perennial.sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Bool'' go!"_#0" l) v.«_#0'» (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.atomic.Bool'' go!"_#0" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := y } : sync.atomic.Bool'') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Bool'' go!"_#0" l) v.«_#0'» (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Bool'' go!"_#0" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := y } : _root_.Perennial.sync.atomic.Bool'') (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Bool'v (l : Loc) (v : sync.atomic.Bool'') (dq : DFrac) :
+noncomputable instance access_load'Bool'v (l : Loc) (v : _root_.Perennial.sync.atomic.Bool'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Bool'' go!"v" l) v.v' dq)
-      (typedPointsto (structFieldRef sync.atomic.Bool'' go!"v" l) v.v' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Bool'' go!"v" l) v.v' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Bool'' go!"v" l) v.v' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Bool'v (l : Loc) (v : sync.atomic.Bool'') (y : w32) :
+noncomputable instance access_store'Bool'v (l : Loc) (v : _root_.Perennial.sync.atomic.Bool'') (y : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Bool'' go!"v" l) v.v' (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.atomic.Bool'' go!"v" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := y } : sync.atomic.Bool'') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Bool'' go!"v" l) v.v' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Bool'' go!"v" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := y } : _root_.Perennial.sync.atomic.Bool'') (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -103,68 +103,68 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : sync.atomic.Assumptions]
+variable [package_sem' : _root_.Perennial.sync.atomic.Assumptions]
 
 noncomputable instance typed_pointsto'Pointer {T₀' : Type} [TypedPointsto (GF := GF) T₀'] :
-    TypedPointsto (GF := GF) (sync.atomic.Pointer T₀') where
+    TypedPointsto (GF := GF) (_root_.Perennial.sync.atomic.Pointer T₀') where
   typedPointstoDef l v dq := iprop(
-    "«_#0»" ∷ typedPointsto (structFieldRef (sync.atomic.Pointer T₀') go!"_#0" l) v.«_#0'» dq ∗
-    "«_#1»" ∷ typedPointsto (structFieldRef (sync.atomic.Pointer T₀') go!"_#1" l) v.«_#1'» dq ∗
-    "v" ∷ typedPointsto (structFieldRef (sync.atomic.Pointer T₀') go!"v" l) v.v' dq ∗
+    "«_#0»" ∷ typedPointsto (structFieldRef (_root_.Perennial.sync.atomic.Pointer T₀') go!"_#0" l) v.«_#0'» dq ∗
+    "«_#1»" ∷ typedPointsto (structFieldRef (_root_.Perennial.sync.atomic.Pointer T₀') go!"_#1" l) v.«_#1'» dq ∗
+    "v" ∷ typedPointsto (structFieldRef (_root_.Perennial.sync.atomic.Pointer T₀') go!"v" l) v.v' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'Pointer (T₀ : go.GoType) {T₀' : Type} [ZeroVal T₀'] [TypedPointsto (GF := GF) T₀'] [IntoValTyped (GF := GF) T₀' T₀] :
-    IntoValTypedUnderlying (GF := GF) (sync.atomic.Pointer T₀') (sync.atomic.Pointer.underlying T₀) := by
+    IntoValTypedUnderlying (GF := GF) (_root_.Perennial.sync.atomic.Pointer T₀') (_root_.Perennial.sync.atomic.Pointer.underlying T₀) := by
   solve_into_val_typed_struct
 
-noncomputable instance «access_load'Pointer'_#0» {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (sync.atomic.Pointer T₀')) (dq : DFrac) :
+noncomputable instance «access_load'Pointer'_#0» {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (_root_.Perennial.sync.atomic.Pointer T₀')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.atomic.Pointer T₀') go!"_#0" l) v.«_#0'» dq)
-      (typedPointsto (structFieldRef (sync.atomic.Pointer T₀') go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef (_root_.Perennial.sync.atomic.Pointer T₀') go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef (_root_.Perennial.sync.atomic.Pointer T₀') go!"_#0" l) v.«_#0'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'Pointer'_#0» {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (sync.atomic.Pointer T₀')) (y : (GoArray Loc 0)) :
+noncomputable instance «access_store'Pointer'_#0» {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (_root_.Perennial.sync.atomic.Pointer T₀')) (y : (GoArray Loc 0)) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.atomic.Pointer T₀') go!"_#0" l) v.«_#0'» (DFrac.own 1))
-      (typedPointsto (structFieldRef (sync.atomic.Pointer T₀') go!"_#0" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := y } : (sync.atomic.Pointer T₀')) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef (_root_.Perennial.sync.atomic.Pointer T₀') go!"_#0" l) v.«_#0'» (DFrac.own 1))
+      (typedPointsto (structFieldRef (_root_.Perennial.sync.atomic.Pointer T₀') go!"_#0" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := y } : (_root_.Perennial.sync.atomic.Pointer T₀')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_load'Pointer'_#1» {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (sync.atomic.Pointer T₀')) (dq : DFrac) :
+noncomputable instance «access_load'Pointer'_#1» {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (_root_.Perennial.sync.atomic.Pointer T₀')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.atomic.Pointer T₀') go!"_#1" l) v.«_#1'» dq)
-      (typedPointsto (structFieldRef (sync.atomic.Pointer T₀') go!"_#1" l) v.«_#1'» dq)
+      (typedPointsto (structFieldRef (_root_.Perennial.sync.atomic.Pointer T₀') go!"_#1" l) v.«_#1'» dq)
+      (typedPointsto (structFieldRef (_root_.Perennial.sync.atomic.Pointer T₀') go!"_#1" l) v.«_#1'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'Pointer'_#1» {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (sync.atomic.Pointer T₀')) (y : sync.atomic.noCopy) :
+noncomputable instance «access_store'Pointer'_#1» {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (_root_.Perennial.sync.atomic.Pointer T₀')) (y : _root_.Perennial.sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.atomic.Pointer T₀') go!"_#1" l) v.«_#1'» (DFrac.own 1))
-      (typedPointsto (structFieldRef (sync.atomic.Pointer T₀') go!"_#1" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#1'» := y } : (sync.atomic.Pointer T₀')) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef (_root_.Perennial.sync.atomic.Pointer T₀') go!"_#1" l) v.«_#1'» (DFrac.own 1))
+      (typedPointsto (structFieldRef (_root_.Perennial.sync.atomic.Pointer T₀') go!"_#1" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#1'» := y } : (_root_.Perennial.sync.atomic.Pointer T₀')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Pointer'v {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (sync.atomic.Pointer T₀')) (dq : DFrac) :
+noncomputable instance access_load'Pointer'v {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (_root_.Perennial.sync.atomic.Pointer T₀')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.atomic.Pointer T₀') go!"v" l) v.v' dq)
-      (typedPointsto (structFieldRef (sync.atomic.Pointer T₀') go!"v" l) v.v' dq)
+      (typedPointsto (structFieldRef (_root_.Perennial.sync.atomic.Pointer T₀') go!"v" l) v.v' dq)
+      (typedPointsto (structFieldRef (_root_.Perennial.sync.atomic.Pointer T₀') go!"v" l) v.v' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Pointer'v {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (sync.atomic.Pointer T₀')) (y : Loc) :
+noncomputable instance access_store'Pointer'v {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (_root_.Perennial.sync.atomic.Pointer T₀')) (y : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.atomic.Pointer T₀') go!"v" l) v.v' (DFrac.own 1))
-      (typedPointsto (structFieldRef (sync.atomic.Pointer T₀') go!"v" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := y } : (sync.atomic.Pointer T₀')) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef (_root_.Perennial.sync.atomic.Pointer T₀') go!"v" l) v.v' (DFrac.own 1))
+      (typedPointsto (structFieldRef (_root_.Perennial.sync.atomic.Pointer T₀') go!"v" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := y } : (_root_.Perennial.sync.atomic.Pointer T₀')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -177,51 +177,51 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : sync.atomic.Assumptions]
+variable [package_sem' : _root_.Perennial.sync.atomic.Assumptions]
 
 noncomputable instance typed_pointsto'Int32 :
-    TypedPointsto (GF := GF) sync.atomic.Int32 where
+    TypedPointsto (GF := GF) _root_.Perennial.sync.atomic.Int32 where
   typedPointstoDef l v dq := iprop(
-    "«_#0»" ∷ typedPointsto (structFieldRef sync.atomic.Int32 go!"_#0" l) v.«_#0'» dq ∗
-    "v" ∷ typedPointsto (structFieldRef sync.atomic.Int32 go!"v" l) v.v' dq ∗
+    "«_#0»" ∷ typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int32 go!"_#0" l) v.«_#0'» dq ∗
+    "v" ∷ typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int32 go!"v" l) v.v' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'Int32 :
-    IntoValTypedUnderlying (GF := GF) sync.atomic.Int32 sync.atomic.Int32.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.sync.atomic.Int32 _root_.Perennial.sync.atomic.Int32.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance «access_load'Int32'_#0» (l : Loc) (v : sync.atomic.Int32) (dq : DFrac) :
+noncomputable instance «access_load'Int32'_#0» (l : Loc) (v : _root_.Perennial.sync.atomic.Int32) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Int32 go!"_#0" l) v.«_#0'» dq)
-      (typedPointsto (structFieldRef sync.atomic.Int32 go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int32 go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int32 go!"_#0" l) v.«_#0'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'Int32'_#0» (l : Loc) (v : sync.atomic.Int32) (y : sync.atomic.noCopy) :
+noncomputable instance «access_store'Int32'_#0» (l : Loc) (v : _root_.Perennial.sync.atomic.Int32) (y : _root_.Perennial.sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Int32 go!"_#0" l) v.«_#0'» (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.atomic.Int32 go!"_#0" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := y } : sync.atomic.Int32) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int32 go!"_#0" l) v.«_#0'» (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int32 go!"_#0" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := y } : _root_.Perennial.sync.atomic.Int32) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Int32'v (l : Loc) (v : sync.atomic.Int32) (dq : DFrac) :
+noncomputable instance access_load'Int32'v (l : Loc) (v : _root_.Perennial.sync.atomic.Int32) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Int32 go!"v" l) v.v' dq)
-      (typedPointsto (structFieldRef sync.atomic.Int32 go!"v" l) v.v' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int32 go!"v" l) v.v' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int32 go!"v" l) v.v' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Int32'v (l : Loc) (v : sync.atomic.Int32) (y : w32) :
+noncomputable instance access_store'Int32'v (l : Loc) (v : _root_.Perennial.sync.atomic.Int32) (y : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Int32 go!"v" l) v.v' (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.atomic.Int32 go!"v" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := y } : sync.atomic.Int32) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int32 go!"v" l) v.v' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int32 go!"v" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := y } : _root_.Perennial.sync.atomic.Int32) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -234,10 +234,10 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : sync.atomic.Assumptions]
+variable [package_sem' : _root_.Perennial.sync.atomic.Assumptions]
 
 noncomputable instance typed_pointsto'align64 :
-    TypedPointsto (GF := GF) sync.atomic.align64 where
+    TypedPointsto (GF := GF) _root_.Perennial.sync.atomic.align64 where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -245,7 +245,7 @@ noncomputable instance typed_pointsto'align64 :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'align64 :
-    IntoValTypedUnderlying (GF := GF) sync.atomic.align64 sync.atomic.align64.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.sync.atomic.align64 _root_.Perennial.sync.atomic.align64.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -257,68 +257,68 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : sync.atomic.Assumptions]
+variable [package_sem' : _root_.Perennial.sync.atomic.Assumptions]
 
 noncomputable instance typed_pointsto'Int64 :
-    TypedPointsto (GF := GF) sync.atomic.Int64 where
+    TypedPointsto (GF := GF) _root_.Perennial.sync.atomic.Int64 where
   typedPointstoDef l v dq := iprop(
-    "«_#0»" ∷ typedPointsto (structFieldRef sync.atomic.Int64 go!"_#0" l) v.«_#0'» dq ∗
-    "«_#1»" ∷ typedPointsto (structFieldRef sync.atomic.Int64 go!"_#1" l) v.«_#1'» dq ∗
-    "v" ∷ typedPointsto (structFieldRef sync.atomic.Int64 go!"v" l) v.v' dq ∗
+    "«_#0»" ∷ typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int64 go!"_#0" l) v.«_#0'» dq ∗
+    "«_#1»" ∷ typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int64 go!"_#1" l) v.«_#1'» dq ∗
+    "v" ∷ typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int64 go!"v" l) v.v' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'Int64 :
-    IntoValTypedUnderlying (GF := GF) sync.atomic.Int64 sync.atomic.Int64.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.sync.atomic.Int64 _root_.Perennial.sync.atomic.Int64.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance «access_load'Int64'_#0» (l : Loc) (v : sync.atomic.Int64) (dq : DFrac) :
+noncomputable instance «access_load'Int64'_#0» (l : Loc) (v : _root_.Perennial.sync.atomic.Int64) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Int64 go!"_#0" l) v.«_#0'» dq)
-      (typedPointsto (structFieldRef sync.atomic.Int64 go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int64 go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int64 go!"_#0" l) v.«_#0'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'Int64'_#0» (l : Loc) (v : sync.atomic.Int64) (y : sync.atomic.noCopy) :
+noncomputable instance «access_store'Int64'_#0» (l : Loc) (v : _root_.Perennial.sync.atomic.Int64) (y : _root_.Perennial.sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Int64 go!"_#0" l) v.«_#0'» (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.atomic.Int64 go!"_#0" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := y } : sync.atomic.Int64) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int64 go!"_#0" l) v.«_#0'» (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int64 go!"_#0" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := y } : _root_.Perennial.sync.atomic.Int64) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_load'Int64'_#1» (l : Loc) (v : sync.atomic.Int64) (dq : DFrac) :
+noncomputable instance «access_load'Int64'_#1» (l : Loc) (v : _root_.Perennial.sync.atomic.Int64) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Int64 go!"_#1" l) v.«_#1'» dq)
-      (typedPointsto (structFieldRef sync.atomic.Int64 go!"_#1" l) v.«_#1'» dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int64 go!"_#1" l) v.«_#1'» dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int64 go!"_#1" l) v.«_#1'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'Int64'_#1» (l : Loc) (v : sync.atomic.Int64) (y : sync.atomic.align64) :
+noncomputable instance «access_store'Int64'_#1» (l : Loc) (v : _root_.Perennial.sync.atomic.Int64) (y : _root_.Perennial.sync.atomic.align64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Int64 go!"_#1" l) v.«_#1'» (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.atomic.Int64 go!"_#1" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#1'» := y } : sync.atomic.Int64) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int64 go!"_#1" l) v.«_#1'» (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int64 go!"_#1" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#1'» := y } : _root_.Perennial.sync.atomic.Int64) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Int64'v (l : Loc) (v : sync.atomic.Int64) (dq : DFrac) :
+noncomputable instance access_load'Int64'v (l : Loc) (v : _root_.Perennial.sync.atomic.Int64) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Int64 go!"v" l) v.v' dq)
-      (typedPointsto (structFieldRef sync.atomic.Int64 go!"v" l) v.v' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int64 go!"v" l) v.v' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int64 go!"v" l) v.v' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Int64'v (l : Loc) (v : sync.atomic.Int64) (y : w64) :
+noncomputable instance access_store'Int64'v (l : Loc) (v : _root_.Perennial.sync.atomic.Int64) (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Int64 go!"v" l) v.v' (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.atomic.Int64 go!"v" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := y } : sync.atomic.Int64) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int64 go!"v" l) v.v' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Int64 go!"v" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := y } : _root_.Perennial.sync.atomic.Int64) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -331,51 +331,51 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : sync.atomic.Assumptions]
+variable [package_sem' : _root_.Perennial.sync.atomic.Assumptions]
 
 noncomputable instance typed_pointsto'Uint32 :
-    TypedPointsto (GF := GF) sync.atomic.Uint32 where
+    TypedPointsto (GF := GF) _root_.Perennial.sync.atomic.Uint32 where
   typedPointstoDef l v dq := iprop(
-    "«_#0»" ∷ typedPointsto (structFieldRef sync.atomic.Uint32 go!"_#0" l) v.«_#0'» dq ∗
-    "v" ∷ typedPointsto (structFieldRef sync.atomic.Uint32 go!"v" l) v.v' dq ∗
+    "«_#0»" ∷ typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint32 go!"_#0" l) v.«_#0'» dq ∗
+    "v" ∷ typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint32 go!"v" l) v.v' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'Uint32 :
-    IntoValTypedUnderlying (GF := GF) sync.atomic.Uint32 sync.atomic.Uint32.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.sync.atomic.Uint32 _root_.Perennial.sync.atomic.Uint32.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance «access_load'Uint32'_#0» (l : Loc) (v : sync.atomic.Uint32) (dq : DFrac) :
+noncomputable instance «access_load'Uint32'_#0» (l : Loc) (v : _root_.Perennial.sync.atomic.Uint32) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Uint32 go!"_#0" l) v.«_#0'» dq)
-      (typedPointsto (structFieldRef sync.atomic.Uint32 go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint32 go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint32 go!"_#0" l) v.«_#0'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'Uint32'_#0» (l : Loc) (v : sync.atomic.Uint32) (y : sync.atomic.noCopy) :
+noncomputable instance «access_store'Uint32'_#0» (l : Loc) (v : _root_.Perennial.sync.atomic.Uint32) (y : _root_.Perennial.sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Uint32 go!"_#0" l) v.«_#0'» (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.atomic.Uint32 go!"_#0" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := y } : sync.atomic.Uint32) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint32 go!"_#0" l) v.«_#0'» (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint32 go!"_#0" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := y } : _root_.Perennial.sync.atomic.Uint32) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Uint32'v (l : Loc) (v : sync.atomic.Uint32) (dq : DFrac) :
+noncomputable instance access_load'Uint32'v (l : Loc) (v : _root_.Perennial.sync.atomic.Uint32) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Uint32 go!"v" l) v.v' dq)
-      (typedPointsto (structFieldRef sync.atomic.Uint32 go!"v" l) v.v' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint32 go!"v" l) v.v' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint32 go!"v" l) v.v' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Uint32'v (l : Loc) (v : sync.atomic.Uint32) (y : w32) :
+noncomputable instance access_store'Uint32'v (l : Loc) (v : _root_.Perennial.sync.atomic.Uint32) (y : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Uint32 go!"v" l) v.v' (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.atomic.Uint32 go!"v" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := y } : sync.atomic.Uint32) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint32 go!"v" l) v.v' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint32 go!"v" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := y } : _root_.Perennial.sync.atomic.Uint32) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -388,68 +388,68 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : sync.atomic.Assumptions]
+variable [package_sem' : _root_.Perennial.sync.atomic.Assumptions]
 
 noncomputable instance typed_pointsto'Uint64 :
-    TypedPointsto (GF := GF) sync.atomic.Uint64 where
+    TypedPointsto (GF := GF) _root_.Perennial.sync.atomic.Uint64 where
   typedPointstoDef l v dq := iprop(
-    "«_#0»" ∷ typedPointsto (structFieldRef sync.atomic.Uint64 go!"_#0" l) v.«_#0'» dq ∗
-    "«_#1»" ∷ typedPointsto (structFieldRef sync.atomic.Uint64 go!"_#1" l) v.«_#1'» dq ∗
-    "v" ∷ typedPointsto (structFieldRef sync.atomic.Uint64 go!"v" l) v.v' dq ∗
+    "«_#0»" ∷ typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint64 go!"_#0" l) v.«_#0'» dq ∗
+    "«_#1»" ∷ typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint64 go!"_#1" l) v.«_#1'» dq ∗
+    "v" ∷ typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint64 go!"v" l) v.v' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'Uint64 :
-    IntoValTypedUnderlying (GF := GF) sync.atomic.Uint64 sync.atomic.Uint64.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.sync.atomic.Uint64 _root_.Perennial.sync.atomic.Uint64.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance «access_load'Uint64'_#0» (l : Loc) (v : sync.atomic.Uint64) (dq : DFrac) :
+noncomputable instance «access_load'Uint64'_#0» (l : Loc) (v : _root_.Perennial.sync.atomic.Uint64) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_#0" l) v.«_#0'» dq)
-      (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint64 go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint64 go!"_#0" l) v.«_#0'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'Uint64'_#0» (l : Loc) (v : sync.atomic.Uint64) (y : sync.atomic.noCopy) :
+noncomputable instance «access_store'Uint64'_#0» (l : Loc) (v : _root_.Perennial.sync.atomic.Uint64) (y : _root_.Perennial.sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_#0" l) v.«_#0'» (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_#0" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := y } : sync.atomic.Uint64) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint64 go!"_#0" l) v.«_#0'» (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint64 go!"_#0" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := y } : _root_.Perennial.sync.atomic.Uint64) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_load'Uint64'_#1» (l : Loc) (v : sync.atomic.Uint64) (dq : DFrac) :
+noncomputable instance «access_load'Uint64'_#1» (l : Loc) (v : _root_.Perennial.sync.atomic.Uint64) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_#1" l) v.«_#1'» dq)
-      (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_#1" l) v.«_#1'» dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint64 go!"_#1" l) v.«_#1'» dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint64 go!"_#1" l) v.«_#1'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'Uint64'_#1» (l : Loc) (v : sync.atomic.Uint64) (y : sync.atomic.align64) :
+noncomputable instance «access_store'Uint64'_#1» (l : Loc) (v : _root_.Perennial.sync.atomic.Uint64) (y : _root_.Perennial.sync.atomic.align64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_#1" l) v.«_#1'» (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_#1" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#1'» := y } : sync.atomic.Uint64) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint64 go!"_#1" l) v.«_#1'» (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint64 go!"_#1" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#1'» := y } : _root_.Perennial.sync.atomic.Uint64) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Uint64'v (l : Loc) (v : sync.atomic.Uint64) (dq : DFrac) :
+noncomputable instance access_load'Uint64'v (l : Loc) (v : _root_.Perennial.sync.atomic.Uint64) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Uint64 go!"v" l) v.v' dq)
-      (typedPointsto (structFieldRef sync.atomic.Uint64 go!"v" l) v.v' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint64 go!"v" l) v.v' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint64 go!"v" l) v.v' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Uint64'v (l : Loc) (v : sync.atomic.Uint64) (y : w64) :
+noncomputable instance access_store'Uint64'v (l : Loc) (v : _root_.Perennial.sync.atomic.Uint64) (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Uint64 go!"v" l) v.v' (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.atomic.Uint64 go!"v" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := y } : sync.atomic.Uint64) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint64 go!"v" l) v.v' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uint64 go!"v" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := y } : _root_.Perennial.sync.atomic.Uint64) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -462,51 +462,51 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : sync.atomic.Assumptions]
+variable [package_sem' : _root_.Perennial.sync.atomic.Assumptions]
 
 noncomputable instance typed_pointsto'Uintptr :
-    TypedPointsto (GF := GF) sync.atomic.Uintptr where
+    TypedPointsto (GF := GF) _root_.Perennial.sync.atomic.Uintptr where
   typedPointstoDef l v dq := iprop(
-    "«_#0»" ∷ typedPointsto (structFieldRef sync.atomic.Uintptr go!"_#0" l) v.«_#0'» dq ∗
-    "v" ∷ typedPointsto (structFieldRef sync.atomic.Uintptr go!"v" l) v.v' dq ∗
+    "«_#0»" ∷ typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uintptr go!"_#0" l) v.«_#0'» dq ∗
+    "v" ∷ typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uintptr go!"v" l) v.v' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'Uintptr :
-    IntoValTypedUnderlying (GF := GF) sync.atomic.Uintptr sync.atomic.Uintptr.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.sync.atomic.Uintptr _root_.Perennial.sync.atomic.Uintptr.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance «access_load'Uintptr'_#0» (l : Loc) (v : sync.atomic.Uintptr) (dq : DFrac) :
+noncomputable instance «access_load'Uintptr'_#0» (l : Loc) (v : _root_.Perennial.sync.atomic.Uintptr) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Uintptr go!"_#0" l) v.«_#0'» dq)
-      (typedPointsto (structFieldRef sync.atomic.Uintptr go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uintptr go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uintptr go!"_#0" l) v.«_#0'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'Uintptr'_#0» (l : Loc) (v : sync.atomic.Uintptr) (y : sync.atomic.noCopy) :
+noncomputable instance «access_store'Uintptr'_#0» (l : Loc) (v : _root_.Perennial.sync.atomic.Uintptr) (y : _root_.Perennial.sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Uintptr go!"_#0" l) v.«_#0'» (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.atomic.Uintptr go!"_#0" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := y } : sync.atomic.Uintptr) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uintptr go!"_#0" l) v.«_#0'» (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uintptr go!"_#0" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := y } : _root_.Perennial.sync.atomic.Uintptr) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Uintptr'v (l : Loc) (v : sync.atomic.Uintptr) (dq : DFrac) :
+noncomputable instance access_load'Uintptr'v (l : Loc) (v : _root_.Perennial.sync.atomic.Uintptr) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Uintptr go!"v" l) v.v' dq)
-      (typedPointsto (structFieldRef sync.atomic.Uintptr go!"v" l) v.v' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uintptr go!"v" l) v.v' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uintptr go!"v" l) v.v' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Uintptr'v (l : Loc) (v : sync.atomic.Uintptr) (y : w64) :
+noncomputable instance access_store'Uintptr'v (l : Loc) (v : _root_.Perennial.sync.atomic.Uintptr) (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Uintptr go!"v" l) v.v' (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.atomic.Uintptr go!"v" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := y } : sync.atomic.Uintptr) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uintptr go!"v" l) v.v' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Uintptr go!"v" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := y } : _root_.Perennial.sync.atomic.Uintptr) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -519,34 +519,34 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : sync.atomic.Assumptions]
+variable [package_sem' : _root_.Perennial.sync.atomic.Assumptions]
 
 noncomputable instance typed_pointsto'Value :
-    TypedPointsto (GF := GF) sync.atomic.Value where
+    TypedPointsto (GF := GF) _root_.Perennial.sync.atomic.Value where
   typedPointstoDef l v dq := iprop(
-    "v" ∷ typedPointsto (structFieldRef sync.atomic.Value go!"v" l) v.v' dq ∗
+    "v" ∷ typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Value go!"v" l) v.v' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'Value :
-    IntoValTypedUnderlying (GF := GF) sync.atomic.Value sync.atomic.Value.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.sync.atomic.Value _root_.Perennial.sync.atomic.Value.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'Value'v (l : Loc) (v : sync.atomic.Value) (dq : DFrac) :
+noncomputable instance access_load'Value'v (l : Loc) (v : _root_.Perennial.sync.atomic.Value) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Value go!"v" l) v.v' dq)
-      (typedPointsto (structFieldRef sync.atomic.Value go!"v" l) v.v' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Value go!"v" l) v.v' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Value go!"v" l) v.v' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Value'v (l : Loc) (v : sync.atomic.Value) (y : GoInterface) :
+noncomputable instance access_store'Value'v (l : Loc) (v : _root_.Perennial.sync.atomic.Value) (y : GoInterface) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.Value go!"v" l) v.v' (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.atomic.Value go!"v" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := y } : sync.atomic.Value) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Value go!"v" l) v.v' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.Value go!"v" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := y } : _root_.Perennial.sync.atomic.Value) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -559,51 +559,51 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : sync.atomic.Assumptions]
+variable [package_sem' : _root_.Perennial.sync.atomic.Assumptions]
 
 noncomputable instance typed_pointsto'efaceWords :
-    TypedPointsto (GF := GF) sync.atomic.efaceWords where
+    TypedPointsto (GF := GF) _root_.Perennial.sync.atomic.efaceWords where
   typedPointstoDef l v dq := iprop(
-    "typ" ∷ typedPointsto (structFieldRef sync.atomic.efaceWords go!"typ" l) v.typ' dq ∗
-    "data" ∷ typedPointsto (structFieldRef sync.atomic.efaceWords go!"data" l) v.data' dq ∗
+    "typ" ∷ typedPointsto (structFieldRef _root_.Perennial.sync.atomic.efaceWords go!"typ" l) v.typ' dq ∗
+    "data" ∷ typedPointsto (structFieldRef _root_.Perennial.sync.atomic.efaceWords go!"data" l) v.data' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'efaceWords :
-    IntoValTypedUnderlying (GF := GF) sync.atomic.efaceWords sync.atomic.efaceWords.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.sync.atomic.efaceWords _root_.Perennial.sync.atomic.efaceWords.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'efaceWords'typ (l : Loc) (v : sync.atomic.efaceWords) (dq : DFrac) :
+noncomputable instance access_load'efaceWords'typ (l : Loc) (v : _root_.Perennial.sync.atomic.efaceWords) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.efaceWords go!"typ" l) v.typ' dq)
-      (typedPointsto (structFieldRef sync.atomic.efaceWords go!"typ" l) v.typ' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.efaceWords go!"typ" l) v.typ' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.efaceWords go!"typ" l) v.typ' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'efaceWords'typ (l : Loc) (v : sync.atomic.efaceWords) (y : Loc) :
+noncomputable instance access_store'efaceWords'typ (l : Loc) (v : _root_.Perennial.sync.atomic.efaceWords) (y : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.efaceWords go!"typ" l) v.typ' (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.atomic.efaceWords go!"typ" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with typ' := y } : sync.atomic.efaceWords) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.efaceWords go!"typ" l) v.typ' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.efaceWords go!"typ" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with typ' := y } : _root_.Perennial.sync.atomic.efaceWords) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'efaceWords'data (l : Loc) (v : sync.atomic.efaceWords) (dq : DFrac) :
+noncomputable instance access_load'efaceWords'data (l : Loc) (v : _root_.Perennial.sync.atomic.efaceWords) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.efaceWords go!"data" l) v.data' dq)
-      (typedPointsto (structFieldRef sync.atomic.efaceWords go!"data" l) v.data' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.efaceWords go!"data" l) v.data' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.efaceWords go!"data" l) v.data' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'efaceWords'data (l : Loc) (v : sync.atomic.efaceWords) (y : Loc) :
+noncomputable instance access_store'efaceWords'data (l : Loc) (v : _root_.Perennial.sync.atomic.efaceWords) (y : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.atomic.efaceWords go!"data" l) v.data' (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.atomic.efaceWords go!"data" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with data' := y } : sync.atomic.efaceWords) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.efaceWords go!"data" l) v.data' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.sync.atomic.efaceWords go!"data" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with data' := y } : _root_.Perennial.sync.atomic.efaceWords) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

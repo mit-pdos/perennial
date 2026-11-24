@@ -26,68 +26,68 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : strconv.Assumptions]
+variable [package_sem' : _root_.Perennial.strconv.Assumptions]
 
 noncomputable instance typed_pointsto'NumError :
-    TypedPointsto (GF := GF) strconv.NumError where
+    TypedPointsto (GF := GF) _root_.Perennial.strconv.NumError where
   typedPointstoDef l v dq := iprop(
-    "Func" ∷ typedPointsto (structFieldRef strconv.NumError go!"Func" l) v.Func' dq ∗
-    "Num" ∷ typedPointsto (structFieldRef strconv.NumError go!"Num" l) v.Num' dq ∗
-    "Err" ∷ typedPointsto (structFieldRef strconv.NumError go!"Err" l) v.Err' dq ∗
+    "Func" ∷ typedPointsto (structFieldRef _root_.Perennial.strconv.NumError go!"Func" l) v.Func' dq ∗
+    "Num" ∷ typedPointsto (structFieldRef _root_.Perennial.strconv.NumError go!"Num" l) v.Num' dq ∗
+    "Err" ∷ typedPointsto (structFieldRef _root_.Perennial.strconv.NumError go!"Err" l) v.Err' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'NumError :
-    IntoValTypedUnderlying (GF := GF) strconv.NumError strconv.NumError.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.strconv.NumError _root_.Perennial.strconv.NumError.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'NumError'Func (l : Loc) (v : strconv.NumError) (dq : DFrac) :
+noncomputable instance access_load'NumError'Func (l : Loc) (v : _root_.Perennial.strconv.NumError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strconv.NumError go!"Func" l) v.Func' dq)
-      (typedPointsto (structFieldRef strconv.NumError go!"Func" l) v.Func' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.strconv.NumError go!"Func" l) v.Func' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.strconv.NumError go!"Func" l) v.Func' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'NumError'Func (l : Loc) (v : strconv.NumError) (y : GoString) :
+noncomputable instance access_store'NumError'Func (l : Loc) (v : _root_.Perennial.strconv.NumError) (y : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strconv.NumError go!"Func" l) v.Func' (DFrac.own 1))
-      (typedPointsto (structFieldRef strconv.NumError go!"Func" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Func' := y } : strconv.NumError) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.strconv.NumError go!"Func" l) v.Func' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.strconv.NumError go!"Func" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Func' := y } : _root_.Perennial.strconv.NumError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'NumError'Num (l : Loc) (v : strconv.NumError) (dq : DFrac) :
+noncomputable instance access_load'NumError'Num (l : Loc) (v : _root_.Perennial.strconv.NumError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strconv.NumError go!"Num" l) v.Num' dq)
-      (typedPointsto (structFieldRef strconv.NumError go!"Num" l) v.Num' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.strconv.NumError go!"Num" l) v.Num' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.strconv.NumError go!"Num" l) v.Num' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'NumError'Num (l : Loc) (v : strconv.NumError) (y : GoString) :
+noncomputable instance access_store'NumError'Num (l : Loc) (v : _root_.Perennial.strconv.NumError) (y : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strconv.NumError go!"Num" l) v.Num' (DFrac.own 1))
-      (typedPointsto (structFieldRef strconv.NumError go!"Num" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Num' := y } : strconv.NumError) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.strconv.NumError go!"Num" l) v.Num' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.strconv.NumError go!"Num" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Num' := y } : _root_.Perennial.strconv.NumError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'NumError'Err (l : Loc) (v : strconv.NumError) (dq : DFrac) :
+noncomputable instance access_load'NumError'Err (l : Loc) (v : _root_.Perennial.strconv.NumError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strconv.NumError go!"Err" l) v.Err' dq)
-      (typedPointsto (structFieldRef strconv.NumError go!"Err" l) v.Err' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.strconv.NumError go!"Err" l) v.Err' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.strconv.NumError go!"Err" l) v.Err' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'NumError'Err (l : Loc) (v : strconv.NumError) (y : GoError) :
+noncomputable instance access_store'NumError'Err (l : Loc) (v : _root_.Perennial.strconv.NumError) (y : GoError) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef strconv.NumError go!"Err" l) v.Err' (DFrac.own 1))
-      (typedPointsto (structFieldRef strconv.NumError go!"Err" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Err' := y } : strconv.NumError) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.strconv.NumError go!"Err" l) v.Err' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.strconv.NumError go!"Err" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Err' := y } : _root_.Perennial.strconv.NumError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

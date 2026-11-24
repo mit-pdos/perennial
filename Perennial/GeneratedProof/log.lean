@@ -24,14 +24,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : log.Assumptions]
+variable [package_sem' : _root_.Perennial.log.Assumptions]
 
 noncomputable instance typed_pointsto'Logger :
-    TypedPointsto (GF := GF) log.Logger :=
+    TypedPointsto (GF := GF) _root_.Perennial.log.Logger :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'Logger :
-    IntoValTypedUnderlying (GF := GF) log.Logger log.Logger.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.log.Logger _root_.Perennial.log.Logger.underlying :=
   sorry -- axiomatized type
 
 end def_

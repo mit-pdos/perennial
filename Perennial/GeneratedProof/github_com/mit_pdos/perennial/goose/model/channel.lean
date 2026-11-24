@@ -23,102 +23,102 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics]
-variable [package_sem' : github_com.mit_pdos.perennial.goose.model.channel.Assumptions]
+variable [package_sem' : _root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Assumptions]
 
 noncomputable instance typed_pointsto'Channel {T₀' : Type} [TypedPointsto (GF := GF) T₀'] :
-    TypedPointsto (GF := GF) (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') where
+    TypedPointsto (GF := GF) (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') where
   typedPointstoDef l v dq := iprop(
-    "cap" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"cap" l) v.cap' dq ∗
-    "mu" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"mu" l) v.mu' dq ∗
-    "state" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"state" l) v.state' dq ∗
-    "buffer" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"buffer" l) v.buffer' dq ∗
-    "v" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"v" l) v.v' dq ∗
+    "cap" ∷ typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"cap" l) v.cap' dq ∗
+    "mu" ∷ typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"mu" l) v.mu' dq ∗
+    "state" ∷ typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"state" l) v.state' dq ∗
+    "buffer" ∷ typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"buffer" l) v.buffer' dq ∗
+    "v" ∷ typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"v" l) v.v' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'Channel (T₀ : go.GoType) {T₀' : Type} [ZeroVal T₀'] [TypedPointsto (GF := GF) T₀'] [IntoValTyped (GF := GF) T₀' T₀] :
-    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') (github_com.mit_pdos.perennial.goose.model.channel.Channel.underlying T₀) := by
+    IntoValTypedUnderlying (GF := GF) (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel.underlying T₀) := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'Channel'cap {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (dq : DFrac) :
+noncomputable instance access_load'Channel'cap {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"cap" l) v.cap' dq)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"cap" l) v.cap' dq)
+      (typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"cap" l) v.cap' dq)
+      (typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"cap" l) v.cap' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Channel'cap {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (y : w64) :
+noncomputable instance access_store'Channel'cap {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"cap" l) v.cap' (DFrac.own 1))
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"cap" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cap' := y } : (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"cap" l) v.cap' (DFrac.own 1))
+      (typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"cap" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cap' := y } : (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Channel'mu {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (dq : DFrac) :
+noncomputable instance access_load'Channel'mu {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"mu" l) v.mu' dq)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"mu" l) v.mu' dq)
+      (typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"mu" l) v.mu' dq)
+      (typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"mu" l) v.mu' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Channel'mu {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (y : Loc) :
+noncomputable instance access_store'Channel'mu {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (y : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"mu" l) v.mu' (DFrac.own 1))
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"mu" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := y } : (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"mu" l) v.mu' (DFrac.own 1))
+      (typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"mu" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := y } : (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Channel'state {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (dq : DFrac) :
+noncomputable instance access_load'Channel'state {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"state" l) v.state' dq)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"state" l) v.state' dq)
+      (typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"state" l) v.state' dq)
+      (typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"state" l) v.state' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Channel'state {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (y : github_com.mit_pdos.perennial.goose.model.channel.offerState) :
+noncomputable instance access_store'Channel'state {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.offerState) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"state" l) v.state' (DFrac.own 1))
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"state" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with state' := y } : (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"state" l) v.state' (DFrac.own 1))
+      (typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"state" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with state' := y } : (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Channel'buffer {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (dq : DFrac) :
+noncomputable instance access_load'Channel'buffer {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"buffer" l) v.buffer' dq)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"buffer" l) v.buffer' dq)
+      (typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"buffer" l) v.buffer' dq)
+      (typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"buffer" l) v.buffer' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Channel'buffer {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (y : GoSlice) :
+noncomputable instance access_store'Channel'buffer {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"buffer" l) v.buffer' (DFrac.own 1))
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"buffer" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with buffer' := y } : (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"buffer" l) v.buffer' (DFrac.own 1))
+      (typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"buffer" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with buffer' := y } : (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Channel'v {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (dq : DFrac) :
+noncomputable instance access_load'Channel'v {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"v" l) v.v' dq)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"v" l) v.v' dq)
+      (typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"v" l) v.v' dq)
+      (typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"v" l) v.v' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Channel'v {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (y : T₀') :
+noncomputable instance access_store'Channel'v {T₀' : Type} [TypedPointsto (GF := GF) T₀'] (l : Loc) (v : (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (y : T₀') :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"v" l) v.v' (DFrac.own 1))
-      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"v" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := y } : (github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"v" l) v.v' (DFrac.own 1))
+      (typedPointsto (structFieldRef (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀') go!"v" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := y } : (_root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.Channel T₀')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

@@ -29,85 +29,85 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : crypto.sha1.Assumptions]
+variable [package_sem' : _root_.Perennial.crypto.sha1.Assumptions]
 
 noncomputable instance typed_pointsto'digest :
-    TypedPointsto (GF := GF) crypto.sha1.digest where
+    TypedPointsto (GF := GF) _root_.Perennial.crypto.sha1.digest where
   typedPointstoDef l v dq := iprop(
-    "h" ∷ typedPointsto (structFieldRef crypto.sha1.digest go!"h" l) v.h' dq ∗
-    "x" ∷ typedPointsto (structFieldRef crypto.sha1.digest go!"x" l) v.x' dq ∗
-    "nx" ∷ typedPointsto (structFieldRef crypto.sha1.digest go!"nx" l) v.nx' dq ∗
-    "len" ∷ typedPointsto (structFieldRef crypto.sha1.digest go!"len" l) v.len' dq ∗
+    "h" ∷ typedPointsto (structFieldRef _root_.Perennial.crypto.sha1.digest go!"h" l) v.h' dq ∗
+    "x" ∷ typedPointsto (structFieldRef _root_.Perennial.crypto.sha1.digest go!"x" l) v.x' dq ∗
+    "nx" ∷ typedPointsto (structFieldRef _root_.Perennial.crypto.sha1.digest go!"nx" l) v.nx' dq ∗
+    "len" ∷ typedPointsto (structFieldRef _root_.Perennial.crypto.sha1.digest go!"len" l) v.len' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'digest :
-    IntoValTypedUnderlying (GF := GF) crypto.sha1.digest crypto.sha1.digest.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.crypto.sha1.digest _root_.Perennial.crypto.sha1.digest.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'digest'h (l : Loc) (v : crypto.sha1.digest) (dq : DFrac) :
+noncomputable instance access_load'digest'h (l : Loc) (v : _root_.Perennial.crypto.sha1.digest) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef crypto.sha1.digest go!"h" l) v.h' dq)
-      (typedPointsto (structFieldRef crypto.sha1.digest go!"h" l) v.h' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.crypto.sha1.digest go!"h" l) v.h' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.crypto.sha1.digest go!"h" l) v.h' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'digest'h (l : Loc) (v : crypto.sha1.digest) (y : (GoArray w32 5)) :
+noncomputable instance access_store'digest'h (l : Loc) (v : _root_.Perennial.crypto.sha1.digest) (y : (GoArray w32 5)) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef crypto.sha1.digest go!"h" l) v.h' (DFrac.own 1))
-      (typedPointsto (structFieldRef crypto.sha1.digest go!"h" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with h' := y } : crypto.sha1.digest) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.crypto.sha1.digest go!"h" l) v.h' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.crypto.sha1.digest go!"h" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with h' := y } : _root_.Perennial.crypto.sha1.digest) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'digest'x (l : Loc) (v : crypto.sha1.digest) (dq : DFrac) :
+noncomputable instance access_load'digest'x (l : Loc) (v : _root_.Perennial.crypto.sha1.digest) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef crypto.sha1.digest go!"x" l) v.x' dq)
-      (typedPointsto (structFieldRef crypto.sha1.digest go!"x" l) v.x' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.crypto.sha1.digest go!"x" l) v.x' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.crypto.sha1.digest go!"x" l) v.x' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'digest'x (l : Loc) (v : crypto.sha1.digest) (y : (GoArray w8 64)) :
+noncomputable instance access_store'digest'x (l : Loc) (v : _root_.Perennial.crypto.sha1.digest) (y : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef crypto.sha1.digest go!"x" l) v.x' (DFrac.own 1))
-      (typedPointsto (structFieldRef crypto.sha1.digest go!"x" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with x' := y } : crypto.sha1.digest) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.crypto.sha1.digest go!"x" l) v.x' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.crypto.sha1.digest go!"x" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with x' := y } : _root_.Perennial.crypto.sha1.digest) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'digest'nx (l : Loc) (v : crypto.sha1.digest) (dq : DFrac) :
+noncomputable instance access_load'digest'nx (l : Loc) (v : _root_.Perennial.crypto.sha1.digest) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef crypto.sha1.digest go!"nx" l) v.nx' dq)
-      (typedPointsto (structFieldRef crypto.sha1.digest go!"nx" l) v.nx' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.crypto.sha1.digest go!"nx" l) v.nx' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.crypto.sha1.digest go!"nx" l) v.nx' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'digest'nx (l : Loc) (v : crypto.sha1.digest) (y : w64) :
+noncomputable instance access_store'digest'nx (l : Loc) (v : _root_.Perennial.crypto.sha1.digest) (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef crypto.sha1.digest go!"nx" l) v.nx' (DFrac.own 1))
-      (typedPointsto (structFieldRef crypto.sha1.digest go!"nx" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with nx' := y } : crypto.sha1.digest) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.crypto.sha1.digest go!"nx" l) v.nx' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.crypto.sha1.digest go!"nx" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with nx' := y } : _root_.Perennial.crypto.sha1.digest) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'digest'len (l : Loc) (v : crypto.sha1.digest) (dq : DFrac) :
+noncomputable instance access_load'digest'len (l : Loc) (v : _root_.Perennial.crypto.sha1.digest) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef crypto.sha1.digest go!"len" l) v.len' dq)
-      (typedPointsto (structFieldRef crypto.sha1.digest go!"len" l) v.len' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.crypto.sha1.digest go!"len" l) v.len' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.crypto.sha1.digest go!"len" l) v.len' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'digest'len (l : Loc) (v : crypto.sha1.digest) (y : w64) :
+noncomputable instance access_store'digest'len (l : Loc) (v : _root_.Perennial.crypto.sha1.digest) (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef crypto.sha1.digest go!"len" l) v.len' (DFrac.own 1))
-      (typedPointsto (structFieldRef crypto.sha1.digest go!"len" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with len' := y } : crypto.sha1.digest) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.crypto.sha1.digest go!"len" l) v.len' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.crypto.sha1.digest go!"len" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with len' := y } : _root_.Perennial.crypto.sha1.digest) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

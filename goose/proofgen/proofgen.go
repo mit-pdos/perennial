@@ -18,7 +18,7 @@ func Package(w io.Writer, pkg *packages.Package, bootstrap bool, filter declfilt
 		Name:          pkgName(pkg),
 		HasTrusted:    filter.HasTrusted(),
 		TrustProofGen: filter.TrustProofGen(),
-		ImportPath:    glang.LeanNamespace(pkg.PkgPath),
+		ImportPath:    glang.LeanModulePath(pkg.PkgPath),
 		Root:          glang.LeanRootPrefix(pkg.PkgPath),
 	}
 
@@ -32,7 +32,7 @@ func Package(w io.Writer, pkg *packages.Package, bootstrap bool, filter declfilt
 
 	for _, path := range imports {
 		pf.Imports = append(pf.Imports, tmpl.Import{
-			Path: glang.LeanNamespace(path),
+			Path: glang.LeanModulePath(path),
 			Root: glang.LeanRootPrefix(path),
 		})
 	}

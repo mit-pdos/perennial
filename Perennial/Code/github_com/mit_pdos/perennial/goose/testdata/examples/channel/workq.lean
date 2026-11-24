@@ -150,8 +150,8 @@ noncomputable def wordCount.impl [GooseExts] [GoGlobalContext] : val :=
   (Seq (App (Val exceptionDo)
   (Let "docs" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (Var "docs"))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (let numWorkers₀ := #(2 : Int);
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType (go.GoType.PointerType Worker.ty))]))) (Val #())) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val numWorkers₀)))
+  (let numWorkers₁ := #(2 : Int);
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType (go.GoType.PointerType Worker.ty))]))) (Val #())) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val numWorkers₁)))
   (Let "workers" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType (go.GoType.PointerType Worker.ty))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType (go.GoType.PointerType Worker.ty))))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -181,7 +181,7 @@ noncomputable def wordCount.impl [GooseExts] [GoGlobalContext] : val :=
   (Lam "$value"
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Worker.ty)))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType (go.GoType.PointerType Worker.ty))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType (go.GoType.PointerType Worker.ty))))) (Var "workers")) (App (Val (GoInstruction (GoOp GoRemainder go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val numWorkers₀)))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Worker.ty)))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType (go.GoType.PointerType Worker.ty))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType (go.GoType.PointerType Worker.ty))))) (Var "workers")) (App (Val (GoInstruction (GoOp GoRemainder go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val numWorkers₁)))))))
   (Let "neighbor" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Worker.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType Worker.ty)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Worker.ty)))) (Var "neighbor"))

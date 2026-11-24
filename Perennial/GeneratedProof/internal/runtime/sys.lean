@@ -22,10 +22,10 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.runtime.sys.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.runtime.sys.Assumptions]
 
 noncomputable instance typed_pointsto'nih :
-    TypedPointsto (GF := GF) internal.runtime.sys.nih where
+    TypedPointsto (GF := GF) _root_.Perennial.internal.runtime.sys.nih where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -33,7 +33,7 @@ noncomputable instance typed_pointsto'nih :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'nih :
-    IntoValTypedUnderlying (GF := GF) internal.runtime.sys.nih internal.runtime.sys.nih.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.runtime.sys.nih _root_.Perennial.internal.runtime.sys.nih.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -45,34 +45,34 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.runtime.sys.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.runtime.sys.Assumptions]
 
 noncomputable instance typed_pointsto'NotInHeap :
-    TypedPointsto (GF := GF) internal.runtime.sys.NotInHeap where
+    TypedPointsto (GF := GF) _root_.Perennial.internal.runtime.sys.NotInHeap where
   typedPointstoDef l v dq := iprop(
-    "«_#0»" ∷ typedPointsto (structFieldRef internal.runtime.sys.NotInHeap go!"_#0" l) v.«_#0'» dq ∗
+    "«_#0»" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.runtime.sys.NotInHeap go!"_#0" l) v.«_#0'» dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'NotInHeap :
-    IntoValTypedUnderlying (GF := GF) internal.runtime.sys.NotInHeap internal.runtime.sys.NotInHeap.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.runtime.sys.NotInHeap _root_.Perennial.internal.runtime.sys.NotInHeap.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance «access_load'NotInHeap'_#0» (l : Loc) (v : internal.runtime.sys.NotInHeap) (dq : DFrac) :
+noncomputable instance «access_load'NotInHeap'_#0» (l : Loc) (v : _root_.Perennial.internal.runtime.sys.NotInHeap) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.runtime.sys.NotInHeap go!"_#0" l) v.«_#0'» dq)
-      (typedPointsto (structFieldRef internal.runtime.sys.NotInHeap go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.runtime.sys.NotInHeap go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.runtime.sys.NotInHeap go!"_#0" l) v.«_#0'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'NotInHeap'_#0» (l : Loc) (v : internal.runtime.sys.NotInHeap) (y : internal.runtime.sys.nih) :
+noncomputable instance «access_store'NotInHeap'_#0» (l : Loc) (v : _root_.Perennial.internal.runtime.sys.NotInHeap) (y : _root_.Perennial.internal.runtime.sys.nih) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.runtime.sys.NotInHeap go!"_#0" l) v.«_#0'» (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.runtime.sys.NotInHeap go!"_#0" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := y } : internal.runtime.sys.NotInHeap) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.runtime.sys.NotInHeap go!"_#0" l) v.«_#0'» (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.runtime.sys.NotInHeap go!"_#0" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := y } : _root_.Perennial.internal.runtime.sys.NotInHeap) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

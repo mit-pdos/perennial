@@ -23,14 +23,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.sync.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.sync.Assumptions]
 
 noncomputable instance typed_pointsto'HashTrieMap {K₀' : Type} [TypedPointsto (GF := GF) K₀'] {V₀' : Type} [TypedPointsto (GF := GF) V₀'] :
-    TypedPointsto (GF := GF) (internal.sync.HashTrieMap K₀' V₀') :=
+    TypedPointsto (GF := GF) (_root_.Perennial.internal.sync.HashTrieMap K₀' V₀') :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'HashTrieMap (K₀ : go.GoType) {K₀' : Type} [ZeroVal K₀'] [TypedPointsto (GF := GF) K₀'] [IntoValTyped (GF := GF) K₀' K₀] (V₀ : go.GoType) {V₀' : Type} [ZeroVal V₀'] [TypedPointsto (GF := GF) V₀'] [IntoValTyped (GF := GF) V₀' V₀] :
-    IntoValTypedUnderlying (GF := GF) (internal.sync.HashTrieMap K₀' V₀') (internal.sync.HashTrieMap.underlying K₀ V₀) :=
+    IntoValTypedUnderlying (GF := GF) (_root_.Perennial.internal.sync.HashTrieMap K₀' V₀') (_root_.Perennial.internal.sync.HashTrieMap.underlying K₀ V₀) :=
   sorry -- axiomatized type
 
 end def_
@@ -42,14 +42,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.sync.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.sync.Assumptions]
 
 noncomputable instance typed_pointsto'hashFunc :
-    TypedPointsto (GF := GF) internal.sync.hashFunc :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.sync.hashFunc :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'hashFunc :
-    IntoValTypedUnderlying (GF := GF) internal.sync.hashFunc internal.sync.hashFunc.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.sync.hashFunc _root_.Perennial.internal.sync.hashFunc.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -61,14 +61,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.sync.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.sync.Assumptions]
 
 noncomputable instance typed_pointsto'equalFunc :
-    TypedPointsto (GF := GF) internal.sync.equalFunc :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.sync.equalFunc :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'equalFunc :
-    IntoValTypedUnderlying (GF := GF) internal.sync.equalFunc internal.sync.equalFunc.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.sync.equalFunc _root_.Perennial.internal.sync.equalFunc.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -80,14 +80,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.sync.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.sync.Assumptions]
 
 noncomputable instance typed_pointsto'indirect {K₀' : Type} [TypedPointsto (GF := GF) K₀'] {V₀' : Type} [TypedPointsto (GF := GF) V₀'] :
-    TypedPointsto (GF := GF) (internal.sync.indirect K₀' V₀') :=
+    TypedPointsto (GF := GF) (_root_.Perennial.internal.sync.indirect K₀' V₀') :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'indirect (K₀ : go.GoType) {K₀' : Type} [ZeroVal K₀'] [TypedPointsto (GF := GF) K₀'] [IntoValTyped (GF := GF) K₀' K₀] (V₀ : go.GoType) {V₀' : Type} [ZeroVal V₀'] [TypedPointsto (GF := GF) V₀'] [IntoValTyped (GF := GF) V₀' V₀] :
-    IntoValTypedUnderlying (GF := GF) (internal.sync.indirect K₀' V₀') (internal.sync.indirect.underlying K₀ V₀) :=
+    IntoValTypedUnderlying (GF := GF) (_root_.Perennial.internal.sync.indirect K₀' V₀') (_root_.Perennial.internal.sync.indirect.underlying K₀ V₀) :=
   sorry -- axiomatized type
 
 end def_
@@ -99,14 +99,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.sync.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.sync.Assumptions]
 
 noncomputable instance typed_pointsto'entry {K₀' : Type} [TypedPointsto (GF := GF) K₀'] {V₀' : Type} [TypedPointsto (GF := GF) V₀'] :
-    TypedPointsto (GF := GF) (internal.sync.entry K₀' V₀') :=
+    TypedPointsto (GF := GF) (_root_.Perennial.internal.sync.entry K₀' V₀') :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'entry (K₀ : go.GoType) {K₀' : Type} [ZeroVal K₀'] [TypedPointsto (GF := GF) K₀'] [IntoValTyped (GF := GF) K₀' K₀] (V₀ : go.GoType) {V₀' : Type} [ZeroVal V₀'] [TypedPointsto (GF := GF) V₀'] [IntoValTyped (GF := GF) V₀' V₀] :
-    IntoValTypedUnderlying (GF := GF) (internal.sync.entry K₀' V₀') (internal.sync.entry.underlying K₀ V₀) :=
+    IntoValTypedUnderlying (GF := GF) (_root_.Perennial.internal.sync.entry K₀' V₀') (_root_.Perennial.internal.sync.entry.underlying K₀ V₀) :=
   sorry -- axiomatized type
 
 end def_
@@ -118,14 +118,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.sync.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.sync.Assumptions]
 
 noncomputable instance typed_pointsto'node {K₀' : Type} [TypedPointsto (GF := GF) K₀'] {V₀' : Type} [TypedPointsto (GF := GF) V₀'] :
-    TypedPointsto (GF := GF) (internal.sync.node K₀' V₀') :=
+    TypedPointsto (GF := GF) (_root_.Perennial.internal.sync.node K₀' V₀') :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'node (K₀ : go.GoType) {K₀' : Type} [ZeroVal K₀'] [TypedPointsto (GF := GF) K₀'] [IntoValTyped (GF := GF) K₀' K₀] (V₀ : go.GoType) {V₀' : Type} [ZeroVal V₀'] [TypedPointsto (GF := GF) V₀'] [IntoValTyped (GF := GF) V₀' V₀] :
-    IntoValTypedUnderlying (GF := GF) (internal.sync.node K₀' V₀') (internal.sync.node.underlying K₀ V₀) :=
+    IntoValTypedUnderlying (GF := GF) (_root_.Perennial.internal.sync.node K₀' V₀') (_root_.Perennial.internal.sync.node.underlying K₀ V₀) :=
   sorry -- axiomatized type
 
 end def_

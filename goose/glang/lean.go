@@ -332,11 +332,11 @@ func LeanIdent(s string) string {
 		return c
 	}
 	if !strings.Contains(s, ".") {
-		return LeanQuoteComponent(GoName(s))
+		return LeanQuoteComponent(declName(s))
 	}
 	if strings.HasPrefix(s, rootPrefix) {
 		i := strings.LastIndex(s, ".")
-		return LeanQuote(s[:i]) + "." + LeanQuoteComponent(GoName(s[i+1:]))
+		return LeanQuote(s[:i]) + "." + LeanQuoteComponent(declName(s[i+1:]))
 	}
 	return LeanQuote(s)
 }
@@ -345,17 +345,60 @@ func LeanIdent(s string) string {
 // package (see goose's pkgRef).
 const rootPrefix = "_root_.Perennial."
 
-// LeanNamespace is the Lean namespace for a Go package: GoPathToIdentPath of
-// the package path with "/" replaced by ".", e.g. "github.com/goose-lang/std" becomes
-// "github_com.goose_lang.std" and "math/rand" becomes "math.rand".
+// FrameworkNamespaces are the namespaces the output refers into relatively
+// (`go.len`, `chan.send`, `slice.elem`, `pkg_id.<ns>`, `package.init`, ...),
+// from inside a package's namespace: Lean resolves `go.len` inside namespace
+// `Perennial.m.v` as `Perennial.m.v.go.len` first. So no translated package's
+// namespace may have one of them as a component (a package `m/v/go` declaring
+// `len` would capture `go.len`); NamespacePath renames such a component c to
+// c''. TestOutputNamesReserved checks that the output's relative references
+// start with one of these, a reserved name, or a Go name of the package.
+var FrameworkNamespaces = map[string]bool{}
+
+func init() {
+	for _, w := range strings.Fields(`go chan map func interface package slice array string
+	pkg_id Iris Classical DFrac Perennial`) {
+		FrameworkNamespaces[w] = true
+	}
+}
+
+// NamespacePath is the (unquoted) Lean namespace of a Go package, relative to
+// Perennial: the components of GoPathToIdentPath, with a component that is a
+// framework namespace c renamed to c'' (see FrameworkNamespaces), e.g.
+// "github.com/goose-lang/std" is github_com.goose_lang.std and "go/token" is
+// go''.token. Module names keep the file path (LeanModulePath).
+func NamespacePath(pkgPath string) string {
+	comps := strings.Split(GoPathToIdentPath(pkgPath), "/")
+	for i, c := range comps {
+		if FrameworkNamespaces[c] {
+			comps[i] = c + "''"
+		}
+	}
+	return strings.Join(comps, ".")
+}
+
+// LeanNamespace is the Lean namespace for a Go package (NamespacePath, quoted).
 func LeanNamespace(pkgPath string) string {
+	return LeanQuote(NamespacePath(pkgPath))
+}
+
+// LeanRootedNamespace is a rooted reference to a package's namespace, for
+// references to its declarations that must not resolve relative to the
+// current namespace.
+func LeanRootedNamespace(pkgPath string) string {
+	return "_root_.Perennial." + LeanNamespace(pkgPath)
+}
+
+// LeanModulePath is the module path of a Go package's files below a root
+// (Code, GeneratedProof, ...): its file path with "/" replaced by ".".
+func LeanModulePath(pkgPath string) string {
 	return LeanQuote(strings.ReplaceAll(GoPathToIdentPath(pkgPath), "/", "."))
 }
 
 // LeanModule is the Lean module for a Go package under the given root (e.g.
 // "Perennial.Code").
 func LeanModule(root string, pkgPath string) string {
-	return root + "." + LeanNamespace(pkgPath)
+	return root + "." + LeanModulePath(pkgPath)
 }
 
 // LeanPkgId is the name of the GoString holding the package path.

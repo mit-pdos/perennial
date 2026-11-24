@@ -25,51 +25,51 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Assumptions]
+variable [package_sem' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Assumptions]
 
 noncomputable instance typed_pointsto'Counter :
-    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter where
+    TypedPointsto (GF := GF) _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter where
   typedPointstoDef l v dq := iprop(
-    "mu" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter go!"mu" l) v.mu' dq ∗
-    "n" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter go!"n" l) v.n' dq ∗
+    "mu" ∷ typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter go!"mu" l) v.mu' dq ∗
+    "n" ∷ typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter go!"n" l) v.n' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'Counter :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'Counter'mu (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter) (dq : DFrac) :
+noncomputable instance access_load'Counter'mu (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter go!"mu" l) v.mu' dq)
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter go!"mu" l) v.mu' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter go!"mu" l) v.mu' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter go!"mu" l) v.mu' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Counter'mu (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter) (y : _root_.Perennial.github_com.goose_lang.primitive.Mutex) :
+noncomputable instance access_store'Counter'mu (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter) (y : _root_.Perennial._root_.Perennial.github_com.goose_lang.primitive.Mutex) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter go!"mu" l) v.mu' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter go!"mu" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter go!"mu" l) v.mu' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter go!"mu" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := y } : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Counter'n (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter) (dq : DFrac) :
+noncomputable instance access_load'Counter'n (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter go!"n" l) v.n' dq)
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter go!"n" l) v.n' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter go!"n" l) v.n' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter go!"n" l) v.n' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Counter'n (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter) (y : w64) :
+noncomputable instance access_store'Counter'n (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter) (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter go!"n" l) v.n' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter go!"n" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with n' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter go!"n" l) v.n' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter go!"n" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with n' := y } : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

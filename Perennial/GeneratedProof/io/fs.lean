@@ -26,68 +26,68 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : io.fs.Assumptions]
+variable [package_sem' : _root_.Perennial.io.fs.Assumptions]
 
 noncomputable instance typed_pointsto'PathError :
-    TypedPointsto (GF := GF) io.fs.PathError where
+    TypedPointsto (GF := GF) _root_.Perennial.io.fs.PathError where
   typedPointstoDef l v dq := iprop(
-    "Op" ∷ typedPointsto (structFieldRef io.fs.PathError go!"Op" l) v.Op' dq ∗
-    "Path" ∷ typedPointsto (structFieldRef io.fs.PathError go!"Path" l) v.Path' dq ∗
-    "Err" ∷ typedPointsto (structFieldRef io.fs.PathError go!"Err" l) v.Err' dq ∗
+    "Op" ∷ typedPointsto (structFieldRef _root_.Perennial.io.fs.PathError go!"Op" l) v.Op' dq ∗
+    "Path" ∷ typedPointsto (structFieldRef _root_.Perennial.io.fs.PathError go!"Path" l) v.Path' dq ∗
+    "Err" ∷ typedPointsto (structFieldRef _root_.Perennial.io.fs.PathError go!"Err" l) v.Err' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'PathError :
-    IntoValTypedUnderlying (GF := GF) io.fs.PathError io.fs.PathError.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.io.fs.PathError _root_.Perennial.io.fs.PathError.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'PathError'Op (l : Loc) (v : io.fs.PathError) (dq : DFrac) :
+noncomputable instance access_load'PathError'Op (l : Loc) (v : _root_.Perennial.io.fs.PathError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.fs.PathError go!"Op" l) v.Op' dq)
-      (typedPointsto (structFieldRef io.fs.PathError go!"Op" l) v.Op' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.PathError go!"Op" l) v.Op' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.PathError go!"Op" l) v.Op' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'PathError'Op (l : Loc) (v : io.fs.PathError) (y : GoString) :
+noncomputable instance access_store'PathError'Op (l : Loc) (v : _root_.Perennial.io.fs.PathError) (y : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.fs.PathError go!"Op" l) v.Op' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.fs.PathError go!"Op" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Op' := y } : io.fs.PathError) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.PathError go!"Op" l) v.Op' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.PathError go!"Op" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Op' := y } : _root_.Perennial.io.fs.PathError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'PathError'Path (l : Loc) (v : io.fs.PathError) (dq : DFrac) :
+noncomputable instance access_load'PathError'Path (l : Loc) (v : _root_.Perennial.io.fs.PathError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.fs.PathError go!"Path" l) v.Path' dq)
-      (typedPointsto (structFieldRef io.fs.PathError go!"Path" l) v.Path' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.PathError go!"Path" l) v.Path' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.PathError go!"Path" l) v.Path' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'PathError'Path (l : Loc) (v : io.fs.PathError) (y : GoString) :
+noncomputable instance access_store'PathError'Path (l : Loc) (v : _root_.Perennial.io.fs.PathError) (y : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.fs.PathError go!"Path" l) v.Path' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.fs.PathError go!"Path" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Path' := y } : io.fs.PathError) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.PathError go!"Path" l) v.Path' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.PathError go!"Path" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Path' := y } : _root_.Perennial.io.fs.PathError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'PathError'Err (l : Loc) (v : io.fs.PathError) (dq : DFrac) :
+noncomputable instance access_load'PathError'Err (l : Loc) (v : _root_.Perennial.io.fs.PathError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.fs.PathError go!"Err" l) v.Err' dq)
-      (typedPointsto (structFieldRef io.fs.PathError go!"Err" l) v.Err' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.PathError go!"Err" l) v.Err' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.PathError go!"Err" l) v.Err' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'PathError'Err (l : Loc) (v : io.fs.PathError) (y : GoError) :
+noncomputable instance access_store'PathError'Err (l : Loc) (v : _root_.Perennial.io.fs.PathError) (y : GoError) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.fs.PathError go!"Err" l) v.Err' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.fs.PathError go!"Err" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Err' := y } : io.fs.PathError) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.PathError go!"Err" l) v.Err' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.PathError go!"Err" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Err' := y } : _root_.Perennial.io.fs.PathError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -100,34 +100,34 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : io.fs.Assumptions]
+variable [package_sem' : _root_.Perennial.io.fs.Assumptions]
 
 noncomputable instance typed_pointsto'dirInfo :
-    TypedPointsto (GF := GF) io.fs.dirInfo where
+    TypedPointsto (GF := GF) _root_.Perennial.io.fs.dirInfo where
   typedPointstoDef l v dq := iprop(
-    "fileInfo" ∷ typedPointsto (structFieldRef io.fs.dirInfo go!"fileInfo" l) v.fileInfo' dq ∗
+    "fileInfo" ∷ typedPointsto (structFieldRef _root_.Perennial.io.fs.dirInfo go!"fileInfo" l) v.fileInfo' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'dirInfo :
-    IntoValTypedUnderlying (GF := GF) io.fs.dirInfo io.fs.dirInfo.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.io.fs.dirInfo _root_.Perennial.io.fs.dirInfo.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'dirInfo'fileInfo (l : Loc) (v : io.fs.dirInfo) (dq : DFrac) :
+noncomputable instance access_load'dirInfo'fileInfo (l : Loc) (v : _root_.Perennial.io.fs.dirInfo) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.fs.dirInfo go!"fileInfo" l) v.fileInfo' dq)
-      (typedPointsto (structFieldRef io.fs.dirInfo go!"fileInfo" l) v.fileInfo' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.dirInfo go!"fileInfo" l) v.fileInfo' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.dirInfo go!"fileInfo" l) v.fileInfo' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'dirInfo'fileInfo (l : Loc) (v : io.fs.dirInfo) (y : io.fs.FileInfo) :
+noncomputable instance access_store'dirInfo'fileInfo (l : Loc) (v : _root_.Perennial.io.fs.dirInfo) (y : _root_.Perennial.io.fs.FileInfo) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.fs.dirInfo go!"fileInfo" l) v.fileInfo' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.fs.dirInfo go!"fileInfo" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with fileInfo' := y } : io.fs.dirInfo) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.dirInfo go!"fileInfo" l) v.fileInfo' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.dirInfo go!"fileInfo" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with fileInfo' := y } : _root_.Perennial.io.fs.dirInfo) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -140,51 +140,51 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : io.fs.Assumptions]
+variable [package_sem' : _root_.Perennial.io.fs.Assumptions]
 
 noncomputable instance typed_pointsto'subFS :
-    TypedPointsto (GF := GF) io.fs.subFS where
+    TypedPointsto (GF := GF) _root_.Perennial.io.fs.subFS where
   typedPointstoDef l v dq := iprop(
-    "fsys" ∷ typedPointsto (structFieldRef io.fs.subFS go!"fsys" l) v.fsys' dq ∗
-    "dir" ∷ typedPointsto (structFieldRef io.fs.subFS go!"dir" l) v.dir' dq ∗
+    "fsys" ∷ typedPointsto (structFieldRef _root_.Perennial.io.fs.subFS go!"fsys" l) v.fsys' dq ∗
+    "dir" ∷ typedPointsto (structFieldRef _root_.Perennial.io.fs.subFS go!"dir" l) v.dir' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'subFS :
-    IntoValTypedUnderlying (GF := GF) io.fs.subFS io.fs.subFS.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.io.fs.subFS _root_.Perennial.io.fs.subFS.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'subFS'fsys (l : Loc) (v : io.fs.subFS) (dq : DFrac) :
+noncomputable instance access_load'subFS'fsys (l : Loc) (v : _root_.Perennial.io.fs.subFS) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.fs.subFS go!"fsys" l) v.fsys' dq)
-      (typedPointsto (structFieldRef io.fs.subFS go!"fsys" l) v.fsys' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.subFS go!"fsys" l) v.fsys' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.subFS go!"fsys" l) v.fsys' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'subFS'fsys (l : Loc) (v : io.fs.subFS) (y : io.fs.FS) :
+noncomputable instance access_store'subFS'fsys (l : Loc) (v : _root_.Perennial.io.fs.subFS) (y : _root_.Perennial.io.fs.FS) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.fs.subFS go!"fsys" l) v.fsys' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.fs.subFS go!"fsys" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with fsys' := y } : io.fs.subFS) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.subFS go!"fsys" l) v.fsys' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.subFS go!"fsys" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with fsys' := y } : _root_.Perennial.io.fs.subFS) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'subFS'dir (l : Loc) (v : io.fs.subFS) (dq : DFrac) :
+noncomputable instance access_load'subFS'dir (l : Loc) (v : _root_.Perennial.io.fs.subFS) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.fs.subFS go!"dir" l) v.dir' dq)
-      (typedPointsto (structFieldRef io.fs.subFS go!"dir" l) v.dir' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.subFS go!"dir" l) v.dir' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.subFS go!"dir" l) v.dir' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'subFS'dir (l : Loc) (v : io.fs.subFS) (y : GoString) :
+noncomputable instance access_store'subFS'dir (l : Loc) (v : _root_.Perennial.io.fs.subFS) (y : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.fs.subFS go!"dir" l) v.dir' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.fs.subFS go!"dir" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with dir' := y } : io.fs.subFS) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.subFS go!"dir" l) v.dir' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.fs.subFS go!"dir" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with dir' := y } : _root_.Perennial.io.fs.subFS) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

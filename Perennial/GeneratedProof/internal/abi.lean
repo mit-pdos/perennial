@@ -22,14 +22,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'RegArgs :
-    TypedPointsto (GF := GF) internal.abi.RegArgs :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.RegArgs :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'RegArgs :
-    IntoValTypedUnderlying (GF := GF) internal.abi.RegArgs internal.abi.RegArgs.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.RegArgs _root_.Perennial.internal.abi.RegArgs.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -41,14 +41,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'IntArgRegBitmap :
-    TypedPointsto (GF := GF) internal.abi.IntArgRegBitmap :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.IntArgRegBitmap :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'IntArgRegBitmap :
-    IntoValTypedUnderlying (GF := GF) internal.abi.IntArgRegBitmap internal.abi.IntArgRegBitmap.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.IntArgRegBitmap _root_.Perennial.internal.abi.IntArgRegBitmap.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -60,14 +60,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'BoundsErrorCode :
-    TypedPointsto (GF := GF) internal.abi.BoundsErrorCode :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.BoundsErrorCode :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'BoundsErrorCode :
-    IntoValTypedUnderlying (GF := GF) internal.abi.BoundsErrorCode internal.abi.BoundsErrorCode.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.BoundsErrorCode _root_.Perennial.internal.abi.BoundsErrorCode.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -79,14 +79,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'ITab :
-    TypedPointsto (GF := GF) internal.abi.ITab :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.ITab :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'ITab :
-    IntoValTypedUnderlying (GF := GF) internal.abi.ITab internal.abi.ITab.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.ITab _root_.Perennial.internal.abi.ITab.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -98,14 +98,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'EmptyInterface :
-    TypedPointsto (GF := GF) internal.abi.EmptyInterface :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.EmptyInterface :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'EmptyInterface :
-    IntoValTypedUnderlying (GF := GF) internal.abi.EmptyInterface internal.abi.EmptyInterface.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.EmptyInterface _root_.Perennial.internal.abi.EmptyInterface.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -117,14 +117,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'NonEmptyInterface :
-    TypedPointsto (GF := GF) internal.abi.NonEmptyInterface :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.NonEmptyInterface :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'NonEmptyInterface :
-    IntoValTypedUnderlying (GF := GF) internal.abi.NonEmptyInterface internal.abi.NonEmptyInterface.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.NonEmptyInterface _root_.Perennial.internal.abi.NonEmptyInterface.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -136,14 +136,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'CommonInterface :
-    TypedPointsto (GF := GF) internal.abi.CommonInterface :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.CommonInterface :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'CommonInterface :
-    IntoValTypedUnderlying (GF := GF) internal.abi.CommonInterface internal.abi.CommonInterface.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.CommonInterface _root_.Perennial.internal.abi.CommonInterface.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -155,14 +155,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'MapType :
-    TypedPointsto (GF := GF) internal.abi.MapType :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.MapType :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'MapType :
-    IntoValTypedUnderlying (GF := GF) internal.abi.MapType internal.abi.MapType.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.MapType _root_.Perennial.internal.abi.MapType.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -174,14 +174,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'RF_State :
-    TypedPointsto (GF := GF) internal.abi.RF_State :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.RF_State :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'RF_State :
-    IntoValTypedUnderlying (GF := GF) internal.abi.RF_State internal.abi.RF_State.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.RF_State _root_.Perennial.internal.abi.RF_State.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -193,14 +193,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'InterfaceSwitch :
-    TypedPointsto (GF := GF) internal.abi.InterfaceSwitch :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.InterfaceSwitch :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'InterfaceSwitch :
-    IntoValTypedUnderlying (GF := GF) internal.abi.InterfaceSwitch internal.abi.InterfaceSwitch.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.InterfaceSwitch _root_.Perennial.internal.abi.InterfaceSwitch.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -212,14 +212,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'InterfaceSwitchCache :
-    TypedPointsto (GF := GF) internal.abi.InterfaceSwitchCache :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.InterfaceSwitchCache :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'InterfaceSwitchCache :
-    IntoValTypedUnderlying (GF := GF) internal.abi.InterfaceSwitchCache internal.abi.InterfaceSwitchCache.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.InterfaceSwitchCache _root_.Perennial.internal.abi.InterfaceSwitchCache.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -231,14 +231,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'InterfaceSwitchCacheEntry :
-    TypedPointsto (GF := GF) internal.abi.InterfaceSwitchCacheEntry :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.InterfaceSwitchCacheEntry :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'InterfaceSwitchCacheEntry :
-    IntoValTypedUnderlying (GF := GF) internal.abi.InterfaceSwitchCacheEntry internal.abi.InterfaceSwitchCacheEntry.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.InterfaceSwitchCacheEntry _root_.Perennial.internal.abi.InterfaceSwitchCacheEntry.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -250,14 +250,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'TypeAssert :
-    TypedPointsto (GF := GF) internal.abi.TypeAssert'' :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.TypeAssert'' :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'TypeAssert :
-    IntoValTypedUnderlying (GF := GF) internal.abi.TypeAssert'' internal.abi.TypeAssert''.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.TypeAssert'' _root_.Perennial.internal.abi.TypeAssert''.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -269,14 +269,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'TypeAssertCache :
-    TypedPointsto (GF := GF) internal.abi.TypeAssertCache :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.TypeAssertCache :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'TypeAssertCache :
-    IntoValTypedUnderlying (GF := GF) internal.abi.TypeAssertCache internal.abi.TypeAssertCache.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.TypeAssertCache _root_.Perennial.internal.abi.TypeAssertCache.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -288,14 +288,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'TypeAssertCacheEntry :
-    TypedPointsto (GF := GF) internal.abi.TypeAssertCacheEntry :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.TypeAssertCacheEntry :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'TypeAssertCacheEntry :
-    IntoValTypedUnderlying (GF := GF) internal.abi.TypeAssertCacheEntry internal.abi.TypeAssertCacheEntry.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.TypeAssertCacheEntry _root_.Perennial.internal.abi.TypeAssertCacheEntry.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -307,14 +307,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'PCLnTabMagic :
-    TypedPointsto (GF := GF) internal.abi.PCLnTabMagic :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.PCLnTabMagic :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'PCLnTabMagic :
-    IntoValTypedUnderlying (GF := GF) internal.abi.PCLnTabMagic internal.abi.PCLnTabMagic.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.PCLnTabMagic _root_.Perennial.internal.abi.PCLnTabMagic.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -326,14 +326,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'FuncFlag :
-    TypedPointsto (GF := GF) internal.abi.FuncFlag :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.FuncFlag :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'FuncFlag :
-    IntoValTypedUnderlying (GF := GF) internal.abi.FuncFlag internal.abi.FuncFlag.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.FuncFlag _root_.Perennial.internal.abi.FuncFlag.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -345,14 +345,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'FuncID :
-    TypedPointsto (GF := GF) internal.abi.FuncID :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.FuncID :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'FuncID :
-    IntoValTypedUnderlying (GF := GF) internal.abi.FuncID internal.abi.FuncID.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.FuncID _root_.Perennial.internal.abi.FuncID.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -364,204 +364,204 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'Type :
-    TypedPointsto (GF := GF) internal.abi.Type'' where
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.Type'' where
   typedPointstoDef l v dq := iprop(
-    "Size_" ∷ typedPointsto (structFieldRef internal.abi.Type'' go!"Size_" l) v.Size_' dq ∗
-    "PtrBytes" ∷ typedPointsto (structFieldRef internal.abi.Type'' go!"PtrBytes" l) v.PtrBytes' dq ∗
-    "Hash" ∷ typedPointsto (structFieldRef internal.abi.Type'' go!"Hash" l) v.Hash' dq ∗
-    "TFlag" ∷ typedPointsto (structFieldRef internal.abi.Type'' go!"TFlag" l) v.TFlag' dq ∗
-    "Align_" ∷ typedPointsto (structFieldRef internal.abi.Type'' go!"Align_" l) v.Align_' dq ∗
-    "FieldAlign_" ∷ typedPointsto (structFieldRef internal.abi.Type'' go!"FieldAlign_" l) v.FieldAlign_' dq ∗
-    "Kind_" ∷ typedPointsto (structFieldRef internal.abi.Type'' go!"Kind_" l) v.Kind_' dq ∗
-    "Equal" ∷ typedPointsto (structFieldRef internal.abi.Type'' go!"Equal" l) v.Equal' dq ∗
-    "GCData" ∷ typedPointsto (structFieldRef internal.abi.Type'' go!"GCData" l) v.GCData' dq ∗
-    "Str" ∷ typedPointsto (structFieldRef internal.abi.Type'' go!"Str" l) v.Str' dq ∗
-    "PtrToThis" ∷ typedPointsto (structFieldRef internal.abi.Type'' go!"PtrToThis" l) v.PtrToThis' dq ∗
+    "Size_" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Size_" l) v.Size_' dq ∗
+    "PtrBytes" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"PtrBytes" l) v.PtrBytes' dq ∗
+    "Hash" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Hash" l) v.Hash' dq ∗
+    "TFlag" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"TFlag" l) v.TFlag' dq ∗
+    "Align_" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Align_" l) v.Align_' dq ∗
+    "FieldAlign_" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"FieldAlign_" l) v.FieldAlign_' dq ∗
+    "Kind_" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Kind_" l) v.Kind_' dq ∗
+    "Equal" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Equal" l) v.Equal' dq ∗
+    "GCData" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"GCData" l) v.GCData' dq ∗
+    "Str" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Str" l) v.Str' dq ∗
+    "PtrToThis" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"PtrToThis" l) v.PtrToThis' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'Type :
-    IntoValTypedUnderlying (GF := GF) internal.abi.Type'' internal.abi.Type''.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.Type'' _root_.Perennial.internal.abi.Type''.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'Type'Size_ (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
+noncomputable instance access_load'Type'Size_ (l : Loc) (v : _root_.Perennial.internal.abi.Type'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Size_" l) v.Size_' dq)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Size_" l) v.Size_' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Size_" l) v.Size_' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Size_" l) v.Size_' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Type'Size_ (l : Loc) (v : internal.abi.Type'') (y : w64) :
+noncomputable instance access_store'Type'Size_ (l : Loc) (v : _root_.Perennial.internal.abi.Type'') (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Size_" l) v.Size_' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Size_" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Size_' := y } : internal.abi.Type'') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Size_" l) v.Size_' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Size_" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Size_' := y } : _root_.Perennial.internal.abi.Type'') (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Type'PtrBytes (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
+noncomputable instance access_load'Type'PtrBytes (l : Loc) (v : _root_.Perennial.internal.abi.Type'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"PtrBytes" l) v.PtrBytes' dq)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"PtrBytes" l) v.PtrBytes' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"PtrBytes" l) v.PtrBytes' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"PtrBytes" l) v.PtrBytes' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Type'PtrBytes (l : Loc) (v : internal.abi.Type'') (y : w64) :
+noncomputable instance access_store'Type'PtrBytes (l : Loc) (v : _root_.Perennial.internal.abi.Type'') (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"PtrBytes" l) v.PtrBytes' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"PtrBytes" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with PtrBytes' := y } : internal.abi.Type'') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"PtrBytes" l) v.PtrBytes' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"PtrBytes" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with PtrBytes' := y } : _root_.Perennial.internal.abi.Type'') (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Type'Hash (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
+noncomputable instance access_load'Type'Hash (l : Loc) (v : _root_.Perennial.internal.abi.Type'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Hash" l) v.Hash' dq)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Hash" l) v.Hash' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Hash" l) v.Hash' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Hash" l) v.Hash' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Type'Hash (l : Loc) (v : internal.abi.Type'') (y : w32) :
+noncomputable instance access_store'Type'Hash (l : Loc) (v : _root_.Perennial.internal.abi.Type'') (y : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Hash" l) v.Hash' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Hash" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Hash' := y } : internal.abi.Type'') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Hash" l) v.Hash' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Hash" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Hash' := y } : _root_.Perennial.internal.abi.Type'') (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Type'TFlag (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
+noncomputable instance access_load'Type'TFlag (l : Loc) (v : _root_.Perennial.internal.abi.Type'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"TFlag" l) v.TFlag' dq)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"TFlag" l) v.TFlag' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"TFlag" l) v.TFlag' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"TFlag" l) v.TFlag' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Type'TFlag (l : Loc) (v : internal.abi.Type'') (y : internal.abi.TFlag) :
+noncomputable instance access_store'Type'TFlag (l : Loc) (v : _root_.Perennial.internal.abi.Type'') (y : _root_.Perennial.internal.abi.TFlag) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"TFlag" l) v.TFlag' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"TFlag" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with TFlag' := y } : internal.abi.Type'') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"TFlag" l) v.TFlag' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"TFlag" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with TFlag' := y } : _root_.Perennial.internal.abi.Type'') (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Type'Align_ (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
+noncomputable instance access_load'Type'Align_ (l : Loc) (v : _root_.Perennial.internal.abi.Type'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Align_" l) v.Align_' dq)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Align_" l) v.Align_' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Align_" l) v.Align_' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Align_" l) v.Align_' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Type'Align_ (l : Loc) (v : internal.abi.Type'') (y : w8) :
+noncomputable instance access_store'Type'Align_ (l : Loc) (v : _root_.Perennial.internal.abi.Type'') (y : w8) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Align_" l) v.Align_' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Align_" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Align_' := y } : internal.abi.Type'') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Align_" l) v.Align_' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Align_" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Align_' := y } : _root_.Perennial.internal.abi.Type'') (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Type'FieldAlign_ (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
+noncomputable instance access_load'Type'FieldAlign_ (l : Loc) (v : _root_.Perennial.internal.abi.Type'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"FieldAlign_" l) v.FieldAlign_' dq)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"FieldAlign_" l) v.FieldAlign_' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"FieldAlign_" l) v.FieldAlign_' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"FieldAlign_" l) v.FieldAlign_' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Type'FieldAlign_ (l : Loc) (v : internal.abi.Type'') (y : w8) :
+noncomputable instance access_store'Type'FieldAlign_ (l : Loc) (v : _root_.Perennial.internal.abi.Type'') (y : w8) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"FieldAlign_" l) v.FieldAlign_' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"FieldAlign_" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with FieldAlign_' := y } : internal.abi.Type'') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"FieldAlign_" l) v.FieldAlign_' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"FieldAlign_" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with FieldAlign_' := y } : _root_.Perennial.internal.abi.Type'') (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Type'Kind_ (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
+noncomputable instance access_load'Type'Kind_ (l : Loc) (v : _root_.Perennial.internal.abi.Type'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Kind_" l) v.Kind_' dq)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Kind_" l) v.Kind_' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Kind_" l) v.Kind_' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Kind_" l) v.Kind_' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Type'Kind_ (l : Loc) (v : internal.abi.Type'') (y : internal.abi.Kind) :
+noncomputable instance access_store'Type'Kind_ (l : Loc) (v : _root_.Perennial.internal.abi.Type'') (y : _root_.Perennial.internal.abi.Kind) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Kind_" l) v.Kind_' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Kind_" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Kind_' := y } : internal.abi.Type'') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Kind_" l) v.Kind_' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Kind_" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Kind_' := y } : _root_.Perennial.internal.abi.Type'') (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Type'Equal (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
+noncomputable instance access_load'Type'Equal (l : Loc) (v : _root_.Perennial.internal.abi.Type'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Equal" l) v.Equal' dq)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Equal" l) v.Equal' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Equal" l) v.Equal' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Equal" l) v.Equal' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Type'Equal (l : Loc) (v : internal.abi.Type'') (y : GoFunc) :
+noncomputable instance access_store'Type'Equal (l : Loc) (v : _root_.Perennial.internal.abi.Type'') (y : GoFunc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Equal" l) v.Equal' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Equal" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Equal' := y } : internal.abi.Type'') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Equal" l) v.Equal' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Equal" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Equal' := y } : _root_.Perennial.internal.abi.Type'') (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Type'GCData (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
+noncomputable instance access_load'Type'GCData (l : Loc) (v : _root_.Perennial.internal.abi.Type'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"GCData" l) v.GCData' dq)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"GCData" l) v.GCData' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"GCData" l) v.GCData' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"GCData" l) v.GCData' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Type'GCData (l : Loc) (v : internal.abi.Type'') (y : Loc) :
+noncomputable instance access_store'Type'GCData (l : Loc) (v : _root_.Perennial.internal.abi.Type'') (y : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"GCData" l) v.GCData' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"GCData" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with GCData' := y } : internal.abi.Type'') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"GCData" l) v.GCData' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"GCData" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with GCData' := y } : _root_.Perennial.internal.abi.Type'') (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Type'Str (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
+noncomputable instance access_load'Type'Str (l : Loc) (v : _root_.Perennial.internal.abi.Type'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Str" l) v.Str' dq)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Str" l) v.Str' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Str" l) v.Str' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Str" l) v.Str' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Type'Str (l : Loc) (v : internal.abi.Type'') (y : internal.abi.NameOff) :
+noncomputable instance access_store'Type'Str (l : Loc) (v : _root_.Perennial.internal.abi.Type'') (y : _root_.Perennial.internal.abi.NameOff) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Str" l) v.Str' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"Str" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Str' := y } : internal.abi.Type'') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Str" l) v.Str' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"Str" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Str' := y } : _root_.Perennial.internal.abi.Type'') (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Type'PtrToThis (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
+noncomputable instance access_load'Type'PtrToThis (l : Loc) (v : _root_.Perennial.internal.abi.Type'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"PtrToThis" l) v.PtrToThis' dq)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"PtrToThis" l) v.PtrToThis' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"PtrToThis" l) v.PtrToThis' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"PtrToThis" l) v.PtrToThis' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Type'PtrToThis (l : Loc) (v : internal.abi.Type'') (y : internal.abi.TypeOff) :
+noncomputable instance access_store'Type'PtrToThis (l : Loc) (v : _root_.Perennial.internal.abi.Type'') (y : _root_.Perennial.internal.abi.TypeOff) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"PtrToThis" l) v.PtrToThis' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.abi.Type'' go!"PtrToThis" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with PtrToThis' := y } : internal.abi.Type'') (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"PtrToThis" l) v.PtrToThis' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.abi.Type'' go!"PtrToThis" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with PtrToThis' := y } : _root_.Perennial.internal.abi.Type'') (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -574,14 +574,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'TextOff :
-    TypedPointsto (GF := GF) internal.abi.TextOff :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.TextOff :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'TextOff :
-    IntoValTypedUnderlying (GF := GF) internal.abi.TextOff internal.abi.TextOff.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.TextOff _root_.Perennial.internal.abi.TextOff.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -593,14 +593,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'Method :
-    TypedPointsto (GF := GF) internal.abi.Method :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.Method :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'Method :
-    IntoValTypedUnderlying (GF := GF) internal.abi.Method internal.abi.Method.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.Method _root_.Perennial.internal.abi.Method.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -612,14 +612,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'UncommonType :
-    TypedPointsto (GF := GF) internal.abi.UncommonType :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.UncommonType :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'UncommonType :
-    IntoValTypedUnderlying (GF := GF) internal.abi.UncommonType internal.abi.UncommonType.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.UncommonType _root_.Perennial.internal.abi.UncommonType.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -631,14 +631,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'Imethod :
-    TypedPointsto (GF := GF) internal.abi.Imethod :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.Imethod :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'Imethod :
-    IntoValTypedUnderlying (GF := GF) internal.abi.Imethod internal.abi.Imethod.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.Imethod _root_.Perennial.internal.abi.Imethod.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -650,14 +650,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'ArrayType :
-    TypedPointsto (GF := GF) internal.abi.ArrayType :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.ArrayType :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'ArrayType :
-    IntoValTypedUnderlying (GF := GF) internal.abi.ArrayType internal.abi.ArrayType.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.ArrayType _root_.Perennial.internal.abi.ArrayType.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -669,14 +669,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'ChanDir :
-    TypedPointsto (GF := GF) internal.abi.ChanDir :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.ChanDir :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'ChanDir :
-    IntoValTypedUnderlying (GF := GF) internal.abi.ChanDir internal.abi.ChanDir.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.ChanDir _root_.Perennial.internal.abi.ChanDir.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -688,14 +688,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'ChanType :
-    TypedPointsto (GF := GF) internal.abi.ChanType :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.ChanType :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'ChanType :
-    IntoValTypedUnderlying (GF := GF) internal.abi.ChanType internal.abi.ChanType.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.ChanType _root_.Perennial.internal.abi.ChanType.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -707,14 +707,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'structTypeUncommon :
-    TypedPointsto (GF := GF) internal.abi.structTypeUncommon :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.structTypeUncommon :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'structTypeUncommon :
-    IntoValTypedUnderlying (GF := GF) internal.abi.structTypeUncommon internal.abi.structTypeUncommon.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.structTypeUncommon _root_.Perennial.internal.abi.structTypeUncommon.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -726,14 +726,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'InterfaceType :
-    TypedPointsto (GF := GF) internal.abi.InterfaceType :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.InterfaceType :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'InterfaceType :
-    IntoValTypedUnderlying (GF := GF) internal.abi.InterfaceType internal.abi.InterfaceType.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.InterfaceType _root_.Perennial.internal.abi.InterfaceType.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -745,14 +745,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'SliceType :
-    TypedPointsto (GF := GF) internal.abi.SliceType :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.SliceType :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'SliceType :
-    IntoValTypedUnderlying (GF := GF) internal.abi.SliceType internal.abi.SliceType.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.SliceType _root_.Perennial.internal.abi.SliceType.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -764,14 +764,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'FuncType :
-    TypedPointsto (GF := GF) internal.abi.FuncType :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.FuncType :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'FuncType :
-    IntoValTypedUnderlying (GF := GF) internal.abi.FuncType internal.abi.FuncType.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.FuncType _root_.Perennial.internal.abi.FuncType.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -783,14 +783,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'PtrType :
-    TypedPointsto (GF := GF) internal.abi.PtrType :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.PtrType :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'PtrType :
-    IntoValTypedUnderlying (GF := GF) internal.abi.PtrType internal.abi.PtrType.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.PtrType _root_.Perennial.internal.abi.PtrType.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -802,14 +802,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'StructField :
-    TypedPointsto (GF := GF) internal.abi.StructField :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.StructField :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'StructField :
-    IntoValTypedUnderlying (GF := GF) internal.abi.StructField internal.abi.StructField.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.StructField _root_.Perennial.internal.abi.StructField.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -821,14 +821,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'StructType :
-    TypedPointsto (GF := GF) internal.abi.StructType :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.StructType :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'StructType :
-    IntoValTypedUnderlying (GF := GF) internal.abi.StructType internal.abi.StructType.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.StructType _root_.Perennial.internal.abi.StructType.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -840,14 +840,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.abi.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.abi.Assumptions]
 
 noncomputable instance typed_pointsto'Name :
-    TypedPointsto (GF := GF) internal.abi.Name :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.abi.Name :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'Name :
-    IntoValTypedUnderlying (GF := GF) internal.abi.Name internal.abi.Name.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.abi.Name _root_.Perennial.internal.abi.Name.underlying :=
   sorry -- axiomatized type
 
 end def_

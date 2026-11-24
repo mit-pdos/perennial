@@ -23,34 +23,34 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : errors.Assumptions]
+variable [package_sem' : _root_.Perennial.errors.Assumptions]
 
 noncomputable instance typed_pointsto'errorString :
-    TypedPointsto (GF := GF) errors.errorString where
+    TypedPointsto (GF := GF) _root_.Perennial.errors.errorString where
   typedPointstoDef l v dq := iprop(
-    "s" ∷ typedPointsto (structFieldRef errors.errorString go!"s" l) v.s' dq ∗
+    "s" ∷ typedPointsto (structFieldRef _root_.Perennial.errors.errorString go!"s" l) v.s' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'errorString :
-    IntoValTypedUnderlying (GF := GF) errors.errorString errors.errorString.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.errors.errorString _root_.Perennial.errors.errorString.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'errorString's (l : Loc) (v : errors.errorString) (dq : DFrac) :
+noncomputable instance access_load'errorString's (l : Loc) (v : _root_.Perennial.errors.errorString) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef errors.errorString go!"s" l) v.s' dq)
-      (typedPointsto (structFieldRef errors.errorString go!"s" l) v.s' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.errors.errorString go!"s" l) v.s' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.errors.errorString go!"s" l) v.s' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'errorString's (l : Loc) (v : errors.errorString) (y : GoString) :
+noncomputable instance access_store'errorString's (l : Loc) (v : _root_.Perennial.errors.errorString) (y : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef errors.errorString go!"s" l) v.s' (DFrac.own 1))
-      (typedPointsto (structFieldRef errors.errorString go!"s" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with s' := y } : errors.errorString) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.errors.errorString go!"s" l) v.s' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.errors.errorString go!"s" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with s' := y } : _root_.Perennial.errors.errorString) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -63,34 +63,34 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : errors.Assumptions]
+variable [package_sem' : _root_.Perennial.errors.Assumptions]
 
 noncomputable instance typed_pointsto'joinError :
-    TypedPointsto (GF := GF) errors.joinError where
+    TypedPointsto (GF := GF) _root_.Perennial.errors.joinError where
   typedPointstoDef l v dq := iprop(
-    "errs" ∷ typedPointsto (structFieldRef errors.joinError go!"errs" l) v.errs' dq ∗
+    "errs" ∷ typedPointsto (structFieldRef _root_.Perennial.errors.joinError go!"errs" l) v.errs' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'joinError :
-    IntoValTypedUnderlying (GF := GF) errors.joinError errors.joinError.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.errors.joinError _root_.Perennial.errors.joinError.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'joinError'errs (l : Loc) (v : errors.joinError) (dq : DFrac) :
+noncomputable instance access_load'joinError'errs (l : Loc) (v : _root_.Perennial.errors.joinError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef errors.joinError go!"errs" l) v.errs' dq)
-      (typedPointsto (structFieldRef errors.joinError go!"errs" l) v.errs' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.errors.joinError go!"errs" l) v.errs' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.errors.joinError go!"errs" l) v.errs' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'joinError'errs (l : Loc) (v : errors.joinError) (y : GoSlice) :
+noncomputable instance access_store'joinError'errs (l : Loc) (v : _root_.Perennial.errors.joinError) (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef errors.joinError go!"errs" l) v.errs' (DFrac.own 1))
-      (typedPointsto (structFieldRef errors.joinError go!"errs" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with errs' := y } : errors.joinError) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.errors.joinError go!"errs" l) v.errs' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.errors.joinError go!"errs" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with errs' := y } : _root_.Perennial.errors.joinError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

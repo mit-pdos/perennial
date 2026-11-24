@@ -23,34 +23,34 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Assumptions]
+variable [package_sem' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Assumptions]
 
 noncomputable instance typed_pointsto'Lock :
-    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock where
+    TypedPointsto (GF := GF) _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock where
   typedPointstoDef l v dq := iprop(
-    "ch" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock go!"ch" l) v.ch' dq ∗
+    "ch" ∷ typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock go!"ch" l) v.ch' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'Lock :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'Lock'ch (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock) (dq : DFrac) :
+noncomputable instance access_load'Lock'ch (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock go!"ch" l) v.ch' dq)
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock go!"ch" l) v.ch' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock go!"ch" l) v.ch' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock go!"ch" l) v.ch' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Lock'ch (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock) (y : GoChan) :
+noncomputable instance access_store'Lock'ch (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock) (y : GoChan) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock go!"ch" l) v.ch' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock go!"ch" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ch' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock go!"ch" l) v.ch' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock go!"ch" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ch' := y } : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

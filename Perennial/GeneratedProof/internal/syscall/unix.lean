@@ -23,51 +23,51 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.syscall.unix.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.syscall.unix.Assumptions]
 
 noncomputable instance typed_pointsto'siErrnoCode :
-    TypedPointsto (GF := GF) internal.syscall.unix.siErrnoCode where
+    TypedPointsto (GF := GF) _root_.Perennial.internal.syscall.unix.siErrnoCode where
   typedPointstoDef l v dq := iprop(
-    "Errno" ∷ typedPointsto (structFieldRef internal.syscall.unix.siErrnoCode go!"Errno" l) v.Errno' dq ∗
-    "Code" ∷ typedPointsto (structFieldRef internal.syscall.unix.siErrnoCode go!"Code" l) v.Code' dq ∗
+    "Errno" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.siErrnoCode go!"Errno" l) v.Errno' dq ∗
+    "Code" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.siErrnoCode go!"Code" l) v.Code' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'siErrnoCode :
-    IntoValTypedUnderlying (GF := GF) internal.syscall.unix.siErrnoCode internal.syscall.unix.siErrnoCode.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.syscall.unix.siErrnoCode _root_.Perennial.internal.syscall.unix.siErrnoCode.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'siErrnoCode'Errno (l : Loc) (v : internal.syscall.unix.siErrnoCode) (dq : DFrac) :
+noncomputable instance access_load'siErrnoCode'Errno (l : Loc) (v : _root_.Perennial.internal.syscall.unix.siErrnoCode) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.syscall.unix.siErrnoCode go!"Errno" l) v.Errno' dq)
-      (typedPointsto (structFieldRef internal.syscall.unix.siErrnoCode go!"Errno" l) v.Errno' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.siErrnoCode go!"Errno" l) v.Errno' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.siErrnoCode go!"Errno" l) v.Errno' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'siErrnoCode'Errno (l : Loc) (v : internal.syscall.unix.siErrnoCode) (y : w32) :
+noncomputable instance access_store'siErrnoCode'Errno (l : Loc) (v : _root_.Perennial.internal.syscall.unix.siErrnoCode) (y : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.syscall.unix.siErrnoCode go!"Errno" l) v.Errno' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.syscall.unix.siErrnoCode go!"Errno" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Errno' := y } : internal.syscall.unix.siErrnoCode) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.siErrnoCode go!"Errno" l) v.Errno' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.siErrnoCode go!"Errno" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Errno' := y } : _root_.Perennial.internal.syscall.unix.siErrnoCode) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'siErrnoCode'Code (l : Loc) (v : internal.syscall.unix.siErrnoCode) (dq : DFrac) :
+noncomputable instance access_load'siErrnoCode'Code (l : Loc) (v : _root_.Perennial.internal.syscall.unix.siErrnoCode) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.syscall.unix.siErrnoCode go!"Code" l) v.Code' dq)
-      (typedPointsto (structFieldRef internal.syscall.unix.siErrnoCode go!"Code" l) v.Code' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.siErrnoCode go!"Code" l) v.Code' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.siErrnoCode go!"Code" l) v.Code' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'siErrnoCode'Code (l : Loc) (v : internal.syscall.unix.siErrnoCode) (y : w32) :
+noncomputable instance access_store'siErrnoCode'Code (l : Loc) (v : _root_.Perennial.internal.syscall.unix.siErrnoCode) (y : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.syscall.unix.siErrnoCode go!"Code" l) v.Code' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.syscall.unix.siErrnoCode go!"Code" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Code' := y } : internal.syscall.unix.siErrnoCode) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.siErrnoCode go!"Code" l) v.Code' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.siErrnoCode go!"Code" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Code' := y } : _root_.Perennial.internal.syscall.unix.siErrnoCode) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -80,136 +80,136 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.syscall.unix.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.syscall.unix.Assumptions]
 
 noncomputable instance typed_pointsto'SiginfoChild :
-    TypedPointsto (GF := GF) internal.syscall.unix.SiginfoChild where
+    TypedPointsto (GF := GF) _root_.Perennial.internal.syscall.unix.SiginfoChild where
   typedPointstoDef l v dq := iprop(
-    "Signo" ∷ typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Signo" l) v.Signo' dq ∗
-    "siErrnoCode" ∷ typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"siErrnoCode" l) v.siErrnoCode' dq ∗
-    "«_#2»" ∷ typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"_#2" l) v.«_#2'» dq ∗
-    "Pid" ∷ typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Pid" l) v.Pid' dq ∗
-    "Uid" ∷ typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Uid" l) v.Uid' dq ∗
-    "Status" ∷ typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Status" l) v.Status' dq ∗
-    "«_#6»" ∷ typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"_#6" l) v.«_#6'» dq ∗
+    "Signo" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"Signo" l) v.Signo' dq ∗
+    "siErrnoCode" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"siErrnoCode" l) v.siErrnoCode' dq ∗
+    "«_#2»" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"_#2" l) v.«_#2'» dq ∗
+    "Pid" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"Pid" l) v.Pid' dq ∗
+    "Uid" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"Uid" l) v.Uid' dq ∗
+    "Status" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"Status" l) v.Status' dq ∗
+    "«_#6»" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"_#6" l) v.«_#6'» dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'SiginfoChild :
-    IntoValTypedUnderlying (GF := GF) internal.syscall.unix.SiginfoChild internal.syscall.unix.SiginfoChild.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.syscall.unix.SiginfoChild _root_.Perennial.internal.syscall.unix.SiginfoChild.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'SiginfoChild'Signo (l : Loc) (v : internal.syscall.unix.SiginfoChild) (dq : DFrac) :
+noncomputable instance access_load'SiginfoChild'Signo (l : Loc) (v : _root_.Perennial.internal.syscall.unix.SiginfoChild) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Signo" l) v.Signo' dq)
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Signo" l) v.Signo' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"Signo" l) v.Signo' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"Signo" l) v.Signo' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'SiginfoChild'Signo (l : Loc) (v : internal.syscall.unix.SiginfoChild) (y : w32) :
+noncomputable instance access_store'SiginfoChild'Signo (l : Loc) (v : _root_.Perennial.internal.syscall.unix.SiginfoChild) (y : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Signo" l) v.Signo' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Signo" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Signo' := y } : internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"Signo" l) v.Signo' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"Signo" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Signo' := y } : _root_.Perennial.internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'SiginfoChild'siErrnoCode (l : Loc) (v : internal.syscall.unix.SiginfoChild) (dq : DFrac) :
+noncomputable instance access_load'SiginfoChild'siErrnoCode (l : Loc) (v : _root_.Perennial.internal.syscall.unix.SiginfoChild) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"siErrnoCode" l) v.siErrnoCode' dq)
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"siErrnoCode" l) v.siErrnoCode' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"siErrnoCode" l) v.siErrnoCode' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"siErrnoCode" l) v.siErrnoCode' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'SiginfoChild'siErrnoCode (l : Loc) (v : internal.syscall.unix.SiginfoChild) (y : internal.syscall.unix.siErrnoCode) :
+noncomputable instance access_store'SiginfoChild'siErrnoCode (l : Loc) (v : _root_.Perennial.internal.syscall.unix.SiginfoChild) (y : _root_.Perennial.internal.syscall.unix.siErrnoCode) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"siErrnoCode" l) v.siErrnoCode' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"siErrnoCode" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with siErrnoCode' := y } : internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"siErrnoCode" l) v.siErrnoCode' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"siErrnoCode" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with siErrnoCode' := y } : _root_.Perennial.internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_load'SiginfoChild'_#2» (l : Loc) (v : internal.syscall.unix.SiginfoChild) (dq : DFrac) :
+noncomputable instance «access_load'SiginfoChild'_#2» (l : Loc) (v : _root_.Perennial.internal.syscall.unix.SiginfoChild) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"_#2" l) v.«_#2'» dq)
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"_#2" l) v.«_#2'» dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"_#2" l) v.«_#2'» dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"_#2" l) v.«_#2'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'SiginfoChild'_#2» (l : Loc) (v : internal.syscall.unix.SiginfoChild) (y : (GoArray w32 1)) :
+noncomputable instance «access_store'SiginfoChild'_#2» (l : Loc) (v : _root_.Perennial.internal.syscall.unix.SiginfoChild) (y : (GoArray w32 1)) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"_#2" l) v.«_#2'» (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"_#2" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#2'» := y } : internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"_#2" l) v.«_#2'» (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"_#2" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#2'» := y } : _root_.Perennial.internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'SiginfoChild'Pid (l : Loc) (v : internal.syscall.unix.SiginfoChild) (dq : DFrac) :
+noncomputable instance access_load'SiginfoChild'Pid (l : Loc) (v : _root_.Perennial.internal.syscall.unix.SiginfoChild) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Pid" l) v.Pid' dq)
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Pid" l) v.Pid' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"Pid" l) v.Pid' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"Pid" l) v.Pid' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'SiginfoChild'Pid (l : Loc) (v : internal.syscall.unix.SiginfoChild) (y : w32) :
+noncomputable instance access_store'SiginfoChild'Pid (l : Loc) (v : _root_.Perennial.internal.syscall.unix.SiginfoChild) (y : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Pid" l) v.Pid' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Pid" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Pid' := y } : internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"Pid" l) v.Pid' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"Pid" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Pid' := y } : _root_.Perennial.internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'SiginfoChild'Uid (l : Loc) (v : internal.syscall.unix.SiginfoChild) (dq : DFrac) :
+noncomputable instance access_load'SiginfoChild'Uid (l : Loc) (v : _root_.Perennial.internal.syscall.unix.SiginfoChild) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Uid" l) v.Uid' dq)
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Uid" l) v.Uid' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"Uid" l) v.Uid' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"Uid" l) v.Uid' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'SiginfoChild'Uid (l : Loc) (v : internal.syscall.unix.SiginfoChild) (y : w32) :
+noncomputable instance access_store'SiginfoChild'Uid (l : Loc) (v : _root_.Perennial.internal.syscall.unix.SiginfoChild) (y : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Uid" l) v.Uid' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Uid" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Uid' := y } : internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"Uid" l) v.Uid' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"Uid" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Uid' := y } : _root_.Perennial.internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'SiginfoChild'Status (l : Loc) (v : internal.syscall.unix.SiginfoChild) (dq : DFrac) :
+noncomputable instance access_load'SiginfoChild'Status (l : Loc) (v : _root_.Perennial.internal.syscall.unix.SiginfoChild) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Status" l) v.Status' dq)
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Status" l) v.Status' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"Status" l) v.Status' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"Status" l) v.Status' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'SiginfoChild'Status (l : Loc) (v : internal.syscall.unix.SiginfoChild) (y : w32) :
+noncomputable instance access_store'SiginfoChild'Status (l : Loc) (v : _root_.Perennial.internal.syscall.unix.SiginfoChild) (y : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Status" l) v.Status' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Status" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Status' := y } : internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"Status" l) v.Status' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"Status" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Status' := y } : _root_.Perennial.internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_load'SiginfoChild'_#6» (l : Loc) (v : internal.syscall.unix.SiginfoChild) (dq : DFrac) :
+noncomputable instance «access_load'SiginfoChild'_#6» (l : Loc) (v : _root_.Perennial.internal.syscall.unix.SiginfoChild) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"_#6" l) v.«_#6'» dq)
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"_#6" l) v.«_#6'» dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"_#6" l) v.«_#6'» dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"_#6" l) v.«_#6'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'SiginfoChild'_#6» (l : Loc) (v : internal.syscall.unix.SiginfoChild) (y : (GoArray w8 100)) :
+noncomputable instance «access_store'SiginfoChild'_#6» (l : Loc) (v : _root_.Perennial.internal.syscall.unix.SiginfoChild) (y : (GoArray w8 100)) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"_#6" l) v.«_#6'» (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"_#6" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#6'» := y } : internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"_#6" l) v.«_#6'» (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.syscall.unix.SiginfoChild go!"_#6" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#6'» := y } : _root_.Perennial.internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
