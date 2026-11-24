@@ -14,7 +14,10 @@
 #            TestBuilderGrow, TestBuilderAllocs, TestBuilderGrowSizeclasses,
 #            TestReplace              allocation counts: Builder.String's model
 #                                     copies the buffer, and copyCheck's stores
-#                                     b in b.addr, so b escapes
+#                                     b in b.addr, so b escapes; and
+#                                     internal/bytealg.MakeNoZero's Go body
+#                                     allocates exactly the length asked for,
+#                                     not gc's size class
 #            TestBuilderCopyPanic     copyCheck's model is stuck (gomodel.Stuck,
 #                                     which blocks in gc) where Go's check
 #                                     fails, and Reset's model keeps b.addr

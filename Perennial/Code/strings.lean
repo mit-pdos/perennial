@@ -781,6 +781,78 @@ noncomputable def NewReplacer.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
   (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Replacer.ty)))) (Var "$res0")))))
 
+/-- Count counts the number of non-overlapping instances of substr in s.
+    If substr is an empty string, Count returns 1 + the number of Unicode code points in s.
+
+    go: strings.go:42:6 -/
+noncomputable def Count.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Lam "substr"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "substr" (App (Val (GoInstruction (GoAlloc go.string))) (Var "substr"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 0))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
+  (Val #true))) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "substr"))
+  (App (App (App (Val (GoInstruction (FuncResolve Index' []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "substr"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int)))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))))
+  (Lam BAnon
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "substr"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (Val #(W64 1)))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "$a1" (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "substr")) (Val #(W64 0))))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.bytealg.CountString []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "substr"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.unicode.utf8.RuneCountInString []))) (Val #())) (Var "$a0"))) (Val #(W64 1))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
+
 /-- LastIndex returns the index of the last instance of substr in s, or -1 if substr is not present in s.
 
     go: strings.go:82:6 -/
@@ -952,12 +1024,18 @@ noncomputable def IndexByte.impl [GooseExts] [GoGlobalContext] : val :=
 /-- MODEL: Split(s, sep) is the substrings of s between the occurrences of sep
     (found left to right, not overlapping), as Go's genSplit(s, sep, 0, -1)
     computes them. The model finds the occurrences by testing HasPrefix at each
-    position: Go's genSplit counts them with Count and finds them with Index,
-    both of which end in internal/bytealg's assembly. For an empty sep, Go
-    splits s into its UTF-8 sequences (explode); the model is stuck there, so
-    every spec of Split requires sep to be non-empty.
+    position, where Go's genSplit counts them with Count and finds them with
+    Index. Goose translates the real Split, but at len(s) = 2^63-1 (a string gc
+    cannot hold) genSplit's len(s)+1 overflows and it panics, so its spec would
+    need a bound on len(s) that Split's spec does not have
+    (Perennial/Code/strings.toml). The model returns the same fields as
+    genSplit wherever genSplit does not panic, and there only: building such a
+    string needs an allocation gc refuses, which the semantics allows
+    (docs/KNOWN_LIMITATIONS.md, "No limit on allocation size"). For an empty
+    sep, Go splits s into its UTF-8 sequences (explode); the model is stuck
+    there, so every spec of Split requires sep to be non-empty.
 
-    go: strings.go:15:6 -/
+    go: strings.go:21:6 -/
 noncomputable def Split.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "sep"
@@ -1423,6 +1501,26 @@ noncomputable def TrimSuffix.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
+
+/-- Index returns the index of the first instance of substr in s, or -1 if substr is not present in s.
+
+    go: strings.go:1265:6 -/
+noncomputable def Index.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Lam "substr"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "substr" (App (Val (GoInstruction (GoAlloc go.string))) (Var "substr"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "substr"))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.stringslite.Index' []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
 /-- Cut slices s around the first instance of sep,
     returning the text before and after sep.
@@ -2005,6 +2103,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   asciiSet_instance : asciiSet.TypeAssumptions
   Compare_unfold : FuncUnfold Compare [] Compare.impl
   NewReplacer_unfold : FuncUnfold NewReplacer [] NewReplacer.impl
+  Count_unfold : FuncUnfold Count [] Count.impl
   LastIndex_unfold : FuncUnfold LastIndex [] LastIndex.impl
   IndexByte_unfold : FuncUnfold IndexByte [] IndexByte.impl
   Split_unfold : FuncUnfold Split [] Split.impl
@@ -2017,6 +2116,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   trimLeftASCII_unfold : FuncUnfold trimLeftASCII [] trimLeftASCII.impl
   TrimPrefix_unfold : FuncUnfold TrimPrefix [] TrimPrefix.impl
   TrimSuffix_unfold : FuncUnfold TrimSuffix [] TrimSuffix.impl
+  Index_unfold : FuncUnfold Index' [] Index.impl
   Cut_unfold : FuncUnfold Cut [] Cut.impl
   import_gomodel_Assumption : _root_.Perennial.internal.gomodel.Assumptions
   import_bytealg_Assumption : _root_.Perennial.internal.bytealg.Assumptions
@@ -2040,6 +2140,7 @@ attribute [instance] Assumptions.Builder_instance
   Assumptions.asciiSet_instance
   Assumptions.Compare_unfold
   Assumptions.NewReplacer_unfold
+  Assumptions.Count_unfold
   Assumptions.LastIndex_unfold
   Assumptions.IndexByte_unfold
   Assumptions.Split_unfold
@@ -2052,6 +2153,7 @@ attribute [instance] Assumptions.Builder_instance
   Assumptions.trimLeftASCII_unfold
   Assumptions.TrimPrefix_unfold
   Assumptions.TrimSuffix_unfold
+  Assumptions.Index_unfold
   Assumptions.Cut_unfold
   Assumptions.import_gomodel_Assumption
   Assumptions.import_bytealg_Assumption
