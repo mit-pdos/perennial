@@ -25,8 +25,8 @@ variable [package_sem : strings.Assumptions]
 
 /-- **The field `addr` of the `*Builder` at `l`**: nil, and owned, while the Builder has not been
 written to (`used = false`); `l` once it has (`used = true`), persistently: `copyCheck`'s model
-leaves a reader on the field for good, so nothing stores to it again (`TrustedCode/strings.lean`,
-`Builder.copyCheck.impl`). -/
+leaves a reader on the field for good (`gomodel.StartRead(&b.addr)`), so nothing stores to it again
+(`goose/model/overlay/strings/builder.go`, `copyCheck`). -/
 def ownBuilderAddr (l : Loc) (used : Bool) : IProp GF :=
   if used then typedPointsto (structFieldRef Builder go!"addr" l) l DFrac.discard
   else typedPointsto (structFieldRef Builder go!"addr" l) null (DFrac.own 1)

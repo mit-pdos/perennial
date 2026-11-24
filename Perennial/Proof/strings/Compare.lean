@@ -4,7 +4,7 @@ The proof of `strings.Compare`.
 module
 
 public import Perennial.Spec.strings.Compare
-public import Perennial.Proof.github_com.mit_pdos.perennial.goose.model.strings.Base
+public import Perennial.Spec.internal.bytealg.CompareString
 
 @[expose] public section
 
@@ -21,25 +21,16 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : strings.Assumptions]
 
-/-- Proved from the model of `Compare` (`Perennial/TrustedCode/strings.lean`). -/
-theorem strings.Compare.wp_proof :
+/-- Proved from the real Go, translated (`return bytealg.CompareString(a, b)`). -/
+theorem strings.Compare.wp_proof
+    (wp_CompareString : internal.bytealg.CompareString.spec (GF := GF) (hG := hG)) :
     strings.Compare.spec (GF := GF) (hG := hG) := by
   intro a b
   wp_start
-  unfold compareResult
-  by_cases hlt : go.GoStringLt a b
-  · simp only [hlt, decide_true, ↓reduceIte]
-    wp_auto
-    iapply HΦ; itrivial
-  · simp only [hlt, decide_false, ↓reduceIte]
-    wp_auto
-    by_cases heq : a = b
-    · simp only [heq, decide_true, ↓reduceIte]
-      wp_auto
-      iapply HΦ; itrivial
-    · simp only [heq, decide_false, ↓reduceIte]
-      wp_auto
-      iapply HΦ; itrivial
+  wp_auto
+  wp_apply wp_CompareString
+  rw [show internal.bytealg.compareResult a b = compareResult a b from rfl]
+  iapply HΦ; itrivial
 
 end proof
 

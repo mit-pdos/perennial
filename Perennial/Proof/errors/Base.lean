@@ -34,7 +34,7 @@ values of some Lean type `V` (with an injective `#`), of which its value, and th
 errors of `S` of its type, are (Go's typing). Pointer errors (`comparableErr_pointer`, `V := Loc`)
 and errors of a named integer type such as `syscall.Errno` (`comparableErr_uintptr`, `V := w64`).
 (`Is` asks `reflectlite` whether `target`'s type is comparable, and the model takes it to be:
-`TrustedCode/errors.lean`; for these types Go's answer is `true` as well.) -/
+`goose/model/overlay/errors/wrap.go`; for these types Go's answer is `true` as well.) -/
 def ComparableErr [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] (S : GoError → Prop) (tii : GoInterfaceOk) : Prop :=
   ∃ (V : Type) (_ : DecidableEq V), Function.Injective (intoVal (V := V)) ∧
     (⟦CheckComparable tii.ty, #()⟧ ⤳ #()) ∧
@@ -265,7 +265,7 @@ methods, and for each error in it the specs of its methods (`errorIsNode`); a pr
 what an `Is` method's `true` means.
 
 The tree walk `is(err, target, targetComparable)` is translated (`wp_is`). `Is` itself is a
-trusted model (`TrustedCode/errors.lean`): Go's `Is` with its one reflection call,
+Go model (`goose/model/overlay/errors/wrap.go`), translated: Go's `Is` with its one reflection call,
 `reflectlite.TypeOf(target).Comparable()`, replaced by `true`, which is Go's answer for the
 `nil` and pointer targets `wp_Is` admits. -/
 

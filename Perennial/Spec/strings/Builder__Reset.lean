@@ -21,8 +21,8 @@ variable [sem : go.Semantics]
 variable [package_sem : strings.Assumptions]
 
 /-- `b.Reset()`: the Builder is empty again. (Go's also unties it from `b`'s address, so that a
-copy of it may be written to; the model does not, `TrustedCode/strings.lean`, and neither does the
-spec.) -/
+copy of it may be written to; the model does not, `goose/model/overlay/strings/builder.go`, and
+neither does the spec.) -/
 abbrev strings.Builder.Reset.spec : Prop :=
   ∀ (l : Loc) (s : GoString),
     {{ strings.ownBuilder (GF := GF) l s }}

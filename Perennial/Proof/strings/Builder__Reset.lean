@@ -26,7 +26,6 @@ theorem strings.Builder.Reset.wp_proof :
   wp_start as Hown
   unfold strings.ownBuilder
   icases Hown with ⟨%used, %buf, %dq, %Hnn, Haddr, Hbf, Hbuf, Hcap, %Hdq⟩
-  rw [show go.GoType.Named go!"strings.Builder" [] = strings.Builder.ty by with_unfolding_all rfl]
   wp_auto
   iapply HΦ
   iexists used, slice.nil, DFrac.own 1
