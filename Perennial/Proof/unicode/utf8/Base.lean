@@ -79,6 +79,18 @@ def acceptRangesVal : GoArray acceptRange 16 := array.mk 16
 
 end defs
 
+/-- The width `size` that `DecodeRuneInString(s)` (and `decodeRuneInStringSlow`) returns: `0` for
+an empty `s`, else between `1` and `len(s)` (the bytes of one rune, or one invalid byte). -/
+def decodeWidthOk (s : GoString) (size : w64) : Prop :=
+  (s = [] ∧ size = W64 0) ∨ (s ≠ [] ∧ 1 ≤ sint.Z size ∧ sint.Z size ≤ s.length)
+
+set_option maxRecDepth 100000 in
+/-- Every entry of `first` is `as` or `xx` (at least `0xF0`) or has a size of 2 to 4 in its low
+bits: what makes `decodeRuneInStringSlow`'s indexing safe. -/
+theorem firstVal_ok : firstVal.arr.all (fun x => decide (240 ≤ x.toNat ∨
+    (2 ≤ (x &&& W8 7).toNat ∧ (x &&& W8 7).toNat ≤ 4))) = true := by
+  decide
+
 section init
 variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]

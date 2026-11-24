@@ -45,6 +45,7 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructSameType
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructTagTypesEqual
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructTagged
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAssertComplexFails
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testBreakLoopFromSwitch
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testBreakSwitch
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testByteSliceToString
@@ -56,6 +57,7 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testComparePointerWrappedDefaultToNil
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testComparePointerWrappedToNil
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCompareSliceToNil
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testComplexZeroValue
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testContinueNestedSwitch
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCountPairs
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDefersOnlyRecovering
@@ -134,12 +136,16 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testTopRecover
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testTwoCells
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testTypeAssertionInterface
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testTypeSwitchComplex
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testTypeSwitchLastType
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testU32Len
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testU32NewtypeLen
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testU32ToU64
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testU64ToU32
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUint32Untyped
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUnaryPlusFloat
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUnaryPlusInt
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUnaryPlusUntypedAndNamed
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedFloatConstAtTypeParam
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedFloatConstToInt
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedFloatConvertAtTypeParam
@@ -284,6 +290,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testA
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testAnonStructTagged : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructTagged.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructTagged.wp_proof
 
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testAssertComplexFails : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAssertComplexFails.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAssertComplexFails.wp_proof
+
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testBreakLoopFromSwitch : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testBreakLoopFromSwitch.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testBreakLoopFromSwitch.wp_proof github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_breakLoopFromSwitch
 
@@ -316,6 +325,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testC
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testCompareSliceToNil : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCompareSliceToNil.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCompareSliceToNil.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testComplexZeroValue : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testComplexZeroValue.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testComplexZeroValue.wp_proof
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testContinueNestedSwitch : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testContinueNestedSwitch.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testContinueNestedSwitch.wp_proof github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_continueFromNestedSwitch
@@ -557,6 +569,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testT
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testTypeAssertionInterface : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testTypeAssertionInterface.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testTypeAssertionInterface.wp_proof
 
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testTypeSwitchComplex : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testTypeSwitchComplex.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testTypeSwitchComplex.wp_proof
+
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testTypeSwitchLastType : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testTypeSwitchLastType.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testTypeSwitchLastType.wp_proof
 
@@ -574,6 +589,15 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testU
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testUint32Untyped : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUint32Untyped.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUint32Untyped.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testUnaryPlusFloat : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUnaryPlusFloat.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUnaryPlusFloat.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testUnaryPlusInt : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUnaryPlusInt.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUnaryPlusInt.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testUnaryPlusUntypedAndNamed : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUnaryPlusUntypedAndNamed.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUnaryPlusUntypedAndNamed.wp_proof
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testUntypedFloatConstAtTypeParam : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedFloatConstAtTypeParam.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedFloatConstAtTypeParam.wp_proof

@@ -13,3 +13,5 @@ require (
 	github.com/stretchr/testify v1.11.1 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 )
+
+replace github.com/mit-pdos/gokv => ../gokv

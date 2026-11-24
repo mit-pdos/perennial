@@ -143,6 +143,18 @@ func (suite *GoTestSuite) TestCompareLE() {
 	suite.Equal(true, testCompareLE())
 }
 
+func (suite *GoTestSuite) TestTypeSwitchComplex() {
+	suite.Equal(true, testTypeSwitchComplex())
+}
+
+func (suite *GoTestSuite) TestAssertComplexFails() {
+	suite.Equal(true, testAssertComplexFails())
+}
+
+func (suite *GoTestSuite) TestComplexZeroValue() {
+	suite.Equal(true, testComplexZeroValue())
+}
+
 func (suite *GoTestSuite) TestConstantCalls() {
 	suite.Equal(true, testConstantCalls())
 }
@@ -1077,6 +1089,18 @@ func (suite *GoTestSuite) TestDefinedStrTypesEqual() {
 
 func (suite *GoTestSuite) TestListTypesEqual() {
 	suite.Equal(true, testListTypesEqual())
+}
+
+func (suite *GoTestSuite) TestUnaryPlusInt() {
+	suite.Equal(true, testUnaryPlusInt())
+}
+
+func (suite *GoTestSuite) TestUnaryPlusUntypedAndNamed() {
+	suite.Equal(true, testUnaryPlusUntypedAndNamed())
+}
+
+func (suite *GoTestSuite) TestUnaryPlusFloat() {
+	suite.Equal(true, testUnaryPlusFloat())
 }
 
 func (suite *GoTestSuite) TestVariadicCall() {
