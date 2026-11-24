@@ -47,7 +47,7 @@ noncomputable instance access_load'Pool'mu (l : Loc) (v : _root_.Perennial.githu
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Pool'mu (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool) (y : _root_.Perennial._root_.Perennial.github_com.goose_lang.primitive.Mutex) :
+noncomputable instance access_store'Pool'mu (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool) (y : _root_.Perennial.github_com.goose_lang.primitive.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool go!"mu" l) y (DFrac.own 1))

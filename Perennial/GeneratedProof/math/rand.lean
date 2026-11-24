@@ -139,7 +139,7 @@ noncomputable instance access_load'runtimeSource'mu (l : Loc) (v : _root_.Perenn
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'runtimeSource'mu (l : Loc) (v : _root_.Perennial.math.rand.runtimeSource) (y : _root_.Perennial._root_.Perennial.sync.Mutex) :
+noncomputable instance access_store'runtimeSource'mu (l : Loc) (v : _root_.Perennial.math.rand.runtimeSource) (y : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.math.rand.runtimeSource go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.math.rand.runtimeSource go!"mu" l) y (DFrac.own 1))
@@ -180,7 +180,7 @@ noncomputable instance access_load'lockedSource'lk (l : Loc) (v : _root_.Perenni
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'lockedSource'lk (l : Loc) (v : _root_.Perennial.math.rand.lockedSource) (y : _root_.Perennial._root_.Perennial.sync.Mutex) :
+noncomputable instance access_store'lockedSource'lk (l : Loc) (v : _root_.Perennial.math.rand.lockedSource) (y : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.math.rand.lockedSource go!"lk" l) v.lk' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.math.rand.lockedSource go!"lk" l) y (DFrac.own 1))

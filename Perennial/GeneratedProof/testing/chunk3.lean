@@ -94,7 +94,7 @@ noncomputable instance access_load'common'mu (l : Loc) (v : _root_.Perennial.tes
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'common'mu (l : Loc) (v : _root_.Perennial.testing.common) (y : _root_.Perennial._root_.Perennial.sync.RWMutex) :
+noncomputable instance access_store'common'mu (l : Loc) (v : _root_.Perennial.testing.common) (y : _root_.Perennial.sync.RWMutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.testing.common go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.testing.common go!"mu" l) y (DFrac.own 1))
@@ -126,7 +126,7 @@ noncomputable instance access_load'common'w (l : Loc) (v : _root_.Perennial.test
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'common'w (l : Loc) (v : _root_.Perennial.testing.common) (y : _root_.Perennial._root_.Perennial.io.Writer) :
+noncomputable instance access_store'common'w (l : Loc) (v : _root_.Perennial.testing.common) (y : _root_.Perennial.io.Writer) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.testing.common go!"w" l) v.w' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.testing.common go!"w" l) y (DFrac.own 1))
@@ -382,7 +382,7 @@ noncomputable instance access_load'common'hasSub (l : Loc) (v : _root_.Perennial
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'common'hasSub (l : Loc) (v : _root_.Perennial.testing.common) (y : _root_.Perennial._root_.Perennial.sync.atomic.Bool'') :
+noncomputable instance access_store'common'hasSub (l : Loc) (v : _root_.Perennial.testing.common) (y : _root_.Perennial.sync.atomic.Bool'') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.testing.common go!"hasSub" l) v.hasSub' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.testing.common go!"hasSub" l) y (DFrac.own 1))
@@ -398,7 +398,7 @@ noncomputable instance access_load'common'cleanupStarted (l : Loc) (v : _root_.P
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'common'cleanupStarted (l : Loc) (v : _root_.Perennial.testing.common) (y : _root_.Perennial._root_.Perennial.sync.atomic.Bool'') :
+noncomputable instance access_store'common'cleanupStarted (l : Loc) (v : _root_.Perennial.testing.common) (y : _root_.Perennial.sync.atomic.Bool'') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.testing.common go!"cleanupStarted" l) v.cleanupStarted' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.testing.common go!"cleanupStarted" l) y (DFrac.own 1))
@@ -558,7 +558,7 @@ noncomputable instance access_load'common'duration (l : Loc) (v : _root_.Perenni
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'common'duration (l : Loc) (v : _root_.Perennial.testing.common) (y : _root_.Perennial._root_.Perennial.time.Duration) :
+noncomputable instance access_store'common'duration (l : Loc) (v : _root_.Perennial.testing.common) (y : _root_.Perennial.time.Duration) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.testing.common go!"duration" l) v.duration' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.testing.common go!"duration" l) y (DFrac.own 1))
@@ -622,7 +622,7 @@ noncomputable instance access_load'common'lastRaceErrors (l : Loc) (v : _root_.P
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'common'lastRaceErrors (l : Loc) (v : _root_.Perennial.testing.common) (y : _root_.Perennial._root_.Perennial.sync.atomic.Int64) :
+noncomputable instance access_store'common'lastRaceErrors (l : Loc) (v : _root_.Perennial.testing.common) (y : _root_.Perennial.sync.atomic.Int64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.testing.common go!"lastRaceErrors" l) v.lastRaceErrors' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.testing.common go!"lastRaceErrors" l) y (DFrac.own 1))
@@ -638,7 +638,7 @@ noncomputable instance access_load'common'raceErrorLogged (l : Loc) (v : _root_.
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'common'raceErrorLogged (l : Loc) (v : _root_.Perennial.testing.common) (y : _root_.Perennial._root_.Perennial.sync.atomic.Bool'') :
+noncomputable instance access_store'common'raceErrorLogged (l : Loc) (v : _root_.Perennial.testing.common) (y : _root_.Perennial.sync.atomic.Bool'') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.testing.common go!"raceErrorLogged" l) v.raceErrorLogged' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.testing.common go!"raceErrorLogged" l) y (DFrac.own 1))
@@ -654,7 +654,7 @@ noncomputable instance access_load'common'tempDirMu (l : Loc) (v : _root_.Perenn
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'common'tempDirMu (l : Loc) (v : _root_.Perennial.testing.common) (y : _root_.Perennial._root_.Perennial.sync.Mutex) :
+noncomputable instance access_store'common'tempDirMu (l : Loc) (v : _root_.Perennial.testing.common) (y : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.testing.common go!"tempDirMu" l) v.tempDirMu' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.testing.common go!"tempDirMu" l) y (DFrac.own 1))
@@ -718,7 +718,7 @@ noncomputable instance access_load'common'artifactDirOnce (l : Loc) (v : _root_.
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'common'artifactDirOnce (l : Loc) (v : _root_.Perennial.testing.common) (y : _root_.Perennial._root_.Perennial.sync.Once) :
+noncomputable instance access_store'common'artifactDirOnce (l : Loc) (v : _root_.Perennial.testing.common) (y : _root_.Perennial.sync.Once) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.testing.common go!"artifactDirOnce" l) v.artifactDirOnce' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.testing.common go!"artifactDirOnce" l) y (DFrac.own 1))
@@ -766,7 +766,7 @@ noncomputable instance access_load'common'ctx (l : Loc) (v : _root_.Perennial.te
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'common'ctx (l : Loc) (v : _root_.Perennial.testing.common) (y : _root_.Perennial._root_.Perennial.context.Context) :
+noncomputable instance access_store'common'ctx (l : Loc) (v : _root_.Perennial.testing.common) (y : _root_.Perennial.context.Context) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.testing.common go!"ctx" l) v.ctx' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.testing.common go!"ctx" l) y (DFrac.own 1))
@@ -782,7 +782,7 @@ noncomputable instance access_load'common'cancelCtx (l : Loc) (v : _root_.Perenn
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'common'cancelCtx (l : Loc) (v : _root_.Perennial.testing.common) (y : _root_.Perennial._root_.Perennial.context.CancelFunc) :
+noncomputable instance access_store'common'cancelCtx (l : Loc) (v : _root_.Perennial.testing.common) (y : _root_.Perennial.context.CancelFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.testing.common go!"cancelCtx" l) v.cancelCtx' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.testing.common go!"cancelCtx" l) y (DFrac.own 1))
@@ -931,7 +931,7 @@ noncomputable instance access_load'matcher'mu (l : Loc) (v : _root_.Perennial.te
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'matcher'mu (l : Loc) (v : _root_.Perennial.testing.matcher) (y : _root_.Perennial._root_.Perennial.sync.Mutex) :
+noncomputable instance access_store'matcher'mu (l : Loc) (v : _root_.Perennial.testing.matcher) (y : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.testing.matcher go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.testing.matcher go!"mu" l) y (DFrac.own 1))
@@ -1091,7 +1091,7 @@ noncomputable instance access_load'M'afterOnce (l : Loc) (v : _root_.Perennial.t
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'M'afterOnce (l : Loc) (v : _root_.Perennial.testing.M) (y : _root_.Perennial._root_.Perennial.sync.Once) :
+noncomputable instance access_store'M'afterOnce (l : Loc) (v : _root_.Perennial.testing.M) (y : _root_.Perennial.sync.Once) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.testing.M go!"afterOnce" l) v.afterOnce' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.testing.M go!"afterOnce" l) y (DFrac.own 1))

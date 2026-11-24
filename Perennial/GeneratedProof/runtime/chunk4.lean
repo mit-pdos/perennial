@@ -1286,7 +1286,7 @@ noncomputable instance access_load'godebugInc'inc (l : Loc) (v : _root_.Perennia
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'godebugInc'inc (l : Loc) (v : _root_.Perennial.runtime.godebugInc) (y : (_root_.Perennial._root_.Perennial.internal.runtime.atomic.Pointer GoFunc)) :
+noncomputable instance access_store'godebugInc'inc (l : Loc) (v : _root_.Perennial.runtime.godebugInc) (y : (_root_.Perennial.internal.runtime.atomic.Pointer GoFunc)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.runtime.godebugInc go!"inc" l) v.inc' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.runtime.godebugInc go!"inc" l) y (DFrac.own 1))
@@ -1754,7 +1754,7 @@ noncomputable instance access_load'traceSchedResourceState'statusTraced (l : Loc
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'traceSchedResourceState'statusTraced (l : Loc) (v : _root_.Perennial.runtime.traceSchedResourceState) (y : (GoArray _root_.Perennial._root_.Perennial.internal.runtime.atomic.Uint32 3)) :
+noncomputable instance access_store'traceSchedResourceState'statusTraced (l : Loc) (v : _root_.Perennial.runtime.traceSchedResourceState) (y : (GoArray _root_.Perennial.internal.runtime.atomic.Uint32 3)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.runtime.traceSchedResourceState go!"statusTraced" l) v.statusTraced' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.runtime.traceSchedResourceState go!"statusTraced" l) y (DFrac.own 1))

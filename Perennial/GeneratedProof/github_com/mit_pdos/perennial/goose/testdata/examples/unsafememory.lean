@@ -647,7 +647,7 @@ noncomputable instance access_load'TxStats'WriteTime (l : Loc) (v : _root_.Peren
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'TxStats'WriteTime (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.TxStats) (y : _root_.Perennial._root_.Perennial.time.Duration) :
+noncomputable instance access_store'TxStats'WriteTime (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.TxStats) (y : _root_.Perennial.time.Duration) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.TxStats go!"WriteTime" l) v.WriteTime' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.TxStats go!"WriteTime" l) y (DFrac.own 1))

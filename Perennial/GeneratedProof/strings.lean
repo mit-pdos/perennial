@@ -184,7 +184,7 @@ noncomputable instance access_load'Replacer'once (l : Loc) (v : _root_.Perennial
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Replacer'once (l : Loc) (v : _root_.Perennial.strings.Replacer) (y : _root_.Perennial._root_.Perennial.sync.Once) :
+noncomputable instance access_store'Replacer'once (l : Loc) (v : _root_.Perennial.strings.Replacer) (y : _root_.Perennial.sync.Once) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.strings.Replacer go!"once" l) v.once' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.strings.Replacer go!"once" l) y (DFrac.own 1))
@@ -438,7 +438,7 @@ noncomputable instance access_load'stringWriter'w (l : Loc) (v : _root_.Perennia
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'stringWriter'w (l : Loc) (v : _root_.Perennial.strings.stringWriter) (y : _root_.Perennial._root_.Perennial.io.Writer) :
+noncomputable instance access_store'stringWriter'w (l : Loc) (v : _root_.Perennial.strings.stringWriter) (y : _root_.Perennial.io.Writer) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.strings.stringWriter go!"w" l) v.w' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.strings.stringWriter go!"w" l) y (DFrac.own 1))

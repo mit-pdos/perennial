@@ -49,7 +49,7 @@ noncomputable instance access_load'Cond'L (l : Loc) (v : _root_.Perennial.github
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Cond'L (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.Cond) (y : _root_.Perennial._root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock) :
+noncomputable instance access_store'Cond'L (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.Cond) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.Cond go!"L" l) v.L' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.Cond go!"L" l) y (DFrac.own 1))

@@ -49,7 +49,7 @@ noncomputable instance access_load'Counter'mu (l : Loc) (v : _root_.Perennial.gi
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Counter'mu (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter) (y : _root_.Perennial._root_.Perennial.github_com.goose_lang.primitive.Mutex) :
+noncomputable instance access_store'Counter'mu (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter) (y : _root_.Perennial.github_com.goose_lang.primitive.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.modeloverlay.Counter go!"mu" l) y (DFrac.own 1))

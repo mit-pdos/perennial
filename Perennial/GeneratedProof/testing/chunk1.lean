@@ -52,7 +52,7 @@ noncomputable instance access_load'durationOrCountFlag'd (l : Loc) (v : _root_.P
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'durationOrCountFlag'd (l : Loc) (v : _root_.Perennial.testing.durationOrCountFlag) (y : _root_.Perennial._root_.Perennial.time.Duration) :
+noncomputable instance access_store'durationOrCountFlag'd (l : Loc) (v : _root_.Perennial.testing.durationOrCountFlag) (y : _root_.Perennial.time.Duration) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.testing.durationOrCountFlag go!"d" l) v.d' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.testing.durationOrCountFlag go!"d" l) y (DFrac.own 1))
@@ -181,7 +181,7 @@ noncomputable instance access_load'highPrecisionTime'now (l : Loc) (v : _root_.P
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'highPrecisionTime'now (l : Loc) (v : _root_.Perennial.testing.highPrecisionTime) (y : _root_.Perennial._root_.Perennial.time.Time) :
+noncomputable instance access_store'highPrecisionTime'now (l : Loc) (v : _root_.Perennial.testing.highPrecisionTime) (y : _root_.Perennial.time.Time) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.testing.highPrecisionTime go!"now" l) v.now' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.testing.highPrecisionTime go!"now" l) y (DFrac.own 1))
@@ -242,7 +242,7 @@ noncomputable instance access_load'BenchmarkResult'T (l : Loc) (v : _root_.Peren
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'BenchmarkResult'T (l : Loc) (v : _root_.Perennial.testing.BenchmarkResult) (y : _root_.Perennial._root_.Perennial.time.Duration) :
+noncomputable instance access_store'BenchmarkResult'T (l : Loc) (v : _root_.Perennial.testing.BenchmarkResult) (y : _root_.Perennial.time.Duration) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.testing.BenchmarkResult go!"T" l) v.T' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.testing.BenchmarkResult go!"T" l) y (DFrac.own 1))
@@ -973,7 +973,7 @@ noncomputable instance access_load'fuzzResult'T (l : Loc) (v : _root_.Perennial.
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'fuzzResult'T (l : Loc) (v : _root_.Perennial.testing.fuzzResult) (y : _root_.Perennial._root_.Perennial.time.Duration) :
+noncomputable instance access_store'fuzzResult'T (l : Loc) (v : _root_.Perennial.testing.fuzzResult) (y : _root_.Perennial.time.Duration) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.testing.fuzzResult go!"T" l) v.T' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.testing.fuzzResult go!"T" l) y (DFrac.own 1))
@@ -1108,7 +1108,7 @@ noncomputable instance access_load'chattyPrinter'w (l : Loc) (v : _root_.Perenni
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'chattyPrinter'w (l : Loc) (v : _root_.Perennial.testing.chattyPrinter) (y : _root_.Perennial._root_.Perennial.io.Writer) :
+noncomputable instance access_store'chattyPrinter'w (l : Loc) (v : _root_.Perennial.testing.chattyPrinter) (y : _root_.Perennial.io.Writer) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.testing.chattyPrinter go!"w" l) v.w' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.testing.chattyPrinter go!"w" l) y (DFrac.own 1))
@@ -1124,7 +1124,7 @@ noncomputable instance access_load'chattyPrinter'lastNameMu (l : Loc) (v : _root
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'chattyPrinter'lastNameMu (l : Loc) (v : _root_.Perennial.testing.chattyPrinter) (y : _root_.Perennial._root_.Perennial.sync.Mutex) :
+noncomputable instance access_store'chattyPrinter'lastNameMu (l : Loc) (v : _root_.Perennial.testing.chattyPrinter) (y : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.testing.chattyPrinter go!"lastNameMu" l) v.lastNameMu' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.testing.chattyPrinter go!"lastNameMu" l) y (DFrac.own 1))
@@ -1373,7 +1373,7 @@ noncomputable instance access_load'testState'deadline (l : Loc) (v : _root_.Pere
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'testState'deadline (l : Loc) (v : _root_.Perennial.testing.testState) (y : _root_.Perennial._root_.Perennial.time.Time) :
+noncomputable instance access_store'testState'deadline (l : Loc) (v : _root_.Perennial.testing.testState) (y : _root_.Perennial.time.Time) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.testing.testState go!"deadline" l) v.deadline' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.testing.testState go!"deadline" l) y (DFrac.own 1))
@@ -1405,7 +1405,7 @@ noncomputable instance access_load'testState'mu (l : Loc) (v : _root_.Perennial.
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'testState'mu (l : Loc) (v : _root_.Perennial.testing.testState) (y : _root_.Perennial._root_.Perennial.sync.Mutex) :
+noncomputable instance access_store'testState'mu (l : Loc) (v : _root_.Perennial.testing.testState) (y : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.testing.testState go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.testing.testState go!"mu" l) y (DFrac.own 1))

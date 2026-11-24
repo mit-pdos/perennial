@@ -1115,7 +1115,7 @@ noncomputable instance access_load'moduledata'NotInHeap (l : Loc) (v : _root_.Pe
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'moduledata'NotInHeap (l : Loc) (v : _root_.Perennial.runtime.moduledata) (y : _root_.Perennial._root_.Perennial.internal.runtime.sys.NotInHeap) :
+noncomputable instance access_store'moduledata'NotInHeap (l : Loc) (v : _root_.Perennial.runtime.moduledata) (y : _root_.Perennial.internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.runtime.moduledata go!"NotInHeap" l) v.NotInHeap' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.runtime.moduledata go!"NotInHeap" l) y (DFrac.own 1))
@@ -1991,7 +1991,7 @@ noncomputable instance «access_load'specialBubble'_#0» (l : Loc) (v : _root_.P
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'specialBubble'_#0» (l : Loc) (v : _root_.Perennial.runtime.specialBubble) (y : _root_.Perennial._root_.Perennial.internal.runtime.sys.NotInHeap) :
+noncomputable instance «access_store'specialBubble'_#0» (l : Loc) (v : _root_.Perennial.runtime.specialBubble) (y : _root_.Perennial.internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.runtime.specialBubble go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.runtime.specialBubble go!"_#0" l) y (DFrac.own 1))
@@ -2196,7 +2196,7 @@ noncomputable instance «access_load'traceRegionAllocBlock'_#0» (l : Loc) (v : 
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'traceRegionAllocBlock'_#0» (l : Loc) (v : _root_.Perennial.runtime.traceRegionAllocBlock) (y : _root_.Perennial._root_.Perennial.internal.runtime.sys.NotInHeap) :
+noncomputable instance «access_store'traceRegionAllocBlock'_#0» (l : Loc) (v : _root_.Perennial.runtime.traceRegionAllocBlock) (y : _root_.Perennial.internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.runtime.traceRegionAllocBlock go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.runtime.traceRegionAllocBlock go!"_#0" l) y (DFrac.own 1))
