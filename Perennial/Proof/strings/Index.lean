@@ -5,6 +5,7 @@ module
 
 public import Perennial.Spec.strings.Index
 public import Perennial.Spec.internal.stringslite.Index
+
 @[expose] public section
 
 noncomputable section
@@ -26,10 +27,9 @@ theorem strings.Index.wp_proof
   intro s substr
   wp_start as #Hinit
   wp_auto
-  wp_apply wp_stringslite_Index as %H
+  wp_apply wp_stringslite_Index as %Hl
   iapply HΦ
-  ipureintro
-  exact H
+  ipureintro; exact Hl
 
 end proof
 

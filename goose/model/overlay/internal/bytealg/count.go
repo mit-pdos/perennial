@@ -4,12 +4,13 @@
 
 // Go model of Count and CountString, which internal/bytealg/count_native.go
 // (go1.26.11) declares without a body: on linux/amd64 they are written in
-// assembly (count_amd64.s, which the overlay blanks). The bodies are Go's own
-// generic ones, verbatim from count_generic.go (the file whose build
-// constraint excludes amd64); count_native.go's countGeneric and
-// countGenericString, which the assembly jumps to on a processor without
-// POPCNT, are the same loops. Evidence: Go's own strings and bytes tests pass
-// with the models in place of the assembly (etc/model-tests.sh).
+// assembly (count_amd64.s, which falls back to count_native.go's countGeneric
+// and countGenericString without POPCNT). The bodies are Go's own generic
+// fallbacks, verbatim from count_generic.go (the file whose build constraint
+// excludes amd64), so that goose translates Go instead of a hand-written Lean
+// model. Evidence: Go's own strings and bytes tests pass with the models in
+// place of the assembly (etc/model-tests.sh, goose/util
+// TestModelBytealgDifftest).
 
 package bytealg
 

@@ -5,11 +5,12 @@
 # `asciiSet.contains`, `trimLeftASCII`); its non-ASCII path, `trimLeftUnicode`, is not translated
 # (it reaches `IndexRune` and utf8 decoding): a call of `TrimLeft` with a cutset that is not all ASCII
 # has no proof. `LastIndex`, `IndexByte` and `Cut` (over internal/stringslite and internal/bytealg).
-# `Count` and `Index` (over internal/stringslite's `Index` and internal/bytealg's `CountString`, a
-# Go model in its package).
+# `Index` (stringslite's), `IndexAny` (over `IndexRune` and the ASCII set), `IndexRune` (a Go model,
+# below) and `Count` (over `Index`, bytealg's `CountString` and utf8's `RuneCountInString`).
 translate = ["Builder", "Builder.*", "asciiSpace", "Compare", "HasPrefix", "HasSuffix", "Join", "maxInt", "TrimPrefix", "TrimSuffix", "NewReplacer",
-  "LastIndex", "IndexByte", "Cut", "Count", "Index",
-  "TrimLeft", "trimLeftByte", "trimLeftASCII", "makeASCIISet", "asciiSet.contains"]
+  "LastIndex", "IndexByte", "Cut",
+  "TrimLeft", "trimLeftByte", "trimLeftASCII", "makeASCIISet", "asciiSet.contains",
+  "Index", "IndexAny", "IndexRune", "Count"]
 imports = ["!*", "internal/stringslite", "sync", "io", "internal/bytealg", "unicode/utf8", "internal/gomodel"]
 
 # translate the definitions of all type declarations goose supports
@@ -25,7 +26,8 @@ translate_types = true
 # every `n >= 1`, `n` becomes `-2^63` and `make([]string, n)` panics), and string values are not
 # bounded in the semantics (`len` only gives `< 2^63`), so the spec would need a new premise
 # `len(s) < 2^63-1`. gc cannot hold such a string (maxAlloc is 2^48). The model has no such
-# arithmetic; it is stuck on an empty `sep`.
+# arithmetic; it is stuck on an empty `sep`. `IndexRune`
+# (its search for a non-ASCII rune is written with goto, which goose does not translate).
 [model]
 dir = "goose/model/overlay/strings"
-replaces = ["Split", "Builder.copyCheck", "Builder.String", "Builder.Reset"]
+replaces = ["Split", "Builder.copyCheck", "Builder.String", "Builder.Reset", "IndexRune"]

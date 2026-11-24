@@ -20,8 +20,8 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : strings.Assumptions]
 
-/-- `strings.Index(s, substr)`: the first index of `substr` in `s`, or `-1` (internal/stringslite's
-`Index`). -/
+/-- `strings.Index(s, substr)`: the first index of `substr` in `s`, or `-1` (`0` for an empty
+`substr`): `stringslite.Index`'s. -/
 abbrev strings.Index.spec : Prop :=
   ∀ (s substr : GoString),
     {{ isPkgInit (PROP := IProp GF) pkg_id.strings }}

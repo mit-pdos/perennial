@@ -207,6 +207,10 @@ func (suite *GoTestSuite) TestByteToString() {
 	suite.Equal(true, testByteToString())
 }
 
+func (suite *GoTestSuite) TestRuneToString() {
+	suite.Equal(true, testRuneToString())
+}
+
 func (suite *GoTestSuite) TestUntypedRuneConst() {
 	suite.Equal(true, testUntypedRuneConst())
 }

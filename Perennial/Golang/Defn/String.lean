@@ -67,6 +67,9 @@ class StringSemantics [GoSemanticsFunctions] : Prop where
   convert_byte_to_string (c : w8) :
     ⟦Convert go.byte go.string, #c⟧ ⤳[under] #(go.runeString (uint.Z c))
 
+  convert_rune_to_string (r : w32) :
+    ⟦Convert go.rune go.string, #r⟧ ⤳[under] #(go.runeString (sint.Z r))
+
   convert_bytes_to_string {from_ elem_type to : go.GoType}
     [from_ ↓u go.SliceType elem_type] [elem_type ↓u go.byte] [to ↓u go.string] (v : val) :
     ⟦Convert from_ to, v⟧ ⤳[internal] (@! strings.ByteSliceToString v)
@@ -89,11 +92,13 @@ class StringSemantics [GoSemanticsFunctions] : Prop where
 
 attribute [instance] StringSemantics.package_sem StringSemantics.internal_string_len_step
   StringSemantics.string_len_unfold StringSemantics.string_index StringSemantics.string_slice
-  StringSemantics.convert_byte_to_string StringSemantics.convert_bytes_to_string
+  StringSemantics.convert_byte_to_string StringSemantics.convert_rune_to_string
+  StringSemantics.convert_bytes_to_string
   StringSemantics.convert_string_to_bytes StringSemantics.lt_string StringSemantics.le_string
   StringSemantics.gt_string StringSemantics.ge_string
 export StringSemantics (internal_string_len_step string_len_unfold string_index string_slice
-  convert_byte_to_string convert_bytes_to_string convert_string_to_bytes lt_string le_string
+  convert_byte_to_string convert_rune_to_string convert_bytes_to_string convert_string_to_bytes
+  lt_string le_string
   gt_string ge_string)
 
 end defs

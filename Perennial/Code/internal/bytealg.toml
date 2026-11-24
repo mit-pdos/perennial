@@ -4,8 +4,9 @@
 # For strings.LastIndex, strings.Index and strings.Cut (through internal/stringslite): the generic
 # Go of bytealg.go (`PrimeRK`, `HashStr`, `HashStrRev`, `IndexRabinKarp`), amd64's `MaxBruteForce`
 # and `Cutover` (index_amd64.go), and `IndexByteString` and `IndexString`, whose bodies on amd64 are
-# assembly: they are translated from their Go models (the [model] table below). The same for
-# `CountString` (strings.Count) and `MakeNoZero` (strings.Builder's grow).
+# assembly: they are translated from their Go models (the [model] table below). For strings.Count:
+# `CountString`, assembly on amd64 too, translated from its Go model. `MakeNoZero` (strings.Builder's
+# grow) and `init.0` (sets `MaxLen`), from their Go models too.
 translate = ["MaxLen", "LastIndexByteString", "PrimeRK", "HashStr", "HashStrRev", "IndexRabinKarp",
   "MaxBruteForce", "Cutover", "IndexByteString", "IndexString", "CountString", "MakeNoZero", "init.0"]
 imports = ["!*", "internal/gomodel"]
@@ -21,11 +22,11 @@ imports = ["!*", "internal/gomodel"]
 # `indexbody<>`), and includes only toolchain headers. Difftest: goose/util's
 # TestModelBytealgDifftest (Go's own strings and bytes tests under this overlay).
 # `CompareString` (strings.Compare) calls `runtime.cmpstring` (assembly, through a `go:linkname`): a
-# Go model too, compare_native.go. (`Compare`, bytes.Compare's, has no Go body, and
+# Go model too, compare_native.go. `Count`/`CountString` (count_native.go, bodyless; count_amd64.s,
+# which also defines only the file-local `countbody<>`, is blanked) are Go's generic fallback,
+# count_generic.go, verbatim (count.go). (`Compare`, bytes.Compare's, has no Go body, and
 # compare_amd64.s, which defines it, also defines `runtime.cmpstring`, which gc's string
 # comparisons call, so that file cannot be blanked: bytes.Compare is modelled in its package.)
-# `Count`/`CountString` (count_native.go, bodyless; assembly in count_amd64.s, which defines only
-# them and `countbody<>`): Go's own generic bodies (count_generic.go, verbatim), count.go.
 # `MakeNoZero` (bytealg.go): no Go body ("external function"); the runtime defines it
 # (runtime/slice.go, a `go:linkname` push, which the overlay blanks); the model chooses the
 # capacity and the bytes, bytealg.go. `init.0` (index_amd64.go) reads
@@ -33,6 +34,6 @@ imports = ["!*", "internal/gomodel"]
 # MaxLen is always 31, more defined than gc; the model chooses 63 or 31, init.go.
 [model]
 dir = "goose/model/overlay/internal/bytealg"
-replaces = ["IndexByte", "IndexByteString", "Index", "IndexString", "CompareString", "Count",
-  "CountString", "MakeNoZero", "init.0"]
+replaces = ["IndexByte", "IndexByteString", "Index", "IndexString", "CompareString", "Count", "CountString",
+  "MakeNoZero", "init.0"]
 blank_asm = ["indexbyte_amd64.s", "index_amd64.s", "count_amd64.s"]

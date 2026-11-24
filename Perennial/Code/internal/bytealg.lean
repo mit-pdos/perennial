@@ -474,7 +474,7 @@ noncomputable def CompareString.impl [GooseExts] [GoGlobalContext] : val :=
     (count_generic.go); the assembly computes the same function,
     deterministically.
 
-    go: count.go:19:6 -/
+    go: count.go:20:6 -/
 noncomputable def Count.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "c"
@@ -516,7 +516,7 @@ noncomputable def Count.impl [GooseExts] [GoGlobalContext] : val :=
     body (count_generic.go); the assembly computes the same function,
     deterministically.
 
-    go: count.go:32:6 -/
+    go: count.go:33:6 -/
 noncomputable def CountString.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "c"

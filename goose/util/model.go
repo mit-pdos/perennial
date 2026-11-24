@@ -1684,9 +1684,8 @@ var asmInclude = regexp.MustCompile(`^\s*#\s*include\s+["<]([^">]+)[">]`)
 // asmHeaders are the toolchain's headers, which define no symbols and no
 // macro that does: a blanked file may include only these, since a macro of
 // another header could expand to a TEXT or GLOBL line that asmDefs, which
-// reads lines of the file itself, does not see. asm_amd64.h ($GOROOT/pkg/include,
-// as textflag.h and funcdata.h) only defines the GOAMD64 level's feature flags
-// (`#define hasPOPCNT`, with no body), which the files test with #ifdef.
+// reads lines of the file itself, does not see. (asm_amd64.h, runtime's,
+// defines only the feature flags of a GOAMD64 level: hasPOPCNT, hasAVX2, ...)
 var asmHeaders = map[string]bool{"textflag.h": true, "go_asm.h": true, "funcdata.h": true, "go_tls.h": true,
 	"asm_amd64.h": true}
 

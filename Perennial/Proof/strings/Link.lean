@@ -26,7 +26,9 @@ public import Perennial.Proof.strings.Fields
 public import Perennial.Proof.strings.HasPrefix
 public import Perennial.Proof.strings.HasSuffix
 public import Perennial.Proof.strings.Index
+public import Perennial.Proof.strings.IndexAny
 public import Perennial.Proof.strings.IndexByte
+public import Perennial.Proof.strings.IndexRune
 public import Perennial.Proof.strings.Join
 public import Perennial.Proof.strings.LastIndex
 public import Perennial.Proof.strings.NewReplacer
@@ -92,7 +94,7 @@ theorem strings.wp_Index : strings.Index.spec (GF := GF) (hG := hG) :=
   strings.Index.wp_proof internal.stringslite.wp_Index
 
 theorem strings.wp_Count : strings.Count.spec (GF := GF) (hG := hG) :=
-  strings.Count.wp_proof internal.bytealg.wp_CountString strings.wp_Index
+  strings.Count.wp_proof strings.wp_Index internal.bytealg.wp_CountString unicode.utf8.wp_RuneCountInString
 
 theorem strings.wp_Cut : strings.Cut.spec (GF := GF) (hG := hG) :=
   strings.Cut.wp_proof internal.stringslite.wp_Cut
@@ -109,6 +111,18 @@ theorem strings.wp_HasSuffix : strings.HasSuffix.spec (GF := GF) (hG := hG) :=
 theorem strings.wp_IndexByte : strings.IndexByte.spec (GF := GF) (hG := hG) :=
   strings.IndexByte.wp_proof internal.stringslite.wp_IndexByte
 
+theorem strings.wp_IndexRune : strings.IndexRune.spec (GF := GF) (hG := hG) :=
+  strings.IndexRune.wp_proof strings.wp_IndexByte strings.wp_Index unicode.utf8.wp_ValidRune
+
+theorem strings.wp_makeASCIISet : strings.makeASCIISet.spec (GF := GF) (hG := hG) :=
+  strings.makeASCIISet.wp_proof
+
+theorem strings.asciiSet.wp_contains : strings.asciiSet.contains.spec (GF := GF) (hG := hG) :=
+  strings.asciiSet.contains.wp_proof
+
+theorem strings.wp_IndexAny : strings.IndexAny.spec (GF := GF) (hG := hG) :=
+  strings.IndexAny.wp_proof strings.wp_IndexRune strings.wp_makeASCIISet strings.asciiSet.wp_contains
+
 theorem strings.wp_Join : strings.Join.spec (GF := GF) (hG := hG) :=
   strings.Join.wp_proof strings.Builder.wp_Grow strings.Builder.wp_WriteString strings.Builder.wp_String
 
@@ -123,12 +137,6 @@ theorem strings.wp_Split : strings.Split.spec (GF := GF) (hG := hG) :=
 
 theorem strings.wp_trimLeftByte : strings.trimLeftByte.spec (GF := GF) (hG := hG) :=
   strings.trimLeftByte.wp_proof
-
-theorem strings.wp_makeASCIISet : strings.makeASCIISet.spec (GF := GF) (hG := hG) :=
-  strings.makeASCIISet.wp_proof
-
-theorem strings.asciiSet.wp_contains : strings.asciiSet.contains.spec (GF := GF) (hG := hG) :=
-  strings.asciiSet.contains.wp_proof
 
 theorem strings.wp_trimLeftASCII : strings.trimLeftASCII.spec (GF := GF) (hG := hG) :=
   strings.trimLeftASCII.wp_proof strings.asciiSet.wp_contains
