@@ -1,10 +1,11 @@
-translate = ["!*", "Version", "Callers", "CallersFrames"]
+# `Caller` is translated with its body: `callers` and `CallersFrames(...).Next()`, below.
+translate = ["!*", "Version", "Caller", "Callers", "CallersFrames"]
 
 imports = ["!*", "internal/runtime/atomic", "internal/runtime/sys"]
 
 # `Gosched` (TrustedCode/runtime.lean); `buildVersion`, which `Version` returns and the linker
 # sets (TrustedCode/runtime.lean: its `init` stores an arbitrary string); `callers`, the stack walk
-# `Callers` calls, and `Frames.Next`, the symbolization of program counters (TrustedCode/runtime.lean:
+# `Callers` and `Caller` call, and `Frames.Next`, the symbolization of program counters (TrustedCode/runtime.lean:
 # arbitrary words, arbitrary frames)
 trusted = ["Gosched", "buildVersion", "callers", "Frames.Next"]
 
