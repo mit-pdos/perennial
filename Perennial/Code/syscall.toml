@@ -5,6 +5,10 @@
 # two body-less declarations the runtime provides (go:linkname pushes): `runtime_envs`
 # (`env_unix.go`): an arbitrary `[]string`, a call of `internal/gomodel.ChooseStrings`; `Exit`
 # (`syscall.go`, `syscall_Exit`): the process exits, `AngelicExit`.
+# `Setenv`, `Unsetenv`, `Clearenv` and the runtime's hooks `runtimeSetenv`/`runtimeUnsetenv`/
+# `runtimeClearenv` stay untranslated (a call is stuck). Keep it so, or make them stuck on the key
+# "GODEBUG": gc's runtime re-reads GODEBUG there, and the Go models that read a GODEBUG setting once
+# (time's `makeTimerChan`; docs/KNOWN_LIMITATIONS.md, "time") rely on it not changing mid-run.
 translate = ["!*",
   "envs", "env", "copyenv",
   "none", "slash", "forceClone3", "fcntl64Syscall",
