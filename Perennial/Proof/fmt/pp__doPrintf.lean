@@ -210,8 +210,70 @@ theorem fmt.pp.doPrintf.wp_proof
       · exfalso; word
       simp only [hj1z, ite_true, hj1, hf1]
       wp_auto
-      trace_state
-      sorry
+      wp_for_post
+      wp_apply (wp_argNumber p argNum format (j + W64 1) _ hj1z (by rw [hj1, hf1]; decide))
+      have hj1lt : sint.Z (j + W64 1) < sint.Z (W64 (format.length : Int)) := by word
+      rw [decide_eq_true hj1lt]
+      wp_auto
+      simp only [hj1z, ite_true, hj1, hf1]
+      wp_auto
+      have hel : sint.nat (W64 (format.length : Int)) = format.length := by word
+      have hpn : parsenumSpec format (sint.nat (j + W64 1)) (sint.nat (W64 (format.length : Int))) =
+          (0, false, sint.nat (j + W64 1)) := by
+        rw [hel, hj1]; exact fmt.parsenumSpec_nondigit format _ _ hf1 (by unfold fmt.IsDigit; decide)
+      wp_apply (wp_parsenum format (j + W64 1) (W64 (format.length : Int)) hj1z (by word))
+      simp only [hpn]
+      unfold fmtOwn
+      iNamed Hfmt
+      icases Hfmt with ⟨Hfbuf, Hflags, Hwid, Hprec⟩
+      wp_auto
+      rw [show W64 (sint.nat (j + W64 1) : Int) = j + W64 1 by word]
+      wp_join with [i format]
+      · simp only [hj1z, ite_true, hj1, hf1]
+        wp_auto
+        wp_join_done
+      wp_apply (wp_argNumber p argNum format (j + W64 1) _ hj1z (by rw [hj1, hf1]; decide))
+      rw [decide_eq_false (show ¬ sint.Z (W64 (format.length : Int)) ≤ sint.Z (j + W64 1) by word)]
+      wp_auto
+      wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len as %_
+      have hd1 : format.drop (sint.nat j + 1) = W8 37 :: encode R' := by
+        rw [← List.drop_drop, hdropj]; rfl
+      have hsl : (format.drop (sint.nat (j + W64 1))).take
+          (sint.nat (W64 (format.length : Int)) - sint.nat (j + W64 1)) = W8 37 :: encode R' := by
+        rw [hj1, hd1]; apply List.take_of_length_le
+        have := congrArg List.length hd1
+        simp only [List.length_drop] at this
+        rw [← this]; word
+      simp only [show 0 ≤ sint.Z (j + W64 1) ∧ sint.Z (j + W64 1) ≤ sint.Z (W64 (format.length : Int)) ∧
+          sint.Z (W64 (format.length : Int)) ≤ format.length from ⟨hj1z, by word, by word⟩,
+        and_self, ite_true, hsl]
+      wp_auto
+      wp_apply wp_DecodeRuneInString as %r %size %Hd
+      obtain ⟨rfl, rfl⟩ := Hd.2 _ _ rfl (by decide)
+      rw [decide_eq_true (show true = decide (W32 (uint.nat (W8 37) : Int) = W32 37) by decide)]
+      wp_auto
+      wp_apply wp_writeByte $$ Hbuf as Hbuf
+      wp_for_post
+      have hfR : Fits R' ar := by cases hfl.2; assumption
+      ihave Hbuf : bufferOwn (p.[pp, go!"buf"]) (bs ++ (od ++ (fmt.leadLits rest).1 ++ [W8 37])) $$ [Hbuf]
+      · iExactEq Hbuf; simp
+      ihave Hfmt : fmtOwn (p.[pp, go!"fmt"]) (p.[pp, go!"buf"]) _ _ _ $$ [Hfbuf Hflags Hwid Hprec]
+      · unfold fmtOwn; iframe
+      ihave Hp : isPrinterA p x (bs ++ (od ++ (fmt.leadLits rest).1 ++ [W8 37])) _ _ _ $$
+          [Hbuf Hfmt Hib Harg Hval Hreord Hgood Hpanicking Herroring Hwrap Hwe]
+      · unfold isPrinterA; iframe
+      iframe
+      iexists (j + W64 1 + W64 1), argNum, R', ar, od ++ (fmt.leadLits rest).1 ++ [W8 37]
+      iexists _, _, _, _
+      iframe
+      isplitl [Hp]
+      · iExactEq Hp; rfl
+      ipureintro
+      refine ⟨by word, by word, ?_, hfR, hargs, ha0, halen, ?_⟩
+      · rw [show sint.nat (j + W64 1 + W64 1) = sint.nat j + 1 + 1 by word, ← List.drop_drop, hd1]; rfl
+      · intro o ho
+        have := hout _ (fmt.Out_leadLits (by rw [hR]; exact Out.percent R' ar o ho))
+        simpa [List.append_assoc] using this
     · -- a directive
       sorry
   · -- the end of the format
