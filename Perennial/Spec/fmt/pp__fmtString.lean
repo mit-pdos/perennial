@@ -25,7 +25,7 @@ hexadecimal (`x`), or `v` quoted (`q`, some string: `StrOut`). -/
 abbrev fmt.pp.fmtString.spec : Prop :=
   ∀ (p : Loc) (x : GoInterface) (bs : GoString) (wid prec : w64) (v : GoString) (verb : w8),
     (verb = verb_s ∨ verb = verb_v ∨ verb = verb_x ∨ verb = verb_q) →
-    (verb = verb_x → v.length < 2 ^ 62) → (verb = verb_q → v.length ≤ maxAddr) →
+    (verb = verb_x → v.length < 2 ^ 62) →
     {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ isPrinterA (GF := GF) p x bs noFlags wid prec }}
       (App (App (Val (p @!! go.GoType.PointerType pp.ty @!! go!"fmtString")) (Val #v)) (Val #(W32 (uint.nat verb))))
     {{ RET #(); ∃ o : GoString, ⌜StrOut verb v o⌝ ∗ isPrinterA p x (bs ++ o) noFlags wid prec }}

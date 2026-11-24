@@ -85,19 +85,16 @@ def ZeroWidthOk : Option Nat → Prop
 
 /-- The directive `%verb` (`zw = none`) or `%0Nverb` (`zw = some N`) of the argument `a` is in
 the verified subset. `%x` of fewer than `2^62` bytes: `fmtSbx` computes the width `2 * length` in
-an `int`, and writes nothing if that wraps. `%q` of at most `maxAddr` bytes: `strconv`'s quoting
-(`appendQuotedWith`) allocates a buffer of `len(s)+2` bytes. -/
+an `int`, and writes nothing if that wraps. -/
 def DirOk : Option Nat → w8 → Arg → Prop
   | zw, v, .int _ => (v = verb_d ∨ v = verb_v ∨ v = verb_x) ∧ ZeroWidthOk zw
   | none, v, .nil => v = verb_v
   | none, v, .bool _ => v = verb_v ∨ v = verb_t
-  | none, v, .str s => v = verb_s ∨ v = verb_v ∨ (v = verb_x ∧ s.length < 2 ^ 62) ∨
-    (v = verb_q ∧ s.length ≤ maxAddr)
+  | none, v, .str s => v = verb_s ∨ v = verb_v ∨ (v = verb_x ∧ s.length < 2 ^ 62) ∨ v = verb_q
   | none, v, .bytes bs _ =>
     v = verb_s ∨ v = verb_v ∨ v = verb_d ∨ (v = verb_x ∧ bs.length < 2 ^ 62)
   | none, v, .method P =>
-    v = verb_s ∨ v = verb_v ∨ (v = verb_x ∧ ∀ s, P s → s.length < 2 ^ 62) ∨
-    (v = verb_q ∧ ∀ s, P s → s.length ≤ maxAddr)
+    v = verb_s ∨ v = verb_v ∨ (v = verb_x ∧ ∀ s, P s → s.length < 2 ^ 62) ∨ v = verb_q
   | some _, _, _ => False
 
 /-- The directive `%.Pverb` of the argument `a` is in the verified subset: an integer under `d`,

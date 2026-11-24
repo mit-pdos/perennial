@@ -22,11 +22,11 @@ variable [package_sem : fmt.Assumptions]
 
 /-- `f.fmtQ(s)` without the flags `#` and `+`, a precision or a width: appends `s` double-quoted as
 a Go literal (`strconv.AppendQuote` into `f.intbuf[:0]`, then `pad`), of which `strconv`'s spec
-says nothing more: some bytes. For `s` of at most `maxAddr` bytes (`strconv.AppendQuote`). -/
+says nothing more: some bytes. -/
 abbrev fmt.fmt.fmtQ.spec : Prop :=
   ∀ (f b : Loc) (F : fmtFlags) (wid prec : w64) (bs s : GoString),
     F.sharp' = false → F.plus' = false → F.precPresent' = false →
-    (F.widPresent' = false ∨ wid = W64 0) → s.length ≤ maxAddr →
+    (F.widPresent' = false ∨ wid = W64 0) →
     {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ fmtOwn (GF := GF) f b F wid prec ∗ intbufOwn f ∗
         bufferOwn b bs }}
       (App (Val (f @!! go.GoType.PointerType fmt.fmt.ty @!! go!"fmtQ")) (Val #s))
