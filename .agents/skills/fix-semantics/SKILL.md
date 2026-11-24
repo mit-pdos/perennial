@@ -60,7 +60,7 @@ Read both before proposing anything.
      gold files (`go test ./goose -update-gold`), run `go test ./goose/...`
      and `go vet`. Rebuild goose/proofgen into a private GOPATH (not
      `go install`, the machine is shared) and regenerate Perennial/Code with
-     `etc/update-goose-new.py`; for std/primitive/marshal whose sources are not
+     `etc/update-goose-new.py` (with the pinned go1.26.11 first on `PATH`); for std/primitive/marshal whose sources are not
      checked out, apply only the hunks the change implies and check them
      against a regeneration from the nearest available source.
    * Build: `etc/lean-ci.sh -q`; no new failures. Proofs that break should

@@ -19,10 +19,11 @@ Tiers (what the helper script reports):
 
 | tier | what | files |
 |---|---|---|
-| 0 | **semantics** (the model of Go) | `Perennial/GooseLang/{Lang,BoundedLang,Adequacy,Threads,Receipts,Locations,Ext,CrashLang,CrashAdequacy,DistLang,DistAdequacy,InitAdequacy}.lean`, `GooseLang/Ext/**`, `Perennial/Golang/Defn.lean`, `Perennial/Golang/Defn/**`, `GrovePrelude.lean` |
+| 0 | **semantics** (the model of Go) | `Perennial/GooseLang/{Lang,BoundedLang,Adequacy,AdequacyAlong,Threads,Receipts,Locations,Ext,CrashLang,CrashAdequacy,DistLang,DistAdequacy,InitAdequacy}.lean`, `GooseLang/Ext/**`, `Perennial/Golang/Defn.lean`, `Perennial/Golang/Defn/**`, `GrovePrelude.lean` |
 | 0 | **translator** | `goose/**` (`*.go`), gold files `goose/testdata/**/*.gold.lean`, Go models `goose/model/**` |
 | 0 | **trusted models** | `Perennial/TrustedCode/**` |
-| 0 | **goose configuration** | `Perennial/Code/**/*.toml` (`trusted`, `translate`, `!p`, `trust_proofgen`) |
+| 0 | **goose configuration** | `Perennial/Code/**/*.toml` (`trusted`, `translate`, `!p`, `trust_proofgen`), test configs `goose/testdata/**/*.toml` |
+| 0 | **Go model overlay** (R12) | the non-test `.go` files of a config's `[model].dir` (`goose/model/overlay/**`; etcd-grove `models/**`), and the `[model]` tables (`dir`, `replaces`, `added_methods`) of goose configs |
 | 1 | generated (trusted only through goose) | `Perennial/Code/**/*.lean`, `Perennial/GeneratedProof/**` |
 | 2 | logic and libraries (proved, but can hide trust) | `GooseLang/Lifting.lean`, `Golang/Theory/**`, `Std`, `Algebra`, `Ghost`, `IrisLib`, `Helpers` |
 | 3 | proofs, docs, tooling | `Perennial/Proof/**`, `ProgramLogic/**`, `docs/`, `README.md`, `etc/` |
@@ -30,7 +31,8 @@ Tiers (what the helper script reports):
 Also trusted wherever they appear: `axiom`, `sorry` outside `Perennial/Proof`,
 `opaque`, `partial def`, `native_decide`/`bv_decide`/`ofReduceBool`,
 `implemented_by`/`@[extern]`, the *statements* of `goose_adequacy*` and
-`goose_invariance*` and the hypotheses they put on the client.
+`goose_invariance*` and the hypotheses they put on the client, and every Go
+file in a `[model].dir` (R12), wherever it sits.
 
 ## Procedure
 
@@ -44,13 +46,17 @@ Also trusted wherever they appear: `axiom`, `sorry` outside `Perennial/Proof`,
    `TARGET` is a commit, a range `A..B`, or nothing (the branch's commits plus
    the working tree, against the merge base with `origin/lean`). The report
    lists changed files by tier, flags *signal* lines (assume, axiom, sorry,
-   Panic, step rules, trusted `.impl`s, trust lists, ...), shows the
-   before/after of the goose trust lists, and for each new trusted model prints
-   the Go code its docstring claims to model next to the real Go source
-   (`go doc -src`). Read the tier-0 diffs in full; `--full` prints the other
-   tiers. Also read, outside the report, the specs and proofs that *use* each
-   new trusted item (`grep` for its name under `Perennial/Proof`,
-   `Golang/Theory`): R4 and R7 cannot be applied from the model alone. If
+   Panic, step rules, trusted `.impl`s, trust lists, `[model]` tables,
+   `gomodel.Choose`/`Stuck` calls, ...), shows the before/after of the goose
+   trust lists and `[model]` tables, for each new trusted model prints the Go
+   code its docstring claims to model next to the real Go source
+   (`go doc -src`), and for each new or changed replaced declaration of a Go
+   model overlay prints the model's Go next to the real one, then lists the
+   additions and primitive stubs. Read the tier-0 diffs in full; `--full`
+   prints the other tiers. Also read, outside the report, the specs and
+   proofs that *use* each new trusted item (`grep` for its name under
+   `Perennial/Proof`, `Golang/Theory`): R4 and R7 cannot be applied from the
+   model alone. If
    there is no tier-0 change and no signal in tiers 1-2, say so and stop: this
    review is about trust, `/code-review` is about bugs. `git show TARGET`
    gives the rest of the change (README, docs, proofs) that steps 2 and R8
@@ -65,14 +71,19 @@ Also trusted wherever they appear: `axiom`, `sorry` outside `Perennial/Proof`,
 3. **Classify every tier-0 item** as one of: new semantics rule; changed
    semantics rule; new/changed trusted model; new model assumption (`assume`,
    `AngelicExit`, stuck `Panic`); trust-list change; skip entry (R11); translator change;
-   adequacy-statement change; new axiom/sorry/opaque. Then apply the rules
+   adequacy-statement change; Go model overlay (R12: a replaced declaration,
+   an addition, a primitive stub, an `added_methods` entry); new
+   axiom/sorry/opaque. Then apply the rules
    below to each. Do not skip an item because it looks routine: the two
    calibration failures in `cases.md` both looked routine.
 
 4. **Verify, do not infer.** Each rule says how. At minimum:
    - compare a trusted model with the *real* Go source (the report's
      `go doc -src` output, or the Go module source) line by line; `go doc -u`
-     shows unexported helpers (`genSplit`, ...);
+     shows unexported helpers (`genSplit`, ...). For a `[model]` change, the
+     comparison is the report's side-by-side real and model source of each
+     replaced declaration, line by line (for `init.N`, read the real `init`
+     yourself: go doc cannot name it);
    - for **every** trusted entry the change adds or touches (a `trusted` name,
      a `"!Name"` in `translate`, a hand-written `.impl`, a `Name.underlying`
      in `TrustedCode`), run goose on the **real** Go source with the entry
@@ -157,8 +168,9 @@ works:
    (a goose change with a unit test and gold file; a new rule in the right
    `*Semantics` class in `Golang/Defn` with its lifting lemma in
    `Golang/Theory`);
-4. write the model *in Go* under `goose/model/` and translate it, so the
-   trusted artifact is readable Go;
+4. write the model *in Go* and translate it, so the trusted artifact is
+   readable Go: a Go model overlay (R12), or a model package under
+   `goose/model/`;
 5. hand-write GooseLang in `TrustedCode`;
 6. `assume` (R3);
 7. `axiom` (needs prior discussion per `README.md`: BLOCK without it).
@@ -385,6 +397,40 @@ variables (`var c, d = pair()`) runs `c.init` then `d.init` where Go evaluates
 `pair()` once: the first `init` must carry the whole evaluation (effects, any
 panic) and say so in its docstring, the later ones only what is left for their
 own variable; a model that runs `pair()`'s effects in each: REWORK.
+
+**R12. A Go model overlay is trusted Go: model ⊇ Go, declaration by
+declaration.** A config's `[model]` table names a directory of model files
+(package = the real package's name) and `replaces`, the real declarations they
+redeclare (`f`, `T.m`, `T`, `X`, `init.N`; `["*"]`: the whole package; `[]`:
+additions only). Goose splices them into the real package and translates them.
+- *Review.* Model Go is TCB: the full R4 review against the real source, which
+  `trusted-delta` prints side by side.
+- *The claim.* For each replaced declaration: every behaviour of the real one
+  (gc, linux/amd64, the pinned Go), under every use by the rest of the program
+  and of the real package, is a behaviour of the model's translation. A stuck
+  point covers every behaviour. Additions (model declarations not in
+  `replaces`) carry no claim of their own. A primitive stub (an addition also
+  in `trusted`) carries the TrustedCode claim of its `.impl`, and R2 applies:
+  the stub must be irreducible. A real behaviour the model lacks is graded
+  by R4.
+- *Documentation.* A replaced declaration's doc comment starts with `MODEL:`
+  and says why the model has at least Go's behaviours (missing: REWORK, R8).
+  Every `gomodel.Choose`/`ChooseUint64`/`Stuck` (or a `primitive`
+  equivalent) has a reason in the doc comment: what Go behaviour the choice
+  covers, why the stuck point is unreachable or allowed (R4); none: REWORK.
+  An `init.N` model carries `//gomodel:replace init.N "<first line of the
+  real body>"`.
+- *API.* Goose refuses a model whose replaced functions, methods or variables
+  change type, whose replaced types change exported fields, kind or
+  comparability, or that changes a real type's method set beyond
+  `added_methods`. That check stands for comparing the model's exported
+  surface with the real package's; do not redo it. Do check `added_methods`: an added method changes a
+  real type's method set (interface satisfaction, type switches, reflection),
+  so its name must be one no real code tests for: a reserved model-only prefix
+  (`PbModel*`, `JSONModel*`). Any other name: REWORK.
+- *R2.* Moving a TrustedCode `.impl` to a model overlay moves it from rung 5
+  to rung 4. What stays a primitive stub still needs the goose run on the
+  real source (step 4).
 
 ## Report format
 

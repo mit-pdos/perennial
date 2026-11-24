@@ -14,7 +14,6 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"golang.org/x/tools/go/packages"
 
 	"github.com/mit-pdos/perennial/goose"
 	"github.com/mit-pdos/perennial/goose/glang"
@@ -42,7 +41,7 @@ func main() {
 	opts := load.Options()
 
 	if all {
-		os.Exit(checkAll(modDir, opts, flag.Args()))
+		os.Exit(checkAll(modDir, configDir, opts, flag.Args()))
 	}
 
 	_, errs, patternErr := goose.TranslatePackages(configDir, modDir, opts, flag.Args()...)
@@ -71,8 +70,8 @@ func main() {
 
 // checkAll checks every assignment and range statement in the packages, and
 // returns the exit status.
-func checkAll(modDir string, opts util.LoadOptions, patterns []string) int {
-	pkgs, err := packages.Load(util.NewPackageConfig(modDir, false, opts), patterns...)
+func checkAll(modDir string, configDir string, opts util.LoadOptions, patterns []string) int {
+	pkgs, _, err := util.LoadPackages(modDir, configDir, false, opts, patterns...)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 2

@@ -1232,6 +1232,9 @@ func (d FuncDecl) LeanDecl() string {
 	if d.RecvArg != nil {
 		names = append(names, d.RecvArg.Name)
 	}
+	if d.RecoverArg {
+		names = append(names, "$recover")
+	}
 	for _, a := range d.Args {
 		names = append(names, a.Name)
 	}

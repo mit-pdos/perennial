@@ -8,6 +8,7 @@ module
 public import Perennial.Proof.bytes.Buffer__Bytes
 public import Perennial.Proof.bytes.Buffer__Len
 public import Perennial.Proof.bytes.Buffer__Read
+public import Perennial.Proof.bytes.Buffer__Reset
 public import Perennial.Proof.bytes.Buffer__String
 public import Perennial.Proof.bytes.Buffer__Write
 public import Perennial.Proof.bytes.Buffer__WriteByte
@@ -43,6 +44,9 @@ theorem bytes.Buffer.wp_Len : bytes.Buffer.Len.spec (GF := GF) (hG := hG) :=
 
 theorem bytes.Buffer.wp_Read : bytes.Buffer.Read.spec (GF := GF) (hG := hG) :=
   bytes.Buffer.Read.wp_proof
+
+theorem bytes.Buffer.wp_Reset : bytes.Buffer.Reset.spec (GF := GF) (hG := hG) :=
+  bytes.Buffer.Reset.wp_proof
 
 theorem bytes.Buffer.wp_String : bytes.Buffer.String.spec (GF := GF) (hG := hG) :=
   bytes.Buffer.String.wp_proof

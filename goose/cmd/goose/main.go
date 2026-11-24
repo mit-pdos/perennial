@@ -69,10 +69,53 @@ func translate(pkgPatterns []string, outRootDir string, configDir string, modDir
 	}
 }
 
+// modelOverlay is `goose model-overlay`: it writes the overlay of the Go
+// models of the packages (util.BuildModels) in the format of go build
+// -overlay, and prints the path of its JSON file.
+func modelOverlay(args []string) {
+	fs := flag.NewFlagSet("goose model-overlay", flag.ExitOnError)
+	fs.Usage = func() {
+		fmt.Fprintln(fs.Output(), "Usage: goose model-overlay [options] -o <dir> <go package patterns>")
+		fmt.Fprintln(fs.Output(), "Writes <dir>/overlay.json (and <dir>/files), for go build/test -overlay: "+
+			"the Go models of the [model] tables of the packages' goose configs, with the -overlay given.")
+		fs.PrintDefaults()
+	}
+	modDir := fs.String("dir", ".", "directory containing necessary go.mod")
+	configDir := fs.String("configdir", ".", "directory containing Goose config files")
+	outDir := fs.String("o", "", "directory to write the overlay to (required)")
+	var load util.LoadFlags
+	load.Register(fs, "")
+	_ = fs.Parse(args)
+	if *outDir == "" || fs.NArg() == 0 {
+		fs.Usage()
+		os.Exit(2)
+	}
+	opts := load.Options()
+	models, err := util.BuildModels(*modDir, *configDir, opts, fs.Args()...)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	out, err := models.WriteGoOverlay(opts, *outDir)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	fmt.Println(out)
+	// the overlay is that of this build configuration (util.NewPackageConfig)
+	fmt.Fprintf(os.Stderr, "goose model-overlay: build with GOOS=linux GOARCH=amd64 go build -tags %s -overlay %s\n",
+		strings.Join(append([]string{"goose"}, opts.Tags...), ","), out)
+}
+
 // noinspection GoUnhandledErrorResult
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "model-overlay" {
+		modelOverlay(os.Args[2:])
+		return
+	}
 	flag.Usage = func() {
 		fmt.Fprintln(flag.CommandLine.Output(), "Usage: goose [options] <path to go package>")
+		fmt.Fprintln(flag.CommandLine.Output(), "       goose model-overlay [options] -o <dir> <go package patterns>")
 
 		flag.PrintDefaults()
 	}

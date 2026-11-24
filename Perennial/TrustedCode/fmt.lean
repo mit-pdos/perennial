@@ -3,20 +3,21 @@ Trusted code for the Go `fmt` package, in namespace `fmt` (as the generated
 package).
 
 Go's `fmt` cannot be translated (reflection on every argument, `sync.Pool`, float formatting), so
-`Sprintf`, `Printf`, `Fprintf` and `Errorf` are models, each goose's translation of the Go its
+`Sprintf`, `Printf`, `Fprintf`, `Fprint` and `Errorf` are models, each goose's translation of the Go its
 docstring quotes, with the edits it names. They share `doPrintf`, which formats the common directives of
 arguments that Go formats without calling any of their methods (`inert`) exactly (`formatArg`), and
 the common directives of a `[]byte` or a `[]string` (`formatSlice`, reading its bytes or elements, as Go does),
 and from the first other directive on gives an arbitrary string while calling what Go calls of the
 arguments: their `Error()` or `String()` under the verbs `v s x X q` (`visitRest`, `visitArg`).
 `Errorf` then returns what Go's `errorf` returns: `errors.New`, a `*wrapError` or a `*wrapErrors`,
-by its `%w` directives. Where the model cannot follow Go (a `Format` or `GoString` method Go would
+by its `%w` directives. `Fprint` calls what Go calls of each operand under `%v` (`visitArg`) and
+writes an arbitrary string. Where the model cannot follow Go (a `Format` or `GoString` method Go would
 call, a `reflect.Value` under a method verb, which Go's `printArg` unwraps (the model tells it by its
 `CanInterface() bool` method), reflection into a struct,
 pointer, map or slice (other than a `[]byte` or a `[]string`), an argument index or a `*` width), it is stuck (`notModelled`). The model's Go is also in `goose/model/fmt/model_test.go`, which
 `goose/model/fmt/model_diff_test.go` runs against Go's `fmt`: same output (each arbitrary string
 standing for any string), same method calls in the same order, same error kind, on every call the
-model is not stuck on, and the model is not stuck on any call the specs admit (`fmt.argsOk`).
+model is not stuck on, and the model is not stuck on any call the specs admit (`fmt.argsOk`; `Fprint`'s, `fmt.printArgOk`).
 -/
 module
 
@@ -4030,6 +4031,118 @@ noncomputable def Errorf.impl : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0"))))))))))))))))))
   (App (Val (GoInstruction (GoLoad go.error))) (Var "$res0"))))))
+
+
+/-- `Fprint(w, a...)`: calls what Go's formatting calls of each operand (`visitArg` under `%v`,
+without `#`), then calls `w.Write` once with an arbitrary string's bytes (also when it is empty),
+and returns what `Write` returns. Go's (`fmt/print.go`)
+
+```go
+func Fprint(w io.Writer, a ...any) (n int, err error) {
+	p := newPrinter()
+	p.doPrint(a)
+	n, err = w.Write(p.buf)
+	p.free()
+	return
+}
+
+func (p *pp) doPrint(a []any) {
+	prevString := false
+	for argNum, arg := range a {
+		isString := arg != nil && reflect.TypeOf(arg).Kind() == reflect.String
+		// Add a space between two non-string arguments.
+		if argNum > 0 && !isString && !prevString {
+			p.buf.writeByte(' ')
+		}
+		p.printArg(arg, 'v')
+		prevString = isString
+	}
+}
+```
+
+prints each operand by `printArg` under `%v` (`p.fmt` is cleared: no flags, width or precision), in
+order, with a space between two operands neither of which is a string (by kind: reading the type
+only); the only calls into the operands are `printArg`'s, which `visitArg` makes (the model is stuck
+where it does not follow them: a `Format` method, a `reflect.Value`, printing by reflection beyond the
+integer and string kinds). The output is not modelled: an arbitrary string, which includes Go's.
+`Write` gets it as `Fprintf`'s gets its output (`printerBuf`, then `retire`; the same evidence,
+`goose/model/fmt/fprintf_alias_test.go`, as `Fprint` uses the same pooled printer). Goose's
+translation (by the goose of this revision, with its function results in cells `$resI`) of
+
+```go
+func Fprint(w io.Writer, a ...any) (int, error) {
+	for _, x := range a {
+		visitArg(x, 'v', false, false)
+	}
+	b := printerBuf(arbitraryString())
+	n, err := w.Write(b)
+	retire(b)
+	return n, err
+}
+```
+
+with these edits: goose's `FuncResolve f [] #()` of a helper of this file replaced by `f`. -/
+noncomputable def Fprint.impl : val :=
+  (LamV "w"
+  (Lam "a"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.any)))) (Var "a"))
+  (Let "w" (App (Val (GoInstruction (GoAlloc _root_.Perennial.io.Writer.ty))) (Var "w"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val arbitraryString) (Val #()))
+  (App (Val printerBuf) (Var "$a0")))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.io.Writer.ty go!"Write"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.io.Writer.ty))) (Var "w"))) (Var "$a0")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (Val retire) (Var "$a0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0"))))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b") (Var "$r0")))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "a"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
+  (App (App (Val (slice.forRange go.any)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))
+  (Let "$a1" (Val #(W8 118))
+  (Let "$a2" (Val #false)
+  (Let "$a3" (Val #false)
+  (App (App (App (App (Val visitArg) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))))
+  (App (Val doExecute)
+  (Var "$key")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "x") (Var "$value"))))))))))))))
+  (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1"))))))))
 
 
 /-- `Print(a...)`: not modelled; stuck. (`Print` takes one argument, the slice `a`.) -/

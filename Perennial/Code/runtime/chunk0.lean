@@ -1103,6 +1103,11 @@ noncomputable def perThreadSyscallArgs.ty [GooseExts] [GoGlobalContext] : go.GoT
 
 attribute [irreducible] perThreadSyscallArgs.ty
 
+noncomputable def kernelVersion.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"runtime.kernelVersion" [])
+
+attribute [irreducible] kernelVersion.ty
+
 noncomputable def sigset.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"runtime.sigset" [])
 
@@ -3113,6 +3118,14 @@ opaque throwTypeRuntime [GooseExts] [GoGlobalContext] : val
 opaque pinnerSize [GooseExts] [GoGlobalContext] : val
 
 opaque pinnerRefStoreSize [GooseExts] [GoGlobalContext] : val
+
+opaque float64Bytes [GooseExts] [GoGlobalContext] : val
+
+opaque float32Bytes [GooseExts] [GoGlobalContext] : val
+
+opaque complex128Bytes [GooseExts] [GoGlobalContext] : val
+
+opaque complex64Bytes [GooseExts] [GoGlobalContext] : val
 
 opaque crashStackImplemented [GooseExts] [GoGlobalContext] : val
 
@@ -5873,9 +5886,6 @@ noncomputable def nextHeapRandBits [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def mallocinit [GooseExts] [GoGlobalContext] : GoString :=
   go!"runtime.mallocinit"
 
-noncomputable def sysReserveAligned [GooseExts] [GoGlobalContext] : GoString :=
-  go!"runtime.sysReserveAligned"
-
 noncomputable def nextFreeFast [GooseExts] [GoGlobalContext] : GoString :=
   go!"runtime.nextFreeFast"
 
@@ -6544,6 +6554,12 @@ noncomputable def sysFault [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def sysReserve [GooseExts] [GoGlobalContext] : GoString :=
   go!"runtime.sysReserve"
+
+noncomputable def sysReserveAligned [GooseExts] [GoGlobalContext] : GoString :=
+  go!"runtime.sysReserveAligned"
+
+noncomputable def sysUnreserve [GooseExts] [GoGlobalContext] : GoString :=
+  go!"runtime.sysUnreserve"
 
 noncomputable def sysMap [GooseExts] [GoGlobalContext] : GoString :=
   go!"runtime.sysMap"
@@ -7412,6 +7428,12 @@ noncomputable def netpollAnyWaiters [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def netpollAdjustWaiters [GooseExts] [GoGlobalContext] : GoString :=
   go!"runtime.netpollAdjustWaiters"
 
+noncomputable def netpollPackData [GooseExts] [GoGlobalContext] : GoString :=
+  go!"runtime.netpollPackData"
+
+noncomputable def netpollUnpackData [GooseExts] [GoGlobalContext] : GoString :=
+  go!"runtime.netpollUnpackData"
+
 noncomputable def netpollinit [GooseExts] [GoGlobalContext] : GoString :=
   go!"runtime.netpollinit"
 
@@ -7591,6 +7613,15 @@ noncomputable def runPerThreadSyscall [GooseExts] [GoGlobalContext] : GoString :
 
 noncomputable def mprotect [GooseExts] [GoGlobalContext] : GoString :=
   go!"runtime.mprotect"
+
+noncomputable def getKernelVersion [GooseExts] [GoGlobalContext] : GoString :=
+  go!"runtime.getKernelVersion"
+
+noncomputable def parseRelease [GooseExts] [GoGlobalContext] : GoString :=
+  go!"runtime.parseRelease"
+
+noncomputable def configure64bitsTimeOn32BitsArchitectures [GooseExts] [GoGlobalContext] : GoString :=
+  go!"runtime.configure64bitsTimeOn32BitsArchitectures"
 
 noncomputable def futex [GooseExts] [GoGlobalContext] : GoString :=
   go!"runtime.futex"
@@ -10135,6 +10166,9 @@ noncomputable def traceGoroutineStackID [GooseExts] [GoGlobalContext] : GoString
 
 noncomputable def traceCompressStackSize [GooseExts] [GoGlobalContext] : GoString :=
   go!"runtime.traceCompressStackSize"
+
+noncomputable def isInjectedCall [GooseExts] [GoGlobalContext] : GoString :=
+  go!"runtime.isInjectedCall"
 
 noncomputable def tracebackPCs [GooseExts] [GoGlobalContext] : GoString :=
   go!"runtime.tracebackPCs"
@@ -15868,6 +15902,28 @@ noncomputable instance equals_unfold_perThreadSyscallArgs [GooseExts] [GoGlobalC
 
 @[reducible] noncomputable def perThreadSyscallArgs.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType perThreadSyscallArgs.fields)
+
+structure kernelVersion [GooseExts] where
+  mk ::
+  major' : w64
+  minor' : w64
+
+noncomputable instance kernelVersion.zero_val [GooseExts] : ZeroVal kernelVersion :=
+  ⟨kernelVersion.mk zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def kernelVersion.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"major" go.int),
+(go.field_decl.FieldDecl go!"minor" go.int)]
+
+@[irreducible] noncomputable def kernelVersion.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  kernelVersion.fieldsUnsealed
+
+noncomputable instance equals_unfold_kernelVersion [GooseExts] [GoGlobalContext] :
+    EqualsUnfold kernelVersion.fields kernelVersion.fieldsUnsealed :=
+  ⟨by unfold kernelVersion.fields; rfl⟩
+
+@[reducible] noncomputable def kernelVersion.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType kernelVersion.fields)
 
 abbrev sigset [GooseExts] : Type := (GoArray w32 2)
 

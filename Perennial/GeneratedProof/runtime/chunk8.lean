@@ -10,6 +10,7 @@ public import Perennial.Code.runtime
 public import Perennial.GeneratedProof.runtime.chunk1
 public import Perennial.GeneratedProof.runtime.chunk2
 public import Perennial.GeneratedProof.runtime.chunk3
+public import Perennial.GeneratedProof.runtime.chunk4
 
 @[expose] public section
 
