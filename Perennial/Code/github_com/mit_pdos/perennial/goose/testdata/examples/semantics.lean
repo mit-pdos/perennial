@@ -189,6 +189,16 @@ noncomputable def Daisy.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] Daisy.ty
 
+noncomputable def Type'.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Type" [])
+
+attribute [irreducible] Type'.ty
+
+noncomputable def IntOrString.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.IntOrString" [])
+
+attribute [irreducible] IntOrString.ty
+
 noncomputable def mutexHolder.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.mutexHolder" [])
 
@@ -1090,6 +1100,9 @@ noncomputable def testCountPairs [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def testMiniPrintf [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testMiniPrintf"
+
+noncomputable def testLocalTypeNameShadow [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testLocalTypeNameShadow"
 
 noncomputable def testsUseLocks [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testsUseLocks"
@@ -7518,6 +7531,29 @@ noncomputable def testMiniPrintf.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "flags") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0")))))))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: local_type_names.go:9:6 -/
+noncomputable def testLocalTypeNameShadow.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Let "$v0" (Val #(W64 7))
+  (App (Val (GoInstruction (CompositeLiteral IntOrString.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Type")) (ElementExpression Type'.ty (Var "$v0")))])))
+  (Let "x" (App (Val (GoInstruction (GoAlloc IntOrString.ty))) (App (Val (GoInstruction (GoZeroVal IntOrString.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 9))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals Type'.ty))) (Pair (App (Val (GoInstruction (GoLoad Type'.ty))) (App (Val (GoInstruction (StructFieldRef IntOrString.ty go!"Type"))) (Var "x"))) (Val #(W64 9))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Type'.ty))) (Pair (App (Val (GoInstruction (StructFieldRef IntOrString.ty go!"Type"))) (Var "x")) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore IntOrString.ty))) (Pair (Var "x") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- We can't interpret multithreaded code, so this just checks that
@@ -16068,6 +16104,55 @@ attribute [instance] Daisy.TypeAssumptions.type_repr
   Daisy.TypeAssumptions.ptr_Genus_unfold
   Daisy.TypeAssumptions.ptr_Petals_unfold
 
+abbrev Type' [GooseExts] : Type := w64
+
+@[reducible] noncomputable def Type'.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  go.int64
+
+class «Type».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Type'.ty Type'.underlying
+  method_set : go.MethodSetIs Type'.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Type'.ty) []
+
+attribute [instance] «Type».TypeAssumptions.underlying
+  «Type».TypeAssumptions.method_set
+  «Type».TypeAssumptions.ptr_method_set
+
+structure IntOrString [GooseExts] where
+  mk ::
+  Type' : Type'
+
+noncomputable instance IntOrString.zero_val [GooseExts] : ZeroVal IntOrString :=
+  ⟨IntOrString.mk zeroValDef⟩
+
+@[reducible] noncomputable def IntOrString.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"Type" Type'.ty)]
+
+@[irreducible] noncomputable def IntOrString.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  IntOrString.fieldsUnsealed
+
+noncomputable instance equals_unfold_IntOrString [GooseExts] [GoGlobalContext] :
+    EqualsUnfold IntOrString.fields IntOrString.fieldsUnsealed :=
+  ⟨by unfold IntOrString.fields; rfl⟩
+
+@[reducible] noncomputable def IntOrString.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType IntOrString.fields)
+
+class IntOrString.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying IntOrString.underlying IntOrString
+  underlying : go.UnderlyingDirectedEq IntOrString.ty IntOrString.underlying
+  get_Type : ∀ (x : IntOrString), go.IsGoStepPureDetTagged under (StructFieldGet IntOrString.underlying go!"Type") #x (Val #(x.Type'))
+  set_Type : ∀ (x : IntOrString) (y : Type'), go.IsGoStepPureDetTagged under (StructFieldSet IntOrString.underlying go!"Type") (PairV #x #y) (Val #(({ x with Type' := y } : IntOrString)))
+  method_set : go.MethodSetIs IntOrString.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType IntOrString.ty) []
+
+attribute [instance] IntOrString.TypeAssumptions.type_repr
+  IntOrString.TypeAssumptions.underlying
+  IntOrString.TypeAssumptions.get_Type
+  IntOrString.TypeAssumptions.set_Type
+  IntOrString.TypeAssumptions.method_set
+  IntOrString.TypeAssumptions.ptr_method_set
+
 structure mutexHolder [GooseExts] where
   mk ::
   mu' : _root_.Perennial.sync.Mutex
@@ -17553,6 +17638,8 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Lily_instance : Lily.TypeAssumptions
   Rose_instance : Rose.TypeAssumptions
   Daisy_instance : Daisy.TypeAssumptions
+  Type_instance : «Type».TypeAssumptions
+  IntOrString_instance : IntOrString.TypeAssumptions
   mutexHolder_instance : mutexHolder.TypeAssumptions
   LoopStruct_instance : LoopStruct.TypeAssumptions
   loopCounter_instance : loopCounter.TypeAssumptions
@@ -17775,6 +17862,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testSameLabelNested_unfold : FuncUnfold testSameLabelNested [] testSameLabelNested.impl
   testCountPairs_unfold : FuncUnfold testCountPairs [] testCountPairs.impl
   testMiniPrintf_unfold : FuncUnfold testMiniPrintf [] testMiniPrintf.impl
+  testLocalTypeNameShadow_unfold : FuncUnfold testLocalTypeNameShadow [] testLocalTypeNameShadow.impl
   testsUseLocks_unfold : FuncUnfold testsUseLocks [] testsUseLocks.impl
   testMutexLiteral_unfold : FuncUnfold testMutexLiteral [] testMutexLiteral.impl
   standardForLoop_unfold : FuncUnfold standardForLoop [] standardForLoop.impl
@@ -18033,6 +18121,8 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.Lily_instance
   Assumptions.Rose_instance
   Assumptions.Daisy_instance
+  Assumptions.Type_instance
+  Assumptions.IntOrString_instance
   Assumptions.mutexHolder_instance
   Assumptions.LoopStruct_instance
   Assumptions.loopCounter_instance
@@ -18255,6 +18345,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testSameLabelNested_unfold
   Assumptions.testCountPairs_unfold
   Assumptions.testMiniPrintf_unfold
+  Assumptions.testLocalTypeNameShadow_unfold
   Assumptions.testsUseLocks_unfold
   Assumptions.testMutexLiteral_unfold
   Assumptions.standardForLoop_unfold

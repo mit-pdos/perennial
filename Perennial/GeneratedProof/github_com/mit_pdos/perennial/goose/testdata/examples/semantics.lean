@@ -831,6 +831,46 @@ noncomputable instance Daisy_into_val_typed :
 end def_
 end Daisy
 
+namespace IntOrString
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
+
+noncomputable instance IntOrString_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString where
+  typedPointstoDef l v dq := iprop(
+    "Type'" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString go!"Type" l) v.Type' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance IntOrString_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance IntOrString_access_load_Type (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString go!"Type" l) v.Type' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString go!"Type" l) v.Type' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance IntOrString_access_store_Type (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString) (Type' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Type') :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString go!"Type" l) v.Type' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString go!"Type" l) Type' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Type' := Type' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end IntOrString
+
 namespace mutexHolder
 section def_
 
