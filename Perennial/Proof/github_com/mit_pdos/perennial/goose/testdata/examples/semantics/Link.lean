@@ -82,6 +82,7 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testLabeledSwitch
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testLabeledTypeSwitch
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testListTypesEqual
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testLocalTypeNameShadow
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testLoopVarCapture
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMaxUint64
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodRecover
@@ -400,6 +401,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testL
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testListTypesEqual : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testListTypesEqual.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testListTypesEqual.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testLocalTypeNameShadow : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testLocalTypeNameShadow.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testLocalTypeNameShadow.wp_proof
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testLoopVarCapture : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testLoopVarCapture.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testLoopVarCapture.wp_proof

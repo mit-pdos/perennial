@@ -488,7 +488,7 @@ noncomputable def startsWithLowerCase [GooseExts] [GoGlobalContext] : GoString :
 noncomputable def nextStdChunk [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.nextStdChunk"
 
-noncomputable def «match» [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def match'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.match"
 
 noncomputable def lookup'' [GooseExts] [GoGlobalContext] : GoString :=
@@ -608,7 +608,7 @@ noncomputable def goFunc [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def interrupt [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.interrupt"
 
-noncomputable def «open» [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def open'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.open"
 
 noncomputable def read [GooseExts] [GoGlobalContext] : GoString :=

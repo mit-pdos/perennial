@@ -346,7 +346,7 @@ noncomputable def writeMultiple [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def scanSign [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/big.scanSign"
 
-noncomputable def «alias» [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def alias'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/big.alias"
 
 noncomputable def addTo [GooseExts] [GoGlobalContext] : GoString :=

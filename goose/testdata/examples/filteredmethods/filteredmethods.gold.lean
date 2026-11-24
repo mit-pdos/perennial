@@ -31,7 +31,7 @@ noncomputable def counter.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] counter.ty
 
-@[reducible] noncomputable def «alias».ty [GooseExts] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def alias''.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   counter.ty
 
 /-- go: filteredmethods.go:16:17 -/

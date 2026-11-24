@@ -860,7 +860,7 @@ noncomputable instance IntOrString_access_load_Type (l : Loc) (v : github_com.mi
  by
   solve_pointsto_access_struct
 
-noncomputable instance IntOrString_access_store_Type (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString) (y : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«Type») :
+noncomputable instance IntOrString_access_store_Type (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString) (y : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Type'') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString go!"Type" l) v.Type' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString go!"Type" l) y (DFrac.own 1))

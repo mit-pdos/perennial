@@ -95,7 +95,7 @@ noncomputable def SliceStable [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def SliceIsSorted [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.SliceIsSorted"
 
-noncomputable def «Sort» [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def Sort'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.Sort"
 
 noncomputable def nextPowerOfTwo [GooseExts] [GoGlobalContext] : GoString :=
@@ -479,7 +479,7 @@ noncomputable def SearchStrings.impl [GooseExts] [GoGlobalContext] : val :=
     ergonomic and runs faster.
 
     go: sort.go:50:6 -/
-noncomputable def «Sort».impl [GooseExts] [GoGlobalContext] : val :=
+noncomputable def Sort''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (Seq (App (Val exceptionDo)
   (Let "data" (App (Val (GoInstruction (GoAlloc Interface.ty))) (Var "data"))
@@ -694,14 +694,14 @@ noncomputable def StringSlice.Swap.impl [GooseExts] [GoGlobalContext] : val :=
 /-- Sort is a convenience method: x.Sort() calls Sort(x).
 
     go: sort.go:163:22 -/
-noncomputable def StringSlice.«Sort».impl [GooseExts] [GoGlobalContext] : val :=
+noncomputable def StringSlice.Sort''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam BAnon
   (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc StringSlice.ty))) (Var "x"))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert StringSlice.ty Interface.ty))) (App (Val (GoInstruction (GoLoad StringSlice.ty))) (Var "x")))
-  (App (App (Val (GoInstruction (FuncResolve «Sort» []))) (Val #())) (Var "$a0"))))))
+  (App (App (Val (GoInstruction (FuncResolve Sort'' []))) (Val #())) (Var "$a0"))))))
   (Val #()))))
 
 /-- Strings sorts a slice of strings in increasing order.
@@ -715,7 +715,7 @@ noncomputable def Strings.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (Var "x"))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "x"))
-  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.slices.«Sort» [(go.GoType.SliceType go.string), go.string]))) (Val #())) (Var "$a0"))))))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.slices.Sort'' [(go.GoType.SliceType go.string), go.string]))) (Val #())) (Var "$a0"))))))
   (Val #())))
 
 /-- Stable sorts data in ascending order as determined by the Less method,
@@ -2377,7 +2377,7 @@ class StringSlice.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType StringSlice.ty) [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Less", (some (go.signature.Signature [go.int, go.int] false [go.bool]))), (go!"Search", (some (go.signature.Signature [go.string] false [go.int]))), (go!"Sort", (some (go.signature.Signature [] false []))), (go!"Swap", (some (go.signature.Signature [go.int, go.int] false [])))]
   Len_unfold : MethodUnfold StringSlice.ty go!"Len" StringSlice.Len.impl
   Less_unfold : MethodUnfold StringSlice.ty go!"Less" StringSlice.Less.impl
-  Sort_unfold : MethodUnfold StringSlice.ty go!"Sort" StringSlice.«Sort».impl
+  Sort_unfold : MethodUnfold StringSlice.ty go!"Sort" StringSlice.Sort''.impl
   Swap_unfold : MethodUnfold StringSlice.ty go!"Swap" StringSlice.Swap.impl
   ptr_Len_unfold : MethodUnfold (go.GoType.PointerType StringSlice.ty) go!"Len" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve StringSlice.ty go!"Len"))) (App (Val (GoInstruction (GoLoad StringSlice.ty))) (Var "$r"))))
@@ -2413,7 +2413,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Find_unfold : FuncUnfold Find [] Find.impl
   SearchInts_unfold : FuncUnfold SearchInts [] SearchInts.impl
   SearchStrings_unfold : FuncUnfold SearchStrings [] SearchStrings.impl
-  Sort_unfold : FuncUnfold «Sort» [] «Sort».impl
+  Sort_unfold : FuncUnfold Sort'' [] Sort''.impl
   nextPowerOfTwo_unfold : FuncUnfold nextPowerOfTwo [] nextPowerOfTwo.impl
   Reverse_unfold : FuncUnfold Reverse [] Reverse.impl
   IsSorted_unfold : FuncUnfold IsSorted [] IsSorted.impl

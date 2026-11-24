@@ -141,7 +141,7 @@ noncomputable def Concat [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def Repeat [GooseExts] [GoGlobalContext] : GoString :=
   go!"slices.Repeat"
 
-noncomputable def «Sort» [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def Sort'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"slices.Sort"
 
 noncomputable def SortFunc [GooseExts] [GoGlobalContext] : GoString :=
@@ -358,7 +358,7 @@ noncomputable def Sorted.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : va
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType E)))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "s"))
-  (App (App (Val (GoInstruction (FuncResolve «Sort» [(go.GoType.SliceType E), E]))) (Val #())) (Var "$a0")))))))
+  (App (App (Val (GoInstruction (FuncResolve Sort'' [(go.GoType.SliceType E), E]))) (Val #())) (Var "$a0")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType E)))) (Pair (Var "s") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "$res0")))))
@@ -513,7 +513,7 @@ noncomputable def Concat.impl [GooseExts] [GoGlobalContext] (S E : go.GoType) : 
     When sorting floating-point numbers, NaNs are ordered before other values.
 
     go: sort.go:16:6 -/
-noncomputable def «Sort».impl [GooseExts] [GoGlobalContext] (S E : go.GoType) : val :=
+noncomputable def Sort''.impl [GooseExts] [GoGlobalContext] (S E : go.GoType) : val :=
   (LamV "x"
   (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc S))) (Var "x"))
@@ -3801,7 +3801,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Clone_unfold : ∀ (S E : go.GoType), FuncUnfold Clone [S, E] (Clone.impl S E)
   Grow_unfold : ∀ (S E : go.GoType), FuncUnfold Grow [S, E] (Grow.impl S E)
   Concat_unfold : ∀ (S E : go.GoType), FuncUnfold Concat [S, E] (Concat.impl S E)
-  Sort_unfold : ∀ (S E : go.GoType), FuncUnfold «Sort» [S, E] («Sort».impl S E)
+  Sort_unfold : ∀ (S E : go.GoType), FuncUnfold Sort'' [S, E] (Sort''.impl S E)
   SortFunc_unfold : ∀ (S E : go.GoType), FuncUnfold SortFunc [S, E] (SortFunc.impl S E)
   nextPowerOfTwo_unfold : FuncUnfold nextPowerOfTwo [] nextPowerOfTwo.impl
   insertionSortCmpFunc_unfold : ∀ (E : go.GoType), FuncUnfold insertionSortCmpFunc [E] (insertionSortCmpFunc.impl E)

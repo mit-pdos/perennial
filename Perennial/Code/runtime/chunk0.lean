@@ -9807,7 +9807,7 @@ noncomputable def usleep_no_g [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def write1 [GooseExts] [GoGlobalContext] : GoString :=
   go!"runtime.write1"
 
-noncomputable def «open» [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def open'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"runtime.open"
 
 noncomputable def madvise [GooseExts] [GoGlobalContext] : GoString :=

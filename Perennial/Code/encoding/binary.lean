@@ -407,7 +407,7 @@ noncomputable def littleEndian.String.impl [GooseExts] [GoGlobalContext] : val :
   (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
 
 /-- go: binary.go:150:21 -/
-noncomputable def littleEndian.GoString.impl [GooseExts] [GoGlobalContext] : val :=
+noncomputable def littleEndian.GoString''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
@@ -676,7 +676,7 @@ noncomputable def bigEndian.String.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
 
 /-- go: binary.go:236:18 -/
-noncomputable def bigEndian.GoString.impl [GooseExts] [GoGlobalContext] : val :=
+noncomputable def bigEndian.GoString''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
@@ -768,7 +768,7 @@ noncomputable def Read.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType decoder.ty)))) (Pair (Var "d") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "size")) (Val #(W64 0)))))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (Val #(go!"binary.Read: invalid type ")) (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.reflect.«Type».ty go!"String"))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "data"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (Val #(go!"binary.Read: invalid type ")) (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.reflect.Type''.ty go!"String"))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "data"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.reflect.TypeOf []))) (Val #())) (Var "$a0")))) (Val #()))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1243,7 +1243,7 @@ noncomputable def Write.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "buf") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "size")) (Val #(W64 0)))))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (Val #(go!"binary.Write: some values are not fixed-sized in type ")) (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.reflect.«Type».ty go!"String"))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "data"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (Val #(go!"binary.Write: some values are not fixed-sized in type ")) (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.reflect.Type''.ty go!"String"))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "data"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.reflect.TypeOf []))) (Val #())) (Var "$a0")))) (Val #()))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2377,7 +2377,7 @@ class littleEndian.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext
   AppendUint16_unfold : MethodUnfold littleEndian.ty go!"AppendUint16" littleEndian.AppendUint16.impl
   AppendUint32_unfold : MethodUnfold littleEndian.ty go!"AppendUint32" littleEndian.AppendUint32.impl
   AppendUint64_unfold : MethodUnfold littleEndian.ty go!"AppendUint64" littleEndian.AppendUint64.impl
-  GoString_unfold : MethodUnfold littleEndian.ty go!"GoString" littleEndian.GoString.impl
+  GoString_unfold : MethodUnfold littleEndian.ty go!"GoString" littleEndian.GoString''.impl
   PutUint16_unfold : MethodUnfold littleEndian.ty go!"PutUint16" littleEndian.PutUint16.impl
   PutUint32_unfold : MethodUnfold littleEndian.ty go!"PutUint32" littleEndian.PutUint32.impl
   PutUint64_unfold : MethodUnfold littleEndian.ty go!"PutUint64" littleEndian.PutUint64.impl
@@ -2462,7 +2462,7 @@ class bigEndian.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   AppendUint16_unfold : MethodUnfold bigEndian.ty go!"AppendUint16" bigEndian.AppendUint16.impl
   AppendUint32_unfold : MethodUnfold bigEndian.ty go!"AppendUint32" bigEndian.AppendUint32.impl
   AppendUint64_unfold : MethodUnfold bigEndian.ty go!"AppendUint64" bigEndian.AppendUint64.impl
-  GoString_unfold : MethodUnfold bigEndian.ty go!"GoString" bigEndian.GoString.impl
+  GoString_unfold : MethodUnfold bigEndian.ty go!"GoString" bigEndian.GoString''.impl
   PutUint16_unfold : MethodUnfold bigEndian.ty go!"PutUint16" bigEndian.PutUint16.impl
   PutUint32_unfold : MethodUnfold bigEndian.ty go!"PutUint32" bigEndian.PutUint32.impl
   PutUint64_unfold : MethodUnfold bigEndian.ty go!"PutUint64" bigEndian.PutUint64.impl

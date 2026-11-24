@@ -94,7 +94,7 @@ theorem wp_Sort_uint64 {S : go.GoType} [S ↓u go.SliceType go.uint64] (data : G
     {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
         "Hxs" ∷ data ↦* xs ∗
         "%Hlength_bound" ∷ ⌜xs.length ≤ 2 ^ 62⌝ }}
-      (App (Val #(functions «Sort» [S, go.uint64])) (Val #data))
+      (App (Val #(functions Sort'' [S, go.uint64])) (Val #data))
     {{ (xs' : List w64), RET #();
         "Hxs" ∷ data ↦* xs' ∗
         "%Hperm" ∷ ⌜xs ≡ₚ xs'⌝ ∗
