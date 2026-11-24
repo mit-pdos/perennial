@@ -243,7 +243,9 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   evaluation frame but that of `Catch e h k` (`GooseLang/Lang.lean`); `panic(p)`
   steps to it, a function with `defer`s runs its body under a `Catch`
   (`Golang/Defn/Defer.lean`), and `recover()` (Goose translates it only directly
-  in a deferred function literal) reads and clears the panic. A postcondition
+  in a deferred function literal, or in a function or method `F` that `defer
+  F(...)` calls as `F'deferred`, passing the cell as `$recover`) reads and clears
+  the panic. A postcondition
   receives panics too, a spec `{{ P }} e {{ RET v; Q }}` excludes them, and a
   goroutine must not panic (`wp_fork`: `forkPost`). The adequacy theorems
   (`goose_adequacy` and the grove/disk ones) require the main thread's
