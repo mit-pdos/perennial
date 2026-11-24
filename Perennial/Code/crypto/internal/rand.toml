@@ -1,0 +1,20 @@
+# crypto/internal/rand: `crypto/rand.Reader`'s initial value, `Reader` (`var Reader io.Reader =
+# reader{}`), and its type `reader` (`struct{ drbg.DefaultReader }`), whose `Read` is a Go model
+# (below). The rest (`CustomReader`, `IsDefaultReader`, `SetTestingReader`, the
+# `cryptocustomrand` setting) is not translated.
+translate = ["!*", "Reader", "reader"]
+imports = ["!*", "internal/gomodel", "io", "crypto/internal/fips140/drbg"]
+
+[[skip]]
+names = ["cryptocustomrand"]
+reason = """
+`godebug.New("cryptocustomrand")` (rand.go): allocates a `godebug.Setting` holding the name
+(`&Setting{name: name}`; the setting is looked up lazily, on first `Value`): cannot panic, no
+effect beyond the variable. Read only by `CustomReader`, which is not translated."""
+
+# The Go model (goose/model/overlay/crypto/internal/rand): `reader.Read` (boring, the FIPS DRBG or
+# the getrandom system call; its MODEL: comment says why it has at least Go's behaviours): arbitrary
+# bytes, `len(b), nil`.
+[model]
+dir = "goose/model/overlay/crypto/internal/rand"
+replaces = ["reader.Read"]

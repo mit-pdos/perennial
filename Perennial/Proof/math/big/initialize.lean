@@ -7,6 +7,8 @@ public import Perennial.Spec.math.big.initialize
 public import Perennial.Spec.fmt.initialize
 public import Perennial.Spec.errors.initialize
 public import Perennial.Spec.errors.New
+public import Perennial.Spec.internal.byteorder.initialize
+public import Perennial.Spec.math.bits.initialize
 
 @[expose] public section
 
@@ -26,7 +28,9 @@ variable [package_sem : math.big.Assumptions]
 theorem math.big.initialize'.wp_proof
     (wp_fmt_initialize : fmt.initialize'.spec (GF := GF) (hG := hG))
     (wp_errors_initialize : errors.initialize'.spec (GF := GF) (hG := hG))
-    (wp_New : errors.New.spec (GF := GF) (hG := hG)) :
+    (wp_New : errors.New.spec (GF := GF) (hG := hG))
+    (wp_byteorder_initialize : internal.byteorder.initialize'.spec (GF := GF) (hG := hG))
+    (wp_bits_initialize : math.bits.initialize'.spec (GF := GF) (hG := hG)) :
     math.big.initialize'.spec (GF := GF) (hG := hG) := by
   intro get_is_pkg_init Hinit
   wp_start as Hown
@@ -41,8 +45,10 @@ theorem math.big.initialize'.wp_proof
     | wp_apply wp_GlobalAlloc (V := GoSlice) _ nat.ty as _
     | wp_apply wp_GlobalAlloc (V := GoInterface) _ go.error as _
     | wp_apply wp_GlobalAlloc (V := w64) _ go.int as _)
-  wp_apply wp_errors_initialize _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Herrors⟩
-  wp_apply wp_fmt_initialize _ Hinit.2.1 $$ Hown as ⟨Hown, #Hfmt⟩
+  wp_apply wp_byteorder_initialize _ Hinit.2.2.2.2.1 $$ Hown as ⟨Hown, #Hbyteorder⟩
+  wp_apply wp_errors_initialize _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #Herrors⟩
+  wp_apply wp_fmt_initialize _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hfmt⟩
+  wp_apply wp_bits_initialize _ Hinit.2.1 $$ Hown as ⟨Hown, #Hbits⟩
   -- the variables, in Go's initialization order (`hasADX` is skipped: not translated)
   repeat (first
     | (wp_apply wp_New as %_ _)

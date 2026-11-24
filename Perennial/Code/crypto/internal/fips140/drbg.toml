@@ -1,0 +1,4 @@
+# crypto/internal/fips140/drbg: only the interface type `DefaultReader` (`interface{
+# defaultReader() }`), which crypto/internal/rand's `reader` embeds.
+translate = ["!*", "DefaultReader"]
+imports = ["!*"]

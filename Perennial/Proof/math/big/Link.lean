@@ -7,10 +7,12 @@ module
 
 public import Perennial.Proof.errors.Link
 public import Perennial.Proof.fmt.Link
+public import Perennial.Proof.internal.byteorder.Link
 public import Perennial.Proof.math.big.Int__Int64
 public import Perennial.Proof.math.big.NewInt
 public import Perennial.Proof.math.big.initialize
 public import Perennial.Proof.math.big.low64
+public import Perennial.Proof.math.bits.Link
 
 @[expose] public section
 
@@ -35,7 +37,7 @@ theorem math.big.wp_NewInt : math.big.NewInt.spec (GF := GF) (hG := hG) :=
   math.big.NewInt.wp_proof
 
 theorem math.big.wp_initialize' : math.big.initialize'.spec (GF := GF) (hG := hG) :=
-  math.big.initialize'.wp_proof fmt.wp_initialize' errors.wp_initialize' errors.wp_New
+  math.big.initialize'.wp_proof fmt.wp_initialize' errors.wp_initialize' errors.wp_New internal.byteorder.wp_initialize' math.bits.wp_initialize'
 
 end link
 

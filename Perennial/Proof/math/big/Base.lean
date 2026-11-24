@@ -14,6 +14,8 @@ public import Perennial.Proof.ProofPrelude
 public import Perennial.Code.math.big
 public import Perennial.GeneratedProof.math.big
 public import Perennial.Proof.fmt.Base
+public import Perennial.Proof.internal.byteorder.Base
+public import Perennial.Proof.math.bits.Base
 
 @[expose] public section
 

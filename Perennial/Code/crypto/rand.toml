@@ -1,6 +1,4 @@
-translate = ["!*"]
-imports = ["!*", "math/big", "io"]
-
-# `Reader`'s initial value is `crypto/internal/rand.Reader`, which is not translated
-# (TrustedCode/crypto/rand.lean)
-trusted = ["Int", "Reader"]
+# `Int` (util.go), translated over math/big and io.ReadFull, and `Reader` (`var Reader io.Reader =
+# rand.Reader`, crypto/internal/rand's `reader{}`, whose `Read` is a Go model there).
+translate = ["!*", "Int", "Reader"]
+imports = ["!*", "math/big", "io", "crypto/internal/rand"]
