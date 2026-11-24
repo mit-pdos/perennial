@@ -216,15 +216,17 @@ instance runtimeTimerCell_persistent (t : Loc) (fire : GoFunc) :
     Persistent (runtimeTimerCell (GF := GF) t fire) := by
   unfold runtimeTimerCell; infer_instance
 
-/-- A timer's callback (persistent): `f(arg, seq, delay)` returns, from `P`, for every `seq` and
-`delay` (the runtime's sequence number and lateness). -/
+/-- One call of a timer's callback (persistent): `f(arg, seq, delay)` returns, from `P`. -/
+def timerCall (f : GoFunc) (arg : GoInterface) (seq delay : w64) (P : IProp GF) : IProp GF :=
+  iprop({{ P }} (App (App (App (Val #f) (Val #arg)) (Val #seq)) (Val #delay)) {{ RET #(); True }})
+
+/-- One call of a timer's callback (persistent): `f(arg, seq, delay)` returns, from `P`. -/
 def timerCallback (f : GoFunc) (arg : GoInterface) (P : IProp GF) : IProp GF :=
-  iprop(∀ seq delay : w64,
-    {{ P }} (App (App (App (Val #f) (Val #arg)) (Val #seq)) (Val #delay)) {{ RET #(); True }})
+  iprop(∀ seq : w64, ∀ delay : w64, timerCall f arg seq delay P)
 
 instance timerCallback_persistent (f : GoFunc) (arg : GoInterface) (P : IProp GF) :
     Persistent (timerCallback f arg P) := by
-  unfold timerCallback; infer_instance
+  unfold timerCallback timerCall; infer_instance
 
 /-- A timer's firing (persistent): `fire()` returns, from `P`. -/
 def timerFiring (fire : GoFunc) (P : IProp GF) : IProp GF :=
@@ -247,7 +249,7 @@ again). -/
 def isTimer (t : Loc) (ch : Loc) (γ : ChanNames) : IProp GF :=
   iprop(structFieldRef time.Timer go!"C" t ↦□ ch ∗
     structFieldRef time.Timer go!"initTimer" t ↦□ true ∗
-    (∃ fire : GoFunc, runtimeTimerCell t fire ∗ timerFiring fire True) ∗
+    (∃ fire : GoFunc, runtimeTimerCell t fire ∗ timerFiring fire iprop(True)) ∗
     isChanBag γ ch (V := time.Time) (fun _ => iprop(True)))
 
 instance isTimer_persistent (t ch : Loc) (γ : ChanNames) :
@@ -267,7 +269,7 @@ instance isFuncTimer_persistent (t : Loc) : Persistent (isFuncTimer (GF := GF) t
 def isTicker (t : Loc) (ch : Loc) (γ : ChanNames) : IProp GF :=
   iprop(structFieldRef time.Ticker go!"C" t ↦□ ch ∗
     structFieldRef time.Ticker go!"initTicker" t ↦□ true ∗
-    (∃ fire : GoFunc, runtimeTimerCell t fire ∗ timerFiring fire True) ∗
+    (∃ fire : GoFunc, runtimeTimerCell t fire ∗ timerFiring fire iprop(True)) ∗
     isChanBag γ ch (V := time.Time) (fun _ => iprop(True)))
 
 instance isTicker_persistent (t ch : Loc) (γ : ChanNames) :
