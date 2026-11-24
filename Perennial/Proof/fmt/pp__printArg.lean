@@ -281,6 +281,20 @@ theorem fmt.pp.printArg.wp_proof_of_complex
       · ipureintro; exact ⟨rfl, hm⟩
       iexact Hm
 
+/-- `printArg`'s spec, with the semantics' rules for `complex64` and `complex128` (their
+underlying types and zero values, `Complex64Semantics`/`Complex128Semantics`). -/
+theorem fmt.pp.printArg.wp_proof
+    (wp_fmtBool : fmt.pp.fmtBool.spec (GF := GF) (hG := hG))
+    (wp_fmtInteger : fmt.pp.fmtInteger.spec (GF := GF) (hG := hG))
+    (wp_fmtString : fmt.pp.fmtString.spec (GF := GF) (hG := hG))
+    (wp_fmtBytes : fmt.pp.fmtBytes.spec (GF := GF) (hG := hG))
+    (wp_handleMethods : fmt.pp.handleMethods.spec (GF := GF) (hG := hG))
+    (wp_padString : fmt.fmt.padString.spec (GF := GF) (hG := hG)) :
+    fmt.pp.printArg.spec (GF := GF) (hG := hG) :=
+  fmt.pp.printArg.wp_proof_of_complex (z64 := #(_root_.Perennial.zero_val (w32 × w32)))
+    (z128 := #(_root_.Perennial.zero_val (w64 × w64))) (by simp) (by simp) wp_fmtBool wp_fmtInteger wp_fmtString
+    wp_fmtBytes wp_handleMethods wp_padString
+
 end proof
 
 end Perennial
