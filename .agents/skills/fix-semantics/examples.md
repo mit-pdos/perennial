@@ -1622,3 +1622,26 @@ infinities, NaN payloads) and at the integer extremes.
 
 **Why.** "A self-contained completion of the `neg_*` scheme": the same types, the identity, floats bit for
 bit including -0 and NaN (Upamanyu, via coordinator-E, etcd-grove #18).
+
+## Case 51 — ACCEPTED: a string is no longer than the address space (branch `string-len-maxaddr`)
+
+**Symptom.** Incomplete (precision): `len(s)` of a string was an `AngelicExit` only from `2^63`
+bytes, so proofs got `len(s) < 2^63` and no more. `strconv.appendQuotedWith`'s capacity
+`len(buf)+1+len(s)+1` then wraps for `len(s) ∈ {2^63-2, 2^63-1}`, and `fmt`'s `%q` needed
+`s.length ≤ maxAddr` from every caller, which callers formatting arbitrary strings cannot give.
+
+**Witness.** `strings.Repeat("a", 1<<47+1)` ends with `runtime: out of memory` (fatal);
+`strings.Repeat("a", 1<<48+1)` panics `makeslice: len out of range`. No gc program on
+linux/amd64 holds a string longer than `maxAddr = 2^47`.
+
+**Taken.** `internal_string_len_step`'s exit moves from `2^63` to `maxAddr` (one condition in
+one rule, `Golang/Defn/String.lean`), the bound heap byte slices get from allocation; a
+`KNOWN_LIMITATIONS` entry (Allocation) records the divergence from the Go spec, which bounds a
+string's length only by `int`. `wp_string_len_maxAddr` exposes the bound.
+
+**Not taken.** Keeping a `len(s) + 2 < 2^63` premise on `%q` (pushes an undischargeable
+obligation to every caller); bounding strings by modelling them in the heap (large change).
+The sibling `array_length_step` keeps `2^63`: array lengths are bounded by Go's types.
+
+**Why.** Upamanyu, 2026-11-24: "I'm ok with constraining executions to only those that have
+strings on the heap that are less than `maxAddr` size."
