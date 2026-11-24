@@ -78,7 +78,7 @@ theorem io.ReadAtLeast.wp_proof :
       rw [Htk, Hdr]
       wp_auto
       wp_apply io.wp_reader_Read ri Pre S E (r0 ++ ys) _ (xs.drop ys.length)
-          (by rw [List.length_drop]; exact Hpre ys Hys.2) $$ [Hp2 HS]
+          (by rw [List.length_drop]; exact Hpre ys ⟨by omega, by omega⟩) $$ [Hp2 HS]
         as %nn %err' ⟨%zs, %Hzs, Hp2, HS, #Herr', %Hty'⟩
       · iframe Hr HS Hp2
       wp_for_post
