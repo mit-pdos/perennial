@@ -9,6 +9,8 @@ module
 public import Perennial.Proof.fmt.Args
 public import Perennial.Proof.fmt.SprintfModel
 public import Perennial.Proof.fmt.BytesModel
+public import Perennial.Spec.fmt.buffer__writeString
+public import Perennial.Spec.internal.gomodel.Choose
 
 @[expose] public section
 
@@ -787,26 +789,80 @@ theorem argsOkAtB_nil_args (B : GoInterface → Option Lent) (mv : List w8) (ds 
     ⊢ argsOkAtB (GF := GF) B mv ds [] := by
   cases ds <;> (unfold argsOkAtB; itrivial)
 
+/-- The helper `fmt.writeArbitrary`: appends some string to the buffer at `b`. -/
+theorem wp_writeArbitrary
+    (wp_Choose : internal.gomodel.Choose.spec (GF := GF) (hG := hG))
+    (wp_ChooseUint64 : internal.gomodel.ChooseUint64.spec (GF := GF) (hG := hG))
+    (wp_writeString : fmt.buffer.writeString.spec (GF := GF) (hG := hG))
+    (b : Loc) (bs : GoString) :
+    {{ bufferOwn (GF := GF) b bs }}
+      (App (Val (@! writeArbitrary)) (Val #b))
+    {{ RET #(); ∃ r : GoString, bufferOwn b (bs ++ r) }} := by
+  wp_start as Hb
+  wp_auto
+  wp_apply (wp_chooseString wp_ChooseUint64) as %s -
+  wp_apply wp_writeString $$ Hb as Hb
+  try wp_auto
+  ihave IH : iprop(∃ r : GoString, "Hb" ∷ bufferOwn (GF := GF) b (bs ++ r)) $$ [Hb]
+  · iexists s; iframe
+  wp_for IH
+  wp_apply wp_Choose as %c -
+  wp_if_destruct
+  · wp_apply (wp_chooseString wp_ChooseUint64) as %s' -
+    wp_apply wp_writeString $$ Hb as Hb
+    try wp_auto
+    wp_for_post
+    iexists (r ++ s')
+    simp only [List.append_assoc]
+    iframe
+  · try wp_auto
+    iapply HΦ
+    iexists r
+    iframe
+
+/-- `wp_writeArbitrary` of a buffer holding `bs` and some string after it. -/
+theorem wp_writeArbitrary_ex
+    (wp_Choose : internal.gomodel.Choose.spec (GF := GF) (hG := hG))
+    (wp_ChooseUint64 : internal.gomodel.ChooseUint64.spec (GF := GF) (hG := hG))
+    (wp_writeString : fmt.buffer.writeString.spec (GF := GF) (hG := hG))
+    (b : Loc) (bs : GoString) :
+    {{ ∃ r : GoString, bufferOwn (GF := GF) b (bs ++ r) }}
+      (App (Val (@! writeArbitrary)) (Val #b))
+    {{ RET #(); ∃ r : GoString, bufferOwn b (bs ++ r) }} := by
+  iintro %Φ ⟨%r, Hb⟩ HΦ
+  wp_apply (wp_writeArbitrary wp_Choose wp_ChooseUint64 wp_writeString b (bs ++ r)) $$ Hb
+    as ⟨%r', Hb⟩
+  iapply HΦ
+  iexists (r ++ r')
+  simp only [List.append_assoc]
+  iexact Hb
+
 set_option maxHeartbeats 4000000 in
 /-- The helper `fmt.visitRest`: from the `%`-or-literal at `format[i]` and the argument `k` on,
 calls what Go calls of each argument (its directive's, or `%v` for those left over), for arguments
 `argsOk` the directives left; returns the arguments of the `%w` directives (`wrapArgsFrom`), or
 gives up (`unknown`) at a directive `fmtDirectives` refuses, every argument being `ArgWf`. -/
-theorem wp_visitRest (B : GoInterface → Option Lent) (dqb : DFrac) (format : GoString) (i : w64) (sl : GoSlice) (xs : List GoInterface)
+theorem wp_visitRest
+    (wp_Choose : internal.gomodel.Choose.spec (GF := GF) (hG := hG))
+    (wp_ChooseUint64 : internal.gomodel.ChooseUint64.spec (GF := GF) (hG := hG))
+    (wp_writeString : fmt.buffer.writeString.spec (GF := GF) (hG := hG))
+    (b : Loc) (bs : GoString)
+    (B : GoInterface → Option Lent) (dqb : DFrac) (format : GoString) (i : w64) (sl : GoSlice) (xs : List GoInterface)
     (dq : DFrac) (k : w64) (wrapErrs : Bool)
     (Hi : 0 ≤ sint.Z i ∧ sint.Z i ≤ (format.length : Int)) (Hlen : (format.length : Int) < 2 ^ 63)
     (Hk : 0 ≤ sint.Z k ∧ sint.Z k ≤ (xs.length : Int)) :
-    {{ sl ↦*{dq} xs ∗ bytesOwn dqb B xs ∗
+    {{ (∃ r : GoString, bufferOwn (GF := GF) b (bs ++ r)) ∗ sl ↦*{dq} xs ∗ bytesOwn dqb B xs ∗
         (⌜ArgsWf xs⌝ ∨ ∃ ds, ⌜fmtDirectivesAux none (format.drop (sint.nat i)) = some ds⌝ ∗
           argsOkAtB (GF := GF) B (modeVerbs wrapErrs) ds (xs.drop (sint.nat k))) }}
-      (App (App (App (App (App (Val (@! visitRest)) (Val #format)) (Val #i)) (Val #sl)) (Val #k))
-        (Val #wrapErrs))
+      (App (App (App (App (App (App (Val (@! visitRest)) (Val #b)) (Val #format)) (Val #i)) (Val #sl))
+        (Val #k)) (Val #wrapErrs))
     {{ (wsl : GoSlice) (unknown : Bool), RET (PairV #wsl #unknown);
+        (∃ r : GoString, bufferOwn b (bs ++ r)) ∗
         sl ↦*{dq} xs ∗ bytesOwn dqb B xs ∗ ∃ ws : List w64, wsl ↦* ws ∗
         ⌜(unknown = true → ArgsWf xs ∧ fmtDirectivesAux none (format.drop (sint.nat i)) = none) ∧
          (unknown = false → ∃ ds, fmtDirectivesAux none (format.drop (sint.nat i)) = some ds ∧
             ws = (wrapArgsFrom (sint.nat k) ds xs.length).map (fun j : Nat => W64 (j : Int)))⌝ }} := by
-  wp_start as ⟨Hsl, Hown, Hargs⟩
+  wp_start as ⟨Hb, Hsl, Hown, Hargs⟩
   wp_auto
   ihave %Hxlen := ownSlice_len $$ Hsl
   ihave Hws0 := ownSlice_nil (V := w64) (GF := GF) (DFrac.own 1)
@@ -1014,6 +1070,8 @@ theorem wp_visitRest (B : GoInterface → Option Lent) (dqb : DFrac) (format : G
       iintro %sl2 ⟨Hsl2, -⟩
       wp_apply wp_slice_append $$ [$Hws $Hwc $Hsl2] as %wsl' ⟨Hws, Hwc, -⟩
       try wp_auto
+      wp_apply (wp_writeArbitrary_ex wp_Choose wp_ChooseUint64 wp_writeString b bs) $$ Hb as Hb
+      try wp_auto
       simp only [show 0 ≤ sint.Z kv ∧ sint.Z kv < sint.Z sl.len from ⟨by word, by word⟩,
         _root_.and_self, ↓reduceIte]
       wp_apply wp_load_slice_index sl (sint.Z kv) xs dq x (by word) $$ [Hsl] with Hsl
@@ -1035,6 +1093,8 @@ theorem wp_visitRest (B : GoInterface → Option Lent) (dqb : DFrac) (format : G
     · have hd119 : W8 (sint.Z verb) ≠ W8 119 := fun h => hw (hwiff.1 h)
       simp only [hw, decide_false]
       wp_auto
+      wp_apply (wp_writeArbitrary_ex wp_Choose wp_ChooseUint64 wp_writeString b bs) $$ Hb as Hb
+      try wp_auto
       simp only [show 0 ≤ sint.Z kv ∧ sint.Z kv < sint.Z sl.len from ⟨by word, by word⟩,
         _root_.and_self, ↓reduceIte]
       wp_apply wp_load_slice_index sl (sint.Z kv) xs dq x (by word) $$ [Hsl] with Hsl
@@ -1096,6 +1156,8 @@ theorem wp_visitRest (B : GoInterface → Option Lent) (dqb : DFrac) (format : G
           iright
           rw [Hkv1]
           iexact Hds
+      wp_apply (wp_writeArbitrary_ex wp_Choose wp_ChooseUint64 wp_writeString b bs) $$ Hb as Hb
+      try wp_auto
       simp only [show 0 ≤ sint.Z kv' ∧ sint.Z kv' < sint.Z sl.len from ⟨by word, by word⟩,
         _root_.and_self, ↓reduceIte]
       wp_apply wp_load_slice_index sl (sint.Z kv') xs dq x (by word) $$ [Hsl] with Hsl

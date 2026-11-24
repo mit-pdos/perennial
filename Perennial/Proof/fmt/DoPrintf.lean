@@ -1,7 +1,8 @@
 /-
 The spec of the helper `doPrintf` of the model printer of `fmt`
-(`goose/model/overlay/fmt/printmodel.go`), which `Fprintf`, `Printf` and `Errorf` run: the formatted string (`SprintfOut`), the calls of the
-arguments' methods Go makes (through `visitRest`), and the arguments of the `%w` directives.
+(`goose/model/overlay/fmt/printmodel.go`), which `Fprintf`, `Printf` and `Errorf` run: the formatted string (`SprintfOut`) appended to the
+printer's buffer, the calls of the arguments' methods Go makes (through `visitRest`), and the
+arguments of the `%w` directives.
 -/
 module
 
@@ -217,23 +218,28 @@ theorem argWf_of_argOkAtB_inert (B : GoInterface → Option Lent) (mv : List w8)
     exact inertTy_not_ref hi (by rw [underlying_SliceType]; trivial)
 
 /-- The helper `fmt.doPrintf`: for arguments `argsOk` the format under the verbs of its mode,
-the formatted string (`SprintfOut`), after the calls Go makes of the arguments' methods; the
+the formatted string (`SprintfOut`) appended to the buffer at `b`, after the calls Go makes of the arguments' methods; the
 arguments' slice comes back; and the arguments of the `%w` directives, unless the model gave up
 (`unknown`) at a directive `fmtDirectives` refuses, every argument being `ArgWf`. -/
 theorem wp_doPrintfB
+    (wp_Choose : internal.gomodel.Choose.spec (GF := GF) (hG := hG))
     (wp_ChooseUint64 : internal.gomodel.ChooseUint64.spec (GF := GF) (hG := hG))
+    (wp_writeString : fmt.buffer.writeString.spec (GF := GF) (hG := hG))
+    (b : Loc) (bs : GoString)
     (B : GoInterface → Option Lent) (dqb : DFrac) (format : GoString)
     (sl : GoSlice) (xs : List GoInterface) (dq : DFrac) (wrapErrs : Bool) :
-    {{ sl ↦*{dq} xs ∗ bytesOwn dqb B xs ∗ argsOkB (GF := GF) B (modeVerbs wrapErrs) format xs }}
-      (App (App (App (Val (@! doPrintf)) (Val #format)) (Val #sl)) (Val #wrapErrs))
-    {{ (s : GoString) (wsl : GoSlice) (unknown : Bool), RET (PairV (PairV #s #wsl) #unknown);
+    {{ bufferOwn (GF := GF) b bs ∗ sl ↦*{dq} xs ∗ bytesOwn dqb B xs ∗
+        argsOkB (GF := GF) B (modeVerbs wrapErrs) format xs }}
+      (App (App (App (App (Val (@! doPrintf)) (Val #b)) (Val #format)) (Val #sl)) (Val #wrapErrs))
+    {{ (wsl : GoSlice) (unknown : Bool), RET (PairV #wsl #unknown);
+        ∃ s : GoString, bufferOwn b (bs ++ s) ∗
         sl ↦*{dq} xs ∗ bytesOwn dqb B xs ∗ ⌜SprintfOutB B format xs s⌝ ∗
         ∃ ws : List w64, wsl ↦* ws ∗
         ⌜(unknown = true → ArgsWf xs ∧ fmtDirectives format = none) ∧
          (unknown = false → ∀ ds, fmtDirectives format = some ds →
             ws = (wrapArgs ds xs.length).map (fun j : Nat => W64 (j : Int))) ∧
          (unknown = false → ∀ w ∈ ws, ∃ j : Nat, w = W64 (j : Int) ∧ j < xs.length)⌝ }} := by
-  wp_start as ⟨Hsl, Hown, Hok⟩
+  wp_start as ⟨Hb, Hsl, Hown, Hok⟩
   wp_auto
   ihave %Hxlen := ownSlice_len $$ Hsl
   icases bytesOwn_ty dqb B xs $$ Hown with ⟨Hown, %HBty⟩
@@ -425,11 +431,19 @@ theorem wp_doPrintfB
                 · exact absurd (Hbi.2 (.inr ⟨ii, h, inertTy_of_isStrArgType hs⟩)) (by simp)
                 · exact absurd (Hbi.2 (.inr ⟨ii, h, inertTy_of_isIntArgType hi⟩)) (by simp)
               wp_auto
-              wp_apply (wp_visitRest B dqb format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
-                $$ [$Hsl $Hown $Hargs] as %wsl %unk ⟨Hsl, Hown, %ws, Hws, %Hvr⟩
-              wp_apply (wp_chooseString wp_ChooseUint64) as %junk -
+              wp_apply wp_writeString $$ Hb as Hb
+              try wp_auto
+              ihave Hb : iprop(∃ r : GoString, bufferOwn (GF := GF) b ((bs ++ acc) ++ r)) $$ [Hb]
+              · iexists []; simp only [List.append_nil]; iexact Hb
+              wp_apply (wp_visitRest wp_Choose wp_ChooseUint64 wp_writeString b (bs ++ acc) B dqb format n sl xs dq k
+                  wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
+                $$ [$Hb $Hsl $Hown $Hargs] as %wsl %unk ⟨Hb, Hsl, Hown, %ws, Hws, %Hvr⟩
+              wp_apply (wp_writeArbitrary_ex wp_Choose wp_ChooseUint64 wp_writeString b (bs ++ acc)) $$ Hb
+                as ⟨%junk, Hb⟩
               wp_for_post
               iapply HΦ
+              iexists (acc ++ junk)
+              simp only [List.append_assoc]
               iframe
               ipureintro
               refine ⟨Hacc junk ?_, doPrintf_exit_wrap Hpre Hvr⟩
@@ -474,11 +488,19 @@ theorem wp_doPrintfB
             cases ok
             · -- not formatted: from here on, `visitRest`
               wp_auto
-              wp_apply (wp_visitRest B dqb format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
-                $$ [$Hsl $Hown $Hargs] as %wsl %unk ⟨Hsl, Hown, %ws, Hws, %Hvr⟩
-              wp_apply (wp_chooseString wp_ChooseUint64) as %junk -
+              wp_apply wp_writeString $$ Hb as Hb
+              try wp_auto
+              ihave Hb : iprop(∃ r : GoString, bufferOwn (GF := GF) b ((bs ++ acc) ++ r)) $$ [Hb]
+              · iexists []; simp only [List.append_nil]; iexact Hb
+              wp_apply (wp_visitRest wp_Choose wp_ChooseUint64 wp_writeString b (bs ++ acc) B dqb format n sl xs dq k
+                  wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
+                $$ [$Hb $Hsl $Hown $Hargs] as %wsl %unk ⟨Hb, Hsl, Hown, %ws, Hws, %Hvr⟩
+              wp_apply (wp_writeArbitrary_ex wp_Choose wp_ChooseUint64 wp_writeString b (bs ++ acc)) $$ Hb
+                as ⟨%junk, Hb⟩
               wp_for_post
               iapply HΦ
+              iexists (acc ++ junk)
+              simp only [List.append_assoc]
               iframe
               ipureintro
               refine ⟨Hacc junk ?_, doPrintf_exit_wrap Hpre Hvr⟩
@@ -522,11 +544,19 @@ theorem wp_doPrintfB
             wp_if_destruct
             · exfalso; word
             try wp_auto
-            wp_apply (wp_visitRest B dqb format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
-              $$ [$Hsl $Hown $Hargs] as %wsl %unk ⟨Hsl, Hown, %ws, Hws, %Hvr⟩
-            wp_apply (wp_chooseString wp_ChooseUint64) as %junk -
+            wp_apply wp_writeString $$ Hb as Hb
+            try wp_auto
+            ihave Hb : iprop(∃ r : GoString, bufferOwn (GF := GF) b ((bs ++ acc) ++ r)) $$ [Hb]
+            · iexists []; simp only [List.append_nil]; iexact Hb
+            wp_apply (wp_visitRest wp_Choose wp_ChooseUint64 wp_writeString b (bs ++ acc) B dqb format n sl xs dq k
+                wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
+              $$ [$Hb $Hsl $Hown $Hargs] as %wsl %unk ⟨Hb, Hsl, Hown, %ws, Hws, %Hvr⟩
+            wp_apply (wp_writeArbitrary_ex wp_Choose wp_ChooseUint64 wp_writeString b (bs ++ acc)) $$ Hb
+              as ⟨%junk, Hb⟩
             wp_for_post
             iapply HΦ
+            iexists (acc ++ junk)
+            simp only [List.append_assoc]
             iframe
             ipureintro
             refine ⟨Hacc junk ?_, doPrintf_exit_wrap Hpre Hvr⟩
@@ -568,11 +598,19 @@ theorem wp_doPrintfB
           wp_apply wp_inert as %bi %Hbi
           cases bi
           · try wp_auto
-            wp_apply (wp_visitRest B dqb format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
-              $$ [$Hsl $Hown $Hargs] as %wsl %unk ⟨Hsl, Hown, %ws, Hws, %Hvr⟩
-            wp_apply (wp_chooseString wp_ChooseUint64) as %junk -
+            wp_apply wp_writeString $$ Hb as Hb
+            try wp_auto
+            ihave Hb : iprop(∃ r : GoString, bufferOwn (GF := GF) b ((bs ++ acc) ++ r)) $$ [Hb]
+            · iexists []; simp only [List.append_nil]; iexact Hb
+            wp_apply (wp_visitRest wp_Choose wp_ChooseUint64 wp_writeString b (bs ++ acc) B dqb format n sl xs dq k
+                wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
+              $$ [$Hb $Hsl $Hown $Hargs] as %wsl %unk ⟨Hb, Hsl, Hown, %ws, Hws, %Hvr⟩
+            wp_apply (wp_writeArbitrary_ex wp_Choose wp_ChooseUint64 wp_writeString b (bs ++ acc)) $$ Hb
+              as ⟨%junk, Hb⟩
             wp_for_post
             iapply HΦ
+            iexists (acc ++ junk)
+            simp only [List.append_assoc]
             iframe
             ipureintro
             refine ⟨Hacc junk ?_, doPrintf_exit_wrap Hpre Hvr⟩
@@ -592,11 +630,19 @@ theorem wp_doPrintfB
             wp_apply wp_formatArg B format n x ⟨Hn.1, by word⟩ HxWf as %s %next %ok ⟨%Hf1, %Hf2⟩
             cases ok
             · wp_auto
-              wp_apply (wp_visitRest B dqb format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
-                $$ [$Hsl $Hown $Hargs] as %wsl %unk ⟨Hsl, Hown, %ws, Hws, %Hvr⟩
-              wp_apply (wp_chooseString wp_ChooseUint64) as %junk -
+              wp_apply wp_writeString $$ Hb as Hb
+              try wp_auto
+              ihave Hb : iprop(∃ r : GoString, bufferOwn (GF := GF) b ((bs ++ acc) ++ r)) $$ [Hb]
+              · iexists []; simp only [List.append_nil]; iexact Hb
+              wp_apply (wp_visitRest wp_Choose wp_ChooseUint64 wp_writeString b (bs ++ acc) B dqb format n sl xs dq k
+                  wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
+                $$ [$Hb $Hsl $Hown $Hargs] as %wsl %unk ⟨Hb, Hsl, Hown, %ws, Hws, %Hvr⟩
+              wp_apply (wp_writeArbitrary_ex wp_Choose wp_ChooseUint64 wp_writeString b (bs ++ acc)) $$ Hb
+                as ⟨%junk, Hb⟩
               wp_for_post
               iapply HΦ
+              iexists (acc ++ junk)
+              simp only [List.append_assoc]
               iframe
               ipureintro
               refine ⟨Hacc junk ?_, doPrintf_exit_wrap Hpre Hvr⟩
@@ -611,11 +657,19 @@ theorem wp_doPrintfB
           wp_if_destruct
           · exfalso; word
           try wp_auto
-          wp_apply (wp_visitRest B dqb format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
-            $$ [$Hsl $Hown $Hargs] as %wsl %unk ⟨Hsl, Hown, %ws, Hws, %Hvr⟩
-          wp_apply (wp_chooseString wp_ChooseUint64) as %junk -
+          wp_apply wp_writeString $$ Hb as Hb
+          try wp_auto
+          ihave Hb : iprop(∃ r : GoString, bufferOwn (GF := GF) b ((bs ++ acc) ++ r)) $$ [Hb]
+          · iexists []; simp only [List.append_nil]; iexact Hb
+          wp_apply (wp_visitRest wp_Choose wp_ChooseUint64 wp_writeString b (bs ++ acc) B dqb format n sl xs dq k
+              wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
+            $$ [$Hb $Hsl $Hown $Hargs] as %wsl %unk ⟨Hb, Hsl, Hown, %ws, Hws, %Hvr⟩
+          wp_apply (wp_writeArbitrary_ex wp_Choose wp_ChooseUint64 wp_writeString b (bs ++ acc)) $$ Hb
+            as ⟨%junk, Hb⟩
           wp_for_post
           iapply HΦ
+          iexists (acc ++ junk)
+          simp only [List.append_assoc]
           iframe
           ipureintro
           refine ⟨Hacc junk ?_, doPrintf_exit_wrap Hpre Hvr⟩
@@ -655,12 +709,20 @@ theorem wp_doPrintfB
     have Hend : sint.nat n = format.length := by word
     rw [Hend, List.drop_length] at Hacc Hpre
     wp_auto
+    wp_apply wp_writeString $$ Hb as Hb
+    try wp_auto
     wp_if_destruct
     · -- arguments are left: under `%v`
-      wp_apply (wp_visitRest B dqb format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
-        $$ [$Hsl $Hown $Hargs] as %wsl %unk ⟨Hsl, Hown, %ws, Hws, %Hvr⟩
-      wp_apply (wp_chooseString wp_ChooseUint64) as %junk -
+      ihave Hb : iprop(∃ r : GoString, bufferOwn (GF := GF) b ((bs ++ acc) ++ r)) $$ [Hb]
+      · iexists []; simp only [List.append_nil]; iexact Hb
+      wp_apply (wp_visitRest wp_Choose wp_ChooseUint64 wp_writeString b (bs ++ acc) B dqb format n sl xs dq k
+          wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
+        $$ [$Hb $Hsl $Hown $Hargs] as %wsl %unk ⟨Hb, Hsl, Hown, %ws, Hws, %Hvr⟩
+      wp_apply (wp_writeArbitrary_ex wp_Choose wp_ChooseUint64 wp_writeString b (bs ++ acc)) $$ Hb
+        as ⟨%junk, Hb⟩
       iapply HΦ
+      iexists (acc ++ junk)
+      simp only [List.append_assoc]
       iframe
       ipureintro
       refine ⟨Hacc junk ?_, doPrintf_exit_wrap (by rw [Hend, List.drop_length]; exact Hpre) Hvr⟩
@@ -668,6 +730,7 @@ theorem wp_doPrintfB
       exact .extra _ _ _
     · ihave Hnil := ownSlice_nil (V := w64) (GF := GF) (DFrac.own 1)
       iapply HΦ
+      iexists acc
       iframe
       isplitr
       · ipureintro
@@ -688,27 +751,33 @@ theorem wp_doPrintfB
         rw [this]; rfl
 
 /-- The helper `fmt.doPrintf`, with no bytes lent (`wp_doPrintfB`): for arguments `argsOk` the format
-under the verbs of its mode, the formatted string (`SprintfOut`), after the calls Go makes of the
-arguments' methods; the arguments' slice comes back; and the arguments of the `%w` directives, unless
+under the verbs of its mode, the formatted string (`SprintfOut`) appended to the buffer at `b`, after
+the calls Go makes of the arguments' methods; the arguments' slice comes back; and the arguments of the `%w` directives, unless
 the model gave up (`unknown`) at a directive `fmtDirectives` refuses, every argument being `ArgWf`. -/
 theorem wp_doPrintf
+    (wp_Choose : internal.gomodel.Choose.spec (GF := GF) (hG := hG))
     (wp_ChooseUint64 : internal.gomodel.ChooseUint64.spec (GF := GF) (hG := hG))
+    (wp_writeString : fmt.buffer.writeString.spec (GF := GF) (hG := hG))
+    (b : Loc) (bs : GoString)
     (format : GoString) (sl : GoSlice) (xs : List GoInterface) (dq : DFrac)
     (wrapErrs : Bool) :
-    {{ sl ↦*{dq} xs ∗ argsOk (GF := GF) (modeVerbs wrapErrs) format xs }}
-      (App (App (App (Val (@! doPrintf)) (Val #format)) (Val #sl)) (Val #wrapErrs))
-    {{ (s : GoString) (wsl : GoSlice) (unknown : Bool), RET (PairV (PairV #s #wsl) #unknown);
+    {{ bufferOwn (GF := GF) b bs ∗ sl ↦*{dq} xs ∗ argsOk (GF := GF) (modeVerbs wrapErrs) format xs }}
+      (App (App (App (App (Val (@! doPrintf)) (Val #b)) (Val #format)) (Val #sl)) (Val #wrapErrs))
+    {{ (wsl : GoSlice) (unknown : Bool), RET (PairV #wsl #unknown);
+        ∃ s : GoString, bufferOwn b (bs ++ s) ∗
         sl ↦*{dq} xs ∗ ⌜SprintfOut format xs s⌝ ∗ ∃ ws : List w64, wsl ↦* ws ∗
         ⌜(unknown = true → ArgsWf xs ∧ fmtDirectives format = none) ∧
          (unknown = false → ∀ ds, fmtDirectives format = some ds →
             ws = (wrapArgs ds xs.length).map (fun j : Nat => W64 (j : Int))) ∧
          (unknown = false → ∀ w ∈ ws, ∃ j : Nat, w = W64 (j : Int) ∧ j < xs.length)⌝ }} := by
-  iintro %Φ ⟨Hsl, Hok⟩ HΦ
+  iintro %Φ ⟨Hb, Hsl, Hok⟩ HΦ
   ihave Hown := bytesOwn_none (GF := GF) (DFrac.own 1) xs
   ihave #HokB := argsOkB_of_argsOk (GF := GF) (fun _ => none) _ _ _ $$ Hok
-  wp_apply (wp_doPrintfB wp_ChooseUint64 (fun _ => none) (DFrac.own 1) format sl xs dq wrapErrs) $$ [$Hsl $Hown $HokB]
-    as %s %wsl %unk ⟨Hsl, -, %Hs, Hws⟩
+  wp_apply (wp_doPrintfB wp_Choose wp_ChooseUint64 wp_writeString b bs (fun _ => none) (DFrac.own 1)
+      format sl xs dq wrapErrs) $$ [$Hb $Hsl $Hown $HokB]
+    as %wsl %unk ⟨%s, Hb, Hsl, -, %Hs, Hws⟩
   iapply HΦ
+  iexists s
   iframe
   ipureintro
   exact Hs.toSprintfOut

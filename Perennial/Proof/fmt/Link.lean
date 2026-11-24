@@ -67,9 +67,6 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
 
-theorem fmt.wp_Errorf : fmt.Errorf.spec (GF := GF) (hG := hG) :=
-  fmt.Errorf.wp_proof internal.stringslite.wp_IndexByte internal.gomodel.wp_ChooseUint64
-
 theorem fmt.fmt.wp_clearflags : fmt.fmt.clearflags.spec (GF := GF) (hG := hG) :=
   fmt.fmt.clearflags.wp_proof
 
@@ -85,11 +82,14 @@ theorem fmt.buffer.wp_writeString : fmt.buffer.writeString.spec (GF := GF) (hG :
 theorem fmt.pp.wp_free : fmt.pp.free.spec (GF := GF) (hG := hG) :=
   fmt.pp.free.wp_proof sync.Pool.wp_Put
 
+theorem fmt.wp_Errorf : fmt.Errorf.spec (GF := GF) (hG := hG) :=
+  fmt.Errorf.wp_proof internal.stringslite.wp_IndexByte fmt.wp_newPrinter fmt.buffer.wp_writeString fmt.pp.wp_free internal.gomodel.wp_Choose internal.gomodel.wp_ChooseUint64
+
 theorem fmt.wp_Fprint : fmt.Fprint.spec (GF := GF) (hG := hG) :=
-  fmt.Fprint.wp_proof fmt.wp_newPrinter fmt.buffer.wp_writeString fmt.pp.wp_free internal.gomodel.wp_ChooseUint64
+  fmt.Fprint.wp_proof fmt.wp_newPrinter fmt.buffer.wp_writeString fmt.pp.wp_free internal.gomodel.wp_Choose internal.gomodel.wp_ChooseUint64
 
 theorem fmt.wp_Fprintf : fmt.Fprintf.spec (GF := GF) (hG := hG) :=
-  fmt.Fprintf.wp_proof fmt.wp_newPrinter fmt.buffer.wp_writeString fmt.pp.wp_free internal.gomodel.wp_ChooseUint64
+  fmt.Fprintf.wp_proof fmt.wp_newPrinter fmt.buffer.wp_writeString fmt.pp.wp_free internal.gomodel.wp_Choose internal.gomodel.wp_ChooseUint64
 
 theorem fmt.wp_Printf : fmt.Printf.spec (GF := GF) (hG := hG) :=
   fmt.Printf.wp_proof fmt.wp_Fprintf internal.gomodel.wp_Choose internal.gomodel.wp_ChooseUint64

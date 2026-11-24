@@ -550,9 +550,13 @@ func visitArg(x any, verb byte, sharpV bool, wrapErrs bool) {
 
 // visitRest goes through the directives of format from index i, the arguments from argNum,
 // calling what Go calls of each argument (visitArg), and then of each argument left over (Go's
-// %!(EXTRA ...), under %v). It returns the indices of the arguments of the %w directives, and
-// whether it gave up at a directive the model does not follow, every argument being inert.
-func visitRest(format string, i int, a []any, argNum int, wrapErrs bool) ([]int, bool) {
+// %!(EXTRA ...), under %v). Before each argument it appends arbitrary strings to b
+// (writeArbitrary): what Go's printer has appended to its buffer by then, which a method of the
+// argument can read through a slice of the buffer that a writer kept (Fprintf hands the buffer to
+// w.Write, and the pool hands the printer out again). It returns the indices of the arguments of
+// the %w directives, and whether it gave up at a directive the model does not follow, every
+// argument being inert.
+func visitRest(b *buffer, format string, i int, a []any, argNum int, wrapErrs bool) ([]int, bool) {
 	var wrapped []int
 	for i < len(format) {
 		if format[i] != '%' {
@@ -576,21 +580,36 @@ func visitRest(format string, i int, a []any, argNum int, wrapErrs bool) ([]int,
 		if verb == 'w' {
 			wrapped = append(wrapped, argNum)
 		}
+		writeArbitrary(b)
 		visitArg(a[argNum], byte(verb), sharpV, wrapErrs)
 		argNum++
 	}
 	for argNum < len(a) {
+		writeArbitrary(b)
 		visitArg(a[argNum], 'v', false, wrapErrs)
 		argNum++
 	}
 	return wrapped, false
 }
 
-// doPrintf: the formatted string, the indices of the arguments of the %w directives, and whether
-// those are unknown (visitRest gave up). It formats as the trusted model of Sprintf did before stage 1 of perennial#671, up to
-// the first directive it does not format or whose argument is not inert; from there the output is
-// arbitrary, and visitRest makes the calls Go makes.
-func doPrintf(format string, a []any, wrapErrs bool) (string, []int, bool) {
+// writeArbitrary appends one or more arbitrary strings to b (chooseString), each with one
+// writeString: Go's printer appends to its buffer piece by piece, and as GooseLang's append chooses
+// a new capacity freely when it reallocates, these appends can leave b as Go's leaves its buffer,
+// in content, backing array and capacity.
+func writeArbitrary(b *buffer) {
+	b.writeString(chooseString())
+	for arbitraryBool() {
+		b.writeString(chooseString())
+	}
+}
+
+// doPrintf appends the formatted string to b and returns the indices of the arguments of the %w
+// directives, and whether those are unknown (visitRest gave up). It formats as the trusted model of
+// Sprintf did before stage 1 of perennial#671, up to the first directive it does not format or
+// whose argument is not inert, and appends that prefix to b, which Go's printer has appended by
+// then, before any method call; from there visitRest makes the calls Go makes, with arbitrary
+// strings appended before each, and arbitrary strings end the output.
+func doPrintf(b *buffer, format string, a []any, wrapErrs bool) ([]int, bool) {
 	var out string
 	var argNum int
 	var i int
@@ -623,14 +642,18 @@ func doPrintf(format string, a []any, wrapErrs bool) (string, []int, bool) {
 				continue
 			}
 		}
-		wrapped, unknown := visitRest(format, i, a, argNum, wrapErrs)
-		return out + chooseString(), wrapped, unknown
+		b.writeString(out)
+		wrapped, unknown := visitRest(b, format, i, a, argNum, wrapErrs)
+		writeArbitrary(b)
+		return wrapped, unknown
 	}
+	b.writeString(out)
 	if argNum < len(a) {
-		wrapped, unknown := visitRest(format, i, a, argNum, wrapErrs)
-		return out + chooseString(), wrapped, unknown
+		wrapped, unknown := visitRest(b, format, i, a, argNum, wrapErrs)
+		writeArbitrary(b)
+		return wrapped, unknown
 	}
-	return out, nil, false
+	return nil, false
 }
 
 // errorfResult: the error errorf returns of the message s, the indices wrapped of the arguments

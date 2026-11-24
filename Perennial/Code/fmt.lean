@@ -431,6 +431,9 @@ noncomputable def visitArg [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def visitRest [GooseExts] [GoGlobalContext] : GoString :=
   go!"fmt.visitRest"
 
+noncomputable def writeArbitrary [GooseExts] [GoGlobalContext] : GoString :=
+  go!"fmt.writeArbitrary"
+
 noncomputable def doPrintf [GooseExts] [GoGlobalContext] : GoString :=
   go!"fmt.doPrintf"
 
@@ -482,17 +485,19 @@ noncomputable def Errorf.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r0"))))))))))
   (App (Val (GoInstruction (GoLoad go.error))) (Var "$res0")))))))
 
-/-- MODEL: errorf is Go's, but for its printer: Go formats with p.doPrintf (p.wrapErrs set) and
-    reads the message from p.buf and the %w arguments from p.wrappedErrs and p.reordered; the model
-    formats with the model printer, doPrintf (format, a, true), which gives the message (Go's,
-    with an arbitrary suffix from the first directive it does not format) and the indices of the %w
-    arguments (or that they are unknown), and builds the error from them (errorfResult) as Go's
-    switch on len(p.wrappedErrs) does: errors.New, a *wrapError, a *wrapErrors (see the file
-    comment for what the model printer covers and where it is stuck; TestModelErrorf compares the
-    error's kind, message and wrapped errors with Go's). Go's newPrinter/free pair is left out: the
-    printer and its pool (ppFree) are not observable outside fmt.
+/-- MODEL: errorf is Go's, but for its printer: Go's p.doPrintf(format, a), with p.wrapErrs set, is
+    the model printer's doPrintf(&p.buf, format, a, true), which appends the message to p.buf (Go's,
+    with arbitrary strings from the first directive it does not format) and gives the indices of the
+    %w arguments (or that they are unknown); errorfResult builds the error from them as Go's switch
+    on len(p.wrappedErrs) does: errors.New, a *wrapError, a *wrapErrors (see the file comment for
+    what the model printer covers and where it is stuck; TestModelErrorf compares the error's kind,
+    message and wrapped errors with Go's). The printer is Go's own, from newPrinter and back to the
+    pool with p.free(), and the message is read back from p.buf as Go reads it: the pool is
+    observable outside fmt, since Fprintf hands p.buf to a writer, which may keep the slice and see
+    what a later errorf writes into the same printer's buffer, or write into it itself
+    (TestModelAlias, goose/model/fmt).
 
-    go: print.go:45:6 -/
+    go: print.go:53:6 -/
 noncomputable def errorf.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "format"
   (Lam "a"
@@ -501,38 +506,51 @@ noncomputable def errorf.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.any)))) (Var "a"))
   (Let "format" (App (Val (GoInstruction (GoAlloc go.string))) (Var "format"))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "format"))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "a"))
-  (Let "$a2" (Val #true)
-  (App (App (App (App (Val (GoInstruction (FuncResolve doPrintf []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
-  (Let "$ret0" (Fst (Fst (Var "__p")))
-  (Let "$ret1" (Snd (Fst (Var "__p")))
-  (Let "$ret2" (Snd (Var "__p"))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve newPrinter []))) (Val #())) (Val #()))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType pp.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType pp.ty)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (StructFieldRef pp.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType pp.ty)))) (Var "p")))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "format"))
+  (Let "$a2" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "a"))
+  (Let "$a3" (Val #true)
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve doPrintf []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
-  (Let "$r2" (Var "$ret2")
   (Let "unknown" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "wrapped" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.int)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.int)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert buffer.ty go.string))) (App (Val (GoInstruction (GoLoad buffer.ty))) (App (Val (GoInstruction (StructFieldRef pp.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType pp.ty)))) (Var "p")))))
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "wrapped"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.bool))) (Var "unknown"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "a"))
   (App (App (App (App (App (Val (GoInstruction (FuncResolve errorfResult []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "unknown") (Var "$r2")))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType pp.ty) go!"free"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType pp.ty)))) (Var "p"))) (Val #()))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.int)))) (Pair (Var "wrapped") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0")))))))))))))))))
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "unknown") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.int)))) (Pair (Var "wrapped") (Var "$r0"))))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType pp.ty)))) (Pair (Var "p") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "a"))
   (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.any)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "format"))
   (Let "$a1" (Val #(W8 37))
@@ -2409,12 +2427,14 @@ noncomputable def pp.WriteString.impl [GooseExts] [GoGlobalContext] : val :=
   (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1"))))))))))
 
 /-- MODEL: Fprintf is Go's, but for one line: Go's p.doPrintf(format, a) is the model printer's
-    doPrintf(format, a, false), whose string goes into p.buf (see the file comment for what the
-    model printer covers and where it is stuck; TestModelFprintf checks the bytes Write receives
-    and the methods called). The printer, its pool (ppFree), the one w.Write(p.buf) and p.free()
-    are Go's own.
+    doPrintf(&p.buf, format, a, false), which appends to p.buf what Go appends up to its first
+    method call or directive the model does not format, and arbitrary strings from there, before
+    each method call and at the end (see the file comment for what the model printer covers and
+    where it is stuck; TestModelFprintf checks the bytes Write receives and the methods called;
+    TestModelAlias a method reading p.buf through a slice an earlier Write kept). The printer, its
+    pool (ppFree), the one w.Write(p.buf) and p.free() are Go's own.
 
-    go: print.go:58:6 -/
+    go: print.go:72:6 -/
 noncomputable def Fprintf.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "format"
@@ -2429,20 +2449,6 @@ noncomputable def Fprintf.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "w" (App (Val (GoInstruction (GoAlloc _root_.Perennial.io.Writer.ty))) (Var "w"))
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve newPrinter []))) (Val #())) (Val #()))
   (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType pp.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType pp.ty)))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "format"))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "a"))
-  (Let "$a2" (Val #false)
-  (App (App (App (App (Val (GoInstruction (FuncResolve doPrintf []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
-  (Let "$ret0" (Fst (Fst (Var "__p")))
-  (Let "$ret1" (Snd (Fst (Var "__p")))
-  (Let "$ret2" (Snd (Var "__p"))
-  (Let "$r0" (Var "$ret0")
-  (Let "$r1" (Var "$ret1")
-  (Let "$r2" (Var "$ret2")
-  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad buffer.ty))) (App (Val (GoInstruction (StructFieldRef pp.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType pp.ty)))) (Var "p"))))
@@ -2463,14 +2469,11 @@ noncomputable def Fprintf.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0"))))))))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType buffer.ty) go!"writeString"))) (App (Val (GoInstruction (StructFieldRef pp.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType pp.ty)))) (Var "p")))) (Var "$a0")))))))
-  (App (Val doExecute)
-  (Var "$r2")))))
-  (App (Val doExecute)
-  (Var "$r1")))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0")))))))))))))))
+  (Let "$a0" (App (Val (GoInstruction (StructFieldRef pp.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType pp.ty)))) (Var "p")))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "format"))
+  (Let "$a2" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "a"))
+  (Let "$a3" (Val #false)
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve doPrintf []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType pp.ty)))) (Pair (Var "p") (Var "$r0")))))))))))
   (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1")))))))))))
@@ -2480,7 +2483,7 @@ noncomputable def Fprintf.impl [GooseExts] [GoGlobalContext] : val :=
     or assigns os.Stdout is stuck), and Printf always writes to the file Go opens as os.Stdout
     (descriptor 1, "/dev/stdout"); stdout.Write has every result Go's (*os.File).Write of it has.
 
-    go: print.go:71:6 -/
+    go: print.go:84:6 -/
 noncomputable def Printf.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "format"
   (Lam "a"
@@ -4936,11 +4939,13 @@ noncomputable def pp.doPrintf.impl [GooseExts] [GoGlobalContext] : val :=
     tells a string by reflect.TypeOf(arg).Kind() == reflect.String (reflection, which is stuck) and
     prints each with p.printArg, which is stuck on the operands of the file comment; Fprint's spec
     admits them (fmt.printArgOk). The model calls of each operand what Go's printArg calls under %v
-    (visitArg: its Error() or String(), stuck where the model printer is) and appends an arbitrary
-    string to p.buf, which stands for Go's output (TestModelFprint checks the calls). Fprint and
+    (visitArg: its Error() or String(), stuck where the model printer is), after appending arbitrary
+    strings to p.buf (writeArbitrary), which stand for what Go has appended by then (a method may
+    read p.buf through a slice a writer kept), and appends arbitrary strings at the end, for the
+    rest of Go's output (TestModelFprint checks the calls, TestModelAlias the buffer). Fprint and
     Sprint, Go's own, print with it.
 
-    go: print.go:125:14 -/
+    go: print.go:143:14 -/
 noncomputable def pp.doPrint.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam "a"
@@ -4949,13 +4954,14 @@ noncomputable def pp.doPrint.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.any)))) (Var "a"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (App (Val (GoInstruction (FuncResolve chooseString []))) (Val #())) (Val #()))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType buffer.ty) go!"writeString"))) (App (Val (GoInstruction (StructFieldRef pp.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType pp.ty)))) (Var "p")))) (Var "$a0"))))))
+  (Let "$a0" (App (Val (GoInstruction (StructFieldRef pp.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType pp.ty)))) (Var "p")))
+  (App (App (Val (GoInstruction (FuncResolve writeArbitrary []))) (Val #())) (Var "$a0"))))))
   (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "a"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
   (App (App (Val (slice.forRange go.any)) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
@@ -4964,6 +4970,9 @@ noncomputable def pp.doPrint.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$a2" (Val #false)
   (Let "$a3" (Val #false)
   (App (App (App (App (App (Val (GoInstruction (FuncResolve visitArg []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (StructFieldRef pp.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType pp.ty)))) (Var "p")))
+  (App (App (Val (GoInstruction (FuncResolve writeArbitrary []))) (Val #())) (Var "$a0")))))))
   (App (Val doExecute)
   (Var "$key")))))
   (App (Val doExecute)
@@ -5022,9 +5031,12 @@ noncomputable def pp.doPrintln.impl [GooseExts] [GoGlobalContext] : val :=
         program handles or ignores it: the model may then not return (a loop, which covers the
         death), or return the error. (Go's io.ErrShortWrite for n != len(b) is always overwritten by
         the wrapped error: FD.Write returns n < len(b) only with an error.) Go panics where write(2)
-        claims more bytes than asked ("invalid return from write", a kernel bug): not modelled.
+        claims more bytes than asked (panic "invalid return from write"): not modelled, excluded
+        by an assumption on the environment that the write never claims that. The assumption is not
+        only that the kernel has no bug: golang/go#61060 reports the panic with VPN software
+        installed.
 
-    go: print.go:92:15 -/
+    go: print.go:108:15 -/
 noncomputable def stdout.Write.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
@@ -5109,7 +5121,7 @@ noncomputable def stdout.Write.impl [GooseExts] [GoGlobalContext] : val :=
 /-- chooseString is an arbitrary string, the model printer's output from where it stops following
     Go: it can return every string (and may also not terminate, which partial correctness allows).
 
-    go: print.go:134:6 -/
+    go: print.go:153:6 -/
 noncomputable def chooseString.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
@@ -5133,7 +5145,7 @@ noncomputable def chooseString.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- notModelled is the model printer's stuck point, where it does not follow Go: gomodel.Stuck.
 
-    go: print.go:143:6 -/
+    go: print.go:162:6 -/
 noncomputable def notModelled.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Seq (App (Val exceptionDo)
@@ -7786,12 +7798,17 @@ noncomputable def visitArg.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- visitRest goes through the directives of format from index i, the arguments from argNum,
     calling what Go calls of each argument (visitArg), and then of each argument left over (Go's
-    %!(EXTRA ...), under %v). It returns the indices of the arguments of the %w directives, and
-    whether it gave up at a directive the model does not follow, every argument being inert.
+    %!(EXTRA ...), under %v). Before each argument it appends arbitrary strings to b
+    (writeArbitrary): what Go's printer has appended to its buffer by then, which a method of the
+    argument can read through a slice of the buffer that a writer kept (Fprintf hands the buffer to
+    w.Write, and the pool hands the printer out again). It returns the indices of the arguments of
+    the %w directives, and whether it gave up at a directive the model does not follow, every
+    argument being inert.
 
-    go: printmodel.go:554:6 -/
+    go: printmodel.go:558:6 -/
 noncomputable def visitRest.impl [GooseExts] [GoGlobalContext] : val :=
-  (LamV "format"
+  (LamV "b"
+  (Lam "format"
   (Lam "i"
   (Lam "a"
   (Lam "argNum"
@@ -7804,6 +7821,7 @@ noncomputable def visitRest.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.any)))) (Var "a"))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (Var "i"))
   (Let "format" (App (Val (GoInstruction (GoAlloc go.string))) (Var "format"))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType buffer.ty)))) (Var "b"))
   (Let "wrapped" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.int)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.int)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -7821,6 +7839,7 @@ noncomputable def visitRest.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "argNum")) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "a"))
   (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.any)]))) (Val #())) (Var "$a0"))))))) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "argNum") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "argNum")) (Val #(W64 1)))))))))
   (App (Val doExecute)
@@ -7829,6 +7848,9 @@ noncomputable def visitRest.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$a2" (Val #false)
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.bool))) (Var "wrapErrs"))
   (App (App (App (App (App (Val (GoInstruction (FuncResolve visitArg []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType buffer.ty)))) (Var "b"))
+  (App (App (Val (GoInstruction (FuncResolve writeArbitrary []))) (Val #())) (Var "$a0")))))))
   (Lam BAnon
   (Val #()))))))
   (App (App (App (Val doFor) (Lam BAnon
@@ -7861,6 +7883,7 @@ noncomputable def visitRest.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "argNum") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "argNum")) (Val #(W64 1)))))))))
   (App (Val doExecute)
@@ -7869,6 +7892,9 @@ noncomputable def visitRest.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.bool))) (Var "sharpV"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.bool))) (Var "wrapErrs"))
   (App (App (App (App (App (Val (GoInstruction (FuncResolve visitArg []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType buffer.ty)))) (Var "b"))
+  (App (App (Val (GoInstruction (FuncResolve writeArbitrary []))) (Val #())) (Var "$a0")))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "verb")) (Val #(W64 119)))))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "wrapped"))
   (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (GoLoad go.int))) (Var "argNum"))
@@ -7925,53 +7951,77 @@ noncomputable def visitRest.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))))
   (Lam BAnon
-  (Val #())))))))))))
-  (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res1")))))))))))
+  (Val #()))))))))))))
+  (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res1"))))))))))))
 
-/-- doPrintf: the formatted string, the indices of the arguments of the %w directives, and whether
-    those are unknown (visitRest gave up). It formats as the trusted model of Sprintf did before stage 1 of perennial#671, up to
-    the first directive it does not format or whose argument is not inert; from there the output is
-    arbitrary, and visitRest makes the calls Go makes.
+/-- writeArbitrary appends one or more arbitrary strings to b (chooseString), each with one
+    writeString: Go's printer appends to its buffer piece by piece, and as GooseLang's append chooses
+    a new capacity freely when it reallocates, these appends can leave b as Go's leaves its buffer,
+    in content, backing array and capacity.
 
-    go: printmodel.go:592:6 -/
+    go: printmodel.go:598:6 -/
+noncomputable def writeArbitrary.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "b"
+  (Seq (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType buffer.ty)))) (Var "b"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.Choose []))) (Val #())) (Val #())))) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (App (Val (GoInstruction (FuncResolve chooseString []))) (Val #())) (Val #()))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType buffer.ty) go!"writeString"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType buffer.ty)))) (Var "b"))) (Var "$a0"))))))
+  (Lam BAnon
+  (Val #())))))
+  (App (Val doExecute)
+  (Let "$a0" (App (App (Val (GoInstruction (FuncResolve chooseString []))) (Val #())) (Val #()))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType buffer.ty) go!"writeString"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType buffer.ty)))) (Var "b"))) (Var "$a0")))))))
+  (Val #())))
+
+/-- doPrintf appends the formatted string to b and returns the indices of the arguments of the %w
+    directives, and whether those are unknown (visitRest gave up). It formats as the trusted model of
+    Sprintf did before stage 1 of perennial#671, up to the first directive it does not format or
+    whose argument is not inert, and appends that prefix to b, which Go's printer has appended by
+    then, before any method call; from there visitRest makes the calls Go makes, with arbitrary
+    strings appended before each, and arbitrary strings end the output.
+
+    go: printmodel.go:611:6 -/
 noncomputable def doPrintf.impl [GooseExts] [GoGlobalContext] : val :=
-  (LamV "format"
+  (LamV "b"
+  (Lam "format"
   (Lam "a"
   (Lam "wrapErrs"
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
-  (Let "$res1" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.int)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.int)))) (Val #())))
-  (Let "$res2" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.int)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.int)))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "wrapErrs" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "wrapErrs"))
   (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.any)))) (Var "a"))
   (Let "format" (App (Val (GoInstruction (GoAlloc go.string))) (Var "format"))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType buffer.ty)))) (Var "b"))
   (Let "out" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
   (Let "argNum" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (Var "out"))
-  (Let "$r1" (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType go.int)))) (Val UntypedNil))
-  (Let "$r2" (Val #false)
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType go.int)))) (Val UntypedNil))
+  (Let "$r1" (Val #false)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res2") (Var "$r2")))))))
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.int)))) (Pair (Var "$res1") (Var "$r1")))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.int)))) (Pair (Var "$res0") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "argNum")) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "a"))
   (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.any)]))) (Val #())) (Var "$a0"))))))
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "format"))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
-  (Let "$a2" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "a"))
-  (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "argNum"))
-  (Let "$a4" (App (Val (GoInstruction (GoLoad go.bool))) (Var "wrapErrs"))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve visitRest []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType buffer.ty)))) (Var "b"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "format"))
+  (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
+  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "a"))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad go.int))) (Var "argNum"))
+  (Let "$a5" (App (Val (GoInstruction (GoLoad go.bool))) (Var "wrapErrs"))
+  (App (App (App (App (App (App (App (Val (GoInstruction (FuncResolve visitRest []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5"))))))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
@@ -7980,26 +8030,29 @@ noncomputable def doPrintf.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "wrapped" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.int)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.int)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (App (App (Val (GoInstruction (FuncResolve chooseString []))) (Val #())) (Val #()))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "wrapped"))
-  (Let "$r2" (App (Val (GoInstruction (GoLoad go.bool))) (Var "unknown"))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "wrapped"))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad go.bool))) (Var "unknown"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res2") (Var "$r2")))))))
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.int)))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.int)))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType buffer.ty)))) (Var "b"))
+  (App (App (Val (GoInstruction (FuncResolve writeArbitrary []))) (Val #())) (Var "$a0")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "unknown") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.int)))) (Pair (Var "wrapped") (Var "$r0"))))))))))))
   (App (Val doExecute)
   (Val #()))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "out"))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType buffer.ty) go!"writeString"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType buffer.ty)))) (Var "b"))) (Var "$a0")))))))
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "format"))
   (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))))))) (Lam BAnon
@@ -8007,12 +8060,14 @@ noncomputable def doPrintf.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "format"))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
-  (Let "$a2" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "a"))
-  (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "argNum"))
-  (Let "$a4" (App (Val (GoInstruction (GoLoad go.bool))) (Var "wrapErrs"))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve visitRest []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType buffer.ty)))) (Var "b"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "format"))
+  (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
+  (Let "$a3" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "a"))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad go.int))) (Var "argNum"))
+  (Let "$a5" (App (Val (GoInstruction (GoLoad go.bool))) (Var "wrapErrs"))
+  (App (App (App (App (App (App (App (Val (GoInstruction (FuncResolve visitRest []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5"))))))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
@@ -8021,24 +8076,27 @@ noncomputable def doPrintf.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "wrapped" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.int)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.int)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (App (App (Val (GoInstruction (FuncResolve chooseString []))) (Val #())) (Val #()))))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "wrapped"))
-  (Let "$r2" (App (Val (GoInstruction (GoLoad go.bool))) (Var "unknown"))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "wrapped"))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad go.bool))) (Var "unknown"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res2") (Var "$r2")))))))
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.int)))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.int)))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType buffer.ty)))) (Var "b"))
+  (App (App (Val (GoInstruction (FuncResolve writeArbitrary []))) (Val #())) (Var "$a0")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "unknown") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.int)))) (Pair (Var "wrapped") (Var "$r0"))))))))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "out"))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType buffer.ty) go!"writeString"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType buffer.ty)))) (Var "b"))) (Var "$a0")))))))
   (If (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "argNum")) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "a"))
   (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.any)]))) (Val #())) (Var "$a0"))))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.any)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "argNum")))))
   (App (App (Val (GoInstruction (FuncResolve inert []))) (Val #())) (Var "$a0"))) (Val #false))
@@ -8143,8 +8201,8 @@ noncomputable def doPrintf.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))))
   (Lam BAnon
-  (Val #())))))))))))
-  (Pair (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "$res1"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res2"))))))))))
+  (Val #()))))))))))))
+  (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res1"))))))))))
 
 /-- errorfResult: the error errorf returns of the message s, the indices wrapped of the arguments
     of its %w directives, and whether those are unknown (doPrintf's results): errors.New(s) when no
@@ -8154,7 +8212,7 @@ noncomputable def doPrintf.impl [GooseExts] [GoGlobalContext] : val :=
     follow: parseDirective refuses '['). Where doPrintf gave up on a directive it does not follow,
     every argument being inert (none is an error), the error is any of the three, holding no error.
 
-    go: printmodel.go:642:6 -/
+    go: printmodel.go:665:6 -/
 noncomputable def errorfResult.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "wrapped"
@@ -9256,6 +9314,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   callString_unfold : FuncUnfold callString [] callString.impl
   visitArg_unfold : FuncUnfold visitArg [] visitArg.impl
   visitRest_unfold : FuncUnfold visitRest [] visitRest.impl
+  writeArbitrary_unfold : FuncUnfold writeArbitrary [] writeArbitrary.impl
   doPrintf_unfold : FuncUnfold doPrintf [] doPrintf.impl
   errorfResult_unfold : FuncUnfold errorfResult [] errorfResult.impl
   import_errors_Assumption : _root_.Perennial.errors.Assumptions
@@ -9338,6 +9397,7 @@ attribute [instance] Assumptions.wrapError_instance
   Assumptions.callString_unfold
   Assumptions.visitArg_unfold
   Assumptions.visitRest_unfold
+  Assumptions.writeArbitrary_unfold
   Assumptions.doPrintf_unfold
   Assumptions.errorfResult_unfold
   Assumptions.import_errors_Assumption
