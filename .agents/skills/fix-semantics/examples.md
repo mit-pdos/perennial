@@ -1603,3 +1603,22 @@ on a non-complex interface fails); a byte-cell (`IsPlainScalar`) representation,
 
 **Why.** Approved by the owner (upamanyus) as a self-contained semantics improvement, 2026-11-24
 (relayed by coordinator-E): complete the uniform scheme the way `float32`/`float64` are done.
+## Case 50 — ACCEPTED: unary `+` is the identity (branch `unary-plus`)
+
+**Symptom.** Incomplete. goose translates `+x` as `GoUnOp GoPos t`, but no semantics rule stepped `GoPos`
+at any type, so `cmp.Compare` (`return +1` for `x > y`) was stuck; found by etcd-grove's proof of mvcc's
+`hashStorage.Store` over `slices.SortFunc(..., cmp.Compare)` (etcd-grove #18).
+
+**Witness.** `func f() int { return +1 }` is stuck; so is `+x` for a variable `x` of any integer or float type.
+
+**Taken.** An identity rule `pos_<t>` beside each `neg_<t>` in `Golang/Defn/Predeclared.lean`, at the same
+types (`untypedInt`, the eleven integer types, `untypedFloat`, `float64`, `float32`; the named types through
+`go_un_op_underlying`): `⟦GoUnOp GoPos t, #v⟧ ⤳[under] #v` (`⤳` at the untyped types). 15 rules, no goose
+change. Semantics tests `testUnaryPlusInt`, `testUnaryPlusUntypedAndNamed`, `testUnaryPlusFloat`
+(`unary_plus.go`); Go evidence `unary_plus_test.go`: `+x` is `x` bit for bit at the float types (-0, the
+infinities, NaN payloads) and at the integer extremes.
+
+**Not taken.** Folding `+x` to `x` in goose (a goose branch for what is one rule per type in the semantics).
+
+**Why.** "A self-contained completion of the `neg_*` scheme": the same types, the identity, floats bit for
+bit including -0 and NaN (Upamanyu, via coordinator-E, etcd-grove #18).
