@@ -5,6 +5,7 @@ module
 
 public import Perennial.Spec.fmt.newPrinter
 public import Perennial.Spec.fmt.fmt__init
+public import Perennial.Proof.fmt.InitLemmas
 public import Perennial.Spec.sync.Pool__Get
 
 @[expose] public section
@@ -27,11 +28,7 @@ theorem fmt.newPrinter.wp_proof
     (wp_init : fmt.fmt.init.spec (GF := GF) (hG := hG)) :
     fmt.newPrinter.spec (GF := GF) (hG := hG) := by
   wp_start
-  have hacc : isPkgInit (PROP := IProp GF) pkg_id.fmt ⊢ fmt.isInit (GF := GF) := by
-    with_unfolding_all exact isPkgInit_access (PROP := IProp GF) pkg_id.fmt
-  ihave #Hi := hacc $$ Hpkg
-  unfold fmt.isInit
-  icases Hi with ⟨%f, %hf, #Hpool⟩
+  ihave ⟨%f, %hf, #Hpool⟩ := fmt.isPkgInit_ppFree $$ Hpkg
   wp_auto
   wp_apply wp_Get $$ [] as %x ⟨Hx, -⟩
   · iframe #
@@ -41,12 +38,16 @@ theorem fmt.newPrinter.wp_proof
   unfold fmt.ppFreeElem
   icases Hx with ⟨%l, %v, %hx, Hl, Hbuf, Hbcap, Hw, Hwcap⟩
   subst hx
+  ihave %hnn := typedPointsto_not_null $$ Hl
   iStructNamed Hl
+  ihave %hfnn := typedPointsto_not_null $$ fmt
   wp_auto
   wp_apply wp_init $$ fmt as ⟨Hfmt, Hib⟩
   iapply HΦ
-  iexists v.arg'
-  unfold fmt.isPrinterA fmt.bufferOwn
+  unfold fmt.isPrinterAny fmt.isPrinter fmt.isPrinterA fmt.bufferOwn
+  isplitr
+  · ipureintro; exact ⟨hnn, hfnn⟩
+  iexists noFlags, W64 0, W64 0, v.arg'
   iframe
 
 end proof

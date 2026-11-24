@@ -4,8 +4,8 @@ The proof of `fmt.(*pp).free`.
 module
 
 public import Perennial.Spec.fmt.pp__free
+public import Perennial.Proof.fmt.InitLemmas
 public import Perennial.Spec.sync.Pool__Put
-public import Perennial.Spec.sync.Pool__Get
 
 @[expose] public section
 
@@ -22,25 +22,16 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
 
-/-- `fmt.pp.free.spec` for a printer whose address `p` and field address `p.fmt` are not
-`nil`: `free` gives the printer back to the pool `ppFree`, whose `ppFreeElem` is a points-to of
-the whole struct, `p ↦ v`, which holds `p ≠ null`; its field `fmt` is a struct too, so
-reassembling it needs `p.fmt ≠ null`. `isPrinterAny` (field points-tos) holds neither. -/
-theorem fmt.pp.free.wp_proof_of_ne_null
+theorem fmt.pp.free.wp_proof
     (wp_Put : sync.Pool.Put.spec (GF := GF) (hG := hG)) :
-    ∀ (p : Loc) (bs : GoString), p ≠ null → p.[fmt.pp, go!"fmt"] ≠ null →
-    {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ isPrinterAny p bs }}
-      (App (Val (p @!! go.GoType.PointerType pp.ty @!! go!"free")) (Val #()))
-    {{ RET #(); True }} := fun p bs hnn hfnn => by
+    fmt.pp.free.spec (GF := GF) (hG := hG) := fun p bs => by
   wp_start as Hp
-  have hacc : isPkgInit (PROP := IProp GF) pkg_id.fmt ⊢ fmt.isInit (GF := GF) := by
-    with_unfolding_all exact isPkgInit_access (PROP := IProp GF) pkg_id.fmt
-  ihave #Hi := hacc $$ Hpkg
-  unfold fmt.isInit
-  icases Hi with ⟨%f, %hf, #Hpool⟩
+  ihave ⟨%f, %hf, #Hpool⟩ := fmt.isPkgInit_ppFree $$ Hpkg
   unfold fmt.isPrinterAny fmt.isPrinter fmt.isPrinterA fmt.bufferOwn
-  icases Hp with ⟨%F, %wid, %prec, %x, ⟨%bsl, Hb, Hbs, Hbcap⟩, Hfmt, Hib, Harg, ⟨%val, Hval⟩,
+  -- `p ≠ null` and `p.fmt ≠ null` reassemble the struct points-tos `ppFreeElem` holds
+  icases Hp with ⟨%hpnn, %F, %wid, %prec, %x, ⟨%bsl, Hb, Hbs, Hbcap⟩, Hfmt, Hib, Harg, ⟨%val, Hval⟩,
     ⟨%ro, Hro⟩, ⟨%ga, Hga⟩, Hpan, Herr, Hwrap, ⟨%wsl, %ws, Hw, Hws, Hwcap⟩⟩
+  obtain ⟨hnn, hfnn⟩ := hpnn
   have h0 : sint.Z (W64 0) = 0 := rfl
   wp_auto
   ihave %hbwf := ownSliceCap_wf $$ Hbcap
