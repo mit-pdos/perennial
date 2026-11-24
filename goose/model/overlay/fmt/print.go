@@ -11,15 +11,21 @@
 // under a non-method verb (pp.printValue, which reflects). The specs of Errorf, Printf, Fprintf
 // and Fprint admit those calls (fmt.argsOk, fmt.printArgOk), so these four print with the model
 // printer instead: doPrintf formats exactly the common directives of inert arguments and of a
-// []byte or []string, and from the first other directive on writes an arbitrary string, calling
-// each argument's Error() or String() where Go's handleMethods does; it is stuck (notModelled)
+// []byte or []string, appending them to the printer's buffer p.buf as Go does, and from the first
+// other directive on appends arbitrary strings, before each call of an argument's Error() or
+// String() (where Go's handleMethods calls it) and at the end. The buffer is observable outside
+// fmt: Fprintf and Fprint hand p.buf to w.Write, and a writer that keeps the slice aliases the
+// buffer of a printer the pool (ppFree) hands out again, to a later errorf, Fprintf or Fprint, or
+// to a method that the same call calls; so the model appends to p.buf what Go has appended by each
+// method call (an arbitrary string covers it), and errorf reads its message back from p.buf. it is stuck (notModelled)
 // where it does not follow Go: a Format or GoString method Go would call, a reflect.Value,
 // reflection into a struct, pointer, map or other slice, an argument index or a '*' width with an
 // argument that is not inert, a method that panics (Go's catchPanic recovers it). Its output is
-// Go's, the arbitrary string standing for any suffix, and it calls the methods Go calls in Go's
+// Go's, the arbitrary strings standing for any suffix, and it calls the methods Go calls in Go's
 // order: model ⊇ Go, checked by goose/model/fmt/model_diff_test.go (TestModelSprintf,
 // TestModelBytesExact, TestModelStringsExact, TestModelErrorf, TestModelFprintf, TestModelFprint,
-// TestModelPrintf) and sprintf_test.go.
+// TestModelPrintf) and sprintf_test.go, and, for the buffer, by TestModelAlias (testdata/alias,
+// run by etc/model-tests.sh under the overlay).
 
 package fmt
 
@@ -33,32 +39,39 @@ import (
 	"syscall"
 )
 
-// MODEL: errorf is Go's, but for its printer: Go formats with p.doPrintf (p.wrapErrs set) and
-// reads the message from p.buf and the %w arguments from p.wrappedErrs and p.reordered; the model
-// formats with the model printer, doPrintf (format, a, true), which gives the message (Go's,
-// with an arbitrary suffix from the first directive it does not format) and the indices of the %w
-// arguments (or that they are unknown), and builds the error from them (errorfResult) as Go's
-// switch on len(p.wrappedErrs) does: errors.New, a *wrapError, a *wrapErrors (see the file
-// comment for what the model printer covers and where it is stuck; TestModelErrorf compares the
-// error's kind, message and wrapped errors with Go's). Go's newPrinter/free pair is left out: the
-// printer and its pool (ppFree) are not observable outside fmt.
+// MODEL: errorf is Go's, but for its printer: Go's p.doPrintf(format, a), with p.wrapErrs set, is
+// the model printer's doPrintf(&p.buf, format, a, true), which appends the message to p.buf (Go's,
+// with arbitrary strings from the first directive it does not format) and gives the indices of the
+// %w arguments (or that they are unknown); errorfResult builds the error from them as Go's switch
+// on len(p.wrappedErrs) does: errors.New, a *wrapError, a *wrapErrors (see the file comment for
+// what the model printer covers and where it is stuck; TestModelErrorf compares the error's kind,
+// message and wrapped errors with Go's). The printer is Go's own, from newPrinter and back to the
+// pool with p.free(), and the message is read back from p.buf as Go reads it: the pool is
+// observable outside fmt, since Fprintf hands p.buf to a writer, which may keep the slice and see
+// what a later errorf writes into the same printer's buffer, or write into it itself
+// (TestModelAlias, goose/model/fmt).
 func errorf(format string, a ...any) error {
 	if len(a) == 0 && stringslite.IndexByte(format, '%') == -1 {
 		return nil
 	}
-	s, wrapped, unknown := doPrintf(format, a, true)
-	return errorfResult(s, wrapped, unknown, a)
+	p := newPrinter()
+	wrapped, unknown := doPrintf(&p.buf, format, a, true)
+	s := string(p.buf)
+	err := errorfResult(s, wrapped, unknown, a)
+	p.free()
+	return err
 }
 
 // MODEL: Fprintf is Go's, but for one line: Go's p.doPrintf(format, a) is the model printer's
-// doPrintf(format, a, false), whose string goes into p.buf (see the file comment for what the
-// model printer covers and where it is stuck; TestModelFprintf checks the bytes Write receives
-// and the methods called). The printer, its pool (ppFree), the one w.Write(p.buf) and p.free()
-// are Go's own.
+// doPrintf(&p.buf, format, a, false), which appends to p.buf what Go appends up to its first
+// method call or directive the model does not format, and arbitrary strings from there, before
+// each method call and at the end (see the file comment for what the model printer covers and
+// where it is stuck; TestModelFprintf checks the bytes Write receives and the methods called;
+// TestModelAlias a method reading p.buf through a slice an earlier Write kept). The printer, its
+// pool (ppFree), the one w.Write(p.buf) and p.free() are Go's own.
 func Fprintf(w io.Writer, format string, a ...any) (n int, err error) {
 	p := newPrinter()
-	s, _, _ := doPrintf(format, a, false)
-	p.buf.writeString(s)
+	doPrintf(&p.buf, format, a, false)
 	n, err = w.Write(p.buf)
 	p.free()
 	return
@@ -88,7 +101,10 @@ type stdout struct{}
 //     program handles or ignores it: the model may then not return (a loop, which covers the
 //     death), or return the error. (Go's io.ErrShortWrite for n != len(b) is always overwritten by
 //     the wrapped error: FD.Write returns n < len(b) only with an error.) Go panics where write(2)
-//     claims more bytes than asked ("invalid return from write", a kernel bug): not modelled.
+//     claims more bytes than asked (panic "invalid return from write"): not modelled, excluded
+//     by an assumption on the environment that the write never claims that. The assumption is not
+//     only that the kernel has no bug: golang/go#61060 reports the panic with VPN software
+//     installed.
 func (stdout) Write(b []byte) (n int, err error) {
 	if gomodel.Choose() {
 		return len(b), nil
@@ -119,14 +135,17 @@ func (stdout) Write(b []byte) (n int, err error) {
 // tells a string by reflect.TypeOf(arg).Kind() == reflect.String (reflection, which is stuck) and
 // prints each with p.printArg, which is stuck on the operands of the file comment; Fprint's spec
 // admits them (fmt.printArgOk). The model calls of each operand what Go's printArg calls under %v
-// (visitArg: its Error() or String(), stuck where the model printer is) and appends an arbitrary
-// string to p.buf, which stands for Go's output (TestModelFprint checks the calls). Fprint and
+// (visitArg: its Error() or String(), stuck where the model printer is), after appending arbitrary
+// strings to p.buf (writeArbitrary), which stand for what Go has appended by then (a method may
+// read p.buf through a slice a writer kept), and appends arbitrary strings at the end, for the
+// rest of Go's output (TestModelFprint checks the calls, TestModelAlias the buffer). Fprint and
 // Sprint, Go's own, print with it.
 func (p *pp) doPrint(a []any) {
 	for _, x := range a {
+		writeArbitrary(&p.buf)
 		visitArg(x, 'v', false, false)
 	}
-	p.buf.writeString(chooseString())
+	writeArbitrary(&p.buf)
 }
 
 // chooseString is an arbitrary string, the model printer's output from where it stops following

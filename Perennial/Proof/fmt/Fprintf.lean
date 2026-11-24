@@ -1,6 +1,6 @@
 /-
 The proof of `fmt.Fprintf` (the Go model of `goose/model/overlay/fmt`): a printer from `newPrinter`,
-the model printer's `doPrintf` (`Perennial/Proof/fmt/DoPrintf.lean`) into its buffer, the writer's
+the model printer's `doPrintf` (`Perennial/Proof/fmt/DoPrintf.lean`) appending to its buffer, the writer's
 `writeSpec` lent the buffer, and `pp.free`.
 -/
 module
@@ -10,6 +10,7 @@ public import Perennial.Proof.fmt.DoPrintf
 public import Perennial.Spec.fmt.newPrinter
 public import Perennial.Spec.fmt.buffer__writeString
 public import Perennial.Spec.fmt.pp__free
+public import Perennial.Spec.internal.gomodel.Choose
 
 @[expose] public section
 
@@ -30,6 +31,7 @@ theorem fmt.Fprintf.wp_proof
     (wp_newPrinter : fmt.newPrinter.spec (GF := GF) (hG := hG))
     (wp_writeString : fmt.buffer.writeString.spec (GF := GF) (hG := hG))
     (wp_free : fmt.pp.free.spec (GF := GF) (hG := hG))
+    (wp_Choose : internal.gomodel.Choose.spec (GF := GF) (hG := hG))
     (wp_ChooseUint64 : internal.gomodel.ChooseUint64.spec (GF := GF) (hG := hG)) :
     fmt.Fprintf.spec (GF := GF) (hG := hG) := by
   intro w format args_sl xs dq P Q
@@ -37,13 +39,13 @@ theorem fmt.Fprintf.wp_proof
   subst Hw
   wp_auto
   wp_apply wp_newPrinter as %p Hp
-  have hdo := fmt.wp_doPrintf wp_ChooseUint64 format args_sl xs dq false
-  rw [fmt.modeVerbs_false] at hdo
-  wp_apply hdo $$ [$Hsl $Hok] as %s %wsl %unk ⟨Hsl, %Hs, -⟩
-  try wp_auto
   unfold fmt.isPrinterAny fmt.isPrinter fmt.isPrinterA
   icases Hp with ⟨%hnn, %F, %wid, %prec, %x', Hb, Hrest⟩
-  wp_apply wp_writeString $$ Hb as Hb
+  have hdo := fmt.wp_doPrintf wp_Choose wp_ChooseUint64 wp_writeString (p.[fmt.pp, go!"buf"]) []
+    format args_sl xs dq false
+  rw [fmt.modeVerbs_false] at hdo
+  wp_apply hdo $$ [$Hb $Hsl $Hok] as %wsl %unk ⟨%s, Hb, Hsl, %Hs, -⟩
+  try wp_auto
   unfold fmt.bufferOwn
   icases Hb with ⟨%sl, Hb, Hbs, Hcap⟩
   wp_auto

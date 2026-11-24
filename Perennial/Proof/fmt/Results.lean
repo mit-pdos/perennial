@@ -45,13 +45,14 @@ theorem fmt.wp_Fprintf_bytes :
   subst Hw
   wp_auto
   wp_apply fmt.wp_newPrinter as %p Hp
-  have hdo := fmt.wp_doPrintfB (internal.gomodel.wp_ChooseUint64 (GF := GF) (hG := hG)) B dqb format args_sl xs dq false
-  rw [fmt.modeVerbs_false] at hdo
-  wp_apply hdo $$ [$Hsl $Hown $Hok] as %s %wsl %unk ⟨Hsl, Hown, %Hs, -⟩
-  try wp_auto
   unfold fmt.isPrinterAny fmt.isPrinter fmt.isPrinterA
   icases Hp with ⟨%hnn, %F, %wid, %prec, %x', Hb, Hrest⟩
-  wp_apply fmt.buffer.wp_writeString $$ Hb as Hb
+  have hdo := fmt.wp_doPrintfB (internal.gomodel.wp_Choose (GF := GF) (hG := hG))
+    (internal.gomodel.wp_ChooseUint64 (GF := GF) (hG := hG)) fmt.buffer.wp_writeString
+    (p.[fmt.pp, go!"buf"]) [] B dqb format args_sl xs dq false
+  rw [fmt.modeVerbs_false] at hdo
+  wp_apply hdo $$ [$Hb $Hsl $Hown $Hok] as %wsl %unk ⟨%s, Hb, Hsl, Hown, %Hs, -⟩
+  try wp_auto
   unfold fmt.bufferOwn
   icases Hb with ⟨%sl, Hb, Hbs, Hcap⟩
   wp_auto

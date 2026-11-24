@@ -26,6 +26,24 @@ var arbitraryChoice uint64
 
 func arbitrary() uint64 { return arbitraryChoice }
 
+// arbitraryBool is what gomodel.Choose() returns: false, so that writeArbitrary appends one
+// arbitrary string (one arbitraryMark, which stands for any string, so for any number of them).
+func arbitraryBool() bool { return false }
+
+// buffer is fmt's printer buffer (print.go), with the method the model printer calls.
+type buffer []byte
+
+func (b *buffer) writeString(s string) { *b = append(*b, s...) }
+
+// squash merges adjacent arbitraryMarks (the model's arbitrary strings appended one after
+// another, which stand for any string together).
+func squash(s string) string {
+	for strings.Contains(s, arbitraryMark+arbitraryMark) {
+		s = strings.ReplaceAll(s, arbitraryMark+arbitraryMark, arbitraryMark)
+	}
+	return s
+}
+
 type notModelledPanic struct{}
 
 // notModelled stands for gomodel.Stuck() (no behaviour): the tests see a panic.
@@ -64,31 +82,37 @@ func (e *wrapErrors) Unwrap() []error { return e.errs }
 // modelSprintf is a probe of the model printer's doPrintf, as a Sprintf (Sprintf itself is the
 // real fmt's).
 func modelSprintf(format string, a ...any) string {
-	s, _, _ := doPrintf(format, a, false)
-	return s
+	var b buffer
+	doPrintf(&b, format, a, false)
+	return squash(string(b))
 }
 
-// modelErrorf is Go's Errorf over the model's errorf.
+// modelErrorf is Go's Errorf over the model's errorf (the printer's buffer a fresh one).
 func modelErrorf(format string, a ...any) error {
 	if len(a) == 0 && strings.IndexByte(format, '%') == -1 {
 		return errors.New(format)
 	}
-	s, wrapped, unknown := doPrintf(format, a, true)
-	return errorfResult(s, wrapped, unknown, a)
+	var b buffer
+	wrapped, unknown := doPrintf(&b, format, a, true)
+	return errorfResult(squash(string(b)), wrapped, unknown, a)
 }
 
-// modelFprintf is the model's Fprintf: Write gets the bytes doPrintf formats.
+// modelFprintf is the model's Fprintf: Write gets the bytes doPrintf appends to a fresh buffer.
 func modelFprintf(w io.Writer, format string, a ...any) (int, error) {
-	s, _, _ := doPrintf(format, a, false)
-	return w.Write([]byte(s))
+	var b buffer
+	doPrintf(&b, format, a, false)
+	return w.Write([]byte(squash(string(b))))
 }
 
 // modelFprint is Go's Fprint over the model's pp.doPrint.
 func modelFprint(w io.Writer, a ...any) (int, error) {
+	var b buffer
 	for _, x := range a {
+		writeArbitrary(&b)
 		visitArg(x, 'v', false, false)
 	}
-	return w.Write([]byte(chooseString()))
+	writeArbitrary(&b)
+	return w.Write([]byte(squash(string(b))))
 }
 
 // modelPrintf is the model's Printf with a writer that discards (the tests compare the calls).

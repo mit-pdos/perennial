@@ -57,13 +57,17 @@
 #   os, sort, runtime/debug           in full
 # runtime's own tests are not run. (os.runtime_args, syscall.runtime_envs, runtime.callers and
 # internal/synctest are not models: trusted, with the runtime's real bodies under gc.)
-#   fmt      not run: its models (errorf, Fprintf, Printf, pp.doPrint) print an
-#            empty string where the model printer's output is arbitrary
-#            (gomodel's Go bodies choose 0) and block where it is stuck, so
-#            fmt's own tests of Errorf, Fprint(f), Printf and Sprint fail by
-#            design (and time out). The model's evidence is the differential
-#            tests of goose/model/fmt (go test ./model/fmt, run by
-#            go test ./goose/...), which compare it with the real fmt.
+#   fmt      only TestModelAlias (goose/model/fmt/testdata/alias): its models
+#            (errorf, Fprintf, Printf, pp.doPrint) print an empty string where
+#            the model printer's output is arbitrary (gomodel's Go bodies
+#            choose 0) and block where it is stuck, so fmt's own tests of
+#            Errorf, Fprint(f), Printf and Sprint fail by design (and time
+#            out). The model's evidence is the differential tests of
+#            goose/model/fmt (go test ./model/fmt, run by go test
+#            ./goose/...), which compare it with the real fmt, and
+#            TestModelAlias, run here on the real fmt and on the models with
+#            gomodel's choices driven (testdata/alias/gomodel_driven.go): the
+#            printer's buffer seen through a slice a writer kept.
 #
 # usage: etc/model-tests.sh
 set -euo pipefail
@@ -91,4 +95,23 @@ runc syscall -skip '^TestPrlimitFileLimit$'
 runc log -skip '^(TestAll|TestCallDepth|ExampleLogger|ExampleLogger_Output)$'
 runc os sort runtime/debug
 go build -overlay "$OUT/ovc/overlay.json" -tags purego,goose runtime internal/synctest
+# fmt: TestModelAlias, on the real fmt, then on its models with the driven gomodel
+"$OUT/goose" model-overlay -configdir "$ROOT/Perennial/Code" -dir . -tags purego -o "$OUT/ovfmt" fmt
+ALIAS="$ROOT/goose/model/fmt/testdata/alias"
+python3 - "$(go env GOROOT)/src" "$ALIAS" "$OUT/ovfmt/overlay.json" "$OUT" <<'PY'
+import json, sys
+src, alias, ov, out = sys.argv[1:]
+tests = {src + "/fmt/zz_alias_test.go": alias + "/alias_test.go",
+         src + "/fmt/zz_alias_goose_test.go": alias + "/alias_goose_test.go"}
+json.dump({"Replace": tests}, open(out + "/alias-real.json", "w"))
+m = json.load(open(ov))["Replace"]
+gm = src + "/internal/gomodel/zz_gomodel_gomodel.go"
+assert gm in m, gm
+m[gm] = alias + "/gomodel_driven.go"
+m.update(tests)
+json.dump({"Replace": m}, open(out + "/alias-model.json", "w"))
+PY
+go test -vet=off -timeout 300s -overlay "$OUT/alias-real.json" -run '^TestModelAlias$' fmt
+run_alias() { go test -vet=off -timeout 300s -overlay "$OUT/alias-model.json" -tags purego,goose -run '^TestModelAlias$' fmt; }
+run_alias
 echo "model-tests: ok"

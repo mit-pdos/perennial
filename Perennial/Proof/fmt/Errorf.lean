@@ -1,7 +1,8 @@
 /-
 The proof of `fmt.Errorf` (Go's) and of the Go model of `errorf` (`goose/model/overlay/fmt`): the
-model printer's `doPrintf` (`Perennial/Proof/fmt/DoPrintf.lean`), then `errorfResult`, from
-`errors.New`'s code (`errors.wp_New_errorString_cell`).
+model printer's `doPrintf` (`Perennial/Proof/fmt/DoPrintf.lean`) into the buffer of a printer from
+`newPrinter`, the message read back from it, then `errorfResult`, from `errors.New`'s code
+(`errors.wp_New_errorString_cell`), and `pp.free`.
 -/
 module
 
@@ -10,6 +11,8 @@ public import Perennial.Proof.fmt.DoPrintf
 public import Perennial.Proof.errors.NewVar
 public import Perennial.Spec.internal.stringslite.IndexByte
 public import Perennial.Spec.internal.gomodel.ChooseUint64
+public import Perennial.Spec.fmt.newPrinter
+public import Perennial.Spec.fmt.pp__free
 
 @[expose] public section
 
@@ -63,7 +66,8 @@ theorem fmt.W64_nat_inj {a b : Nat} (ha : a < 2 ^ 63) (hb : b < 2 ^ 63)
   rw [uint_Z_W64 _ (by omega) (by omega), uint_Z_W64 _ (by omega) (by omega)] at this
   omega
 
-/-- The model's `errorfResult s wrapped unknown a`, of the results of `doPrintf(format, a, true)`: the
+/-- The model's `errorfResult s wrapped unknown a`, of the results of `doPrintf(&p.buf, format, a, true)`
+(`s` read back from `p.buf`): the
 error `Errorf` returns (`errorfErr`). -/
 theorem fmt.wp_errorfResult
     (wp_ChooseUint64 : internal.gomodel.ChooseUint64.spec (GF := GF) (hG := hG))
@@ -365,6 +369,10 @@ theorem fmt.fmtDirectives_noPct (f : GoString) (h : ∀ j : Nat, f[j]? ≠ some 
 
 theorem fmt.Errorf.wp_proof
     (wp_IndexByte : internal.stringslite.IndexByte.spec (GF := GF) (hG := hG))
+    (wp_newPrinter : fmt.newPrinter.spec (GF := GF) (hG := hG))
+    (wp_writeString : fmt.buffer.writeString.spec (GF := GF) (hG := hG))
+    (wp_free : fmt.pp.free.spec (GF := GF) (hG := hG))
+    (wp_Choose : internal.gomodel.Choose.spec (GF := GF) (hG := hG))
     (wp_ChooseUint64 : internal.gomodel.ChooseUint64.spec (GF := GF) (hG := hG)) :
     fmt.Errorf.spec (GF := GF) (hG := hG) := by
   intro format args_sl xs dq
@@ -416,22 +424,58 @@ theorem fmt.Errorf.wp_proof
       · ipureintro; rfl
       iexact Hcell
     · try wp_auto
-      have hdo := fmt.wp_doPrintf wp_ChooseUint64 format args_sl xs dq true
+      wp_apply wp_newPrinter as %p Hp
+      unfold fmt.isPrinterAny fmt.isPrinter fmt.isPrinterA
+      icases Hp with ⟨%hnn, %F, %wid, %prec, %x', Hb, Hrest⟩
+      have hdo := fmt.wp_doPrintf wp_Choose wp_ChooseUint64 wp_writeString (p.[fmt.pp, go!"buf"]) []
+        format args_sl xs dq true
       rw [fmt.modeVerbs_true] at hdo
-      wp_apply hdo $$ [$Hsl $Hok] as %s %wsl %unk ⟨Hsl, %Hs, %ws, Hws, %Hwr⟩
+      wp_apply hdo $$ [$Hb $Hsl $Hok] as %wsl %unk ⟨%s, Hb, Hsl, %Hs, %ws, Hws, %Hwr⟩
       try wp_auto
-      wp_apply (fmt.wp_errorfResult wp_ChooseUint64 format args_sl xs dq s wsl unk ws) $$ [$Hsl $Hws] as %err ⟨Hsl, HE⟩
+      unfold fmt.bufferOwn
+      icases Hb with ⟨%sl, Hb, Hbs, Hcap⟩
+      wp_auto
+      wp_apply wp_bytes_to_string sl ([] ++ s) (DFrac.own 1) $$ Hbs as Hbs
+      try wp_auto
+      wp_apply (fmt.wp_errorfResult wp_ChooseUint64 format args_sl xs dq ([] ++ s) wsl unk ws) $$ [$Hsl $Hws]
+        as %err ⟨Hsl, HE⟩
       · ipureintro; exact ⟨Hs, Hwr⟩
+      try wp_auto
+      wp_apply wp_free p ([] ++ s) $$ [Hb Hbs Hcap Hrest]
+      · iframe
+        unfold fmt.isPrinterAny fmt.isPrinter fmt.isPrinterA fmt.bufferOwn
+        isplitr
+        · ipureintro; exact hnn
+        iexists F, wid, prec, x'
+        iframe
       try wp_auto
       iapply HΦ
       iframe
   · try wp_auto
-    have hdo := fmt.wp_doPrintf wp_ChooseUint64 format args_sl xs dq true
+    wp_apply wp_newPrinter as %p Hp
+    unfold fmt.isPrinterAny fmt.isPrinter fmt.isPrinterA
+    icases Hp with ⟨%hnn, %F, %wid, %prec, %x', Hb, Hrest⟩
+    have hdo := fmt.wp_doPrintf wp_Choose wp_ChooseUint64 wp_writeString (p.[fmt.pp, go!"buf"]) []
+      format args_sl xs dq true
     rw [fmt.modeVerbs_true] at hdo
-    wp_apply hdo $$ [$Hsl $Hok] as %s %wsl %unk ⟨Hsl, %Hs, %ws, Hws, %Hwr⟩
+    wp_apply hdo $$ [$Hb $Hsl $Hok] as %wsl %unk ⟨%s, Hb, Hsl, %Hs, %ws, Hws, %Hwr⟩
     try wp_auto
-    wp_apply (fmt.wp_errorfResult wp_ChooseUint64 format args_sl xs dq s wsl unk ws) $$ [$Hsl $Hws] as %err ⟨Hsl, HE⟩
+    unfold fmt.bufferOwn
+    icases Hb with ⟨%sl, Hb, Hbs, Hcap⟩
+    wp_auto
+    wp_apply wp_bytes_to_string sl ([] ++ s) (DFrac.own 1) $$ Hbs as Hbs
+    try wp_auto
+    wp_apply (fmt.wp_errorfResult wp_ChooseUint64 format args_sl xs dq ([] ++ s) wsl unk ws) $$ [$Hsl $Hws]
+      as %err ⟨Hsl, HE⟩
     · ipureintro; exact ⟨Hs, Hwr⟩
+    try wp_auto
+    wp_apply wp_free p ([] ++ s) $$ [Hb Hbs Hcap Hrest]
+    · iframe
+      unfold fmt.isPrinterAny fmt.isPrinter fmt.isPrinterA fmt.bufferOwn
+      isplitr
+      · ipureintro; exact hnn
+      iexists F, wid, prec, x'
+      iframe
     try wp_auto
     iapply HΦ
     iframe
