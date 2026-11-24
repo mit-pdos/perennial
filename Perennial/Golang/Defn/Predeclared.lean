@@ -1206,6 +1206,38 @@ export Float32Semantics (go_zero_val_float32 comparable_float32 underlying_float
   convert_uint16_to_float32 convert_uint8_to_float32 convert_uintptr_to_float32 convert_untyped_int_to_float32
   convert_float64_to_float32)
 
+/-! ### Complex numbers
+
+A `complex64` (`complex128`) is the pair of its real and imaginary parts, each a `float32`
+(`float64`); `==` compares both parts with the float `==`. The other operations, the conversions,
+`real`/`imag`/`complex`, and loads and stores have no rules. -/
+
+class Complex64Semantics [GoSemanticsFunctions] : Prop where
+  go_zero_val_complex64 : TypeReprUnderlying go.complex64 (w32 × w32)
+  comparable_complex64 : ⟦CheckComparable go.complex64, #()⟧ ⤳[under] #()
+  underlying_complex64 : go.complex64 ↓u go.complex64
+  eq_complex64 (v1 v2 : w32 × w32) : ⟦GoOp GoEquals go.complex64, (#v1, #v2)⟧
+    ⤳[under] #(float32Eq v1.1 v2.1 && float32Eq v1.2 v2.2)
+
+attribute [instance] Complex64Semantics.go_zero_val_complex64
+  Complex64Semantics.comparable_complex64 Complex64Semantics.underlying_complex64
+  Complex64Semantics.eq_complex64
+export Complex64Semantics (go_zero_val_complex64 comparable_complex64 underlying_complex64
+  eq_complex64)
+
+class Complex128Semantics [GoSemanticsFunctions] : Prop where
+  go_zero_val_complex128 : TypeReprUnderlying go.complex128 (w64 × w64)
+  comparable_complex128 : ⟦CheckComparable go.complex128, #()⟧ ⤳[under] #()
+  underlying_complex128 : go.complex128 ↓u go.complex128
+  eq_complex128 (v1 v2 : w64 × w64) : ⟦GoOp GoEquals go.complex128, (#v1, #v2)⟧
+    ⤳[under] #(float64Eq v1.1 v2.1 && float64Eq v1.2 v2.2)
+
+attribute [instance] Complex128Semantics.go_zero_val_complex128
+  Complex128Semantics.comparable_complex128 Complex128Semantics.underlying_complex128
+  Complex128Semantics.eq_complex128
+export Complex128Semantics (go_zero_val_complex128 comparable_complex128 underlying_complex128
+  eq_complex128)
+
 class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
   alloc_predeclared (u : go.GoType) [H : IsPredeclared u] (v : val) :
     ⟦GoAlloc u, v⟧ ⤳[internalUnder] Alloc v
@@ -1265,6 +1297,8 @@ class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
   [untypedFloat_semantics : UntypedFloatSemantics]
   [float64_semantics : Float64Semantics]
   [float32_semantics : Float32Semantics]
+  [complex64_semantics : Complex64Semantics]
+  [complex128_semantics : Complex128Semantics]
   [prophid_semantics : ProphIdSemantics]
 
   comparable_string : ⟦CheckComparable go.string, #()⟧ ⤳[under] #()
@@ -1306,7 +1340,8 @@ attribute [instance] PredeclaredSemantics.alloc_predeclared PredeclaredSemantics
   PredeclaredSemantics.uint16_semantics PredeclaredSemantics.uint8_semantics
   PredeclaredSemantics.uintptr_semantics
   PredeclaredSemantics.untypedFloat_semantics PredeclaredSemantics.float64_semantics
-  PredeclaredSemantics.float32_semantics PredeclaredSemantics.prophid_semantics
+  PredeclaredSemantics.float32_semantics PredeclaredSemantics.complex64_semantics
+  PredeclaredSemantics.complex128_semantics PredeclaredSemantics.prophid_semantics
   PredeclaredSemantics.comparable_string PredeclaredSemantics.go_eq_string
   PredeclaredSemantics.underlying_string PredeclaredSemantics.plus_string
   PredeclaredSemantics.go_zero_val_string PredeclaredSemantics.underlying_untyped_nil
@@ -1323,7 +1358,7 @@ export PredeclaredSemantics (alloc_predeclared load_predeclared store_predeclare
   untypedInt_semantics int_semantics int64_semantics int32_semantics int16_semantics
   int8_semantics uint_semantics uint64_semantics uint32_semantics uint16_semantics
   uint8_semantics uintptr_semantics untypedFloat_semantics float64_semantics float32_semantics
-  prophid_semantics
+  complex64_semantics complex128_semantics prophid_semantics
   comparable_string go_eq_string underlying_string plus_string go_zero_val_string
   underlying_untyped_nil convert_nil_pointer convert_nil_function convert_nil_slice
   convert_nil_chan convert_nil_map convert_nil_interface convert_nil_unsafe_pointer
