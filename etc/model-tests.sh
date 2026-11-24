@@ -118,6 +118,10 @@ tests = {src + "/fmt/zz_alias_test.go": alias + "/alias_test.go",
          src + "/fmt/zz_alias_goose_test.go": alias + "/alias_goose_test.go"}
 json.dump({"Replace": tests}, open(out + "/alias-real.json", "w"))
 m = json.load(open(ov))["Replace"]
+# fmt's models only: the overlay also splices the models of fmt's dependencies (sync.Pool's and
+# internal/sync's consume gomodel choices too), which this test leaves real
+m = {k: v for k, v in m.items()
+     if k.startswith(src + "/fmt/") or k.startswith(src + "/internal/gomodel/")}
 gm = src + "/internal/gomodel/zz_gomodel_gomodel.go"
 assert gm in m, gm
 m[gm] = alias + "/gomodel_driven.go"
