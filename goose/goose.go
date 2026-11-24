@@ -3003,6 +3003,22 @@ func (ctx *Ctx) functionConstSpec(spec *ast.ValueSpec, cont glang.Expr) glang.Ex
 func (ctx *Ctx) globalVarDecl(d *ast.GenDecl) {
 	for _, spec := range d.Specs {
 		s := spec.(*ast.ValueSpec)
+		// A type declared in a function literal of a translated initializer is not
+		// registered as a package-level type (only a FuncDecl's local types are, in
+		// Ctx.funcDecl): its uses would resolve to the package-level type of the
+		// same name, or to nothing. Refuse it.
+		for _, name := range s.Names {
+			if ctx.varAction(name.Name, name.Pos()) != declfilter.Translate {
+				continue
+			}
+			for _, g := range util.TypeDecls(s) {
+				for _, ts := range g.Specs {
+					ctx.unsupported(ts, "local type %s in a package-level variable's initializer",
+						ts.(*ast.TypeSpec).Name.Name)
+				}
+			}
+			break
+		}
 		for _, name := range s.Names {
 			if ctx.varAction(name.Name, name.Pos()) == declfilter.Skip {
 				// no name, X.init, allocation or init step (skip.go)
