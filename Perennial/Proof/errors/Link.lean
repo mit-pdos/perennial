@@ -14,6 +14,7 @@ public import Perennial.Proof.errors.Unwrap
 public import Perennial.Proof.errors.asType_
 public import Perennial.Proof.errors.initialize
 public import Perennial.Proof.errors.is_
+public import Perennial.Proof.internal.reflectlite.Link
 
 @[expose] public section
 
@@ -53,7 +54,7 @@ theorem errors.wp_Unwrap : errors.Unwrap.spec (GF := GF) (hG := hG) :=
   errors.Unwrap.wp_proof
 
 theorem errors.wp_initialize' : errors.initialize'.spec (GF := GF) (hG := hG) :=
-  errors.initialize'.wp_proof
+  errors.initialize'.wp_proof internal.reflectlite.wp_initialize' internal.reflectlite.wp_TypeOf internal.reflectlite.rtype.wp_Elem
 
 end link
 

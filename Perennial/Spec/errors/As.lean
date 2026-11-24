@@ -20,10 +20,10 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : errors.Assumptions]
 
-/-- Spec of `errors.As(err, target)` for a target `*T`, `l`. `As` is a Go model
-(`goose/model/overlay/errors/wrap.go`): Go's `As`, its tree walk `asWalk` Go's `as`, with the
-reflection (`reflectlite`: the checks of the target, `TypeOf(err).AssignableTo(T)` and the store)
-in one function, `asAssign`, the semantics' `AsAssign`.
+/-- Spec of `errors.As(err, target)` for a target `*T`, `l`. `As` and its tree walk `as` are Go's
+(`src/errors/wrap.go`, translated with their bodies), over the Go model of `internal/reflectlite`
+(`goose/model/overlay/internal/reflectlite`: the checks of the target, `TypeOf(err).AssignableTo(T)`
+and the store, `Value.Set`).
 
 Go's `As` panics when `target` is `nil`, is not a non-`nil` pointer, or points to a type that
 is neither an interface type nor implements `error`. The target here is the pointer `l` of type
@@ -31,9 +31,10 @@ is neither an interface type nor implements `error`. The target here is the poin
 
 Three cases:
 * over an error tree `S` of `err` (`isErrorTree`, as `AsType`'s: the `As` methods called with
-  `target` itself), each of whose errors the model decides (`AsDecided`: it does not follow Go's
-  assignability of a type to another of the same underlying type, one of them unnamed, and finds
-  an error of a non-interface type `T` only for a `T` named or a pointer to a named type): some
+  `target` itself), each of whose errors the model decides (`AsDecided`: it does not decide Go's
+  assignability of a type to another of the same underlying type, one of them unnamed, nor for
+  struct, channel and function kinds, and finds an error of a non-interface type `T` only for a
+  `T` named or a pointer to a named type): some
   result, `*l` written;
 * **first match**: `err`'s dynamic type is assignable to `T` (`asAssignable`: implements an
   interface `T`, or is `T`; decided by the model, `AsDecided`): `true`, `err` stored into `*l` (`asStored`; of the target's Lean type,

@@ -8,6 +8,7 @@ module
 public import Perennial.Proof.ProofPrelude
 public import Perennial.Code.errors
 public import Perennial.GeneratedProof.errors
+public import Perennial.Proof.internal.reflectlite.Base
 
 @[expose] public section
 
@@ -147,10 +148,15 @@ theorem newVar_ne (X Y m1 m2 : GoString) (h : m1 ≠ m2) (v1 v2 : GoInterface) :
   injection he with _ he
   exact go.intoVal_inj he
 
-/-- The package-initialized state (persistent): `ErrUnsupported` holds its `errors.New` error
-(`errorType`, a runtime type descriptor, is skipped: `Code/errors.toml`). -/
+/-- `errorType`'s value, `reflectlite.TypeOf((*error)(nil)).Elem()`: the model's `Type` of `error`. -/
+abbrev errorTypeVal : GoInterface :=
+  interface.mkOk internal.reflectlite.rtype.ty #(internal.reflectlite.rtype.mk (go.tok go.error))
+
+/-- The package-initialized state (persistent): `ErrUnsupported` holds its `errors.New` error, and
+`errorType` the `reflectlite` `Type` of `error` (`errorTypeVal`). -/
 abbrev isInit : IProp GF :=
-  iprop("#HErrUnsupported" ∷ newVar ErrUnsupported go!"unsupported operation")
+  iprop("#HErrUnsupported" ∷ newVar ErrUnsupported go!"unsupported operation" ∗
+    "#HErrorType" ∷ globalAddr errorType ↦□ errorTypeVal)
 
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.errors :=
   define_is_pkg_init isInit
@@ -164,8 +170,17 @@ theorem isInit_access :
 /-- `errors.ErrUnsupported` holds `errors.New("unsupported operation")`. -/
 theorem errUnsupported_of_init :
     isPkgInit (PROP := IProp GF) pkg_id.errors ⊢
-      newVar (GF := GF) ErrUnsupported go!"unsupported operation" :=
-  isInit_access
+      newVar (GF := GF) ErrUnsupported go!"unsupported operation" := by
+  iintro Hpkg
+  ihave ⟨#H, -⟩ := isInit_access $$ Hpkg
+  iexact H
+
+/-- `errors.errorType` holds the `reflectlite` `Type` of `error`. -/
+theorem errorType_of_init :
+    isPkgInit (PROP := IProp GF) pkg_id.errors ⊢ globalAddr errorType ↦□ errorTypeVal := by
+  iintro Hpkg
+  ihave ⟨-, #H⟩ := isInit_access $$ Hpkg
+  iexact H
 
 def isUnwrappable (err : GoError) : IProp GF :=
   match err with
