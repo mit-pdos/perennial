@@ -383,7 +383,9 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   model's translation (`review-trusted`, R12).
 * **Generated code comes from goose.** The translator in `goose/` emits
   `Perennial/Code/**` and `Perennial/GeneratedProof/**`; regenerate with
-  `etc/update-goose-new.py` rather than editing them by hand.
+  `etc/update-goose-new.py` rather than editing them by hand. The translation's
+  Go toolchain is pinned to go1.26.11 (`GO_VERSION` there; the standard library
+  goose translates is that toolchain's), and the script refuses another `go`.
 
 ## Layering (bottom up)
 

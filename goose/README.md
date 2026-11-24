@@ -49,6 +49,8 @@ printed as plain constructor applications of `Perennial/GooseLang/Lang.lean`.
 ## Running goose
 
 The usual way to run goose is `etc/update-goose-new.py` (see its `--help`),
+with the pinned Go toolchain, go1.26.11 (its `GO_VERSION`: the standard library
+is translated from that toolchain's GOROOT),
 which regenerates the translations checked into Perennial. It runs, for each
 package,
 
@@ -121,8 +123,8 @@ declares no predeclared identifier. Model files live in a module nothing builds
 stuck points are `internal/gomodel`'s `Choose`, `ChooseUint64` and `Stuck`
 (`Stuck` is the stuck `Panic "not modelled"`, which no WP rule steps; the
 shared stuck point, whose `.impl` a model outside the standard library reuses
-for its own stub), a package the overlay adds (go1.26.0's `go list` does not find such a package
-through `go/packages`; go1.26.11 and go1.27 do). The gold example is
+for its own stub), a package the overlay adds (the pinned go1.26.11 finds such a package
+through `go/packages`; go1.26.0's `go list` did not). The gold example is
 `testdata/examples/modeloverlay`.
 
 The output for a large package is split into modules `<pkg>/chunkN` that lake

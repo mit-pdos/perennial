@@ -25,6 +25,25 @@ def create_proj(name=None, repo=None, pkgs=None):
     return Proj(name, repo, pkgs)
 
 
+# The Go toolchain Perennial's translations are generated with: the standard
+# library goose translates is this toolchain's GOROOT, so another version gives
+# other output (and go1.26.0's go list does not find internal/gomodel, a
+# standard-library package only an overlay adds).
+GO_VERSION = "go1.26.11"
+
+
+def check_go_version():
+    try:
+        out = subprocess.run(["go", "env", "GOVERSION"], capture_output=True, text=True, check=True).stdout.strip()
+    except (OSError, subprocess.CalledProcessError) as e:
+        sys.exit(f"update-goose-new: cannot run go: {e}")
+    if out != GO_VERSION:
+        sys.exit(
+            f"update-goose-new: the go on PATH is {out}; Perennial's translations are generated "
+            f"with {GO_VERSION} (put it first on PATH, with GOTOOLCHAIN=local), or pass --any-go"
+        )
+
+
 # define the supported projects
 projs = [
     create_proj(repo="goose-lang/std"),
@@ -112,6 +131,12 @@ def main():
         action="store_true",
     )
     parser.add_argument(
+        "--any-go",
+        help=f"run with whatever go is on PATH, not only {GO_VERSION} (the output then differs "
+        "wherever the standard library does)",
+        action="store_true",
+    )
+    parser.add_argument(
         "--goose-examples",
         help="also translate tests in Goose",
         action="store_true",
@@ -135,6 +160,9 @@ def main():
         )
 
     args = parser.parse_args()
+    # (--modelcheck writes nothing, and etc/land.sh runs it with the go it finds)
+    if not args.any_go and not args.dry_run and not args.modelcheck:
+        check_go_version()
 
     if args.all:
         setattr(args, "std_lib", True)
@@ -339,6 +367,8 @@ def main():
             "fmt",
             "log",
             "encoding/binary",
+            # added by its Go model overlay (Perennial/Code/internal/gomodel.toml)
+            "internal/gomodel",
         )
 
     for proj in projs:
@@ -346,12 +376,6 @@ def main():
             proj_dir(proj.name),
             *proj.pkgs,
         )
-    # internal/gomodel, a standard-library package that only its Go model
-    # overlay adds (Perennial/Code/internal/gomodel.toml), on its own: go1.26.0's
-    # go list does not find such a package through go/packages (go1.26.11 and
-    # go1.27 do), and its failure must not stop the packages above
-    if args.std_lib:
-        run_goose(goose_dir, "internal/gomodel")
     # packages whose types (only) are translated, so that the types of the
     # packages above that refer to them can be translated
     if args.std_lib:
