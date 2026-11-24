@@ -58,7 +58,7 @@ theorem errors.Is.wp_proof
       dsimp only
       wp_auto
       (try wp_auto)
-      rw [show (go!"errors.is" : GoString) = is' from rfl]
+      rw [show (go!"errors.is" : GoString) = is'' from rfl]
       wp_apply wp_is S I U (interface.ok ii) (interface.ok tii) true HS
         (fun _ => ⟨tii, rfl, htarget tii rfl⟩) $$ [] as %b %Hb
       · iframe #
