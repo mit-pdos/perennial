@@ -3,6 +3,7 @@ The proof of `fmt.(*pp).fmtBytes`.
 -/
 module
 
+public import Perennial.Proof.fmt.OutLemmas
 public import Perennial.Spec.fmt.pp__fmtBytes
 public import Perennial.Spec.fmt.fmt__fmtInteger
 public import Perennial.Spec.fmt.fmt__fmtBs
@@ -106,15 +107,16 @@ theorem fmt.pp.fmtBytes.wp_proof
       · iframe; ipureintro; exact Hcy
       rw [show unsigned = #false from rfl, show ldigits = #(hexDigits false) from rfl]
       have hk : sint.nat (n + W64 1) = sint.nat n + 1 := by word
-      have hI : intOut 10 0 (uint.Z (W64 (uint.Z cy))) = decimalPad 0 (uint.Z cy) := by
-        rw [show uint.Z (W64 (uint.Z cy)) = uint.Z cy by word]; rfl
+      have hI : widthPad 10 false 0 (uint.Z (W64 (uint.Z cy))) = decimalPad 0 (uint.Z cy) := by
+        rw [show uint.Z (W64 (uint.Z cy)) = uint.Z cy by word, widthPad_false _ _ _ (Or.inl rfl)]; rfl
       wp_if_destruct
       · wp_apply wp_writeByte _ (bs ++ W8 91 :: bytesDecBody (ys.take (sint.nat n))) (W8 32) $$ [Hb]
           as Hb
         · iexact Hb
         wp_apply wp_fmtInteger (p.[pp, go!"fmt"]) (p.[pp, go!"buf"]) noFlags wid prec
           (bs ++ W8 91 :: bytesDecBody (ys.take (sint.nat n)) ++ [W8 32]) (W64 (uint.Z cy)) (W64 10)
-          false _ (Or.inl rfl) (by decide) rfl rfl rfl rfl rfl (fun h => by cases h)
+          false _ false (Or.inl rfl) (by decide) rfl rfl rfl rfl (fun h => by cases h)
+          (fun h => by cases h)
           $$ [Hfb Hff Hfw Hfp Hib Hb] as ⟨Hf, Hib, Hb⟩
         · unfold fmtOwn; iframe
         unfold fmtOwn
@@ -132,7 +134,8 @@ theorem fmt.pp.fmtBytes.wp_proof
           constructor <;> word
       · wp_apply wp_fmtInteger (p.[pp, go!"fmt"]) (p.[pp, go!"buf"]) noFlags wid prec
           (bs ++ W8 91 :: bytesDecBody (ys.take (sint.nat n))) (W64 (uint.Z cy)) (W64 10)
-          false _ (Or.inl rfl) (by decide) rfl rfl rfl rfl rfl (fun h => by cases h)
+          false _ false (Or.inl rfl) (by decide) rfl rfl rfl rfl (fun h => by cases h)
+          (fun h => by cases h)
           $$ [Hfb Hff Hfw Hfp Hib Hb] as ⟨Hf, Hib, Hb⟩
         · unfold fmtOwn; iframe
         unfold fmtOwn
