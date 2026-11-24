@@ -27,7 +27,7 @@ theorem strconv.syntaxError.wp_proof
   intro fn str
   wp_start
   ihave Hi := strconv.isInit_access $$ Hpkg
-  icases Hi with ⟨#HErrRange, #HErrSyntax⟩
+  icases Hi with ⟨#HErrRange, #HErrSyntax, -⟩
   iunfold errors.newVar at HErrSyntax
   icases HErrSyntax with ⟨%x, #Hx, -⟩
   wp_auto
