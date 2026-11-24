@@ -10632,7 +10632,10 @@ noncomputable def CallersFrames.impl [GooseExts] [GoGlobalContext] : val :=
     uintptr", symtab.go:131), and whether another one follows. Go reads and
     writes *ci, so a nil ci panics (nil dereference) and a concurrent call on
     the same Frames races; the model's load and store of ci.callers do both.
-    The model leaves *ci unchanged, where Go advances it, which no caller
+    The model stores ci.callers on every call, also on an exhausted Frames,
+    where Go only reads *ci: two concurrent Next calls on an exhausted Frames
+    race in the model and not in Go (extra behaviour, the safe direction: a
+    race is stuck in GooseLang, so a proof must exclude it). The model leaves *ci unchanged, where Go advances it, which no caller
     observes (the fields are unexported). It does not read the words
     ci.callers points to, which Go does (ci.callers[0]): a concurrent write to
     them races in Go and not in the model, but Go reads them only to look them
@@ -10648,7 +10651,7 @@ noncomputable def CallersFrames.impl [GooseExts] [GoGlobalContext] : val :=
     with Go's pointers into the binary's tables. startLine and Entry are
     arbitrary too; funcInfo stays zero (unexported, read only by the runtime).
 
-    go: symtab.go:29:19 -/
+    go: symtab.go:32:19 -/
 noncomputable def Frames.Next.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "ci"
   (Lam BAnon
