@@ -30,7 +30,7 @@ theorem internal.bytealg.CountString.wp_proof :
       "n" ∷ n_ptr ↦ W64 ((s.take j).count c : Int) ∗
       "%Hj" ∷ ⌜j ≤ s.length⌝ : IProp GF) $$ [i n]
   · iexists 0
-    simp only [List.take_zero, List.count_nil, Nat.cast_zero]
+    simp only [List.take_zero, List.count_nil, show ((0 : Nat) : Int) = 0 from rfl]
     iframe i n
     ipureintro; exact Nat.zero_le _
   wp_for HI
@@ -82,8 +82,9 @@ theorem internal.bytealg.CountString.wp_proof :
   · -- `i = len(s)`
     simp only [intoVal_eq_iff, decide_eq_true_eq] at Hif
     have Hjl : j = s.length := by revert Hif; word
-    simp only [Hif, decide_false, Bool.false_eq_true, ↓reduceIte]
     subst Hjl
+    try wp_auto
+    rw [if_neg (by simp)]
     try wp_auto
     rw [List.take_length]
     iapply HΦ

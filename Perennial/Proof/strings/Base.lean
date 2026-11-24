@@ -287,7 +287,9 @@ theorem split_found (s sep : GoString) (hsep : sep ≠ []) (m : Nat) (hp : sep <
     (hmin : ∀ j < m, ¬ sep <+: s.drop j) :
     split s sep = s.take m :: split (s.drop (m + sep.length)) sep := by
   have hm : m + sep.length ≤ s.length := by
-    have := hp.length_le; simp only [List.length_drop] at this; omega
+    have h1 := hp.length_le
+    have h2 := List.length_pos_iff.mpr hsep
+    simp only [List.length_drop] at h1; omega
   unfold split
   rw [splitAux_skip sep m s [] (by omega) hmin, List.nil_append]
   obtain ⟨c, r, hcr⟩ : ∃ c r, s.drop m = c :: r := by
@@ -320,10 +322,11 @@ theorem splitAux_length_single (c : w8) (r field : GoString) :
   fun_induction splitAux [c] r field with
   | case1 field => simp
   | case2 c' r field h ih =>
-    have hc : c' = c := by simpa using h.2
+    have hc : c = c' := by simpa using h.2
     subst hc
-    simp only [List.length_cons, ih, List.length_singleton, List.drop_succ_cons, List.drop_zero,
-      List.count_cons_self]
+    simp only [List.length_cons, List.length_nil, List.drop_succ_cons, List.drop_zero,
+      List.count_cons_self] at ih ⊢
+    omega
   | case3 c' r field h ih =>
     have hc : c' ≠ c := fun hc => h ⟨by simp, by simp [hc]⟩
     rw [ih, List.count_cons_of_ne hc]

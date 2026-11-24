@@ -1032,11 +1032,10 @@ noncomputable def IndexByte.impl [GooseExts] [GoGlobalContext] : val :=
     genSplit wherever genSplit does not panic, and there only: building such a
     string needs an allocation gc refuses, which the semantics allows
     (docs/KNOWN_LIMITATIONS.md, "No limit on allocation size"). For an empty
-    sep, Go
-    splits s into its UTF-8 sequences (explode); the model is stuck there, so
-    every spec of Split requires sep to be non-empty.
+    sep, Go splits s into its UTF-8 sequences (explode); the model is stuck
+    there, so every spec of Split requires sep to be non-empty.
 
-    go: strings.go:22:6 -/
+    go: strings.go:21:6 -/
 noncomputable def Split.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "sep"

@@ -8,6 +8,21 @@ public import Perennial.Spec.strings.Index
 public import Perennial.Spec.internal.bytealg.CountString
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.model.strings.Base
 
+@[expose] public section
+
+noncomputable section
+
+namespace Perennial
+
+open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
+
+section proof
+variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem : strings.Assumptions]
+
 set_option maxHeartbeats 1000000 in
 theorem strings.Count.wp_proof
     (wp_CountString : internal.bytealg.CountString.spec (GF := GF) (hG := hG))
@@ -19,12 +34,12 @@ theorem strings.Count.wp_proof
   wp_auto
   wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len as %Hl0
   wp_if_destruct
-  · exfalso; revert Hif; simp only [intoVal_eq_iff]; word
+  · exfalso; revert Hif; word
   wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len as %-
   wp_if_destruct
   · -- one byte: `bytealg.CountString(s, substr[0])`
     obtain ⟨c, rfl⟩ : ∃ c, substr = [c] := by
-      have h1 : substr.length = 1 := by revert Hif; simp only [intoVal_eq_iff]; word
+      have h1 : substr.length = 1 := by revert Hif; word
       match substr, h1 with
       | [c], _ => exact ⟨c, rfl⟩
     try wp_auto
@@ -41,6 +56,7 @@ theorem strings.Count.wp_proof
       iframe s n
       ipureintro; omega
     wp_for HI
+    try wp_auto
     wp_apply wp_Index as %Hsl
     have Hsl' := Hsl Hsub
     have Hb := internal.bytealg.index_bounds s' substr
@@ -48,7 +64,7 @@ theorem strings.Count.wp_proof
     wp_if_destruct
     · -- not found
       have Hm : internal.bytealg.index s' substr = -1 := by
-        revert Hif; simp only [intoVal_eq_iff]; intro Hif; clear Hk; word
+        clear Hk; revert Hif; word
       rw [Hm, if_neg (by omega)] at Hk
       try wp_auto
       wp_for_post
@@ -69,7 +85,17 @@ theorem strings.Count.wp_proof
       wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len as %-
       wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len as %-
       try wp_auto
-      done
+      rw [ite_eq_left (by word)]
+      rw [show sint.nat (W64 (m : Int) + W64 (substr.length : Int)) = m + substr.length by word,
+        show sint.nat (W64 (s'.length : Int)) = s'.length by word,
+        List.take_of_length_le (by simp),
+        show W64 (k : Int) + W64 1 = W64 ((k + 1 : Nat) : Int) by word]
+      try wp_auto
+      wp_for_post
+      iframe
+      iexists _, (k + 1)
+      iframe
+      ipureintro; omega
 
 end proof
 

@@ -43,7 +43,8 @@ theorem internal.bytealg.initialize'.wp_proof
   wp_apply wp_Choose as %c -
   iapply wp_fupd
   wp_if_destruct <;>
-  · try wp_auto
+  · unfold MaxLen
+    try wp_auto
     ipersist HMaxLen
     iframe Hown
     is_pkg_init_finish
