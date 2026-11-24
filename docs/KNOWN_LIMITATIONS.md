@@ -287,6 +287,16 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   d := grove_ffi.FileRead("f") // Go: nil or a prefix; the model: the file's contents
   ```
 
+- **`Listen` and `Accept` are assumed to succeed (environment assumption).** Go's
+  `grove_ffi.Listen` and `grove_ffi.Accept` panic when `net.Listen` or `Accept` fails (the
+  address is in use, a resource limit, a closed listener). The model has no failure for them
+  (`IsGroveStep` "Listen" and "Accept", `Ext/Grove/Impl.lean`): it assumes they succeed, so a
+  Go run in which they panic, possibly recovered by the program, is not a run of the model.
+
+  ```go
+  l := grove_ffi.Listen(a) // Go: panics if a's port is in use; the model: a listener
+  ```
+
 - **A crash leaves a Grove node's state arbitrary; files are not durable.** The extension's
   crash relation is `True` (`ExtSemantics.crash`, `Ext/Grove/Impl.lean`): after a crash a
   node's files and TSC may be anything, so nothing a node wrote is known to survive. There
