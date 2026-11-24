@@ -66,7 +66,7 @@ noncomputable instance «access_load'struct#03d5a6ce'mu» (l : Loc) (v : _root_.
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'struct#03d5a6ce'mu» (l : Loc) (v : _root_.Perennial.internal.testlog.«struct#03d5a6ce») (y : _root_.Perennial._root_.Perennial.sync.Mutex) :
+noncomputable instance «access_store'struct#03d5a6ce'mu» (l : Loc) (v : _root_.Perennial.internal.testlog.«struct#03d5a6ce») (y : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.internal.testlog.«struct#03d5a6ce» go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.internal.testlog.«struct#03d5a6ce» go!"mu" l) y (DFrac.own 1))

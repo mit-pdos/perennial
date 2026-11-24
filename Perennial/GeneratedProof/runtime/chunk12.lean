@@ -86,7 +86,7 @@ noncomputable instance access_load'semaRoot'nwait (l : Loc) (v : _root_.Perennia
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'semaRoot'nwait (l : Loc) (v : _root_.Perennial.runtime.semaRoot) (y : _root_.Perennial._root_.Perennial.internal.runtime.atomic.Uint32) :
+noncomputable instance access_store'semaRoot'nwait (l : Loc) (v : _root_.Perennial.runtime.semaRoot) (y : _root_.Perennial.internal.runtime.atomic.Uint32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.runtime.semaRoot go!"nwait" l) v.nwait' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.runtime.semaRoot go!"nwait" l) y (DFrac.own 1))
@@ -130,7 +130,7 @@ noncomputable instance access_load'notifyList'wait (l : Loc) (v : _root_.Perenni
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'notifyList'wait (l : Loc) (v : _root_.Perennial.runtime.notifyList) (y : _root_.Perennial._root_.Perennial.internal.runtime.atomic.Uint32) :
+noncomputable instance access_store'notifyList'wait (l : Loc) (v : _root_.Perennial.runtime.notifyList) (y : _root_.Perennial.internal.runtime.atomic.Uint32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.runtime.notifyList go!"wait" l) v.wait' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.runtime.notifyList go!"wait" l) y (DFrac.own 1))
@@ -236,7 +236,7 @@ noncomputable instance «access_load'stackpoolItem'_#0» (l : Loc) (v : _root_.P
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'stackpoolItem'_#0» (l : Loc) (v : _root_.Perennial.runtime.stackpoolItem) (y : _root_.Perennial._root_.Perennial.internal.runtime.sys.NotInHeap) :
+noncomputable instance «access_store'stackpoolItem'_#0» (l : Loc) (v : _root_.Perennial.runtime.stackpoolItem) (y : _root_.Perennial.internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.runtime.stackpoolItem go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.runtime.stackpoolItem go!"_#0" l) y (DFrac.own 1))
@@ -475,7 +475,7 @@ noncomputable instance «access_load'traceBuf'_#0» (l : Loc) (v : _root_.Perenn
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'traceBuf'_#0» (l : Loc) (v : _root_.Perennial.runtime.traceBuf) (y : _root_.Perennial._root_.Perennial.internal.runtime.sys.NotInHeap) :
+noncomputable instance «access_store'traceBuf'_#0» (l : Loc) (v : _root_.Perennial.runtime.traceBuf) (y : _root_.Perennial.internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.runtime.traceBuf go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.runtime.traceBuf go!"_#0" l) y (DFrac.own 1))
@@ -566,7 +566,7 @@ noncomputable instance access_load'traceRegionAlloc'dropping (l : Loc) (v : _roo
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'traceRegionAlloc'dropping (l : Loc) (v : _root_.Perennial.runtime.traceRegionAlloc) (y : _root_.Perennial._root_.Perennial.internal.runtime.atomic.Bool'') :
+noncomputable instance access_store'traceRegionAlloc'dropping (l : Loc) (v : _root_.Perennial.runtime.traceRegionAlloc) (y : _root_.Perennial.internal.runtime.atomic.Bool'') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.runtime.traceRegionAlloc go!"dropping" l) v.dropping' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.runtime.traceRegionAlloc go!"dropping" l) y (DFrac.own 1))
@@ -582,7 +582,7 @@ noncomputable instance access_load'traceRegionAlloc'current (l : Loc) (v : _root
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'traceRegionAlloc'current (l : Loc) (v : _root_.Perennial.runtime.traceRegionAlloc) (y : _root_.Perennial._root_.Perennial.internal.runtime.atomic.UnsafePointer) :
+noncomputable instance access_store'traceRegionAlloc'current (l : Loc) (v : _root_.Perennial.runtime.traceRegionAlloc) (y : _root_.Perennial.internal.runtime.atomic.UnsafePointer) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.runtime.traceRegionAlloc go!"current" l) v.current' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.runtime.traceRegionAlloc go!"current" l) y (DFrac.own 1))

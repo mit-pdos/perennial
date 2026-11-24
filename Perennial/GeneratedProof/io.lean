@@ -550,7 +550,7 @@ noncomputable instance access_load'onceError'Mutex (l : Loc) (v : _root_.Perenni
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'onceError'Mutex (l : Loc) (v : _root_.Perennial.io.onceError) (y : _root_.Perennial._root_.Perennial.sync.Mutex) :
+noncomputable instance access_store'onceError'Mutex (l : Loc) (v : _root_.Perennial.io.onceError) (y : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.io.onceError go!"Mutex" l) v.Mutex' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.io.onceError go!"Mutex" l) y (DFrac.own 1))
@@ -612,7 +612,7 @@ noncomputable instance access_load'pipe'wrMu (l : Loc) (v : _root_.Perennial.io.
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'pipe'wrMu (l : Loc) (v : _root_.Perennial.io.pipe) (y : _root_.Perennial._root_.Perennial.sync.Mutex) :
+noncomputable instance access_store'pipe'wrMu (l : Loc) (v : _root_.Perennial.io.pipe) (y : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"wrMu" l) v.wrMu' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"wrMu" l) y (DFrac.own 1))
@@ -660,7 +660,7 @@ noncomputable instance access_load'pipe'once (l : Loc) (v : _root_.Perennial.io.
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'pipe'once (l : Loc) (v : _root_.Perennial.io.pipe) (y : _root_.Perennial._root_.Perennial.sync.Once) :
+noncomputable instance access_store'pipe'once (l : Loc) (v : _root_.Perennial.io.pipe) (y : _root_.Perennial.sync.Once) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"once" l) v.once' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"once" l) y (DFrac.own 1))

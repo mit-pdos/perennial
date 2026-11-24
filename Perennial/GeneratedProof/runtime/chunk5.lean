@@ -1869,7 +1869,7 @@ noncomputable instance «access_load'traceMapNode'_#0» (l : Loc) (v : _root_.Pe
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'traceMapNode'_#0» (l : Loc) (v : _root_.Perennial.runtime.traceMapNode) (y : _root_.Perennial._root_.Perennial.internal.runtime.sys.NotInHeap) :
+noncomputable instance «access_store'traceMapNode'_#0» (l : Loc) (v : _root_.Perennial.runtime.traceMapNode) (y : _root_.Perennial.internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.runtime.traceMapNode go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.runtime.traceMapNode go!"_#0" l) y (DFrac.own 1))
@@ -1885,7 +1885,7 @@ noncomputable instance access_load'traceMapNode'children (l : Loc) (v : _root_.P
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'traceMapNode'children (l : Loc) (v : _root_.Perennial.runtime.traceMapNode) (y : (GoArray _root_.Perennial._root_.Perennial.internal.runtime.atomic.UnsafePointer 4)) :
+noncomputable instance access_store'traceMapNode'children (l : Loc) (v : _root_.Perennial.runtime.traceMapNode) (y : (GoArray _root_.Perennial.internal.runtime.atomic.UnsafePointer 4)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.runtime.traceMapNode go!"children" l) v.children' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.runtime.traceMapNode go!"children" l) y (DFrac.own 1))
@@ -1990,7 +1990,7 @@ noncomputable instance access_load'traceRegionAllocBlockHeader'off (l : Loc) (v 
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'traceRegionAllocBlockHeader'off (l : Loc) (v : _root_.Perennial.runtime.traceRegionAllocBlockHeader) (y : _root_.Perennial._root_.Perennial.internal.runtime.atomic.Uintptr) :
+noncomputable instance access_store'traceRegionAllocBlockHeader'off (l : Loc) (v : _root_.Perennial.runtime.traceRegionAllocBlockHeader) (y : _root_.Perennial.internal.runtime.atomic.Uintptr) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.runtime.traceRegionAllocBlockHeader go!"off" l) v.off' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.runtime.traceRegionAllocBlockHeader go!"off" l) y (DFrac.own 1))
@@ -2035,7 +2035,7 @@ noncomputable instance access_load'mTraceState'writing (l : Loc) (v : _root_.Per
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'mTraceState'writing (l : Loc) (v : _root_.Perennial.runtime.mTraceState) (y : _root_.Perennial._root_.Perennial.internal.runtime.atomic.Bool'') :
+noncomputable instance access_store'mTraceState'writing (l : Loc) (v : _root_.Perennial.runtime.mTraceState) (y : _root_.Perennial.internal.runtime.atomic.Bool'') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.runtime.mTraceState go!"writing" l) v.writing' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.runtime.mTraceState go!"writing" l) y (DFrac.own 1))

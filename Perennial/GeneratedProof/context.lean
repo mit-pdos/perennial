@@ -196,7 +196,7 @@ noncomputable instance access_load'cancelCtx'mu (l : Loc) (v : _root_.Perennial.
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'cancelCtx'mu (l : Loc) (v : _root_.Perennial.context.cancelCtx) (y : _root_.Perennial._root_.Perennial.sync.Mutex) :
+noncomputable instance access_store'cancelCtx'mu (l : Loc) (v : _root_.Perennial.context.cancelCtx) (y : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.context.cancelCtx go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.context.cancelCtx go!"mu" l) y (DFrac.own 1))
@@ -212,7 +212,7 @@ noncomputable instance access_load'cancelCtx'done (l : Loc) (v : _root_.Perennia
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'cancelCtx'done (l : Loc) (v : _root_.Perennial.context.cancelCtx) (y : _root_.Perennial._root_.Perennial.sync.atomic.Value) :
+noncomputable instance access_store'cancelCtx'done (l : Loc) (v : _root_.Perennial.context.cancelCtx) (y : _root_.Perennial.sync.atomic.Value) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.context.cancelCtx go!"done" l) v.done' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.context.cancelCtx go!"done" l) y (DFrac.own 1))
@@ -244,7 +244,7 @@ noncomputable instance access_load'cancelCtx'err (l : Loc) (v : _root_.Perennial
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'cancelCtx'err (l : Loc) (v : _root_.Perennial.context.cancelCtx) (y : _root_.Perennial._root_.Perennial.sync.atomic.Value) :
+noncomputable instance access_store'cancelCtx'err (l : Loc) (v : _root_.Perennial.context.cancelCtx) (y : _root_.Perennial.sync.atomic.Value) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.context.cancelCtx go!"err" l) v.err' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.context.cancelCtx go!"err" l) y (DFrac.own 1))
@@ -318,7 +318,7 @@ noncomputable instance access_load'afterFuncCtx'once (l : Loc) (v : _root_.Peren
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'afterFuncCtx'once (l : Loc) (v : _root_.Perennial.context.afterFuncCtx) (y : _root_.Perennial._root_.Perennial.sync.Once) :
+noncomputable instance access_store'afterFuncCtx'once (l : Loc) (v : _root_.Perennial.context.afterFuncCtx) (y : _root_.Perennial.sync.Once) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.context.afterFuncCtx go!"once" l) v.once' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.context.afterFuncCtx go!"once" l) y (DFrac.own 1))
@@ -505,7 +505,7 @@ noncomputable instance access_load'timerCtx'deadline (l : Loc) (v : _root_.Peren
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'timerCtx'deadline (l : Loc) (v : _root_.Perennial.context.timerCtx) (y : _root_.Perennial._root_.Perennial.time.Time) :
+noncomputable instance access_store'timerCtx'deadline (l : Loc) (v : _root_.Perennial.context.timerCtx) (y : _root_.Perennial.time.Time) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.context.timerCtx go!"deadline" l) v.deadline' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.context.timerCtx go!"deadline" l) y (DFrac.own 1))

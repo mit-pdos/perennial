@@ -901,7 +901,7 @@ noncomputable instance access_load'mutexHolder'mu (l : Loc) (v : _root_.Perennia
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'mutexHolder'mu (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.mutexHolder) (y : _root_.Perennial._root_.Perennial.sync.Mutex) :
+noncomputable instance access_store'mutexHolder'mu (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.mutexHolder) (y : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.mutexHolder go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.mutexHolder go!"mu" l) y (DFrac.own 1))
