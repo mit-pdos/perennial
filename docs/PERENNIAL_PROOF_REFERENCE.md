@@ -449,6 +449,18 @@ or from the body, and `f` returning while the body runs, are undefined behavior
 the values the result variables have then, as in Go. Unfold it with
 `func.forRange_unseal`.
 
+An iterator (`iter.Seq[E]`) is specified by `iter.SeqRuns f R ok`
+(`Golang/Theory/RangeFunc.lean`): run with the resource `R` and a yield function,
+`f` chooses a list `xs` with `ok xs` and calls yield on its elements in order until
+one call returns `false`, then gives `R` back; the caller's yield invariant is
+chosen once `xs` is known. `maps.Keys`/`maps.Values` return such iterators
+(`□ ∀ dq M, iter.SeqRuns f (m ↦${dq} M) ..`), and `slices.AppendSeq`, `Collect`
+and `Sorted` take one. A range over one (`n = 1`) is proved with
+`wp_func_for_range1 f R ok body Φ`: from `iter.SeqRuns f R ok` and `R`, given `xs`,
+an invariant `P i` over the elements done, with the body at `xs[i]` ending in
+`forMapPostcondition (P (i + 1)) (fun v => R -∗ Φ v)`. Example: `slices.AppendSeq`
+(`Proof/slices/AppendSeq.lean`).
+
 Each iteration of a loop has its own iteration variables. Goose shares one
 variable among the iterations unless that is observable, that is, unless the
 loop captures the variable in a function literal or takes its address (`&x`,
@@ -600,6 +612,7 @@ Specs take `isPkgInit` of their package; `wp_apply` discharges it.
 | `wp_mapInsert` | `{{ l ↦$ m }} ... {{ RET #(); l ↦$ <[k := v]> m }}` (needs `SafeMapKey`) |
 | `wp_map_lookup1`, `wp_map_lookup2` | `m[k]`, `v, ok := m[k]`; the result is `(m !! k).getD (zero_val V)` (and `decide (m !! k).isSome`) |
 | `wp_mapDelete`, `wp_map_clear`, `wp_map_for_range` | |
+| `wp_map_clone` | `InternalMapClone` (the model of `maps.clone`): a fresh `l' ↦$ m` from `l ↦${dq} m`; callers use `maps.wp_Clone` (`Proof/maps`) |
 
 Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `GMap.insert_empty`.
 
@@ -616,7 +629,7 @@ pointers (`safeMapKey_interface_pointer`); a proof with other interface keys giv
 |:--|:--|
 | `wp_for`, `wp_for_post_do/continue/break/return/panic/labeled` | loops (used by the tactics) |
 | `wp_with_defer` | functions with `defer` (introduce `%defer Hdefer`, see `Once.wp_doSlow`); the body runs under a `Catch` (see "Panics") |
-| `wp_with_defer_recover`, `wp_recoverPanic` | functions whose deferred function literal calls `recover()` (introduce `%defer %pnc defer pnc`) and the `recover()` |
+| `wp_with_defer_recover`, `wp_recoverPanic` | functions whose deferred function literal or `F'deferred` calls `recover()` (introduce `%defer %pnc defer pnc`) and the `recover()` (of `$panic` or `$recover`) |
 | `wp_panic`, `wp_unwind`, `wp_catch`, `wp_catch_panic`, `wp_catch_val` | panics (see "Panics") |
 | `wp_fork` | `go` statements: `▷ WP e {{ v, ⌜v.isPanic = false⌝ }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}` |
 | `wp_fork_tok`, `wp_ThreadExit` | `go` statements with thread tokens: the forking thread receives a `threadTok`, the forked thread `e ;; ThreadExit` must end with one; see "Thread tokens" |
@@ -811,6 +824,31 @@ theorem wp_recoverNamed :
   wp_apply wp_recoverPanic $$ [$pnc] as pnc       -- in the deferred literal
   iapply HΦ
   itrivial
+```
+
+A function or method `F` whose own body calls `recover()` is translated only as
+`F'deferred`, which takes the cell as an extra parameter `$recover` (after the
+receiver), and is what `defer F(args)` (with `F` a function, or a method of a
+concrete type) calls, as `F'deferred $panic args`. The ordinary `F` (called
+directly, or deferred as a function value or an interface method) keeps its name
+and method-set entries but has no `FuncUnfold`/`MethodUnfold`, so a proof cannot
+use such a call (`KNOWN_LIMITATIONS.md`). The
+spec of `F'deferred` takes the cell's points-to, which its proof reads with
+`wp_recoverPanic`, and the deferring function's proof passes it `pnc`
+(`recover_deferred.go`'s proofs, e.g. `methodRecover.lean`):
+
+```lean
+abbrev catcher.catch'deferred.spec : Prop :=
+  ∀ (c res pnc : Loc) (s x w : w64),
+    {{ (c.[catcher, go!"seen"] ↦ s : IProp GF) ∗ res ↦ x ∗ pnc ↦ interface.mkOk go.uint64 #w }}
+      (App (App (Val (c @!! go.GoType.PointerType catcher.ty @!! go!"catch'deferred")) (Val #pnc))
+        (Val #res))
+    {{ RET #(); c.[catcher, go!"seen"] ↦ (s + W64 1) ∗ res ↦ w ∗ pnc ↦ (interface.nil : GoInterface) }}
+-- methodRecover: `defer c.catch(&x); panic(uint64(7))`
+  wp_apply wp_with_defer_recover as %defer %pnc defer pnc
+  iStructNamed «$r0»
+  wp_apply wp_panic
+  wp_apply wp_catch $$ [$seen $x $pnc] as ⟨seen, x, pnc⟩
 ```
 
 A loop body that panics proves its `forPostcondition` with `wp_for_post`
@@ -1240,6 +1278,13 @@ gives the new hypothesis from the old one (so `goose_adequacy` follows,
 raises `T`, `.nsteps` forgets it. `goose_invariance_below` is the same for
 `goose_invariance`.
 
+With crashes (same file): `RealCrashNstepsBelow boot T n ρ κs ρ' b` is `RealCrashNsteps`
+whose every generation is a `RealNstepsBelow T` (the restarted configuration `[boot]` is
+the first of the next generation, so it is bounded too), and `goose_crash_adequacy_below`
+is `goose_crash_adequacy` with `Hsteps : RealCrashNstepsBelow e T n ([e], (σ, g)) κs
+(t2, σ2) b` in place of `Hsteps`/`Hlive`; the same `of_threadsBelow`, `of_single`, `mono`,
+`nsteps`, and the check `goose_crash_adequacy_of_below`. The distributed forms are below.
+
 ### Initial states of extensions
 
 Files: `Perennial/GooseLang/Lang.lean` (`ExtSemantics.initLocal`/`initGlobal`,
@@ -1458,9 +1503,17 @@ and the last included, having fewer than `T` live threads on every node
 (`DistCfgThreadsBelow`); it is `RealNstepsBelow` for several nodes, with crashes.
 A statement whose thread bound is a premise about the execution it is about (a
 robustness statement: "fewer than `T` goroutines alive at once on any machine")
-quantifies over these, and its step bound need not be below its thread bound. No
-adequacy theorem takes it yet: `of_threadsBelow` turns `goose_dist_crash_adequacy`'s
-premise into it, `of_single` gives `n + 2` from one thread per node, `nsteps`
+quantifies over these, and its step bound need not be below its thread bound.
+`goose_dist_crash_adequacy_below` and `goose_dist_mixed_crash_adequacy_below`
+(`DistAdequacy.lean`) are the crash adequacy theorems over it, with no `Hlive`
+(`Hsteps : DistCrashNstepsBelow (es.map Prod.fst) T n (distInit es g) κs c`; the mixed
+one's `DistCrashNstepsBelow (crashing.map Prod.fst) T n (distInit (crashing ++ stable) g)
+κs c`), and `goose_dist_adequacy_below` the one without crashes, over
+`DistCrashNstepsBelow []` (with no boot programs, no node crashes;
+`DistCrashNstepsBelow.of_distThreadsBelow` gives it from `goose_dist_adequacy`'s premises). Their proofs are the old ones with the simulations `bdist_crash_nsteps_of_real_below`
+/ `bdist_nsteps_of_real_below` (`DistLang.lean`), which read the thread bound off the
+execution; each old theorem follows (`goose_dist_*_of_below`). `of_threadsBelow` turns the
+old premise into the new one, `of_single` gives `n + 2` from one thread per node, `nsteps`
 forgets it, and `mono` raises `T`.
 
 The network (`netExt`): a node's local state is its address; the network maps

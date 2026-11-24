@@ -1216,7 +1216,7 @@ noncomputable instance mmapper_access_load_Mutex (l : Loc) (v : syscall.mmapper)
  by
   solve_pointsto_access_struct
 
-noncomputable instance mmapper_access_store_Mutex (l : Loc) (v : syscall.mmapper) (Mutex' : sync.Mutex) :
+noncomputable instance mmapper_access_store_Mutex (l : Loc) (v : syscall.mmapper) (Mutex' : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.mmapper go!"Mutex" l) v.Mutex' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.mmapper go!"Mutex" l) Mutex' (DFrac.own 1))

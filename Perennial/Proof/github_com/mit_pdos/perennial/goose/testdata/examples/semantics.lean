@@ -8,6 +8,8 @@ for each proved function `F`. By Go source file:
 * `control_flow.go`: `fallthrough`, and `break` in a `switch`.
 * `conversions.go`, `int_conversions.go`: conversions (the `[]byte -> string`
   conversion is handled with `wp_bytes_to_string`) and integer conversions.
+* `generic_interface.go`: a type-parameter value converted to an interface (an argument,
+  an assignment, a result).
 * `interfaces_complex.go`, `type_equality.go`, `structs.go`, `new.go`, `slices.go`.
 * `labels.go`: labeled `break` and `continue` (`catchLabel` at the labeled statement): out
   of inner loops and `switch`es (`doPrintf`'s shape), of a labeled `switch`, and of labeled
@@ -21,6 +23,14 @@ for each proved function `F`. By Go source file:
   literal that sets a named result (`recoverNamed`), a panic raised two calls down
   inside a loop that reaches a recovering `defer` (`catchTwoDeep`), and a panic that
   runs the deferred functions and continues (`panicUnrecovered`).
+* `recover_deferred.go`: `recover()` in a function or method called by `defer`, whose
+  `F'deferred` reads the cell that `defer F(...)` passes it (`$recover`) with
+  `wp_recoverPanic`, as a deferred literal reads `$panic`: a deferred method and a
+  deferred function that recover (`methodRecover`, `topRecover`), a deferred method
+  that panics again (`repanic`), one with its own recovering deferred literal, a second
+  cell (`twoCells`), one deferred when nothing panics (`recoverNotPanicking`), and a deferred
+  literal that defers recovering calls and so reads the outer cell as `$recover`
+  (`outerSeenByLiteral`; `defersOnlyRecovering` when it does not recover itself).
 * `anon_structs.go`: unnamed struct types (each modeled by a generated structure): field
   reads, writes and addresses, a pointer to one, one type in two functions, one nested in
   another, and one with a type parameter captured by a closure (as `sync.OnceValue`'s).

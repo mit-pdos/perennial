@@ -10,7 +10,7 @@ import (
 )
 
 func TestCheck(t *testing.T) {
-	pkgs, err := packages.Load(util.NewPackageConfig("./testdata", false, nil), ".")
+	pkgs, err := packages.Load(util.NewPackageConfig("./testdata", false, util.LoadOptions{}), ".")
 	if err != nil || len(pkgs) != 1 || len(pkgs[0].Errors) != 0 {
 		t.Fatalf("load: %v %v", err, pkgs)
 	}

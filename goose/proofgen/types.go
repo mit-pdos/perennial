@@ -304,6 +304,12 @@ func (tr *typesTranslator) toLeanType(t types.Type) string {
 		var base string
 		if pkg := t.Obj().Pkg(); pkg != nil {
 			base = glang.LeanNamespace(pkg.Path()) + "." + glang.LeanQuote(glang.ToIdent(t.Obj().Name()))
+			if pkg.Path() != tr.pkg.PkgPath {
+				// rooted, as goose's references to other packages (pkgRef): a relative
+				// `sync.Mutex` from inside namespace `internal.testlog` would resolve to
+				// `internal.sync.Mutex`
+				base = "_root_.Perennial." + base
+			}
 		} else {
 			// universe types (error) are modeled by the framework
 			base = glang.LeanUniverseType(t.Obj().Name())

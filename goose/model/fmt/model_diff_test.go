@@ -77,6 +77,10 @@ var testFormats = []string{
 // printArg's case []byte; the model does not follow it.
 type namedBytes []byte
 
+// A named type of underlying type []string: not the type []string itself, which the model
+// follows; Go formats it as a []string (it has no methods), the model is stuck on it.
+type namedStrings []string
+
 func testArgs() []any {
 	ps := &plainStruct{a: []int{1, 2}}
 	return []any{
@@ -88,11 +92,12 @@ func testArgs() []any {
 		reflect.ValueOf(&recErr{"rv"}), reflect.Value{}, reflect.ValueOf(3),
 		[]byte(nil), []byte{}, []byte("q\"b\\s\x00\x01\x1f\x7f\a\b\f\n\r\t\v ~"),
 		[]byte("é"), []byte{0x80, 'a'}, []byte{0xff}, namedBytes("nb"),
+		[]string(nil), []string{}, []string{"a", "b c", "", "é\x00\"%"}, namedStrings{"ns"},
 	}
 }
 
-// bytesOk: the admission proposed for []byte arguments: argsOk, with an argument of type
-// []byte (exactly) also admitted under every directive, where the directives parse.
+// bytesOk: the admission of lent slice arguments (fmt.argsOkB): argsOk, with an argument of type
+// []byte or []string (exactly) also admitted under every directive, where the directives parse.
 func bytesOk(mv, format string, a []any) bool {
 	ds, ok := directives(format)
 	if !ok {
@@ -104,6 +109,9 @@ func bytesOk(mv, format string, a []any) bool {
 			d = ds[k]
 		}
 		if _, isB := x.([]byte); isB {
+			continue
+		}
+		if _, isS := x.([]string); isS {
 			continue
 		}
 		if !argOkAt(mv, d, x) {
@@ -411,6 +419,28 @@ func TestModelBytesExact(t *testing.T) {
 	}
 }
 
+// The model formats %s and %v of a []string exactly, whatever its strings: brackets, the strings
+// separated by spaces; its other directives (%q, %x, %d, flags, width) are arbitrary strings.
+func TestModelStringsExact(t *testing.T) {
+	cases := [][]string{nil, {}, {""}, {"", ""}, {"a"}, {"a", "b c", "é\x00\xff\"%", "[x]"},
+		{"https://127.0.0.1:2379", "https://127.0.0.2:2379"}}
+	for _, verb := range []string{"%s", "%v"} {
+		for _, ss := range cases {
+			format := "<" + verb + ">"
+			got := fmt.Sprintf(format, ss)
+			out := modelSprintf(format, ss)
+			if out != got {
+				t.Errorf("Sprintf(%q, %q) = %q, the model's %q", format, ss, got, out)
+			}
+		}
+	}
+	for _, format := range []string{"<%q>", "<%x>", "<%d>", "<%5s>", "<%+v>", "<%#v>"} {
+		if out := modelSprintf(format, []string{"a"}); out != "<"+arbitraryMark {
+			t.Errorf("Sprintf(%q, []string{\"a\"}): the model's %q, not arbitrary", format, out)
+		}
+	}
+}
+
 // recWriter records each Write: its bytes, as a call, then returns its fixed results.
 type recWriter struct {
 	writes [][]byte
@@ -469,6 +499,62 @@ func TestModelFprintf(t *testing.T) {
 			}
 		}
 	}
+}
+
+// Fprint: the calls Go's printArg makes of each operand under %v, in order, then one Write (also
+// when the output is empty), returning what Write returns; the output is arbitrary. Admitted (the
+// spec's fmt.printArgOk): each operand as argOkAt admits it under %v.
+func TestModelFprint(t *testing.T) {
+	werr := errors.New("w")
+	admitted := 0
+	for _, a := range argTuples() {
+		ok := true
+		for _, x := range a {
+			if !argOkAt("vsxXq", directive{'v', false}, x) {
+				ok = false
+			}
+		}
+		if ok {
+			admitted++
+		}
+		for _, res := range []struct {
+			n   int
+			err error
+		}{{3, nil}, {0, werr}} {
+			calls = nil
+			gw := &recWriter{n: res.n, err: res.err}
+			gn, gerr := fmt.Fprint(gw, a...)
+			goCalls := calls
+			calls = nil
+			mw := &recWriter{n: res.n, err: res.err}
+			var mn int
+			var merr error
+			stuck := runModel(func() { mn, merr = modelFprint(mw, a...) })
+			if stuck {
+				if ok {
+					t.Errorf("Fprint(%s): admitted, but the model is stuck", describe("", a))
+				}
+				continue
+			}
+			if !reflect.DeepEqual(goCalls, calls) {
+				t.Errorf("Fprint(%s): Go calls %v, the model %v", describe("", a), goCalls, calls)
+			}
+			if len(gw.writes) != 1 || len(mw.writes) != 1 {
+				t.Errorf("Fprint(%s): Go writes %d times, the model %d", describe("", a),
+					len(gw.writes), len(mw.writes))
+				continue
+			}
+			if !matches(string(mw.writes[0]), string(gw.writes[0])) {
+				t.Errorf("Fprint(%s) writes %q, the model %q", describe("", a), gw.writes[0],
+					mw.writes[0])
+			}
+			if gn != mn || gerr != merr {
+				t.Errorf("Fprint(%s) = %d, %v; the model's %d, %v", describe("", a), gn, gerr, mn,
+					merr)
+			}
+		}
+	}
+	t.Logf("%d operand lists admitted", admitted)
 }
 
 // errKind: 0 for an *errors.errorString, 1 for a *fmt.wrapError, 2 for a *fmt.wrapErrors, and

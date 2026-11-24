@@ -1429,3 +1429,91 @@ semantics supports integer-to-float conversions, of every type.
 **Why.** Reviewed by the owner (upamanyus), 2026-11-22 (relayed by coordinator-E): "it's simpler for
 us to be able to say 'our go semantics supports integer to float conversions' than it is to say 'our
 semantics supports conversions for float64 but not float32'."
+
+## Case 45 — ACCEPTED: the implicit conversion of a type-parameter value to an interface (branch `goose-tparam`)
+
+**Symptom.** Incomplete. `handleImplicitConversion` emitted no `Convert` when the source's and the
+target's underlying types were identical, and a type parameter's underlying type is its constraint
+interface: for `T any` assigned to `any` both are `interface{}`, so the raw `T` value was stored,
+passed or returned at type `any`. Instantiated with a non-interface type, the model compared a
+`Loc` (or an `int`) at `go.any` and was stuck. Found in zap's `pool.Pool[T].Put(x T)
+{ p.pool.Put(x) }` (etcd-grove claim #40).
+
+The same condition dropped an explicit conversion between two type parameters with identical
+constraints, which was unsound: `func f[T, U ~int | ~float64](x U) T { return T(x) }` at
+`f[int](3.5)` returned the float's bits as an `int`, where Go truncates to 3.
+
+**Witness.** `func f[T any](x T) any { return x }; f(3) == any(3)` is stuck.
+
+**Taken.** In goose only: an identical source and target emit nothing; otherwise a source that is a
+type parameter always gets `Convert T <target>`, as every other source with a different underlying
+type does; the semantics already has the rule (`convert_to_interface`: the identity when `T` is
+instantiated with an interface type, `interface.mkOk T v` otherwise). One condition in
+`handleImplicitConversion`, which every implicit-conversion site (arguments, results,
+assignments, composite-literal elements, explicit conversions) goes through. Semantics tests
+`testGenericToInterface` (Go-checked and proved; stuck before the change) and
+`testGenericToInterfaceLiteralClosure` and `testGenericConvertTypeParams` (Go-checked; the latter
+is now `Convert U T`, whose float-to-int case the semantics leaves arbitrary). Cost: 0 rules, 1 changed goose condition.
+Perennial's own translations (std, models, examples but the test packages) regenerate unchanged.
+
+**Not taken.** A goose branch on the target being an interface: the type parameter's own
+instantiation decides what the conversion does, which is the semantics' job.
+
+**Why.** Proposed in etcd-grove's `notes/perennial-changes.md` (zap pool entry); the change asked
+for by the owner's coordinator, 2026-11-23.
+
+## Case 46 — ACCEPTED: `recover()` in a function or method called by `defer`: `F'deferred` takes the cell (branch `goose-deferred-recover`)
+
+**Symptom.** Incomplete. Goose translated `recover()` only directly in a function literal that is
+the operand of `defer` (it reads the deferring function's `$panic` cell lexically) and refused it in
+a named function or method, whose body cannot see that cell. Go recovers when the deferred function
+is a named function, a method or a method value (spec, "Handling panics"); `fmt`'s
+`handleMethods` defers `p.catchPanic(p.arg, verb, "Error")` (#671 stage 0, item 2).
+
+**Witness.** `func (c *catcher) catch(res *uint64) { if r := recover(); r != nil { *res =
+r.(uint64) } }; func methodRecover() (x uint64) { c := &catcher{}; defer c.catch(&x);
+panic(uint64(7)) }` (Go: 7); `semantics/recover_deferred.go`.
+
+**Taken.** No GooseLang definition or rule. Goose: each translated function or method `F` whose own
+body calls `recover()` (`recoveringFuncs`, outside nested literals) is emitted only as `F'deferred`
+(its own `GoString`/`FuncUnfold`, or a `MethodUnfold` in place of `F`'s for every method-set entry of
+`F`, including the pointer-receiver wrapper and promotions; the method sets themselves are unchanged),
+which takes the cell as an extra parameter `$recover` after the receiver, and its `recover()` is
+`recoverPanic $recover`. The ordinary `F` keeps its `GoString` and method-set entries but has no
+declaration and no `FuncUnfold`/`MethodUnfold`: a direct call or a dynamic `defer` of it is
+translated but unprovable (Go recovers under a dynamic `defer f()`, so `nil` would be unsound; a
+refusal would also reject packages that only mention `F` as a value or a method-set entry). `defer F(args)`
+/ `defer x.M(args)`, with `F` a function of the package or `M` a method of a concrete type in that
+set, defers `$f $panic args` with `$f` the `'deferred` function or method value, and marks the
+function `with_defer_recover:`. A deferred literal that itself defers a recovering literal or
+`F'deferred` binds its own `$panic` (its `with_defer_recover:`), which shadowed the deferring
+function's cell, so its `recover()` read `nil` (unsound, found by the trusted review; the
+literal-only form predates this change): such a literal, if it also calls `recover()` itself (so
+the deferring function binds `$panic`), is now `let: "$recover" := "$panic"` around its body, and its
+`recover()` reads `$recover`, as an `F'deferred` does (`defersRecovering`; semantics tests
+`outerSeenByLiteral`, and `defersOnlyRecovering` for a literal that only defers one). A function value, method value or interface method is deferred as
+today and reaches the undeclared `F` (`KNOWN_LIMITATIONS.md`). Functions without `recover()` translate
+byte-for-byte as before: every other gold file and the regenerated std-lib and model output
+(go1.26.0) are unchanged. No translated function of the std-lib, the models or etcd-grove (all 71
+projects of its `etc/goose.py`, translated with this branch) calls `recover()` outside a deferred
+literal, so only the goose semantics and unittest examples have an `F'deferred`, and no proof uses
+an ordinary `F`. The negative test `recover_indirect` (a deferred named helper) is deleted,
+since that program now translates. Proof side: no new lemma; `F'deferred`'s spec takes the cell's
+points-to, its proof reads it with `wp_recoverPanic`, and the caller passes `pnc` from
+`wp_with_defer_recover`. Semantics tests (Go-checked and proved): a deferred method and a deferred
+function that recover the value, a re-panic, an `F'deferred` with its own recovering literal (two
+cells), and a deferred function when nothing panics; unittest gold `recover_deferred.go` with the
+`handleMethods`/`catchPanic` shape, value receivers, an interface conversion, and the unprovable
+shapes (method value, interface method, function value, direct call). Cost: 0 definitions, 0 rules, 1 `deferStmt` branch, 1 new kind of generated
+declaration, about 100 goose lines.
+
+**Not taken.** (B) The goroutine's panic state and the running deferred frame in the semantics:
+faithful also for dynamic `defer f()`, but a large semantics change. (C) Inlining `F` into a deferred
+literal: not compositional, fails on recursion. `recover()` in the ordinary `F` as `nil`: Go's value
+for a direct call, but unsound under a dynamic `defer`.
+
+**Why.** Approved by the owner (upamanyus), 2026-11-22 (#671 stage-0 plan, part 2, design A), with a
+refinement: functions with no `recover()` get no second version and translate exactly as today.
+The owner then chose to emit only `F'deferred` (option (b), 2026-11-23), instead of also a stuck
+ordinary `F`, on the condition that no proof in Perennial or etcd-grove uses the ordinary `F` of a
+recovering function; none does.

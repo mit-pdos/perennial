@@ -106,6 +106,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Termios_instance : Termios.TypeAssumptions
   runtime_envs_unfold : FuncUnfold runtime_envs [] runtime_envs.impl
   «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
+  Exit_unfold : FuncUnfold Exit [] Exit.impl
   import_sync_Assumption : _root_.Perennial.sync.Assumptions
 
 attribute [instance] Assumptions.SysProcIDMap_instance
@@ -194,6 +195,7 @@ attribute [instance] Assumptions.SysProcIDMap_instance
   Assumptions.Termios_instance
   Assumptions.runtime_envs_unfold
   Assumptions.«init.0_unfold»
+  Assumptions.Exit_unfold
   Assumptions.import_sync_Assumption
 
 end syscall

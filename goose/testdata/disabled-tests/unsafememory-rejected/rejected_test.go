@@ -9,6 +9,7 @@ import (
 
 	"github.com/mit-pdos/perennial/goose"
 	"github.com/mit-pdos/perennial/goose/modelcheck"
+	"github.com/mit-pdos/perennial/goose/util"
 )
 
 // What Go does, to keep the comments in rejected.go honest.
@@ -45,7 +46,7 @@ func TestRefused(t *testing.T) {
 		}
 	}
 
-	_, errs, patternErr := goose.TranslatePackages(".", ".", nil, ".")
+	_, errs, patternErr := goose.TranslatePackages(".", ".", util.LoadOptions{}, ".")
 	if patternErr != nil {
 		t.Fatal(patternErr)
 	}

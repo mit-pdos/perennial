@@ -185,6 +185,14 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
           ) gl(return: (do: #())) ids)
   internal_map_make_step (v : val) :
     go.IsGoStepPureDet InternalMapMake v (Val (map.mapV v []))
+  /-- `maps.clone` (`runtime/map.go`'s `maps_clone`), on an interface holding a map: a new map
+  with the same entries, in an interface of the same dynamic type. A map is the cell holding its
+  entries, so the copy is a new cell holding the value read. Stuck on anything else (`maps.Clone`
+  passes only a non-nil map). A clone racing a write is stuck (`Read` is non-atomic), where Go
+  may throw "concurrent map clone and map write". -/
+  internal_map_clone_step {t key_type elem_type : go.GoType} [t ↓u go.MapType key_type elem_type]
+    (l : Loc) :
+    ⟦InternalMapClone, #(interface.mkOk t #l)⟧ ⤳ (Convert t go.any (Alloc (Read #l)))
   internal_map_check_key_step (key_type : go.GoType) (k : val) :
     ⟦InternalMapCheckKey key_type, k⟧ ⤳ (k =⟨key_type⟩ k)
 
@@ -257,12 +265,13 @@ attribute [instance] MapSemantics.internal_map_lookup_step
   MapSemantics.internal_map_insert_step MapSemantics.internal_map_delete_step
   MapSemantics.internal_map_lookup_id_step MapSemantics.internal_map_length_step
   MapSemantics.internal_map_make_step MapSemantics.internal_map_check_key_step
+  MapSemantics.internal_map_clone_step
   MapSemantics.is_go_op_go_equals_map_nil_l MapSemantics.is_go_op_go_equals_map_nil_r
   MapSemantics.clear_map MapSemantics.delete_map MapSemantics.make2_map MapSemantics.make1_map
   MapSemantics.len_map MapSemantics.composite_literal_map
 export MapSemantics (internal_map_lookup_step internal_map_insert_step internal_map_delete_step
   internal_map_lookup_id_step internal_map_length_step internal_map_for_range_step
-  internal_map_make_step internal_map_check_key_step
+  internal_map_make_step internal_map_check_key_step internal_map_clone_step
   is_go_op_go_equals_map_nil_l is_go_op_go_equals_map_nil_r
   clear_map delete_map make2_map make1_map len_map composite_literal_map)
 

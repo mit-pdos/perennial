@@ -295,6 +295,18 @@ func (suite *GoTestSuite) TestArgumentOrder() {
 	suite.Equal(true, failing_testArgumentOrder())
 }
 
+func (suite *GoTestSuite) TestGenericToInterface() {
+	suite.Equal(true, testGenericToInterface())
+}
+
+func (suite *GoTestSuite) TestGenericToInterfaceLiteralClosure() {
+	suite.Equal(true, testGenericToInterfaceLiteralClosure())
+}
+
+func (suite *GoTestSuite) TestGenericConvertTypeParams() {
+	suite.Equal(true, testGenericConvertTypeParams())
+}
+
 func (suite *GoTestSuite) TestInitOrder() {
 	suite.Equal(true, testInitOrder())
 }
@@ -873,6 +885,34 @@ func (suite *GoTestSuite) TestRecoverNamed() {
 
 func (suite *GoTestSuite) TestCatchTwoDeep() {
 	suite.Equal(true, testCatchTwoDeep())
+}
+
+func (suite *GoTestSuite) TestMethodRecover() {
+	suite.Equal(true, testMethodRecover())
+}
+
+func (suite *GoTestSuite) TestTopRecover() {
+	suite.Equal(true, testTopRecover())
+}
+
+func (suite *GoTestSuite) TestRepanic() {
+	suite.Equal(true, testRepanic())
+}
+
+func (suite *GoTestSuite) TestTwoCells() {
+	suite.Equal(true, testTwoCells())
+}
+
+func (suite *GoTestSuite) TestRecoverNotPanicking() {
+	suite.Equal(true, testRecoverNotPanicking())
+}
+
+func (suite *GoTestSuite) TestOuterSeenByLiteral() {
+	suite.Equal(true, testOuterSeenByLiteral())
+}
+
+func (suite *GoTestSuite) TestDefersOnlyRecovering() {
+	suite.Equal(true, testDefersOnlyRecovering())
 }
 
 func (suite *GoTestSuite) TestShortcircuitAndTF() {

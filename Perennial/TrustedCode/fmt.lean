@@ -3,20 +3,21 @@ Trusted code for the Go `fmt` package, in namespace `fmt` (as the generated
 package).
 
 Go's `fmt` cannot be translated (reflection on every argument, `sync.Pool`, float formatting), so
-`Sprintf`, `Printf`, `Fprintf` and `Errorf` are models, each goose's translation of the Go its
+`Sprintf`, `Printf`, `Fprintf`, `Fprint` and `Errorf` are models, each goose's translation of the Go its
 docstring quotes, with the edits it names. They share `doPrintf`, which formats the common directives of
 arguments that Go formats without calling any of their methods (`inert`) exactly (`formatArg`), and
-the common directives of a `[]byte` (`formatBytes`, reading its bytes, as Go does),
+the common directives of a `[]byte` or a `[]string` (`formatSlice`, reading its bytes or elements, as Go does),
 and from the first other directive on gives an arbitrary string while calling what Go calls of the
 arguments: their `Error()` or `String()` under the verbs `v s x X q` (`visitRest`, `visitArg`).
 `Errorf` then returns what Go's `errorf` returns: `errors.New`, a `*wrapError` or a `*wrapErrors`,
-by its `%w` directives. Where the model cannot follow Go (a `Format` or `GoString` method Go would
+by its `%w` directives. `Fprint` calls what Go calls of each operand under `%v` (`visitArg`) and
+writes an arbitrary string. Where the model cannot follow Go (a `Format` or `GoString` method Go would
 call, a `reflect.Value` under a method verb, which Go's `printArg` unwraps (the model tells it by its
 `CanInterface() bool` method), reflection into a struct,
-pointer, slice or map, an argument index or a `*` width), it is stuck (`notModelled`). The model's Go is also in `goose/model/fmt/model_test.go`, which
+pointer, map or slice (other than a `[]byte` or a `[]string`), an argument index or a `*` width), it is stuck (`notModelled`). The model's Go is also in `goose/model/fmt/model_test.go`, which
 `goose/model/fmt/model_diff_test.go` runs against Go's `fmt`: same output (each arbitrary string
 standing for any string), same method calls in the same order, same error kind, on every call the
-model is not stuck on, and the model is not stuck on any call the specs admit (`fmt.argsOk`).
+model is not stuck on, and the model is not stuck on any call the specs admit (`fmt.argsOk`; `Fprint`'s, `fmt.printArgOk`).
 -/
 module
 
@@ -1412,7 +1413,7 @@ noncomputable def formatArg : val :=
   (Val #()))))))))
   (Pair (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.int))) (Var "$res1"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res2"))))))))))
 
-/-- The hexadecimal digit of `d` (below 16), lowercase or uppercase (a helper of `formatBytes`). Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
+/-- The hexadecimal digit of `d` (below 16), lowercase or uppercase (a helper of `formatSlice`). Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
 
 ```go
 func hexNibble(d byte, upper bool) byte {
@@ -1680,7 +1681,7 @@ noncomputable def quoteBytes : val :=
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (Var "$r0")))))))))
   (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res1")))))))
 
-/-- `%v` and `%d` of the `[]byte` `b`, as Go's `fmtBytes` prints them: its bytes in decimal, separated by spaces, in brackets (a helper of `formatBytes`). Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
+/-- `%v` and `%d` of the `[]byte` `b`, as Go's `fmtBytes` prints them: its bytes in decimal, separated by spaces, in brackets (a helper of `formatSlice`). Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
 
 ```go
 func decBytes(b []byte) string {
@@ -1738,7 +1739,7 @@ noncomputable def decBytes : val :=
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")))))
 
-/-- `%x` (`upper` false) and `%X` of the `[]byte` `b`, as Go's `fmtBytes` prints them: two hexadecimal characters a byte (a helper of `formatBytes`). Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
+/-- `%x` (`upper` false) and `%X` of the `[]byte` `b`, as Go's `fmtBytes` prints them: two hexadecimal characters a byte (a helper of `formatSlice`). Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
 
 ```go
 func hexBytes(b []byte, upper bool) string {
@@ -1787,15 +1788,76 @@ noncomputable def hexBytes : val :=
   (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "c") (Var "$value")))))))))))))))
   (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
 
-/-- At `format[i]`, a `%`: the output of the directive for the argument `x`, if it is of type `[]byte`, and the index after it, as Go's `fmtBytes` prints it, if the directive is `%s`, `%v`, `%d`, `%x`, `%X` or `%q` without flags, width or precision (`%q` only of ASCII bytes, `quoteBytes`): `string(b)`; the decimal bytes in brackets, separated by spaces; two hexadecimal digits a byte. It reads every byte of `x` then, as Go does, and nothing otherwise (the type assertion only after the verb: the proofs of the calls that never reach it need no ownership). Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
+/-- `%v` and `%s` of the `[]string` `ss`, as Go's `printValue` prints a slice: `[`, its elements separated by spaces (each by `fmtS`: a `string` has no method for `handleMethods` to call, and without flags, width or precision `fmtS` writes it as it is), `]` (a helper of `formatSlice`). Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
 
 ```go
-func formatBytes(format string, i int, x any) (string, int, bool) {
+func joinStrings(ss []string) string {
+	out := "["
+	for k, s := range ss {
+		if k > 0 {
+			out += " "
+		}
+		out += s
+	}
+	return out + "]"
+}
+```
+
+with these edits: goose's `FuncResolve f [] #()` of a helper of this file replaced by `f`. -/
+noncomputable def joinStrings : val :=
+  (LamV "ss"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "ss" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (Var "ss"))
+  (Let "$r0" (Val #(go!"["))
+  (Let "out" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (Val #(go!"]"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "ss"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Let "k" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val (slice.forRange go.string)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (App (Val (GoInstruction (GoLoad go.string))) (Var "s")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "k")) (Val #(W64 0)))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "out")) (Val #(go!" ")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "k") (Var "$key")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$value"))))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "out") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")))))
+
+/-- At `format[i]`, a `%`: the output of the directive for the argument `x`, if it is of type `[]byte` or `[]string` (exactly: not a named type of either underlying type), and the index after it. Of a `[]byte`, as Go's `fmtBytes` prints it, if the directive is `%s`, `%v`, `%d`, `%x`, `%X` or `%q` without flags, width or precision (`%q` only of ASCII bytes, `quoteBytes`): `string(b)`; the decimal bytes in brackets, separated by spaces; two hexadecimal digits a byte. Of a `[]string`, as Go's `printValue` prints it (Go's `printArg` has no case for it and `handleMethods` finds no method on it, nor on its elements), if the directive is `%s` or `%v` without flags, width or precision (`joinStrings`). It reads every byte or element of `x` then, as Go does, and nothing otherwise (the type assertions only after the verb: the proofs of the calls that never reach them need no ownership). Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
+
+```go
+func formatSlice(format string, i int, x any) (string, int, bool) {
 	if i+1 >= len(format) {
 		return "", 0, false
 	}
 	verb := format[i+1]
 	if verb != 's' && verb != 'v' && verb != 'd' && verb != 'x' && verb != 'X' && verb != 'q' {
+		return "", 0, false
+	}
+	if ss, ok := x.([]string); ok {
+		if verb == 's' || verb == 'v' {
+			return joinStrings(ss), i + 2, true
+		}
 		return "", 0, false
 	}
 	b, ok := x.([]byte)
@@ -1823,7 +1885,7 @@ func formatBytes(format string, i int, x any) (string, int, bool) {
 ```
 
 with these edits: goose's `FuncResolve f [] #()` of a helper of this file replaced by `f`. -/
-noncomputable def formatBytes : val :=
+noncomputable def formatSlice : val :=
   (LamV "format"
   (Lam "i"
   (Lam "x"
@@ -1837,6 +1899,7 @@ noncomputable def formatBytes : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "format")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))))
   (Let "verb" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoLoad go.any))) (Var "x")))
@@ -1991,6 +2054,55 @@ noncomputable def formatBytes : val :=
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b") (Var "$r0"))))))))))))))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (GoLoad go.any))) (Var "x")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "ss" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.string)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(go!""))
+  (Let "$r1" (Val #(W64 0))
+  (Let "$r2" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res2") (Var "$r2")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "verb")) (Val #(W8 115)))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "verb")) (Val #(W8 118))))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "ss"))
+  (App (Val joinStrings) (Var "$a0")))
+  (Let "$r1" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 2))))
+  (Let "$r2" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res2") (Var "$r2")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Val #()))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.string)))) (Pair (Var "ss") (Var "$r0")))))))))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (If (If (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "verb")) (Val #(W8 115))))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "verb")) (Val #(W8 118))))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "verb")) (Val #(W8 100))))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "verb")) (Val #(W8 120))))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "verb")) (Val #(W8 88))))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "verb")) (Val #(W8 113))))) (Val #false)))
   (Let "$r0" (Val #(go!""))
   (Let "$r1" (Val #(W64 0))
@@ -2733,7 +2845,7 @@ noncomputable def callString : val :=
   (App (Var "$oldf") (Val #()))))))))))))))
   (Val #())))
 
-/-- The helper `visitArg` of the model (not a function of package `fmt`) calls the methods of x that Go's printArg calls under the directive (verb, sharpV), and nothing else, and reads the bytes of a `[]byte` (Go's `fmtBytes`, under every verb but `%T` and `%p`, as printArg's type switch takes it before handleMethods); the output is not modelled. Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
+/-- The helper `visitArg` of the model (not a function of package `fmt`) calls the methods of x that Go's printArg calls under the directive (verb, sharpV), and nothing else, reads the bytes of a `[]byte` (Go's `fmtBytes`, under every verb but `%T` and `%p`, as printArg's type switch takes it before handleMethods), and reads the elements of a `[]string` (Go's `printValue`, under every verb but `%T` and `%p`: neither a `[]string` nor a `string` has a method for `handleMethods` to call; under a verb that is bad for a string, or `%w`, Go's `badVerb` prints by `printValue` too); the output is not modelled. Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
 
 ```go
 func visitArg(x any, verb byte, sharpV bool, wrapErrs bool) {
@@ -2748,6 +2860,10 @@ func visitArg(x any, verb byte, sharpV bool, wrapErrs bool) {
 	}
 	if b, ok := x.([]byte); ok {
 		_ = string(b) // printArg's fmtBytes: reads b, calls no method, under every verb
+		return
+	}
+	if ss, ok := x.([]string); ok {
+		_ = joinStrings(ss) // printValue: reads the elements, calls no method, under every verb
 		return
 	}
 	if verb == 'w' {
@@ -2792,6 +2908,7 @@ noncomputable def visitArg : val :=
   (Let "sharpV" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "sharpV"))
   (Let "verb" (App (Val (GoInstruction (GoAlloc go.byte))) (Var "verb"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (Var "x"))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2931,6 +3048,29 @@ noncomputable def visitArg : val :=
   (Var "$r0"))))))))))
   (App (Val doExecute)
   (Val #()))))))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (GoLoad go.any))) (Var "x")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "ss" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.string)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "ss"))
+  (App (Val joinStrings) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (Var "$r0"))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.string)))) (Pair (Var "ss") (Var "$r0")))))))))))))))
   (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoLoad go.any))) (Var "x")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
@@ -3148,7 +3288,7 @@ noncomputable def visitRest : val :=
   (Val #())))))))))))
   (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res1")))))))))))
 
-/-- The helper `doPrintf` of the model (not a function of package `fmt`): the formatted string, the indices of the arguments of the %w directives, and whether those are unknown (visitRest gave up). It formats as the previous model of Sprintf did (and the directives of a `[]byte` that `formatBytes` formats), up to the first directive it does not format or whose argument is neither inert nor a `[]byte`; from there the output is arbitrary, and visitRest makes the calls Go makes. Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
+/-- The helper `doPrintf` of the model (not a function of package `fmt`): the formatted string, the indices of the arguments of the %w directives, and whether those are unknown (visitRest gave up). It formats as the previous model of Sprintf did (and the directives of a `[]byte` or a `[]string` that `formatSlice` formats), up to the first directive it does not format or whose argument is not inert; from there the output is arbitrary, and visitRest makes the calls Go makes. Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
 
 ```go
 func doPrintf(format string, a []any, wrapErrs bool) (string, []int, bool) {
@@ -3167,7 +3307,7 @@ func doPrintf(format string, a []any, wrapErrs bool) (string, []int, bool) {
 			continue
 		}
 		if argNum < len(a) {
-			s, next, ok := formatBytes(format, i, a[argNum])
+			s, next, ok := formatSlice(format, i, a[argNum])
 			if ok {
 				out += s
 				argNum++
@@ -3347,7 +3487,7 @@ noncomputable def doPrintf : val :=
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "format"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.any))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.any)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "argNum")))))
-  (App (App (App (Val formatBytes) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (App (App (Val formatSlice) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
   (Let "$ret0" (Fst (Fst (Var "__p")))
   (Let "$ret1" (Snd (Fst (Var "__p")))
   (Let "$ret2" (Snd (Var "__p"))
@@ -3891,6 +4031,118 @@ noncomputable def Errorf.impl : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0"))))))))))))))))))
   (App (Val (GoInstruction (GoLoad go.error))) (Var "$res0"))))))
+
+
+/-- `Fprint(w, a...)`: calls what Go's formatting calls of each operand (`visitArg` under `%v`,
+without `#`), then calls `w.Write` once with an arbitrary string's bytes (also when it is empty),
+and returns what `Write` returns. Go's (`fmt/print.go`)
+
+```go
+func Fprint(w io.Writer, a ...any) (n int, err error) {
+	p := newPrinter()
+	p.doPrint(a)
+	n, err = w.Write(p.buf)
+	p.free()
+	return
+}
+
+func (p *pp) doPrint(a []any) {
+	prevString := false
+	for argNum, arg := range a {
+		isString := arg != nil && reflect.TypeOf(arg).Kind() == reflect.String
+		// Add a space between two non-string arguments.
+		if argNum > 0 && !isString && !prevString {
+			p.buf.writeByte(' ')
+		}
+		p.printArg(arg, 'v')
+		prevString = isString
+	}
+}
+```
+
+prints each operand by `printArg` under `%v` (`p.fmt` is cleared: no flags, width or precision), in
+order, with a space between two operands neither of which is a string (by kind: reading the type
+only); the only calls into the operands are `printArg`'s, which `visitArg` makes (the model is stuck
+where it does not follow them: a `Format` method, a `reflect.Value`, printing by reflection beyond the
+integer and string kinds). The output is not modelled: an arbitrary string, which includes Go's.
+`Write` gets it as `Fprintf`'s gets its output (`printerBuf`, then `retire`; the same evidence,
+`goose/model/fmt/fprintf_alias_test.go`, as `Fprint` uses the same pooled printer). Goose's
+translation (by the goose of this revision, with its function results in cells `$resI`) of
+
+```go
+func Fprint(w io.Writer, a ...any) (int, error) {
+	for _, x := range a {
+		visitArg(x, 'v', false, false)
+	}
+	b := printerBuf(arbitraryString())
+	n, err := w.Write(b)
+	retire(b)
+	return n, err
+}
+```
+
+with these edits: goose's `FuncResolve f [] #()` of a helper of this file replaced by `f`. -/
+noncomputable def Fprint.impl : val :=
+  (LamV "w"
+  (Lam "a"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.any)))) (Var "a"))
+  (Let "w" (App (Val (GoInstruction (GoAlloc _root_.Perennial.io.Writer.ty))) (Var "w"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val arbitraryString) (Val #()))
+  (App (Val printerBuf) (Var "$a0")))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.io.Writer.ty go!"Write"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.io.Writer.ty))) (Var "w"))) (Var "$a0")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (Val retire) (Var "$a0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0"))))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b") (Var "$r0")))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "a"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
+  (App (App (Val (slice.forRange go.any)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))
+  (Let "$a1" (Val #(W8 118))
+  (Let "$a2" (Val #false)
+  (Let "$a3" (Val #false)
+  (App (App (App (App (Val visitArg) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))))
+  (App (Val doExecute)
+  (Var "$key")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "x") (Var "$value"))))))))))))))
+  (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1"))))))))
 
 
 /-- `Print(a...)`: not modelled; stuck. (`Print` takes one argument, the slice `a`.) -/

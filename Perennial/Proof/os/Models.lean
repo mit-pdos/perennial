@@ -6,7 +6,7 @@ its clients (it is names-only here but for its initializers).
 -/
 module
 
-public import Perennial.Proof.syscall.initialize
+public import Perennial.Proof.syscall.Base
 public import Perennial.Code.os
 
 @[expose] public section

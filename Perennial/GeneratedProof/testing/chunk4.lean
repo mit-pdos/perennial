@@ -151,7 +151,7 @@ noncomputable instance B_access_load_previousDuration (l : Loc) (v : testing.B) 
  by
   solve_pointsto_access_struct
 
-noncomputable instance B_access_store_previousDuration (l : Loc) (v : testing.B) (previousDuration' : time.Duration) :
+noncomputable instance B_access_store_previousDuration (l : Loc) (v : testing.B) (previousDuration' : _root_.Perennial.time.Duration) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.B go!"previousDuration" l) v.previousDuration' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.B go!"previousDuration" l) previousDuration' (DFrac.own 1))

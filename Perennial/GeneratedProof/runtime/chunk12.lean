@@ -86,7 +86,7 @@ noncomputable instance semaRoot_access_load_nwait (l : Loc) (v : runtime.semaRoo
  by
   solve_pointsto_access_struct
 
-noncomputable instance semaRoot_access_store_nwait (l : Loc) (v : runtime.semaRoot) (nwait' : internal.runtime.atomic.Uint32) :
+noncomputable instance semaRoot_access_store_nwait (l : Loc) (v : runtime.semaRoot) (nwait' : _root_.Perennial.internal.runtime.atomic.Uint32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.semaRoot go!"nwait" l) v.nwait' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.semaRoot go!"nwait" l) nwait' (DFrac.own 1))
@@ -130,7 +130,7 @@ noncomputable instance notifyList_access_load_wait (l : Loc) (v : runtime.notify
  by
   solve_pointsto_access_struct
 
-noncomputable instance notifyList_access_store_wait (l : Loc) (v : runtime.notifyList) (wait' : internal.runtime.atomic.Uint32) :
+noncomputable instance notifyList_access_store_wait (l : Loc) (v : runtime.notifyList) (wait' : _root_.Perennial.internal.runtime.atomic.Uint32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.notifyList go!"wait" l) v.wait' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.notifyList go!"wait" l) wait' (DFrac.own 1))
@@ -236,7 +236,7 @@ noncomputable instance «stackpoolItem_access_load__#0» (l : Loc) (v : runtime.
  by
   solve_pointsto_access_struct
 
-noncomputable instance «stackpoolItem_access_store__#0» (l : Loc) (v : runtime.stackpoolItem) («_#0'» : internal.runtime.sys.NotInHeap) :
+noncomputable instance «stackpoolItem_access_store__#0» (l : Loc) (v : runtime.stackpoolItem) («_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.stackpoolItem go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.stackpoolItem go!"_#0" l) «_#0'» (DFrac.own 1))
@@ -475,7 +475,7 @@ noncomputable instance «traceBuf_access_load__#0» (l : Loc) (v : runtime.trace
  by
   solve_pointsto_access_struct
 
-noncomputable instance «traceBuf_access_store__#0» (l : Loc) (v : runtime.traceBuf) («_#0'» : internal.runtime.sys.NotInHeap) :
+noncomputable instance «traceBuf_access_store__#0» (l : Loc) (v : runtime.traceBuf) («_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceBuf go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceBuf go!"_#0" l) «_#0'» (DFrac.own 1))
@@ -566,7 +566,7 @@ noncomputable instance traceRegionAlloc_access_load_dropping (l : Loc) (v : runt
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceRegionAlloc_access_store_dropping (l : Loc) (v : runtime.traceRegionAlloc) (dropping' : internal.runtime.atomic.Bool') :
+noncomputable instance traceRegionAlloc_access_store_dropping (l : Loc) (v : runtime.traceRegionAlloc) (dropping' : _root_.Perennial.internal.runtime.atomic.Bool') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceRegionAlloc go!"dropping" l) v.dropping' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceRegionAlloc go!"dropping" l) dropping' (DFrac.own 1))
@@ -582,7 +582,7 @@ noncomputable instance traceRegionAlloc_access_load_current (l : Loc) (v : runti
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceRegionAlloc_access_store_current (l : Loc) (v : runtime.traceRegionAlloc) (current' : internal.runtime.atomic.UnsafePointer) :
+noncomputable instance traceRegionAlloc_access_store_current (l : Loc) (v : runtime.traceRegionAlloc) (current' : _root_.Perennial.internal.runtime.atomic.UnsafePointer) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceRegionAlloc go!"current" l) v.current' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceRegionAlloc go!"current" l) current' (DFrac.own 1))

@@ -184,7 +184,7 @@ noncomputable instance Replacer_access_load_once (l : Loc) (v : strings.Replacer
  by
   solve_pointsto_access_struct
 
-noncomputable instance Replacer_access_store_once (l : Loc) (v : strings.Replacer) (once' : sync.Once) :
+noncomputable instance Replacer_access_store_once (l : Loc) (v : strings.Replacer) (once' : _root_.Perennial.sync.Once) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.Replacer go!"once" l) v.once' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.Replacer go!"once" l) once' (DFrac.own 1))
@@ -438,7 +438,7 @@ noncomputable instance stringWriter_access_load_w (l : Loc) (v : strings.stringW
  by
   solve_pointsto_access_struct
 
-noncomputable instance stringWriter_access_store_w (l : Loc) (v : strings.stringWriter) (w' : io.Writer) :
+noncomputable instance stringWriter_access_store_w (l : Loc) (v : strings.stringWriter) (w' : _root_.Perennial.io.Writer) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.stringWriter go!"w" l) v.w' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.stringWriter go!"w" l) w' (DFrac.own 1))

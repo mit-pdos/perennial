@@ -294,6 +294,11 @@ noncomputable def rangeStr.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] rangeStr.ty
 
+noncomputable def catcher.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.catcher" [])
+
+attribute [irreducible] catcher.ty
+
 noncomputable def BoolTest.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.BoolTest" [])
 
@@ -847,6 +852,30 @@ noncomputable def storeAndReturn [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def failing_testArgumentOrder [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.failing_testArgumentOrder"
+
+noncomputable def genericAnyArg [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.genericAnyArg"
+
+noncomputable def genericToAny [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.genericToAny"
+
+noncomputable def genericSliceOfAny [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.genericSliceOfAny"
+
+noncomputable def genericFuncToAny [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.genericFuncToAny"
+
+noncomputable def testGenericToInterface [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testGenericToInterface"
+
+noncomputable def testGenericToInterfaceLiteralClosure [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testGenericToInterfaceLiteralClosure"
+
+noncomputable def genericConvertTP [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.genericConvertTP"
+
+noncomputable def testGenericConvertTypeParams [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testGenericConvertTypeParams"
 
 noncomputable def init.«0» [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.init.0"
@@ -1456,6 +1485,63 @@ noncomputable def testRecoverNamed [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def testCatchTwoDeep [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCatchTwoDeep"
+
+noncomputable def methodRecover [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.methodRecover"
+
+noncomputable def catchTop [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.catchTop"
+
+noncomputable def catchTop'deferred [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.catchTop'deferred"
+
+noncomputable def topRecover [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.topRecover"
+
+noncomputable def repanicInner [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.repanicInner"
+
+noncomputable def repanic [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.repanic"
+
+noncomputable def twoCells [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.twoCells"
+
+noncomputable def catchNil [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.catchNil"
+
+noncomputable def catchNil'deferred [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.catchNil'deferred"
+
+noncomputable def recoverNotPanicking [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.recoverNotPanicking"
+
+noncomputable def testMethodRecover [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testMethodRecover"
+
+noncomputable def testTopRecover [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testTopRecover"
+
+noncomputable def testRepanic [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRepanic"
+
+noncomputable def testTwoCells [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testTwoCells"
+
+noncomputable def testRecoverNotPanicking [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRecoverNotPanicking"
+
+noncomputable def outerSeenByLiteral [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.outerSeenByLiteral"
+
+noncomputable def testOuterSeenByLiteral [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testOuterSeenByLiteral"
+
+noncomputable def defersOnlyRecovering [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.defersOnlyRecovering"
+
+noncomputable def testDefersOnlyRecovering [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testDefersOnlyRecovering"
 
 noncomputable def CheckTrue [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.CheckTrue"
@@ -4853,6 +4939,181 @@ noncomputable def failing_testArgumentOrder.impl [GooseExts] [GoGlobalContext] :
   (App (App (App (App (App (Val (GoInstruction (FuncResolve addFour64 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: generic_interface.go:7:6 -/
+noncomputable def genericAnyArg.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "x"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (Var "x"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.any))) (Var "$res0")))))
+
+/-- go: generic_interface.go:11:6 -/
+noncomputable def genericToAny.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
+  (LamV "x"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc T))) (Var "x"))
+  (Let "y" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (Convert T go.any))) (App (Val (GoInstruction (GoLoad T))) (Var "x")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert T go.any))) (App (Val (GoInstruction (GoLoad T))) (Var "x")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (Let "$a0" (App (Val (GoInstruction (Convert T go.any))) (App (Val (GoInstruction (GoLoad T))) (Var "x")))
+  (App (App (Val (GoInstruction (FuncResolve genericAnyArg []))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (GoLoad go.any))) (Var "y"))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "y") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.any))) (Var "$res0")))))
+
+/-- go: generic_interface.go:20:6 -/
+noncomputable def genericSliceOfAny.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
+  (LamV "x"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.any)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.any)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc T))) (Var "x"))
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad T))) (Var "x"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.any)))) (LiteralValue [(KeyedElement none (ElementExpression T (Var "$v0")))])))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.any)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "$res0")))))
+
+/-- go: generic_interface.go:24:6 -/
+noncomputable def genericFuncToAny.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
+  (LamV "f"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false [go.any]))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [] false [go.any]))))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false [T]))))) (Var "f"))
+  (Let "$r0" (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (Convert T go.any))) (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [T]))))) (Var "f")) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.any))) (Var "$res0")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false [go.any]))))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [go.any]))))) (Var "$res0")))))
+
+/-- go: generic_interface.go:28:6 -/
+noncomputable def testGenericToInterface.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.int)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.int)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.int) go.any))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.int)))) (Var "p")))
+  (Let "e" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.int go.any))) (Val #(W64 3)))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (If (If (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.int)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve genericToAny [(go.GoType.PointerType go.int)]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (GoLoad go.any))) (Var "e")))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (Let "$a0" (Val #(W64 3))
+  (App (App (Val (GoInstruction (FuncResolve genericToAny [go.int]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (GoLoad go.any))) (Var "i")))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "e"))
+  (App (App (Val (GoInstruction (FuncResolve genericToAny [go.any]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (GoLoad go.any))) (Var "e")))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (Let "$a0" (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil))
+  (App (App (Val (GoInstruction (FuncResolve genericToAny [go.any]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "i") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "e") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.int)))) (Pair (Var "p") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: generic_interface.go:36:6 -/
+noncomputable def testGenericToInterfaceLiteralClosure.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (Convert go.int go.any))) (Val #(W64 3)))
+  (Let "e" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.any)))) (Pair (Let "$a0" (Val #(W64 3))
+  (App (App (Val (GoInstruction (FuncResolve genericSliceOfAny [go.int]))) (Val #())) (Var "$a0"))) (Val #(W64 0))))) (App (Val (GoInstruction (GoLoad go.any))) (Var "e")))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Let "$a0" (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Val #(W64 3))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
+  (App (App (Val (GoInstruction (FuncResolve genericFuncToAny [go.int]))) (Val #())) (Var "$a0"))) (Val #())) (App (Val (GoInstruction (GoLoad go.any))) (Var "e")))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "e") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- An explicit conversion between two type parameters with the same constraint
+    converts the value (here a float64 to an int, truncating).
+
+    go: generic_interface.go:43:6 -/
+noncomputable def genericConvertTP.impl [GooseExts] [GoGlobalContext] (T U : go.GoType) : val :=
+  (LamV "x"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc U))) (Var "x"))
+  (Let "$r0" (App (Val (GoInstruction (Convert U T))) (App (Val (GoInstruction (GoLoad U))) (Var "x")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore T))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad T))) (Var "$res0")))))
+
+/-- go: generic_interface.go:47:6 -/
+noncomputable def testGenericConvertTypeParams.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (Val #(W64 4615063718147915776))
+  (App (App (Val (GoInstruction (FuncResolve genericConvertTP [go.int, go.float64]))) (Val #())) (Var "$a0"))) (Val #(W64 3)))) (App (Val (GoInstruction (GoOp GoEquals go.float64))) (Pair (Let "$a0" (Val #(W64 2))
+  (App (App (Val (GoInstruction (FuncResolve genericConvertTP [go.float64, go.int]))) (Val #())) (Var "$a0"))) (Val #(W64 4611686018427387904)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- go: init_order.go:5:6 -/
@@ -11972,6 +12233,475 @@ noncomputable def testCatchTwoDeep.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
+/-- catch recovers a uint64 panic value into *res and counts it.
+
+    go: recover_deferred.go:12:19 -/
+noncomputable def catcher.catch'deferred.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "c"
+  (Lam "$recover"
+  (Lam "res"
+  (Seq (App (Val exceptionDo)
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType catcher.ty)))) (Var "c"))
+  (Let "res" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint64)))) (Var "res"))
+  (Let "$r0" (App (Val recoverPanic)
+  (Var "$recover"))
+  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [])))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.InterfaceType [])))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "r")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.InterfaceType [])))) (Val UntypedNil))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (TypeAssert go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "r")))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "res")) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef catcher.ty go!"seen"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType catcher.ty)))) (Var "c"))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef catcher.ty go!"seen"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType catcher.ty)))) (Var "c")))) (Val #(W64 1))))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "r") (Var "$r0"))))))))))
+  (Val #())))))
+
+/-- methodRecover: a deferred method recovers 7 into the named result.
+
+    go: recover_deferred.go:20:6 -/
+noncomputable def methodRecover.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$res0" (Var "x")
+  (Seq (App (Val wrapDeferRecover)
+  (Lam "$defer"
+  (Lam "$panic"
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc catcher.ty))) (App (Val (GoInstruction (CompositeLiteral catcher.ty))) (LiteralValue [])))
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType catcher.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType catcher.ty)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.uint64 (go.GoType.InterfaceType [])))) (Val #(W64 7)))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))
+  (App (Val doExecute)
+  (Let "$a0" (Var "x")
+  (Let "$f" (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType catcher.ty) go!"catch'deferred"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType catcher.ty)))) (Var "c")))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (App (Var "$f") (Var "$panic")) (Var "$a0"))
+  (App (Var "$oldf") (Val #())))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType catcher.ty)))) (Pair (Var "c") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0"))))))
+
+/-- catchTop is a top-level function that recovers a uint64 panic value into *res.
+
+    go: recover_deferred.go:27:6 -/
+noncomputable def catchTop'deferred.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "$recover"
+  (Lam "res"
+  (Seq (App (Val exceptionDo)
+  (Let "res" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint64)))) (Var "res"))
+  (Let "$r0" (App (Val recoverPanic)
+  (Var "$recover"))
+  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [])))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.InterfaceType [])))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "r")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.InterfaceType [])))) (Val UntypedNil))))))
+  (Let "$r0" (App (Val (GoInstruction (TypeAssert go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "r")))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "res")) (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "r") (Var "$r0")))))))))
+  (Val #()))))
+
+/-- topRecover: a deferred top-level function recovers 8 into the named result.
+
+    go: recover_deferred.go:34:6 -/
+noncomputable def topRecover.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$res0" (Var "x")
+  (Seq (App (Val wrapDeferRecover)
+  (Lam "$defer"
+  (Lam "$panic"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.uint64 (go.GoType.InterfaceType [])))) (Val #(W64 8)))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))
+  (App (Val doExecute)
+  (Let "$a0" (Var "x")
+  (Let "$f" (App (Val (GoInstruction (FuncResolve catchTop'deferred []))) (Val #()))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (App (Var "$f") (Var "$panic")) (Var "$a0"))
+  (App (Var "$oldf") (Val #()))))))))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0"))))))
+
+/-- catchAndRepanic recovers, counts, and panics again with the value plus one.
+
+    go: recover_deferred.go:40:19 -/
+noncomputable def catcher.catchAndRepanic'deferred.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "c"
+  (Lam "$recover"
+  (Lam BAnon
+  (Seq (App (Val exceptionDo)
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType catcher.ty)))) (Var "c"))
+  (Let "$r0" (App (Val recoverPanic)
+  (Var "$recover"))
+  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [])))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.uint64 (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (TypeAssert go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "r"))) (Val #(W64 1)))))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef catcher.ty go!"seen"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType catcher.ty)))) (Var "c"))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef catcher.ty go!"seen"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType catcher.ty)))) (Var "c")))) (Val #(W64 1))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "r") (Var "$r0")))))))))
+  (Val #())))))
+
+/-- go: recover_deferred.go:46:6 -/
+noncomputable def repanicInner.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "c"
+  (Seq (App (Val wrapDeferRecover)
+  (Lam "$defer"
+  (Lam "$panic"
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType catcher.ty)))) (Var "c"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.uint64 (go.GoType.InterfaceType [])))) (Val #(W64 5)))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))
+  (App (Val doExecute)
+  (Let "$f" (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType catcher.ty) go!"catchAndRepanic'deferred"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType catcher.ty)))) (Var "c")))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (App (Var "$f") (Var "$panic")) (Val #()))
+  (App (Var "$oldf") (Val #()))))))))))))))
+  (Val #())))
+
+/-- repanic: a deferred method recovers 5 and panics with 6, which a deferred
+    literal of the caller recovers: 6*10 + 1.
+
+    go: recover_deferred.go:53:6 -/
+noncomputable def repanic.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$res0" (Var "x")
+  (Seq (App (Val wrapDeferRecover)
+  (Lam "$defer"
+  (Lam "$panic"
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc catcher.ty))) (App (Val (GoInstruction (CompositeLiteral catcher.ty))) (LiteralValue [])))
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType catcher.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType catcher.ty)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 0))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType catcher.ty)))) (Var "c"))
+  (App (App (Val (GoInstruction (FuncResolve repanicInner []))) (Val #())) (Var "$a0")))))))
+  (App (Val doExecute)
+  (Let "$f" (Lam BAnon
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (TypeAssert go.uint64))) (App (Val recoverPanic)
+  (Var "$panic"))) (Val #(W64 10)))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef catcher.ty go!"seen"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType catcher.ty)))) (Var "c"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))
+  (Val #())))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Val #()))
+  (App (Var "$oldf") (Val #()))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType catcher.ty)))) (Pair (Var "c") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0"))))))
+
+/-- catchTwice recovers the panic it is deferred for (through its parameter),
+    panics with the value plus one, and recovers that in its own deferred literal
+    (through its own cell).
+
+    go: recover_deferred.go:65:19 -/
+noncomputable def catcher.catchTwice'deferred.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "c"
+  (Lam "$recover"
+  (Lam "res"
+  (Seq (App (Val wrapDeferRecover)
+  (Lam "$defer"
+  (Lam "$panic"
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType catcher.ty)))) (Var "c"))
+  (Let "res" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint64)))) (Var "res"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (TypeAssert go.uint64))) (App (Val recoverPanic)
+  (Var "$recover")))
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.uint64 (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "r")) (Val #(W64 1)))))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "r") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (Let "$f" (Lam BAnon
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (TypeAssert go.uint64))) (App (Val recoverPanic)
+  (Var "$panic"))) (Val #(W64 10))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "res")) (Var "$r0"))))))
+  (Val #())))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Val #()))
+  (App (Var "$oldf") (Val #())))))))))))))))
+  (Val #())))))
+
+/-- twoCells: 4 is recovered by catchTwice, and 5 by catchTwice's literal: 50.
+
+    go: recover_deferred.go:74:6 -/
+noncomputable def twoCells.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$res0" (Var "x")
+  (Seq (App (Val wrapDeferRecover)
+  (Lam "$defer"
+  (Lam "$panic"
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc catcher.ty))) (App (Val (GoInstruction (CompositeLiteral catcher.ty))) (LiteralValue [])))
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType catcher.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType catcher.ty)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.uint64 (go.GoType.InterfaceType [])))) (Val #(W64 4)))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))
+  (App (Val doExecute)
+  (Let "$a0" (Var "x")
+  (Let "$f" (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType catcher.ty) go!"catchTwice'deferred"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType catcher.ty)))) (Var "c")))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (App (Var "$f") (Var "$panic")) (Var "$a0"))
+  (App (Var "$oldf") (Val #())))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType catcher.ty)))) (Pair (Var "c") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0"))))))
+
+/-- go: recover_deferred.go:80:6 -/
+noncomputable def catchNil'deferred.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "$recover"
+  (Lam "isNil"
+  (Seq (App (Val exceptionDo)
+  (Let "isNil" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.bool)))) (Var "isNil"))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals (go.GoType.InterfaceType [])))) (Pair (App (Val recoverPanic)
+  (Var "$recover")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.InterfaceType [])))) (Val UntypedNil))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.bool)))) (Var "isNil")) (Var "$r0")))))))
+  (Val #()))))
+
+/-- recoverNotPanicking: a deferred function that recovers while nothing is
+    panicking gets nil, and the function returns normally.
+
+    go: recover_deferred.go:86:6 -/
+noncomputable def recoverNotPanicking.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "isNil" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "$res0" (Var "isNil")
+  (Seq (App (Val wrapDeferRecover)
+  (Lam "$defer"
+  (Lam "$panic"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Let "$a0" (Var "isNil")
+  (Let "$f" (App (Val (GoInstruction (FuncResolve catchNil'deferred []))) (Val #()))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (App (Var "$f") (Var "$panic")) (Var "$a0"))
+  (App (Var "$oldf") (Val #()))))))))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))
+
+/-- go: recover_deferred.go:91:6 -/
+noncomputable def testMethodRecover.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve methodRecover []))) (Val #())) (Val #())) (Val #(W64 7))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: recover_deferred.go:92:6 -/
+noncomputable def testTopRecover.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve topRecover []))) (Val #())) (Val #())) (Val #(W64 8))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: recover_deferred.go:93:6 -/
+noncomputable def testRepanic.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve repanic []))) (Val #())) (Val #())) (Val #(W64 61))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: recover_deferred.go:94:6 -/
+noncomputable def testTwoCells.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve twoCells []))) (Val #())) (Val #())) (Val #(W64 50))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: recover_deferred.go:95:6 -/
+noncomputable def testRecoverNotPanicking.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve recoverNotPanicking []))) (Val #())) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- outerSeenByLiteral: a deferred literal that itself defers a recovering
+    function and a recovering literal still recovers the panic of the function
+    that deferred it; its own deferred calls then get nil.
+
+    go: recover_deferred.go:100:6 -/
+noncomputable def outerSeenByLiteral.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$res0" (Var "x")
+  (Seq (App (Val wrapDeferRecover)
+  (Lam "$defer"
+  (Lam "$panic"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.uint64 (go.GoType.InterfaceType [])))) (Val #(W64 1)))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))
+  (App (Val doExecute)
+  (Let "$f" (Lam BAnon
+  (Let "$recover" (Var "$panic")
+  (Seq (App (Val wrapDeferRecover)
+  (Lam "$defer"
+  (Lam "$panic"
+  (Let "isNil" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoMul go.uint64))) (Pair (App (Val (GoInstruction (TypeAssert go.uint64))) (App (Val recoverPanic)
+  (Var "$recover"))) (Val #(W64 10))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Let "$f" (Lam BAnon
+  (Seq (App (Val exceptionDo)
+  (App (Val doExecute)
+  (App (Val recoverPanic)
+  (Var "$panic"))))
+  (Val #())))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Val #()))
+  (App (Var "$oldf") (Val #()))))))))))))
+  (App (Val doExecute)
+  (Let "$a0" (Var "isNil")
+  (Let "$f" (App (Val (GoInstruction (FuncResolve catchNil'deferred []))) (Val #()))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (App (Var "$f") (Var "$panic")) (Var "$a0"))
+  (App (Var "$oldf") (Val #())))))))))))))))
+  (Val #()))))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Val #()))
+  (App (Var "$oldf") (Val #())))))))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0"))))))
+
+/-- go: recover_deferred.go:110:6 -/
+noncomputable def testOuterSeenByLiteral.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve outerSeenByLiteral []))) (Val #())) (Val #())) (Val #(W64 10))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- defersOnlyRecovering: a deferred literal that defers a recovering function
+    but does not call recover() itself, when nothing panics.
+
+    go: recover_deferred.go:114:6 -/
+noncomputable def defersOnlyRecovering.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Seq (App (Val wrapDefer)
+  (Lam "$defer"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 7))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Let "$f" (Lam BAnon
+  (Seq (App (Val wrapDeferRecover)
+  (Lam "$defer"
+  (Lam "$panic"
+  (Let "isNil" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (App (Val doExecute)
+  (Let "$a0" (Var "isNil")
+  (Let "$f" (App (Val (GoInstruction (FuncResolve catchNil'deferred []))) (Val #()))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (App (Var "$f") (Var "$panic")) (Var "$a0"))
+  (App (Var "$oldf") (Val #()))))))))))))))
+  (Val #())))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Val #()))
+  (App (Var "$oldf") (Val #()))))))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0")))))
+
+/-- go: recover_deferred.go:122:6 -/
+noncomputable def testDefersOnlyRecovering.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve defersOnlyRecovering []))) (Val #())) (Val #())) (Val #(W64 7))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
 /-- go: shortcircuiting.go:11:6 -/
 noncomputable def CheckTrue.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
@@ -15668,6 +16398,47 @@ attribute [instance] rangeStr.TypeAssumptions.underlying
   rangeStr.TypeAssumptions.method_set
   rangeStr.TypeAssumptions.ptr_method_set
 
+structure catcher [GooseExts] where
+  mk ::
+  seen' : w64
+
+noncomputable instance catcher.zero_val [GooseExts] : ZeroVal catcher :=
+  ⟨catcher.mk zeroValDef⟩
+
+@[reducible] noncomputable def catcher.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"seen" go.uint64)]
+
+@[irreducible] noncomputable def catcher.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  catcher.fieldsUnsealed
+
+noncomputable instance equals_unfold_catcher [GooseExts] [GoGlobalContext] :
+    EqualsUnfold catcher.fields catcher.fieldsUnsealed :=
+  ⟨by unfold catcher.fields; rfl⟩
+
+@[reducible] noncomputable def catcher.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType catcher.fields)
+
+class catcher.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying catcher.underlying catcher
+  underlying : go.UnderlyingDirectedEq catcher.ty catcher.underlying
+  get_seen : ∀ (x : catcher), go.IsGoStepPureDetTagged under (StructFieldGet catcher.underlying go!"seen") #x (Val #(x.seen'))
+  set_seen : ∀ (x : catcher) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet catcher.underlying go!"seen") (PairV #x #y) (Val #(({ x with seen' := y } : catcher)))
+  method_set : go.MethodSetIs catcher.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType catcher.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.catch", (some (go.signature.Signature [(go.GoType.PointerType go.uint64)] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.catchAndRepanic", (some (go.signature.Signature [] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.catchTwice", (some (go.signature.Signature [(go.GoType.PointerType go.uint64)] false [])))]
+  ptr_catch'deferred_unfold : MethodUnfold (go.GoType.PointerType catcher.ty) go!"catch'deferred" catcher.catch'deferred.impl
+  ptr_catchAndRepanic'deferred_unfold : MethodUnfold (go.GoType.PointerType catcher.ty) go!"catchAndRepanic'deferred" catcher.catchAndRepanic'deferred.impl
+  ptr_catchTwice'deferred_unfold : MethodUnfold (go.GoType.PointerType catcher.ty) go!"catchTwice'deferred" catcher.catchTwice'deferred.impl
+
+attribute [instance] catcher.TypeAssumptions.type_repr
+  catcher.TypeAssumptions.underlying
+  catcher.TypeAssumptions.get_seen
+  catcher.TypeAssumptions.set_seen
+  catcher.TypeAssumptions.method_set
+  catcher.TypeAssumptions.ptr_method_set
+  catcher.TypeAssumptions.ptr_catch'deferred_unfold
+  catcher.TypeAssumptions.ptr_catchAndRepanic'deferred_unfold
+  catcher.TypeAssumptions.ptr_catchTwice'deferred_unfold
+
 structure BoolTest [GooseExts] where
   mk ::
   t' : Bool
@@ -16374,6 +17145,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   msHidden_instance : msHidden.TypeAssumptions
   msRenamed_instance : msRenamed.TypeAssumptions
   rangeStr_instance : rangeStr.TypeAssumptions
+  catcher_instance : catcher.TypeAssumptions
   BoolTest_instance : BoolTest.TypeAssumptions
   ArrayEditor_instance : ArrayEditor.TypeAssumptions
   appendNamedSlice_instance : appendNamedSlice.TypeAssumptions
@@ -16496,6 +17268,14 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   failing_testFunctionOrdering_unfold : FuncUnfold failing_testFunctionOrdering [] failing_testFunctionOrdering.impl
   storeAndReturn_unfold : FuncUnfold storeAndReturn [] storeAndReturn.impl
   failing_testArgumentOrder_unfold : FuncUnfold failing_testArgumentOrder [] failing_testArgumentOrder.impl
+  genericAnyArg_unfold : FuncUnfold genericAnyArg [] genericAnyArg.impl
+  genericToAny_unfold : ∀ (T : go.GoType), FuncUnfold genericToAny [T] (genericToAny.impl T)
+  genericSliceOfAny_unfold : ∀ (T : go.GoType), FuncUnfold genericSliceOfAny [T] (genericSliceOfAny.impl T)
+  genericFuncToAny_unfold : ∀ (T : go.GoType), FuncUnfold genericFuncToAny [T] (genericFuncToAny.impl T)
+  testGenericToInterface_unfold : FuncUnfold testGenericToInterface [] testGenericToInterface.impl
+  testGenericToInterfaceLiteralClosure_unfold : FuncUnfold testGenericToInterfaceLiteralClosure [] testGenericToInterfaceLiteralClosure.impl
+  genericConvertTP_unfold : ∀ (T U : go.GoType), FuncUnfold genericConvertTP [T, U] (genericConvertTP.impl T U)
+  testGenericConvertTypeParams_unfold : FuncUnfold testGenericConvertTypeParams [] testGenericConvertTypeParams.impl
   «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
   «init.1_unfold» : FuncUnfold init.«1» [] init.«1».impl
   testInitOrder_unfold : FuncUnfold testInitOrder [] testInitOrder.impl
@@ -16699,6 +17479,23 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   panicUnrecovered_unfold : FuncUnfold panicUnrecovered [] panicUnrecovered.impl
   testRecoverNamed_unfold : FuncUnfold testRecoverNamed [] testRecoverNamed.impl
   testCatchTwoDeep_unfold : FuncUnfold testCatchTwoDeep [] testCatchTwoDeep.impl
+  methodRecover_unfold : FuncUnfold methodRecover [] methodRecover.impl
+  catchTop'deferred_unfold : FuncUnfold catchTop'deferred [] catchTop'deferred.impl
+  topRecover_unfold : FuncUnfold topRecover [] topRecover.impl
+  repanicInner_unfold : FuncUnfold repanicInner [] repanicInner.impl
+  repanic_unfold : FuncUnfold repanic [] repanic.impl
+  twoCells_unfold : FuncUnfold twoCells [] twoCells.impl
+  catchNil'deferred_unfold : FuncUnfold catchNil'deferred [] catchNil'deferred.impl
+  recoverNotPanicking_unfold : FuncUnfold recoverNotPanicking [] recoverNotPanicking.impl
+  testMethodRecover_unfold : FuncUnfold testMethodRecover [] testMethodRecover.impl
+  testTopRecover_unfold : FuncUnfold testTopRecover [] testTopRecover.impl
+  testRepanic_unfold : FuncUnfold testRepanic [] testRepanic.impl
+  testTwoCells_unfold : FuncUnfold testTwoCells [] testTwoCells.impl
+  testRecoverNotPanicking_unfold : FuncUnfold testRecoverNotPanicking [] testRecoverNotPanicking.impl
+  outerSeenByLiteral_unfold : FuncUnfold outerSeenByLiteral [] outerSeenByLiteral.impl
+  testOuterSeenByLiteral_unfold : FuncUnfold testOuterSeenByLiteral [] testOuterSeenByLiteral.impl
+  defersOnlyRecovering_unfold : FuncUnfold defersOnlyRecovering [] defersOnlyRecovering.impl
+  testDefersOnlyRecovering_unfold : FuncUnfold testDefersOnlyRecovering [] testDefersOnlyRecovering.impl
   CheckTrue_unfold : FuncUnfold CheckTrue [] CheckTrue.impl
   CheckFalse_unfold : FuncUnfold CheckFalse [] CheckFalse.impl
   testShortcircuitAndTF_unfold : FuncUnfold testShortcircuitAndTF [] testShortcircuitAndTF.impl
@@ -16816,6 +17613,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.msHidden_instance
   Assumptions.msRenamed_instance
   Assumptions.rangeStr_instance
+  Assumptions.catcher_instance
   Assumptions.BoolTest_instance
   Assumptions.ArrayEditor_instance
   Assumptions.appendNamedSlice_instance
@@ -16938,6 +17736,14 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.failing_testFunctionOrdering_unfold
   Assumptions.storeAndReturn_unfold
   Assumptions.failing_testArgumentOrder_unfold
+  Assumptions.genericAnyArg_unfold
+  Assumptions.genericToAny_unfold
+  Assumptions.genericSliceOfAny_unfold
+  Assumptions.genericFuncToAny_unfold
+  Assumptions.testGenericToInterface_unfold
+  Assumptions.testGenericToInterfaceLiteralClosure_unfold
+  Assumptions.genericConvertTP_unfold
+  Assumptions.testGenericConvertTypeParams_unfold
   Assumptions.«init.0_unfold»
   Assumptions.«init.1_unfold»
   Assumptions.testInitOrder_unfold
@@ -17141,6 +17947,23 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.panicUnrecovered_unfold
   Assumptions.testRecoverNamed_unfold
   Assumptions.testCatchTwoDeep_unfold
+  Assumptions.methodRecover_unfold
+  Assumptions.catchTop'deferred_unfold
+  Assumptions.topRecover_unfold
+  Assumptions.repanicInner_unfold
+  Assumptions.repanic_unfold
+  Assumptions.twoCells_unfold
+  Assumptions.catchNil'deferred_unfold
+  Assumptions.recoverNotPanicking_unfold
+  Assumptions.testMethodRecover_unfold
+  Assumptions.testTopRecover_unfold
+  Assumptions.testRepanic_unfold
+  Assumptions.testTwoCells_unfold
+  Assumptions.testRecoverNotPanicking_unfold
+  Assumptions.outerSeenByLiteral_unfold
+  Assumptions.testOuterSeenByLiteral_unfold
+  Assumptions.defersOnlyRecovering_unfold
+  Assumptions.testDefersOnlyRecovering_unfold
   Assumptions.CheckTrue_unfold
   Assumptions.CheckFalse_unfold
   Assumptions.testShortcircuitAndTF_unfold
