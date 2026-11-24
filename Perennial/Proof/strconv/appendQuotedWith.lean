@@ -26,6 +26,13 @@ variable [package_sem : strconv.Assumptions]
 
 attribute [-instance] go.SliceSemantics.composite_literal_slice
 
+/-- Composing two undo wands. -/
+private theorem appendQuotedWith.undo_comp {P Q R : IProp GF} : (P -∗ Q) ⊢ (Q -∗ R) -∗ (P -∗ R) := by
+  iintro H1 H2 HP
+  iapply H2
+  iapply H1
+  iexact HP
+
 theorem strconv.appendQuotedWith.wp_proof
     (wp_appendEscapedRune : strconv.appendEscapedRune.spec (GF := GF) (hG := hG))
     (wp_DecodeRuneInString : unicode.utf8.DecodeRuneInString.spec (GF := GF) (hG := hG)) :
@@ -41,8 +48,10 @@ theorem strconv.appendQuotedWith.wp_proof
   have hbl : (bs.length : Int) = sint.Z buf.len := by
     obtain ⟨h1, h2⟩ := Hblen; simp only [sint.nat, sint.Z] at h1 h2 ⊢; omega
   wp_join iprop(∃ b : GoSlice, "buf" ∷ buf_ptr ↦ b ∗ "Hb" ∷ b ↦* bs ∗
-      "Hcap" ∷ ownSliceCap w8 b (DFrac.own 1) ∗ "s" ∷ s_ptr ↦ s) with [buf Hb Hcap s]
-      as ⟨%b0, buf, Hb, Hcap, s⟩
+      "Hcap" ∷ ownSliceCap w8 b (DFrac.own 1) ∗ "s" ∷ s_ptr ↦ s ∗
+      "Hundo" ∷ (b ↦* bs ∗ ownSliceCap w8 b (DFrac.own 1) -∗
+        buf ↦* bs ∗ ownSliceCap w8 buf (DFrac.own 1))) with [buf Hb Hcap s]
+      as ⟨%b0, buf, Hb, Hcap, s, Hundo⟩
   · try wp_auto
     wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len as %-
     try wp_auto
@@ -50,25 +59,32 @@ theorem strconv.appendQuotedWith.wp_proof
       as %nb ⟨Hnb, Hncap, %Hnbc⟩
     try wp_auto
     wp_apply wp_slice_copy (V := w8) (t := go.byte) nb _ buf bs (DFrac.own 1) $$ [$Hnb $Hb]
-      as %n ⟨%Hn, Hnb, -⟩
+      as %n ⟨%Hn, Hnb, Hbo⟩
     have hl : (List.replicate (sint.nat buf.len) (zero_val w8)).length = bs.length := by
       simp only [List.length_replicate]; omega
     rw [hl, List.take_length, List.drop_eq_nil_of_le (by omega), List.append_nil]
     try wp_auto
+    ihave Hundo : (nb ↦* bs ∗ ownSliceCap w8 nb (DFrac.own 1) -∗
+        buf ↦* bs ∗ ownSliceCap w8 buf (DFrac.own 1)) $$ [Hbo Hcap]
+    · iintro -; iframe
     wp_join_done
+  all_goals try (iexists buf; iframe; iintro H; iexact H; done)
   all_goals (
     wp_apply wp_slice_literal
     isplitr
     · ipureintro; rfl
     iintro %sl ⟨Hsl, -⟩
     try wp_auto
-    wp_apply wp_slice_append (V := w8) (t := go.byte) _ _ _ _ _ $$ [$Hb $Hcap $Hsl]
-      as %b' ⟨Hb, Hcap, -⟩
+    wp_apply wp_slice_append_undo (V := w8) (t := go.byte) _ _ _ _ _ $$ [$Hb $Hcap $Hsl]
+      as %b' ⟨Hb, Hcap, -, Hu⟩
+    ihave Hundo := appendQuotedWith.undo_comp $$ Hu Hundo
     try wp_auto
     ihave HI : (∃ (sv : GoString) (b : GoSlice) (q : List w8) (rv : w32) (wv : w64),
         "s" ∷ s_ptr ↦ sv ∗ "buf" ∷ buf_ptr ↦ b ∗ "Hb" ∷ b ↦* bs ++ q ∗
         "Hcap" ∷ ownSliceCap w8 b (DFrac.own 1) ∗ "r" ∷ r_ptr ↦ rv ∗ "width" ∷ width_ptr ↦ wv ∗
-        "%Hsv" ∷ ⌜sv.length ≤ s.length⌝ : IProp GF) $$ [s buf Hb Hcap r width]
+        "Hundo" ∷ (b ↦* bs ++ q ∗ ownSliceCap w8 b (DFrac.own 1) -∗
+          buf ↦* bs ∗ ownSliceCap w8 buf (DFrac.own 1)) ∗
+        "%Hsv" ∷ ⌜sv.length ≤ s.length⌝ : IProp GF) $$ [s buf Hb Hcap r width Hundo]
     · iexists _, _, _, _, _
       iframe
       ipureintro; exact Nat.le_refl _
@@ -90,17 +106,20 @@ theorem strconv.appendQuotedWith.wp_proof
             strconv.lowerhex_idx_shr_w8_hi, strconv.lowerhex_idx_and_w8_lo, strconv.lowerhex_idx_and_w8_hi,
             _root_.and_self, ↓reduceIte])
         | (wp_apply wp_string_to_bytes as %sl ⟨Hsl, -⟩
-           wp_apply wp_slice_append (V := w8) (t := go.byte) _ _ _ _ _ $$ [$Hb $Hcap $Hsl]
-             as %b' ⟨Hb, Hcap, -⟩)
+           wp_apply wp_slice_append_undo (V := w8) (t := go.byte) _ _ _ _ _ $$ [$Hb $Hcap $Hsl]
+             as %b' ⟨Hb, Hcap, -, Hu⟩
+           ihave Hundo := appendQuotedWith.undo_comp $$ Hu Hundo)
         | (wp_apply wp_slice_literal
            isplitr
            ipureintro
            rfl
            iintro %sl ⟨Hsl, -⟩
            wp_auto
-           wp_apply wp_slice_append (V := w8) (t := go.byte) _ _ _ _ _ $$ [$Hb $Hcap $Hsl]
-             as %b' ⟨Hb, Hcap, -⟩)
-        | (wp_apply wp_appendEscapedRune $$ [$Hb $Hcap] as %b' ⟨%q', Hb, Hcap⟩))
+           wp_apply wp_slice_append_undo (V := w8) (t := go.byte) _ _ _ _ _ $$ [$Hb $Hcap $Hsl]
+             as %b' ⟨Hb, Hcap, -, Hu⟩
+           ihave Hundo := appendQuotedWith.undo_comp $$ Hu Hundo)
+        | (wp_apply wp_appendEscapedRune $$ [$Hb $Hcap] as %b' ⟨%q', Hb, Hcap, Hu⟩
+           ihave Hundo := appendQuotedWith.undo_comp $$ Hu Hundo))
       all_goals (
         wp_for_post
         wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len as %-
@@ -124,8 +143,9 @@ theorem strconv.appendQuotedWith.wp_proof
       · ipureintro; rfl
       iintro %sl ⟨Hsl, -⟩
       wp_auto
-      wp_apply wp_slice_append (V := w8) (t := go.byte) _ _ _ _ _ $$ [$Hb $Hcap $Hsl]
-        as %b' ⟨Hb, Hcap, -⟩
+      wp_apply wp_slice_append_undo (V := w8) (t := go.byte) _ _ _ _ _ $$ [$Hb $Hcap $Hsl]
+        as %b' ⟨Hb, Hcap, -, Hu⟩
+      ihave Hundo := appendQuotedWith.undo_comp $$ Hu Hundo
       try wp_auto
       try simp only [List.append_assoc]
       iapply HΦ

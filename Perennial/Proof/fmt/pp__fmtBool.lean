@@ -22,15 +22,16 @@ variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
 
 theorem fmt.pp.fmtBool.wp_proof (wp_fmtBoolean : fmt.fmt.fmtBoolean.spec (GF := GF) (hG := hG)) :
-    fmt.pp.fmtBool.spec (GF := GF) (hG := hG) := fun p x bs wid prec v => by
-  wp_start as Hp
-  unfold isPrinterA
-  icases Hp with ⟨Hb, Hf, Hrest⟩
-  wp_auto
-  wp_apply wp_fmtBoolean _ _ noFlags wid prec bs v (Or.inl rfl) $$ [Hf Hb] as ⟨Hf, Hb⟩
-  · iframe
-  iapply HΦ
-  iframe
+    fmt.pp.fmtBool.spec (GF := GF) (hG := hG) := fun p x bs wid prec v verb hverb => by
+  rcases hverb with rfl | rfl <;>
+  · wp_start as Hp
+    unfold isPrinterA
+    icases Hp with ⟨Hb, Hf, Hrest⟩
+    wp_auto
+    wp_apply wp_fmtBoolean _ _ noFlags wid prec bs v (Or.inl rfl) $$ [Hf Hb] as ⟨Hf, Hb⟩
+    · iframe
+    iapply HΦ
+    iframe
 
 end proof
 

@@ -20,11 +20,12 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
 
-/-- `p.fmtBool(v, verb)`, `%v` without flags: appends `true` or `false`. -/
+/-- `p.fmtBool(v, verb)`, `%v` or `%t` without flags: appends `true` or `false`. -/
 abbrev fmt.pp.fmtBool.spec : Prop :=
-  ∀ (p : Loc) (x : GoInterface) (bs : GoString) (wid prec : w64) (v : Bool),
+  ∀ (p : Loc) (x : GoInterface) (bs : GoString) (wid prec : w64) (v : Bool) (verb : w8),
+    (verb = verb_v ∨ verb = verb_t) →
     {{ isPrinterA (GF := GF) p x bs noFlags wid prec }}
-      (App (App (Val (p @!! go.GoType.PointerType pp.ty @!! go!"fmtBool")) (Val #v)) (Val #(W32 118)))
+      (App (App (Val (p @!! go.GoType.PointerType pp.ty @!! go!"fmtBool")) (Val #v)) (Val #(W32 (uint.nat verb))))
     {{ RET #(); isPrinterA p x (bs ++ if v then go!"true" else go!"false") noFlags wid prec }}
 
 end spec

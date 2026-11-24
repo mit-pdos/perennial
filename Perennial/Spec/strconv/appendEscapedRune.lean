@@ -21,7 +21,7 @@ variable [sem : go.Semantics]
 variable [package_sem : strconv.Assumptions]
 
 /-- `appendEscapedRune(buf, r, quote, ASCIIonly, graphicOnly)` appends `r`, escaped as in a Go
-literal quoted by `quote`, to `buf`; here, some bytes. Only without `graphicOnly` (what `Quote` and
+literal quoted by `quote`, to `buf`; here, some bytes. The old `buf` can be recovered from the result (as `wp_slice_append_undo`): Go's `append` only writes past `len(buf)` or copies into a new array, so a caller that lent `buf`'s capacity (`fmt`'s `intbuf`) gets it back. Only without `graphicOnly` (what `Quote` and
 `AppendQuote` pass): with it, Go consults `isInGraphicList`, which is not translated. -/
 abbrev strconv.appendEscapedRune.spec : Prop :=
   ∀ (buf : GoSlice) (bs : List w8) (r : w32) (quote : w8) (ASCIIonly : Bool),
@@ -30,7 +30,9 @@ abbrev strconv.appendEscapedRune.spec : Prop :=
       (App (App (App (App (App (Val (@! appendEscapedRune)) (Val #buf)) (Val #r)) (Val #quote))
         (Val #ASCIIonly)) (Val #false))
     {{ (buf' : GoSlice), RET #buf';
-        ∃ q : List w8, buf' ↦* (bs ++ q) ∗ ownSliceCap w8 buf' (DFrac.own 1) }}
+        ∃ q : List w8, buf' ↦* (bs ++ q) ∗ ownSliceCap w8 buf' (DFrac.own 1) ∗
+          (buf' ↦* (bs ++ q) ∗ ownSliceCap w8 buf' (DFrac.own 1) -∗
+            buf ↦* bs ∗ ownSliceCap w8 buf (DFrac.own 1)) }}
 
 end spec
 

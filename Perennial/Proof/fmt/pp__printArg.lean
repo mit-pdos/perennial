@@ -10,6 +10,7 @@ public import Perennial.Spec.fmt.pp__fmtString
 public import Perennial.Spec.fmt.pp__fmtBytes
 public import Perennial.Spec.fmt.pp__handleMethods
 public import Perennial.Spec.fmt.fmt__padString
+public import Perennial.Proof.fmt.OutLemmas
 
 @[expose] public section
 
@@ -27,6 +28,58 @@ theorem fmt.sint_Z_W64_sint_Z_w32 (n : w32) : sint.Z (W64 (sint.Z n)) = sint.Z n
 theorem fmt.uint_Z_W64_uint_Z_w8 (n : w8) : uint.Z (W64 (uint.Z n)) = uint.Z n := by word
 theorem fmt.uint_Z_W64_uint_Z_w16 (n : w16) : uint.Z (W64 (uint.Z n)) = uint.Z n := by word
 theorem fmt.uint_Z_W64_uint_Z_w32 (n : w32) : uint.Z (W64 (uint.Z n)) = uint.Z n := by word
+
+namespace fmt
+
+/-- What `fmtInteger` writes for an integer directive is what Go writes for it. -/
+theorem Mod.Out_int {md : Mod} {v : w8} (z : Int) (h : md.IntOk v) :
+    md.Out v (.int z) (md.intOut v z) := by
+  cases md with
+  | prec p => exact PrecOut.int p v z
+  | width zw =>
+    obtain ⟨hv, -⟩ := h
+    simp only [Mod.Out, Mod.intOut]
+    rcases hv with rfl | rfl | rfl
+    · rw [show verbBase verb_d = 10 by decide, show decide (verb_d = verb_X) = false by decide,
+        widthPad_false _ _ _ (Or.inl rfl)]
+      exact DirOut.int_d _ _
+    · rw [show verbBase verb_v = 10 by decide, show decide (verb_v = verb_X) = false by decide,
+        widthPad_false _ _ _ (Or.inl rfl)]
+      exact DirOut.int_v _ _
+    · rw [show verbBase verb_x = 16 by decide, show decide (verb_x = verb_X) = false by decide,
+        widthPad_false _ _ _ (Or.inr rfl)]
+      exact DirOut.int_x _ _
+
+theorem StrOut.dirOut_str {v : w8} {s o : GoString} (h : StrOut v s o)
+    (hv : v = verb_s ∨ v = verb_v ∨ v = verb_x ∨ v = verb_q) : DirOut none v (.str s) o := by
+  rcases hv with rfl | rfl | rfl | rfl
+  · rcases h with h | rfl
+    · exact absurd h (by decide)
+    · exact DirOut.str_s _
+  · rcases h with h | rfl
+    · exact absurd h (by decide)
+    · exact DirOut.str_v _
+  · rcases h with h | rfl
+    · exact absurd h (by decide)
+    · exact DirOut.str_x _
+  · exact DirOut.str_q _ _
+
+theorem StrOut.dirOut_method {v : w8} {P : GoString → Prop} {s o : GoString} (h : StrOut v s o)
+    (hs : P s) (hv : v = verb_s ∨ v = verb_v ∨ v = verb_x ∨ v = verb_q) :
+    DirOut none v (.method P) o := by
+  rcases hv with rfl | rfl | rfl | rfl
+  · rcases h with h | rfl
+    · exact absurd h (by decide)
+    · exact DirOut.method_s _ _ hs
+  · rcases h with h | rfl
+    · exact absurd h (by decide)
+    · exact DirOut.method_v _ _ hs
+  · rcases h with h | rfl
+    · exact absurd h (by decide)
+    · exact DirOut.method_x _ _ hs
+  · exact DirOut.method_q _ _ _ hs
+
+end fmt
 
 section proof
 variable [GooseExts] [GooseSemantics] [GooseInterp]
@@ -54,13 +107,14 @@ theorem fmt.pp.printArg.wp_proof_of_complex
     (wp_handleMethods : fmt.pp.handleMethods.spec (GF := GF) (hG := hG))
     (wp_padString : fmt.fmt.padString.spec (GF := GF) (hG := hG)) :
     fmt.pp.printArg.spec (GF := GF) (hG := hG) :=
-    fun p arg a bs zw verb hok => by
+    fun p arg a bs md verb hok => by
   cases a with
   | nil =>
-    cases zw with
-    | some _ => exact hok.elim
-    | none =>
-    simp only [DirOk] at hok
+    rcases md with (_ | N) | pr
+    rotate_left
+    · simp [Mod.Ok, DirOk] at hok
+    · simp [Mod.Ok, PrecOk] at hok
+    simp only [Mod.flags, Mod.wid, Mod.precW, Mod.Ok, Mod.Out, DirOk] at hok ⊢
     subst hok
     wp_start as ⟨Hp, Ha⟩
     iunfold isArg at Ha
@@ -82,38 +136,49 @@ theorem fmt.pp.printArg.wp_proof_of_complex
     simp only [isArg]
     itrivial
   | bool b =>
-    cases zw with
-    | some _ => exact hok.elim
-    | none =>
-    simp only [DirOk] at hok
-    subst hok
-    wp_start as ⟨Hp, Ha⟩
-    iunfold isArg at Ha
-    icases Ha with %Ha
-    subst Ha
-    iunfold isPrinter at Hp
-    icases Hp with ⟨%x0, Hp⟩
-    iunfold isPrinterA at Hp
-    icases Hp with ⟨Hbuf, Hfmt, Hib, Harg, ⟨%v0, Hval⟩, Hreo, Hgood, Hpan, Herr, Hwrap, Hwe⟩
-    wp_auto
-    wp_apply (wp_fmtBool p _ bs (dirWid none) (W64 0) b) $$
-      [Hbuf Hfmt Hib Harg Hval Hreo Hgood Hpan Herr Hwrap Hwe] as Hp
-    · unfold isPrinterA; iframe
-    iapply HΦ
-    iexists _
-    isplitr
-    · ipureintro; exact DirOut.bool_v b
-    iframe
-    simp only [isArg]
-    itrivial
+    rcases md with (_ | N) | pr
+    rotate_left
+    · simp [Mod.Ok, DirOk] at hok
+    · simp [Mod.Ok, PrecOk] at hok
+    simp only [Mod.flags, Mod.wid, Mod.precW, Mod.Ok, Mod.Out, DirOk] at hok ⊢
+    have hfb := wp_fmtBool p arg bs (dirWid none) (W64 0) b verb hok
+    rcases hok with rfl | rfl
+    all_goals
+      first
+        | rw [show (W32 (uint.nat verb_v : Int) : w32) = W32 118 from rfl] at hfb ⊢
+        | rw [show (W32 (uint.nat verb_t : Int) : w32) = W32 116 from rfl] at hfb ⊢
+      wp_start as ⟨Hp, Ha⟩
+      iunfold isArg at Ha
+      icases Ha with %Ha
+      subst Ha
+      iunfold isPrinter at Hp
+      icases Hp with ⟨%x0, Hp⟩
+      iunfold isPrinterA at Hp
+      icases Hp with ⟨Hbuf, Hfmt, Hib, Harg, ⟨%v0, Hval⟩, Hreo, Hgood, Hpan, Herr, Hwrap, Hwe⟩
+      wp_auto
+      wp_apply hfb $$
+        [Hbuf Hfmt Hib Harg Hval Hreo Hgood Hpan Herr Hwrap Hwe] as Hp
+      · unfold isPrinterA; iframe
+      iapply HΦ
+      iexists _
+      isplitr
+      · ipureintro; first | exact DirOut.bool_v b | exact DirOut.bool_t b
+      iframe
+      simp only [isArg]
+      itrivial
   | int z =>
-    obtain ⟨hverb, hzw⟩ := hok
-    have hfi := fun v s => wp_fmtInteger p arg bs zw v s verb hverb hzw
-    rcases hverb with rfl | rfl | rfl <;>
+    have hio : md.IntOk verb := by cases md <;> exact hok
+    have hfi := fun v s => wp_fmtInteger p arg bs md v s verb hio
+    have hv4 : verb = verb_d ∨ verb = verb_v ∨ verb = verb_x ∨ verb = verb_X := by
+      cases md with
+      | width zw => rcases hio.1 with h | h | h <;> simp [h]
+      | prec pr => exact hio.1
+    rcases hv4 with rfl | rfl | rfl | rfl <;>
     · first
         | rw [show (W32 (uint.nat verb_d : Int) : w32) = W32 100 from rfl] at hfi ⊢
         | rw [show (W32 (uint.nat verb_v : Int) : w32) = W32 118 from rfl] at hfi ⊢
         | rw [show (W32 (uint.nat verb_x : Int) : w32) = W32 120 from rfl] at hfi ⊢
+        | rw [show (W32 (uint.nat verb_X : Int) : w32) = W32 88 from rfl] at hfi ⊢
       wp_start as ⟨Hp, Ha⟩
       iunfold isArg at Ha
       icases Ha with %Ha
@@ -131,35 +196,43 @@ theorem fmt.pp.printArg.wp_proof_of_complex
         iframe Hp
         isplitl
         · ipureintro
-          simp only [intOut, fmt.sint_Z_W64_sint_Z_w8, fmt.sint_Z_W64_sint_Z_w16,
+          try simp only [fmt.sint_Z_W64_sint_Z_w8, fmt.sint_Z_W64_sint_Z_w16,
             fmt.sint_Z_W64_sint_Z_w32, fmt.uint_Z_W64_uint_Z_w8, fmt.uint_Z_W64_uint_Z_w16,
             fmt.uint_Z_W64_uint_Z_w32]
-          first
-            | exact DirOut.int_d _ _
-            | exact DirOut.int_v _ _
-            | exact DirOut.int_x _ _
+          exact fmt.Mod.Out_int _ hio
         simp only [isArg]
         ipureintro
         constructor
   | str t =>
-    cases zw with
-    | some _ => exact hok.elim
-    | none =>
-    simp only [DirOk] at hok
-    have hverb : verb = verb_s ∨ verb = verb_v ∨ verb = verb_x := by
-      rcases hok with h | h | ⟨h, _⟩ <;> simp [h]
+    rcases md with (_ | N) | pr
+    rotate_left
+    · simp [Mod.Ok, DirOk] at hok
+    · simp [Mod.Ok, PrecOk] at hok
+    simp only [Mod.flags, Mod.wid, Mod.precW, Mod.Ok, Mod.Out, DirOk] at hok ⊢
+    have hverb : verb = verb_s ∨ verb = verb_v ∨ verb = verb_x ∨ verb = verb_q := by
+      rcases hok with h | h | ⟨h, _⟩ | ⟨h, _⟩ <;> simp [h]
     have hlen : verb = verb_x → t.length < 2 ^ 62 := by
       rintro rfl
-      rcases hok with h | h | ⟨_, hl⟩
+      rcases hok with h | h | ⟨_, hl⟩ | ⟨h, _⟩
       · exact absurd h (by decide)
       · exact absurd h (by decide)
       · exact hl
-    have hfs := wp_fmtString p arg bs (dirWid none) (W64 0) t verb hverb hlen
-    rcases hverb with rfl | rfl | rfl <;>
+      · exact absurd h (by decide)
+    have hq : verb = verb_q → t.length ≤ maxAddr := by
+      rintro rfl
+      rcases hok with h | h | ⟨h, _⟩ | ⟨_, hl⟩
+      · exact absurd h (by decide)
+      · exact absurd h (by decide)
+      · exact absurd h (by decide)
+      · exact hl
+    have hfs := wp_fmtString p arg bs (dirWid none) (W64 0) t verb hverb hlen hq
+    have hverb' := hverb
+    rcases hverb with rfl | rfl | rfl | rfl <;>
     · first
         | rw [show (W32 (uint.nat verb_s : Int) : w32) = W32 115 from rfl] at hfs ⊢
         | rw [show (W32 (uint.nat verb_v : Int) : w32) = W32 118 from rfl] at hfs ⊢
         | rw [show (W32 (uint.nat verb_x : Int) : w32) = W32 120 from rfl] at hfs ⊢
+        | rw [show (W32 (uint.nat verb_q : Int) : w32) = W32 113 from rfl] at hfs ⊢
       rw [show dirFlags none = noFlags from rfl]
       wp_start as ⟨Hp, Ha⟩
       iunfold isArg at Ha
@@ -170,24 +243,22 @@ theorem fmt.pp.printArg.wp_proof_of_complex
       iunfold isPrinterA at Hp
       icases Hp with ⟨Hbuf, Hfmt, Hib, Harg, ⟨%v0, Hval⟩, Hreo, Hgood, Hpan, Herr, Hwrap, Hwe⟩
       wp_auto
-      wp_apply hfs $$ [Hbuf Hfmt Hib Harg Hval Hreo Hgood Hpan Herr Hwrap Hwe] as Hp
+      wp_apply hfs $$ [Hbuf Hfmt Hib Harg Hval Hreo Hgood Hpan Herr Hwrap Hwe] as ⟨%o, %Ho, Hp⟩
       · unfold isPrinterA; iframe
       iapply HΦ
-      iexists _
+      iexists o
       iframe Hp
       isplitl
       · ipureintro
-        first
-          | exact DirOut.str_s _
-          | exact DirOut.str_v _
-          | exact DirOut.str_x _
+        exact Ho.dirOut_str hverb'
       simp only [isArg]
       itrivial
   | bytes ys dq =>
-    cases zw with
-    | some _ => exact hok.elim
-    | none =>
-    simp only [DirOk] at hok
+    rcases md with (_ | N) | pr
+    rotate_left
+    · simp [Mod.Ok, DirOk] at hok
+    · simp [Mod.Ok, PrecOk] at hok
+    simp only [Mod.flags, Mod.wid, Mod.precW, Mod.Ok, Mod.Out, DirOk] at hok ⊢
     have hverb : verb = verb_s ∨ verb = verb_v ∨ verb = verb_d ∨ verb = verb_x := by
       rcases hok with h | h | h | ⟨h, _⟩ <;> simp [h]
     have hlen : verb = verb_x → ys.length < 2 ^ 62 := by
@@ -231,25 +302,36 @@ theorem fmt.pp.printArg.wp_proof_of_complex
       iframe
       itrivial
   | method P =>
-    cases zw with
-    | some _ => exact hok.elim
-    | none =>
-    simp only [DirOk] at hok
-    have hverb : verb = verb_s ∨ verb = verb_v ∨ verb = verb_x := by
-      rcases hok with h | h | ⟨h, _⟩ <;> simp [h]
+    rcases md with (_ | N) | pr
+    rotate_left
+    · simp [Mod.Ok, DirOk] at hok
+    · simp [Mod.Ok, PrecOk] at hok
+    simp only [Mod.flags, Mod.wid, Mod.precW, Mod.Ok, Mod.Out, DirOk] at hok ⊢
+    have hverb : verb = verb_s ∨ verb = verb_v ∨ verb = verb_x ∨ verb = verb_q := by
+      rcases hok with h | h | ⟨h, _⟩ | ⟨h, _⟩ <;> simp [h]
     have hlen : verb = verb_x → ∀ s, P s → s.length < 2 ^ 62 := by
       rintro rfl
-      rcases hok with h | h | ⟨_, hl⟩
+      rcases hok with h | h | ⟨_, hl⟩ | ⟨h, _⟩
+      · exact absurd h (by decide)
+      · exact absurd h (by decide)
+      · exact hl
+      · exact absurd h (by decide)
+    have hq : verb = verb_q → ∀ s, P s → s.length ≤ maxAddr := by
+      rintro rfl
+      rcases hok with h | h | ⟨h, _⟩ | ⟨_, hl⟩
+      · exact absurd h (by decide)
       · exact absurd h (by decide)
       · exact absurd h (by decide)
       · exact hl
     have hhm := fun ii m hx hm =>
-      wp_handleMethods p arg ii m P bs (dirWid none) (W64 0) verb hx hm hverb hlen
-    rcases hverb with rfl | rfl | rfl <;>
+      wp_handleMethods p arg ii m P bs (dirWid none) (W64 0) verb hx hm hverb hlen hq
+    have hverb' := hverb
+    rcases hverb with rfl | rfl | rfl | rfl <;>
     · first
         | rw [show (W32 (uint.nat verb_s : Int) : w32) = W32 115 from rfl] at hhm ⊢
         | rw [show (W32 (uint.nat verb_v : Int) : w32) = W32 118 from rfl] at hhm ⊢
         | rw [show (W32 (uint.nat verb_x : Int) : w32) = W32 120 from rfl] at hhm ⊢
+        | rw [show (W32 (uint.nat verb_q : Int) : w32) = W32 113 from rfl] at hhm ⊢
       rw [show dirFlags none = noFlags from rfl]
       wp_start as ⟨Hp, Ha⟩
       iunfold isArg at Ha
@@ -264,17 +346,14 @@ theorem fmt.pp.printArg.wp_proof_of_complex
       icases Hp with ⟨Hbuf, Hfmt, Hib, Harg, ⟨%v0, Hval⟩, Hreo, Hgood, Hpan, Herr, Hwrap, Hwe⟩
       repeat' (first | wp_auto | simp only [h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14,
         h15, h16, h17, h18, h19, ↓reduceIte, decide_false])
-      wp_apply (hhm ii m rfl hm) $$ [Hbuf Hfmt Hib Harg Hval Hreo Hgood Hpan Herr Hwrap Hwe] as ⟨%s, %Hs, Hp⟩
+      wp_apply (hhm ii m rfl hm) $$ [Hbuf Hfmt Hib Harg Hval Hreo Hgood Hpan Herr Hwrap Hwe] as ⟨%s, %o, ⟨%Hs, %Ho⟩, Hp⟩
       · unfold isPrinterA; iframe; iexact Hm
       iapply HΦ
-      iexists _
+      iexists o
       iframe Hp
       isplitr
       · ipureintro
-        first
-          | exact DirOut.method_s _ _ Hs
-          | exact DirOut.method_v _ _ Hs
-          | exact DirOut.method_x _ _ Hs
+        exact Ho.dirOut_method Hs hverb'
       simp only [isArg]
       iexists ii, m
       isplitr
