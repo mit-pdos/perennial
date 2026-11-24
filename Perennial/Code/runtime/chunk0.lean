@@ -10537,6 +10537,78 @@ noncomputable def writeErr [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def callersModel [GooseExts] [GoGlobalContext] : GoString :=
   go!"runtime.callersModel"
 
+/-- Caller reports file and line number information about function invocations on
+    the calling goroutine's stack. The argument skip is the number of stack frames
+    to ascend, with 0 identifying the caller of Caller. (For historical reasons the
+    meaning of skip differs between Caller and [Callers].) The return values report
+    the program counter, the file name (using forward slashes as path separator, even
+    on Windows), and the line number within the file of the corresponding call.
+    The boolean ok is false if it was not possible to recover the information.
+
+    go: extern.go:309:6 -/
+noncomputable def Caller.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "skip"
+  (Let "pc" (App (Val (GoInstruction (GoAlloc go.uintptr))) (App (Val (GoInstruction (GoZeroVal go.uintptr))) (Val #())))
+  (Let "$res0" (Var "pc")
+  (Let "file" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Let "$res1" (Var "file")
+  (Let "line" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Let "$res2" (Var "line")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "$res3" (Var "ok")
+  (Seq (App (Val exceptionDo)
+  (Let "skip" (App (Val (GoInstruction (GoAlloc go.int))) (Var "skip"))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.uintptr)]))) (Val #())) (Val #(W64 1)))
+  (Let "rpc" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uintptr)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.uintptr)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "skip")) (Val #(W64 1))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uintptr)))) (Var "rpc"))
+  (App (App (App (Val (GoInstruction (FuncResolve callers []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Frames.ty) go!"Next"))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uintptr)))) (Var "rpc"))
+  (App (App (Val (GoInstruction (FuncResolve CallersFrames []))) (Val #())) (Var "$a0")))) (Val #()))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "frame" (App (Val (GoInstruction (GoAlloc Frame.ty))) (App (Val (GoInstruction (GoZeroVal Frame.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uintptr))) (App (Val (GoInstruction (StructFieldRef Frame.ty go!"PC"))) (Var "frame")))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef Frame.ty go!"File"))) (Var "frame")))
+  (Let "$r2" (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef Frame.ty go!"Line"))) (Var "frame")))
+  (Let "$r3" (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uintptr))) (Pair (App (Val (GoInstruction (GoLoad go.uintptr))) (App (Val (GoInstruction (StructFieldRef Frame.ty go!"PC"))) (Var "frame"))) (Val #(W64 0)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res3") (Var "$r3")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res2") (Var "$r2")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uintptr))) (Pair (Var "$res0") (Var "$r0")))))))))))
+  (App (Val doExecute)
+  (Var "$r1")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Frame.ty))) (Pair (Var "frame") (Var "$r0")))))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1)))))
+  (App (Val doReturn)
+  (Val #()))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uintptr)))) (Pair (Var "rpc") (Var "$r0")))))))))
+  (Pair (Pair (Pair (App (Val (GoInstruction (GoLoad go.uintptr))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.string))) (Var "$res1"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "$res2"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res3")))))))))))))
+
 /-- Callers fills the slice pc with the return program counters of function invocations
     on the calling goroutine's stack. The argument skip is the number of stack frames
     to skip before recording in pc, with 0 identifying the frame for Callers itself and

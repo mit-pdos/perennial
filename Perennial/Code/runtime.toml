@@ -1,4 +1,5 @@
-translate = ["!*", "Version", "Callers", "CallersFrames"]
+# `Caller` is translated with its body: `callers` and `CallersFrames(...).Next()`, below.
+translate = ["!*", "Version", "Caller", "Callers", "CallersFrames"]
 
 imports = ["!*", "internal/runtime/atomic", "internal/runtime/sys", "internal/gomodel"]
 
