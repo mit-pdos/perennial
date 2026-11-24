@@ -308,6 +308,11 @@ the reflection primitives of `internal/reflectcore` (`TrustedCode/internal/refle
   `runtime.staticuint64s`. The model's `ValueOf` boxes each indirect value in a new variable, so
   two such `Value`s are never `==`. The documentation of `Value` says that `==` does not compare
   the underlying values. Direct pointers, channels and unsafe.Pointers compare as in gc.
+- **`==` on `Value`s that hold a func or a map directly panics (incomplete, sound).** A direct
+  `Value` holds its data itself in the field `ptr` (an `any`), where gc holds the data word. For
+  a func or a map (or a one-element array or struct of one), `ptr`'s dynamic type is not
+  comparable, so `ValueOf(f) == ValueOf(f)`, or such a `Value` as a map key, is the run-time
+  panic of comparing an uncomparable interface (stuck), where gc compares the words.
 
 ## Floats
 
