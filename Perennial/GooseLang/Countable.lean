@@ -138,6 +138,35 @@ end
 
 instance GoType.countable : Pos.Countable GoType := countableOfTree GoType.toTree GoType.toTree_inj
 
+def Shape.toTree : Shape → GenTree
+  | .self => node 0 []
+  | .slice => node 1 []
+  | .map => node 2 []
+  | .ptr => node 3 []
+  | .chan c => node 4 [c.toTree]
+  | .deref s => node 5 [s.toTree]
+theorem Shape.toTree_inj : ∀ {a b : Shape}, a.toTree = b.toTree → a = b
+  | .chan c, b, h => by inj_cases b [go.Shape.chan.injEq]; exact ChanDir.toTree_inj h
+  | .deref s, b, h => by inj_cases b [go.Shape.deref.injEq]; exact Shape.toTree_inj h
+  | .self, b, h | .slice, b, h | .map, b, h | .ptr, b, h => by
+    cases b <;> first | rfl | (injection h with h0 h; contradiction)
+instance Shape.countable : Pos.Countable Shape := countableOfTree Shape.toTree Shape.toTree_inj
+
+def TypeQ.toNat : TypeQ → Nat
+  | .kind => 0 | .name => 1 | .numTypeArgs => 2 | .pkgName => 3 | .elem => 4 | .key => 5
+  | .len => 6 | .chanDir => 7 | .numField => 8 | .fieldName => 9 | .fieldType => 10
+  | .fieldTag => 11 | .fieldEmbedded => 12 | .fieldPkg => 13 | .numIn => 14 | .inType => 15
+  | .numOut => 16 | .outType => 17 | .variadic => 18 | .numMethod => 19 | .methodId => 20
+  | .methodType => 21 | .arrayOf => 22
+def TypeQ.fromNat : Nat → TypeQ
+  | 0 => .kind | 1 => .name | 2 => .numTypeArgs | 3 => .pkgName | 4 => .elem | 5 => .key
+  | 6 => .len | 7 => .chanDir | 8 => .numField | 9 => .fieldName | 10 => .fieldType
+  | 11 => .fieldTag | 12 => .fieldEmbedded | 13 => .fieldPkg | 14 => .numIn | 15 => .inType
+  | 16 => .numOut | 17 => .outType | 18 => .variadic | 19 => .numMethod | 20 => .methodId
+  | 21 => .methodType | _ => .arrayOf
+instance TypeQ.countable : Pos.Countable TypeQ :=
+  countableOfLeftInverse TypeQ.toNat TypeQ.fromNat (by intro x; cases x <;> rfl)
+
 end go
 
 /-! ## Locations, slices and base literals -/
@@ -158,6 +187,8 @@ local instance : Inhabited PrimOp0 := ⟨.ArbitraryIntOp⟩
 local instance : Inhabited GoOperator := ⟨.GoEquals⟩
 local instance : Inhabited GoUnaryOperator := ⟨.GoPos⟩
 local instance : Inhabited GoInstruction := ⟨.AngelicExit⟩
+local instance : Inhabited go.Shape := ⟨.self⟩
+local instance : Inhabited go.TypeQ := ⟨.kind⟩
 
 def PrimOp1.toNat : PrimOp1 → Nat
   | .PrepareWriteOp => 0
@@ -342,6 +373,13 @@ def GoInstruction.toTree : GoInstruction → GenTree
   | .TypeAssertUnderlying2 x0 => node 44 [of x0]
   | .TypeOfEq => node 45 []
   | .InternalMapClone => node 46 []
+  | .FuncResolveAt x0 x1 => node 47 [of x0, of x1]
+  | .ConvertAt => node 48 []
+  | .FieldRefAt => node 49 []
+  | .ArraySliceAt => node 50 []
+  | .EqNilAt => node 51 []
+  | .PointerOfAt => node 52 []
+  | .TypeQuery x0 => node 53 [of x0]
 def GoInstruction.ofTree : GenTree → GoInstruction
   | node 0 [] => .AngelicExit
   | node 1 [x0, x1] => .Convert (decLeaf x0) (decLeaf x1)
@@ -390,6 +428,13 @@ def GoInstruction.ofTree : GenTree → GoInstruction
   | node 44 [x0] => .TypeAssertUnderlying2 (decLeaf x0)
   | node 45 [] => .TypeOfEq
   | node 46 [] => .InternalMapClone
+  | node 47 [x0, x1] => .FuncResolveAt (decLeaf x0) (decLeaf x1)
+  | node 48 [] => .ConvertAt
+  | node 49 [] => .FieldRefAt
+  | node 50 [] => .ArraySliceAt
+  | node 51 [] => .EqNilAt
+  | node 52 [] => .PointerOfAt
+  | node 53 [x0] => .TypeQuery (decLeaf x0)
   | _ => default
 instance GoInstruction.countable : Pos.Countable GoInstruction :=
   countableOfLeftInverse GoInstruction.toTree GoInstruction.ofTree
