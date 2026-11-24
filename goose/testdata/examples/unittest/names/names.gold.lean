@@ -145,6 +145,11 @@ noncomputable def Members.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] Members.ty
 
+noncomputable def «名».ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.名" [])
+
+attribute [irreducible] «名».ty
+
 @[reducible] noncomputable def AliasTP.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   TP.ty
 
@@ -192,6 +197,9 @@ noncomputable def useFoo [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def localConst [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.localConst"
+
+noncomputable def «λ''» [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.λ"
 
 /-- go: names.go:17:6 -/
 noncomputable def useIntOrString.impl [GooseExts] [GoGlobalContext] : val :=
@@ -259,7 +267,7 @@ noncomputable def K.end''.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore def''.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad def''.ty))) (Var "$res0"))))))
 
-/-- go: names.go:47:6 -/
+/-- go: names.go:48:6 -/
 noncomputable def «ü».impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc «é».ty))) (App (Val (GoInstruction (GoZeroVal «é».ty))) (Val #())))
@@ -273,7 +281,7 @@ noncomputable def «ü».impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore «é».ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad «é».ty))) (Var "$res0")))))
 
-/-- go: names.go:49:13 -/
+/-- go: names.go:50:13 -/
 noncomputable def «Ñ».«ö».impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam BAnon
@@ -289,7 +297,7 @@ noncomputable def «Ñ».«ö».impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore «é».ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad «é».ty))) (Var "$res0"))))))
 
-/-- go: names.go:73:12 -/
+/-- go: names.go:74:12 -/
 noncomputable def U.get.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam BAnon
@@ -304,7 +312,7 @@ noncomputable def U.get.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore ty''.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad ty''.ty))) (Var "$res0"))))))
 
-/-- go: names.go:75:6 -/
+/-- go: names.go:76:6 -/
 noncomputable def mk''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -317,7 +325,7 @@ noncomputable def mk''.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
 
-/-- go: names.go:76:6 -/
+/-- go: names.go:77:6 -/
 noncomputable def rec''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -330,7 +338,7 @@ noncomputable def rec''.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
 
-/-- go: names.go:77:6 -/
+/-- go: names.go:78:6 -/
 noncomputable def impl''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -343,7 +351,7 @@ noncomputable def impl''.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
 
-/-- go: names.go:78:6 -/
+/-- go: names.go:79:6 -/
 noncomputable def eq_def''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -356,7 +364,7 @@ noncomputable def eq_def''.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
 
-/-- go: names.go:79:6 -/
+/-- go: names.go:80:6 -/
 noncomputable def eq_1''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -369,7 +377,7 @@ noncomputable def eq_1''.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
 
-/-- go: names.go:81:6 -/
+/-- go: names.go:82:6 -/
 noncomputable def callsReserved.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -382,7 +390,7 @@ noncomputable def callsReserved.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
 
-/-- go: names.go:83:12 -/
+/-- go: names.go:84:12 -/
 noncomputable def U.callsReserved.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam BAnon
@@ -401,7 +409,7 @@ noncomputable def U.callsReserved.impl [GooseExts] [GoGlobalContext] : val :=
     another method: the function, type and global must not resolve to the
     method.
 
-    go: names.go:100:6 -/
+    go: names.go:101:6 -/
 noncomputable def f.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -414,7 +422,7 @@ noncomputable def f.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
 
-/-- go: names.go:108:12 -/
+/-- go: names.go:109:12 -/
 noncomputable def S.f.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
@@ -429,7 +437,7 @@ noncomputable def S.f.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
-/-- go: names.go:109:12 -/
+/-- go: names.go:110:12 -/
 noncomputable def S.T.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
@@ -444,7 +452,7 @@ noncomputable def S.T.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore T.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad T.ty))) (Var "$res0"))))))
 
-/-- go: names.go:110:12 -/
+/-- go: names.go:111:12 -/
 noncomputable def S.gl.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
@@ -459,7 +467,7 @@ noncomputable def S.gl.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
-/-- go: names.go:111:12 -/
+/-- go: names.go:112:12 -/
 noncomputable def S.g.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
@@ -477,7 +485,7 @@ noncomputable def S.g.impl [GooseExts] [GoGlobalContext] : val :=
 /-- Methods named like the names goose and Lean declare in a type's
     namespace, and like framework names.
 
-    go: names.go:115:12 -/
+    go: names.go:116:12 -/
 noncomputable def S.ty''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
@@ -492,7 +500,7 @@ noncomputable def S.ty''.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
-/-- go: names.go:116:12 -/
+/-- go: names.go:117:12 -/
 noncomputable def S.underlying''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
@@ -507,7 +515,7 @@ noncomputable def S.underlying''.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
-/-- go: names.go:117:12 -/
+/-- go: names.go:118:12 -/
 noncomputable def S.mk''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
@@ -522,7 +530,7 @@ noncomputable def S.mk''.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
-/-- go: names.go:118:12 -/
+/-- go: names.go:119:12 -/
 noncomputable def S.Val''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
@@ -537,7 +545,7 @@ noncomputable def S.Val''.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
-/-- go: names.go:135:6 -/
+/-- go: names.go:136:6 -/
 noncomputable def unbox.impl [GooseExts] [GoGlobalContext] (Val₀ : go.GoType) : val :=
   (LamV "b"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc Val₀))) (App (Val (GoInstruction (GoZeroVal Val₀))) (Val #())))
@@ -551,7 +559,7 @@ noncomputable def unbox.impl [GooseExts] [GoGlobalContext] (Val₀ : go.GoType) 
   (App (Val (GoInstruction (GoStore Val₀))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad Val₀))) (Var "$res0")))))
 
-/-- go: names.go:140:6 -/
+/-- go: names.go:141:6 -/
 noncomputable def useFoo.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -565,7 +573,7 @@ noncomputable def useFoo.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
 
-/-- go: names.go:168:18 -/
+/-- go: names.go:169:18 -/
 noncomputable def Members.get.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
@@ -580,7 +588,7 @@ noncomputable def Members.get.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
-/-- go: names.go:169:19 -/
+/-- go: names.go:170:19 -/
 noncomputable def Members.f.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
@@ -595,7 +603,7 @@ noncomputable def Members.f.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
-/-- go: names.go:170:19 -/
+/-- go: names.go:171:19 -/
 noncomputable def Members.ptr_f.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "m"
   (Lam BAnon
@@ -612,7 +620,7 @@ noncomputable def Members.ptr_f.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- A function-local constant named like a framework name.
 
-    go: names.go:173:6 -/
+    go: names.go:174:6 -/
 noncomputable def localConst.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -626,6 +634,20 @@ noncomputable def localConst.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
+
+/-- go: names.go:184:6 -/
+noncomputable def «λ''».impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "x"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc «名».ty))) (App (Val (GoInstruction (GoZeroVal «名».ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc «名».ty))) (Var "x"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad «名».ty))) (Var "x"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore «名».ty))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad «名».ty))) (Var "$res0")))))
 
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.names where
   pkgImportedPkgs := []
@@ -1460,6 +1482,20 @@ attribute [instance] Members.TypeAssumptions.type_repr
   Members.TypeAssumptions.ptr_unfold'get
   Members.TypeAssumptions.ptr_unfold'ptr_f
 
+abbrev «名» [GooseExts] : Type := w64
+
+@[reducible] noncomputable def «名».underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  go.int64
+
+class «名».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq «名».ty «名».underlying
+  method_set : go.MethodSetIs «名».ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType «名».ty) []
+
+attribute [instance] «名».TypeAssumptions.underlying
+  «名».TypeAssumptions.method_set
+  «名».TypeAssumptions.ptr_method_set
+
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   instance'Type : Type''.TypeAssumptions
   instance'IntOrString : IntOrString.TypeAssumptions
@@ -1486,6 +1522,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   instance'TP : TP.TypeAssumptions
   instance'GenBox : GenBox.TypeAssumptions
   instance'Members : Members.TypeAssumptions
+  «instance'名» : «名».TypeAssumptions
   unfold'useIntOrString : FuncUnfold useIntOrString [] useIntOrString.impl
   unfold'fun : FuncUnfold fun'' [] fun''.impl
   «unfold'ü» : FuncUnfold «ü» [] «ü».impl
@@ -1499,6 +1536,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   unfold'unbox : ∀ (Val₀ : go.GoType), FuncUnfold unbox [Val₀] (unbox.impl Val₀)
   unfold'useFoo : FuncUnfold useFoo [] useFoo.impl
   unfold'localConst : FuncUnfold localConst [] localConst.impl
+  «unfold'λ» : FuncUnfold «λ''» [] «λ''».impl
 
 attribute [instance] Assumptions.instance'Type
   Assumptions.instance'IntOrString
@@ -1525,6 +1563,7 @@ attribute [instance] Assumptions.instance'Type
   Assumptions.instance'TP
   Assumptions.instance'GenBox
   Assumptions.instance'Members
+  Assumptions.«instance'名»
   Assumptions.unfold'useIntOrString
   Assumptions.unfold'fun
   Assumptions.«unfold'ü»
@@ -1538,6 +1577,7 @@ attribute [instance] Assumptions.instance'Type
   Assumptions.unfold'unbox
   Assumptions.unfold'useFoo
   Assumptions.unfold'localConst
+  Assumptions.«unfold'λ»
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.unittest.names
 

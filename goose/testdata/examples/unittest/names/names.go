@@ -36,8 +36,9 @@ func (k K) show() def { return k.match }
 
 func (k K) end() def { return k.show() }
 
-// Names Lean's lexer rejects (written in guillemets): a type, function,
-// field and method.
+// Non-ASCII names (written in guillemets, conservatively: Lean's lexer
+// rejects some, such as 名 and λ, and accepts others, such as é): a type,
+// function, field and method.
 type é int64
 
 type Ñ struct {
@@ -175,3 +176,9 @@ func localConst() int {
 	const Pair = Val + 1
 	return Pair
 }
+
+// Names Lean's lexer rejects: a CJK type, and λ, a Go identifier that is a
+// Lean keyword (reserved, then quoted: «λ”»).
+type 名 int64
+
+func λ(x 名) 名 { return x }

@@ -49,8 +49,8 @@ type Expr interface {
 //
 // Guillemets are only a lexing fallback, not a conflict rule: a Go identifier
 // may contain Unicode letters and digits that Lean's identifier lexer rejects
-// (`é`, `名`, `λ`; Lean accepts ASCII letters, `_` and its letter-like ranges,
-// such as most Greek letters), and such a name is written in guillemets
+// (`名`, `λ`, `Π`, `Σ`; Lean 4.34 accepts ASCII and Latin letters such as `é`,
+// and most Greek letters), and such a name is written in guillemets
 // (LeanQuoteComponent, conservatively for every non-ASCII name), which does
 // not change the name.
 //
