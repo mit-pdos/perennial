@@ -5,10 +5,7 @@ public import Perennial.Proof.ProofPrelude
 public import Perennial.ManualProof.fmt
 public import Perennial.GeneratedProof.errors
 public import Perennial.GeneratedProof.io
-public import Perennial.GeneratedProof.reflect
-public import Perennial.GeneratedProof.strconv
 public import Perennial.GeneratedProof.sync
-public import Perennial.GeneratedProof.unicode.utf8
 public import Perennial.Golang.Theory
 public import Perennial.Code.fmt
 
@@ -430,186 +427,12 @@ variable [sem : go.Semantics]
 variable [package_sem' : fmt.Assumptions]
 
 noncomputable instance typed_pointsto'pp :
-    TypedPointsto (GF := GF) fmt.pp where
-  typedPointstoDef l v dq := iprop(
-    "buf" ∷ typedPointsto (structFieldRef fmt.pp go!"buf" l) v.buf' dq ∗
-    "arg" ∷ typedPointsto (structFieldRef fmt.pp go!"arg" l) v.arg' dq ∗
-    "value" ∷ typedPointsto (structFieldRef fmt.pp go!"value" l) v.value' dq ∗
-    "fmt" ∷ typedPointsto (structFieldRef fmt.pp go!"fmt" l) v.fmt' dq ∗
-    "reordered" ∷ typedPointsto (structFieldRef fmt.pp go!"reordered" l) v.reordered' dq ∗
-    "goodArgNum" ∷ typedPointsto (structFieldRef fmt.pp go!"goodArgNum" l) v.goodArgNum' dq ∗
-    "panicking" ∷ typedPointsto (structFieldRef fmt.pp go!"panicking" l) v.panicking' dq ∗
-    "erroring" ∷ typedPointsto (structFieldRef fmt.pp go!"erroring" l) v.erroring' dq ∗
-    "wrapErrs" ∷ typedPointsto (structFieldRef fmt.pp go!"wrapErrs" l) v.wrapErrs' dq ∗
-    "wrappedErrs" ∷ typedPointsto (structFieldRef fmt.pp go!"wrappedErrs" l) v.wrappedErrs' dq ∗
-    "_" ∷ True)
-  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
-  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
-  typedPointsto_agree := by solve_typed_pointsto_agree
+    TypedPointsto (GF := GF) fmt.pp :=
+  sorry -- axiomatized type
 
 noncomputable instance into_val_typed'pp :
-    IntoValTypedUnderlying (GF := GF) fmt.pp fmt.pp.underlying := by
-  solve_into_val_typed_struct
-
-noncomputable instance access_load'pp'buf (l : Loc) (v : fmt.pp) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef fmt.pp go!"buf" l) v.buf' dq)
-      (typedPointsto (structFieldRef fmt.pp go!"buf" l) v.buf' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance access_store'pp'buf (l : Loc) (v : fmt.pp) (y : fmt.buffer) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef fmt.pp go!"buf" l) v.buf' (DFrac.own 1))
-      (typedPointsto (structFieldRef fmt.pp go!"buf" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with buf' := y } : fmt.pp) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance access_load'pp'arg (l : Loc) (v : fmt.pp) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef fmt.pp go!"arg" l) v.arg' dq)
-      (typedPointsto (structFieldRef fmt.pp go!"arg" l) v.arg' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance access_store'pp'arg (l : Loc) (v : fmt.pp) (y : GoInterface) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef fmt.pp go!"arg" l) v.arg' (DFrac.own 1))
-      (typedPointsto (structFieldRef fmt.pp go!"arg" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with arg' := y } : fmt.pp) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance access_load'pp'value (l : Loc) (v : fmt.pp) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef fmt.pp go!"value" l) v.value' dq)
-      (typedPointsto (structFieldRef fmt.pp go!"value" l) v.value' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance access_store'pp'value (l : Loc) (v : fmt.pp) (y : _root_.Perennial.reflect.Value) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef fmt.pp go!"value" l) v.value' (DFrac.own 1))
-      (typedPointsto (structFieldRef fmt.pp go!"value" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with value' := y } : fmt.pp) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance access_load'pp'fmt (l : Loc) (v : fmt.pp) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef fmt.pp go!"fmt" l) v.fmt' dq)
-      (typedPointsto (structFieldRef fmt.pp go!"fmt" l) v.fmt' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance access_store'pp'fmt (l : Loc) (v : fmt.pp) (y : fmt.fmt) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef fmt.pp go!"fmt" l) v.fmt' (DFrac.own 1))
-      (typedPointsto (structFieldRef fmt.pp go!"fmt" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with fmt' := y } : fmt.pp) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance access_load'pp'reordered (l : Loc) (v : fmt.pp) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef fmt.pp go!"reordered" l) v.reordered' dq)
-      (typedPointsto (structFieldRef fmt.pp go!"reordered" l) v.reordered' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance access_store'pp'reordered (l : Loc) (v : fmt.pp) (y : Bool) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef fmt.pp go!"reordered" l) v.reordered' (DFrac.own 1))
-      (typedPointsto (structFieldRef fmt.pp go!"reordered" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with reordered' := y } : fmt.pp) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance access_load'pp'goodArgNum (l : Loc) (v : fmt.pp) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef fmt.pp go!"goodArgNum" l) v.goodArgNum' dq)
-      (typedPointsto (structFieldRef fmt.pp go!"goodArgNum" l) v.goodArgNum' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance access_store'pp'goodArgNum (l : Loc) (v : fmt.pp) (y : Bool) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef fmt.pp go!"goodArgNum" l) v.goodArgNum' (DFrac.own 1))
-      (typedPointsto (structFieldRef fmt.pp go!"goodArgNum" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with goodArgNum' := y } : fmt.pp) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance access_load'pp'panicking (l : Loc) (v : fmt.pp) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef fmt.pp go!"panicking" l) v.panicking' dq)
-      (typedPointsto (structFieldRef fmt.pp go!"panicking" l) v.panicking' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance access_store'pp'panicking (l : Loc) (v : fmt.pp) (y : Bool) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef fmt.pp go!"panicking" l) v.panicking' (DFrac.own 1))
-      (typedPointsto (structFieldRef fmt.pp go!"panicking" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with panicking' := y } : fmt.pp) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance access_load'pp'erroring (l : Loc) (v : fmt.pp) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef fmt.pp go!"erroring" l) v.erroring' dq)
-      (typedPointsto (structFieldRef fmt.pp go!"erroring" l) v.erroring' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance access_store'pp'erroring (l : Loc) (v : fmt.pp) (y : Bool) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef fmt.pp go!"erroring" l) v.erroring' (DFrac.own 1))
-      (typedPointsto (structFieldRef fmt.pp go!"erroring" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with erroring' := y } : fmt.pp) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance access_load'pp'wrapErrs (l : Loc) (v : fmt.pp) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef fmt.pp go!"wrapErrs" l) v.wrapErrs' dq)
-      (typedPointsto (structFieldRef fmt.pp go!"wrapErrs" l) v.wrapErrs' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance access_store'pp'wrapErrs (l : Loc) (v : fmt.pp) (y : Bool) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef fmt.pp go!"wrapErrs" l) v.wrapErrs' (DFrac.own 1))
-      (typedPointsto (structFieldRef fmt.pp go!"wrapErrs" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wrapErrs' := y } : fmt.pp) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance access_load'pp'wrappedErrs (l : Loc) (v : fmt.pp) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef fmt.pp go!"wrappedErrs" l) v.wrappedErrs' dq)
-      (typedPointsto (structFieldRef fmt.pp go!"wrappedErrs" l) v.wrappedErrs' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance access_store'pp'wrappedErrs (l : Loc) (v : fmt.pp) (y : GoSlice) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef fmt.pp go!"wrappedErrs" l) v.wrappedErrs' (DFrac.own 1))
-      (typedPointsto (structFieldRef fmt.pp go!"wrappedErrs" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wrappedErrs' := y } : fmt.pp) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
+    IntoValTypedUnderlying (GF := GF) fmt.pp fmt.pp.underlying :=
+  sorry -- axiomatized type
 
 end def_
 end pp
