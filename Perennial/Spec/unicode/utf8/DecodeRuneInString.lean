@@ -20,13 +20,16 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : unicode.utf8.Assumptions]
 
-/-- `DecodeRuneInString(s)` of a string starting with the ASCII byte `c`: `c` and its size 1. -/
+/-- `DecodeRuneInString(s)`: the first rune of `s` and its width, `0` for an empty `s` and otherwise
+between `1` and `len(s)` (`decodeWidthOk`); for an `s` starting with an ASCII byte `c`, `c` and
+width 1. -/
 abbrev unicode.utf8.DecodeRuneInString.spec : Prop :=
-  ∀ (c : w8) (s : GoString),
-    uint.Z c < 128 →
+  ∀ (s : GoString),
     {{ isPkgInit (PROP := IProp GF) pkg_id.unicode.utf8 }}
-      (App (Val (@! DecodeRuneInString)) (Val #(c :: s)))
-    {{ RET (PairV #(W32 (uint.nat c)) #(W64 1)); True }}
+      (App (Val (@! DecodeRuneInString)) (Val #s))
+    {{ (r : w32) (size : w64), RET (PairV #r #size); ⌜unicode.utf8.decodeWidthOk s size ∧
+        ∀ (c : w8) (rest : GoString), s = c :: rest → uint.Z c < 128 →
+          r = W32 (uint.nat c) ∧ size = W64 1⌝ }}
 
 end spec
 

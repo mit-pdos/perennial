@@ -1517,3 +1517,61 @@ refinement: functions with no `recover()` get no second version and translate ex
 The owner then chose to emit only `F'deferred` (option (b), 2026-11-23), instead of also a stuck
 ordinary `F`, on the condition that no proof in Perennial or etcd-grove uses the ordinary `F` of a
 recovering function; none does.
+## Case 47 — ACCEPTED: an index read of a slice passes `IndexRef` its operands in order (branch `fix-index-slice-operands`, issue #643)
+
+**Symptom.** Incomplete (stuck where Go runs). `index_slice` stepped `⟦Index (go.SliceType e), (#s, #i)⟧`
+to `GoLoad e (IndexRef (go.SliceType e) (#i, #s))`, and no rule takes `IndexRef` of a slice type with
+the index first (`index_ref_slice` takes `(#s, #i)`), so the read stopped there. Goose emits `Index`
+on a slice only when the operand's type is a type parameter (a read of a slice-typed operand is
+`IndexRef` and a load), so only generic code instantiated at a slice type met it. Reported from a
+proof of `unicode/utf8.Valid`.
+
+**Witness.**
+
+```go
+func first[S ~[]byte | ~string](s S) byte { return s[0] }
+// first([]byte{1}): Go returns 1; the model was stuck.
+```
+
+**Taken.** The operands in `index_slice`'s right-hand side swapped to `(#s, #i)`. Cost: 1 changed
+semantics line, 0 new rules, 0 goose changes. Semantics tests `testIndexGenericBytes`,
+`testIndexGenericNamedBytes` (a named byte-slice type) and `testIndexGenericString` (the string
+instantiation, which never used the rule), all proved; the two slice proofs do not go through with
+the operands reversed.
+
+**Siblings.** None: `index_array`, `string_index`, `index_ref_array` and every use of `IndexRef` in
+`Golang/Defn` take the container first.
+
+**Why.** The user, on the issue's proposed one-line diff: "I think [it] is valid issue. Fix it in a
+branch, so I can make a PR. Also add a regression test for it."
+
+## Case 48 — ACCEPTED: Go model overlays, the mechanism (branch `goose-model-overlay-s0`, issue #692, stage S0)
+
+**Symptom.** Trust in the wrong place. A package's trusted parts were hand-written GooseLang
+(`TrustedCode/*.lean`, much of it pasted goose output of Go quoted in a docstring), a separate Go
+model package called from Lean glue (`goose/model/pool`), or a whole file added by `-overlay`.
+Nothing replaced one declaration of a real package by Go, and nothing tied a model to the real
+package's API.
+
+**Witness.** `internal/sync.Mutex.Lock` is a hand-written `.impl` over `lock.lock`, and its type's
+layout `Mutex.underlying := go.bool` is trusted too, although Go's own `state int32` and a CAS loop
+express it.
+
+**Taken.** One mechanism (D1): a `[model]` table in the package's config, with `dir` and an explicit
+`replaces` list checked both ways (D2). One builder in `goose/util` that every command loads
+through: it splices each model declaration in the place of the real one between `//line`
+directives (keeping initialization order), adds the model's other declarations in
+`zz_gomodel_<file>.go`, and refuses a model that changes the real package's API (D5). Whole-package
+models (`["*"]`) and additions only (`[]`) are the same table. The standard-library models' choice
+and stuck points are calls of `internal/gomodel` (D3), a package only the overlay adds; its three
+functions are primitive stubs. Cost: a builder of about 1500 lines (`goose/util/model.go`) and its tests, 0 semantics rules,
+0 changed translations; the trusted text of a model becomes its Go, reviewed side by side with the
+real source (`review-trusted` R12).
+
+**Not taken.** Keeping Lean models plus #692's `[layouts]` table for layouts (more hand-written Lean,
+a second mechanism); detecting replacements by shared names (a model could shadow a real
+declaration silently).
+
+**Why.** The plan "Go model overlays" (#692), decisions D1–D7 approved by the owner as recommended,
+2026-11-23. The toolchain check found that go1.26.0's `go list` does not find a standard-library
+package added by an overlay through `go/packages`; go1.26.11 and go1.27 do.

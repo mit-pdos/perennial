@@ -1,0 +1,3 @@
+# What `crypto/sha1` reaches.
+translate = ["Enforced"]
+imports = ["!*", "crypto/fips140"]

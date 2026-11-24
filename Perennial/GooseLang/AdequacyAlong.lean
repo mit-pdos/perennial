@@ -19,11 +19,18 @@ it excludes are exactly those in which `T` goroutines are live at once.
 
 `RealNstepsBelow.of_threadsBelow` recovers `goose_adequacy`'s premises from the new one, so
 `goose_adequacy` follows from `goose_adequacy_below` (`goose_adequacy_of_below`, a check).
+
+The same for executions with crashes: `RealCrashNstepsBelow boot T n ρ κs ρ' b` is an execution
+with crashes (`RealCrashNsteps`) each generation of which is a `RealNstepsBelow T`, and
+`goose_crash_adequacy_below` is `goose_crash_adequacy` about every such execution
+(`goose_crash_adequacy_of_below`, the check). The distributed forms over `DistCrashNstepsBelow`
+are in `DistAdequacy.lean`.
 -/
 module
 
 public import Perennial.GooseLang.Adequacy
 public import Perennial.GooseLang.CrashLang
+public import Perennial.GooseLang.CrashAdequacy
 
 @[expose] public section
 
@@ -194,6 +201,192 @@ theorem goose_invariance_below [hPre : GooseGpreS GF] (N T : Nat)
   exact goose_invariance_blang (σ2 := (σ2, ⟨c, t⟩)) N T (by omega) hT e σ g φinv Hinitg Hinit Hwp
     ((Language.erasedStep_nSteps _ _).mpr ⟨n, κs, Hb⟩)
 
+
 end adequacy
+
+/-! ## Executions with crashes -/
+
+section real_crash
+variable [GooseExts] [GooseSemantics] [GoGlobalContext]
+
+/-- An execution with crashes of the real semantics (`RealCrashNsteps`) along which every
+configuration, the first and the last of each generation included, has fewer than `T` live
+threads: each generation is a `RealNstepsBelow T`. A crash (not a step) replaces the thread
+pool by `[boot]`, the local state `σ` by any `σ'` with `Crash σ σ'`, and keeps the global state;
+the restarted configuration is the first of the next generation, so it is bounded too. -/
+inductive RealCrashNstepsBelow (boot : Expr) (T : Nat) :
+    Nat → List Expr × CfgState → List Observation → List Expr × CfgState → Bool → Prop
+  | done {n ρ κs ρ'} : RealNstepsBelow T n ρ κs ρ' → RealCrashNstepsBelow boot T n ρ κs ρ' false
+  | crash {n m ρ κs t σ g σ' κs' ρ' b} :
+      RealNstepsBelow T n ρ κs (t, (σ, g)) → Crash σ σ' →
+      RealCrashNstepsBelow boot T m ([boot], (σ', g)) κs' ρ' b →
+      RealCrashNstepsBelow boot T (n + m) ρ (κs ++ κs') ρ' true
+
+namespace RealCrashNstepsBelow
+
+/-- The execution, forgetting the thread bound. -/
+theorem nsteps {boot : Expr} {T n : Nat} {ρ ρ' : List Expr × CfgState} {κs : List Observation}
+    {b : Bool} (h : RealCrashNstepsBelow boot T n ρ κs ρ' b) : RealCrashNsteps boot n ρ κs ρ' b := by
+  induction h with
+  | done h => exact .done h.nsteps
+  | crash h hc _ ih => exact .crash h.nsteps hc ih
+
+/-- The first configuration has fewer than `T` threads. -/
+theorem start {boot : Expr} {T n : Nat} {ρ ρ' : List Expr × CfgState} {κs : List Observation}
+    {b : Bool} (h : RealCrashNstepsBelow boot T n ρ κs ρ' b) : ρ.2.1.threads < T := by
+  cases h with
+  | done h => exact h.start
+  | crash h _ _ => exact h.start
+
+/-- `goose_crash_adequacy`'s premises give the new one: if every execution with crashes of at
+most `n` steps from `ρ` stays below `T` threads, so does this one. -/
+theorem of_threadsBelow {boot : Expr} {T n : Nat} {ρ ρ' : List Expr × CfgState}
+    {κs : List Observation} {b : Bool} (h : RealCrashNsteps boot n ρ κs ρ' b)
+    (hT : RealCrashThreadsBelow boot T n ρ) : RealCrashNstepsBelow boot T n ρ κs ρ' b := by
+  induction h with
+  | done h =>
+    exact .done (RealNstepsBelow.of_threadsBelow h
+      (fun k κs ρ' hk hk' => hT k κs ρ' false hk (.done hk')))
+  | @crash n m ρ κs t σ g σ' κs' ρ' b h₁ hc _ ih =>
+    exact .crash (RealNstepsBelow.of_threadsBelow h₁
+        (fun k κs₀ ρ₀ hk hk' => hT k κs₀ ρ₀ false (by omega) (.done hk'))) hc
+      (ih fun k κs'' ρ'' b' hk hk' => hT (n + k) (κs ++ κs'') ρ'' true (by omega) (.crash h₁ hc hk'))
+
+/-- From a configuration with one thread, an execution with crashes of `n` steps stays below
+`n + 2` threads (a step forks at most one thread, a crash leaves one). -/
+theorem of_single {boot : Expr} {n : Nat} {ρ ρ' : List Expr × CfgState} {κs : List Observation}
+    {b : Bool} (h : RealCrashNsteps boot n ρ κs ρ' b) (h1 : ρ.2.1.threads = 1) :
+    RealCrashNstepsBelow boot (n + 2) n ρ κs ρ' b :=
+  of_threadsBelow h (RealCrashThreadsBelow.of_single h1)
+
+/-- A larger bound. -/
+theorem mono {boot : Expr} {T T' n : Nat} {ρ ρ' : List Expr × CfgState} {κs : List Observation}
+    {b : Bool} (h : RealCrashNstepsBelow boot T n ρ κs ρ' b) (hTT : T ≤ T') :
+    RealCrashNstepsBelow boot T' n ρ κs ρ' b := by
+  induction h with
+  | done h => exact .done (h.mono hTT)
+  | crash h hc _ ih => exact .crash (h.mono hTT) hc ih
+
+end RealCrashNstepsBelow
+
+/-- `bounded_nsteps_of_real_below`, with the step fuel that is left. -/
+theorem bounded_nsteps_of_real_below_fuel {T n : Nat} {ρ₁ ρ₂ : List Expr × CfgState}
+    {κs : List Observation} (h : RealNstepsBelow T n ρ₁ κs ρ₂) (s : Nat) (hs : n ≤ s) (t : Nat)
+    (ht : T - 1 ≤ t + ρ₁.2.1.threads) :
+    ∃ s' t', s ≤ s' + n ∧
+      Language.NSteps n (ρ₁.1, ((ρ₁.2, ⟨s, t⟩) : BcfgState)) κs (ρ₂.1, (ρ₂.2, ⟨s', t'⟩)) := by
+  induction h generalizing s t with
+  | refl ρ _ => exact ⟨s, t, by omega, .refl _⟩
+  | cons _ hstep hrest ih =>
+    obtain ⟨s₁, t₁, hs₁, ht₁, hstep'⟩ :=
+      bounded_step_of_real s t T hstep (by omega) ht hrest.start
+    obtain ⟨s', t', hs', hsteps'⟩ := ih s₁ (by omega) t₁ ht₁
+    exact ⟨s', t', by omega, .cons hstep' hsteps'⟩
+
+/-- Simulation with crashes, with the thread bound along the execution: a real execution with
+crashes of `n` steps every configuration of which has fewer than `T` threads is also an execution
+with crashes of the bounded semantics, started with any step fuel `s ≥ n` and any thread fuel
+`t ≥ T - 1 - threads` (`bounded_crash_nsteps_of_real`, with the thread bound read off the
+execution). -/
+theorem bounded_crash_nsteps_of_real_below {boot : Expr} {T n : Nat} {ρ ρ' : List Expr × CfgState}
+    {κs : List Observation} {b : Bool} (h : RealCrashNstepsBelow boot T n ρ κs ρ' b) (s : Nat)
+    (hs : n ≤ s) (t : Nat) (ht : T - 1 ≤ t + ρ.2.1.threads) :
+    ∃ s' t', BoundedCrashNsteps boot T n (ρ.1, ((ρ.2, ⟨s, t⟩) : BcfgState)) κs
+      (ρ'.1, (ρ'.2, ⟨s', t'⟩)) b := by
+  induction h generalizing s t with
+  | done h =>
+    obtain ⟨s', t', -, h'⟩ := bounded_nsteps_of_real_below_fuel h s hs t ht
+    exact ⟨s', t', .done h'⟩
+  | @crash n m ρ κs t₀ σ g σ' κs' ρ' b h₁ hc hrest ih =>
+    obtain ⟨s₁, t₁, hs₁, h₁'⟩ := bounded_nsteps_of_real_below_fuel h₁ s (by omega) t ht
+    have h1T : 1 < T := hc.threads ▸ hrest.start
+    obtain ⟨s', t', h₂'⟩ := ih s₁ (by omega) (T - 2) (by simp only [hc.threads]; omega)
+    exact ⟨s', t', .crash (f := ⟨s₁, t₁⟩) h₁' hc h₂'⟩
+
+end real_crash
+
+section crash_adequacy
+variable [GooseExts] [GooseInterp] [GooseSemantics] [GoGlobalContext] [GooseCrashInterp]
+variable {GF : BundledGFunctors}
+
+/-- **Crash adequacy of GooseLang, with the thread bound on the execution.** As
+`goose_crash_adequacy`, but about every real execution with crashes of the boot program `e` of
+fewer than `N` steps in all, from a configuration with the main thread only, *along which* fewer
+than `T` threads are live at every configuration (`RealCrashNstepsBelow e T n`): if the main
+thread has terminated with `v` then `φ v`, every thread is a value or can take a step, and no
+thread has an unrecovered panic. -/
+theorem goose_crash_adequacy_below [hPre : GooseGpreS GF] (N T : Nat)
+    (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p))
+    (Hinitg : extsInitgP g.globalWorld) (Hinit : extsInitP σ.world g.globalWorld)
+    (P : ∀ [GooseGlobalGS .hasLC GF], GooseLocalGS GF → IProp GF)
+    (Hstart : ∀ [hG : HeapGS .hasLC GF],
+      receiptBound GF = N →
+      threadBound GF = T →
+      hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld -∗
+        extsLocalStart (GF := GF) σ.world -∗
+        ownGoState σ.goState.packageState ={⊤}=∗ P hG.goose_localGS)
+    (Hwp : ∀ [hG : HeapGS .hasLC GF],
+      receiptBound GF = N →
+      threadBound GF = T →
+      hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
+      ⊢ P hG.goose_localGS -∗ threadTok ={⊤}=∗
+        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }} ∗
+        ∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
+          extsCrashStart hG.goose_localGS L' -∗
+          ownGoState (hG := L'.goose_go_stateGS) ∅ -∗ £ 1 ={⊤}=∗ P L')
+    (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState) (b : Bool)
+    (Hsteps : RealCrashNstepsBelow e T n ([e], ((σ, g) : CfgState)) κs (t2, σ2) b)
+    (Hbound : n < N) (Hthreads : σ.threads = 1) :
+    (∀ v t2', t2 = Val v :: t2' → φ v) ∧
+      (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
+      (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2) := by
+  have hT : 1 < T := by have := Hsteps.start; simp only at this; omega
+  obtain ⟨c, t, Hb⟩ := bounded_crash_nsteps_of_real_below Hsteps (N - 1) (by omega) (T - 2)
+    (by simp only; omega)
+  have H := goose_crash_adequacy_blang N T (by omega) hT e σ g φ hφ Hinitg Hinit P Hstart Hwp Hb
+  refine ⟨H.1, fun e2 he2 => realNotStuck_of_bounded (H.2.1 e2 he2), ?_⟩
+  intro e2 He2 Hu
+  obtain ⟨p, Hp⟩ := unrecoveredPanic_steps Hu
+  obtain ⟨t₁, t₂, rfl⟩ := List.append_of_mem He2
+  obtain ⟨m, κs', Hm⟩ := (Language.erasedStep_nSteps _ _).mp (Hp [] t₁ t₂ (σ2, ⟨c, t⟩))
+  have := (goose_crash_adequacy_blang N T (by omega) hT e σ g φ hφ Hinitg Hinit P Hstart Hwp
+    (Hb.append Hm)).2.2 (PanicV p) (by simp)
+  simp [val.isPanic] at this
+
+/-- Check: `goose_crash_adequacy` is the instance of `goose_crash_adequacy_below` at an execution
+all of whose executions with crashes of `n` steps stay below `T` threads
+(`RealCrashNstepsBelow.of_threadsBelow`). -/
+theorem goose_crash_adequacy_of_below [hPre : GooseGpreS GF] (N T : Nat)
+    (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p))
+    (Hinitg : extsInitgP g.globalWorld) (Hinit : extsInitP σ.world g.globalWorld)
+    (P : ∀ [GooseGlobalGS .hasLC GF], GooseLocalGS GF → IProp GF)
+    (Hstart : ∀ [hG : HeapGS .hasLC GF],
+      receiptBound GF = N →
+      threadBound GF = T →
+      hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld -∗
+        extsLocalStart (GF := GF) σ.world -∗
+        ownGoState σ.goState.packageState ={⊤}=∗ P hG.goose_localGS)
+    (Hwp : ∀ [hG : HeapGS .hasLC GF],
+      receiptBound GF = N →
+      threadBound GF = T →
+      hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
+      ⊢ P hG.goose_localGS -∗ threadTok ={⊤}=∗
+        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }} ∗
+        ∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
+          extsCrashStart hG.goose_localGS L' -∗
+          ownGoState (hG := L'.goose_go_stateGS) ∅ -∗ £ 1 ={⊤}=∗ P L')
+    (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState) (b : Bool)
+    (Hsteps : RealCrashNsteps e n ([e], ((σ, g) : CfgState)) κs (t2, σ2) b)
+    (Hbound : n < N) (Hthreads : σ.threads = 1)
+    (Hlive : RealCrashThreadsBelow e T n ([e], ((σ, g) : CfgState))) :
+    (∀ v t2', t2 = Val v :: t2' → φ v) ∧
+      (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
+      (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2) :=
+  goose_crash_adequacy_below N T e σ g φ hφ Hinitg Hinit P Hstart Hwp n κs t2 σ2 b
+    (RealCrashNstepsBelow.of_threadsBelow Hsteps Hlive) Hbound Hthreads
+
+end crash_adequacy
 
 end Perennial

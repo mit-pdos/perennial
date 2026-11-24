@@ -300,6 +300,16 @@ theorem mono {boots : List Expr} {T T' n : Nat} {c c' : DistCfg} {κs : List Obs
   | refl c h => exact .refl c fun i tp σ hi => Nat.lt_of_lt_of_le (h i tp σ hi) hTT
   | cons h hstep _ ih => exact .cons (fun i tp σ hi => Nat.lt_of_lt_of_le (h i tp σ hi) hTT) hstep ih
 
+/-- `goose_dist_adequacy`'s premises give the new one for a system with no boot programs: a
+distributed execution without crashes all of whose executions of at most `n` steps stay below
+`T` threads on every node is a `DistCrashNstepsBelow []`. -/
+theorem of_distThreadsBelow {T n : Nat} {c c' : DistCfg} {κs : List Observation}
+    (h : DistNsteps n c κs c') (hT : DistThreadsBelow T n c) :
+    DistCrashNstepsBelow [] T n c κs c' := by
+  induction h with
+  | refl c => exact .refl c fun _ _ _ hi => hT.start hi
+  | cons hstep _ ih => exact .cons (fun _ _ _ hi => hT.start hi) (.step hstep) (ih (hT.step hstep))
+
 end DistCrashNstepsBelow
 
 end real_facts
@@ -526,6 +536,75 @@ theorem bdist_crash_nsteps_of_real {boots : List Expr} {n : Nat} {c c' : DistCfg
             · cases hj
           · exact ht j tp₂ σ₂ t₂ hj)
       exact ⟨bc', .cons (.crash hbi hboot hcr) hrest', he'⟩
+
+
+/-! ### The simulations with the thread bound along the execution
+
+`bdist_crash_nsteps_of_real` uses its thread bound only at the configurations of the given
+execution; these state that directly, over `DistCrashNstepsBelow` (as
+`bounded_nsteps_of_real_below` does for one node, `AdequacyAlong.lean`). -/
+
+/-- Simulation with crashes, with the thread bound along the execution: a real execution with
+crashes of `n` steps every configuration of which has fewer than `T` threads on every node
+(`DistCrashNstepsBelow`) is also an execution with crashes of the bounded semantics started with
+any step fuel `s ≥ n` and any thread fuels `t ≥ T - 1 - threads`. -/
+theorem bdist_crash_nsteps_of_real_below {boots : List Expr} {T n : Nat} {c c' : DistCfg}
+    {κs : List Observation} (h : DistCrashNstepsBelow boots T n c κs c') (bc : BDistCfg)
+    (he : bc.erase = c) (hs : n ≤ bc.steps) (ht : bc.FuelOk T) :
+    ∃ bc', BDistCrashNsteps boots T n bc κs bc' ∧ bc'.erase = c' := by
+  induction h generalizing bc with
+  | refl => exact ⟨bc, .refl _, he⟩
+  | @cons n c₁ c₂ c₃ κ κs _ hstep hrest ih =>
+    cases hstep with
+    | step hstep =>
+      obtain ⟨bc₂, hb, he₂, hs₂, ht₂⟩ := bdist_step_of_real hstep T bc he (by omega) ht
+        (fun i tp σ hi => hrest.start i tp σ hi)
+      obtain ⟨bc', hrest', he'⟩ := ih bc₂ he₂ (by omega) ht₂
+      exact ⟨bc', .cons (.step hb) hrest', he'⟩
+    | @crash nodes g i tp σ e σ' hi hboot hcr =>
+      obtain ⟨bnodes, bg, bs⟩ := bc
+      simp only at hs
+      simp only [BDistCfg.erase, DistCfg.mk.injEq] at he
+      obtain ⟨rfl, rfl⟩ := he
+      have hi' := hi
+      simp only [List.getElem?_map] at hi'
+      obtain ⟨⟨tp₀, σ₀, t⟩, hbi, hx⟩ := Option.map_eq_some_iff.mp hi'
+      obtain ⟨rfl, rfl⟩ : tp = tp₀ ∧ σ = σ₀ := by
+        simp only [Prod.mk.injEq] at hx; exact ⟨hx.1.symm, hx.2.symm⟩
+      have h1T : 1 < T := by
+        have := hrest.start i [e] σ' (by
+          simp [(List.getElem?_eq_some_iff.mp hbi).1])
+        rw [hcr.threads] at this; exact this
+      obtain ⟨bc', hrest', he'⟩ := ih ⟨bnodes.set i ([e], σ', T - 2), bg, bs⟩
+        (by simp [BDistCfg.erase, List.map_set]) (by simp only; omega)
+        (by
+          intro j tp₂ σ₂ t₂ hj
+          simp only [List.getElem?_set] at hj
+          split at hj
+          · split at hj
+            · cases hj; rw [hcr.threads]; omega
+            · cases hj
+          · exact ht j tp₂ σ₂ t₂ hj)
+      exact ⟨bc', .cons (.crash hbi hboot hcr) hrest', he'⟩
+
+/-- Simulation without crashes, with the thread bound along the execution: a real execution of a
+system with no boot programs (so no node crashes, `DistCrashNstepsBelow []`) of `n` steps along
+which every node has fewer than `T` threads is also an execution of the bounded semantics started
+with any step fuel `s ≥ n` and any thread fuels `t ≥ T - 1 - threads`. -/
+theorem bdist_nsteps_of_real_below {T n : Nat} {c c' : DistCfg} {κs : List Observation}
+    (h : DistCrashNstepsBelow [] T n c κs c') (bc : BDistCfg)
+    (he : bc.erase = c) (hs : n ≤ bc.steps) (ht : bc.FuelOk T) :
+    ∃ bc', BDistNsteps n bc κs bc' ∧ bc'.erase = c' := by
+  induction h generalizing bc with
+  | refl => exact ⟨bc, .refl _, he⟩
+  | @cons n c₁ c₂ c₃ κ κs _ hstep hrest ih =>
+    cases hstep with
+    | step hstep =>
+      obtain ⟨bc₂, hb, he₂, hs₂, ht₂⟩ := bdist_step_of_real hstep T bc he (by omega) ht
+        (fun i tp σ hi => hrest.start i tp σ hi)
+      obtain ⟨bc', hrest', he'⟩ := ih bc₂ he₂ (by omega) ht₂
+      exact ⟨bc', .cons hb hrest', he'⟩
+    | crash _ hboot _ => simp at hboot
 
 end bounded
 

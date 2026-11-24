@@ -125,7 +125,7 @@ theorem wp_BigEndian_Uint64_of
   ihave #Hpkg : isPkgInit (PROP := IProp GF) pkg_id.encoding.binary $$ []
   · iPkgInit
   ihave #Hinit := isInit_access $$ Hpkg
-  icases Hinit with ⟨-, #Hbe⟩
+  icases Hinit with ⟨-, #Hbe, -⟩
   ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hbe
   wp_apply (wp_load_struct_nofields (V := bigEndian) _ Hnn) as -
   wp_apply wp_bigEndian_Uint64 _ b bs rem dq Hlen $$ [$Hb] as Hb
@@ -145,7 +145,7 @@ theorem wp_BigEndian_PutUint64_of
   ihave #Hpkg : isPkgInit (PROP := IProp GF) pkg_id.encoding.binary $$ []
   · iPkgInit
   ihave #Hinit := isInit_access $$ Hpkg
-  icases Hinit with ⟨-, #Hbe⟩
+  icases Hinit with ⟨-, #Hbe, -⟩
   ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hbe
   wp_apply (wp_load_struct_nofields (V := bigEndian) _ Hnn) as -
   wp_apply wp_bigEndian_PutUint64 _ b space rem v Hlen $$ [$Hb] as Hb
@@ -165,7 +165,7 @@ theorem wp_BigEndian_Uint32_of
   ihave #Hpkg : isPkgInit (PROP := IProp GF) pkg_id.encoding.binary $$ []
   · iPkgInit
   ihave #Hinit := isInit_access $$ Hpkg
-  icases Hinit with ⟨-, #Hbe⟩
+  icases Hinit with ⟨-, #Hbe, -⟩
   ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hbe
   wp_apply (wp_load_struct_nofields (V := bigEndian) _ Hnn) as -
   wp_apply wp_bigEndian_Uint32 _ b bs rem dq Hlen $$ [$Hb] as Hb
@@ -185,7 +185,7 @@ theorem wp_BigEndian_PutUint32_of
   ihave #Hpkg : isPkgInit (PROP := IProp GF) pkg_id.encoding.binary $$ []
   · iPkgInit
   ihave #Hinit := isInit_access $$ Hpkg
-  icases Hinit with ⟨-, #Hbe⟩
+  icases Hinit with ⟨-, #Hbe, -⟩
   ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hbe
   wp_apply (wp_load_struct_nofields (V := bigEndian) _ Hnn) as -
   wp_apply wp_bigEndian_PutUint32 _ b space rem v Hlen $$ [$Hb] as Hb

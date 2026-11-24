@@ -117,7 +117,11 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   concludes about (`RealNstepsBelow T n`: fewer than `T` threads in each of its
   configurations), so that a program whose goroutine count is unbounded over
   all schedules can still use a constant `T` without bounding the step count by
-  it. See `docs/PERENNIAL_PROOF_REFERENCE.md`, "Time receipts" and "Thread tokens".
+  it. The crash and distributed theorems have the same forms:
+  `goose_crash_adequacy_below` over `RealCrashNstepsBelow` (`AdequacyAlong.lean`),
+  and `goose_dist_adequacy_below`, `goose_dist_crash_adequacy_below` and
+  `goose_dist_mixed_crash_adequacy_below` over `DistCrashNstepsBelow`
+  (`DistAdequacy.lean`). See `docs/PERENNIAL_PROOF_REFERENCE.md`, "Time receipts" and "Thread tokens".
 * **Iris substrate.** iris-lean provides the BI, proof mode, invariants,
   ghost maps, later credits and the WP. General-purpose libraries that iris-lean
   lacks (finite maps and sets, machine words, list lemmas) live in
@@ -143,6 +147,11 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   * s390x: the user address space (`TASK_SIZE`) is 2^64.
 
   `docs/KNOWN_LIMITATIONS.md`, "Platform", repeats this.
+  The standard library is translated with the build tag `purego`
+  (`etc/update-goose-new.py`), which selects the pure-Go code of the crypto
+  packages (`crypto/sha1`'s `blockGeneric`, where the default build calls
+  assembly) and changes no other package; build tags are those of a whole
+  build, so the results are about programs built with `-tags purego`.
   The Go semantics also assumes a 64-bit platform: the
   word-sized types `int`, `uint` and `uintptr` are 64-bit (values `w64`).
   `uintptr` (`go.UintptrSemantics`, `Perennial/Golang/Defn/Predeclared.lean`)
@@ -209,6 +218,21 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   semantics, only by a top-level statement that names `Sha256NoCollision ok` as a
   hypothesis (`GooseLang/Ext/Sha256/Adequacy.lean`). Only `crypto.sha256.is_hash_inj`
   needs it.
+* **Environment premise (GODEBUG `fips140`), opt-in.** `crypto/fips140`'s
+  `enabled` (`godebug.New("fips140").Value() == "only"`) is a trusted
+  initializer (`TrustedCode/crypto/fips140.lean`) over `godebugFips140`, an
+  opaque string standing for the text of the run's `fips140` GODEBUG setting,
+  of which nothing is proved. In mode `only`, `crypto/sha1.Sum` panics. A theorem whose
+  proof needs the mode off names `GodebugFips140Off` (the setting is unset or
+  `off`) as a hypothesis, and then covers only the runs with that setting; it is
+  the condition under which the untranslated initializers of
+  `crypto/internal/fips140` and `crypto/internal/fips140/check` do not panic
+  (with `purego`, FIPS 140-3 mode panics at start). The model makes no such
+  assumption itself. The trusted initializer stands in for translating
+  `internal/godebug` (by the user's decision, 2026-11-23), which goose
+  translates but for four `go:linkname` hooks (`setUpdate`, whose model would
+  have to hand it the environment, `registerMetric`, `setNewIncNonDefault`,
+  `write`) and which needs `sync.Map` and `internal/bisect`, not translated.
 * **Model assumptions (initial states).** An extension's
   `ExtSemantics.initLocal`/`initGlobal` (`GooseLang/Lang.lean`, default `True`)
   are what a top-level theorem assumes of the states its execution starts from.
@@ -313,7 +337,10 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   argues that the other outcome's results are among the model's. The fix
   translates `internal/godebug` (as for `asynctimerchan`) and the seeded path
   it then reaches (`lockedSource`, `rngSource` and its seeding over
-  `rngCooked`). The no-op for `math.useFMA` (a CPU
+  `rngCooked`). `crypto/sha1`'s `init` (`crypto.RegisterHash(crypto.SHA1,
+  New)`) is a trusted no-op for the same program-logic gap, as `crypto/sha256`'s:
+  `crypto` is not translated, so nothing translated reads its hash table
+  (the user's decision, 2026-11-23). The no-op for `math.useFMA` (a CPU
   feature the runtime detects) models irreducible behaviour;
   `errors.errorType` and `math/big.hasADX`, the same kind, are skip entries. Each model's docstring says why it is
   faithful.
@@ -374,9 +401,20 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   tag `goose`: a method declared only in files excluded by it (or included only by it) would
   make the emitted method set differ from the real build's.
   `go_type_set` (`Golang/Theory/TypeSet.lean`) decides `typeSetContains` goals.
+* **Go model overlays.** A package's trusted parts may be Go model code in the
+  package itself: its goose config's `[model]` table names a directory of model
+  files and the real declarations they replace (`goose/README.md`). Goose
+  splices the model into the real package in place (so initialization order is
+  kept), refuses a model that changes the real package's API, and translates
+  the model like any other code; only the primitive stubs it calls have a
+  hand-written `.impl`. The trusted claim, for each replaced declaration, is
+  that every behaviour of the real one under every use is a behaviour of the
+  model's translation (`review-trusted`, R12).
 * **Generated code comes from goose.** The translator in `goose/` emits
   `Perennial/Code/**` and `Perennial/GeneratedProof/**`; regenerate with
-  `etc/update-goose-new.py` rather than editing them by hand.
+  `etc/update-goose-new.py` rather than editing them by hand. The translation's
+  Go toolchain is pinned to go1.26.11 (`GO_VERSION` there; the standard library
+  goose translates is that toolchain's), and the script refuses another `go`.
 
 ## Layering (bottom up)
 

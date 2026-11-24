@@ -1,9 +1,11 @@
 /-
-The proof of `unicode.utf8.DecodeRuneInString`.
+The proof of `unicode/utf8.DecodeRuneInString`.
 -/
 module
 
 public import Perennial.Spec.unicode.utf8.DecodeRuneInString
+public import Perennial.Spec.unicode.utf8.decodeRuneInStringSlow
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.model.strings.Base
 
 @[expose] public section
 
@@ -20,16 +22,32 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : unicode.utf8.Assumptions]
 
-theorem unicode.utf8.DecodeRuneInString.wp_proof :
-    unicode.utf8.DecodeRuneInString.spec (GF := GF) (hG := hG) := fun c s Hc => by
-  wp_start
+theorem unicode.utf8.DecodeRuneInString.wp_proof
+    (wp_decodeRuneInStringSlow : unicode.utf8.decodeRuneInStringSlow.spec (GF := GF) (hG := hG)) :
+    unicode.utf8.DecodeRuneInString.spec (GF := GF) (hG := hG) := by
+  intro s
+  wp_start as #Hpkg
   wp_auto
   wp_if_destruct
-  · have Hr : W32 ((uint.nat c : Nat) : Int) = W32 (uint.Z c) := by word
-    rw [Hr]
-    iapply HΦ
-    itrivial
-  · exfalso; word
+  · wp_apply wp_decodeRuneInStringSlow as %r %size %Hsz
+    iapply HΦ; ipureintro
+    refine ⟨Hsz, fun c rest h _ => ?_⟩
+    simp at h
+  obtain ⟨c, rest, rfl⟩ := List.exists_cons_of_ne_nil Hif
+  wp_auto
+  wp_if_destruct
+  · iapply HΦ; ipureintro
+    refine ⟨Or.inr ⟨List.cons_ne_nil _ _, by word, by simp only [List.length_cons]; word⟩, ?_⟩
+    intro c' rest' h _
+    simp only [List.cons.injEq] at h
+    obtain ⟨rfl, rfl⟩ := h
+    exact ⟨by simp [uint.nat], rfl⟩
+  · wp_apply wp_decodeRuneInStringSlow as %r %size %Hsz
+    iapply HΦ; ipureintro
+    refine ⟨Hsz, fun c' rest' h hc => ?_⟩
+    simp only [List.cons.injEq] at h
+    obtain ⟨rfl, rfl⟩ := h
+    exact absurd (by word) Hif
 
 end proof
 

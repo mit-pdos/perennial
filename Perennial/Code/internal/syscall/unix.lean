@@ -44,8 +44,6 @@ opaque readlinkatTrap [GooseExts] [GoGlobalContext] : val
 
 opaque mkdiratTrap [GooseExts] [GoGlobalContext] : val
 
-opaque fchmodatTrap [GooseExts] [GoGlobalContext] : val
-
 opaque fchownatTrap [GooseExts] [GoGlobalContext] : val
 
 opaque linkatTrap [GooseExts] [GoGlobalContext] : val
@@ -61,6 +59,8 @@ opaque AT_REMOVEDIR [GooseExts] [GoGlobalContext] : val
 opaque AT_SYMLINK_NOFOLLOW [GooseExts] [GoGlobalContext] : val
 
 opaque UTIME_OMIT [GooseExts] [GoGlobalContext] : val
+
+opaque O_PATH [GooseExts] [GoGlobalContext] : val
 
 opaque fstatatTrap [GooseExts] [GoGlobalContext] : val
 
@@ -135,9 +135,6 @@ noncomputable def Readlinkat [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def Mkdirat [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/syscall/unix.Mkdirat"
 
-noncomputable def Fchmodat [GooseExts] [GoGlobalContext] : GoString :=
-  go!"internal/syscall/unix.Fchmodat"
-
 noncomputable def Fchownat [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/syscall/unix.Fchownat"
 
@@ -158,6 +155,9 @@ noncomputable def CopyFileRange [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def Eaccess [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/syscall/unix.Eaccess"
+
+noncomputable def Fchmodat [GooseExts] [GoGlobalContext] : GoString :=
+  go!"internal/syscall/unix.Fchmodat"
 
 noncomputable def fcntl [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/syscall/unix.fcntl"

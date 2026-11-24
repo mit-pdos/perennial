@@ -1,0 +1,10 @@
+translate = ["*", "!init.0"]
+imports = ["!*", "crypto/internal/boring", "crypto/internal/fips140only", "errors", "hash",
+  "internal/byteorder", "math/bits"]
+
+# `init.0` registers `New` with `crypto.RegisterHash` (a store into `crypto`'s table `hashes`);
+# `crypto` is not translated, so nothing a translated program does reads the registration
+# (TrustedCode/crypto/sha1.lean). Trusted, by the owner's decision (2026-11-23), because proving
+# the store needs ownership of another package's variable in an init proof, which the program
+# logic does not give.
+trusted = ["init.0"]
