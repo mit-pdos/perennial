@@ -13,6 +13,7 @@ public import Perennial.Proof.sync.Base
 public import Perennial.Proof.io.Base
 public import Perennial.Proof.internal.bytealg.Base
 public import Perennial.Proof.unicode.utf8.Base
+public import Perennial.Proof.internal.gomodel.Base
 
 @[expose] public section
 

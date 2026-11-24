@@ -21,23 +21,24 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : strings.Assumptions]
 
-/-- Proved from the model of `Compare` (`Perennial/TrustedCode/strings.lean`). -/
+/-- Proved from the Go model of `Compare` (`goose/model/overlay/strings/compare.go`), translated. -/
 theorem strings.Compare.wp_proof :
     strings.Compare.spec (GF := GF) (hG := hG) := by
   intro a b
   wp_start
+  wp_auto
   unfold compareResult
   by_cases hlt : go.GoStringLt a b
-  · simp only [hlt, decide_true, ↓reduceIte]
+  · simp only [hlt, _root_.decide_true, ↓reduceIte]
     wp_auto
     iapply HΦ; itrivial
-  · simp only [hlt, decide_false, ↓reduceIte]
+  · simp only [hlt, _root_.decide_false, ↓reduceIte]
     wp_auto
     by_cases heq : a = b
-    · simp only [heq, decide_true, ↓reduceIte]
+    · simp only [heq, _root_.decide_true, ↓reduceIte]
       wp_auto
       iapply HΦ; itrivial
-    · simp only [heq, decide_false, ↓reduceIte]
+    · simp only [heq, _root_.decide_false, ↓reduceIte]
       wp_auto
       iapply HΦ; itrivial
 

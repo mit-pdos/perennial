@@ -22,9 +22,12 @@ translate = [
   "opInvalid",
   "opRead",
 ]
-# `Compare` calls `internal/bytealg.Compare` (assembly): a model in TrustedCode/bytes.lean.
-trusted = ["Compare"]
 imports = ["!*", "errors", "io"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true
+
+# `Compare` calls `internal/bytealg.Compare` (assembly): a Go model (goose/model/overlay/bytes).
+[model]
+dir = "goose/model/overlay/bytes"
+replaces = ["Compare"]

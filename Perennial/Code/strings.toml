@@ -1,13 +1,19 @@
-# Builder's methods are translated but three, trusted (TrustedCode/strings.lean): `String`, whose
-# `unsafe.String(unsafe.SliceData(b.buf), len(b.buf))` returns a string that aliases the buffer;
-# `copyCheck`, whose `(*Builder)(abi.NoEscape(unsafe.Pointer(b)))` converts an `unsafe.Pointer` to a
-# pointer to a non-plain type (no rule: Golang/Defn/Plain.lean), and whose model leaves a reader on
-# `b.addr` once set, so that a copy by value stored back over a used Builder is stuck; and `Reset`,
-# whose model therefore leaves `b.addr` as it is. `grow`'s `bytealg.MakeNoZero` is
-# trusted in its package.
-translate = ["Builder", "Builder.*", "!Builder.String", "!Builder.copyCheck", "!Builder.Reset", "asciiSpace", "HasSuffix", "TrimSuffix", "NewReplacer"]
-imports = ["!*", "internal/stringslite", "sync", "io", "internal/bytealg", "unicode/utf8"]
-trusted = ["Builder.String", "Builder.copyCheck", "Builder.Reset", "Join", "HasPrefix", "Compare", "TrimPrefix", "Split"]
+# The real Go is translated: Builder (but three methods, modelled), HasPrefix and TrimPrefix (over
+# internal/stringslite's), and the rest of `translate`. `grow`'s `bytealg.MakeNoZero` is trusted in
+# its package.
+translate = ["Builder", "Builder.*", "asciiSpace", "HasPrefix", "HasSuffix", "TrimPrefix", "TrimSuffix", "NewReplacer"]
+imports = ["!*", "internal/stringslite", "sync", "io", "internal/bytealg", "unicode/utf8", "internal/gomodel"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true
+
+# The Go model (goose/model/overlay/strings): each declaration's MODEL: comment says why it has at
+# least Go's behaviours. `Builder.String` (`unsafe.String`, which aliases the buffer),
+# `Builder.copyCheck` (an `unsafe.Pointer` converted to `*Builder`, which the semantics has no rule
+# for) and `Builder.Reset` (which must not store to the `addr` that `copyCheck`'s model makes
+# read-only); `Compare` (`bytealg.CompareString`, assembly); `Split` (`Count` and `Index`, which end
+# in `internal/bytealg`'s assembly); `Join` (its length-overflow panic, which the model does not
+# have).
+[model]
+dir = "goose/model/overlay/strings"
+replaces = ["Join", "Split", "Compare", "Builder.copyCheck", "Builder.String", "Builder.Reset"]

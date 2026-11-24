@@ -2,8 +2,8 @@
 module
 
 public import Perennial.Proof.ProofPrelude
-public import Perennial.ManualProof.strings
 public import Perennial.GeneratedProof.internal.bytealg
+public import Perennial.GeneratedProof.internal.gomodel
 public import Perennial.GeneratedProof.internal.stringslite
 public import Perennial.GeneratedProof.io
 public import Perennial.GeneratedProof.sync
