@@ -139,7 +139,9 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   programs are built by gc for linux/amd64. Every allocation address lies in
   `(0, maxAddr]`, `maxAddr = 2^47` (`GooseLang/Lang.lean`, `IsFresh`/`IsFreshBytes`),
   gc's user address space there, and proofs use that bound to rule out address
-  overflow (`unsafe.Slice`, `unsafe.Add`). The bound is false elsewhere, where
+  overflow (`unsafe.Slice`, `unsafe.Add`). A string is no longer than `maxAddr`
+  either: `len` of a longer one is an `AngelicExit` (`internal_string_len_step`,
+  `Golang/Defn/String.lean`; "Model assumptions (overflow)" below). The bound is false elsewhere, where
   a proof may claim "no panic" for a program gc stops:
   * aix/ppc64: gc's heap hints lie above `0xa0<<52`.
   * linux/arm64 PIE and android: globals and `zerobase` load near
@@ -186,16 +188,23 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
     `x := make([]struct{}, 1<<62); x = append(x, x...)` panics with
     "growslice: len out of range". A program with that bug verifies.
 
+  * a string's length (`internal_string_len_step`, `Golang/Defn/String.lean`): `len`
+    of a string longer than `maxAddr` is an `AngelicExit`. Every string goose
+    translates has its bytes in memory, which gc keeps below `maxAddr`
+    ("Platform"). `unsafe.String` can build a longer view, so goose's refusal
+    of it is what keeps this sound; a future rule for it must check the backing
+    allocation.
+
   Only a length that must exist in memory may be assumed away; a length Go
   computes and checks *before* allocating is reachable. Overflows that a
   program *can* reach are not assumed away. `strings.Join` is one: Go sums the
   elements' lengths and panics before allocating anything, so a few gigabytes
   of aliased elements (`make([]string, 1<<30+1)` with a long separator) reach
-  the panic. **Known, not yet fixed:** `Join` is still a trusted model that
-  omits that panic, and `strings.wp_Join` has no premise excluding it. The fix
-  is to translate the real `Join` over `strings.Builder`, whose methods are now
-  goose's translation but for `String`, a model that is stuck where Go's
-  `String` aliases the builder's buffer (`TrustedCode/strings.lean`). `sync.WaitGroup`'s
+  the panic. Goose translates the real `Join`, over `strings.Builder` (the real
+  Go too, but for three Go models in `goose/model/overlay/strings/builder.go`:
+  `String`, which is stuck where Go's `String` aliases the builder's buffer,
+  `copyCheck` and `Reset`), so the panic is in the model, and `strings.wp_Join`
+  requires the result to be shorter than `2^61` bytes. `sync.WaitGroup`'s
   `int32` counter is another (two `Add(1 << 30)` calls panic in Go): `WaitGroup.Add`
   is Goose's translation, and `WaitGroup.wp_Add` asks its caller to bound the
   new counter by `2^31`. A caller whose counter is backed by one goroutine per
@@ -203,6 +212,15 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   threadBound GF`, and the client assumes `threadBound GF ≤ 2^31` at adequacy
   time (`ProgramLogic/ThreadTokensTest.lean`, `docs/PERENNIAL_PROOF_REFERENCE.md`
   "Thread tokens").
+* **Model assumption (stack depth).** `runtime.callers` (`TrustedCode/runtime.lean`, behind
+  `runtime.Callers`) reports at most `2^40 - 1` frames, so it returns fewer frames than a buffer
+  of `2^40` or more holds (zap's `stacktrace.Capture` doubles its buffer until it is not filled,
+  and stops). Go reports fewer than `2^39`: a stack is at most `maxstackceiling` (2e9 bytes on
+  64-bit, which `debug.SetMaxStack` does not raise), so at most `250_000_000` physical frames,
+  each expanded into at most `2081` inlined frames with the compiler's default flags (the
+  inliner's largest budget). Only compiler debug flags (`-gcflags=-d=pgoinlinebudget=N`,
+  `-d=inlbudgetslack=N`) or `GOEXPERIMENT=newinliner` could raise the inlining depth past that;
+  a build with them is outside what the model covers.
 * **Model assumption (SHA-256 collisions), opt-in.** `crypto/sha256.Sum256` is a
   trusted model over the SHA-256 extension (`GooseLang/Ext/Sha256/Impl.lean`): an
   opaque function `sha256Hash` and a global state of every input hashed so far.
@@ -233,6 +251,12 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   translates but for four `go:linkname` hooks (`setUpdate`, whose model would
   have to hand it the environment, `registerMetric`, `setNewIncNonDefault`,
   `write`) and which needs `sync.Map` and `internal/bisect`, not translated.
+* **Environment premises (the build's `runtime.buildVersion`), opt-in.** The string `Version`
+  returns is the trusted initializer's `runtime.buildVersionValue` (`TrustedCode/runtime.lean`),
+  an opaque string standing for what the linker wrote into the binary, of which nothing is
+  proved. A theorem whose proof needs a property of it (for example that it is valid UTF-8,
+  which a standard `go build` gives and only `-ldflags -X runtime.buildVersion=<s>` can break)
+  names the property as a hypothesis, and then covers only the builds with it.
 * **Model assumptions (initial states).** An extension's
   `ExtSemantics.initLocal`/`initGlobal` (`GooseLang/Lang.lean`, default `True`)
   are what a top-level theorem assumes of the states its execution starts from.

@@ -20,16 +20,17 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : strconv.Assumptions]
 
-/-- `appendQuotedWith(buf, s, quote, ASCIIonly, graphicOnly)` appends `s` quoted by `quote`, as a Go literal, to `buf`; here, some bytes. Only without `graphicOnly` (what `Quote` and `AppendQuote` pass; with it, Go consults `isInGraphicList`, which is not translated), and for a string `s` no longer than memory (`maxAddr`): Go computes `len(buf)+1+len(s)+1`, which a longer string than any Go program can hold could overflow. -/
+/-- `appendQuotedWith(buf, s, quote, ASCIIonly, graphicOnly)` appends `s` quoted by `quote`, as a Go literal, to `buf`; here, some bytes. The old `buf` can be recovered from the result (as `wp_slice_append_undo`): Go's `append` only writes past `len(buf)` or copies into a new array, so a caller that lent `buf`'s capacity (`fmt`'s `intbuf`) gets it back. Only without `graphicOnly` (what `Quote` and `AppendQuote` pass; with it, Go consults `isInGraphicList`, which is not translated). Go computes `len(buf)+1+len(s)+1`, which does not wrap: a string, like a slice, is no longer than the address space (`maxAddr`, `wp_string_len_maxAddr`). -/
 abbrev strconv.appendQuotedWith.spec : Prop :=
   ∀ (buf : GoSlice) (bs : List w8) (s : GoString) (quote : w8) (ASCIIonly : Bool),
-    s.length ≤ maxAddr →
     {{ isPkgInit (PROP := IProp GF) pkg_id.strconv ∗ buf ↦* bs ∗
         ownSliceCap w8 buf (DFrac.own 1) }}
       (App (App (App (App (App (Val (@! appendQuotedWith)) (Val #buf)) (Val #s)) (Val #quote))
         (Val #ASCIIonly)) (Val #false))
     {{ (buf' : GoSlice), RET #buf';
-        ∃ q : List w8, buf' ↦* (bs ++ q) ∗ ownSliceCap w8 buf' (DFrac.own 1) }}
+        ∃ q : List w8, buf' ↦* (bs ++ q) ∗ ownSliceCap w8 buf' (DFrac.own 1) ∗
+          (buf' ↦* (bs ++ q) ∗ ownSliceCap w8 buf' (DFrac.own 1) -∗
+            buf ↦* bs ∗ ownSliceCap w8 buf (DFrac.own 1)) }}
 
 end spec
 

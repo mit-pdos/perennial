@@ -30,6 +30,9 @@ noncomputable def ChooseUint64 [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def Stuck [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/gomodel.Stuck"
 
+noncomputable def StartRead [GooseExts] [GoGlobalContext] : GoString :=
+  go!"internal/gomodel.StartRead"
+
 noncomputable instance info' : PkgInfo pkg_id.internal.gomodel where
   pkgImportedPkgs := []
 
@@ -46,10 +49,12 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Choose_unfold : FuncUnfold Choose [] Choose.impl
   ChooseUint64_unfold : FuncUnfold ChooseUint64 [] ChooseUint64.impl
   Stuck_unfold : FuncUnfold Stuck [] Stuck.impl
+  StartRead_unfold : ∀ (T : go.GoType), FuncUnfold StartRead [T] (StartRead.impl T)
 
 attribute [instance] Assumptions.Choose_unfold
   Assumptions.ChooseUint64_unfold
   Assumptions.Stuck_unfold
+  Assumptions.StartRead_unfold
 
 end internal.gomodel
 

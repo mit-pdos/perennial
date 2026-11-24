@@ -380,6 +380,7 @@ def GoInstruction.toTree : GoInstruction → GenTree
   | .EqNilAt => node 51 []
   | .PointerOfAt => node 52 []
   | .TypeQuery x0 => node 53 [of x0]
+  | .AsAssign => node 54 []
 def GoInstruction.ofTree : GenTree → GoInstruction
   | node 0 [] => .AngelicExit
   | node 1 [x0, x1] => .Convert (decLeaf x0) (decLeaf x1)
@@ -435,6 +436,7 @@ def GoInstruction.ofTree : GenTree → GoInstruction
   | node 51 [] => .EqNilAt
   | node 52 [] => .PointerOfAt
   | node 53 [x0] => .TypeQuery (decLeaf x0)
+  | node 54 [] => .AsAssign
   | _ => default
 instance GoInstruction.countable : Pos.Countable GoInstruction :=
   countableOfLeftInverse GoInstruction.toTree GoInstruction.ofTree

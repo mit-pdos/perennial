@@ -1,5 +1,6 @@
-// Package fmt_test checks, against Go's fmt, the behaviour of fmt.Sprintf that the trusted model
-// of Sprintf in Perennial/TrustedCode/fmt.lean (formatArg) relies on. Only tests: nothing here is
+// Package fmt_test checks, against Go's fmt, the behaviour of fmt.Sprintf that the trusted model's
+// doPrintf in Perennial/TrustedCode/fmt.lean (formatArg) relies on; Printf, Fprintf and Errorf
+// format with it (Sprintf itself is the real fmt's, translated). Only tests: nothing here is
 // translated.
 package fmt_test
 

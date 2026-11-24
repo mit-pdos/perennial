@@ -1,10 +1,35 @@
 /-
-Trusted code for the Go `errors` package, in namespace `errors` (as the generated
-package).
+Trusted code for the Go `errors` package (namespace `errors`, as the generated package).
+
+`As` is a Go model (`goose/model/overlay/errors/wrap.go`, translated): Go's `As`, whose tree walk
+`asWalk` is Go's `as` with its reflection moved into one function, `asAssign`. `asAssign(err,
+target)` is that reflection (Go, in the model:
+
+```go
+val := reflectlite.ValueOf(target)
+typ := val.Type()
+if typ.Kind() != reflectlite.Ptr || val.IsNil() {
+	panic("errors: target must be a non-nil pointer")
+}
+targetType := typ.Elem()
+if targetType.Kind() != reflectlite.Interface && !targetType.Implements(errorType) {
+	panic("errors: *target must be interface or implement error")
+}
+if reflectlite.TypeOf(err).AssignableTo(targetType) {
+	val.Elem().Set(reflectlite.ValueOf(err))
+	return true
+}
+return false
+```
+
+), which is the semantics' `AsAssign` on `(err, target)` (`go.InterfaceSemantics.as_assign_step`):
+where Go panics (a target that is not a non-`nil` pointer to an interface type or a type
+implementing `error`) it has no semantics, so the model is stuck there, as it is where Go assigns
+a type to a non-interface type of the same underlying type that is not that type.
 -/
 module
 
-public import Perennial.Golang.Defn
+public import Perennial.Golang.Defn.Pre
 
 @[expose] public section
 
@@ -16,52 +41,8 @@ namespace errors
 section code
 variable [GooseExts] [GoGlobalContext]
 
-/-- `Is(err, target)`. Go's `Is` is
-
-```go
-func Is(err, target error) bool {
-	if err == nil || target == nil {
-		return err == target
-	}
-	isComparable := reflectlite.TypeOf(target).Comparable()
-	return is(err, target, isComparable)
-}
-```
-
-(`is`, which walks the error tree, is translated). The model is goose's translation of it
-with the reflection call `reflectlite.TypeOf(target).Comparable()` replaced by `true`, and `is`
-named by its Go name `errors.is`.
-
-Departure from Go: GooseLang cannot inspect the dynamic type of an interface value, so the
-model takes every `target` to be comparable. For a `target` whose dynamic type is not
-comparable (a slice type, say), Go's `is` skips `err == target`; the model performs it, and
-when some error of the tree has `target`'s type that comparison is stuck (`CheckComparable`
-has no rule for an uncomparable type). The model is thus less defined than Go there, never
-different: `wp_Is` only admits `nil` and pointer targets. A semantics rule testing the
-comparability of an interface's dynamic type (refining `CheckComparable`) would let goose
-translate `Is` and remove this departure. -/
-noncomputable def Is.impl : val :=
-  (LamV "err"
-  (Lam "target"
-  (App (Val exceptionDo)
-  (Let "target" (App (Val (GoInstruction (GoAlloc go.error))) (Var "target"))
-  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (Var "err"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Val #true)
-  (Let "isComparable" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad go.error))) (Var "target"))
-  (Let "$a2" (App (Val (GoInstruction (GoLoad go.bool))) (Var "isComparable"))
-  (App (App (App (App (Val (GoInstruction (FuncResolve go!"errors.is" []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "isComparable") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil)))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "target")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))
-  (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (GoLoad go.error))) (Var "target")))))
-  (App (Val doExecute)
-  (Val #())))))))))
+def asAssign.impl : val :=
+  λ: "err" "target", AsAssign ("err", "target")
 
 end code
 end errors

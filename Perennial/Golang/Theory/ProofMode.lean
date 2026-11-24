@@ -2915,18 +2915,73 @@ meta partial def hypsHaveLater {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {e} (hy
     laterCache.modify fun c => (if c.size > 100000 then {} else c).insert ty b
     return b
 
+meta register_option goose.wp.laterSubtree : Bool := {
+  defValue := true
+  descr := "introduce a `▷` (the `▷` of a pure step, and the `▷ (Q -∗ Φ)` left by `wp_apply`) by \
+    transforming only the subtrees of the context that have a strippable `▷` \
+    (`iLaterIntro`, `inext_subtree`), keeping the others whole (on by default; `false` runs \
+    iris-lean's `iModAction` over the whole context, as `inext` does)"
+}
+
+/-- `▷` introduced on both sides of a `∗`: the step of `iLaterIntro` at a `∗` node of the
+context, from the proofs for its two subtrees. -/
+theorem later_sep_intro {PROP : Type _} [BI PROP] {P Q P' Q' : PROP} (h1 : P ⊢ ▷ P')
+    (h2 : Q ⊢ ▷ Q') : P ∗ Q ⊢ ▷ (P' ∗ Q') :=
+  (sep_mono h1 h2).trans later_sep.2
+
 /-- Introduce a `▷` in front of the hypotheses: `hyps ⊢ ▷ hyps'`, stripping laters
-from the hypotheses. When no hypothesis has a strippable `▷`,
-this is `later_intro` (`hyps' = hyps`), avoiding a typeclass search per
-hypothesis on every step. -/
-meta def iLaterIntro {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+from the hypotheses.
+
+iris-lean's `iModAction` (what `inext` runs) transforms every hypothesis, with a
+`modaction_*` proof and an `IntoLater` search per hypothesis, though in a large context
+almost all come out unchanged. Here a subtree of the context with no strippable `▷`
+(`hypsHaveLater`, cached per subtree) is kept whole, by `later_intro` (`O(1)`); at a `∗`
+node with a `▷` below, the two sides are done separately and joined by `later_sep_intro`;
+only a hypothesis with a strippable `▷` goes through `iModAction`. The result is the
+context `iModAction` gives on the hypotheses it would change, and the others unchanged
+(which is what `iModAction` gives on them too, up to an `IntoLater` instance on a
+hypothesis with no syntactic `▷`, which `strippableLater` does not see). The proof term is
+proportional to the number of hypotheses with a `▷` times the depth of the tree, rather than
+to the size of the context. With `goose.wp.laterSubtree` off, a context with a `▷` goes
+through `iModAction` whole. -/
+meta partial def iLaterIntro {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) : ProofModeM ((e' : Q($prop)) × Hyps bi e' × Lean.Expr) := do
   if ← hypsHaveLater hyps then
+    -- (not with metavariables in the context, where an `IntoLater` search of `iModAction` may
+    -- fail: then the whole step fails, as before)
+    if let .sep _ elhs erhs _ lhs rhs := hyps then
+      if goose.wp.laterSubtree.get (← getOptions) && !(← instantiateMVars ehyps).hasExprMVar then
+        let ⟨el', lhs', pl⟩ ← iLaterIntro lhs
+        let ⟨er', rhs', pr⟩ ← iLaterIntro rhs
+        let pf := mkAppN (mkConst ``later_sep_intro [u]) #[prop, bi, elhs, erhs, el', er', pl, pr]
+        return ⟨_, .mkSep lhs' rhs', pf⟩
     let ⟨e', hyps', pf⟩ ← iModAction (prop1 := prop) (bi1 := bi) hyps (← laterModality prop bi)
     return ⟨e', hyps', pf⟩
   -- (`▷` rather than `▷^[1]`, as in the tactic lemmas: no unfolding in the kernel)
   let pf ← mkAppOptM ``BI.later_intro #[some prop, some bi, some ehyps]
   return ⟨ehyps, hyps, pf⟩
+
+theorem tac_inext_subtree {PROP : Type _} [BI PROP] {Δ Δ' Q : PROP} (hl : Δ ⊢ ▷ Δ')
+    (h : Δ' ⊢ Q) : Δ ⊢ ▷ Q :=
+  hl.trans (later_mono h)
+
+open Lean Elab Tactic Meta Qq Iris.ProofMode in
+/-- `inext` on a goal `▷ Q`, introducing the `▷` with `iLaterIntro`: only the subtrees of the
+context with a strippable `▷` are transformed, so that the proof term does not grow with the
+size of the context (`wp_apply` runs it on the `▷ (Q -∗ Φ)` of every specification it
+applies). Fails on any goal but a syntactic `▷ Q` (`inext` handles the others), and when the
+goal or the context has a metavariable: `inext`'s `FromModal` search fails on such a goal (as
+on the continuation of a specification whose result is not determined yet), and `wp_apply`
+then leaves the `▷` in place; `inext_subtree` must not succeed where `inext` fails. -/
+elab "inext_subtree" : tactic => do
+  ProofModeM.runTactic `inext_subtree fun mvar {u, prop, bi, e, hyps, goal, ..} => do
+    let goal ← instantiateMVars goal
+    let_expr BIBase.later _ _ Q := goal | throwIPMError "inext_subtree: not a ▷ goal"
+    if goal.hasExprMVar || (← instantiateMVars e).hasExprMVar then
+      throwIPMError "inext_subtree: metavariables in the goal or the context"
+    let ⟨e', hyps', hl⟩ ← iLaterIntro hyps
+    let h ← addBIGoal hyps' Q
+    mvar.assign (mkAppN (mkConst ``tac_inext_subtree [u]) #[prop, bi, e, e', Q, hl, h])
 
 /-- Is `e` an application of a `CompositeLiteral` instruction (possibly curried)? -/
 meta def isCompositeLitApp (e : Lean.Expr) : MetaM Bool := do
@@ -3799,7 +3854,11 @@ elab "wp_apply_post" : tactic => do
       out := out ++ [mv]; continue
     let tag ← mv.getTag
     setGoals [mv]
-    evalTactic (← `(tactic| try inext))
+    -- (`inext_subtree`: a proof term that does not grow with the context, `iLaterIntro`)
+    if goose.wp.laterSubtree.get (← getOptions) then
+      evalTactic (← `(tactic| first | inext_subtree | try inext))
+    else
+      evalTactic (← `(tactic| try inext))
     let mut solved := false
     if let [mv'] ← getGoals then
       if let some g := parseIrisGoal? (← instantiateMVars (← mv'.getType)) then

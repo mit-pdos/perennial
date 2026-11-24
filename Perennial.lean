@@ -34,5 +34,6 @@ public import Perennial.Golang.Theory.ChanAuto
 public import Perennial.Golang.Theory.IfJoin
 public import Perennial.Golang.Theory.RangeFunc
 public import Perennial.Golang.Theory.Chan.Idioms.Idioms
+public import Perennial.Golang.Theory.SliceBounds
 
 @[expose] public section

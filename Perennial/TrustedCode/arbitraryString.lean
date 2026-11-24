@@ -1,6 +1,6 @@
 /-
 Trusted code shared by models of several packages: an arbitrary string, in namespace `fmt` (where
-the model of `Sprintf` uses it; the model of `syscall`'s `runtime_envs` uses it too).
+the model of `fmt`'s `doPrintf` uses it; the model of `syscall`'s `runtime_envs` uses it too).
 -/
 module
 
@@ -16,7 +16,7 @@ namespace fmt
 section code
 variable [GooseExts] [GoGlobalContext]
 
-/-- An arbitrary string: a helper of the model of `Sprintf`, not a function of package `fmt`.
+/-- An arbitrary string: a helper of the model of `fmt`'s `doPrintf`, not a function of package `fmt`.
 It is goose's translation of
 
 ```go

@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"sort"
 	"strconv"
@@ -992,6 +993,7 @@ func (b *builder) splicePackage(pm *PackageModel, pkg *packages.Package) []error
 			}
 		}
 	}
+	errs = append(errs, b.blankAsm(pm, pkg, realDecls, replaced)...)
 	if len(errs) > 0 {
 		return errs
 	}
@@ -1718,4 +1720,113 @@ func addedMethodPatternUsed(pattern string, real, over *types.Package) bool {
 		}
 	}
 	return false
+}
+
+// asmSymbol matches a line of Go assembly that defines a symbol: TEXT (a
+// function) or GLOBL (data), with the symbol's name.
+var asmSymbol = regexp.MustCompile(`^\s*(TEXT|GLOBL)\s+([^\s(,]+)\(SB\)`)
+
+// asmInclude matches an #include line of Go assembly, with the header's name.
+var asmInclude = regexp.MustCompile(`^\s*#\s*include\s+["<]([^">]+)[">]`)
+
+// asmHeaders are the toolchain's headers, which define no symbols and no
+// macro that does: a blanked file may include only these, since a macro of
+// another header could expand to a TEXT or GLOBL line that asmDefs, which
+// reads lines of the file itself, does not see.
+var asmHeaders = map[string]bool{"textflag.h": true, "go_asm.h": true, "funcdata.h": true, "go_tls.h": true}
+
+// asmDefs returns the symbols an assembly file defines, with their lines, and
+// the headers it includes other than asmHeaders, with theirs.
+func asmDefs(src []byte) (syms []string, lines []int, incs []string, incLines []int) {
+	for i, line := range strings.Split(string(src), "\n") {
+		if m := asmSymbol.FindStringSubmatch(line); m != nil {
+			syms = append(syms, m[2])
+			lines = append(lines, i+1)
+		}
+		if m := asmInclude.FindStringSubmatch(line); m != nil && !asmHeaders[m[1]] {
+			incs = append(incs, m[1])
+			incLines = append(incLines, i+1)
+		}
+	}
+	return syms, lines, incs, incLines
+}
+
+// blankAsm overlays the assembly files [model].blank_asm names with an empty
+// file, after checking that this drops nothing but what the model replaces:
+// every symbol each file defines must be a replaced bodyless function of the
+// package (`·F`, whose model Go body takes its place) or a file-local symbol
+// (`name<>`, which only the file itself can reference), and each file may
+// include only the toolchain's headers (asmHeaders). It also refuses a
+// replaced bodyless function whose assembly definition is in a file the list
+// does not name (gc would refuse the overlay: defined in both Go and
+// assembly).
+func (b *builder) blankAsm(pm *PackageModel, pkg *packages.Package, realDecls map[string]*decl,
+	replaced map[string]bool) []error {
+	var errs []error
+	asmFiles := make(map[string]string) // base name -> path
+	for _, f := range pkg.OtherFiles {
+		if strings.HasSuffix(f, ".s") {
+			asmFiles[filepath.Base(f)] = f
+		}
+	}
+	replacedBodyless := func(name string) bool {
+		r := realDecls[name]
+		return replaced[name] && r != nil && r.kind == "func" && r.fn != nil && r.fn.Body == nil
+	}
+	blank := make(map[string]bool)
+	for _, name := range pm.Config.BlankAsm {
+		path, ok := asmFiles[name]
+		if !ok {
+			errs = append(errs, errors.Errorf("blank_asm %q: not an assembly file of the real package", name))
+			continue
+		}
+		blank[name] = true
+		src, err := b.source(path)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		syms, lines, incs, incLines := asmDefs(src)
+		ok = true
+		for i, inc := range incs {
+			errs = append(errs, errors.Errorf("blank_asm %q: %s:%d includes %q, which is not a "+
+				"toolchain header (a macro of it could define a symbol the check does not see)",
+				name, path, incLines[i], inc))
+			ok = false
+		}
+		for i, sym := range syms {
+			if strings.HasSuffix(sym, "<>") {
+				continue
+			}
+			if fn, local := strings.CutPrefix(sym, "·"); !local || !replacedBodyless(fn) {
+				errs = append(errs, errors.Errorf("blank_asm %q: %s:%d defines %s, which is not a "+
+					"replaced bodyless function of the package or a file-local symbol (blanking the "+
+					"file would drop it)", name, path, lines[i], sym))
+				ok = false
+			}
+		}
+		if ok {
+			b.models.Overlay[path] = []byte("// blanked by the Go model of " + pm.PkgPath +
+				" ([model] blank_asm): its functions are the model's\n")
+		}
+	}
+	for name, path := range asmFiles {
+		if blank[name] {
+			continue
+		}
+		src, err := b.source(path)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		syms, lines, _, _ := asmDefs(src)
+		for i, sym := range syms {
+			if fn, local := strings.CutPrefix(sym, "·"); local && replacedBodyless(fn) {
+				errs = append(errs, errors.Errorf("replaces %q, defined in assembly at %s:%d, which "+
+					"blank_asm does not list", fn, path, lines[i]))
+			}
+		}
+	}
+	sort.Slice(errs, func(i, j int) bool { return errs[i].Error() < errs[j].Error() })
+	return errs
 }

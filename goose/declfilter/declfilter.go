@@ -84,6 +84,15 @@ type ModelConfig struct {
 	// entry matches some model declaration (util.BuildModels), none is
 	// trusted or replaced.
 	NamesOnly []string `toml:"names_only"`
+	// Assembly files of the real package (base names, as built for
+	// linux/amd64) that the overlay blanks, so that the model's Go bodies of
+	// replaced bodyless functions are the definitions instead of the
+	// assembly. The builder refuses a file unless every symbol it defines
+	// (TEXT or GLOBL) is a replaced bodyless function of the package or a
+	// file-local symbol (`name<>`) and it includes only the toolchain's
+	// headers, and refuses a replaced function whose
+	// assembly definition is in a file this list does not name.
+	BlankAsm []string `toml:"blank_asm"`
 }
 
 // WholePackage says whether the model replaces every real file.
@@ -164,6 +173,18 @@ func (c FilterConfig) CheckModel() []error {
 				errs = append(errs, fmt.Errorf("[model] names_only %q matches %q, which is listed in trusted", p, n))
 			}
 		}
+	}
+	seenAsm := make(map[string]bool)
+	for _, f := range m.BlankAsm {
+		switch {
+		case m.WholePackage():
+			errs = append(errs, fmt.Errorf(`[model] blank_asm %q with replaces = ["*"]: a whole-package model does not blank assembly`, f))
+		case !strings.HasSuffix(f, ".s") || strings.ContainsAny(f, `/\`):
+			errs = append(errs, fmt.Errorf("[model] blank_asm %q: not the base name of an assembly (.s) file", f))
+		case seenAsm[f]:
+			errs = append(errs, fmt.Errorf("[model] blank_asm %q twice", f))
+		}
+		seenAsm[f] = true
 	}
 	return errs
 }

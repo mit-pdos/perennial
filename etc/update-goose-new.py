@@ -147,6 +147,11 @@ def main():
         action="store_true",
     )
     parser.add_argument(
+        "--proph",
+        help="translate proph, Perennial's package of prophecy variables (its own module, in proph/)",
+        action="store_true",
+    )
+    parser.add_argument(
         "--std-lib",
         help="translate (parts of) Go standard library",
         action="store_true",
@@ -172,6 +177,7 @@ def main():
     if args.all:
         setattr(args, "std_lib", True)
         setattr(args, "models", True)
+        setattr(args, "proph", True)
         setattr(args, "goose_examples", True)
         setattr(args, "gokv", True)
         for proj in projs:
@@ -338,6 +344,9 @@ def main():
         run_goose(goose_dir, "./model/channel")
         run_goose(goose_dir, "./model/strings")
         run_goose(goose_dir, "./model/pool")
+
+    if args.proph:
+        run_goose(path.join(perennial_dir, "proph"))
 
     # The standard library is translated with the build tag purego, which selects the
     # pure-Go implementations of the crypto packages (crypto/sha1's blockGeneric, where

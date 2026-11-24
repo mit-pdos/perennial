@@ -35,8 +35,8 @@ theorem unicode.utf8.AppendRune.wp_proof
     · ipureintro; rfl
     iintro %sl ⟨Hsl, -⟩
     wp_auto
-    wp_apply wp_slice_append (V := w8) (t := go.byte) p bs _ _ _ $$ [$Hp $Hcap $Hsl]
-      as %p' ⟨Hp', Hcap', -⟩
+    wp_apply wp_slice_append_undo (V := w8) (t := go.byte) p bs _ _ _ $$ [$Hp $Hcap $Hsl]
+      as %p' ⟨Hp', Hcap', -, Hundo⟩
     iapply HΦ
     iexists _
     iframe

@@ -22,19 +22,19 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : strings.Assumptions]
 
-/-- Proved from the model of `Split` (`Perennial/TrustedCode/strings.lean`), which does not
-model Go's split of `s` into UTF-8 sequences for an empty `sep`. -/
+/-- Proved from the Go model of `Split` (`goose/model/overlay/strings/strings.go`), which is stuck
+for an empty `sep` (Go splits `s` into UTF-8 sequences there); the spec requires `sep ≠ []`. -/
 theorem strings.Split.wp_proof
     (wp_HasPrefix : strings.HasPrefix.spec (GF := GF) (hG := hG)) :
     strings.Split.spec (GF := GF) (hG := hG) := by
   intro s sep Hsep
   wp_start as #Hinit
-  obtain ⟨c0, Hc0⟩ : ∃ c0, sep[0]? = some c0 := by
-    cases sep with
-    | nil => exact absurd rfl Hsep
-    | cons c _ => exact ⟨c, rfl⟩
   wp_auto
-  rw [Hc0]
+  wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %Hseplen
+  have Hne : W64 (sep.length : Int) ≠ W64 0 := by
+    have : 0 < sep.length := List.length_pos_iff.mpr Hsep
+    word
+  rw [decide_eq_false Hne]
   wp_auto
   ihave IH : iprop(∃ (a_sl : GoSlice) (fs : List GoString) (field rest : GoString),
       "a" ∷ a_ptr ↦ a_sl ∗
@@ -59,8 +59,6 @@ theorem strings.Split.wp_proof
       cases rest with
       | nil => exfalso; simp at Hif'
       | cons c r => exact ⟨c, r, rfl⟩
-    -- the model calls `HasPrefix` by its name (the trusted code is below `Code.strings`)
-    rw [show (go!"strings.HasPrefix" : GoString) = HasPrefix from rfl]
     wp_apply wp_HasPrefix
     by_cases hp : sep <+: c :: r
     · -- an occurrence of `sep`: the field ends
@@ -79,16 +77,14 @@ theorem strings.Split.wp_proof
       wp_apply wp_slice_append (V := GoString) (t := go.string) a_sl fs _ [field] (DFrac.own 1)
         $$ [Ha Hcap Htmp] as %a' ⟨Ha', Hcap', -⟩
       · iframe
-      wp_apply wp_string_to_bytes as %sl ⟨Hsl, -⟩
-      ihave %Hlen := ownSlice_len $$ Hsl
-      ihave %Hwf := ownSlice_wf $$ Hsl
+      wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %-
       wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %-
       have Hp : sep.length ≤ (c :: r).length := hp.length_le
-      have Hk : 0 ≤ sint.Z (W64 sep.length) ∧ sint.Z (W64 sep.length) ≤ sint.Z sl.len := by word
-      rw [ite_eq_left ⟨Hk.1, Hk.2, Hwf.2⟩]
-      icases (ownSlice_split_all (W64 sep.length) sl _ _ Hk).1 $$ Hsl with ⟨-, Hsl⟩
-      rw [show sint.nat (W64 sep.length) = sep.length by word]
-      wp_apply wp_bytes_to_string $$ Hsl as -
+      rw [ite_eq_left (by word)]
+      rw [show sint.nat (W64 ((c :: r).length : Int)) = (c :: r).length by word,
+        show sint.nat (W64 (sep.length : Int)) = sep.length by word,
+        List.take_of_length_le (by simp)]
+      wp_auto
       wp_for_post
       iframe
       iexists _, _, _, _
@@ -99,25 +95,13 @@ theorem strings.Split.wp_proof
     · -- another byte: it goes to the field
       simp only [hp, decide_false]
       wp_auto
-      wp_bind (App (Val (GoInstruction (CompositeLiteral (go.SliceType go.byte))))
-        (Val (LiteralValueV _)))
-      iapply wp_slice_literal (V := w8) (t := go.byte) [c]
+      rw [ite_eq_left (by simp only [List.length_cons] at Hrlen ⊢; word)]
       wp_auto
-      rw [show go.arrayLiteralSize
-        [KeyedElement none (ElementExpression go.byte #c)] = 1 from rfl]
-      isplitl []
-      · ipureintro; rfl
-      iintro %c_sl ⟨Hc_sl, -⟩
-      wp_apply wp_bytes_to_string $$ Hc_sl as -
-      wp_apply wp_string_to_bytes as %sl ⟨Hsl, -⟩
-      ihave %Hlen := ownSlice_len $$ Hsl
-      ihave %Hwf := ownSlice_wf $$ Hsl
-      have Hk : 0 ≤ sint.Z (W64 1) ∧ sint.Z (W64 1) ≤ sint.Z sl.len := by
-        simp only [List.length_cons] at Hlen Hrlen; word
-      rw [ite_eq_left ⟨Hk.1, Hk.2, Hwf.2⟩]
-      icases (ownSlice_split_all (W64 1) sl _ _ Hk).1 $$ Hsl with ⟨-, Hsl⟩
-      rw [show sint.nat (W64 1) = 1 by word]
-      wp_apply wp_bytes_to_string $$ Hsl as -
+      wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %-
+      rw [ite_eq_left (by simp only [List.length_cons] at Hrlen ⊢; word)]
+      rw [show sint.nat (W64 ((c :: r).length : Int)) = (c :: r).length by word,
+        List.take_of_length_le (l := List.drop 1 (c :: r)) (by simp)]
+      wp_auto
       wp_for_post
       iframe
       iexists _, _, _, _

@@ -45,7 +45,7 @@ class StringSemantics [GoSemanticsFunctions] : Prop where
   [package_sem : strings.Assumptions]
 
   internal_string_len_step (s : GoString) :
-    ⟦InternalStringLen, #s⟧ ⤳ (if s.length < 2^63 then
+    ⟦InternalStringLen, #s⟧ ⤳ (if (s.length : Int) ≤ maxAddr then
                                   (Val #(W64 s.length))
                                 else AngelicExit #())
 

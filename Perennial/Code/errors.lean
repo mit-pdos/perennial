@@ -61,6 +61,12 @@ noncomputable def AsType [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def asType [GooseExts] [GoGlobalContext] : GoString :=
   go!"errors.asType"
 
+noncomputable def asWalk [GooseExts] [GoGlobalContext] : GoString :=
+  go!"errors.asWalk"
+
+noncomputable def asAssign [GooseExts] [GoGlobalContext] : GoString :=
+  go!"errors.asAssign"
+
 /-- New returns an error that formats as the given text.
     Each call to New returns a distinct error value even if the text is identical.
 
@@ -221,6 +227,61 @@ noncomputable def Unwrap.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error]))])))) (Pair (Var "u") (Var "$r0"))))))))))))))
   (App (Val (GoInstruction (GoLoad go.error))) (Var "$res0")))))
 
+/-- MODEL: Is reports whether any error in err's tree matches target. Go's is
+
+    	if err == nil || target == nil {
+    		return err == target
+    	}
+    	isComparable := reflectlite.TypeOf(target).Comparable()
+    	return is(err, target, isComparable)
+
+    (is, which walks the error tree, is the real Go, translated). The model
+    replaces the reflection call by true: the semantics cannot inspect the
+    dynamic type of an interface value, so the model takes every target to be
+    comparable. For a target whose dynamic type is not comparable (a slice
+    type, say), Go's is skips err == target; the model performs it, and when
+    some error of the tree has target's dynamic type that comparison is stuck
+    (CheckComparable has no rule for an uncomparable type); comparing with an
+    error of another dynamic type is false, as Go's skipped comparison would
+    have been. The model is thus less defined than Go there, never different:
+    wp_Is only admits nil and pointer targets. A semantics rule testing the
+    comparability of an interface's dynamic type would let goose translate the
+    real Is.
+
+    go: wrap.go:28:6 -/
+noncomputable def Is.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "err"
+  (Lam "target"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "target" (App (Val (GoInstruction (GoAlloc go.error))) (Var "target"))
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (Var "err"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #true)
+  (Let "isComparable" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.error))) (Var "target"))
+  (Let "$a2" (App (Val (GoInstruction (GoLoad go.bool))) (Var "isComparable"))
+  (App (App (App (App (Val (GoInstruction (FuncResolve is' []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "isComparable") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil)))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "target")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (GoLoad go.error))) (Var "target"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))
+
 /-- go: wrap.go:54:6 -/
 noncomputable def is.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "err"
@@ -330,6 +391,66 @@ noncomputable def is.impl [GooseExts] [GoGlobalContext] : val :=
   (Lam BAnon
   (Val #())))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))))
+
+/-- MODEL: As finds the first error in err's tree that matches target, and if
+    one is found, sets target to that error value and returns true. Go's is
+
+    	if err == nil {
+    		return false
+    	}
+    	if target == nil {
+    		panic("errors: target cannot be nil")
+    	}
+    	val := reflectlite.ValueOf(target)
+    	typ := val.Type()
+    	if typ.Kind() != reflectlite.Ptr || val.IsNil() {
+    		panic("errors: target must be a non-nil pointer")
+    	}
+    	targetType := typ.Elem()
+    	if targetType.Kind() != reflectlite.Interface && !targetType.Implements(errorType) {
+    		panic("errors: *target must be interface or implement error")
+    	}
+    	return as(err, target, val, targetType)
+
+    The model keeps the checks of err and target that need no reflection and
+    moves the others into asAssign, which asWalk calls first, before calling any
+    method of err: the same checks at the same point (no method of err is
+    called between them), with the same panics.
+
+    go: wrap.go:60:6 -/
+noncomputable def As.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "err"
+  (Lam "target"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "target" (App (Val (GoInstruction (GoAlloc go.any))) (Var "target"))
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (Var "err"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.any))) (Var "target"))
+  (App (App (App (Val (GoInstruction (FuncResolve asWalk []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (Var "target")) (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil)))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"errors: target cannot be nil")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil)))))
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))
 
 /-- AsType finds the first error in err's tree that matches the type E, and
     if one is found, returns that error value and true. Otherwise, it
@@ -534,6 +655,130 @@ noncomputable def asType.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : va
   (Val #()))))))
   (Pair (App (Val (GoInstruction (GoLoad E))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res1"))))))))
 
+/-- MODEL: asWalk is Go's as (the tree walk; not translated), with its
+    reflection (the parameters targetVal and targetType, and the test
+
+    	if reflectlite.TypeOf(err).AssignableTo(targetType) {
+    		targetVal.Elem().Set(reflectlite.ValueOf(err))
+    		return true
+    	}
+
+    ) replaced by a call of asAssign, which does exactly this.
+
+    go: wrap.go:79:6 -/
+noncomputable def asWalk.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "err"
+  (Lam "target"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "target" (App (Val (GoInstruction (GoAlloc go.any))) (Var "target"))
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (Var "err"))
+  (App (App (App (Val doFor) (Lam BAnon
+  (Val #true))) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$y" (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error]))])))) (Var "$y"))
+  (Let "$x" (Fst (Var "__p"))
+  (Let "$ok" (Snd (Var "__p"))
+  (If (Var "$ok")
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error]))])))) (Var "$x"))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error]))]) go!"Unwrap"))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error]))])))) (Var "x"))) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil)))))
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r0")))))))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [(go.GoType.SliceType go.error)]))])))) (Var "$y"))
+  (Let "$x" (Fst (Var "__p"))
+  (Let "$ok" (Snd (Var "__p"))
+  (If (Var "$ok")
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [(go.GoType.SliceType go.error)]))])))) (Var "$x"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (App (Val (GoInstruction (MethodResolve (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [(go.GoType.SliceType go.error)]))]) go!"Unwrap"))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [(go.GoType.SliceType go.error)]))])))) (Var "x"))) (Val #()))
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (App (App (Val (slice.forRange go.error)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (Let "$a0" (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.any))) (Var "target"))
+  (App (App (App (Val (GoInstruction (FuncResolve asWalk []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil)))))
+  (App (Val doContinue) (Val #()))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (Var "$key")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$value"))))))))))))
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))))))))))))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"As" (go.signature.Signature [go.any] false [go.bool]))])))) (App (Val (GoInstruction (GoLoad go.error))) (Var "err")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"As" (go.signature.Signature [go.any] false [go.bool]))])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"As" (go.signature.Signature [go.any] false [go.bool]))])))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "target"))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"As" (go.signature.Signature [go.any] false [go.bool]))]) go!"As"))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"As" (go.signature.Signature [go.any] false [go.bool]))])))) (Var "x"))) (Var "$a0"))) (Val #false))
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"As" (go.signature.Signature [go.any] false [go.bool]))])))) (Pair (Var "x") (Var "$r0")))))))))))))))
+  (If (Let "$a0" (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.any))) (Var "target"))
+  (App (App (App (Val (GoInstruction (FuncResolve asAssign []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (Lam BAnon
+  (Val #()))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))
+
 /-- The package variables goose does not translate (the `skip` entries of the package's
 goose config): no Lean name, allocation or initialization step, so no translated code names
 them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot
@@ -541,11 +786,11 @@ panic, and has no effect beyond the variable), for the reason given.
 
 - `errorType` (`var errorType = reflectlite.TypeOf((*error)(nil)).Elem()`): `reflectlite.TypeOf((*error)(nil)).Elem()` (wrap.go): reads the static runtime type descriptor
 of `error` (`abi.TypeOf`, through `unsafe`), which the semantics cannot represent; it allocates
-nothing the program can see, cannot panic and has no other effect. Read only by `As`, which is
-not translated.
+nothing the program can see, cannot panic and has no other effect. Read only by `asAssign` (the
+model of `As`'s reflection), which is trusted.
 -/
 noncomputable def skipped' : List go.SkippedVar := [
-  ⟨"errors.errorType", "`reflectlite.TypeOf((*error)(nil)).Elem()` (wrap.go): reads the static runtime type descriptor\nof `error` (`abi.TypeOf`, through `unsafe`), which the semantics cannot represent; it allocates\nnothing the program can see, cannot panic and has no other effect. Read only by `As`, which is\nnot translated.", "var errorType = reflectlite.TypeOf((*error)(nil)).Elem()"⟩]
+  ⟨"errors.errorType", "`reflectlite.TypeOf((*error)(nil)).Elem()` (wrap.go): reads the static runtime type descriptor\nof `error` (`abi.TypeOf`, through `unsafe`), which the semantics cannot represent; it allocates\nnothing the program can see, cannot panic and has no other effect. Read only by `asAssign` (the\nmodel of `As`'s reflection), which is trusted.", "var errorType = reflectlite.TypeOf((*error)(nil)).Elem()"⟩]
 
 noncomputable instance info' : PkgInfo pkg_id.errors where
   pkgImportedPkgs := []
@@ -644,8 +889,11 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Unwrap_unfold : FuncUnfold Unwrap [] Unwrap.impl
   Is_unfold : FuncUnfold Is [] Is.impl
   is_unfold : FuncUnfold is' [] is.impl
+  As_unfold : FuncUnfold As [] As.impl
   AsType_unfold : ∀ (E : go.GoType), FuncUnfold AsType [E] (AsType.impl E)
   asType_unfold : ∀ (E : go.GoType), FuncUnfold asType [E] (asType.impl E)
+  asWalk_unfold : FuncUnfold asWalk [] asWalk.impl
+  asAssign_unfold : FuncUnfold asAssign [] asAssign.impl
 
 attribute [instance] Assumptions.errorString_instance
   Assumptions.joinError_instance
@@ -654,8 +902,11 @@ attribute [instance] Assumptions.errorString_instance
   Assumptions.Unwrap_unfold
   Assumptions.Is_unfold
   Assumptions.is_unfold
+  Assumptions.As_unfold
   Assumptions.AsType_unfold
   Assumptions.asType_unfold
+  Assumptions.asWalk_unfold
+  Assumptions.asAssign_unfold
 
 end errors
 

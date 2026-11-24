@@ -6,10 +6,10 @@ import (
 )
 
 // TestBuilderStringAliases is the evidence for the model of (*strings.Builder).String
-// (Perennial/TrustedCode/strings.lean, Builder.String.impl): gc's String shares the
+// (goose/model/overlay/strings/builder.go, String): gc's String shares the
 // Builder's buffer, so a Builder restored from a copy by value (copyCheck passes:
 // its addr is its own address again) overwrites the bytes of a string returned
-// earlier. The model returns a copy and leaves a reader on those bytes, so that the
+// earlier. The model returns a copy and makes those bytes read-only, so that the
 // overwrite is stuck there, never different.
 func TestBuilderStringAliases(t *testing.T) {
 	var b strings.Builder
@@ -54,10 +54,10 @@ func growStack(n int) int {
 var staleSaved strings.Builder
 
 // TestBuilderStaleCopyPanics is the evidence for the model of (*strings.Builder).copyCheck
-// (Perennial/TrustedCode/strings.lean, Builder.copyCheck.impl): b stays on the stack
+// (goose/model/overlay/strings/builder.go, copyCheck): b stays on the stack
 // (copyCheck hides b.addr from escape analysis), a copy by value kept on the heap holds
 // b's address, and once the stack has moved that address is stale, so storing the copy
-// back over b and writing panics. The model's copyCheck leaves a reader on b.addr, so
+// back over b and writing panics. The model's copyCheck makes b.addr read-only, so
 // that the store back is stuck there; with b.addr = b alone the write would succeed.
 func TestBuilderStaleCopyPanics(t *testing.T) {
 	var b strings.Builder

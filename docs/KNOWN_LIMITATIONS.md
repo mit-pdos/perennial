@@ -17,7 +17,8 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
 - **The model assumes gc on linux/amd64 (trusted assumption).** Every allocation lies in
   `(0, maxAddr]`, `maxAddr = 2^47` (`IsFresh`/`IsFreshBytes`, `GooseLang/Lang.lean`), which
   holds for gc's user address space on linux/amd64, and proofs use it to rule out address
-  overflow (`unsafe.Slice`'s length check, `unsafe.Add`'s range). It is false on:
+  overflow (`unsafe.Slice`'s length check, `unsafe.Add`'s range) and to bound a string's
+  length ("Allocation"). It is false on:
   - aix/ppc64: gc's heap hints lie above `0xa0<<52`.
   - linux/arm64 PIE and android: globals and `zerobase` load near `0xaaaa_xxxx_xxxx`.
   - s390x: the user address space (`TASK_SIZE`) is 2^64.
@@ -182,6 +183,21 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   valid; a length of `2^63` or more is not a Go type, and reaches `AngelicExit`). A size
   check needs the layout table, which R1 of `docs/design/unsafe-memory.md` adds for plain
   types only.
+- **Strings are no longer than the address space (trusted assumption).** `len(s)` of a
+  string longer than `maxAddr` bytes is an `AngelicExit` (`internal_string_len_step`,
+  `Golang/Defn/String.lean`). The Go spec bounds a string's length only by `int`. On gc
+  linux/amd64 no string goose translates is longer: its bytes are in memory, gc's arena
+  hints all lie below `maxAddr` (`runtime/malloc.go`), and the kernel's default mmap window
+  is 47 bits, so `strings.Repeat("a", 1<<47+1)` and `string(make([]byte, 1<<47+1))` end with
+  a fatal `runtime: out of memory: cannot allocate 140737492549632-byte block` whatever the
+  RAM, and `strings.Repeat("a", 1<<48+1)` panics with `makeslice: len out of range`. The
+  exception is `unsafe.String`: `unsafe.String(&b[0], 1<<50)` runs in gc and has length
+  `2^50`. Goose refuses `unsafe.String`/`unsafe.StringData` today; a future rule for them
+  (`docs/design/unsafe-memory.md`) must check the backing allocation, or this exit hides a
+  real execution. The model's string `+` is unbounded (a doubling loop that gc ends with a
+  fatal out of memory runs on in the model), so such a run reaches this exit at its next
+  `len`. A heap byte slice gets the same bound from allocation (`IsFresh`), not from an exit.
+  Approved by Upamanyu on 2026-11-24 (`.agents/skills/fix-semantics/examples.md`, Case 51).
 - **Out of memory is outside the model.** The heap is bounded: every allocation lies in
   `(0, maxAddr]`, `maxAddr = 2^47` (`GooseLang/Lang.lean`; valid only for gc on
   linux/amd64, "Platform" above). When no free range is left, an allocation steps to itself forever
@@ -489,6 +505,29 @@ the reflection primitives of `internal/reflectcore` (`TrustedCode/internal/refle
   is no crash adequacy theorem for Grove: `grove_single_node_adequacy`
   (`Ext/Grove/Adequacy.lean`) is fail-stop, and a verified Grove program is verified only
   for executions without crashes.
+
+## Program exit
+
+Not unsound (the model has more executions than Go), but easy to misread. `syscall.Exit`, and
+so `os.Exit` and every logger's `Fatal` that calls it, is modelled as `AngelicExit`
+(`TrustedCode/syscall.lean`; the instruction in `GooseLang/Lang.lean`), which steps to itself
+forever:
+
+- **The other goroutines keep running.** In Go the process ends at the exit; in the model only
+  the exiting goroutine stops, and the program's other goroutines (and other machines) go on. A
+  Go run up to the exit is a prefix of a model run, so the adequacy theorems cover it, and a
+  proof must also show the goroutines that run on in the model safe.
+- **Any exit status is a safe end.** An exiting goroutine is neither stuck nor panicking, whatever
+  its `code`, so `os.Exit(1)` (or `log.Fatal`) on a failed check is a run the adequacy theorems
+  count as safe, exactly as `os.Exit(0)` is. A program meant to check a property (a
+  linearizability checker run beside a system, an assertion) must report a violation by
+  panicking: one that exits on a violation is verified to do nothing about it. In a deployment of
+  several machines, Go's run of a machine that exits is the model's run in which the scheduler
+  stops picking that machine after the exit.
+
+Witness: `goose/model/runtime/exit_test.go` (`TestExitEndsProgram`: after `os.Exit(3)` neither
+the deferred function nor the other goroutine runs, status 3). `README.md`, "Program exit", says
+the same.
 
 ## The step bound of the adequacy theorems
 

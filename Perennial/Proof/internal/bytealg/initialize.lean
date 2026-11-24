@@ -4,6 +4,7 @@ The proof of `internal.bytealg.initialize'`.
 module
 
 public import Perennial.Spec.internal.bytealg.initialize
+public import Perennial.Spec.internal.gomodel.initialize
 
 @[expose] public section
 
@@ -22,7 +23,8 @@ variable [package_sem : internal.bytealg.Assumptions]
 
 set_option maxRecDepth 20000 in
 set_option maxHeartbeats 2000000 in
-theorem internal.bytealg.initialize'.wp_proof :
+theorem internal.bytealg.initialize'.wp_proof
+    (wp_gomodel_initialize : internal.gomodel.initialize'.spec (GF := GF) (hG := hG)) :
     internal.bytealg.initialize'.spec (GF := GF) (hG := hG) := by
   intro get_is_pkg_init Hinit
   wp_start as Hown
@@ -31,12 +33,25 @@ theorem internal.bytealg.initialize'.wp_proof :
   iintro Hown
   wp_auto
   wp_apply wp_GlobalAlloc (V := w64) _ go.int as HMaxLen
+  wp_apply wp_gomodel_initialize _ Hinit.2.1 $$ Hown as ⟨Hown, #Hgomodel⟩
   -- `init.0` (trusted): `MaxLen` is 63 or 31
   wp_func_call
   wp_call
   iunfold MaxLen at HMaxLen
   wp_apply wp_ArbitraryInt as %c -
-  wp_if_destruct <;> (iframe Hown; is_pkg_init_finish)
+  iapply wp_fupd
+  wp_if_destruct <;>
+  · ipersist HMaxLen
+    iframe Hown
+    is_pkg_init_finish
+    isplitr
+    · ipureintro; simp
+    imodintro
+    unfold internal.bytealg.isInit MaxLen
+    iexists _
+    iframe HMaxLen
+    ipureintro
+    simp
 
 end proof
 

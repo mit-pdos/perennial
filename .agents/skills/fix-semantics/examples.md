@@ -1603,3 +1603,45 @@ on a non-complex interface fails); a byte-cell (`IsPlainScalar`) representation,
 
 **Why.** Approved by the owner (upamanyus) as a self-contained semantics improvement, 2026-11-24
 (relayed by coordinator-E): complete the uniform scheme the way `float32`/`float64` are done.
+## Case 50 — ACCEPTED: unary `+` is the identity (branch `unary-plus`)
+
+**Symptom.** Incomplete. goose translates `+x` as `GoUnOp GoPos t`, but no semantics rule stepped `GoPos`
+at any type, so `cmp.Compare` (`return +1` for `x > y`) was stuck; found by etcd-grove's proof of mvcc's
+`hashStorage.Store` over `slices.SortFunc(..., cmp.Compare)` (etcd-grove #18).
+
+**Witness.** `func f() int { return +1 }` is stuck; so is `+x` for a variable `x` of any integer or float type.
+
+**Taken.** An identity rule `pos_<t>` beside each `neg_<t>` in `Golang/Defn/Predeclared.lean`, at the same
+types (`untypedInt`, the eleven integer types, `untypedFloat`, `float64`, `float32`; the named types through
+`go_un_op_underlying`): `⟦GoUnOp GoPos t, #v⟧ ⤳[under] #v` (`⤳` at the untyped types). 15 rules, no goose
+change. Semantics tests `testUnaryPlusInt`, `testUnaryPlusUntypedAndNamed`, `testUnaryPlusFloat`
+(`unary_plus.go`); Go evidence `unary_plus_test.go`: `+x` is `x` bit for bit at the float types (-0, the
+infinities, NaN payloads) and at the integer extremes.
+
+**Not taken.** Folding `+x` to `x` in goose (a goose branch for what is one rule per type in the semantics).
+
+**Why.** "A self-contained completion of the `neg_*` scheme": the same types, the identity, floats bit for
+bit including -0 and NaN (Upamanyu, via coordinator-E, etcd-grove #18).
+
+## Case 51 — ACCEPTED: a string is no longer than the address space (branch `string-len-maxaddr`)
+
+**Symptom.** Incomplete (precision): `len(s)` of a string was an `AngelicExit` only from `2^63`
+bytes, so proofs got `len(s) < 2^63` and no more. `strconv.appendQuotedWith`'s capacity
+`len(buf)+1+len(s)+1` then wraps for `len(s) ∈ {2^63-2, 2^63-1}`, and `fmt`'s `%q` needed
+`s.length ≤ maxAddr` from every caller, which callers formatting arbitrary strings cannot give.
+
+**Witness.** `strings.Repeat("a", 1<<47+1)` ends with `runtime: out of memory` (fatal);
+`strings.Repeat("a", 1<<48+1)` panics `makeslice: len out of range`. No gc program on
+linux/amd64 holds a string longer than `maxAddr = 2^47`.
+
+**Taken.** `internal_string_len_step`'s exit moves from `2^63` to `maxAddr` (one condition in
+one rule, `Golang/Defn/String.lean`), the bound heap byte slices get from allocation; a
+`KNOWN_LIMITATIONS` entry (Allocation) records the divergence from the Go spec, which bounds a
+string's length only by `int`. `wp_string_len_maxAddr` exposes the bound.
+
+**Not taken.** Keeping a `len(s) + 2 < 2^63` premise on `%q` (pushes an undischargeable
+obligation to every caller); bounding strings by modelling them in the heap (large change).
+The sibling `array_length_step` keeps `2^63`: array lengths are bounded by Go's types.
+
+**Why.** Upamanyu, 2026-11-24: "I'm ok with constraining executions to only those that have
+strings on the heap that are less than `maxAddr` size."

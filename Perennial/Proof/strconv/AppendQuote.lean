@@ -24,10 +24,10 @@ variable [package_sem : strconv.Assumptions]
 theorem strconv.AppendQuote.wp_proof
     (wp_appendQuotedWith : strconv.appendQuotedWith.spec (GF := GF) (hG := hG)) :
     strconv.AppendQuote.spec (GF := GF) (hG := hG) := by
-  intro dst bs s Hs
+  intro dst bs s
   wp_start as ⟨Hd, Hcap⟩
   wp_auto
-  wp_apply wp_appendQuotedWith _ _ _ _ _ Hs $$ [$Hd $Hcap] as %d' Hd'
+  wp_apply wp_appendQuotedWith _ _ _ _ _ $$ [$Hd $Hcap] as %d' Hd'
   iapply HΦ $$ Hd'
 
 end proof

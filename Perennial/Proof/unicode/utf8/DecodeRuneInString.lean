@@ -30,14 +30,24 @@ theorem unicode.utf8.DecodeRuneInString.wp_proof
   wp_auto
   wp_if_destruct
   · wp_apply wp_decodeRuneInStringSlow as %r %size %Hsz
-    iapply HΦ; ipureintro; exact Hsz
+    iapply HΦ; ipureintro
+    refine ⟨Hsz, fun c rest h _ => ?_⟩
+    simp at h
   obtain ⟨c, rest, rfl⟩ := List.exists_cons_of_ne_nil Hif
   wp_auto
   wp_if_destruct
-  · iapply HΦ; ipureintro; right
-    refine ⟨List.cons_ne_nil _ _, by word, by simp only [List.length_cons]; word⟩
+  · iapply HΦ; ipureintro
+    refine ⟨Or.inr ⟨List.cons_ne_nil _ _, by word, by simp only [List.length_cons]; word⟩, ?_⟩
+    intro c' rest' h _
+    simp only [List.cons.injEq] at h
+    obtain ⟨rfl, rfl⟩ := h
+    exact ⟨by simp [uint.nat], rfl⟩
   · wp_apply wp_decodeRuneInStringSlow as %r %size %Hsz
-    iapply HΦ; ipureintro; exact Hsz
+    iapply HΦ; ipureintro
+    refine ⟨Hsz, fun c' rest' h hc => ?_⟩
+    simp only [List.cons.injEq] at h
+    obtain ⟨rfl, rfl⟩ := h
+    exact absurd (by word) Hif
 
 end proof
 

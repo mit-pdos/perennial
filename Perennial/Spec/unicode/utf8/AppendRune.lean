@@ -20,13 +20,15 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : unicode.utf8.Assumptions]
 
-/-- `AppendRune(p, r)`: appends the UTF-8 encoding of `r` (of `RuneError` if `r` is invalid) to `p`; here, some bytes. The slice is owned with its capacity, which `append` may use. -/
+/-- `AppendRune(p, r)`: appends the UTF-8 encoding of `r` (of `RuneError` if `r` is invalid) to `p`; here, some bytes. The old `p` can be recovered from the result (as `wp_slice_append_undo`). The slice is owned with its capacity, which `append` may use. -/
 abbrev unicode.utf8.AppendRune.spec : Prop :=
   ∀ (p : GoSlice) (bs : List w8) (r : w32),
     {{ isPkgInit (PROP := IProp GF) pkg_id.unicode.utf8 ∗ p ↦* bs ∗ ownSliceCap w8 p (DFrac.own 1) }}
       (App (App (Val (@! AppendRune)) (Val #p)) (Val #r))
     {{ (p' : GoSlice), RET #p';
-        ∃ q : List w8, p' ↦* (bs ++ q) ∗ ownSliceCap w8 p' (DFrac.own 1) }}
+        ∃ q : List w8, p' ↦* (bs ++ q) ∗ ownSliceCap w8 p' (DFrac.own 1) ∗
+          (p' ↦* (bs ++ q) ∗ ownSliceCap w8 p' (DFrac.own 1) -∗
+            p ↦* bs ∗ ownSliceCap w8 p (DFrac.own 1)) }}
 
 end spec
 
