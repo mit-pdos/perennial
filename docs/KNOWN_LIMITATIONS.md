@@ -329,8 +329,12 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   d := grove_ffi.FileRead("f") // Go: []byte{}; the model: the file's contents
   ```
 
-- **A node's `durable/` directory is assumed private, writable and unaliased, and to hold
-  exactly the node's initial files when it starts (environment assumption).** A file in
+- **A node's `durable/` and `tmp/` directories are assumed private, writable, unaliased and
+  on one filesystem, and `durable/` to hold exactly the node's initial files when it starts
+  (environment assumption).** `FileWrite` creates its temporary file in `tmp/` (in the working
+  directory) and renames it into `durable/`; Go's `FileWrite` exits the process (`log.Fatal`)
+  when `tmp/` is not a writable directory, is full, or is on another filesystem than `durable/`
+  (`rename(2)` fails with `EXDEV`), where the model's returns. A file in
   `durable/` that is missing from the initial `groveNodeFiles` reads as its contents in Go but
   as empty in the model (`FileRead` of a missing name), so the initial state must list every
   file there. The model keeps each valid file name's contents independently
@@ -404,7 +408,10 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   returns a range that contains a global time which never decreases, across all nodes
   (`IsGroveStep` "GetTimeRange", `Ext/Grove/Impl.lean`): it assumes every node's clock reads
   a value in `[t-10ms, t]` of that time `t`. A clock step (NTP, `settimeofday`) back by more
-  than 10ms, or a skew of more than 10ms between nodes, breaks it.
+  than 10ms, or a skew of more than 10ms between nodes, breaks it. It also assumes the clock
+  reads, as `uint64` nanoseconds, below `2^64 - 10ms` (Go's `t + 10e6` then does not wrap):
+  a clock in the 10ms before 1970-01-01 (`UnixNano` negative) makes Go return `h < l`, where
+  the model's range has `l <= h`.
 
   ```go
   l1, _ := grove_ffi.GetTimeRange()
