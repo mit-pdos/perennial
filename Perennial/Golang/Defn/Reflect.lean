@@ -162,8 +162,13 @@ class ReflectSemantics : Prop where
     ⟦PointerOfAt, #(interface.mkOk t #m)⟧ ⤳ #m
   pointer_of_at_chan {t e : go.GoType} {d : go.ChanDir} [t ↓u go.ChannelType d e] (c : GoChan) :
     ⟦PointerOfAt, #(interface.mkOk t #c)⟧ ⤳ #c
-  /-- A slice's data pointer. -/
-  pointer_of_at_slice {t e : go.GoType} [t ↓u go.SliceType e] (s : GoSlice) :
+  /-- A nil slice's data pointer. -/
+  pointer_of_at_slice_nil {t e : go.GoType} [t ↓u go.SliceType e] :
+    ⟦PointerOfAt, #(interface.mkOk t #slice.nil)⟧ ⤳ #null
+  /-- The data pointer of a slice of positive capacity. Not an instance: its premise is not found
+  by instance search. -/
+  pointer_of_at_slice {t e : go.GoType} [t ↓u go.SliceType e] (s : GoSlice)
+      (h : 0 < uint.Z s.cap) :
     ⟦PointerOfAt, #(interface.mkOk t #s)⟧ ⤳ #s.ptr
   /-- The fact `q` about the type `t` of a token. Not an instance: its premise is not found by
   instance search. -/
@@ -174,10 +179,10 @@ class ReflectSemantics : Prop where
 attribute [instance] ReflectSemantics.convert_at_step ReflectSemantics.eq_nil_at_step
   ReflectSemantics.pointer_of_at_ptr ReflectSemantics.pointer_of_at_unsafe
   ReflectSemantics.pointer_of_at_map ReflectSemantics.pointer_of_at_chan
-  ReflectSemantics.pointer_of_at_slice
+  ReflectSemantics.pointer_of_at_slice_nil
 export ReflectSemantics (func_resolve_at_step convert_at_step field_ref_at_step
   array_slice_at_step eq_nil_at_step pointer_of_at_ptr pointer_of_at_unsafe pointer_of_at_map
-  pointer_of_at_chan pointer_of_at_slice type_query_step)
+  pointer_of_at_chan pointer_of_at_slice_nil pointer_of_at_slice type_query_step)
 
 end defs
 end go
