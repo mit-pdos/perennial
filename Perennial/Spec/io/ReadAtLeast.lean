@@ -24,7 +24,10 @@ variable [package_sem : io.Assumptions]
 (`io.readerOk`), from `S r0`: delivers `ys` into the front of `buf` and leaves `S (r0 ++ ys)`,
 returning `len(ys)` and an error as `io.readAtLeastRes` says (`eof`, `ueof`, `sb`: the values of
 `io.EOF`, `io.ErrUnexpectedEOF`, `io.ErrShortBuffer`). Each `Read` is of `buf`'s remaining bytes,
-so `Pre` must hold of every such call. It may not return (a reader that keeps returning `0, nil`:
+after `ys` with `len(ys) < min` and `len(ys) < len(buf)` (the loop reads only while `n < min`, and
+only once `min ≤ len(buf)`: else it returns `ErrShortBuffer` at once), so `Pre` must hold of every
+such call, never of an empty read (a reader whose condition refuses `len(p) = 0`, a connection's,
+qualifies). It may not return (a reader that keeps returning `0, nil`:
 partial correctness). -/
 abbrev io.ReadAtLeast.spec : Prop :=
   ∀ (ri : GoInterfaceOk) (Pre : List w8 → Nat → Prop) (S : List w8 → IProp GF)
@@ -33,7 +36,8 @@ abbrev io.ReadAtLeast.spec : Prop :=
   {{ isPkgInit (PROP := IProp GF) pkg_id.io ∗ io.readerOk ri Pre S E ∗
       globalAddr io.EOF ↦□ eof ∗ globalAddr io.ErrUnexpectedEOF ↦□ ueof ∗
       globalAddr io.ErrShortBuffer ↦□ sb ∗
-      ⌜∀ ys : List w8, ys.length ≤ xs.length → Pre (r0 ++ ys) (xs.length - ys.length)⌝ ∗
+      ⌜∀ ys : List w8, (ys.length : Int) < sint.Z min ∧ ys.length < xs.length →
+        Pre (r0 ++ ys) (xs.length - ys.length)⌝ ∗
       S r0 ∗ p ↦* xs }}
     (App (App (App (Val (@! io.ReadAtLeast)) (Val #(interface.ok ri))) (Val #p)) (Val #min))
   {{ (n : w64) (err : GoInterface), RET (PairV #n #err);

@@ -1,0 +1,6 @@
+translate = ["!*"]
+imports = ["!*"]
+
+# an assembly function (sig_amd64.s) with no Go body: a marker that returns at once
+# (TrustedCode/crypto/internal/boring/sig.lean)
+trusted = ["StandardCrypto"]

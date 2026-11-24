@@ -35,7 +35,9 @@ theorem io.ReadFull.wp_proof
   wp_apply wp_ReadAtLeast ri Pre S E r0 p xs p.len eof ueof _ $$ [Hp HS]
     as %n %err ⟨%ys, %Hys, Hp, HS, #Hres⟩
   · iframe Hr Heof Hueof HSB HS Hp
-    ipureintro; exact Hpre
+    ipureintro
+    intro ys hys
+    exact Hpre ys hys.2
   wp_auto
   iapply HΦ
   iexists ys
