@@ -1,8 +1,13 @@
 # The real Go is translated: Builder (but three methods, modelled), Join (over Builder), Compare
 # (over `bytealg.CompareString`, modelled in its package), HasPrefix and TrimPrefix (over
 # internal/stringslite's), and the rest of `translate`. `grow`'s `bytealg.MakeNoZero` is trusted in
-# its package.
-translate = ["Builder", "Builder.*", "asciiSpace", "Compare", "HasPrefix", "HasSuffix", "Join", "maxInt", "TrimPrefix", "TrimSuffix", "NewReplacer"]
+# its package. `TrimLeft` with its ASCII helpers (`trimLeftByte`, `makeASCIISet`,
+# `asciiSet.contains`, `trimLeftASCII`); its non-ASCII path, `trimLeftUnicode`, is not translated
+# (it reaches `IndexRune` and utf8 decoding): a call of `TrimLeft` with a cutset that is not all ASCII
+# has no proof. `LastIndex`, `IndexByte` and `Cut` (over internal/stringslite and internal/bytealg).
+translate = ["Builder", "Builder.*", "asciiSpace", "Compare", "HasPrefix", "HasSuffix", "Join", "maxInt", "TrimPrefix", "TrimSuffix", "NewReplacer",
+  "LastIndex", "IndexByte", "Cut",
+  "TrimLeft", "trimLeftByte", "trimLeftASCII", "makeASCIISet", "asciiSet.contains"]
 imports = ["!*", "internal/stringslite", "sync", "io", "internal/bytealg", "unicode/utf8", "internal/gomodel"]
 
 # translate the definitions of all type declarations goose supports

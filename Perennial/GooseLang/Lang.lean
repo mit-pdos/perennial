@@ -482,6 +482,7 @@ instance : ZeroVal GoString := ⟨[]⟩
 instance : ZeroVal GoFunc := ⟨func.nil⟩
 instance {V} [ZeroVal V] (n : Int) : ZeroVal (GoArray V n) :=
   ⟨⟨List.replicate n.toNat (zero_val V)⟩⟩
+instance {V W} [ZeroVal V] [ZeroVal W] : ZeroVal (V × W) := ⟨(zero_val V, zero_val W)⟩
 instance : ZeroVal GoSlice := ⟨slice.nil⟩
 instance : ZeroVal GoInterface := ⟨.nil⟩
 instance : ZeroVal proph_id := ⟨1⟩

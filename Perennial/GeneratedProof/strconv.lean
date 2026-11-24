@@ -5,6 +5,7 @@ public import Perennial.Proof.ProofPrelude
 public import Perennial.GeneratedProof.errors
 public import Perennial.GeneratedProof.internal.strconv
 public import Perennial.GeneratedProof.internal.stringslite
+public import Perennial.GeneratedProof.unicode.utf8
 public import Perennial.Golang.Theory
 public import Perennial.Code.strconv
 

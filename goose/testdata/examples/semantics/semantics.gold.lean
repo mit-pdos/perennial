@@ -369,6 +369,11 @@ noncomputable def List'.ty [GooseExts] [GoGlobalContext] (T : go.GoType) : go.Go
 
 attribute [irreducible] List'.ty
 
+noncomputable def plusNamed.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.plusNamed" [])
+
+attribute [irreducible] plusNamed.ty
+
 noncomputable def variadicSlice.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.variadicSlice" [])
 
@@ -692,6 +697,15 @@ noncomputable def testCompareLT [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def testCompareLE [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCompareLE"
+
+noncomputable def testTypeSwitchComplex [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testTypeSwitchComplex"
+
+noncomputable def testAssertComplexFails [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testAssertComplexFails"
+
+noncomputable def testComplexZeroValue [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testComplexZeroValue"
 
 noncomputable def testConstantCalls [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testConstantCalls"
@@ -1691,6 +1705,15 @@ noncomputable def testDefinedStrTypesEqual [GooseExts] [GoGlobalContext] : GoStr
 
 noncomputable def testListTypesEqual [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testListTypesEqual"
+
+noncomputable def testUnaryPlusInt [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testUnaryPlusInt"
+
+noncomputable def testUnaryPlusUntypedAndNamed [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testUnaryPlusUntypedAndNamed"
+
+noncomputable def testUnaryPlusFloat [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testUnaryPlusFloat"
 
 noncomputable def variadicSum [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.variadicSum"
@@ -3067,6 +3090,167 @@ noncomputable def testCompareLE.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- The complex cases of a type switch on a value of another type are skipped (as in
+    fmt's printArg, whose complex cases come first).
+
+    go: complex_types.go:5:6 -/
+noncomputable def testTypeSwitchComplex.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (Convert go.float32 go.any))) (Val #(W32 0)))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$y" (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 go.complex64))) (Var "$y"))
+  (Let "$x" (Fst (Var "__p"))
+  (Let "$ok" (Snd (Var "__p"))
+  (If (Var "$ok")
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 go.complex128))) (Var "$y"))
+  (Let "$x" (Fst (Var "__p"))
+  (Let "$ok" (Snd (Var "__p"))
+  (If (Var "$ok")
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 go.float32))) (Var "$y"))
+  (Let "$x" (Fst (Var "__p"))
+  (Let "$ok" (Snd (Var "__p"))
+  (If (Var "$ok")
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "x") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- A failed assertion to a complex type reports false.
+
+    go: complex_types.go:19:6 -/
+noncomputable def testAssertComplexFails.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (Convert go.float64 go.any))) (Val #(W64 0)))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 go.complex64))) (App (Val (GoInstruction (GoLoad go.any))) (Var "x")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok64" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 go.complex128))) (App (Val (GoInstruction (GoLoad go.any))) (Var "x")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok128" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok64"))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok128"))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok128") (Var "$r1")))))))
+  (App (Val doExecute)
+  (Var "$r0")))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok64") (Var "$r1")))))))
+  (App (Val doExecute)
+  (Var "$r0")))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "x") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- The zero values of the complex types: an interface holding one asserts to its type only,
+    and equals the zero value of its type, not that of the other complex type.
+
+    go: complex_types.go:28:6 -/
+noncomputable def testComplexZeroValue.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (Convert go.complex64 go.any))) (App (Val (GoInstruction (Index (go.GoType.ArrayType 1 go.complex64)))) (Pair (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 1 go.complex64)))) (LiteralValue [])) (Val #(W64 0)))))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.complex128 go.any))) (App (Val (GoInstruction (Index (go.GoType.ArrayType 1 go.complex128)))) (Pair (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 1 go.complex128)))) (LiteralValue [])) (Val #(W64 0)))))
+  (Let "y" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 go.complex64))) (App (Val (GoInstruction (GoLoad go.any))) (Var "x")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok64" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 go.complex128))) (App (Val (GoInstruction (GoLoad go.any))) (Var "x")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok128" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 go.complex128))) (App (Val (GoInstruction (GoLoad go.any))) (Var "y")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "yok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (If (If (If (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok64")) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok128"))) (Val #false)) (App (Val (GoInstruction (GoLoad go.bool))) (Var "yok")) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (Var "x")) (App (Val (GoInstruction (Convert go.complex64 go.any))) (App (Val (GoInstruction (Index (go.GoType.ArrayType 1 go.complex64)))) (Pair (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 1 go.complex64)))) (LiteralValue [])) (Val #(W64 0))))))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (Var "y")) (App (Val (GoInstruction (Convert go.complex128 go.any))) (App (Val (GoInstruction (Index (go.GoType.ArrayType 1 go.complex128)))) (Pair (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 1 go.complex128)))) (LiteralValue [])) (Val #(W64 0))))))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (Var "x")) (App (Val (GoInstruction (GoLoad go.any))) (Var "y"))))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "yok") (Var "$r1")))))))
+  (App (Val doExecute)
+  (Var "$r0")))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok128") (Var "$r1")))))))
+  (App (Val doExecute)
+  (Var "$r0")))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok64") (Var "$r1")))))))
+  (App (Val doExecute)
+  (Var "$r0")))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "y") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "x") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- go: constant_calls.go:5:6 -/
@@ -14398,6 +14582,125 @@ noncomputable def testListTypesEqual.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
+/-- go: unary_plus.go:5:6 -/
+noncomputable def testUnaryPlusInt.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3 : Int))))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 (-4611686018427387904)))
+  (Let "i64" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int32))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7 : Int))))
+  (Let "i32" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W16 300))
+  (Let "i16" (App (Val (GoInstruction (GoAlloc go.int16))) (App (Val (GoInstruction (GoZeroVal go.int16))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int8))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(128 : Int))))
+  (Let "i8" (App (Val (GoInstruction (GoAlloc go.int8))) (App (Val (GoInstruction (GoZeroVal go.int8))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 5))
+  (Let "u" (App (Val (GoInstruction (GoAlloc go.uint))) (App (Val (GoInstruction (GoZeroVal go.uint))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 18446744073709551615))
+  (Let "u64" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W32 4294967295))
+  (Let "u32" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W16 9))
+  (Let "u16" (App (Val (GoInstruction (GoAlloc go.uint16))) (App (Val (GoInstruction (GoZeroVal go.uint16))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W8 255))
+  (Let "u8" (App (Val (GoInstruction (GoAlloc go.uint8))) (App (Val (GoInstruction (GoZeroVal go.uint8))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 17))
+  (Let "up" (App (Val (GoInstruction (GoAlloc go.uintptr))) (App (Val (GoInstruction (GoZeroVal go.uintptr))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (If (If (If (If (If (If (If (If (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoUnOp GoPos go.int))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3 : Int)))))) (App (Val (GoInstruction (GoOp GoEquals go.int64))) (Pair (App (Val (GoInstruction (GoUnOp GoPos go.int64))) (App (Val (GoInstruction (GoLoad go.int64))) (Var "i64"))) (Val #(W64 (-4611686018427387904))))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.int32))) (Pair (App (Val (GoInstruction (GoUnOp GoPos go.int32))) (App (Val (GoInstruction (GoLoad go.int32))) (Var "i32"))) (App (Val (GoInstruction (Convert go.untypedInt go.int32))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7 : Int)))))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.int16))) (Pair (App (Val (GoInstruction (GoUnOp GoPos go.int16))) (App (Val (GoInstruction (GoLoad go.int16))) (Var "i16"))) (Val #(W16 300)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.int8))) (Pair (App (Val (GoInstruction (GoUnOp GoPos go.int8))) (App (Val (GoInstruction (GoLoad go.int8))) (Var "i8"))) (App (Val (GoInstruction (Convert go.untypedInt go.int8))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(128 : Int)))))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.uint))) (Pair (App (Val (GoInstruction (GoUnOp GoPos go.uint))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "u"))) (Val #(W64 5)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoUnOp GoPos go.uint64))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "u64"))) (Val #(W64 18446744073709551615)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoUnOp GoPos go.uint32))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "u32"))) (Val #(W32 4294967295)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.uint16))) (Pair (App (Val (GoInstruction (GoUnOp GoPos go.uint16))) (App (Val (GoInstruction (GoLoad go.uint16))) (Var "u16"))) (Val #(W16 9)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.uint8))) (Pair (App (Val (GoInstruction (GoUnOp GoPos go.uint8))) (App (Val (GoInstruction (GoLoad go.uint8))) (Var "u8"))) (Val #(W8 255)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.uintptr))) (Pair (App (Val (GoInstruction (GoUnOp GoPos go.uintptr))) (App (Val (GoInstruction (GoLoad go.uintptr))) (Var "up"))) (Val #(W64 17)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uintptr))) (Pair (Var "up") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint8))) (Pair (Var "u8") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint16))) (Pair (Var "u16") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "u32") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "u64") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint))) (Pair (Var "u") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int8))) (Pair (Var "i8") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int16))) (Pair (Var "i16") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "i32") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "i64") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: unary_plus.go:23:6 -/
+noncomputable def testUnaryPlusUntypedAndNamed.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoPos go.untypedInt))) (Val #(1 : Int))))
+  (Let "one" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt plusNamed.ty))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4 : Int))))
+  (Let "n" (App (Val (GoInstruction (GoAlloc plusNamed.ty))) (App (Val (GoInstruction (GoZeroVal plusNamed.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "one")) (Val #(W64 1)))) (App (Val (GoInstruction (GoOp GoEquals plusNamed.ty))) (Pair (App (Val (GoInstruction (GoUnOp GoPos plusNamed.ty))) (App (Val (GoInstruction (GoLoad plusNamed.ty))) (Var "n"))) (App (Val (GoInstruction (Convert go.untypedInt plusNamed.ty))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4 : Int)))))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore plusNamed.ty))) (Pair (Var "n") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "one") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: unary_plus.go:29:6 -/
+noncomputable def testUnaryPlusFloat.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Val #(W64 4609434218613702656))
+  (Let "f" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W32 3222274048))
+  (Let "f32" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 4602678819172646912))
+  (Let "g" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (If (App (Val (GoInstruction (GoOp GoEquals go.float64))) (Pair (App (Val (GoInstruction (GoUnOp GoPos go.float64))) (App (Val (GoInstruction (GoLoad go.float64))) (Var "f"))) (Val #(W64 4609434218613702656)))) (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (App (Val (GoInstruction (GoUnOp GoPos go.float32))) (App (Val (GoInstruction (GoLoad go.float32))) (Var "f32"))) (Val #(W32 3222274048)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.float64))) (Pair (App (Val (GoInstruction (GoLoad go.float64))) (Var "g")) (Val #(W64 4602678819172646912)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "g") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "f32") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "f") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
 /-- go: variadic.go:3:6 -/
 noncomputable def variadicSum.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "base"
@@ -17013,6 +17316,20 @@ attribute [instance] List.TypeAssumptions.type_repr
   List.TypeAssumptions.method_set
   List.TypeAssumptions.ptr_method_set
 
+abbrev plusNamed [GooseExts] : Type := w64
+
+@[reducible] noncomputable def plusNamed.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  go.int64
+
+class plusNamed.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq plusNamed.ty plusNamed.underlying
+  method_set : go.MethodSetIs plusNamed.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType plusNamed.ty) []
+
+attribute [instance] plusNamed.TypeAssumptions.underlying
+  plusNamed.TypeAssumptions.method_set
+  plusNamed.TypeAssumptions.ptr_method_set
+
 abbrev variadicSlice [GooseExts] : Type := GoSlice
 
 @[reducible] noncomputable def variadicSlice.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
@@ -17272,6 +17589,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   switchInterface_instance : switchInterface.TypeAssumptions
   DefinedStr_instance : DefinedStr.TypeAssumptions
   List_instance : List.TypeAssumptions
+  plusNamed_instance : plusNamed.TypeAssumptions
   variadicSlice_instance : variadicSlice.TypeAssumptions
   «struct#7d913798_instance» : «struct#7d913798».TypeAssumptions
   «struct#3819980a_instance» : «struct#3819980a».TypeAssumptions
@@ -17326,6 +17644,9 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testCompareGE_unfold : FuncUnfold testCompareGE [] testCompareGE.impl
   testCompareLT_unfold : FuncUnfold testCompareLT [] testCompareLT.impl
   testCompareLE_unfold : FuncUnfold testCompareLE [] testCompareLE.impl
+  testTypeSwitchComplex_unfold : FuncUnfold testTypeSwitchComplex [] testTypeSwitchComplex.impl
+  testAssertComplexFails_unfold : FuncUnfold testAssertComplexFails [] testAssertComplexFails.impl
+  testComplexZeroValue_unfold : FuncUnfold testComplexZeroValue [] testComplexZeroValue.impl
   testConstantCalls_unfold : FuncUnfold testConstantCalls [] testConstantCalls.impl
   fallthroughSwitch_unfold : FuncUnfold fallthroughSwitch [] fallthroughSwitch.impl
   testFallthrough_unfold : FuncUnfold testFallthrough [] testFallthrough.impl
@@ -17657,6 +17978,9 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testPrimitiveTypesEqual_unfold : FuncUnfold testPrimitiveTypesEqual [] testPrimitiveTypesEqual.impl
   testDefinedStrTypesEqual_unfold : FuncUnfold testDefinedStrTypesEqual [] testDefinedStrTypesEqual.impl
   testListTypesEqual_unfold : FuncUnfold testListTypesEqual [] testListTypesEqual.impl
+  testUnaryPlusInt_unfold : FuncUnfold testUnaryPlusInt [] testUnaryPlusInt.impl
+  testUnaryPlusUntypedAndNamed_unfold : FuncUnfold testUnaryPlusUntypedAndNamed [] testUnaryPlusUntypedAndNamed.impl
+  testUnaryPlusFloat_unfold : FuncUnfold testUnaryPlusFloat [] testUnaryPlusFloat.impl
   variadicSum_unfold : FuncUnfold variadicSum [] variadicSum.impl
   variadicTriple_unfold : FuncUnfold variadicTriple [] variadicTriple.impl
   variadicSingle_unfold : FuncUnfold variadicSingle [] variadicSingle.impl
@@ -17745,6 +18069,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.switchInterface_instance
   Assumptions.DefinedStr_instance
   Assumptions.List_instance
+  Assumptions.plusNamed_instance
   Assumptions.variadicSlice_instance
   Assumptions.«struct#7d913798_instance»
   Assumptions.«struct#3819980a_instance»
@@ -17799,6 +18124,9 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testCompareGE_unfold
   Assumptions.testCompareLT_unfold
   Assumptions.testCompareLE_unfold
+  Assumptions.testTypeSwitchComplex_unfold
+  Assumptions.testAssertComplexFails_unfold
+  Assumptions.testComplexZeroValue_unfold
   Assumptions.testConstantCalls_unfold
   Assumptions.fallthroughSwitch_unfold
   Assumptions.testFallthrough_unfold
@@ -18130,6 +18458,9 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testPrimitiveTypesEqual_unfold
   Assumptions.testDefinedStrTypesEqual_unfold
   Assumptions.testListTypesEqual_unfold
+  Assumptions.testUnaryPlusInt_unfold
+  Assumptions.testUnaryPlusUntypedAndNamed_unfold
+  Assumptions.testUnaryPlusFloat_unfold
   Assumptions.variadicSum_unfold
   Assumptions.variadicTriple_unfold
   Assumptions.variadicSingle_unfold

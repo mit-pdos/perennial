@@ -11,6 +11,7 @@ public import Perennial.Proof.fmt.Base
 public import Perennial.Proof.log.Base
 public import Perennial.Proof.sync.Base
 public import Perennial.Proof.github_com.goose_lang.primitive.Base
+public import Perennial.Proof.github_com.mit_pdos.perennial.proph.Base
 public import Perennial.Proof.github_com.goose_lang.std.Base
 
 @[expose] public section

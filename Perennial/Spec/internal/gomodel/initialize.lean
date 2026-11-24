@@ -21,12 +21,12 @@ variable [sem : go.Semantics]
 variable [package_sem : internal.gomodel.Assumptions]
 
 abbrev internal.gomodel.initialize'.spec : Prop :=
-  ∀ (get_is_pkg_init : GoString → IProp GF)
-    (Hinit : GetIsPkgInitProp pkg_id.internal.gomodel get_is_pkg_init),
-    {{ ownInitializing get_is_pkg_init }}
-      (App (Val initialize') (Val #()))
-    {{ RET #(); ownInitializing get_is_pkg_init ∗
-        isPkgInit (PROP := IProp GF) pkg_id.internal.gomodel }}
+  ∀ (get_is_pkg_init : GoString → IProp GF),
+  GetIsPkgInitProp pkg_id.internal.gomodel get_is_pkg_init →
+  {{ ownInitializing get_is_pkg_init }}
+    (App (Val initialize') (Val #()))
+  {{ RET #(); ownInitializing get_is_pkg_init ∗
+      isPkgInit (PROP := IProp GF) pkg_id.internal.gomodel }}
 
 end spec
 

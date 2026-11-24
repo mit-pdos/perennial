@@ -2,9 +2,10 @@
 Trusted code for the Go `fmt` package, in namespace `fmt` (as the generated
 package).
 
-Go's `fmt` cannot be translated (reflection on every argument, `sync.Pool`, float formatting), so
-`Sprintf`, `Printf`, `Fprintf`, `Fprint` and `Errorf` are models, each goose's translation of the Go its
-docstring quotes, with the edits it names. They share `doPrintf`, which formats the common directives of
+`Sprintf` and the printer it runs are goose's translation of the real `fmt` (`Perennial/Code/fmt.toml`,
+perennial#671 stage 1). Until stage 2 retires them, `Printf`, `Fprintf`, `Fprint` and `Errorf` are
+still the models here, each goose's translation of the Go its docstring quotes, with the edits it
+names; they do not use the real printer (nor its pool `ppFree`). They share `doPrintf`, which formats the common directives of
 arguments that Go formats without calling any of their methods (`inert`) exactly (`formatArg`), and
 the common directives of a `[]byte` or a `[]string` (`formatSlice`, reading its bytes or elements, as Go does),
 and from the first other directive on gives an arbitrary string while calling what Go calls of the
@@ -37,7 +38,7 @@ section code
 variable [GooseExts] [GoGlobalContext]
 
 /-- At `format[i]`, a `%`: whether an integer directive follows, with its width and the index
-after it (helpers of the model of `Sprintf`, like those below, not functions of package `fmt`).
+after it (helpers of the model's `doPrintf`, like those below, not functions of package `fmt`).
 Goose's translation of
 
 ```go
@@ -3288,7 +3289,27 @@ noncomputable def visitRest : val :=
   (Val #())))))))))))
   (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res1")))))))))))
 
-/-- The helper `doPrintf` of the model (not a function of package `fmt`): the formatted string, the indices of the arguments of the %w directives, and whether those are unknown (visitRest gave up). It formats as the previous model of Sprintf did (and the directives of a `[]byte` or a `[]string` that `formatSlice` formats), up to the first directive it does not format or whose argument is not inert; from there the output is arbitrary, and visitRest makes the calls Go makes. Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
+/-- The helper `doPrintf` of the model (not a function of package `fmt`): the formatted string, the indices of the arguments of the %w directives, and whether those are unknown (visitRest gave up). It formats the directives of inert arguments that `formatArg` formats (and the directives of a `[]byte` or a `[]string` that `formatSlice` formats), up to the first directive it does not format or whose argument is not inert; from there the output is arbitrary, and visitRest makes the calls Go makes.
+The model formats `%%`, and `%s`/`%v` of a string, `%d`, `%v`,
+`%0Nd` and `%x` of an integer, of inert arguments, and `%s`, `%v`, `%d`, `%x`, `%X` of a `[]byte` (`%q` of one
+of ASCII bytes) exactly, up to the first other directive; from
+there the output is an arbitrary string, and the model calls each later argument's `Error()` or
+`String()` where Go's formatting does (`visitRest`). It follows Go for the arguments the specs admit
+(`fmt.argsOk`, `Perennial/Proof/fmt/Args.lean`) and is stuck (`notModelled`) for the others it
+cannot tell apart from them: a `Format` method, `%#v` of a `GoString` method, a `reflect.Value`
+under a method verb (Go's `printArg` unwraps it), reflection into a
+value of another kind than an integer or a string (a struct, a pointer under `%v`, a slice other than
+a `[]byte`, a map),
+`%w` of an error when `wrapErrs` is false. Where Go recovers a panic of an argument's method (`catchPanic`),
+the model is stuck (`callError`, `callString`: less defined). `%p` of a pointer, func, map, chan or slice is an arbitrary
+string, without reading memory, as Go's `fmtPointer` prints the address; `%p` of a value of another
+kind is an arbitrary string too, where Go prints it by reflection (`badVerb`) with no method call
+but reading the memory it reaches: the specs admit under `%p` only arguments of those kinds and
+inert ones. `goose/model/fmt/model_diff_test.go` checks the model (the Go below and the helpers')
+against Go's `fmt` on 70 formats and 600 argument lists: the output (each arbitrary string standing
+for any string), the methods called and their order.
+
+Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
 
 ```go
 func doPrintf(format string, a []any, wrapErrs bool) (string, []int, bool) {
@@ -3548,70 +3569,7 @@ noncomputable def doPrintf : val :=
   (Val #())))))))))))
   (Pair (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "$res1"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res2"))))))))))
 
-/-- `Sprintf(format, a...)`: the formatted string (`doPrintf`, with `wrapErrs` false: a `%w` is a
-bad verb, as in Go's `Sprintf`). The model formats `%%`, and `%s`/`%v` of a string, `%d`, `%v`,
-`%0Nd` and `%x` of an integer, of inert arguments, and `%s`, `%v`, `%d`, `%x`, `%X` of a `[]byte` (`%q` of one
-of ASCII bytes) exactly, up to the first other directive; from
-there the output is an arbitrary string, and the model calls each later argument's `Error()` or
-`String()` where Go's formatting does (`visitRest`). It follows Go for the arguments the specs admit
-(`fmt.argsOk`, `Perennial/Proof/fmt/Args.lean`) and is stuck (`notModelled`) for the others it
-cannot tell apart from them: a `Format` method, `%#v` of a `GoString` method, a `reflect.Value`
-under a method verb (Go's `printArg` unwraps it), reflection into a
-value of another kind than an integer or a string (a struct, a pointer under `%v`, a slice other than
-a `[]byte`, a map),
-`%w` of an error under `Sprintf`. Where Go recovers a panic of an argument's method (`catchPanic`),
-the model is stuck (`callError`, `callString`: less defined). `%p` of a pointer, func, map, chan or slice is an arbitrary
-string, without reading memory, as Go's `fmtPointer` prints the address; `%p` of a value of another
-kind is an arbitrary string too, where Go prints it by reflection (`badVerb`) with no method call
-but reading the memory it reaches: the specs admit under `%p` only arguments of those kinds and
-inert ones. `goose/model/fmt/model_diff_test.go` checks the model (the Go below and the helpers')
-against Go's `fmt` on 70 formats and 600 argument lists: the output (each arbitrary string standing
-for any string), the methods called and their order. Goose's translation (by the goose of this revision, with its function results in cells `$resI`) of
-
-```go
-func Sprintf(format string, a ...any) string {
-	s, _, _ := doPrintf(format, a, false)
-	return s
-}
-```
-
-with these edits: goose's `FuncResolve f [] #()` of a helper of this file replaced by `f`. -/
-noncomputable def Sprintf.impl : val :=
-  (LamV "format"
-  (Lam "a"
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
-  (Seq (App (Val exceptionDo)
-  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.any)))) (Var "a"))
-  (Let "format" (App (Val (GoInstruction (GoAlloc go.string))) (Var "format"))
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "format"))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "a"))
-  (Let "$a2" (Val #false)
-  (App (App (App (Val doPrintf) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
-  (Let "$ret0" (Fst (Fst (Var "__p")))
-  (Let "$ret1" (Snd (Fst (Var "__p")))
-  (Let "$ret2" (Snd (Var "__p"))
-  (Let "$r0" (Var "$ret0")
-  (Let "$r1" (Var "$ret1")
-  (Let "$r2" (Var "$ret2")
-  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (App (Val doExecute)
-  (Var "$r2")))))
-  (App (Val doExecute)
-  (Var "$r1")))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0"))))))))))))))))
-  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
-
-/-- `Printf(format, a...)`: formats as `Sprintf` does (`doPrintf`), calling what Go's formatting
+/-- `Printf(format, a...)`: formats with `doPrintf`, calling what Go's formatting
 calls of the arguments, and returns an arbitrary count and either `nil` or an arbitrary error: writing
 to standard output is not modelled (Go returns the count of bytes written and the error of the
 write).
@@ -3737,7 +3695,7 @@ noncomputable def retire : val :=
       ("b", FuncResolve go.len [go.SliceType go.byte] #() "b",
         FuncResolve go.cap [go.SliceType go.byte] #() "b"))
 
-/-- `Fprintf(w, format, a...)`: formats as `Sprintf` does (`doPrintf`, with `wrapErrs` false), calling
+/-- `Fprintf(w, format, a...)`: formats with `doPrintf` (with `wrapErrs` false), calling
 what Go's formatting calls of the arguments, then calls `w.Write` once with the formatted bytes (also
 when they are empty), and returns what `Write` returns. Go's (`fmt/print.go`)
 
@@ -3837,7 +3795,7 @@ noncomputable def Fprintf.impl : val :=
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0")))))))))))))))))
   (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1")))))))))
 
-/-- `Errorf(format, a...)`: formats as `Sprintf` does (`doPrintf`, with `wrapErrs` true: a `%w`
+/-- `Errorf(format, a...)`: formats with `doPrintf` (with `wrapErrs` true: a `%w`
 of an error is formatted as `%v`, Go's `handleMethods`), then returns what Go's `errorf` returns
 (`fmt/errors.go`): `errors.New(s)` when no `%w` directive had an argument, a `*wrapError` holding the
 argument as an `error` (`nil` if it is not one) when one had, a `*wrapErrors` holding those of the

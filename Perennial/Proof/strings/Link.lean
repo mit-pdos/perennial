@@ -20,15 +20,23 @@ public import Perennial.Proof.strings.Builder__WriteString
 public import Perennial.Proof.strings.Builder__copyCheck
 public import Perennial.Proof.strings.Builder__grow_
 public import Perennial.Proof.strings.Compare
+public import Perennial.Proof.strings.Cut
 public import Perennial.Proof.strings.Fields
 public import Perennial.Proof.strings.HasPrefix
 public import Perennial.Proof.strings.HasSuffix
+public import Perennial.Proof.strings.IndexByte
 public import Perennial.Proof.strings.Join
+public import Perennial.Proof.strings.LastIndex
 public import Perennial.Proof.strings.NewReplacer
 public import Perennial.Proof.strings.Split
+public import Perennial.Proof.strings.TrimLeft
 public import Perennial.Proof.strings.TrimPrefix
 public import Perennial.Proof.strings.TrimSuffix
+public import Perennial.Proof.strings.asciiSet__contains
 public import Perennial.Proof.strings.initialize
+public import Perennial.Proof.strings.makeASCIISet
+public import Perennial.Proof.strings.trimLeftASCII
+public import Perennial.Proof.strings.trimLeftByte
 public import Perennial.Proof.sync.Link
 public import Perennial.Proof.unicode.utf8.Link
 
@@ -78,6 +86,9 @@ theorem strings.Builder.wp_WriteString : strings.Builder.WriteString.spec (GF :=
 theorem strings.wp_Compare : strings.Compare.spec (GF := GF) (hG := hG) :=
   strings.Compare.wp_proof internal.bytealg.wp_CompareString
 
+theorem strings.wp_Cut : strings.Cut.spec (GF := GF) (hG := hG) :=
+  strings.Cut.wp_proof internal.stringslite.wp_Cut
+
 theorem strings.wp_Fields : strings.Fields.spec (GF := GF) (hG := hG) :=
   strings.Fields.wp_proof
 
@@ -87,14 +98,35 @@ theorem strings.wp_HasPrefix : strings.HasPrefix.spec (GF := GF) (hG := hG) :=
 theorem strings.wp_HasSuffix : strings.HasSuffix.spec (GF := GF) (hG := hG) :=
   strings.HasSuffix.wp_proof internal.stringslite.wp_HasSuffix
 
+theorem strings.wp_IndexByte : strings.IndexByte.spec (GF := GF) (hG := hG) :=
+  strings.IndexByte.wp_proof internal.stringslite.wp_IndexByte
+
 theorem strings.wp_Join : strings.Join.spec (GF := GF) (hG := hG) :=
   strings.Join.wp_proof strings.Builder.wp_Grow strings.Builder.wp_WriteString strings.Builder.wp_String
+
+theorem strings.wp_LastIndex : strings.LastIndex.spec (GF := GF) (hG := hG) :=
+  strings.LastIndex.wp_proof internal.bytealg.wp_LastIndexByteString internal.bytealg.wp_HashStrRev
 
 theorem strings.wp_NewReplacer : strings.NewReplacer.spec (GF := GF) (hG := hG) :=
   strings.NewReplacer.wp_proof
 
 theorem strings.wp_Split : strings.Split.spec (GF := GF) (hG := hG) :=
   strings.Split.wp_proof strings.wp_HasPrefix
+
+theorem strings.wp_trimLeftByte : strings.trimLeftByte.spec (GF := GF) (hG := hG) :=
+  strings.trimLeftByte.wp_proof
+
+theorem strings.wp_makeASCIISet : strings.makeASCIISet.spec (GF := GF) (hG := hG) :=
+  strings.makeASCIISet.wp_proof
+
+theorem strings.asciiSet.wp_contains : strings.asciiSet.contains.spec (GF := GF) (hG := hG) :=
+  strings.asciiSet.contains.wp_proof
+
+theorem strings.wp_trimLeftASCII : strings.trimLeftASCII.spec (GF := GF) (hG := hG) :=
+  strings.trimLeftASCII.wp_proof strings.asciiSet.wp_contains
+
+theorem strings.wp_TrimLeft : strings.TrimLeft.spec (GF := GF) (hG := hG) :=
+  strings.TrimLeft.wp_proof strings.wp_trimLeftByte strings.wp_makeASCIISet strings.wp_trimLeftASCII
 
 theorem strings.wp_TrimPrefix : strings.TrimPrefix.spec (GF := GF) (hG := hG) :=
   strings.TrimPrefix.wp_proof internal.stringslite.wp_TrimPrefix

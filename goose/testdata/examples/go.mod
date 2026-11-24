@@ -5,6 +5,8 @@ go 1.26
 require (
 	github.com/goose-lang/primitive v0.2.2-0.20260212023729-cb7f52217e65
 	github.com/goose-lang/std v0.7.0
+	github.com/mit-pdos/gokv v0.1.1
+	github.com/mit-pdos/perennial/proph v0.0.0
 	github.com/stretchr/testify v1.11.1
 	github.com/tchajed/marshal v0.6.2
 )
@@ -18,3 +20,7 @@ require (
 )
 
 replace github.com/tchajed/marshal => github.com/upamanyus/marshal v0.0.0-20260212025754-cf86d74f6773
+
+replace github.com/mit-pdos/gokv => ../gokv
+
+replace github.com/mit-pdos/perennial/proph => ../../../proph

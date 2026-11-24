@@ -690,6 +690,8 @@ func doPrintf(format string, a []any, wrapErrs bool) (string, []int, bool) {
 	return out, nil, false
 }
 
+// modelSprintf is a test probe of the model's doPrintf, as a Sprintf: the Lean model has no
+// Sprintf (Sprintf is the real fmt's, translated).
 func modelSprintf(format string, a ...any) string {
 	s, _, _ := doPrintf(format, a, false)
 	return s

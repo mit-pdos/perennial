@@ -1,5 +1,7 @@
-translate = ["!*", "HasPrefix", "HasSuffix", "TrimPrefix", "TrimSuffix"]
-imports = ["!*"]
+# `IndexByte`, `Index`, `Cut`: strings.IndexByte and strings.Cut; they call internal/bytealg's
+# `IndexByteString` and `IndexString`, translated from their Go models (Code/internal/bytealg.toml)
+translate = ["!*", "HasPrefix", "HasSuffix", "TrimPrefix", "TrimSuffix", "IndexByte", "Index", "Cut"]
+imports = ["!*", "internal/bytealg"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true
