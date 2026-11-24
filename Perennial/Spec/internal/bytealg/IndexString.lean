@@ -22,7 +22,7 @@ variable [package_sem : internal.bytealg.Assumptions]
 
 /-- `bytealg.IndexString(a, b)`: the first index of `b` in `a`, or `-1`, for a `b` of at least 2
 and at most `MaxLen` bytes (its documented precondition; outside it the Go model,
-`goose/model/overlay/internal/bytealg/index_native.go`, does not terminate). The caller gives
+`goose/model/overlay/internal/bytealg/index.go`, calls `gomodel.Stuck`, which has no behaviour). The caller gives
 `MaxLen`'s value `m` (from `bytealg`'s `isPkgInit`, `internal.bytealg.isInit`). -/
 abbrev internal.bytealg.IndexString.spec : Prop :=
   ∀ (a b : GoString) (m : w64),

@@ -13,6 +13,7 @@ public import Perennial.Proof.internal.bytealg.IndexRabinKarp
 public import Perennial.Proof.internal.bytealg.IndexString
 public import Perennial.Proof.internal.bytealg.LastIndexByteString
 public import Perennial.Proof.internal.bytealg.initialize
+public import Perennial.Proof.internal.gomodel.Link
 
 @[expose] public section
 
@@ -49,7 +50,7 @@ theorem internal.bytealg.wp_LastIndexByteString : internal.bytealg.LastIndexByte
   internal.bytealg.LastIndexByteString.wp_proof
 
 theorem internal.bytealg.wp_initialize' : internal.bytealg.initialize'.spec (GF := GF) (hG := hG) :=
-  internal.bytealg.initialize'.wp_proof
+  internal.bytealg.initialize'.wp_proof internal.gomodel.wp_initialize'
 
 end link
 

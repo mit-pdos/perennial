@@ -1,6 +1,6 @@
 /-
 The proof of `internal.bytealg.IndexString` (its Go model,
-`goose/model/overlay/internal/bytealg/index_native.go`).
+`goose/model/overlay/internal/bytealg/index.go`).
 -/
 module
 

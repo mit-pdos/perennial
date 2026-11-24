@@ -6,11 +6,10 @@
 # For strings.LastIndex, strings.Index and strings.Cut (through internal/stringslite): the generic
 # Go of bytealg.go (`PrimeRK`, `HashStr`, `HashStrRev`, `IndexRabinKarp`), amd64's `MaxBruteForce`
 # and `Cutover` (index_amd64.go), and `IndexByteString` and `IndexString`, whose bodies on amd64 are
-# assembly: they are translated from their Go models (goose/model/overlay/internal/bytealg, which
-# replace indexbyte_native.go and index_native.go; goose/model/overlay/overlay.toml).
+# assembly: they are translated from their Go models (the [model] table below).
 translate = ["MaxLen", "LastIndexByteString", "PrimeRK", "HashStr", "HashStrRev", "IndexRabinKarp",
   "MaxBruteForce", "Cutover", "IndexByteString", "IndexString"]
-imports = ["!*"]
+imports = ["!*", "internal/gomodel"]
 # `init.0` sets `MaxLen` from `cpu.X86.HasAVX2`: trusted, as one of the two values
 # (TrustedCode/internal/bytealg.lean). Goose translates `init.0` itself, to a read of the global
 # `internal/cpu.X86`, which no package initializer sets: the runtime does (`cpu.Initialize`, from
@@ -21,3 +20,17 @@ imports = ["!*"]
 # and translating it leaves it zero (MaxLen always 31: more defined than gc). Pending a goose
 # change that gives such a variable an `X.init` hook.
 trusted = ["MakeNoZero", "init.0"]
+
+# The Go models of the four bodyless declarations of indexbyte_native.go and index_native.go,
+# assembly on amd64 (indexbyte_amd64.s, index_amd64.s): `IndexByte`/`IndexByteString` are Go's own
+# generic fallback (indexbyte_generic.go, verbatim), `Index`/`IndexString` the naive search their
+# doc comments specify. Only `IndexByteString` and `IndexString` are translated (strings.IndexByte,
+# strings.Cut and strings.LastIndex reach them); the []byte pair is replaced with them, as the two
+# assembly files define all four. The overlay blanks those files (blank_asm), which the builder
+# allows only because each defines nothing but two of the replaced functions and a file-local helper
+# (`indexbytebody<>`, `indexbody<>`). Difftest: goose/util's TestModelBytealgDifftest (Go's own
+# strings and bytes tests under this overlay).
+[model]
+dir = "goose/model/overlay/internal/bytealg"
+replaces = ["IndexByte", "IndexByteString", "Index", "IndexString"]
+blank_asm = ["indexbyte_amd64.s", "index_amd64.s"]

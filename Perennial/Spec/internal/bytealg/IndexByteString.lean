@@ -21,7 +21,7 @@ variable [sem : go.Semantics]
 variable [package_sem : internal.bytealg.Assumptions]
 
 /-- `bytealg.IndexByteString(s, c)`: the first index of `c` in `s`, or `-1`. Translated from its Go
-model (`goose/model/overlay/internal/bytealg/indexbyte_native.go`: on amd64 the function is
+model (`goose/model/overlay/internal/bytealg/indexbyte.go`: on amd64 the function is
 assembly). It reads no package variable, so it needs no initialized package. -/
 abbrev internal.bytealg.IndexByteString.spec : Prop :=
   ∀ (s : GoString) (c : w8),

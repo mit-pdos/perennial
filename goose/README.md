@@ -97,7 +97,12 @@ ancestor of `-configdir` with a lakefile, or `-model-root DIR`), and
 `init.N`, whose model `init` is marked `//gomodel:replace init.N "<first line
 of the real body>"`; `["*"]` replaces every real file, and may add a
 standard-library package; `[]` only adds). `added_methods` lists the methods
-the model may add to the real types. The builder (`util.BuildModels`, used by
+the model may add to the real types. `blank_asm` lists assembly files of the
+real package (base names) that the overlay blanks, so that a model's Go body
+of a replaced bodyless function is its definition: the builder refuses a file
+that defines (TEXT or GLOBL) anything but replaced bodyless functions of the
+package and file-local `name<>` symbols, and a replaced function whose assembly
+is in a file the list omits. The builder (`util.BuildModels`, used by
 `goose`, `proofgen`, `modelcheck` and `skiplint` through `util.LoadPackages`)
 covers every package of the import graph with a `[model]` table: it deletes
 each replaced declaration (with its doc comment and `//go:linkname`) and puts

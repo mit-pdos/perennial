@@ -7,6 +7,7 @@ module
 
 public import Perennial.Proof.ProofPrelude
 public import Perennial.GeneratedProof.internal.bytealg
+public import Perennial.Proof.internal.gomodel.Base
 
 @[expose] public section
 
