@@ -7,7 +7,6 @@
 package sync
 
 import (
-	"internal/gomodel"
 	"sync/atomic"
 )
 
@@ -30,7 +29,10 @@ import (
 // model is cansemacquire's loop, retried until it succeeds: it returns exactly
 // when it has decremented a positive *s, as Go's does; a model goroutine
 // spinning where Go's parks is a schedule with the same results (the queue
-// only orders the waiters).
+// only orders the waiters). A goroutine that never acquires spins forever
+// where Go's parks forever: spinning for parking is partial correctness, and
+// Go's deadlock detector (a global deadlock becomes the fatal throw "all
+// goroutines are asleep") is not modelled (docs/KNOWN_LIMITATIONS.md).
 func runtime_Semacquire(s *uint32) {
 	for {
 		v := atomic.LoadUint32(s)
@@ -68,31 +70,68 @@ func runtime_Semrelease(s *uint32, handoff bool, skipframes int) {
 	atomic.AddUint32(s, 1)
 }
 
-// MODEL: Go's runtime_notifyListAdd (runtime/sema.go, notifyListAdd) returns
-// the next ticket of the runtime's counter l.wait and increments it; the
-// ticket is used only by runtime_notifyListWait. The model's Wait does not
-// use it and the model keeps no counter, so the ticket is an arbitrary
-// uint32 (gomodel.ChooseUint64), which covers the runtime's, and l is not
-// written.
+// MODEL: Go's runtime_notifyListAdd (runtime/sema.go, notifyListAdd) is
+//
+//	return l.wait.Add(1) - 1
+//
+// the next ticket of the list, taken atomically; the model is the same over
+// sync/atomic (wait is the runtime's atomic.Uint32, a uint32 in sync's copy of
+// the type).
 func runtime_notifyListAdd(l *notifyList) uint32 {
-	return uint32(gomodel.ChooseUint64())
+	return atomic.AddUint32(&l.wait, 1) - 1
 }
 
-// MODEL: Go's runtime_notifyListWait parks until ticket t is notified. The
-// model returns at once: Cond.Wait's callers must anyway allow for Wait
-// returning when the condition does not hold, and the return happens in
-// every schedule where Go's does, so the model has all of Go's behaviours
-// (and more).
+// MODEL: Go's runtime_notifyListWait (notifyListWait) returns at once if
+// ticket t has been notified, less(t, l.notify) with
+//
+//	func less(a, b uint32) bool {
+//		return int32(a-b) < 0
+//	}
+//
+// and otherwise parks until a notify call readies it, which the notify calls
+// do exactly when they advance l.notify past t (NotifyOne readies the waiter
+// whose ticket is the old l.notify, NotifyAll every waiter). The model spins
+// on the same test, reading l.notify atomically: it returns exactly when Go's
+// can. A goroutine that is never notified spins forever where Go's parks
+// forever: spinning for parking is partial correctness, and Go's deadlock
+// detector (a global deadlock becomes the fatal throw "all goroutines are
+// asleep") is not modelled (docs/KNOWN_LIMITATIONS.md).
 func runtime_notifyListWait(l *notifyList, t uint32) {
+	for int32(t-atomic.LoadUint32(&l.notify)) >= 0 {
+	}
 }
 
-// MODEL: Go's wakes every goroutine parked in runtime_notifyListWait; the
-// model's Wait never parks, so there is nothing to wake.
+// MODEL: Go's runtime_notifyListNotifyAll (notifyListNotifyAll) returns if
+// l.wait == l.notify (no waiter), and otherwise, under the list's lock, sets
+// l.notify to l.wait and readies every parked waiter. The model reads both and
+// sets l.notify with a compare-and-swap, retried if l.notify changed in
+// between: the store linearizes at the compare-and-swap, as Go's does under
+// the lock (the lock only orders the notify calls, which the compare-and-swap
+// also does). The waiters are readied by the new l.notify (see
+// runtime_notifyListWait).
 func runtime_notifyListNotifyAll(l *notifyList) {
+	for {
+		n := atomic.LoadUint32(&l.notify)
+		w := atomic.LoadUint32(&l.wait)
+		if n == w || atomic.CompareAndSwapUint32(&l.notify, n, w) {
+			return
+		}
+	}
 }
 
-// MODEL: as runtime_notifyListNotifyAll, for one goroutine.
+// MODEL: Go's runtime_notifyListNotifyOne (notifyListNotifyOne) returns if
+// l.wait == l.notify (no waiter), and otherwise, under the list's lock,
+// increments l.notify and readies the waiter holding the old value as its
+// ticket, if it has parked yet (if not, its Wait sees the ticket notified and
+// returns at once). The model is the same increment by compare-and-swap,
+// retried if l.notify changed in between (as for NotifyAll).
 func runtime_notifyListNotifyOne(l *notifyList) {
+	for {
+		n := atomic.LoadUint32(&l.notify)
+		if n == atomic.LoadUint32(&l.wait) || atomic.CompareAndSwapUint32(&l.notify, n, n+1) {
+			return
+		}
+	}
 }
 
 // MODEL: Go's runtime_notifyListCheck throws if size is not the runtime's

@@ -41,7 +41,7 @@ theorem sync.Cond.Wait.wp_proof
   unfold isLocker
   iNamed Hlock
   wp_apply H_Unlock $$ HR
-  wp_apply wp_runtime_notifyListWait $$ [$Hnotify] with _
+  wp_apply wp_runtime_notifyListWait $$ [$Hnotify]
   wp_apply H_Lock $$ [] with HR
   wp_end
 

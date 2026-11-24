@@ -21,12 +21,7 @@
 #   errors   TestIs                   its uncomparable target (#13): Is's model
 #                                     compares it, which panics in gc (and is
 #                                     stuck in GooseLang)
-#   sync     TestCondSignal, TestCondBroadcast, TestRace
-#                                     Cond.Wait returns at once: the model of
-#                                     runtime_notifyListWait does not park (a
-#                                     behaviour Go does not have; the tests
-#                                     count wakeups)
-#            TestMutexMisuse          an Unlock of an unlocked Mutex: fatal's
+#   sync     TestMutexMisuse          an Unlock of an unlocked Mutex: fatal's
 #                                     model is stuck (gomodel.Stuck, which
 #                                     blocks in gc) where Go ends the program
 #            TestPool, TestPoolGC, TestPoolRelease
@@ -46,9 +41,11 @@ go build -o "$OUT/goose" ./cmd/goose
 "$OUT/goose" model-overlay -configdir "$ROOT/Perennial/Code" -dir . -tags purego -o "$OUT/ov" \
   strings bytes errors internal/stringslite internal/bytealg internal/sync sync
 # go vet does not find the overlay-added internal/gomodel (it changes into the package's directory)
-run() { go test -vet=off -timeout 300s -overlay "$OUT/ov/overlay.json" -tags purego,goose "$@"; }
+run() { go test -vet=off -timeout 600s -overlay "$OUT/ov/overlay.json" -tags purego,goose "$@"; }
 run strings -skip '^(TestSplit|ExampleSplit|TestBuilderGrow|TestBuilderAllocs|TestBuilderGrowSizeclasses|TestReplace|TestBuilderCopyPanic)$'
 run errors -skip '^TestIs$'
-run sync -skip '^(TestCondSignal|TestCondBroadcast|TestRace|TestMutexMisuse|TestPool|TestPoolGC|TestPoolRelease)$'
+run sync -skip '^(TestMutexMisuse|TestPool|TestPoolGC|TestPoolRelease)$'
+# the models' own tests (goose/model/overlaytests: Cond.Wait without a signal blocks, ...)
+run ./model/overlaytests/
 run bytes internal/stringslite internal/bytealg internal/sync
 echo "model-tests: ok"

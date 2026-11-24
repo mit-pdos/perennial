@@ -4,7 +4,7 @@ The proof of `sync.runtime_notifyListAdd`.
 module
 
 public import Perennial.Spec.sync.runtime_notifyListAdd
-public import Perennial.Spec.internal.gomodel.ChooseUint64
+public import Perennial.Spec.sync.atomic.AddUint32
 
 @[expose] public section
 
@@ -24,12 +24,15 @@ variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
 theorem sync.runtime_notifyListAdd.wp_proof
-    (wp_ChooseUint64 : internal.gomodel.ChooseUint64.spec (GF := GF) (hG := hG)) :
+    (wp_AddUint32 : sync.atomic.AddUint32.spec (GF := GF) (hG := hG)) :
     sync.runtime_notifyListAdd.spec (GF := GF) (hG := hG) := by
-  intro l l_v dq
-  wp_start as Hl
+  intro l
+  wp_start as #Hl
   wp_auto
-  wp_apply wp_ChooseUint64 as %x _
+  wp_apply_core sync.wp_notifyList_add_wait wp_AddUint32 l (W32 1) _ $$ [] Hl
+  · iPkgInit
+  iintro %w
+  wp_auto
   wp_end
 
 end proof

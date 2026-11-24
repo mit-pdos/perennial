@@ -67,22 +67,22 @@ theorem sync.copyChecker.wp_check : sync.copyChecker.check.spec (GF := GF) (hG :
   sync.copyChecker.check.wp_proof
 
 theorem sync.wp_runtime_notifyListNotifyAll : sync.runtime_notifyListNotifyAll.spec (GF := GF) (hG := hG) :=
-  sync.runtime_notifyListNotifyAll.wp_proof
+  sync.runtime_notifyListNotifyAll.wp_proof sync.atomic.wp_LoadUint32 sync.atomic.wp_CompareAndSwapUint32
 
 theorem sync.Cond.wp_Broadcast : sync.Cond.Broadcast.spec (GF := GF) (hG := hG) :=
   sync.Cond.Broadcast.wp_proof sync.copyChecker.wp_check sync.wp_runtime_notifyListNotifyAll
 
 theorem sync.wp_runtime_notifyListNotifyOne : sync.runtime_notifyListNotifyOne.spec (GF := GF) (hG := hG) :=
-  sync.runtime_notifyListNotifyOne.wp_proof
+  sync.runtime_notifyListNotifyOne.wp_proof sync.atomic.wp_LoadUint32 sync.atomic.wp_CompareAndSwapUint32
 
 theorem sync.Cond.wp_Signal : sync.Cond.Signal.spec (GF := GF) (hG := hG) :=
   sync.Cond.Signal.wp_proof sync.copyChecker.wp_check sync.wp_runtime_notifyListNotifyOne
 
 theorem sync.wp_runtime_notifyListAdd : sync.runtime_notifyListAdd.spec (GF := GF) (hG := hG) :=
-  sync.runtime_notifyListAdd.wp_proof internal.gomodel.wp_ChooseUint64
+  sync.runtime_notifyListAdd.wp_proof sync.atomic.wp_AddUint32
 
 theorem sync.wp_runtime_notifyListWait : sync.runtime_notifyListWait.spec (GF := GF) (hG := hG) :=
-  sync.runtime_notifyListWait.wp_proof
+  sync.runtime_notifyListWait.wp_proof sync.atomic.wp_LoadUint32
 
 theorem sync.Cond.wp_Wait : sync.Cond.Wait.spec (GF := GF) (hG := hG) :=
   sync.Cond.Wait.wp_proof sync.copyChecker.wp_check sync.wp_runtime_notifyListAdd sync.wp_runtime_notifyListWait

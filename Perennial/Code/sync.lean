@@ -922,9 +922,12 @@ noncomputable def runtime_registerPoolCleanup.impl [GooseExts] [GoGlobalContext]
     model is cansemacquire's loop, retried until it succeeds: it returns exactly
     when it has decremented a positive *s, as Go's does; a model goroutine
     spinning where Go's parks is a schedule with the same results (the queue
-    only orders the waiters).
+    only orders the waiters). A goroutine that never acquires spins forever
+    where Go's parks forever: spinning for parking is partial correctness, and
+    Go's deadlock detector (a global deadlock becomes the fatal throw "all
+    goroutines are asleep") is not modelled (docs/KNOWN_LIMITATIONS.md).
 
-    go: runtime.go:34:6 -/
+    go: runtime.go:36:6 -/
 noncomputable def runtime_Semacquire.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Seq (App (Val exceptionDo)
@@ -958,7 +961,7 @@ noncomputable def runtime_Semacquire.impl [GooseExts] [GoGlobalContext] : val :=
     for a parked goroutine and in synctest's durable blocking, which the model
     does not observe.
 
-    go: runtime.go:49:6 -/
+    go: runtime.go:51:6 -/
 noncomputable def runtime_SemacquireWaitGroup.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "synctestDurable"
@@ -973,7 +976,7 @@ noncomputable def runtime_SemacquireWaitGroup.impl [GooseExts] [GoGlobalContext]
 /-- MODEL: as runtime_Semacquire: lifo and skipframes only order the waiters
     and select the profiled stack frames.
 
-    go: runtime.go:55:6 -/
+    go: runtime.go:57:6 -/
 noncomputable def runtime_SemacquireRWMutexR.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "lifo"
@@ -989,7 +992,7 @@ noncomputable def runtime_SemacquireRWMutexR.impl [GooseExts] [GoGlobalContext] 
 
 /-- MODEL: as runtime_Semacquire (see runtime_SemacquireRWMutexR).
 
-    go: runtime.go:60:6 -/
+    go: runtime.go:62:6 -/
 noncomputable def runtime_SemacquireRWMutex.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "lifo"
@@ -1007,7 +1010,7 @@ noncomputable def runtime_SemacquireRWMutex.impl [GooseExts] [GoGlobalContext] :
     wakes a waiter if there is one (handing it the count directly if handoff);
     the model's waiters spin, so it is the increment.
 
-    go: runtime.go:67:6 -/
+    go: runtime.go:69:6 -/
 noncomputable def runtime_Semrelease.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "handoff"
@@ -1022,20 +1025,23 @@ noncomputable def runtime_Semrelease.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.AddUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))
   (Val #())))))
 
-/-- MODEL: Go's runtime_notifyListAdd (runtime/sema.go, notifyListAdd) returns
-    the next ticket of the runtime's counter l.wait and increments it; the
-    ticket is used only by runtime_notifyListWait. The model's Wait does not
-    use it and the model keeps no counter, so the ticket is an arbitrary
-    uint32 (gomodel.ChooseUint64), which covers the runtime's, and l is not
-    written.
+/-- MODEL: Go's runtime_notifyListAdd (runtime/sema.go, notifyListAdd) is
 
-    go: runtime.go:77:6 -/
+    	return l.wait.Add(1) - 1
+
+    the next ticket of the list, taken atomically; the model is the same over
+    sync/atomic (wait is the runtime's atomic.Uint32, a uint32 in sync's copy of
+    the type).
+
+    go: runtime.go:80:6 -/
 noncomputable def runtime_notifyListAdd.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "l"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType notifyList.ty)))) (Var "l"))
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.uint32))) (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.ChooseUint64 []))) (Val #())) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.uint32))) (Pair (Let "$a0" (App (Val (GoInstruction (StructFieldRef notifyList.ty go!"wait"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType notifyList.ty)))) (Var "l")))
+  (Let "$a1" (Val #(W32 1))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.AddUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W32 1))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -1043,51 +1049,116 @@ noncomputable def runtime_notifyListAdd.impl [GooseExts] [GoGlobalContext] : val
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.uint32))) (Var "$res0")))))
 
-/-- MODEL: Go's runtime_notifyListWait parks until ticket t is notified. The
-    model returns at once: Cond.Wait's callers must anyway allow for Wait
-    returning when the condition does not hold, and the return happens in
-    every schedule where Go's does, so the model has all of Go's behaviours
-    (and more).
+/-- MODEL: Go's runtime_notifyListWait (notifyListWait) returns at once if
+    ticket t has been notified, less(t, l.notify) with
 
-    go: runtime.go:86:6 -/
+    	func less(a, b uint32) bool {
+    		return int32(a-b) < 0
+    	}
+
+    and otherwise parks until a notify call readies it, which the notify calls
+    do exactly when they advance l.notify past t (NotifyOne readies the waiter
+    whose ticket is the old l.notify, NotifyAll every waiter). The model spins
+    on the same test, reading l.notify atomically: it returns exactly when Go's
+    can. A goroutine that is never notified spins forever where Go's parks
+    forever: spinning for parking is partial correctness, and Go's deadlock
+    detector (a global deadlock becomes the fatal throw "all goroutines are
+    asleep") is not modelled (docs/KNOWN_LIMITATIONS.md).
+
+    go: runtime.go:99:6 -/
 noncomputable def runtime_notifyListWait.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "t"
   (Seq (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "t"))
   (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType notifyList.ty)))) (Var "l"))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoGe go.int32))) (Pair (App (Val (GoInstruction (Convert go.uint32 go.int32))) (App (Val (GoInstruction (GoOp GoSub go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "t")) (Let "$a0" (App (Val (GoInstruction (StructFieldRef notifyList.ty go!"notify"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType notifyList.ty)))) (Var "l")))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.LoadUint32 []))) (Val #())) (Var "$a0")))))) (Val #(W32 0)))))) (Lam BAnon
   (App (Val doExecute)
-  (Val #())))))
+  (Val #()))))
+  (Lam BAnon
+  (Val #()))))))
   (Val #()))))
 
-/-- MODEL: Go's wakes every goroutine parked in runtime_notifyListWait; the
-    model's Wait never parks, so there is nothing to wake.
+/-- MODEL: Go's runtime_notifyListNotifyAll (notifyListNotifyAll) returns if
+    l.wait == l.notify (no waiter), and otherwise, under the list's lock, sets
+    l.notify to l.wait and readies every parked waiter. The model reads both and
+    sets l.notify with a compare-and-swap, retried if l.notify changed in
+    between: the store linearizes at the compare-and-swap, as Go's does under
+    the lock (the lock only orders the notify calls, which the compare-and-swap
+    also does). The waiters are readied by the new l.notify (see
+    runtime_notifyListWait).
 
-    go: runtime.go:91:6 -/
+    go: runtime.go:112:6 -/
 noncomputable def runtime_notifyListNotifyAll.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "l"
   (Seq (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType notifyList.ty)))) (Var "l"))
+  (App (App (App (Val doFor) (Lam BAnon
+  (Val #true))) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef notifyList.ty go!"notify"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType notifyList.ty)))) (Var "l")))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.LoadUint32 []))) (Val #())) (Var "$a0")))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef notifyList.ty go!"wait"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType notifyList.ty)))) (Var "l")))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.LoadUint32 []))) (Val #())) (Var "$a0")))
+  (Let "w" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (If (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "n")) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "w")))) (Val #true) (Let "$a0" (App (Val (GoInstruction (StructFieldRef notifyList.ty go!"notify"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType notifyList.ty)))) (Var "l")))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "n"))
+  (Let "$a2" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "w"))
+  (App (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.CompareAndSwapUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))
+  (App (Val doReturn)
+  (Val #()))
   (App (Val doExecute)
-  (Val #()))))
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "w") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "n") (Var "$r0")))))))))
+  (Lam BAnon
+  (Val #())))))
   (Val #())))
 
-/-- MODEL: as runtime_notifyListNotifyAll, for one goroutine.
+/-- MODEL: Go's runtime_notifyListNotifyOne (notifyListNotifyOne) returns if
+    l.wait == l.notify (no waiter), and otherwise, under the list's lock,
+    increments l.notify and readies the waiter holding the old value as its
+    ticket, if it has parked yet (if not, its Wait sees the ticket notified and
+    returns at once). The model is the same increment by compare-and-swap,
+    retried if l.notify changed in between (as for NotifyAll).
 
-    go: runtime.go:95:6 -/
+    go: runtime.go:128:6 -/
 noncomputable def runtime_notifyListNotifyOne.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "l"
   (Seq (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType notifyList.ty)))) (Var "l"))
+  (App (App (App (Val doFor) (Lam BAnon
+  (Val #true))) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef notifyList.ty go!"notify"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType notifyList.ty)))) (Var "l")))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.LoadUint32 []))) (Val #())) (Var "$a0")))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (If (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "n")) (Let "$a0" (App (Val (GoInstruction (StructFieldRef notifyList.ty go!"wait"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType notifyList.ty)))) (Var "l")))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.LoadUint32 []))) (Val #())) (Var "$a0"))))) (Val #true) (Let "$a0" (App (Val (GoInstruction (StructFieldRef notifyList.ty go!"notify"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType notifyList.ty)))) (Var "l")))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "n"))
+  (Let "$a2" (App (Val (GoInstruction (GoOp GoPlus go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "n")) (Val #(W32 1))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.CompareAndSwapUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))
+  (App (Val doReturn)
+  (Val #()))
   (App (Val doExecute)
-  (Val #()))))
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "n") (Var "$r0")))))))))
+  (Lam BAnon
+  (Val #())))))
   (Val #())))
 
 /-- MODEL: Go's runtime_notifyListCheck throws if size is not the runtime's
     size of notifyList; the type is the real one, so its size is the runtime's,
     and the check passes.
 
-    go: runtime.go:101:6 -/
+    go: runtime.go:140:6 -/
 noncomputable def runtime_notifyListCheck.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "size"
   (Seq (App (Val exceptionDo)
