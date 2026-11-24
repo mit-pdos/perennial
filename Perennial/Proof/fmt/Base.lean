@@ -6,8 +6,12 @@ write, the well-formedness of arguments (`ArgsWf`), and lemmas about them.
 module
 
 public import Perennial.Proof.sync.Base
+public import Perennial.Proof.sync.PoolDefs
 public import Perennial.Proof.io.Base
 public import Perennial.Proof.errors.Base
+public import Perennial.Proof.reflect.Base
+public import Perennial.Proof.strconv.Base
+public import Perennial.Proof.unicode.utf8.Base
 public import Perennial.Code.fmt
 public import Perennial.GeneratedProof.fmt
 
@@ -1288,8 +1292,25 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
 
+/-- What the pool `ppFree` holds (and its `New` returns): an `any` holding a `*pp` at `l`, with the
+printer's struct, its buffer `buf` and `wrappedErrs` empty, and their backing arrays' capacity
+(`pp.free` empties them; `newPrinter` relies on that and does not). -/
+def ppFreeElem (x : GoAny) : IProp GF :=
+  iprop(∃ (l : Loc) (v : pp),
+    ⌜x = interface.mkOk (go.GoType.PointerType pp.ty) #l⌝ ∗ l ↦ v ∗
+    v.buf' ↦* ([] : List w8) ∗ ownSliceCap w8 v.buf' (DFrac.own 1) ∗
+    v.wrappedErrs' ↦* ([] : List w64) ∗ ownSliceCap w64 v.wrappedErrs' (DFrac.own 1))
+
+/-- The package-initialized state: `ppFree` is a `sync.Pool` of printers (`ppFreeElem`), whose
+`New` needs nothing. -/
+def isInit : IProp GF :=
+  iprop(∃ f : GoFunc, sync.isPool (globalAddr ppFree) f iprop(True) ppFreeElem)
+
+instance isInit_persistent : Persistent (isInit (GF := GF)) := by
+  unfold isInit; infer_instance
+
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.fmt :=
-  define_is_pkg_init iprop(True)
+  define_is_pkg_init isInit
 instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.fmt :=
   build_get_is_pkg_init_wf
 end wps
