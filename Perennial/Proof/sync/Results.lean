@@ -68,7 +68,7 @@ theorem Cond.wp_Wait_with (c : Loc) (m : GoInterfaceOk) (Pre R : IProp GF) :
   unfold isLockerWith
   iNamed Hlock
   wp_apply H_Unlock $$ HR as HPre
-  wp_apply wp_runtime_notifyListWait $$ [$Hnotify] with _
+  wp_apply wp_runtime_notifyListWait $$ [$Hnotify]
   wp_apply H_Lock $$ HPre with HR
   wp_end
 

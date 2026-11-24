@@ -2,7 +2,8 @@
 module
 
 public import Perennial.Proof.ProofPrelude
-public import Perennial.ManualProof.internal.sync
+public import Perennial.GeneratedProof.internal.gomodel
+public import Perennial.GeneratedProof.sync.atomic
 public import Perennial.Golang.Theory
 public import Perennial.Code.internal.sync
 
@@ -130,6 +131,63 @@ noncomputable instance node_into_val_typed (K : go.GoType) {K' : Type} [ZeroVal 
 
 end def_
 end node
+
+namespace Mutex
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : internal.sync.Assumptions]
+
+noncomputable instance Mutex_typed_pointsto :
+    TypedPointsto (GF := GF) internal.sync.Mutex where
+  typedPointstoDef l v dq := iprop(
+    "state" ∷ typedPointsto (structFieldRef internal.sync.Mutex go!"state" l) v.state' dq ∗
+    "sema" ∷ typedPointsto (structFieldRef internal.sync.Mutex go!"sema" l) v.sema' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance Mutex_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) internal.sync.Mutex internal.sync.Mutex.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance Mutex_access_load_state (l : Loc) (v : internal.sync.Mutex) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef internal.sync.Mutex go!"state" l) v.state' dq)
+      (typedPointsto (structFieldRef internal.sync.Mutex go!"state" l) v.state' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance Mutex_access_store_state (l : Loc) (v : internal.sync.Mutex) (state' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef internal.sync.Mutex go!"state" l) v.state' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.sync.Mutex go!"state" l) state' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with state' := state' } : internal.sync.Mutex) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance Mutex_access_load_sema (l : Loc) (v : internal.sync.Mutex) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef internal.sync.Mutex go!"sema" l) v.sema' dq)
+      (typedPointsto (structFieldRef internal.sync.Mutex go!"sema" l) v.sema' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance Mutex_access_store_sema (l : Loc) (v : internal.sync.Mutex) (sema' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef internal.sync.Mutex go!"sema" l) v.sema' (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.sync.Mutex go!"sema" l) sema' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sema' := sema' } : internal.sync.Mutex) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end Mutex
 
 end internal.sync
 end

@@ -25,38 +25,51 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
-/-- `Lock` on a `Mutex` whose lock (the field `mu`, an `internal/sync.Mutex`, a `bool` in
-the model) the caller owns and is unlocked: the trusted spin lock's CAS succeeds. -/
-theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_Lock_owned (m : Loc) :
-    {{ typedPointsto (GF := GF) (structFieldRef sync.Mutex go!"mu" m) false (DFrac.own 1) }}
+/-- `Lock` on a `Mutex` whose `state` cell the caller owns and is unlocked (`0`): its model's
+compare-and-swap succeeds (`internal/sync`'s model, over `sync/atomic`'s, unfolded here since the
+test has no initialized packages). -/
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_Lock_owned (m : Loc) (v : w32) :
+    {{ ⌜v = W32 0⌝ ∗ typedPointsto (GF := GF) (structFieldRef internal.sync.Mutex go!"state" (structFieldRef sync.Mutex go!"mu" m)) v (DFrac.own 1) }}
       (App (Val (m @!! go.GoType.PointerType sync.Mutex.ty @!! go!"Lock")) (Val #()))
-    {{ RET #(); typedPointsto (structFieldRef sync.Mutex go!"mu" m) true (DFrac.own 1) }} := by
-  wp_start as Hmu
+    {{ RET #(); typedPointsto (structFieldRef internal.sync.Mutex go!"state" (structFieldRef sync.Mutex go!"mu" m)) (W32 1) (DFrac.own 1) }} := by
+  wp_start as ⟨%hv, Hs⟩
+  subst hv
   wp_auto
   wp_method_call
-  unfold internal.sync.Mutex.Lock.impl lock.lock
-  wp_pures
-  wp_bind (CmpXchg _ _ _)
-  wp_apply_core wp_cmpxchg_suc _ false false true _ _ rfl $$ Hmu
-  iintro Hmu
+  unfold internal.sync.Mutex.Lock.impl
+  simp only [internal.sync.mutexLocked]
   wp_auto
-  iapply HΦ $$ Hmu
+  wp_for
+  wp_func_call
+  unfold sync.atomic.CompareAndSwapInt32.impl
+  wp_pures
+  wp_bind (CmpXchgBytes _ _ _)
+  wp_apply_core wp_cmpxchg_bytes_suc_typed _ (W32 0) (W32 0) (W32 1) _ _ rfl $$ Hs
+  iintro Hs
+  wp_auto
+  cleanup_bool_decide
+  wp_auto
+  iapply HΦ $$ Hs
 
-/-- `Unlock` on a `Mutex` whose lock the caller owns and is locked. -/
+/-- `Unlock` on a `Mutex` whose `state` cell the caller owns and is locked (`1`). -/
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_Unlock_owned (m : Loc) :
-    {{ typedPointsto (GF := GF) (structFieldRef sync.Mutex go!"mu" m) true (DFrac.own 1) }}
+    {{ typedPointsto (GF := GF) (structFieldRef internal.sync.Mutex go!"state" (structFieldRef sync.Mutex go!"mu" m)) (W32 1) (DFrac.own 1) }}
       (App (Val (m @!! go.GoType.PointerType sync.Mutex.ty @!! go!"Unlock")) (Val #()))
-    {{ RET #(); typedPointsto (structFieldRef sync.Mutex go!"mu" m) false (DFrac.own 1) }} := by
-  wp_start as Hmu
+    {{ RET #(); typedPointsto (structFieldRef internal.sync.Mutex go!"state" (structFieldRef sync.Mutex go!"mu" m)) (W32 0) (DFrac.own 1) }} := by
+  wp_start as Hs
   wp_auto
   wp_method_call
-  unfold internal.sync.Mutex.Unlock.impl lock.unlock
-  wp_pures
-  wp_bind (CmpXchg _ _ _)
-  wp_apply_core wp_cmpxchg_suc _ true true false _ _ rfl $$ Hmu
-  iintro Hmu
+  unfold internal.sync.Mutex.Unlock.impl
+  simp only [internal.sync.mutexLocked]
   wp_auto
-  iapply HΦ $$ Hmu
+  wp_func_call
+  unfold sync.atomic.CompareAndSwapInt32.impl
+  wp_pures
+  wp_bind (CmpXchgBytes _ _ _)
+  wp_apply_core wp_cmpxchg_bytes_suc_typed _ (W32 1) (W32 1) (W32 0) _ _ rfl $$ Hs
+  iintro Hs
+  wp_auto
+  iapply HΦ $$ Hs
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMutexLiteral.wp_proof :
     github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMutexLiteral.spec (GF := GF) (hG := hG) := by
@@ -66,12 +79,16 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMute
   wp_call
   wp_auto
   iStructNamed m
-  wp_apply github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_Lock_owned $$ mu as mu
-  wp_apply github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_Unlock_owned $$ mu as -
+  iStructNamed mu
+  wp_apply github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_Lock_owned $$ [state] as state
+  · iframe; ipureintro; rfl
+  wp_apply github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_Unlock_owned $$ state as -
   iStructNamed h
   iStructNamedSuffix mu "'"
-  wp_apply github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_Lock_owned $$ «mu'» as mu
-  wp_apply github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_Unlock_owned $$ mu as -
+  iStructNamedSuffix «mu'» "'"
+  wp_apply github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_Lock_owned $$ [«state'»] as state
+  · iframe; ipureintro; rfl
+  wp_apply github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_Unlock_owned $$ state as -
   iexact HΦ
 
 end proof

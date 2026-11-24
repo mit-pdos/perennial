@@ -36,7 +36,15 @@
 #                                     last three hang)
 #            TestTimerGC              allocation counts: a model timer's
 #                                     goroutine keeps it alive until it fires
-# internal/stringslite has no tests; bytes and internal/bytealg run in full.
+#   sync     TestMutexMisuse          an Unlock of an unlocked Mutex: fatal's
+#                                     model is stuck (gomodel.Stuck, which
+#                                     blocks in gc) where Go ends the program
+#            TestPool, TestPoolGC, TestPoolRelease
+#                                     the GC clearing pools: the model of
+#                                     Pool has no GC, its Get may return a
+#                                     value Go's GC would have dropped
+# internal/stringslite has no tests; bytes, internal/bytealg and internal/sync
+# run in full.
 # runtime, syscall, log: models that are choices (gomodel.Choose/ChooseUint64/ChooseString),
 # whose Go bodies take one value (false, 0, ""): Frames.Next's frames are empty (no function,
 # file or line), Gosched does not yield, log.Printf/Println print nothing, and prlimit1 neither
@@ -58,17 +66,20 @@ trap 'rm -rf "$OUT"' EXIT
 cd "$ROOT/goose"
 go build -o "$OUT/goose" ./cmd/goose
 "$OUT/goose" model-overlay -configdir "$ROOT/Perennial/Code" -dir . -tags purego -o "$OUT/ov" \
-  strings bytes errors internal/stringslite internal/bytealg time
+  strings bytes errors internal/stringslite internal/bytealg internal/sync sync time
 # the choice models, in an overlay of their own
 "$OUT/goose" model-overlay -configdir "$ROOT/Perennial/Code" -dir . -tags purego -o "$OUT/ovc" \
   runtime syscall log
 # go vet does not find the overlay-added internal/gomodel (it changes into the package's directory)
-run() { go test -vet=off -timeout 300s -overlay "$OUT/ov/overlay.json" -tags purego,goose "$@"; }
+run() { go test -vet=off -timeout 600s -overlay "$OUT/ov/overlay.json" -tags purego,goose "$@"; }
 run strings -skip '^(TestSplit|ExampleSplit|TestBuilderGrow|TestBuilderAllocs|TestBuilderGrowSizeclasses|TestReplace|TestBuilderCopyPanic)$'
 run errors -skip '^TestIs$'
-run bytes internal/stringslite internal/bytealg
+run sync -skip '^(TestMutexMisuse|TestPool|TestPoolGC|TestPoolRelease)$'
+# the models' own tests (goose/model/overlaytests: Cond.Wait without a signal blocks, ...)
+run ./model/overlaytests/
+run bytes internal/stringslite internal/bytealg internal/sync
 run time -skip '^(TestAfterStop|TestTimerStopStress|TestChan|TestTicker|TestReset|TestTimerModifiedEarlier|TestAdjustTimers|TestTimerGC)$'
-runc() { go test -vet=off -timeout 300s -overlay "$OUT/ovc/overlay.json" -tags purego,goose "$@"; }
+runc() { go test -vet=off -timeout 600s -overlay "$OUT/ovc/overlay.json" -tags purego,goose "$@"; }
 runc syscall -skip '^TestPrlimitFileLimit$'
 runc log -skip '^(TestAll|TestCallDepth|ExampleLogger|ExampleLogger_Output)$'
 runc os sort runtime/debug

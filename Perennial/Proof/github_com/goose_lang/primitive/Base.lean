@@ -47,12 +47,12 @@ theorem «wp_RandomUint64__impl» :
   iapply HΦ
   itrivial
 
-def isMutexDef (m : Loc) (R : IProp GF) : IProp GF := isLock m R
+def isMutexDef (m : Loc) (R : IProp GF) : IProp GF := isSpinLock m R
 /-- This means `m` is a valid mutex with invariant `R`. -/
 @[irreducible] def isMutex (m : Loc) (R : IProp GF) : IProp GF := isMutexDef m R
 theorem isMutex_unseal : @isMutex = @isMutexDef := by funext; with_unfolding_all rfl
 
-def ownMutexDef (m : Loc) : IProp GF := ownLock m
+def ownMutexDef (m : Loc) : IProp GF := ownSpinLock m
 /-- This resource denotes ownership of the fact that the Mutex is currently
 locked. -/
 @[irreducible] def ownMutex (m : Loc) : IProp GF := ownMutexDef m
@@ -60,7 +60,7 @@ theorem ownMutex_unseal : @ownMutex = @ownMutexDef := by funext; with_unfolding_
 
 theorem ownMutex_exclusive (m : Loc) : ⊢ ownMutex (GF := GF) m -∗ ownMutex m -∗ False := by
   simp only [ownMutex_unseal, ownMutexDef]
-  exact ownLock_exclusive m
+  exact ownSpinLock_exclusive m
 
 instance isMutex_ne (m : Loc) : NonExpansive (isMutex (GF := GF) m) := by
   rw [isMutex_unseal]; unfold isMutexDef; infer_instance
@@ -74,7 +74,7 @@ instance locked_timeless (m : Loc) : Timeless (ownMutex (GF := GF) m) := by
 theorem init_Mutex (R : IProp GF) (E : CoPset) (m : Loc) :
     ⊢ typedPointsto (GF := GF) m (zero_val Bool) (DFrac.own 1) -∗ ▷ R ={E}=∗ isMutex m R := by
   simp only [isMutex_unseal, isMutexDef]
-  exact init_lock R E m
+  exact init_spinLock R E m
 
 end wps
 
