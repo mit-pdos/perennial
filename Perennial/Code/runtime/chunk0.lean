@@ -10725,7 +10725,11 @@ noncomputable def Frames.Next.impl [GooseExts] [GoGlobalContext] : val :=
     many it wrote (tracebackPCs writes pcBuf[n] only for n < len(pcBuf)). It
     cannot panic: a skip past the stack's depth, or negative, writes fewer
     entries or the whole buffer. The model writes some prefix of pcbuf with
-    arbitrary words and returns its length, every n from 0 to len(pcbuf) (Go: n
+    arbitrary words and returns its length, every n from 0 to
+    min(len(pcbuf), 2^40-1). The bound is the model assumption that a stack has
+    fewer than 2^39 frames (README.md, "Model assumption (stack depth)";
+    Perennial/TrustedCode/runtime.lean, callers.impl), so that a caller growing
+    its buffer until it is not filled (zap's stacktrace.Capture) stops. (Go: n
     < len(pcbuf) when the stack is shallower, 0 when skip is past it,
     len(pcbuf) when the buffer is too short: goose/model/runtime/callers_test.go).
     It writes the cells one at a time, as Go does, so a concurrent access to
@@ -10733,7 +10737,7 @@ noncomputable def Frames.Next.impl [GooseExts] [GoGlobalContext] : val :=
     gomodel.Choose is false, so this body writes nothing, and the testing
     package panics when callers finds no frame.)
 
-    go: traceback.go:26:6 -/
+    go: traceback.go:30:6 -/
 noncomputable def callersModel.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "skip"
   (Lam "pcbuf"
@@ -10752,8 +10756,8 @@ noncomputable def callersModel.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (App (App (Val doFor) (Lam BAnon
-  (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uintptr)))) (Var "pcbuf"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uintptr)]))) (Val #())) (Var "$a0"))))) (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.Choose []))) (Val #())) (Val #())) (Val #false)))) (Lam BAnon
+  (If (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uintptr)))) (Var "pcbuf"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uintptr)]))) (Val #())) (Var "$a0"))))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1099511627775)))) (Val #false)) (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.Choose []))) (Val #())) (Val #())) (Val #false)))) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.uintptr))) (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.ChooseUint64 []))) (Val #())) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
@@ -10783,8 +10787,6 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.ChooseString []))) (Val #())) (Val #()))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -11080,8 +11082,6 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val fastlog2Table.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (GlobalVarAddr buildVersion))) (Val #())) (Var "$r0"))))))))
-  (App (Val doExecute)
   (App (Val boundsNegErrorFmts.init) (Val #()))))))
   (App (Val doExecute)
   (App (Val boundsErrorFmts.init) (Val #()))))))
@@ -11098,7 +11098,7 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.internal.gomodel.initialize') (Val #()))))))
   (App (Val doExecute)
-  (App (Val (go.GlobalAlloc buildVersion go.string)) (Val #()))))))))
+  (App (Val buildVersion.init) (Val #()))))))))
 
 structure userArena [GooseExts] where
   mk ::

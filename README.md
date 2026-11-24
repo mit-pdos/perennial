@@ -203,6 +203,15 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   threadBound GF`, and the client assumes `threadBound GF ≤ 2^31` at adequacy
   time (`ProgramLogic/ThreadTokensTest.lean`, `docs/PERENNIAL_PROOF_REFERENCE.md`
   "Thread tokens").
+* **Model assumption (stack depth).** `runtime.callers` (`TrustedCode/runtime.lean`, behind
+  `runtime.Callers`) reports at most `2^40 - 1` frames, so it returns fewer frames than a buffer
+  of `2^40` or more holds (zap's `stacktrace.Capture` doubles its buffer until it is not filled,
+  and stops). Go reports fewer than `2^39`: a stack is at most `maxstackceiling` (2e9 bytes on
+  64-bit, which `debug.SetMaxStack` does not raise), so at most `250_000_000` physical frames,
+  each expanded into at most `2081` inlined frames with the compiler's default flags (the
+  inliner's largest budget). Only compiler debug flags (`-gcflags=-d=pgoinlinebudget=N`,
+  `-d=inlbudgetslack=N`) or `GOEXPERIMENT=newinliner` could raise the inlining depth past that;
+  a build with them is outside what the model covers.
 * **Model assumption (SHA-256 collisions), opt-in.** `crypto/sha256.Sum256` is a
   trusted model over the SHA-256 extension (`GooseLang/Ext/Sha256/Impl.lean`): an
   opaque function `sha256Hash` and a global state of every input hashed so far.
@@ -233,6 +242,12 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   translates but for four `go:linkname` hooks (`setUpdate`, whose model would
   have to hand it the environment, `registerMetric`, `setNewIncNonDefault`,
   `write`) and which needs `sync.Map` and `internal/bisect`, not translated.
+* **Environment premises (the build's `runtime.buildVersion`), opt-in.** The string `Version`
+  returns is the trusted initializer's `runtime.buildVersionValue` (`TrustedCode/runtime.lean`),
+  an opaque string standing for what the linker wrote into the binary, of which nothing is
+  proved. A theorem whose proof needs a property of it (for example that it is valid UTF-8,
+  which a standard `go build` gives and only `-ldflags -X runtime.buildVersion=<s>` can break)
+  names the property as a hypothesis, and then covers only the builds with it.
 * **Model assumptions (initial states).** An extension's
   `ExtSemantics.initLocal`/`initGlobal` (`GooseLang/Lang.lean`, default `True`)
   are what a top-level theorem assumes of the states its execution starts from.
