@@ -117,7 +117,11 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   concludes about (`RealNstepsBelow T n`: fewer than `T` threads in each of its
   configurations), so that a program whose goroutine count is unbounded over
   all schedules can still use a constant `T` without bounding the step count by
-  it. See `docs/PERENNIAL_PROOF_REFERENCE.md`, "Time receipts" and "Thread tokens".
+  it. The crash and distributed theorems have the same forms:
+  `goose_crash_adequacy_below` over `RealCrashNstepsBelow` (`AdequacyAlong.lean`),
+  and `goose_dist_adequacy_below`, `goose_dist_crash_adequacy_below` and
+  `goose_dist_mixed_crash_adequacy_below` over `DistCrashNstepsBelow`
+  (`DistAdequacy.lean`). See `docs/PERENNIAL_PROOF_REFERENCE.md`, "Time receipts" and "Thread tokens".
 * **Iris substrate.** iris-lean provides the BI, proof mode, invariants,
   ghost maps, later credits and the WP. General-purpose libraries that iris-lean
   lacks (finite maps and sets, machine words, list lemmas) live in
