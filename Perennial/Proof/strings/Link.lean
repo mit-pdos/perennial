@@ -20,10 +20,12 @@ public import Perennial.Proof.strings.Builder__WriteString
 public import Perennial.Proof.strings.Builder__copyCheck
 public import Perennial.Proof.strings.Builder__grow_
 public import Perennial.Proof.strings.Compare
+public import Perennial.Proof.strings.Count
 public import Perennial.Proof.strings.Cut
 public import Perennial.Proof.strings.Fields
 public import Perennial.Proof.strings.HasPrefix
 public import Perennial.Proof.strings.HasSuffix
+public import Perennial.Proof.strings.Index
 public import Perennial.Proof.strings.IndexByte
 public import Perennial.Proof.strings.Join
 public import Perennial.Proof.strings.LastIndex
@@ -85,6 +87,12 @@ theorem strings.Builder.wp_WriteString : strings.Builder.WriteString.spec (GF :=
 
 theorem strings.wp_Compare : strings.Compare.spec (GF := GF) (hG := hG) :=
   strings.Compare.wp_proof internal.bytealg.wp_CompareString
+
+theorem strings.wp_Index : strings.Index.spec (GF := GF) (hG := hG) :=
+  strings.Index.wp_proof internal.stringslite.wp_Index
+
+theorem strings.wp_Count : strings.Count.spec (GF := GF) (hG := hG) :=
+  strings.Count.wp_proof internal.bytealg.wp_CountString strings.wp_Index
 
 theorem strings.wp_Cut : strings.Cut.spec (GF := GF) (hG := hG) :=
   strings.Cut.wp_proof internal.stringslite.wp_Cut

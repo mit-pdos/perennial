@@ -183,7 +183,8 @@ def trimPrefix (s pfx : GoString) : GoString :=
 /-- The fields that Go's `strings.Split` makes of the rest `r` of a string when the current field
 is `field`: at an occurrence of `sep` the field ends and the next one starts after the
 occurrence; any other byte goes to the current field. For an empty `sep` it keeps all of `r` in
-the field (Go splits into UTF-8 sequences instead; `wp_Split` requires `sep` non-empty). -/
+the field (Go splits into UTF-8 sequences instead, `explode`; `wp_Split` requires `sep`
+non-empty). -/
 def splitAux (sep : GoString) : GoString → GoString → List GoString
   | [], field => [field]
   | c :: r, field =>
@@ -265,6 +266,72 @@ theorem splitAux_no_infix (sep r field : GoString) (hsep : sep ≠ [])
 theorem split_no_infix (s sep : GoString) (hsep : sep ≠ []) :
     ∀ f ∈ split s sep, ¬ sep <:+: f :=
   splitAux_no_infix sep s [] hsep (by simp)
+
+/-! `split` at the first occurrence of `sep` (`internal.bytealg.index`, which Go's `Count` finds it
+with), and its number of fields. -/
+
+/-- `splitAux` skips the first `m` bytes of `r` into the field when `sep` occurs at none of them. -/
+theorem splitAux_skip (sep : GoString) :
+    ∀ (m : Nat) (r field : GoString), m ≤ r.length → (∀ k < m, ¬ sep <+: r.drop k) →
+      splitAux sep r field = splitAux sep (r.drop m) (field ++ r.take m)
+  | 0, r, field, _, _ => by simp
+  | m + 1, [], field, hm, _ => by simp at hm
+  | m + 1, c :: r, field, hm, H => by
+    have h0 : ¬ (sep ≠ [] ∧ sep <+: c :: r) := fun h => H 0 (by omega) (by simpa using h.2)
+    rw [splitAux, if_neg h0, splitAux_skip sep m r (field ++ [c]) (by simp at hm; omega)
+      (fun k hk => by simpa using H (k + 1) (by omega))]
+    simp
+
+/-- An occurrence of `sep` first at `m`: the first field is `s[:m]`, the rest is split after it. -/
+theorem split_found (s sep : GoString) (hsep : sep ≠ []) (m : Nat) (hp : sep <+: s.drop m)
+    (hmin : ∀ j < m, ¬ sep <+: s.drop j) :
+    split s sep = s.take m :: split (s.drop (m + sep.length)) sep := by
+  have hm : m + sep.length ≤ s.length := by
+    have := hp.length_le; simp only [List.length_drop] at this; omega
+  unfold split
+  rw [splitAux_skip sep m s [] (by omega) hmin, List.nil_append]
+  obtain ⟨c, r, hcr⟩ : ∃ c r, s.drop m = c :: r := by
+    cases h : s.drop m with
+    | nil => have := List.length_pos_iff.mpr hsep; simp at h; omega
+    | cons c r => exact ⟨c, r, rfl⟩
+  rw [hcr, splitAux, if_pos ⟨hsep, hcr ▸ hp⟩, ← hcr, List.drop_drop]
+
+/-- No occurrence of `sep`: one field, all of `s`. -/
+theorem split_not_found (s sep : GoString) (h : ∀ j, ¬ sep <+: s.drop j) :
+    split s sep = [s] := by
+  unfold split
+  rw [splitAux_skip sep s.length s [] (Nat.le_refl _) (fun k _ => h k)]
+  simp [splitAux]
+
+/-- `split` at `internal.bytealg.index s sep`, as Go's `Count` finds it. -/
+theorem split_index (s sep : GoString) (hsep : sep ≠ []) :
+    split s sep = if 0 ≤ internal.bytealg.index s sep then
+      s.take (internal.bytealg.index s sep).toNat ::
+        split (s.drop ((internal.bytealg.index s sep).toNat + sep.length)) sep
+    else [s] := by
+  rcases internal.bytealg.index_cases s sep with ⟨i, hi, hp, hmin⟩ | ⟨hi, hn⟩
+  · rw [hi, if_pos (by omega), Int.toNat_natCast]
+    exact split_found s sep hsep i hp hmin
+  · rw [hi, if_neg (by omega)]
+    exact split_not_found s sep hn
+
+theorem splitAux_length_single (c : w8) (r field : GoString) :
+    (splitAux [c] r field).length = r.count c + 1 := by
+  fun_induction splitAux [c] r field with
+  | case1 field => simp
+  | case2 c' r field h ih =>
+    have hc : c' = c := by simpa using h.2
+    subst hc
+    simp only [List.length_cons, ih, List.length_singleton, List.drop_succ_cons, List.drop_zero,
+      List.count_cons_self]
+  | case3 c' r field h ih =>
+    have hc : c' ≠ c := fun hc => h ⟨by simp, by simp [hc]⟩
+    rw [ih, List.count_cons_of_ne hc]
+
+/-- With a one-byte `sep`: one field more than the occurrences of the byte (Go's `Count` counts
+them with `bytealg.CountString`). -/
+theorem split_length_single (s : GoString) (c : w8) : (split s [c]).length = s.count c + 1 :=
+  splitAux_length_single c s []
 
 /-- A `*Replacer` made by `NewReplacer(oldnew...)` and not used yet: its own copy of the
 `oldnew` pairs, its `once` and its built `r` still zero. -/
