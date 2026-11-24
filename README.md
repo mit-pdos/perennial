@@ -233,6 +233,12 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   translates but for four `go:linkname` hooks (`setUpdate`, whose model would
   have to hand it the environment, `registerMetric`, `setNewIncNonDefault`,
   `write`) and which needs `sync.Map` and `internal/bisect`, not translated.
+* **Environment premises (the build's `runtime.buildVersion`), opt-in.** The string `Version`
+  returns is the trusted initializer's `runtime.buildVersionValue` (`TrustedCode/runtime.lean`),
+  an opaque string standing for what the linker wrote into the binary, of which nothing is
+  proved. A theorem whose proof needs a property of it (for example that it is valid UTF-8,
+  which a standard `go build` gives and only `-ldflags -X runtime.buildVersion=<s>` can break)
+  names the property as a hypothesis, and then covers only the builds with it.
 * **Model assumptions (initial states).** An extension's
   `ExtSemantics.initLocal`/`initGlobal` (`GooseLang/Lang.lean`, default `True`)
   are what a top-level theorem assumes of the states its execution starts from.

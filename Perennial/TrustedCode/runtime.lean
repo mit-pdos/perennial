@@ -15,6 +15,16 @@ set_option linter.iris.style.nameCheck false
 namespace Perennial
 
 namespace runtime
+
+/-- **The binary's `runtime.buildVersion`**: the string the linker wrote into it (see
+`buildVersion.init`), fixed for the whole run. The model knows nothing of it: it is opaque, nothing
+is proved about it, and a theorem about a program holds whatever string it is. A theorem that
+needs a property of it takes the property as a premise, as `crypto.fips140.GodebugFips140Off` is
+for the `fips140` setting (for example that it is valid UTF-8: a standard `go build` writes the
+toolchain's version, `go1.27.3` or `devel ...`, and only `-ldflags -X runtime.buildVersion=<s>`
+writes an arbitrary string). -/
+opaque buildVersionValue : GoString
+
 section code
 variable [GooseExts] [GoGlobalContext]
 
@@ -41,8 +51,8 @@ replaces an empty value by `"unknown"` before any package is initialized (`proc.
 and a `//go:linkname` pull of it from another package is refused by the default linker (since Go
 1.23; only `-ldflags=-checklinkname=0` allows it, and goose does not model `go:linkname`).
 
-The model allocates the variable and stores an arbitrary string (`fmt.arbitraryString`, which can
-be every string), so it is less defined than Go: every value Go can have is one of its results. It
+The model allocates the variable and stores `buildVersionValue`, the opaque string standing for
+the linker's value: every value Go can have is one it may be, as nothing is known of it. It
 cannot panic, nor can Go's (the value is in the binary). Goose runs it where it would allocate
 a translated variable (before the imported packages' initializers), as for every trusted variable
 without an initializer.
@@ -53,7 +63,7 @@ returns the linker's string. The linker's write is not Go code. `Version` itself
 noncomputable def buildVersion.init : val :=
   λ: <>,
     go.GlobalAlloc go!"runtime.buildVersion" go.string #() ;;
-    GlobalVarAddr go!"runtime.buildVersion" #() <-[go.string] (fmt.arbitraryString #())
+    GlobalVarAddr go!"runtime.buildVersion" #() <-[go.string] #buildVersionValue
 
 /-- `callers(skip int, pcbuf []uintptr) int` (`traceback.go`), which `Callers` (translated) calls
 with a non-empty `pcbuf`: it walks the calling goroutine's stack (`systemstack`, the unwinder) and
