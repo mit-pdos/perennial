@@ -329,8 +329,11 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   d := grove_ffi.FileRead("f") // Go: []byte{}; the model: the file's contents
   ```
 
-- **A node's `durable/` directory is assumed private, writable and unaliased (environment
-  assumption).** The model keeps each valid file name's contents independently
+- **A node's `durable/` directory is assumed private, writable and unaliased, and to hold
+  exactly the node's initial files when it starts (environment assumption).** A file in
+  `durable/` that is missing from the initial `groveNodeFiles` reads as its contents in Go but
+  as empty in the model (`FileRead` of a missing name), so the initial state must list every
+  file there. The model keeps each valid file name's contents independently
   (`groveNodeFiles`, `Ext/Grove/Impl.lean`). Go's files are `durable/<name>` in the working
   directory, so names alias when `durable/` holds symbolic or hard links, is on a
   case-insensitive filesystem, or is shared with another process or another node started in

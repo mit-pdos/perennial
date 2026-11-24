@@ -6,7 +6,8 @@ the Grove extension of `Perennial.GooseLang.Ext.Grove.Impl` (`ExternalOp groveEx
 
 The extension's operations take and return byte strings as Go string values (`#data`); the
 model converts between them and `[]byte`. `FileRead`'s result has an arbitrary capacity at
-least its length (`slice._new_cap`, the capacity `append` chooses), as `os.ReadFile`'s does.
+least its length (`slice._new_cap`, the capacity `append` chooses), which covers both
+`os.ReadFile`'s result and the `[]byte{}` `FileRead` returns when the read fails.
 `FileAppend` appends in pieces of arbitrary sizes, each one step, as a concurrent `FileRead` may
 see part of a `write(2)`.
 A `Listener` or `Connection` is a fresh cell holding the extension's socket value.
