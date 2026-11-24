@@ -41,16 +41,32 @@ def asStored [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType
     (ii : GoInterfaceOk) : val :=
   if go.isInterfaceType (underlying T) then #(interface.ok ii) else ii.v
 
-/-- The model of `As` decides whether `ii` is assignable to `T` (`AsAssign` has semantics): `T`
-is an interface type, or `ii`'s dynamic type is `T` and `T` a defined type without type arguments
-or a pointer to one (`go.identByName`), or `ii`'s dynamic type has another underlying type than
-`T`. (Go also assigns a type to a non-interface type of the same underlying type when one of the
-two is unnamed, which the model does not follow; and `go.identByName` keeps the model from
-equating struct types Go tells apart by their unexported fields' packages.) -/
+/-- Struct, channel and function types: the kinds whose assignability `reflectlite`'s model does
+not decide from underlying types (`goose/model/overlay/internal/reflectlite/type.go`,
+`directlyAssignable`). A defined struct type's underlying type is translated without its fields'
+tags, so it can differ from an unnamed struct type's that Go finds identical; Go assigns a
+bidirectional channel to a directional channel type; and `reflectlite` ignores whether a function
+type is variadic. -/
+def undecidedKind : go.GoType → Bool
+  | go.StructType _ | go.ChannelType _ _ | go.FunctionType _ => true
+  | _ => false
+
+/-- The model of `As` (`reflectlite`'s `AssignableTo`, `goose/model/overlay/internal/reflectlite`)
+decides whether `ii` is assignable to `T`, and Go agrees with `asAssignable`: `T` is an interface
+type; or `ii`'s dynamic type is `T` and `T` a defined type without type arguments or a pointer to
+one (`go.identByName`); or `ii`'s dynamic type has another underlying type than `T` and either another
+kind, or a kind other than struct, channel and function (`undecidedKind`). (Go also assigns a type to
+a non-interface type of the same underlying type when one of the two is unnamed, which the model
+does not decide; `go.identByName` keeps the model from equating struct types Go tells apart by
+their unexported fields' packages; and `undecidedKind` excludes the kinds where Go's identity of
+underlying types is not the translation's: a defined struct type's field tags, which the
+translation drops, and channel directions.) -/
 def AsDecided [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType)
     (ii : GoInterfaceOk) : Prop :=
   go.isInterfaceType (underlying T) = false →
-    (ii.ty = T → go.identByName T = true) ∧ (ii.ty ≠ T → underlying ii.ty ≠ underlying T)
+    (ii.ty = T → go.identByName T = true) ∧
+    (ii.ty ≠ T → underlying ii.ty ≠ underlying T ∧
+      (undecidedKind (underlying T) = false ∨ go.kindOf (underlying ii.ty) ≠ go.kindOf (underlying T)))
 
 /-- A non-nil target that Go's `err == target` compares, without panicking, with the errors of the
 tree `S`: its dynamic type's `==` is defined (`CheckComparable` steps) and is the equality of the
