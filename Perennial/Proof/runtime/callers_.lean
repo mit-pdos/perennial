@@ -1,5 +1,6 @@
 /-
-The proof of `runtime.callers` (its Go model, `goose/model/overlay/runtime`).
+The proof of `runtime.callers` (trusted: a call of its translated model `callersModel`,
+`goose/model/overlay/runtime/traceback.go`).
 -/
 module
 
@@ -29,6 +30,10 @@ theorem runtime.callers.wp_proof
     (wp_ChooseUint64 : internal.gomodel.ChooseUint64.spec (GF := GF) (hG := hG)) :
     runtime.callers.spec (GF := GF) (hG := hG) := fun skip s xs => by
   wp_start as Hs
+  -- `callers.impl` (trusted) calls the translated model `callersModel`
+  try rw [show (go!"runtime.callersModel" : GoString) = runtime.callersModel from rfl]
+  wp_func_call
+  wp_call
   ihave %Hlen := ownSlice_len $$ Hs
   wp_auto
   ihave HI : iprop(∃ (n : w64) (ys : List w64),
@@ -44,7 +49,8 @@ theorem runtime.callers.wp_proof
   ihave %Hlen' := ownSlice_len $$ Hs
   wp_if_destruct
   · wp_apply wp_Choose as %c -
-    cases c
+    rcases c with _ | _ <;> simp only [intoVal_eq_iff, decide_false, decide_true,
+      Bool.false_eq_true, ↓reduceIte]
     · wp_auto
       iapply HΦ
       iexists ys

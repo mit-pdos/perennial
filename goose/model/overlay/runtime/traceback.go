@@ -1,11 +1,14 @@
-// The Go model of runtime.callers (Perennial/Code/runtime.toml, [model]),
-// spliced into traceback.go in place of the real declaration.
+// The model of runtime.callers (Perennial/Code/runtime.toml), added to
+// traceback.go: callers itself stays (gc runs the real stack walk, which
+// testing.callerName and the like need), and is trusted, its GooseLang model
+// (Perennial/TrustedCode/runtime.lean, callers.impl) a call of callersModel.
 
 package runtime
 
 import "internal/gomodel"
 
-// MODEL: callers(skip, pcbuf), which Callers calls: Go walks the calling
+// MODEL: callersModel(skip, pcbuf) is the model of callers(skip, pcbuf), which
+// Callers calls: Go walks the calling
 // goroutine's stack (getg, sys.GetCallerPC/GetCallerSP, compiler intrinsics
 // with no Go body, and the unwinder over the binary's tables) and writes the
 // return program counters of the frames after the first skip into pcbuf[0],
@@ -17,8 +20,10 @@ import "internal/gomodel"
 // < len(pcbuf) when the stack is shallower, 0 when skip is past it,
 // len(pcbuf) when the buffer is too short: goose/model/runtime/callers_test.go).
 // It writes the cells one at a time, as Go does, so a concurrent access to
-// pcbuf races in the model as in Go.
-func callers(skip int, pcbuf []uintptr) int {
+// pcbuf races in the model as in Go. (Not a replacement of callers: under gc,
+// gomodel.Choose is false, so this body writes nothing, and the testing
+// package panics when callers finds no frame.)
+func callersModel(skip int, pcbuf []uintptr) int {
 	n := 0
 	for n < len(pcbuf) && gomodel.Choose() {
 		pcbuf[n] = uintptr(gomodel.ChooseUint64())

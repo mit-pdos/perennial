@@ -38,8 +38,15 @@ theorem internal.gomodel.ChooseString.wp_proof
     · iapply ownSliceCap_nil
   wp_for IH
   wp_apply wp_Choose as %c -
-  wp_if_destruct
-  · wp_apply wp_ChooseUint64 as %x -
+  rcases c with _ | _ <;> simp only [intoVal_eq_iff, decide_false, decide_true,
+    Bool.false_eq_true, ↓reduceIte]
+  -- `false`: the loop ends
+  · wp_auto
+    wp_apply wp_bytes_to_string $$ Hsl as -
+    iapply HΦ; itrivial
+  -- `true`: one more element
+  · wp_auto
+    wp_apply wp_ChooseUint64 as %x -
     wp_apply wp_slice_literal (V := w8) [W8 (uint.Z x)]
     isplitr
     · ipureintro; rfl
@@ -51,10 +58,6 @@ theorem internal.gomodel.ChooseString.wp_proof
     iframe
     iexists _, _
     iframe
-  · wp_auto
-    wp_apply wp_bytes_to_string $$ Hsl as -
-    wp_auto
-    iapply HΦ; itrivial
 
 end proof
 

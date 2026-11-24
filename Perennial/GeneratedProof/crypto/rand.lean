@@ -2,7 +2,7 @@
 module
 
 public import Perennial.Proof.ProofPrelude
-public import Perennial.GeneratedProof.crypto.internal.rand
+public import Perennial.ManualProof.crypto.rand
 public import Perennial.GeneratedProof.io
 public import Perennial.GeneratedProof.math.big
 public import Perennial.Golang.Theory

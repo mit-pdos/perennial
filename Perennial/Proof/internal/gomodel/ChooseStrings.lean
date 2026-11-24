@@ -38,8 +38,16 @@ theorem internal.gomodel.ChooseStrings.wp_proof
     · iapply ownSliceCap_nil
   wp_for HI
   wp_apply wp_Choose as %c -
-  wp_if_destruct
-  · wp_apply wp_ChooseString as %str -
+  rcases c with _ | _ <;> simp only [intoVal_eq_iff, decide_false, decide_true,
+    Bool.false_eq_true, ↓reduceIte]
+  -- `false`: the loop ends
+  · wp_auto
+    iapply HΦ
+    iexists _
+    iframe
+  -- `true`: one more element
+  · wp_auto
+    wp_apply wp_ChooseString as %str -
     wp_apply wp_slice_literal (V := GoString) [str]
     isplitr
     · ipureintro; rfl
@@ -50,10 +58,6 @@ theorem internal.gomodel.ChooseStrings.wp_proof
     wp_for_post
     iframe
     iexists _, _
-    iframe
-  · wp_auto
-    iapply HΦ
-    iexists _
     iframe
 
 end proof

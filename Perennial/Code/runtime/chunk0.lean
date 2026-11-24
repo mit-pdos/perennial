@@ -5,6 +5,7 @@ public import Perennial.Code.internal.runtime.sys
 public import Perennial.Code.internal.runtime.atomic
 public import Perennial.Code.internal.gomodel
 public import Perennial.Golang.Defn
+public import Perennial.TrustedCode.runtime
 
 @[expose] public section
 
@@ -10533,6 +10534,9 @@ noncomputable def vgetrandom [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def writeErr [GooseExts] [GoGlobalContext] : GoString :=
   go!"runtime.writeErr"
 
+noncomputable def callersModel [GooseExts] [GoGlobalContext] : GoString :=
+  go!"runtime.callersModel"
+
 /-- Callers fills the slice pc with the return program counters of function invocations
     on the calling goroutine's stack. The argument skip is the number of stack frames
     to skip before recording in pc, with 0 identifying the frame for Callers itself and
@@ -10712,7 +10716,8 @@ noncomputable def Frames.Next.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uintptr)))) (Pair (App (Val (GoInstruction (StructFieldRef Frames.ty go!"callers"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Frames.ty)))) (Var "ci"))) (Var "$r0"))))))))
   (Pair (App (Val (GoInstruction (GoLoad Frame.ty))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res1"))))))))))
 
-/-- MODEL: callers(skip, pcbuf), which Callers calls: Go walks the calling
+/-- MODEL: callersModel(skip, pcbuf) is the model of callers(skip, pcbuf), which
+    Callers calls: Go walks the calling
     goroutine's stack (getg, sys.GetCallerPC/GetCallerSP, compiler intrinsics
     with no Go body, and the unwinder over the binary's tables) and writes the
     return program counters of the frames after the first skip into pcbuf[0],
@@ -10724,10 +10729,12 @@ noncomputable def Frames.Next.impl [GooseExts] [GoGlobalContext] : val :=
     < len(pcbuf) when the stack is shallower, 0 when skip is past it,
     len(pcbuf) when the buffer is too short: goose/model/runtime/callers_test.go).
     It writes the cells one at a time, as Go does, so a concurrent access to
-    pcbuf races in the model as in Go.
+    pcbuf races in the model as in Go. (Not a replacement of callers: under gc,
+    gomodel.Choose is false, so this body writes nothing, and the testing
+    package panics when callers finds no frame.)
 
-    go: traceback.go:21:6 -/
-noncomputable def callers.impl [GooseExts] [GoGlobalContext] : val :=
+    go: traceback.go:26:6 -/
+noncomputable def callersModel.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "skip"
   (Lam "pcbuf"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))

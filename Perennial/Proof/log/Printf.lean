@@ -56,7 +56,6 @@ theorem log.Printf.wp_proof
       iintro Hs
       iapply HΦ' $$ Hs
       itrivial
-    wp_auto
     iapply HΦ
     iexact Hsl
 

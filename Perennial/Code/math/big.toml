@@ -1,10 +1,5 @@
 translate = [
   "NewInt", "Int.Int64", "low64",
-  # crypto/rand.Int's calls (translated there), over the Go model of the vector primitives (below)
-  "Int.Sign", "Int.SetUint64", "Int.Sub", "Int.BitLen", "Int.SetBytes", "Int.Cmp",
-  "nat.make", "nat.norm", "nat.set", "nat.setWord", "nat.setUint64", "nat.add", "nat.sub",
-  "nat.cmp", "nat.bitLen", "nat.setBytes", "bigEndianWord", "addVW", "subVW", "addVV_g", "subVV_g",
-  "_W", "_S", "_B", "_M",
 
   # the package variables, all but `hasADX`; `_` is the interface assertions
   # `var _ fmt.Formatter = intOne`, ...
@@ -13,7 +8,7 @@ translate = [
   "divRecursiveThreshold", "karatsubaThreshold", "basicSqrThreshold",
   "karatsubaSqrThreshold", "_",
 ]
-imports = ["!*", "errors", "fmt", "math/bits", "internal/byteorder"]
+imports = ["!*", "errors", "fmt"]
 
 
 # translate the definitions of all type declarations goose supports
@@ -25,13 +20,3 @@ reason = """
 `cpu.X86.HasADX && cpu.X86.HasBMI2` (arith_amd64.go): reads two booleans of `internal/cpu`,
 which the runtime sets before any package is initialized; cannot panic, no effect beyond the
 variable. Read only by the assembly of `addMulVVWW` (arith_amd64.s), which is not translated."""
-
-# The Go model (goose/model/overlay/math/big): the six vector primitives that are assembly on amd64
-# (`addVV`, `subVV`, `lshVU`, `rshVU`, `mulAddVWW`, `addMulVVWW`, body-less in arith_decl.go) are
-# Go's own pure-Go build of them (arith_decl_pure.go, verbatim: a call of the generic function of
-# arith.go). arith_amd64.s defines exactly these six, and the overlay blanks it. Difftest: math/big's
-# own tests under the overlay (etc/model-tests.sh).
-[model]
-dir = "goose/model/overlay/math/big"
-replaces = ["addVV", "subVV", "lshVU", "rshVU", "mulAddVWW", "addMulVVWW"]
-blank_asm = ["arith_amd64.s"]

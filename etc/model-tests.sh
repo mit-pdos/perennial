@@ -21,12 +21,19 @@
 #   errors   TestIs                   its uncomparable target (#13): Is's model
 #                                     compares it, which panics in gc (and is
 #                                     stuck in GooseLang)
-# internal/stringslite has no tests; bytes, internal/bytealg and math/big run in full.
-# runtime, os, syscall, log, internal/synctest, crypto/internal/rand: built only, not tested. Their
-# models are choices (gomodel.Choose/ChooseUint64/ChooseString), whose Go bodies take one value
-# (false, 0, ""): os.Args is empty, runtime.Callers writes nothing, log prints nothing, the random
-# bytes are zero (so crypto/rand's tests, which check randomness, fail by design), and Gosched does
-# not yield; internal/synctest.Run blocks (gomodel.Stuck).
+# internal/stringslite has no tests; bytes and internal/bytealg run in full.
+# runtime, syscall, log: models that are choices (gomodel.Choose/ChooseUint64/ChooseString),
+# whose Go bodies take one value (false, 0, ""): Frames.Next's frames are empty (no function,
+# file or line), Gosched does not yield, log.Printf/Println print nothing, and prlimit1 neither
+# reads nor sets a limit. Run with their overlay (every package above runs with runtime's too):
+#   syscall  TestPrlimitFileLimit     prlimit1's model leaves the limit unchanged
+#   log      TestAll                  Printf/Println's model prints nothing
+#            TestCallDepth, ExampleLogger, ExampleLogger_Output
+#                                     the file and line of Lshortfile come from
+#                                     Frames.Next's model (empty)
+#   os, sort, runtime/debug           in full
+# runtime's own tests are not run. (os.runtime_args, syscall.runtime_envs, runtime.callers and
+# internal/synctest are not models: trusted, with the runtime's real bodies under gc.)
 #
 # usage: etc/model-tests.sh
 set -euo pipefail
@@ -36,15 +43,18 @@ trap 'rm -rf "$OUT"' EXIT
 cd "$ROOT/goose"
 go build -o "$OUT/goose" ./cmd/goose
 "$OUT/goose" model-overlay -configdir "$ROOT/Perennial/Code" -dir . -tags purego -o "$OUT/ov" \
-  strings bytes errors internal/stringslite internal/bytealg math/big
-# the choice models, in an overlay of their own (os's model would empty the tests' os.Args)
+  strings bytes errors internal/stringslite internal/bytealg
+# the choice models, in an overlay of their own
 "$OUT/goose" model-overlay -configdir "$ROOT/Perennial/Code" -dir . -tags purego -o "$OUT/ovc" \
-  runtime os syscall log internal/synctest crypto/internal/rand crypto/rand
+  runtime syscall log
 # go vet does not find the overlay-added internal/gomodel (it changes into the package's directory)
 run() { go test -vet=off -timeout 300s -overlay "$OUT/ov/overlay.json" -tags purego,goose "$@"; }
 run strings -skip '^(TestSplit|ExampleSplit|TestBuilderGrow|TestBuilderAllocs|TestBuilderGrowSizeclasses|TestReplace|TestBuilderCopyPanic)$'
 run errors -skip '^TestIs$'
-run bytes internal/stringslite internal/bytealg math/big
-go build -overlay "$OUT/ovc/overlay.json" -tags purego,goose \
-  runtime os syscall log internal/synctest crypto/internal/rand crypto/rand
+run bytes internal/stringslite internal/bytealg
+runc() { go test -vet=off -timeout 300s -overlay "$OUT/ovc/overlay.json" -tags purego,goose "$@"; }
+runc syscall -skip '^TestPrlimitFileLimit$'
+runc log -skip '^(TestAll|TestCallDepth|ExampleLogger|ExampleLogger_Output)$'
+runc os sort runtime/debug
+go build -overlay "$OUT/ovc/overlay.json" -tags purego,goose runtime internal/synctest
 echo "model-tests: ok"
