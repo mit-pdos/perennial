@@ -12,6 +12,7 @@ module
 
 public import Perennial.Proof.ProofPrelude
 public import Perennial.GeneratedProof.internal.sync
+public import Perennial.Proof.internal.gomodel.Base
 public import Perennial.Golang.Theory.Lock
 public import Perennial.Spec.sync.atomic.CompareAndSwapInt32
 
@@ -66,12 +67,25 @@ def ownLockDef (m : Loc) : IProp GF :=
 @[irreducible] def ownLock (m : Loc) : IProp GF := ownLockDef m
 theorem ownLock_unseal : @ownLock = @ownLockDef := by funext; with_unfolding_all rfl
 
+/-- Two fractions of a `w32` cell sum to at most `1` (through the cell's first byte). -/
+theorem typedPointsto_w32_frac_valid (l : Loc) (v1 v2 : w32) (q1 q2 : Qp) :
+    ⊢ typedPointsto (GF := GF) l v1 (DFrac.own q1) -∗ typedPointsto (GF := GF) l v2 (DFrac.own q2) -∗
+      ⌜✓ (DFrac.own q1 • DFrac.own q2)⌝ := by
+  rw [typedPointsto_unseal]; unfold typedPointstoWrap
+  rw [typedPointstoDef_w32, typedPointstoDef_w32,
+    show natBytes 4 v1.toNat = BitVec.ofNat 8 v1.toNat :: natBytes 3 (v1.toNat / 256) from rfl,
+    show natBytes 4 v2.toNat = BitVec.ofNat 8 v2.toNat :: natBytes 3 (v2.toNat / 256) from rfl]
+  simp only [bytesPointsto]
+  iintro ⟨⟨H1, _⟩, _⟩ ⟨⟨H2, _⟩, _⟩
+  icombine H1 H2 gives % ⟨Hv, _⟩
+  ipureintro; exact Hv
+
 theorem ownLock_exclusive (m : Loc) : ⊢ ownLock (GF := GF) m -∗ ownLock m -∗ False := by
   rw [ownLock_unseal]; unfold ownLockDef
   iintro H1 H2
-  icombine H1 H2 gives %Hv
+  icases typedPointsto_w32_frac_valid _ _ _ _ _ $$ H1 H2 with %Hbad
   exfalso
-  have : (3 / 4 + 3 / 4 : Rat) ≤ 1 := Hv.1
+  have : (3 / 4 + 3 / 4 : Rat) ≤ 1 := Hbad
   grind
 
 instance isLock_ne (m : Loc) : NonExpansive (isLock (GF := GF) m) where
@@ -97,13 +111,14 @@ theorem init_lock (R : IProp GF) (E : CoPset) (m : Loc) :
   iintro Hm HR
   iStructNamed Hm
   rw [isLock_unseal]; unfold isLockDef
+  rw [show (zero_val internal.sync.Mutex).state' = W32 0 from rfl]
   icases (typedPointsto_quarter_three_quarter _ _).1 $$ state with ⟨Hl1, Hl2⟩
   imod inv_alloc nroot E (lockInv (structFieldRef internal.sync.Mutex go!"state" m) R)
     $$ [Hl1 Hl2 HR] with #Hinv
   · inext
     unfold lockInv
-    iexists _
-    simp only [zero_val_eq, ↓reduceIte]
+    iexists (W32 0)
+    rw [if_pos rfl]
     iframe
   imodintro
   iframe Hinv
@@ -139,6 +154,7 @@ theorem wp_lock_acquire
     isplitr
     · ipureintro; rfl
     iintro Hs
+    rw [if_pos rfl]
     icases (typedPointsto_quarter_three_quarter _ (W32 1)).1 $$ Hs with ⟨Hl1, Hl2⟩
     imod Hmask with _
     imod Hclose $$ [Hl1] with _
@@ -158,10 +174,10 @@ theorem wp_lock_acquire
     iintro Hs
     imod Hmask with _
     imod Hclose $$ [Hs Hrest] with _
-    · inext; iexists v; iframe
+    · inext; iexists v; simp only [hv, ↓reduceIte]; iframe
     imodintro
     iapply HΦ
-    simp only [hv, decide_false, Bool.false_eq_true, ↓reduceIte]
+    simp only [decide_false, Bool.false_eq_true, ↓reduceIte]
     itrivial
 
 end lock

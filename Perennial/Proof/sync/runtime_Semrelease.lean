@@ -37,6 +37,7 @@ theorem sync.runtime_Semrelease.wp_proof
   imod HΦ with ⟨%v1, Hv2, HΦ⟩
   icombine Hv Hv2 gives % ⟨_, Heq⟩
   subst Heq
+  imodintro
   inext
   iexists v
   iframe Hs

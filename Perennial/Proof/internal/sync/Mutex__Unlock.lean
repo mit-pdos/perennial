@@ -34,7 +34,7 @@ theorem internal.sync.Mutex.Unlock.wp_proof
   iinv Hinv with Hi Hclose
   icases Hi with ⟨%v, >Hs, Hrest⟩
   icombine Hs Hown gives %Heq
-  obtain ⟨_, rfl⟩ := Heq
+  subst Heq
   ihave Hfull := (typedPointsto_quarter_three_quarter _ (W32 1)).2 $$ [Hs Hown]
   · iframe
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -45,7 +45,7 @@ theorem internal.sync.Mutex.Unlock.wp_proof
   isplitr
   · ipureintro; rfl
   iintro Hs
-  simp only [↓reduceIte]
+  rw [if_pos rfl]
   icases (typedPointsto_quarter_three_quarter _ (W32 0)).1 $$ Hs with ⟨Hl1, Hl2⟩
   imod Hmask with _
   imod Hclose $$ [Hl1 Hl2 HR] with _

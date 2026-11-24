@@ -56,16 +56,11 @@ theorem sync.poolModelOf.wp_proof
   imodintro
   wp_auto
   wp_if_destruct
-  · -- `local` holds a pool state: return it
-    icases Hs with (%h | #Hs)
-    · exact absurd h ‹_›
-    wp_apply wp_poolModelAt as _
-    wp_auto
-    wp_for_post
-    iapply HΦ
-    iexact Hs
-  · -- `local` is `nil`: try to install a new, empty pool state
-    imod sync.init_poolModel _ P ⊤ $$ [$] with #Hnew
+  · -- `local` is `nil` (`s` is `null`): try to install a new, empty pool state
+    iclear Hs
+    wp_alloc new_ptr as Hnew
+    imod sync.init_poolModel new_ptr P ⊤ $$ Hnew with #Hnew
+    wp_pures
     wp_apply_core wp_CompareAndSwapPointer $$ [] [-]
     · iPkgInit
     iinv Hinv with Hi Hclose
@@ -88,13 +83,20 @@ theorem sync.poolModelOf.wp_proof
       wp_auto
       wp_for_post
       iframe
-    · simp only [hs', ↓reduceIte, decide_false]
+    · simp only [if_neg hs', decide_eq_false hs']
       imod Hclose $$ [Hlocal Hs'] with _
       · inext; iexists s'; iframe
       imodintro
       wp_auto
       wp_for_post
       iframe
+  · -- `local` holds a pool state: return it
+    icases Hs with (%h | #Hs)
+    · exact absurd h Hif
+    wp_apply wp_poolModelAt
+    wp_for_post
+    iapply HΦ
+    iexact Hs
 
 end proof
 

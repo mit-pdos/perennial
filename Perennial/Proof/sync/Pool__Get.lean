@@ -38,10 +38,10 @@ theorem sync.Pool.Get.wp_proof
     sync.Pool.Get.spec (GF := GF) (hG := hG) := by
   intro p f R P
   wp_start as ⟨#His, HR⟩
+  wp_auto
   wp_apply wp_poolModelOf p f R P $$ [$His] as %s #Hs
   simp only [sync.isPool_unseal, sync.isPoolDef, sync.isPoolModel_unseal, sync.isPoolModelDef]
   iNamed His
-  wp_auto
   wp_apply wp_Mutex_Lock $$ [$Hs] as ⟨Hlocked, Hi⟩
   unfold sync.poolInv
   iNamed Hi
@@ -49,13 +49,29 @@ theorem sync.Pool.Get.wp_proof
   ihave %Hcapwf := ownSliceCap_wf _ _ $$ Hcap
   wp_auto
   wp_if_destruct
+  · -- the pool is empty
+    wp_apply wp_Mutex_Unlock $$ [$Hs $Hlocked items Hsl Hcap HP]
+    · iexists sl, xs; iframe
+    by_cases hf : f = func.nil
+    · rw [decide_eq_true hf]
+      wp_auto
+      iapply HΦ
+      iframe
+      iright; ipureintro; exact ⟨hf, rfl⟩
+    · rw [decide_eq_false hf]
+      unfold sync.newSpec
+      icases HNew with (%h | #HNew)
+      · exact absurd h hf
+      wp_auto
+      wp_apply HNew $$ [$HR] as %y ⟨Hy, HR⟩
+      iapply HΦ
+      iframe
   · have hlen0 : ¬ sl.len = W64 0 := ‹_›
     wp_apply wp_Choose as %b _
-    wp_auto
-    wp_if_destruct
+    cases b
     · -- take an element
-      wp_apply wp_ChooseUint64 as %j _
       wp_auto
+      wp_apply wp_ChooseUint64 as %j _
       rw [ite_eq_right (show ¬ uint.Z sl.len = 0 by word)]
       have hn : 0 < xs.length := by word
       have hmod : uint.Z (j % sl.len) < uint.Z sl.len := by
@@ -123,13 +139,12 @@ theorem sync.Pool.Get.wp_proof
           · exact absurd h hf
           wp_auto
           wp_apply HNew $$ [$HR] as %y ⟨Hy, HR⟩
-          wp_auto
           iapply HΦ
           iframe
     · -- `Choose` ignores the pool
+      wp_auto
       wp_apply wp_Mutex_Unlock $$ [$Hs $Hlocked items Hsl Hcap HP]
       · iexists sl, xs; iframe
-      wp_auto
       by_cases hf : f = func.nil
       · rw [decide_eq_true hf]
         wp_auto
@@ -142,29 +157,8 @@ theorem sync.Pool.Get.wp_proof
         · exact absurd h hf
         wp_auto
         wp_apply HNew $$ [$HR] as %y ⟨Hy, HR⟩
-        wp_auto
         iapply HΦ
         iframe
-
-  · -- the pool is empty
-    wp_apply wp_Mutex_Unlock $$ [$Hs $Hlocked items Hsl Hcap HP]
-    · iexists sl, xs; iframe
-    wp_auto
-    by_cases hf : f = func.nil
-    · rw [decide_eq_true hf]
-      wp_auto
-      iapply HΦ
-      iframe
-      iright; ipureintro; exact ⟨hf, rfl⟩
-    · rw [decide_eq_false hf]
-      unfold sync.newSpec
-      icases HNew with (%h | #HNew)
-      · exact absurd h hf
-      wp_auto
-      wp_apply HNew $$ [$HR] as %y ⟨Hy, HR⟩
-      wp_auto
-      iapply HΦ
-      iframe
 
 end proof
 

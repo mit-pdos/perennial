@@ -29,8 +29,17 @@ theorem sync.runtime_SemacquireRWMutex.wp_proof
   intro sema γ N lifo skipframes
   wp_start as #Hsem
   wp_auto
-  wp_apply_core wp_runtime_Semacquire sema γ N $$ [] HΦ
-  iframe #
+  wp_apply_core wp_runtime_Semacquire sema γ N $$ [] [-]
+  · iframe #
+  imod HΦ with ⟨%v, Hv, HΦ⟩
+  imodintro
+  iexists v
+  iframe Hv
+  iintro %Hpos Hv
+  imod HΦ $$ %Hpos Hv with HΦ
+  imodintro
+  wp_auto
+  iexact HΦ
 
 end proof
 

@@ -26,6 +26,7 @@ theorem sync.runtime_notifyListNotifyOne.wp_proof :
     sync.runtime_notifyListNotifyOne.spec (GF := GF) (hG := hG) := by
   intro l l_v dq
   wp_start as Hl
+  wp_auto
   wp_end
 
 end proof

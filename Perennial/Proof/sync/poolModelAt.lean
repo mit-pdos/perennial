@@ -26,7 +26,6 @@ theorem sync.poolModelAt.wp_proof :
     sync.poolModelAt.spec (GF := GF) (hG := hG) := by
   intro l
   wp_start as _
-  wp_auto
   iapply HΦ
   itrivial
 

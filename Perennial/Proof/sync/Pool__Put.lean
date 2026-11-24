@@ -44,11 +44,12 @@ theorem sync.Pool.Put.wp_proof
     wp_auto
     wp_apply wp_poolModelOf p f R P $$ [$His] as %s #Hs
     simp only [sync.isPoolModel_unseal, sync.isPoolModelDef]
-    wp_auto
     wp_apply wp_Choose as %b _
-    wp_auto
     wp_if_destruct
-    · iapply HΦ
+    -- the first case is `Choose` returning `false` (keep `x`)
+    rotate_left
+    · -- `Choose` returned `true`: drop `x`
+      iapply HΦ
       itrivial
     wp_apply wp_Mutex_Lock $$ [$Hs] as ⟨Hlocked, Hi⟩
     unfold sync.poolInv

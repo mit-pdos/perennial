@@ -27,17 +27,21 @@ theorem internal.sync.Mutex.Lock.wp_proof
   simp only [internal.sync.mutexLocked]
   wp_auto
   wp_for
-  wp_auto
   wp_apply_core wp_lock_acquire wp_CompareAndSwapInt32 m R $$ [] His
   · iPkgInit
   iintro %b Hb
   cases b
-  · wp_auto
-    wp_for_post
-    iframe
-  · simp only [↓reduceIte]
+  · -- the compare-and-swap failed: try again
+    wp_auto
+    cleanup_bool_decide
     wp_auto
     wp_for_post
+    iframe
+  · -- it took the lock
+    simp only [↓reduceIte]
+    wp_auto
+    cleanup_bool_decide
+    wp_auto
     iapply HΦ
     iexact Hb
 
