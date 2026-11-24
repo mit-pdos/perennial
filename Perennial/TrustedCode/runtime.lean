@@ -63,23 +63,26 @@ writes the return program counters of the frames after the first `skip` into `pc
 past `len(pcbuf)`, and a `skip` past the stack's depth, or negative, writes fewer entries or the
 whole buffer.
 
-**A stack has fewer than `2^39` frames**, and the model reports at most `2^40 - 1`, so `callers`
-returns `n < len(pcbuf)` once `len(pcbuf) ≥ 2^40` (a caller that grows its buffer until it is not filled, as zap's
-`stacktrace.Capture` does, stops). The frames it reports are the physical frames of the
+**A stack has fewer than `2^39` frames**, and the model reports at most `2^40 - 1`, so
+`callers` returns `n < len(pcbuf)` once `len(pcbuf) ≥ 2^40` (a caller that grows its buffer
+until it is not filled, as zap's `stacktrace.Capture` does, stops; `README.md`, "Model
+assumption (stack depth)"). The frames it reports are the physical frames of the
 goroutine's stack, each expanded into the calls inlined into it:
 - a goroutine's stack is at most `maxstackceiling = 2 * maxstacksize = 2_000_000_000` bytes on
   64-bit (`runtime/proc.go`, `main`; `newstack` throws "stack overflow" past it,
   `runtime/stack.go`), whatever `debug.SetMaxStack` later sets: `setMaxStack` changes
   `maxstacksize` only, never the ceiling. Each physical frame holds at least its 8-byte return
-  address, so there are fewer than `2^28` of them;
+  address, so there are at most `250_000_000` of them;
 - the calls inlined into one physical frame are nested at most as deep as the inliner's budget
   allows: a function is inlined only if its cost is within the budget, and its cost counts the
   call node and the cost of every call inlined into it, so each level of nesting costs at least
-  one node. The budget is at most `inlineHotMaxBudget = 2000` with the compiler's default flags
-  (`cmd/compile/internal/inline/inl.go`: the PGO hot-call budget, 80 otherwise; only
-  `-gcflags=-d=pgoinlinebudget=N` raises it), so a physical frame expands into at most
-  `2001 < 2^11` frames.
-That is fewer than `2^39` frames. (Exceeding the stack limit is a fatal error, not a longer result:
+  one node. With the compiler's default flags and experiments the largest budget is
+  `inlineHotMaxBudget + BudgetExpansion = 2000 + 80` (`cmd/compile/internal/inline/inl.go`,
+  `inlineBudget`: the PGO hot-call budget; 80 otherwise, 800 for a closure called once, 16 x 80
+  with SIMD values), so a physical frame expands into at most `2081` frames. (Only debug flags
+  raise it: `-gcflags=-d=pgoinlinebudget=N`, `-d=inlbudgetslack=N`, or `GOEXPERIMENT=newinliner`,
+  whose call-site scores replace costs.)
+That is fewer than `250_000_000 * 2081 < 2^39` frames. (Exceeding the stack limit is a fatal error, not a longer result:
 `goose/model/runtime/callers_test.go`'s `TestStackLimitFatal`.)
 
 The model is goose's translation of
