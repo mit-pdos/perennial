@@ -27,7 +27,7 @@ theorem fmt.pp.fmtString.wp_proof (wp_fmtS : fmt.fmt.fmtS.spec (GF := GF) (hG :=
     (wp_fmtSx : fmt.fmt.fmtSx.spec (GF := GF) (hG := hG))
     (wp_fmtQ : fmt.fmt.fmtQ.spec (GF := GF) (hG := hG)) :
     fmt.pp.fmtString.spec (GF := GF) (hG := hG) :=
-    fun p x bs wid prec v verb hverb hshort hq => by
+    fun p x bs wid prec v verb hverb hshort => by
   rcases hverb with rfl | rfl | rfl | rfl
   all_goals
     wp_start as Hp
@@ -64,7 +64,7 @@ theorem fmt.pp.fmtString.wp_proof (wp_fmtS : fmt.fmt.fmtS.spec (GF := GF) (hG :=
     · ipureintro; right; simp
     unfold fmtOwn
     iframe
-  · wp_apply wp_fmtQ _ (p.[pp, go!"buf"]) noFlags wid prec bs v rfl rfl rfl (Or.inl rfl) (hq rfl)
+  · wp_apply wp_fmtQ _ (p.[pp, go!"buf"]) noFlags wid prec bs v rfl rfl rfl (Or.inl rfl)
       $$ [Hfb Hff Hfw Hfp Hib Hb] as ⟨%o, Hf, Hib, Hb⟩
     · unfold fmtOwn; iframe
     iapply HΦ

@@ -26,7 +26,7 @@ theorem fmt.pp.handleMethods.wp_proof
     (wp_fmtString : fmt.pp.fmtString.spec (GF := GF) (hG := hG))
     (wp_catchPanic : fmt.pp.catchPanic'deferred.spec (GF := GF) (hG := hG)) :
     fmt.pp.handleMethods.spec (GF := GF) (hG := hG) :=
-    fun p x ii m P bs wid prec verb hx hm hverb hlen hqlen => by
+    fun p x ii m P bs wid prec verb hx hm hverb hlen => by
   subst hx
   obtain ⟨hsw, hF, hm⟩ := hm
   wp_start as ⟨Hp, #Hm⟩
@@ -34,8 +34,8 @@ theorem fmt.pp.handleMethods.wp_proof
   icases Hp with ⟨Hbuf, Hfmt, Hib, Harg, Hval, Hreo, Hgood, Hpan, Herr, Hwrap, Hwe⟩
   iunfold fmtOwn at Hfmt
   icases Hfmt with ⟨Hfbuf, Hflags, Hwid, Hprec⟩
-  have hfs := fun s (hs : verb = verb_x → s.length < 2 ^ 62) (hq : verb = verb_q → s.length ≤ maxAddr) =>
-    wp_fmtString p (GoInterface.ok ii) bs wid prec s verb hverb hs hq
+  have hfs := fun s (hs : verb = verb_x → s.length < 2 ^ 62) =>
+    wp_fmtString p (GoInterface.ok ii) bs wid prec s verb hverb hs
   iunfold methodSpec at Hm
   rcases hverb with rfl | rfl | rfl | rfl <;>
   rcases hm with ⟨rfl, hE⟩ | ⟨rfl, hE, hS⟩ <;>
@@ -56,7 +56,7 @@ theorem fmt.pp.handleMethods.wp_proof
     inext
     iintro %s %Hs
     wp_auto
-    wp_apply (hfs s (fun hv => hlen hv s Hs) (fun hv => hqlen hv s Hs)) $$
+    wp_apply (hfs s (fun hv => hlen hv s Hs)) $$
       [Hbuf Hfbuf Hflags Hwid Hprec Hib Harg Hval Hreo Hgood Hpan Herr Hwrap Hwe] as ⟨%o, %Ho, Hp⟩
     · iunfold isPrinterA; iunfold fmtOwn; iframe
     wp_apply wp_catchPanic $$ [$pnc] as pnc

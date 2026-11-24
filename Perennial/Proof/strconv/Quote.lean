@@ -24,10 +24,10 @@ variable [package_sem : strconv.Assumptions]
 theorem strconv.Quote.wp_proof
     (wp_quoteWith : strconv.quoteWith.spec (GF := GF) (hG := hG)) :
     strconv.Quote.spec (GF := GF) (hG := hG) := by
-  intro s Hs
+  intro s
   wp_start
   wp_auto
-  wp_apply wp_quoteWith _ _ _ Hs as %q -
+  wp_apply wp_quoteWith _ _ _ as %q -
   iapply HΦ
   itrivial
 

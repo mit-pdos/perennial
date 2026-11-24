@@ -77,7 +77,7 @@ theorem fmt.fmt.fmtQ.wp_proof
     (wp_pad : fmt.fmt.pad.spec (GF := GF) (hG := hG))
     (wp_AppendQuote : strconv.AppendQuote.spec (GF := GF) (hG := hG)) :
     fmt.fmt.fmtQ.spec (GF := GF) (hG := hG) :=
-    fun f b F wid prec bs s hsharp hplus hprecP hwid hs => by
+    fun f b F wid prec bs s hsharp hplus hprecP hwid => by
   obtain ⟨wP, pP, mi, pl, sh, sp, ze, pV, sV⟩ := F
   simp only at hsharp hplus hprecP hwid ⊢
   subst hsharp hplus hprecP
@@ -94,7 +94,7 @@ theorem fmt.fmt.fmtQ.wp_proof
     show W64 68 - W64 0 = W64 68 from rfl]
   icases fmt.fmtQ.array_to_slice0 _ $$ [Hib] with ⟨Hsl, Hcap⟩
   · iexists ib; iexact Hib
-  wp_apply wp_AppendQuote _ _ s hs $$ [$Hsl $Hcap] as %sl' ⟨%q, Hsl', Hcap', Hundo⟩
+  wp_apply wp_AppendQuote _ _ s $$ [$Hsl $Hcap] as %sl' ⟨%q, Hsl', Hcap', Hundo⟩
   wp_apply wp_pad f b (fmt.fmtFlags.mk wP false mi false false sp ze pV sV) wid prec bs sl' _
     (DFrac.own 1) (hwid.elim Or.inl (fun h => Or.inr (Or.inl h)))
     $$ [Hbufp Hflags Hwid Hprec Hbuf Hsl'] as ⟨Hown, Hbuf, Hsl'⟩

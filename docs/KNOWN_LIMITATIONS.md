@@ -17,7 +17,8 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
 - **The model assumes gc on linux/amd64 (trusted assumption).** Every allocation lies in
   `(0, maxAddr]`, `maxAddr = 2^47` (`IsFresh`/`IsFreshBytes`, `GooseLang/Lang.lean`), which
   holds for gc's user address space on linux/amd64, and proofs use it to rule out address
-  overflow (`unsafe.Slice`'s length check, `unsafe.Add`'s range). It is false on:
+  overflow (`unsafe.Slice`'s length check, `unsafe.Add`'s range) and to bound a string's
+  length ("Allocation"). It is false on:
   - aix/ppc64: gc's heap hints lie above `0xa0<<52`.
   - linux/arm64 PIE and android: globals and `zerobase` load near `0xaaaa_xxxx_xxxx`.
   - s390x: the user address space (`TASK_SIZE`) is 2^64.
@@ -208,6 +209,21 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   valid; a length of `2^63` or more is not a Go type, and reaches `AngelicExit`). A size
   check needs the layout table, which R1 of `docs/design/unsafe-memory.md` adds for plain
   types only.
+- **Strings are no longer than the address space (trusted assumption).** `len(s)` of a
+  string longer than `maxAddr` bytes is an `AngelicExit` (`internal_string_len_step`,
+  `Golang/Defn/String.lean`). The Go spec bounds a string's length only by `int`. On gc
+  linux/amd64 no string goose translates is longer: its bytes are in memory, gc's arena
+  hints all lie below `maxAddr` (`runtime/malloc.go`), and the kernel's default mmap window
+  is 47 bits, so `strings.Repeat("a", 1<<47+1)` and `string(make([]byte, 1<<47+1))` end with
+  a fatal `runtime: out of memory: cannot allocate 140737492549632-byte block` whatever the
+  RAM, and `strings.Repeat("a", 1<<48+1)` panics with `makeslice: len out of range`. The
+  exception is `unsafe.String`: `unsafe.String(&b[0], 1<<50)` runs in gc and has length
+  `2^50`. Goose refuses `unsafe.String`/`unsafe.StringData` today; a future rule for them
+  (`docs/design/unsafe-memory.md`) must check the backing allocation, or this exit hides a
+  real execution. The model's string `+` is unbounded (a doubling loop that gc ends with a
+  fatal out of memory runs on in the model), so such a run reaches this exit at its next
+  `len`. A heap byte slice gets the same bound from allocation (`IsFresh`), not from an exit.
+  Approved by Upamanyu on 2026-11-24 (`.agents/skills/fix-semantics/examples.md`, Case 51).
 - **Out of memory is outside the model.** The heap is bounded: every allocation lies in
   `(0, maxAddr]`, `maxAddr = 2^47` (`GooseLang/Lang.lean`; valid only for gc on
   linux/amd64, "Platform" above). When no free range is left, an allocation steps to itself forever

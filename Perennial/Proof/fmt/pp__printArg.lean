@@ -210,22 +210,15 @@ theorem fmt.pp.printArg.wp_proof_of_complex
     · simp [Mod.Ok, PrecOk] at hok
     simp only [Mod.flags, Mod.wid, Mod.precW, Mod.Ok, Mod.Out, DirOk] at hok ⊢
     have hverb : verb = verb_s ∨ verb = verb_v ∨ verb = verb_x ∨ verb = verb_q := by
-      rcases hok with h | h | ⟨h, _⟩ | ⟨h, _⟩ <;> simp [h]
+      rcases hok with h | h | ⟨h, _⟩ | h <;> simp [h]
     have hlen : verb = verb_x → t.length < 2 ^ 62 := by
       rintro rfl
-      rcases hok with h | h | ⟨_, hl⟩ | ⟨h, _⟩
+      rcases hok with h | h | ⟨_, hl⟩ | h
       · exact absurd h (by decide)
       · exact absurd h (by decide)
       · exact hl
       · exact absurd h (by decide)
-    have hq : verb = verb_q → t.length ≤ maxAddr := by
-      rintro rfl
-      rcases hok with h | h | ⟨h, _⟩ | ⟨_, hl⟩
-      · exact absurd h (by decide)
-      · exact absurd h (by decide)
-      · exact absurd h (by decide)
-      · exact hl
-    have hfs := wp_fmtString p arg bs (dirWid none) (W64 0) t verb hverb hlen hq
+    have hfs := wp_fmtString p arg bs (dirWid none) (W64 0) t verb hverb hlen
     have hverb' := hverb
     rcases hverb with rfl | rfl | rfl | rfl <;>
     · first
@@ -308,23 +301,16 @@ theorem fmt.pp.printArg.wp_proof_of_complex
     · simp [Mod.Ok, PrecOk] at hok
     simp only [Mod.flags, Mod.wid, Mod.precW, Mod.Ok, Mod.Out, DirOk] at hok ⊢
     have hverb : verb = verb_s ∨ verb = verb_v ∨ verb = verb_x ∨ verb = verb_q := by
-      rcases hok with h | h | ⟨h, _⟩ | ⟨h, _⟩ <;> simp [h]
+      rcases hok with h | h | ⟨h, _⟩ | h <;> simp [h]
     have hlen : verb = verb_x → ∀ s, P s → s.length < 2 ^ 62 := by
       rintro rfl
-      rcases hok with h | h | ⟨_, hl⟩ | ⟨h, _⟩
+      rcases hok with h | h | ⟨_, hl⟩ | h
       · exact absurd h (by decide)
       · exact absurd h (by decide)
       · exact hl
       · exact absurd h (by decide)
-    have hq : verb = verb_q → ∀ s, P s → s.length ≤ maxAddr := by
-      rintro rfl
-      rcases hok with h | h | ⟨h, _⟩ | ⟨_, hl⟩
-      · exact absurd h (by decide)
-      · exact absurd h (by decide)
-      · exact absurd h (by decide)
-      · exact hl
     have hhm := fun ii m hx hm =>
-      wp_handleMethods p arg ii m P bs (dirWid none) (W64 0) verb hx hm hverb hlen hq
+      wp_handleMethods p arg ii m P bs (dirWid none) (W64 0) verb hx hm hverb hlen
     have hverb' := hverb
     rcases hverb with rfl | rfl | rfl | rfl <;>
     · first
