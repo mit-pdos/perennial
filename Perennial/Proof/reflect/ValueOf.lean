@@ -25,16 +25,16 @@ theorem reflect.ValueOf.wp_proof
     (wp_unpackEface : reflect.unpackEface.spec (GF := GF) (hG := hG)) :
     reflect.ValueOf.spec (GF := GF) (hG := hG) := by
   refine ⟨?_, ?_, ?_⟩
-  · intro t u hu k v hk ht hd
+  · intro t u hu k n v hk ht hd
     wp_start as #Hinit
     wp_auto
-    wp_apply wp_unpackEface.1 k v hk ht hd
+    wp_apply wp_unpackEface.1 k n v hk ht hd
     iapply HΦ
     itrivial
-  · intro V _ _ t u hu _ k x hk ht h17 h25 hd hi
+  · intro V _ _ t u hu _ k n x hk ht hd hi
     wp_start as #Hinit
     wp_auto
-    wp_apply wp_unpackEface.2 k x hk ht h17 h25 hd hi as %q Hq
+    wp_apply wp_unpackEface.2 k n x hk ht hd hi as %q Hq
     iapply HΦ
     iexact Hq
   · wp_start as #Hinit

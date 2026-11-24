@@ -20,15 +20,15 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : reflect.Assumptions]
 
-/-- `isDirectIface(t)` for the token (or any pointer-any) of a type `T` of a kind `k` other than
-`Array` (17) and `Struct` (25): whether `k` is `Chan`, `Func`, `Map`, `Pointer` or
-`UnsafePointer`. -/
+/-- `isDirectIface(t)` for the token (or any pointer-any) of a type `T`: `directIfaceN n T`, for
+any `n` at which it is defined (for a kind other than `Array` and `Struct`, any `n > 0`:
+`directIfaceN_of_kind`). -/
 abbrev reflect.isDirectIface.spec : Prop :=
-  ∀ {T u : go.GoType} [T ↓u u] (k : Nat) (l : Loc),
-  go.kindOf u = some k → k ≠ 17 → k ≠ 25 →
+  ∀ (n : Nat) (T : go.GoType) (l : Loc) (b : Bool),
+  reflect.directIfaceN n T = some b →
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (@! isDirectIface)) (Val #(interface.mkOk (go.PointerType T) #l)))
-    {{ RET #(decide (k = 18 ∨ k = 19 ∨ k = 21 ∨ k = 22 ∨ k = 26)); True }}
+    {{ RET #b; True }}
 
 end spec
 

@@ -25,15 +25,6 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 
 namespace reflect
 
-/-- A kind is below 32 (it fits the kind bits of a flag). -/
-theorem kindOf_lt {u : go.GoType} [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] {k : Nat}
-    (h : go.kindOf u = some k) : k < 27 := by
-  unfold go.kindOf at h
-  split at h <;> try (cases h; omega)
-  simp only [List.find?] at h
-  repeat (first | (split at h <;> try (cases h; omega)) | (simp at h; omega))
-  all_goals simp_all
-
 /-- The flag bits of a `reflElem`: kind `k`, `flagIndir` and `flagAddr`. -/
 theorem elemFlag_bits (k : Nat) (hk : k < 27) :
     (W64 k ||| W64 128 ||| W64 256) &&& W64 31 = W64 k ∧

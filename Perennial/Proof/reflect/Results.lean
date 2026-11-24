@@ -57,10 +57,27 @@ theorem wp_ValueOf_reflPtr (T : go.GoType) (p : Loc) :
     {{ (w : Value), RET #w; ⌜reflPtr w T p⌝ }} := by
   iintro %Φ #Hinit HΦ
   wp_apply (reflect.wp_ValueOf (GF := GF) (hG := hG)).1 (t := go.PointerType T)
-    (u := go.PointerType T) 22 #p (by simp [go.kindOf]) (pointerType_ne_rtype T) (by omega)
+    (u := go.PointerType T) 22 1 #p (by simp [go.kindOf]) (pointerType_ne_rtype T)
+    (directIfaceN_of_kind (u := go.PointerType T) (k := 22) 0 (by simp [go.kindOf]) (by omega)
+      (by omega))
   iapply HΦ
   ipureintro
   rfl
+
+/-- `ValueOf(any(x))` for a value `x : V` of a struct type `t` that is not direct (for one
+whose last field's type has a kind outside `directKind`, `Array` and `Struct`, such as `int64`:
+`directIfaceN_struct_last`): the indirect `Value` of kind `Struct` holding a new variable `q`
+holding `x`, on which `IsNil` panics (`Value.wp_IsNil_struct_value`). -/
+theorem wp_ValueOf_struct_indirect {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
+    {t : go.GoType} {fs : List go.field_decl} [t ↓u go.StructType fs]
+    [IntoValTyped (GF := GF) V t] (x : V) (n : Nat) (ht : t ≠ rtype.ty)
+    (hd : directIfaceN n t = some false) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
+      (App (Val (@! ValueOf)) (Val #(interface.mkOk t #x)))
+    {{ (q : Loc), RET #(Value.mk (go.tok t) (interface.mkOk (go.PointerType t) #q)
+        (W64 25 ||| W64 128)); q ↦ x }} :=
+  (reflect.wp_ValueOf (GF := GF) (hG := hG)).2.1 (u := go.StructType fs) 25 n x
+    (by simp [go.kindOf]) ht hd (by simp [go.isInterfaceType])
 
 /-- `ValueOf(nil)`: the zero `Value`. -/
 theorem wp_ValueOf_nil :
@@ -329,6 +346,23 @@ theorem Value.wp_IsNil_reflElem_struct (v : Value) (T : go.GoType) (p : Loc)
     rw [show v.flag' = W64 25 ||| W64 128 ||| W64 256 by rw [hv]; rfl]
     exact (elemFlag_bits 25 (by omega)).1
   have h := (reflect.Value.wp_IsNil : reflect.Value.IsNil.spec (GF := GF) (hG := hG)).2.2 v Φ
+    (by rw [hf]; exact isNil_panic_kinds.2.1)
+  rwa [hf] at h
+
+/-- `w.IsNil()` of the `Value` that `ValueOf` returns for a struct value that is not direct
+(`wp_ValueOf_struct_indirect`): Go's panic `&ValueError{"reflect.Value.IsNil", Struct}`. -/
+theorem Value.wp_IsNil_struct_value (t : go.GoType) (q : Loc) (Φ : val → IProp GF) :
+    isPkgInit (PROP := IProp GF) pkg_id.reflect ∗
+      (∀ l : Loc, l ↦ ValueError.mk go!"reflect.Value.IsNil" (W64 25) -∗
+        Φ (PanicV #(interface.mkOk (go.PointerType ValueError.ty) #l))) ⊢
+      WP (App (Val ((Value.mk (go.tok t) (interface.mkOk (go.PointerType t) #q)
+        (W64 25 ||| W64 128)) @!! Value.ty @!! go!"IsNil")) (Val #())) {{ Φ }} := by
+  have hf : (Value.mk (go.tok t) (interface.mkOk (go.PointerType t) #q)
+      (W64 25 ||| W64 128)).flag' &&& W64 31 = W64 25 := by
+    show (W64 25 ||| W64 128) &&& W64 31 = W64 25
+    decide
+  have h := (reflect.Value.wp_IsNil : reflect.Value.IsNil.spec (GF := GF) (hG := hG)).2.2
+    (Value.mk (go.tok t) (interface.mkOk (go.PointerType t) #q) (W64 25 ||| W64 128)) Φ
     (by rw [hf]; exact isNil_panic_kinds.2.1)
   rwa [hf] at h
 

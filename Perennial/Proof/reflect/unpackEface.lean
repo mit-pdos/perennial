@@ -33,28 +33,24 @@ theorem reflect.unpackEface.wp_proof
     (wp_Box : internal.reflectcore.Box.spec (GF := GF) (hG := hG)) :
     reflect.unpackEface.spec (GF := GF) (hG := hG) := by
   constructor
-  · intro t u hu k v hk ht hd
+  · intro t u hu k n v hk ht hd
     wp_start as #Hinit
     wp_auto
     wp_apply wp_TokOf
     unfold go.tok
     wp_apply wp_isModelRType t null ht
     wp_apply wp_TypeKind k null hk
-    wp_apply wp_isDirectIface k null hk (by omega) (by omega)
-    rw [decide_eq_true hd]
-    wp_auto
+    wp_apply wp_isDirectIface n t null true hd
     iapply HΦ
     itrivial
-  · intro V _ _ t u hu _ k x hk ht h17 h25 hd hi
+  · intro V _ _ t u hu _ k n x hk ht hd hi
     wp_start as #Hinit
     wp_auto
     wp_apply wp_TokOf
     unfold go.tok
     wp_apply wp_isModelRType t null ht
     wp_apply wp_TypeKind k null hk
-    wp_apply wp_isDirectIface k null hk h17 h25
-    rw [decide_eq_false hd]
-    wp_auto
+    wp_apply wp_isDirectIface n t null false hd
     wp_apply wp_Box x hi as %q Hq
     iapply HΦ
     iexact Hq

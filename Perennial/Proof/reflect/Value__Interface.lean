@@ -57,8 +57,9 @@ theorem reflect.Value.Interface.wp_proof
   wp_auto
   rw [htyp]
   unfold go.tok
-  wp_apply wp_isDirectIface (T := go.PointerType T) 22 null (by simp [go.kindOf]) (by omega)
-    (by omega)
+  wp_apply wp_isDirectIface 1 (go.PointerType T) null true
+    (reflect.directIfaceN_of_kind (u := go.PointerType T) (k := 22) 0 (by simp [go.kindOf]) (by omega)
+      (by omega))
   simp only [hi, decide_true, Bool.not_true, Bool.true_eq_false, decide_false]
   wp_auto
   rw [hptr]

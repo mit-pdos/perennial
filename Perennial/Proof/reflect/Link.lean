@@ -25,6 +25,7 @@ public import Perennial.Proof.reflect.flag__kind
 public import Perennial.Proof.reflect.initialize
 public import Perennial.Proof.reflect.isDirectIface
 public import Perennial.Proof.reflect.isModelRType
+public import Perennial.Proof.reflect.isZeroSize
 public import Perennial.Proof.reflect.rtype__Elem
 public import Perennial.Proof.reflect.rtype__Kind
 public import Perennial.Proof.reflect.toRType
@@ -73,8 +74,11 @@ theorem reflect.flag.wp_kind : reflect.flag.kind.spec (GF := GF) (hG := hG) :=
 theorem reflect.Value.wp_Elem : reflect.Value.Elem.spec (GF := GF) (hG := hG) :=
   reflect.Value.Elem.wp_proof reflect.flag.wp_kind internal.reflectcore.wp_EqNilAt internal.reflectcore.wp_TypeElem internal.reflectcore.wp_TypeKind internal.reflectcore.wp_PtrTok internal.reflectcore.wp_ConvertAt
 
+theorem reflect.wp_isZeroSize : reflect.isZeroSize.spec (GF := GF) (hG := hG) :=
+  reflect.isZeroSize.wp_proof internal.reflectcore.wp_TypeKind internal.reflectcore.wp_TypeLen internal.reflectcore.wp_TypeElem internal.reflectcore.wp_TypeNumField internal.reflectcore.wp_TypeFieldType
+
 theorem reflect.wp_isDirectIface : reflect.isDirectIface.spec (GF := GF) (hG := hG) :=
-  reflect.isDirectIface.wp_proof internal.reflectcore.wp_TypeKind
+  reflect.isDirectIface.wp_proof internal.reflectcore.wp_TypeKind internal.reflectcore.wp_TypeLen internal.reflectcore.wp_TypeElem internal.reflectcore.wp_TypeNumField internal.reflectcore.wp_TypeFieldType reflect.wp_isZeroSize
 
 theorem reflect.Value.wp_Interface : reflect.Value.Interface.spec (GF := GF) (hG := hG) :=
   reflect.Value.Interface.wp_proof reflect.flag.wp_kind reflect.wp_isDirectIface
