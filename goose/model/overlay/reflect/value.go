@@ -7,7 +7,6 @@ package reflect
 import (
 	"internal/gomodel"
 	"internal/reflectcore"
-	"runtime"
 )
 
 // Value is the reflection interface to a Go value.
@@ -163,23 +162,13 @@ func (e *ValueError) Error() string {
 }
 
 // valueMethodName returns the name of the exported calling method on Value.
+//
+// MODEL: names-only. Real's body walks the stack with runtime.Callers, which
+// the model has, but importing runtime makes reflect's initializer run
+// runtime's, which is not modelled.
 func valueMethodName() string {
-	var pc [5]uintptr
-	n := runtime.Callers(1, pc[:])
-	frames := runtime.CallersFrames(pc[:n])
-	var frame runtime.Frame
-	for more := true; more; {
-		const prefix = "reflect.Value."
-		frame, more = frames.Next()
-		name := frame.Function
-		if len(name) > len(prefix) && name[:len(prefix)] == prefix {
-			methodName := name[len(prefix):]
-			if len(methodName) > 0 && 'A' <= methodName[0] && methodName[0] <= 'Z' {
-				return name
-			}
-		}
-	}
-	return "unknown method"
+	gomodel.Stuck()
+	panic("unreachable")
 }
 
 // mustBe panics if f's kind is not expected.

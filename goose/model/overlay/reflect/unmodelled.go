@@ -4,8 +4,9 @@
 // model, with their real signatures, so that every caller type-checks.
 // Each function and method is names-only (its goose config's names_only):
 // goose translates its name and type, not its body, which is
-// gomodel.Stuck() for gc builds. A struct type with unexported fields is
-// a placeholder, also names-only.
+// gomodel.Stuck() for gc builds. Each type is names-only too (a struct
+// type with unexported fields is a placeholder); the constants are
+// translated.
 
 package reflect
 

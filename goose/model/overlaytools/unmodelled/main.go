@@ -7,8 +7,8 @@
 // fields are all exported, other exported types and exported constants are
 // copied; an exported struct type with unexported fields becomes a
 // placeholder struct. It also rewrites the names_only list of the package's
-// goose config: the generated functions, methods and placeholder types, and
-// every model function whose whole body is that stub.
+// goose config: the generated functions, methods and types, and every model
+// function whose whole body is that stub.
 //
 // Usage, from the repository root, with the pinned Go first on PATH:
 //
@@ -139,8 +139,9 @@ func run(pkgPath, modelDir string, recvTypes []string, tomlPath string) error {
 		"// model, with their real signatures, so that every caller type-checks.\n"+
 		"// Each function and method is names-only (its goose config's names_only):\n"+
 		"// goose translates its name and type, not its body, which is\n"+
-		"// gomodel.Stuck() for gc builds. A struct type with unexported fields is\n"+
-		"// a placeholder, also names-only.\n\n")
+		"// gomodel.Stuck() for gc builds. Each type is names-only too (a struct\n"+
+		"// type with unexported fields is a placeholder); the constants are\n"+
+		"// translated.\n\n")
 	fmt.Fprintf(&out, "package %s\n\n", bp.Name)
 	g.imports["internal/gomodel"] = "gomodel"
 	var paths []string
@@ -330,6 +331,7 @@ func (g *gen) file(name string, f *ast.File, declared map[string]bool) {
 					}
 					g.useImports(f, &spec)
 					fmt.Fprintf(&section, "\ntype %s\n", g.print(&spec))
+					g.namesOnly = append(g.namesOnly, ts.Name.Name)
 				}
 			case token.CONST:
 				exported, missing := false, false
