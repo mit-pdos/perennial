@@ -375,6 +375,7 @@ func TestModelSprintf(t *testing.T) {
 	t.Logf("%d calls admitted, %d where the model is stuck", admitted, stuckN)
 }
 
+// TestModelPrintf: the formatting of the trusted Printf (printfFormat) calls what Go's Printf calls.
 func TestModelPrintf(t *testing.T) {
 	for _, format := range testFormats {
 		for _, a := range argTuples() {
@@ -382,7 +383,7 @@ func TestModelPrintf(t *testing.T) {
 			_ = fmt.Sprintf(format, a...) // Printf formats as Sprintf does
 			goCalls := calls
 			calls = nil
-			stuck := runModel(func() { modelPrintf(format, a...) })
+			stuck := runModel(func() { modelPrintfFormat(format, a...) })
 			if stuck {
 				continue
 			}

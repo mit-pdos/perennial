@@ -68,7 +68,7 @@
 # runtime's own tests are not run. (os.runtime_args, syscall.runtime_envs, runtime.callers and
 # internal/synctest are not models: trusted, with the runtime's real bodies under gc.)
 #   fmt      only TestModelAlias (goose/model/fmt/testdata/alias): its models
-#            (errorf, Fprintf, Printf, pp.doPrint) print an empty string where
+#            (errorf, Fprintf, pp.doPrint; Printf runs Fprintf) print an empty string where
 #            the model printer's output is arbitrary (gomodel's Go bodies
 #            choose 0) and block where it is stuck, so fmt's own tests of
 #            Errorf, Fprint(f), Printf and Sprint fail by design (and time

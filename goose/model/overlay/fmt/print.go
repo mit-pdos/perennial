@@ -1,7 +1,8 @@
-// The Go models of fmt (Perennial/Code/fmt.toml, [model]): errorf, Fprintf, Printf and
-// pp.doPrint, spliced into errors.go and print.go in place of the real declarations, and the
-// additions they need besides the model printer (printmodel.go). Sprintf, Errorf, Fprint and the
-// real printer stay Go's own, translated.
+// The Go models of fmt (Perennial/Code/fmt.toml, [model]): errorf, Fprintf and pp.doPrint,
+// spliced into errors.go and print.go in place of the real declarations, printfFormat (the
+// formatting of Printf, which is trusted: Perennial/TrustedCode/fmt.lean), and the additions they
+// need besides the model printer (printmodel.go). Sprintf, Errorf, Fprint and the real printer stay
+// Go's own, translated.
 //
 // Why models at all: the real print path (pp.doPrintf, pp.printArg) is translated and proved only
 // on stage 1's subset (fmt.Fits, perennial#671). Elsewhere it is stuck: on floats and complex
@@ -10,7 +11,7 @@
 // named integer and string types, a []string, and a value of integer kind with String or Error
 // under a non-method verb (pp.printValue, which reflects). The specs of Errorf, Printf, Fprintf
 // and Fprint admit those calls (fmt.argsOk, fmt.printArgOk), so these four print with the model
-// printer instead: doPrintf formats exactly the common directives of inert arguments and of a
+// printer instead (Printf through printfFormat): doPrintf formats exactly the common directives of inert arguments and of a
 // []byte or []string, appending them to the printer's buffer p.buf as Go does, and from the first
 // other directive on appends arbitrary strings, before each call of an argument's Error() or
 // String() (where Go's handleMethods calls it) and at the end. The buffer is observable outside
@@ -31,12 +32,9 @@ package fmt
 
 import (
 	"internal/gomodel"
-	"internal/poll"
 	"internal/stringslite"
 	"io"
-	"io/fs"
 	"reflect"
-	"syscall"
 )
 
 // MODEL: errorf is Go's, but for its printer: Go's p.doPrintf(format, a), with p.wrapErrs set, is
@@ -77,58 +75,16 @@ func Fprintf(w io.Writer, format string, a ...any) (n int, err error) {
 	return
 }
 
-// MODEL: Printf is Go's Fprintf(os.Stdout, format, a...) with the writer stdout{} for os.Stdout:
-// the model of os has no Stdout (os.toml: its variable is not allocated, so a program that reads
-// or assigns os.Stdout is stuck), and Printf always writes to the file Go opens as os.Stdout
-// (descriptor 1, "/dev/stdout"); stdout.Write has every result Go's (*os.File).Write of it has.
-func Printf(format string, a ...any) (n int, err error) {
-	return Fprintf(stdout{}, format, a...)
-}
-
-// stdout is the model's os.Stdout for Printf.
-type stdout struct{}
-
-// Write: what Go's (*os.File).Write of os.Stdout can return. Go writes b with poll.FD.Write
-// (write(2) until all is written or an error), then wraps a failure in f.wrapErr("write", e):
-//   - all of b written, no error: (len(b), nil);
-//   - otherwise n bytes, 0 <= n <= len(b) (also n == len(b) == 0, when write(2) of no bytes fails),
-//     and *fs.PathError{Op: "write", Path: "/dev/stdout", Err: e} (os.PathError) with e one of:
-//     fs.ErrClosed (os.ErrClosed, wrapErr's for poll.ErrFileClosing: writeLock on a closed fd, or
-//     the poller), poll.ErrDeadlineExceeded (os.ErrDeadlineExceeded) and poll.ErrNotPollable (the
-//     poller's prepareWrite/waitWrite), io.ErrUnexpectedEOF (write(2)
-//     wrote nothing, no error), or the syscall.Errno of write(2), between 1 and 4095 (Linux's
-//     errno range); on EPIPE Go's epipecheck raises SIGPIPE, which kills the process unless the
-//     program handles or ignores it: the model may then not return (a loop, which covers the
-//     death), or return the error. (Go's io.ErrShortWrite for n != len(b) is always overwritten by
-//     the wrapped error: FD.Write returns n < len(b) only with an error.) Go panics where write(2)
-//     claims more bytes than asked (panic "invalid return from write"): not modelled, excluded
-//     by an assumption on the environment that the write never claims that. The assumption is not
-//     only that the kernel has no bug: golang/go#61060 reports the panic with VPN software
-//     installed.
-func (stdout) Write(b []byte) (n int, err error) {
-	if gomodel.Choose() {
-		return len(b), nil
-	}
-	n = int(gomodel.ChooseUint64() % (uint64(len(b)) + 1))
-	var e error
-	switch gomodel.ChooseUint64() {
-	case 0:
-		e = fs.ErrClosed
-	case 1:
-		e = poll.ErrDeadlineExceeded
-	case 2:
-		e = poll.ErrNotPollable
-	case 3:
-		e = io.ErrUnexpectedEOF
-	default:
-		errno := syscall.Errno(1 + gomodel.ChooseUint64()%4095)
-		if errno == syscall.EPIPE && gomodel.Choose() {
-			for {
-			}
-		}
-		e = errno
-	}
-	return n, &fs.PathError{Op: "write", Path: "/dev/stdout", Err: e}
+// printfFormat is Printf's formatting, a helper of its trusted model (Perennial/TrustedCode/fmt.lean,
+// fmt.toml's trusted), not a function of package fmt: Go's Printf is Fprintf(os.Stdout, format,
+// a...), whose printer, model doPrintf (as in Fprintf above) and p.free() this is, without the
+// write to os.Stdout; the trusted Printf returns an arbitrary count and either nil or an arbitrary
+// error for it (the model of os has no Stdout, and translating the write would need a semantics
+// primitive for an arbitrary interface value, Go's error of it).
+func printfFormat(format string, a []any) {
+	p := newPrinter()
+	doPrintf(&p.buf, format, a, false)
+	p.free()
 }
 
 // MODEL: pp.doPrint prints the operands under %v, a space between two that are not strings. Go

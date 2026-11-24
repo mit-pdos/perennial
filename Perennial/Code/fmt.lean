@@ -9,9 +9,6 @@ public import Perennial.Code.io
 public import Perennial.Code.reflect
 public import Perennial.Code.sync
 public import Perennial.Code.internal.gomodel
-public import Perennial.Code.internal.poll
-public import Perennial.Code.io.fs
-public import Perennial.Code.syscall
 public import Perennial.Golang.Defn
 public import Perennial.TrustedCode.fmt
 
@@ -116,11 +113,6 @@ noncomputable def readRune.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"fmt.readRune" [])
 
 attribute [irreducible] readRune.ty
-
-noncomputable def stdout.ty [GooseExts] [GoGlobalContext] : go.GoType :=
-  (go.GoType.Named go!"fmt.stdout" [])
-
-attribute [irreducible] stdout.ty
 
 @[reducible] noncomputable def ldigits [GooseExts] [GoGlobalContext] : val :=
   #(go!"0123456789abcdefx")
@@ -338,6 +330,9 @@ noncomputable def hexDigit [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def errorHandler [GooseExts] [GoGlobalContext] : GoString :=
   go!"fmt.errorHandler"
 
+noncomputable def printfFormat [GooseExts] [GoGlobalContext] : GoString :=
+  go!"fmt.printfFormat"
+
 noncomputable def chooseString [GooseExts] [GoGlobalContext] : GoString :=
   go!"fmt.chooseString"
 
@@ -497,7 +492,7 @@ noncomputable def Errorf.impl [GooseExts] [GoGlobalContext] : val :=
     what a later errorf writes into the same printer's buffer, or write into it itself
     (TestModelAlias, goose/model/fmt).
 
-    go: print.go:53:6 -/
+    go: print.go:51:6 -/
 noncomputable def errorf.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "format"
   (Lam "a"
@@ -2434,7 +2429,7 @@ noncomputable def pp.WriteString.impl [GooseExts] [GoGlobalContext] : val :=
     TestModelAlias a method reading p.buf through a slice an earlier Write kept). The printer, its
     pool (ppFree), the one w.Write(p.buf) and p.free() are Go's own.
 
-    go: print.go:72:6 -/
+    go: print.go:70:6 -/
 noncomputable def Fprintf.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "format"
@@ -2477,40 +2472,6 @@ noncomputable def Fprintf.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType pp.ty)))) (Pair (Var "p") (Var "$r0")))))))))))
   (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1")))))))))))
-
-/-- MODEL: Printf is Go's Fprintf(os.Stdout, format, a...) with the writer stdout{} for os.Stdout:
-    the model of os has no Stdout (os.toml: its variable is not allocated, so a program that reads
-    or assigns os.Stdout is stuck), and Printf always writes to the file Go opens as os.Stdout
-    (descriptor 1, "/dev/stdout"); stdout.Write has every result Go's (*os.File).Write of it has.
-
-    go: print.go:84:6 -/
-noncomputable def Printf.impl [GooseExts] [GoGlobalContext] : val :=
-  (LamV "format"
-  (Lam "a"
-  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
-  (Let "$res0" (Var "n")
-  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
-  (Let "$res1" (Var "err")
-  (Seq (App (Val exceptionDo)
-  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.any)))) (Var "a"))
-  (Let "format" (App (Val (GoInstruction (GoAlloc go.string))) (Var "format"))
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (Convert stdout.ty _root_.Perennial.io.Writer.ty))) (App (Val (GoInstruction (CompositeLiteral stdout.ty))) (LiteralValue [])))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "format"))
-  (Let "$a2" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "a"))
-  (App (App (App (App (Val (GoInstruction (FuncResolve Fprintf []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
-  (Let "$ret0" (Fst (Var "__p"))
-  (Let "$ret1" (Snd (Var "__p"))
-  (Let "$r0" (Var "$ret0")
-  (Let "$r1" (Var "$ret1")
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res1") (Var "$r1")))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))))))))
-  (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1"))))))))))
 
 /-- Sprintf formats according to a format specifier and returns the resulting string.
 
@@ -4945,7 +4906,7 @@ noncomputable def pp.doPrintf.impl [GooseExts] [GoGlobalContext] : val :=
     rest of Go's output (TestModelFprint checks the calls, TestModelAlias the buffer). Fprint and
     Sprint, Go's own, print with it.
 
-    go: print.go:143:14 -/
+    go: print.go:99:14 -/
 noncomputable def pp.doPrint.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam "a"
@@ -5018,110 +4979,40 @@ noncomputable def pp.doPrintln.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "arg") (Var "$value")))))))))))))))
   (Val #()))))
 
-/-- Write: what Go's (*os.File).Write of os.Stdout can return. Go writes b with poll.FD.Write
-    (write(2) until all is written or an error), then wraps a failure in f.wrapErr("write", e):
-      - all of b written, no error: (len(b), nil);
-      - otherwise n bytes, 0 <= n <= len(b) (also n == len(b) == 0, when write(2) of no bytes fails),
-        and *fs.PathError{Op: "write", Path: "/dev/stdout", Err: e} (os.PathError) with e one of:
-        fs.ErrClosed (os.ErrClosed, wrapErr's for poll.ErrFileClosing: writeLock on a closed fd, or
-        the poller), poll.ErrDeadlineExceeded (os.ErrDeadlineExceeded) and poll.ErrNotPollable (the
-        poller's prepareWrite/waitWrite), io.ErrUnexpectedEOF (write(2)
-        wrote nothing, no error), or the syscall.Errno of write(2), between 1 and 4095 (Linux's
-        errno range); on EPIPE Go's epipecheck raises SIGPIPE, which kills the process unless the
-        program handles or ignores it: the model may then not return (a loop, which covers the
-        death), or return the error. (Go's io.ErrShortWrite for n != len(b) is always overwritten by
-        the wrapped error: FD.Write returns n < len(b) only with an error.) Go panics where write(2)
-        claims more bytes than asked (panic "invalid return from write"): not modelled, excluded
-        by an assumption on the environment that the write never claims that. The assumption is not
-        only that the kernel has no bug: golang/go#61060 reports the panic with VPN software
-        installed.
+/-- printfFormat is Printf's formatting, a helper of its trusted model (Perennial/TrustedCode/fmt.lean,
+    fmt.toml's trusted), not a function of package fmt: Go's Printf is Fprintf(os.Stdout, format,
+    a...), whose printer, model doPrintf (as in Fprintf above) and p.free() this is, without the
+    write to os.Stdout; the trusted Printf returns an arbitrary count and either nil or an arbitrary
+    error for it (the model of os has no Stdout, and translating the write would need a semantics
+    primitive for an arbitrary interface value, Go's error of it).
 
-    go: print.go:108:15 -/
-noncomputable def stdout.Write.impl [GooseExts] [GoGlobalContext] : val :=
-  (LamV BAnon
-  (Lam "b"
-  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
-  (Let "$res0" (Var "n")
-  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
-  (Let "$res1" (Var "err")
+    go: print.go:84:6 -/
+noncomputable def printfFormat.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "format"
+  (Lam "a"
   (Seq (App (Val exceptionDo)
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.ChooseUint64 []))) (Val #())) (Val #())) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")))) (Val #(W64 1)))))))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "e" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
-  (Let "$r1" (App (Val (GoInstruction (Convert (go.GoType.PointerType _root_.Perennial.io.fs.PathError.ty) go.error))) (App (Val (GoInstruction (GoAlloc _root_.Perennial.io.fs.PathError.ty))) (Let "$v0" (Val #(go!"write"))
-  (Let "$v1" (Val #(go!"/dev/stdout"))
-  (Let "$v2" (App (Val (GoInstruction (GoLoad go.error))) (Var "e"))
-  (App (Val (GoInstruction (CompositeLiteral _root_.Perennial.io.fs.PathError.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Op")) (ElementExpression go.string (Var "$v0"))), (KeyedElement (some (KeyField go!"Path")) (ElementExpression go.string (Var "$v1"))), (KeyedElement (some (KeyField go!"Err")) (ElementExpression go.error (Var "$v2")))])))))))
+  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.any)))) (Var "a"))
+  (Let "format" (App (Val (GoInstruction (GoAlloc go.string))) (Var "format"))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve newPrinter []))) (Val #())) (Val #()))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType pp.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType pp.ty)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType pp.ty) go!"free"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType pp.ty)))) (Var "p"))) (Val #())))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (StructFieldRef pp.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType pp.ty)))) (Var "p")))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "format"))
+  (Let "$a2" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "a"))
+  (Let "$a3" (Val #false)
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve doPrintf []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType pp.ty)))) (Pair (Var "p") (Var "$r0"))))))))))
   (Val #()))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res1") (Var "$r1")))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))))
-  (Let "$sw" (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.ChooseUint64 []))) (Val #())) (Val #()))
-  (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Var "$sw") (Val #(W64 0))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.io.fs.ErrClosed))) (Val #())))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "e") (Var "$r0")))))
-  (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Var "$sw") (Val #(W64 1))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.internal.poll.ErrDeadlineExceeded))) (Val #())))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "e") (Var "$r0")))))
-  (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Var "$sw") (Val #(W64 2))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.internal.poll.ErrNotPollable))) (Val #())))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "e") (Var "$r0")))))
-  (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Var "$sw") (Val #(W64 3))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.io.ErrUnexpectedEOF))) (Val #())))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "e") (Var "$r0")))))
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 _root_.Perennial.syscall.Errno.ty))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (Val #(W64 1)) (App (Val (GoInstruction (GoOp GoRemainder go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.ChooseUint64 []))) (Val #())) (Val #())) (Val #(W64 4095)))))))
-  (Let "errno" (App (Val (GoInstruction (GoAlloc _root_.Perennial.syscall.Errno.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.syscall.Errno.ty))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert _root_.Perennial.syscall.Errno.ty go.error))) (App (Val (GoInstruction (GoLoad _root_.Perennial.syscall.Errno.ty))) (Var "errno")))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "e") (Var "$r0")))))))
-  (If (If (App (Val (GoInstruction (GoOp GoEquals _root_.Perennial.syscall.Errno.ty))) (Pair (App (Val (GoInstruction (GoLoad _root_.Perennial.syscall.Errno.ty))) (Var "errno")) (Val #(W64 32)))) (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.Choose []))) (Val #())) (Val #())) (Val #false))
-  (App (App (App (Val doFor) (Lam BAnon
-  (Val #true))) (Lam BAnon
-  (App (Val doExecute)
-  (Val #()))))
-  (Lam BAnon
-  (Val #())))
-  (App (Val doExecute)
-  (Val #()))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore _root_.Perennial.syscall.Errno.ty))) (Pair (Var "errno") (Var "$r0"))))))))))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0"))))))))
-  (If (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.Choose []))) (Val #())) (Val #()))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")))
-  (Let "$r1" (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res1") (Var "$r1")))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
-  (App (Val doExecute)
-  (Val #()))))))
-  (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1"))))))))))
 
 /-- chooseString is an arbitrary string, the model printer's output from where it stops following
     Go: it can return every string (and may also not terminate, which partial correctness allows).
 
-    go: print.go:153:6 -/
+    go: print.go:109:6 -/
 noncomputable def chooseString.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
@@ -5145,7 +5036,7 @@ noncomputable def chooseString.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- notModelled is the model printer's stuck point, where it does not follow Go: gomodel.Stuck.
 
-    go: print.go:162:6 -/
+    go: print.go:118:6 -/
 noncomputable def notModelled.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Seq (App (Val exceptionDo)
@@ -8349,15 +8240,12 @@ noncomputable def errorfResult.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.error))) (Var "$res0"))))))))
 
 noncomputable instance info' : PkgInfo pkg_id.fmt where
-  pkgImportedPkgs := [pkg_id.errors, pkg_id.internal.stringslite, pkg_id.strconv, pkg_id.unicode.utf8, pkg_id.io, pkg_id.reflect, pkg_id.sync, pkg_id.internal.gomodel, pkg_id.internal.poll, pkg_id.io.fs, pkg_id.syscall]
+  pkgImportedPkgs := [pkg_id.errors, pkg_id.internal.stringslite, pkg_id.strconv, pkg_id.unicode.utf8, pkg_id.io, pkg_id.reflect, pkg_id.sync, pkg_id.internal.gomodel]
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.fmt)) (Lam BAnon
   (App (Val exceptionDo)
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -8448,12 +8336,6 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.sync.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.internal.gomodel.initialize') (Val #()))))))
-  (App (Val doExecute)
-  (App (Val _root_.Perennial.internal.poll.initialize') (Val #()))))))
-  (App (Val doExecute)
-  (App (Val _root_.Perennial.io.fs.initialize') (Val #()))))))
-  (App (Val doExecute)
-  (App (Val _root_.Perennial.syscall.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc ppFree _root_.Perennial.sync.Pool.ty)) (Val #()))))))
   (App (Val doExecute)
@@ -9210,41 +9092,6 @@ attribute [instance] readRune.TypeAssumptions.type_repr
   readRune.TypeAssumptions.method_set
   readRune.TypeAssumptions.ptr_method_set
 
-structure stdout [GooseExts] where
-  mk ::
-
-noncomputable instance stdout.zero_val [GooseExts] : ZeroVal stdout :=
-  ⟨stdout.mk⟩
-
-@[reducible] noncomputable def stdout.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  []
-
-@[irreducible] noncomputable def stdout.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  stdout.fieldsUnsealed
-
-noncomputable instance equals_unfold_stdout [GooseExts] [GoGlobalContext] :
-    EqualsUnfold stdout.fields stdout.fieldsUnsealed :=
-  ⟨by unfold stdout.fields; rfl⟩
-
-@[reducible] noncomputable def stdout.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType stdout.fields)
-
-class stdout.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying stdout.underlying stdout
-  underlying : go.UnderlyingDirectedEq stdout.ty stdout.underlying
-  method_set : go.MethodSetIs stdout.ty [(go!"Write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error])))]
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType stdout.ty) [(go!"Write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error])))]
-  Write_unfold : MethodUnfold stdout.ty go!"Write" stdout.Write.impl
-  ptr_Write_unfold : MethodUnfold (go.GoType.PointerType stdout.ty) go!"Write" (LamV "$r"
-(App (Val (GoInstruction (MethodResolve stdout.ty go!"Write"))) (App (Val (GoInstruction (GoLoad stdout.ty))) (Var "$r"))))
-
-attribute [instance] stdout.TypeAssumptions.type_repr
-  stdout.TypeAssumptions.underlying
-  stdout.TypeAssumptions.method_set
-  stdout.TypeAssumptions.ptr_method_set
-  stdout.TypeAssumptions.Write_unfold
-  stdout.TypeAssumptions.ptr_Write_unfold
-
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   wrapError_instance : wrapError.TypeAssumptions
   wrapErrors_instance : wrapErrors.TypeAssumptions
@@ -9263,7 +9110,6 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   ss_instance : ss.TypeAssumptions
   ssave_instance : ssave.TypeAssumptions
   readRune_instance : readRune.TypeAssumptions
-  stdout_instance : stdout.TypeAssumptions
   Errorf_unfold : FuncUnfold Errorf [] Errorf.impl
   errorf_unfold : FuncUnfold errorf [] errorf.impl
   FormatString_unfold : FuncUnfold FormatString [] FormatString.impl
@@ -9283,6 +9129,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   parsenum_unfold : FuncUnfold parsenum [] parsenum.impl
   intFromArg_unfold : FuncUnfold intFromArg [] intFromArg.impl
   parseArgNumber_unfold : FuncUnfold parseArgNumber [] parseArgNumber.impl
+  printfFormat_unfold : FuncUnfold printfFormat [] printfFormat.impl
   chooseString_unfold : FuncUnfold chooseString [] chooseString.impl
   notModelled_unfold : FuncUnfold notModelled [] notModelled.impl
   underlyingAs_unfold : ∀ (T : go.GoType), FuncUnfold underlyingAs [T] (underlyingAs.impl T)
@@ -9325,9 +9172,6 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   import_reflect_Assumption : _root_.Perennial.reflect.Assumptions
   import_sync_Assumption : _root_.Perennial.sync.Assumptions
   import_gomodel_Assumption : _root_.Perennial.internal.gomodel.Assumptions
-  import_poll_Assumption : _root_.Perennial.internal.poll.Assumptions
-  import_fs_Assumption : _root_.Perennial.io.fs.Assumptions
-  import_syscall_Assumption : _root_.Perennial.syscall.Assumptions
 
 attribute [instance] Assumptions.wrapError_instance
   Assumptions.wrapErrors_instance
@@ -9346,7 +9190,6 @@ attribute [instance] Assumptions.wrapError_instance
   Assumptions.ss_instance
   Assumptions.ssave_instance
   Assumptions.readRune_instance
-  Assumptions.stdout_instance
   Assumptions.Errorf_unfold
   Assumptions.errorf_unfold
   Assumptions.FormatString_unfold
@@ -9366,6 +9209,7 @@ attribute [instance] Assumptions.wrapError_instance
   Assumptions.parsenum_unfold
   Assumptions.intFromArg_unfold
   Assumptions.parseArgNumber_unfold
+  Assumptions.printfFormat_unfold
   Assumptions.chooseString_unfold
   Assumptions.notModelled_unfold
   Assumptions.underlyingAs_unfold
@@ -9408,9 +9252,6 @@ attribute [instance] Assumptions.wrapError_instance
   Assumptions.import_reflect_Assumption
   Assumptions.import_sync_Assumption
   Assumptions.import_gomodel_Assumption
-  Assumptions.import_poll_Assumption
-  Assumptions.import_fs_Assumption
-  Assumptions.import_syscall_Assumption
 
 end fmt
 

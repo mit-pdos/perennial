@@ -14,9 +14,6 @@ public import Perennial.Proof.strconv.Base
 public import Perennial.Proof.unicode.utf8.Base
 public import Perennial.Proof.internal.stringslite.Base
 public import Perennial.Proof.internal.gomodel.Base
-public import Perennial.Proof.io.fs.Base
-public import Perennial.Proof.syscall.Base
-public import Perennial.Proof.internal.poll.Base
 public import Perennial.Code.fmt
 public import Perennial.GeneratedProof.fmt
 

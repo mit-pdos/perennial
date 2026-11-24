@@ -44,14 +44,11 @@ public import Perennial.Proof.fmt.pp__handleMethods
 public import Perennial.Proof.fmt.pp__printArg
 public import Perennial.Proof.fmt.tooLarge
 public import Perennial.Proof.internal.gomodel.Link
-public import Perennial.Proof.internal.poll.Link
 public import Perennial.Proof.internal.stringslite.Link
 public import Perennial.Proof.io.Link
-public import Perennial.Proof.io.fs.Link
 public import Perennial.Proof.reflect.Link
 public import Perennial.Proof.strconv.Link
 public import Perennial.Proof.sync.Link
-public import Perennial.Proof.syscall.Link
 public import Perennial.Proof.unicode.utf8.Link
 
 @[expose] public section
@@ -92,7 +89,7 @@ theorem fmt.wp_Fprintf : fmt.Fprintf.spec (GF := GF) (hG := hG) :=
   fmt.Fprintf.wp_proof fmt.wp_newPrinter fmt.buffer.wp_writeString fmt.pp.wp_free internal.gomodel.wp_Choose internal.gomodel.wp_ChooseUint64
 
 theorem fmt.wp_Printf : fmt.Printf.spec (GF := GF) (hG := hG) :=
-  fmt.Printf.wp_proof fmt.wp_Fprintf internal.gomodel.wp_Choose internal.gomodel.wp_ChooseUint64
+  fmt.Printf.wp_proof fmt.wp_newPrinter fmt.buffer.wp_writeString fmt.pp.wp_free internal.gomodel.wp_Choose internal.gomodel.wp_ChooseUint64
 
 theorem fmt.buffer.wp_writeByte : fmt.buffer.writeByte.spec (GF := GF) (hG := hG) :=
   fmt.buffer.writeByte.wp_proof
@@ -176,7 +173,7 @@ theorem fmt.wp_Sprintf : fmt.Sprintf.spec (GF := GF) (hG := hG) :=
   fmt.Sprintf.wp_proof fmt.wp_newPrinter fmt.pp.wp_doPrintf fmt.pp.wp_free
 
 theorem fmt.wp_initialize' : fmt.initialize'.spec (GF := GF) (hG := hG) :=
-  fmt.initialize'.wp_proof sync.wp_initialize' io.wp_initialize' errors.wp_initialize' unicode.utf8.wp_initialize' reflect.wp_initialize' strconv.wp_initialize' errors.wp_New syscall.wp_initialize' io.fs.wp_initialize' internal.poll.wp_initialize' internal.gomodel.wp_initialize' internal.stringslite.wp_initialize'
+  fmt.initialize'.wp_proof sync.wp_initialize' io.wp_initialize' errors.wp_initialize' unicode.utf8.wp_initialize' reflect.wp_initialize' strconv.wp_initialize' errors.wp_New internal.gomodel.wp_initialize' internal.stringslite.wp_initialize'
 
 end link
 

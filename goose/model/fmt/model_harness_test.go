@@ -3,8 +3,9 @@ package fmt_test
 // The harness of the differential tests (model_diff_test.go): model_test.go is the model printer of
 // goose/model/overlay/fmt/printmodel.go, rewritten into this package (model_copy_test.go); here are
 // the stand-ins for what it calls of the overlay's other file (print.go) and of internal/gomodel,
-// and the model's errorf, Fprintf, Fprint and Printf, each the body of the overlay's replaced
-// declaration (print.go) with Go's printer, which the tests cannot reach, left out.
+// and the model's errorf, Fprintf, Fprint and printfFormat (the formatting of the trusted Printf),
+// each the body of the overlay's declaration (print.go) with Go's printer, which the tests cannot
+// reach, left out.
 
 import (
 	"errors"
@@ -115,7 +116,9 @@ func modelFprint(w io.Writer, a ...any) (int, error) {
 	return w.Write([]byte(squash(string(b))))
 }
 
-// modelPrintf is the model's Printf with a writer that discards (the tests compare the calls).
-func modelPrintf(format string, a ...any) (int, error) {
-	return modelFprintf(io.Discard, format, a...)
+// modelPrintfFormat is printfFormat, the formatting of the trusted Printf (the tests compare the
+// calls; the write to os.Stdout is not modelled).
+func modelPrintfFormat(format string, a ...any) {
+	var b buffer
+	doPrintf(&b, format, a, false)
 }

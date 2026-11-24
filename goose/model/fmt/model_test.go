@@ -1,7 +1,7 @@
 // Code generated from goose/model/overlay/fmt/printmodel.go by model_copy_test.go; DO NOT EDIT.
 
 // The model printer of fmt (Perennial/Code/fmt.toml, [model]): additions that the models of
-// errorf, Fprintf, Printf and pp.doPrint (print.go of this directory) call in place of Go's
+// errorf, Fprintf, printfFormat (Printf's) and pp.doPrint (print.go of this directory) call in place of Go's
 // printer for the formatting the real print path is stuck on. Translated like the rest of fmt;
 // they carry no claim of their own: the claims are the MODEL: comments of the replaced
 // declarations, which call them. goose/model/fmt/model_test.go is this file rewritten for the

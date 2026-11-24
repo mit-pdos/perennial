@@ -1,11 +1,18 @@
 /-
-The proof of `fmt.Printf` (the Go model of `goose/model/overlay/fmt`): `Fprintf` to the model's
-`os.Stdout`, `stdout{}`, whose `Write` returns whatever it returns, needing nothing.
+The proof of `fmt.Printf` (trusted, `Perennial/TrustedCode/fmt.lean`): the translated model
+`printfFormat` (a printer from `newPrinter`, the model printer's `doPrintf`
+(`Perennial/Proof/fmt/DoPrintf.lean`) appending to its buffer, and `pp.free`), then an arbitrary
+count and either `nil` or an `errors.New` of an arbitrary string.
 -/
 module
 
 public import Perennial.Spec.fmt.Printf
-public import Perennial.Spec.fmt.Fprintf
+public import Perennial.Proof.fmt.DoPrintf
+public import Perennial.Proof.errors.NewVar
+public import Perennial.Proof.arbitraryString
+public import Perennial.Spec.fmt.newPrinter
+public import Perennial.Spec.fmt.buffer__writeString
+public import Perennial.Spec.fmt.pp__free
 public import Perennial.Spec.internal.gomodel.Choose
 public import Perennial.Spec.internal.gomodel.ChooseUint64
 
@@ -24,88 +31,45 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
 
-/-- The `Write` of the model's `os.Stdout`, `stdout{}`, needs nothing and gives nothing back but
-the bytes. -/
-theorem fmt.stdout_writeSpec
-    (wp_Choose : internal.gomodel.Choose.spec (GF := GF) (hG := hG))
-    (wp_ChooseUint64 : internal.gomodel.ChooseUint64.spec (GF := GF) (hG := hG))
-    (x : fmt.stdout) :
-    isPkgInit (PROP := IProp GF) pkg_id.fmt ⊢
-      fmt.writeSpec ⟨fmt.stdout.ty, #x⟩ iprop(True) (fun _ _ _ => iprop(True)) := by
-  iintro #Hpkg
-  iunfold fmt.writeSpec
-  iintro %sl %bs %Φ - Hsl HΦ
-  ihave #Hfs : isPkgInit (PROP := IProp GF) pkg_id.io.fs $$ []
-  · iPkgInit
-  ihave #Hpoll : isPkgInit (PROP := IProp GF) pkg_id.internal.poll $$ []
-  · iPkgInit
-  ihave #Hio : isPkgInit (PROP := IProp GF) pkg_id.io $$ []
-  · iPkgInit
-  ihave #Hfsi := io.fs.isInit_access $$ Hfs
-  icases Hfsi with ⟨-, -, -, -, HEC, -⟩
-  iunfold errors.newVar at HEC
-  icases HEC with ⟨%xEC, #HEC, -⟩
-  ihave #Hpolli := internal.poll.isInit_access $$ Hpoll
-  icases Hpolli with ⟨-, ⟨%eDE, #HDE⟩, HNP⟩
-  iunfold errors.newVar at HNP
-  icases HNP with ⟨%xNP, #HNP, -⟩
-  ihave #Hioi := io.isInit_access $$ Hio
-  icases Hioi with ⟨-, -, -, -, -, HUE, -⟩
-  iunfold errors.newVar at HUE
-  icases HUE with ⟨%xUE, #HUE, -⟩
-  ihave %Hlen := ownSlice_len $$ Hsl
-  wp_method_call
-  wp_call
-  wp_auto
-  wp_apply wp_Choose as %c -
-  wp_if_destruct
-  all_goals try (iapply HΦ $$ Hsl; itrivial)
-  wp_apply wp_ChooseUint64 as %m -
-  have Hl0 : ¬ uint.Z (sl.len + W64 1) = 0 := by
-    word
-  rw [if_neg Hl0]
-  try wp_auto
-  wp_apply wp_ChooseUint64 as %sw -
-  -- the switch on the error, then (on `EPIPE`) the choice to loop for ever (`for {}`, under the
-  -- whole context as its invariant), then the `*fs.PathError`
-  repeat' (first
-    | wp_if_destruct
-    | wp_auto
-    | wp_apply wp_ChooseUint64 as %e -
-    | wp_apply wp_Choose as %c2 -
-    | wp_alloc_anon
-    | wp_for
-    | wp_for_post
-    | (iapply HΦ $$ Hsl; itrivial)
-    | (iframe; done))
-
-end proof
-
-section proof
-variable [GooseExts] [GooseSemantics] [GooseInterp]
-variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem : fmt.Assumptions]
-
 theorem fmt.Printf.wp_proof
-    (wp_Fprintf : fmt.Fprintf.spec (GF := GF) (hG := hG))
+    (wp_newPrinter : fmt.newPrinter.spec (GF := GF) (hG := hG))
+    (wp_writeString : fmt.buffer.writeString.spec (GF := GF) (hG := hG))
+    (wp_free : fmt.pp.free.spec (GF := GF) (hG := hG))
     (wp_Choose : internal.gomodel.Choose.spec (GF := GF) (hG := hG))
     (wp_ChooseUint64 : internal.gomodel.ChooseUint64.spec (GF := GF) (hG := hG)) :
-    fmt.Printf.spec (GF := GF) (hG := hG) := by
-  intro format args_sl xs dq
+    fmt.Printf.spec (GF := GF) (hG := hG) := fun format args_sl xs dq => by
   wp_start as ⟨Hsl, Hok⟩
+  -- `Printf.impl` (trusted) calls the translated model `printfFormat`
+  try rw [show (go!"fmt.printfFormat" : GoString) = fmt.printfFormat from rfl]
   wp_auto
-  wp_apply (wp_Fprintf _ format args_sl xs dq iprop(True) (fun _ _ _ => iprop(True)))
-    $$ [$Hsl $Hok] as %n %err ⟨Hsl, -⟩
-  · isplitr
-    · itrivial
-    iexists _
+  wp_func_call
+  wp_call
+  wp_auto
+  wp_apply wp_newPrinter as %p Hp
+  unfold fmt.isPrinterAny fmt.isPrinter fmt.isPrinterA
+  icases Hp with ⟨%hnn, %F, %wid, %prec, %x', Hb, Hrest⟩
+  have hdo := fmt.wp_doPrintf wp_Choose wp_ChooseUint64 wp_writeString (p.[fmt.pp, go!"buf"]) []
+    format args_sl xs dq false
+  rw [fmt.modeVerbs_false] at hdo
+  wp_apply hdo $$ [$Hb $Hsl $Hok] as %wsl %unk ⟨%s, Hb, Hsl, -, -⟩
+  try wp_auto
+  wp_apply wp_free p ([] ++ s) $$ [Hb Hrest]
+  · iframe
+    unfold fmt.isPrinterAny fmt.isPrinter fmt.isPrinterA
     isplitr
-    · ipureintro; rfl
-    iapply (fmt.stdout_writeSpec wp_Choose wp_ChooseUint64) $$ Hpkg
-  iapply HΦ
-  iframe
+    · ipureintro; exact hnn
+    iexists F, wid, prec, x'
+    iframe
+  try wp_auto
+  wp_apply wp_ArbitraryInt as %n -
+  wp_apply wp_ArbitraryInt as %b -
+  wp_if_destruct
+  · iapply HΦ
+    iframe
+  · wp_apply fmt.wp_arbitraryString as %junk -
+    wp_apply errors.wp_New_errorString_cell as %x -
+    iapply HΦ
+    iframe
 
 end proof
 
