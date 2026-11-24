@@ -1,0 +1,5 @@
+translate = ["!*"]
+
+[model]
+dir = "goose/testdata/models/modelwhole"
+replaces = ["*"]

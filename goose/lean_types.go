@@ -299,7 +299,7 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) typeAssumptionsDe
 		// for every method in `t`
 		for _, m := range ctx.methodDecls(goMset) {
 			selection, methodName, index := m.selection, m.name, m.selection.Index()
-			if ctx.filter.GetAction(typeName+"."+selection.Obj().Name()) == declfilter.Axiomatize {
+			if ctx.methodAxiomatized(typeName, selection) {
 				continue
 			}
 			var impl string
@@ -330,7 +330,7 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) typeAssumptionsDe
 		// for every method in `*t`
 		for _, m := range ctx.methodDecls(goPtrMset) {
 			selection, methodName, index := m.selection, m.name, m.selection.Index()
-			if ctx.filter.GetAction(typeName+"."+selection.Obj().Name()) == declfilter.Axiomatize {
+			if ctx.methodAxiomatized(typeName, selection) {
 				continue
 			}
 			var impl string
@@ -676,4 +676,25 @@ func (ctx *Ctx) leanInfoInstance() string {
 	}
 	return fmt.Sprintf("noncomputable instance info' : PkgInfo %s where\n  pkgImportedPkgs := [%s]",
 		ctx.pkgIdent, strings.Join(imps, ", "))
+}
+
+// methodAxiomatized says whether a method of a method set of the type
+// typeName has no MethodUnfold: whether the filter axiomatizes `T.m`, and,
+// for a method promoted through embedded fields, also the declaring method's
+// own name `U.m` (U its receiver's named type; in a whole-package model,
+// where translate = ["!*"], only the declaring method is a declaration).
+func (ctx *Ctx) methodAxiomatized(typeName string, selection *types.Selection) bool {
+	if ctx.filter.GetAction(typeName+"."+selection.Obj().Name()) != declfilter.Axiomatize {
+		return false
+	}
+	if len(selection.Index()) > 1 {
+		recv := selection.Obj().(*types.Func).Signature().Recv().Type()
+		if p, ok := recv.(*types.Pointer); ok {
+			recv = p.Elem()
+		}
+		if n, ok := types.Unalias(recv).(*types.Named); ok {
+			return ctx.filter.GetAction(n.Obj().Name()+"."+selection.Obj().Name()) == declfilter.Axiomatize
+		}
+	}
+	return true
 }

@@ -326,6 +326,7 @@ def main():
             "./unsafememory/...",
             "./xpkgalias/...",
             "./modeloverlay",
+            "./modelwhole",
         )
 
     # goose/testdata/gokv is loaded through the examples module, which replaces
