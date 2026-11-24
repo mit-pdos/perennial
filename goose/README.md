@@ -52,22 +52,28 @@ One rule per kind of name (`GoName` in `glang/syntax.go`):
 
 - a struct field `F` is the projection `F'`, and a type parameter `P`'s value
   type is the binder `P'`;
-- every other Go name `X` (type, function, global, method's receiver type, a type
-  parameter's `go.GoType` binder) is `X`, or `X''` when `X` is reserved: a
-  framework name the output refers to unqualified (`Val`, `Pair`, `Index`, `Int`,
-  `Bool`, `Set`, `list`, ...), a name goose or Lean declares under a type's or
-  function's namespace (`ty`, `underlying`, `fields`, `impl`, `mk`, `rec`,
-  `eq_def`, ...), a generated member shape (`get_F`, `set_F`, `M_unfold`,
-  `T_instance`, ...), or a binder of the generated code (`x`, `y`, `l`, `GF`, ...);
-- a name that is not a plain Lean identifier (a Lean keyword, non-ASCII) is
-  written in guillemets, which does not change the name: Go `type Type int64` is
-  `«Type»`, its field `Type` is `Type'`.
+- every other Go name `X` (type, function, global, method, a type parameter's
+  `go.GoType` binder) is `X`, or `X''` when `X` is reserved: a Lean keyword
+  (`Type`, `def`, `at`, ...), a framework name the output refers to unqualified
+  (`Val`, `Pair`, `Index`, `Int`, `Bool`, `Set`, `list`, ...), a name goose or
+  Lean declares under a type's or function's namespace (`ty`, `underlying`,
+  `fields`, `impl`, `mk`, `rec`, `eq_def`, ...), a generated member shape
+  (`get_F`, `set_F`, `M_unfold`, `T_instance`, ...), or a binder of the
+  generated code (`x`, `y`, `l`, `GF`, ...). Go `type Type int64` is `Type''`,
+  its field `Type` is `Type'`.
+
+Guillemets are a lexing fallback, not a conflict rule: Go identifiers may use
+Unicode letters and digits that Lean's identifier lexer rejects (`é`, `名`), and
+such a name is written in guillemets (`«é»`), which does not change the name.
+(Goose also quotes its own encoded names, `«struct#<h>»`, `«_#0'»`, which are
+not Go identifiers, and package-path components that are Lean keywords in
+namespaces, `pkg_id.«unsafe»`.)
 
 Go identifiers contain no `'`, so a name ending in exactly one `'` is always a
 field projection (or a value binder), and nothing else Go-derived ends that way:
-a projection `S.F'` cannot capture a type, function or global referenced inside
-namespace `S`. `testdata/examples/unittest/names` has a case for each kind of
-capture.
+a projection `S.F'` cannot capture a type, function, global or method referenced
+inside namespace `S`. `testdata/examples/unittest/names` has a case for each
+kind of capture.
 
 ## Running goose
 

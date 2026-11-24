@@ -189,10 +189,10 @@ noncomputable def Daisy.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] Daisy.ty
 
-noncomputable def «Type».ty [GooseExts] [GoGlobalContext] : go.GoType :=
+noncomputable def Type''.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Type" [])
 
-attribute [irreducible] «Type».ty
+attribute [irreducible] Type''.ty
 
 noncomputable def IntOrString.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.IntOrString" [])
@@ -3812,7 +3812,7 @@ noncomputable def testNegUnderflowConstIsPosZero.impl [GooseExts] [GoGlobalConte
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (let «local» := #(mkRat (-1 : Int) 100000000000000000000000000000000000000000000000000);
+  (let local'' := #(mkRat (-1 : Int) 100000000000000000000000000000000000000000000000000);
   (Let "$r0" (Val #(W64 0))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -4801,7 +4801,7 @@ noncomputable def evalCounter.ch.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.uint64)))) (Var "$res0"))))))
 
 /-- go: evalorder.go:52:23 -/
-noncomputable def evalCounter.val.impl [GooseExts] [GoGlobalContext] : val :=
+noncomputable def evalCounter.val''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -7539,19 +7539,19 @@ noncomputable def testLocalTypeNameShadow.impl [GooseExts] [GoGlobalContext] : v
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "$r0" (Let "$v0" (Val #(W64 7))
-  (App (Val (GoInstruction (CompositeLiteral IntOrString.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Type")) (ElementExpression «Type».ty (Var "$v0")))])))
+  (App (Val (GoInstruction (CompositeLiteral IntOrString.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Type")) (ElementExpression Type''.ty (Var "$v0")))])))
   (Let "x" (App (Val (GoInstruction (GoAlloc IntOrString.ty))) (App (Val (GoInstruction (GoZeroVal IntOrString.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 9))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals «Type».ty))) (Pair (App (Val (GoInstruction (GoLoad «Type».ty))) (App (Val (GoInstruction (StructFieldRef IntOrString.ty go!"Type"))) (Var "x"))) (Val #(W64 9))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals Type''.ty))) (Pair (App (Val (GoInstruction (GoLoad Type''.ty))) (App (Val (GoInstruction (StructFieldRef IntOrString.ty go!"Type"))) (Var "x"))) (Val #(W64 9))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore «Type».ty))) (Pair (App (Val (GoInstruction (StructFieldRef IntOrString.ty go!"Type"))) (Var "x")) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore Type''.ty))) (Pair (App (Val (GoInstruction (StructFieldRef IntOrString.ty go!"Type"))) (Var "x")) (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore IntOrString.ty))) (Pair (Var "x") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
@@ -8762,7 +8762,7 @@ noncomputable def msValRecv.Get.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0"))))))
 
 /-- go: method_sets.go:21:21 -/
-noncomputable def msPtrRecv.Set.impl [GooseExts] [GoGlobalContext] : val :=
+noncomputable def msPtrRecv.Set''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam "x"
   (Seq (App (Val exceptionDo)
@@ -9253,7 +9253,7 @@ noncomputable def msBoth.Get.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0"))))))
 
 /-- go: method_sets.go:146:18 -/
-noncomputable def msBoth.Set.impl [GooseExts] [GoGlobalContext] : val :=
+noncomputable def msBoth.Set''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "x"
   (Seq (App (Val exceptionDo)
@@ -9695,7 +9695,7 @@ noncomputable def msRenamed.Get.impl [GooseExts] [GoGlobalContext] (B A : go.GoT
   (App (Val (GoInstruction (GoLoad A))) (Var "$res0"))))))
 
 /-- go: method_sets.go:258:27 -/
-noncomputable def msRenamed.Set.impl [GooseExts] [GoGlobalContext] (X Y : go.GoType) : val :=
+noncomputable def msRenamed.Set''.impl [GooseExts] [GoGlobalContext] (X Y : go.GoType) : val :=
   (LamV "r"
   (Lam "v"
   (Seq (App (Val exceptionDo)
@@ -15502,7 +15502,7 @@ class evalCounter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType evalCounter.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.ch", (some (go.signature.Signature [(go.GoType.ChannelType go.ChanDir.sendrecv go.uint64)] false [(go.GoType.ChannelType go.ChanDir.sendrecv go.uint64)]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.next", (some (go.signature.Signature [] false [(go.GoType.SliceType go.uint64)]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.val", (some (go.signature.Signature [] false [go.uint64])))]
   ptr_ch_unfold : MethodUnfold (go.GoType.PointerType evalCounter.ty) go!"ch" evalCounter.ch.impl
   ptr_next_unfold : MethodUnfold (go.GoType.PointerType evalCounter.ty) go!"next" evalCounter.next.impl
-  ptr_val_unfold : MethodUnfold (go.GoType.PointerType evalCounter.ty) go!"val" evalCounter.val.impl
+  ptr_val_unfold : MethodUnfold (go.GoType.PointerType evalCounter.ty) go!"val" evalCounter.val''.impl
 
 attribute [instance] evalCounter.TypeAssumptions.type_repr
   evalCounter.TypeAssumptions.underlying
@@ -16104,29 +16104,29 @@ attribute [instance] Daisy.TypeAssumptions.type_repr
   Daisy.TypeAssumptions.ptr_Genus_unfold
   Daisy.TypeAssumptions.ptr_Petals_unfold
 
-abbrev «Type» [GooseExts] : Type := w64
+abbrev Type'' [GooseExts] : Type := w64
 
-@[reducible] noncomputable def «Type».underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Type''.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.int64
 
-class «Type».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq «Type».ty «Type».underlying
-  method_set : go.MethodSetIs «Type».ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType «Type».ty) []
+class Type''.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Type''.ty Type''.underlying
+  method_set : go.MethodSetIs Type''.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Type''.ty) []
 
-attribute [instance] «Type».TypeAssumptions.underlying
-  «Type».TypeAssumptions.method_set
-  «Type».TypeAssumptions.ptr_method_set
+attribute [instance] Type''.TypeAssumptions.underlying
+  Type''.TypeAssumptions.method_set
+  Type''.TypeAssumptions.ptr_method_set
 
 structure IntOrString [GooseExts] where
   mk ::
-  Type' : «Type»
+  Type' : Type''
 
 noncomputable instance IntOrString.zero_val [GooseExts] : ZeroVal IntOrString :=
   ⟨IntOrString.mk zeroValDef⟩
 
 @[reducible] noncomputable def IntOrString.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"Type" «Type».ty)]
+  [(go.field_decl.FieldDecl go!"Type" Type''.ty)]
 
 @[irreducible] noncomputable def IntOrString.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   IntOrString.fieldsUnsealed
@@ -16142,7 +16142,7 @@ class IntOrString.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext]
   type_repr : go.TypeReprUnderlying IntOrString.underlying IntOrString
   underlying : go.UnderlyingDirectedEq IntOrString.ty IntOrString.underlying
   get_Type : ∀ (x : IntOrString), go.IsGoStepPureDetTagged under (StructFieldGet IntOrString.underlying go!"Type") #x (Val #(x.Type'))
-  set_Type : ∀ (x : IntOrString) (y : «Type»), go.IsGoStepPureDetTagged under (StructFieldSet IntOrString.underlying go!"Type") (PairV #x #y) (Val #(({ x with Type' := y } : IntOrString)))
+  set_Type : ∀ (x : IntOrString) (y : Type''), go.IsGoStepPureDetTagged under (StructFieldSet IntOrString.underlying go!"Type") (PairV #x #y) (Val #(({ x with Type' := y } : IntOrString)))
   method_set : go.MethodSetIs IntOrString.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType IntOrString.ty) []
 
@@ -16366,7 +16366,7 @@ class msPtrRecv.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   set_x : ∀ (x : msPtrRecv) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet msPtrRecv.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : msPtrRecv)))
   method_set : go.MethodSetIs msPtrRecv.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType msPtrRecv.ty) [(go!"Set", (some (go.signature.Signature [go.uint64] false [])))]
-  ptr_Set_unfold : MethodUnfold (go.GoType.PointerType msPtrRecv.ty) go!"Set" msPtrRecv.Set.impl
+  ptr_Set_unfold : MethodUnfold (go.GoType.PointerType msPtrRecv.ty) go!"Set" msPtrRecv.Set''.impl
 
 attribute [instance] msPtrRecv.TypeAssumptions.type_repr
   msPtrRecv.TypeAssumptions.underlying
@@ -16639,7 +16639,7 @@ class msBoth.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   method_set : go.MethodSetIs msBoth.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType msBoth.ty) [(go!"Get", (some (go.signature.Signature [] false [go.uint64]))), (go!"Set", (some (go.signature.Signature [go.uint64] false [])))]
   ptr_Get_unfold : MethodUnfold (go.GoType.PointerType msBoth.ty) go!"Get" msBoth.Get.impl
-  ptr_Set_unfold : MethodUnfold (go.GoType.PointerType msBoth.ty) go!"Set" msBoth.Set.impl
+  ptr_Set_unfold : MethodUnfold (go.GoType.PointerType msBoth.ty) go!"Set" msBoth.Set''.impl
 
 attribute [instance] msBoth.TypeAssumptions.type_repr
   msBoth.TypeAssumptions.underlying
@@ -16858,7 +16858,7 @@ class msRenamed.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   Get_unfold : ∀ (A B : go.GoType), MethodUnfold (msRenamed.ty A B) go!"Get" (msRenamed.Get.impl A B)
   ptr_Get_unfold : ∀ (A B : go.GoType), MethodUnfold (go.GoType.PointerType (msRenamed.ty A B)) go!"Get" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (msRenamed.ty A B) go!"Get"))) (App (Val (GoInstruction (GoLoad (msRenamed.ty A B)))) (Var "$r"))))
-  ptr_Set_unfold : ∀ (A B : go.GoType), MethodUnfold (go.GoType.PointerType (msRenamed.ty A B)) go!"Set" (msRenamed.Set.impl A B)
+  ptr_Set_unfold : ∀ (A B : go.GoType), MethodUnfold (go.GoType.PointerType (msRenamed.ty A B)) go!"Set" (msRenamed.Set''.impl A B)
 
 attribute [instance] msRenamed.TypeAssumptions.type_repr
   msRenamed.TypeAssumptions.underlying
@@ -17638,7 +17638,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Lily_instance : Lily.TypeAssumptions
   Rose_instance : Rose.TypeAssumptions
   Daisy_instance : Daisy.TypeAssumptions
-  Type_instance : «Type».TypeAssumptions
+  Type_instance : Type''.TypeAssumptions
   IntOrString_instance : IntOrString.TypeAssumptions
   mutexHolder_instance : mutexHolder.TypeAssumptions
   LoopStruct_instance : LoopStruct.TypeAssumptions

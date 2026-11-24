@@ -479,6 +479,10 @@ func (suite *GoTestSuite) TestMiniPrintf() {
 	suite.Equal(true, testMiniPrintf())
 }
 
+func (suite *GoTestSuite) TestLocalTypeNameShadow() {
+	suite.Equal(true, testLocalTypeNameShadow())
+}
+
 func (suite *GoTestSuite) TestsUseLocks() {
 	suite.Equal(true, testsUseLocks())
 }

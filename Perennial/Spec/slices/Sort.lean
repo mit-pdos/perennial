@@ -29,7 +29,7 @@ abbrev slices.Sort.spec : Prop :=
         "Hxs" ∷ data ↦* xs ∗
         "%Hlength_bound" ∷ ⌜xs.length ≤ 2 ^ 62⌝ ∗
         "#Hless" ∷ lessImplements (Et := Et) R }}
-      (App (Val #(functions «Sort» [S, Et])) (Val #data))
+      (App (Val #(functions Sort'' [S, Et])) (Val #data))
     {{ (xs' : List E), RET #();
         "Hxs" ∷ data ↦* xs' ∗
         "%Hperm" ∷ ⌜xs ≡ₚ xs'⌝ ∗

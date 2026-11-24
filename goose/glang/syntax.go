@@ -38,22 +38,26 @@ type Expr interface {
 //     value type of a type parameter P is the binder P' (lean_types.go);
 //   - every other Go name X (a type, function, global, method, or the
 //     go.GoType binder of a type parameter) is GoName(X): X itself, or X''
-//     when X is reserved (see reservedName).
+//     when X is reserved (see reservedName). Lean keywords are reserved like
+//     every other conflicting name: Go `type Type int64` is `Type''`, `def` is
+//     `def''`, `Int` is `Int''`; the field `Type` is `Type'`.
 //
-// Names that are not plain Lean identifiers (Lean keywords such as `Type` or
-// `def`, non-ASCII names) are then written in guillemets (LeanQuote), which
-// does not change the name: Go `type Type int64` is `«Type»`, its field
-// `Type` is `Type'`.
+// Guillemets are only a lexing fallback, not a conflict rule: a Go identifier
+// may contain Unicode letters and digits that Lean's identifier lexer rejects
+// (`é`, `名`; Lean accepts ASCII letters, `_` and its letter-like ranges, such
+// as most Greek letters), and such a name is written in guillemets
+// (LeanQuoteComponent, conservatively for every non-ASCII name), which does
+// not change the name.
 //
 // Why this is collision-free: a field projection or value-type binder ends in
 // exactly one "'" after a Go identifier, and no other Go-derived name does
 // (Go identifiers have no "'", and reserved ones get two), so a projection
-// S.F' in namespace S can never capture a type, function or global, and the
-// binders P' are distinct from the fields of a structure (whose earlier fields
-// are in scope in its later fields' types) only because a model structure
-// names its parameters P (lean_types.go). Every other name that Lean or goose
-// puts next to Go names, or that the output references unqualified, is
-// reserved, so no Go name takes it.
+// S.F' in namespace S can never capture a type, function, global or method,
+// and the binders P' are distinct from the fields of a structure (whose
+// earlier fields are in scope in its later fields' types) only because a
+// model structure names its parameters P (lean_types.go). Every other name
+// that Lean or goose puts next to Go names, or that the output references
+// unqualified, is reserved, so no Go name takes it.
 
 // reservedNames are the Lean names a Go name (other than a field) must not
 // take; GoName renames such a Go name X to X”. A Lean declaration named
@@ -110,8 +114,8 @@ func init() {
 	}
 }
 
-// reservedName reports whether a Go name must be renamed by GoName: it is in
-// reservedNames or has the shape of a generated name: the members
+// reservedName reports whether a Go name must be renamed by GoName: it is a
+// Lean keyword, is in reservedNames, or has the shape of a generated name: the members
 // get_F/set_F/M_unfold/ptr_M_unfold of a TypeAssumptions class and
 // T_instance/f_unfold/import_p_Assumption of an Assumptions class (in scope
 // as locals in the later members' types), the instances equals_unfold_T of
@@ -121,7 +125,8 @@ func reservedName(x string) bool {
 		// not a Go identifier: a generated name, or one GoName renamed
 		return false
 	}
-	if reservedNames[x] {
+	if reservedNames[x] || LeanKeywords[x] {
+		// LeanKeywords: Lean's tokens, which an identifier must not be
 		return true
 	}
 	for _, p := range []string{"get_", "set_", "import_", "equals_unfold_"} {
@@ -515,7 +520,7 @@ type Decl interface {
 
 // TypeMethod is the name of the GooseLang implementation of a method.
 func TypeMethod(typeName string, methodName string) string {
-	return fmt.Sprintf("%s.%s.impl", GoName(typeName), methodName)
+	return fmt.Sprintf("%s.%s.impl", GoName(typeName), GoName(methodName))
 }
 
 // These will not end up in `File.Decls`, they are put into `File.Imports` by `translatePackage`.

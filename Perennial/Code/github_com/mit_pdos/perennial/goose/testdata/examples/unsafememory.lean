@@ -569,7 +569,7 @@ noncomputable def freelistSize.impl [GooseExts] [GoGlobalContext] : val :=
 /-- meta is Page.Meta: the Meta right after the page header.
 
     go: meta.go:30:16 -/
-noncomputable def Page.«meta».impl [GooseExts] [GoGlobalContext] : val :=
+noncomputable def Page.meta''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Meta.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType Meta.ty)))) (Val #())))
@@ -2748,7 +2748,7 @@ class Page.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
   ptr_freelistPageCount_unfold : MethodUnfold (go.GoType.PointerType Page.ty) go!"freelistPageCount" Page.freelistPageCount.impl
   ptr_leafPageElement_unfold : MethodUnfold (go.GoType.PointerType Page.ty) go!"leafPageElement" Page.leafPageElement.impl
   ptr_leafPageElements_unfold : MethodUnfold (go.GoType.PointerType Page.ty) go!"leafPageElements" Page.leafPageElements.impl
-  ptr_meta_unfold : MethodUnfold (go.GoType.PointerType Page.ty) go!"meta" Page.«meta».impl
+  ptr_meta_unfold : MethodUnfold (go.GoType.PointerType Page.ty) go!"meta" Page.meta''.impl
   ptr_pageElementSize_unfold : MethodUnfold (go.GoType.PointerType Page.ty) go!"pageElementSize" Page.pageElementSize.impl
 
 attribute [instance] Page.TypeAssumptions.type_repr

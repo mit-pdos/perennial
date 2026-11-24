@@ -52,7 +52,7 @@ noncomputable def is'' [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def As [GooseExts] [GoGlobalContext] : GoString :=
   go!"errors.As"
 
-noncomputable def «as» [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def as'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"errors.as"
 
 noncomputable def AsType [GooseExts] [GoGlobalContext] : GoString :=

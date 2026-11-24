@@ -35,7 +35,7 @@ abbrev sort.«Sort».spec : Prop :=
         "#Hsrt" ∷ isSorter x own R ∗
         "Hxs" ∷ own xs ∗
         "%Hlength_bound" ∷ ⌜xs.length ≤ 2 ^ 62⌝ }}
-      (App (Val (@! «Sort»)) (Val #(interface.ok x)))
+      (App (Val (@! Sort'')) (Val #(interface.ok x)))
     {{ (xs' : List E), RET #();
         "Hxs" ∷ own xs' ∗
         "%Hperm" ∷ ⌜xs ≡ₚ xs'⌝ ∗

@@ -353,7 +353,7 @@ noncomputable def gocoverdir [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def matchList [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.matchList"
 
-noncomputable def «match» [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def match'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.match"
 
 noncomputable def skip [GooseExts] [GoGlobalContext] : GoString :=

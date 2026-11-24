@@ -559,7 +559,7 @@ noncomputable def readFileContents [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def WriteFile [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.WriteFile"
 
-noncomputable def «open» [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def open'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.open"
 
 noncomputable def syscallMode [GooseExts] [GoGlobalContext] : GoString :=

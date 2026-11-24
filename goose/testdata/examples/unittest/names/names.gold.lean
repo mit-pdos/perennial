@@ -20,25 +20,35 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.unittest.names
 
-noncomputable def «Type».ty [GooseExts] [GoGlobalContext] : go.GoType :=
+noncomputable def Type''.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.Type" [])
 
-attribute [irreducible] «Type».ty
+attribute [irreducible] Type''.ty
 
 noncomputable def IntOrString.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.IntOrString" [])
 
 attribute [irreducible] IntOrString.ty
 
-noncomputable def «def».ty [GooseExts] [GoGlobalContext] : go.GoType :=
+noncomputable def def''.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.def" [])
 
-attribute [irreducible] «def».ty
+attribute [irreducible] def''.ty
 
 noncomputable def K.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.K" [])
 
 attribute [irreducible] K.ty
+
+noncomputable def «é».ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.é" [])
+
+attribute [irreducible] «é».ty
+
+noncomputable def «Ñ».ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.Ñ" [])
+
+attribute [irreducible] «Ñ».ty
 
 noncomputable def Pair''.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.Pair" [])
@@ -110,7 +120,7 @@ noncomputable def Foo_Assumptions.ty [GooseExts] [GoGlobalContext] : go.GoType :
 
 attribute [irreducible] Foo_Assumptions.ty
 
-noncomputable def «at» [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def at'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.at"
 
 noncomputable def gl [GooseExts] [GoGlobalContext] : GoString :=
@@ -119,8 +129,11 @@ noncomputable def gl [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def useIntOrString [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.useIntOrString"
 
-noncomputable def «fun» [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def fun'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.fun"
+
+noncomputable def «ü» [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.ü"
 
 noncomputable def mk'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.mk"
@@ -152,55 +165,100 @@ noncomputable def useFoo [GooseExts] [GoGlobalContext] : GoString :=
 /-- go: names.go:17:6 -/
 noncomputable def useIntOrString.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc «Type».ty))) (App (Val (GoInstruction (GoZeroVal «Type».ty))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Type''.ty))) (App (Val (GoInstruction (GoZeroVal Type''.ty))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "$r0" (Let "$v0" (Val #(W64 7))
-  (App (Val (GoInstruction (CompositeLiteral IntOrString.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Type")) (ElementExpression «Type».ty (Var "$v0")))])))
+  (App (Val (GoInstruction (CompositeLiteral IntOrString.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Type")) (ElementExpression Type''.ty (Var "$v0")))])))
   (Let "x" (App (Val (GoInstruction (GoAlloc IntOrString.ty))) (App (Val (GoInstruction (GoZeroVal IntOrString.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 9))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus «Type».ty))) (Pair (App (Val (GoInstruction (GoLoad «Type».ty))) (App (Val (GoInstruction (StructFieldRef IntOrString.ty go!"Type"))) (Var "x"))) (App (Val (GoInstruction (GoLoad «Type».ty))) (App (Val (GoInstruction (StructFieldRef IntOrString.ty go!"Other"))) (Var "x")))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus Type''.ty))) (Pair (App (Val (GoInstruction (GoLoad Type''.ty))) (App (Val (GoInstruction (StructFieldRef IntOrString.ty go!"Type"))) (Var "x"))) (App (Val (GoInstruction (GoLoad Type''.ty))) (App (Val (GoInstruction (StructFieldRef IntOrString.ty go!"Other"))) (Var "x")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore «Type».ty))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore Type''.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore «Type».ty))) (Pair (App (Val (GoInstruction (StructFieldRef IntOrString.ty go!"Type"))) (Var "x")) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore Type''.ty))) (Pair (App (Val (GoInstruction (StructFieldRef IntOrString.ty go!"Type"))) (Var "x")) (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore IntOrString.ty))) (Pair (Var "x") (Var "$r0"))))))))
-  (App (Val (GoInstruction (GoLoad «Type».ty))) (Var "$res0")))))
+  (App (Val (GoInstruction (GoLoad Type''.ty))) (Var "$res0")))))
 
-/-- go: names.go:28:6 -/
-noncomputable def «fun».impl [GooseExts] [GoGlobalContext] : val :=
+/-- go: names.go:29:6 -/
+noncomputable def fun''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc «def».ty))) (App (Val (GoInstruction (GoZeroVal «def».ty))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc def''.ty))) (App (Val (GoInstruction (GoZeroVal def''.ty))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "$r0" (App (Val (GoInstruction (GoLoad «def».ty))) (App (Val (GoInstruction (GlobalVarAddr «at»))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad def''.ty))) (App (Val (GoInstruction (GlobalVarAddr at''))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore «def».ty))) (Pair (Var "$res0") (Var "$r0")))))))
-  (App (Val (GoInstruction (GoLoad «def».ty))) (Var "$res0")))))
+  (App (Val (GoInstruction (GoStore def''.ty))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad def''.ty))) (Var "$res0")))))
 
-/-- go: names.go:34:12 -/
-noncomputable def K.«show».impl [GooseExts] [GoGlobalContext] : val :=
+/-- go: names.go:35:12 -/
+noncomputable def K.show''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "k"
   (Lam BAnon
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc «def».ty))) (App (Val (GoInstruction (GoZeroVal «def».ty))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc def''.ty))) (App (Val (GoInstruction (GoZeroVal def''.ty))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "k" (App (Val (GoInstruction (GoAlloc K.ty))) (Var "k"))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad «def».ty))) (App (Val (GoInstruction (StructFieldRef K.ty go!"match"))) (Var "k")))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad def''.ty))) (App (Val (GoInstruction (StructFieldRef K.ty go!"match"))) (Var "k")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore «def».ty))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (App (Val (GoInstruction (GoLoad «def».ty))) (Var "$res0"))))))
+  (App (Val (GoInstruction (GoStore def''.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad def''.ty))) (Var "$res0"))))))
 
-/-- go: names.go:58:12 -/
+/-- go: names.go:37:12 -/
+noncomputable def K.end''.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "k"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc def''.ty))) (App (Val (GoInstruction (GoZeroVal def''.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "k" (App (Val (GoInstruction (GoAlloc K.ty))) (Var "k"))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType K.ty) go!"show"))) (Var "k")) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore def''.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad def''.ty))) (Var "$res0"))))))
+
+/-- go: names.go:47:6 -/
+noncomputable def «ü».impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "x"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc «é».ty))) (App (Val (GoInstruction (GoZeroVal «é».ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc «é».ty))) (Var "x"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad «é».ty))) (Var "x"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore «é».ty))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad «é».ty))) (Var "$res0")))))
+
+/-- go: names.go:49:13 -/
+noncomputable def «Ñ».«ö».impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "n"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc «é».ty))) (App (Val (GoInstruction (GoZeroVal «é».ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "n" (App (Val (GoInstruction (GoAlloc «Ñ».ty))) (Var "n"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad «é».ty))) (App (Val (GoInstruction (StructFieldRef «Ñ».ty go!"ñ"))) (Var "n")))
+  (App (App (Val (GoInstruction (FuncResolve «ü» []))) (Val #())) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore «é».ty))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad «é».ty))) (Var "$res0"))))))
+
+/-- go: names.go:73:12 -/
 noncomputable def U.get.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam BAnon
@@ -215,7 +273,7 @@ noncomputable def U.get.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore ty''.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad ty''.ty))) (Var "$res0"))))))
 
-/-- go: names.go:60:6 -/
+/-- go: names.go:75:6 -/
 noncomputable def mk''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -228,7 +286,7 @@ noncomputable def mk''.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
 
-/-- go: names.go:61:6 -/
+/-- go: names.go:76:6 -/
 noncomputable def rec''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -241,7 +299,7 @@ noncomputable def rec''.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
 
-/-- go: names.go:62:6 -/
+/-- go: names.go:77:6 -/
 noncomputable def impl''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -254,7 +312,7 @@ noncomputable def impl''.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
 
-/-- go: names.go:63:6 -/
+/-- go: names.go:78:6 -/
 noncomputable def eq_def''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -267,7 +325,7 @@ noncomputable def eq_def''.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
 
-/-- go: names.go:64:6 -/
+/-- go: names.go:79:6 -/
 noncomputable def eq_1''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -280,7 +338,7 @@ noncomputable def eq_1''.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
 
-/-- go: names.go:66:6 -/
+/-- go: names.go:81:6 -/
 noncomputable def callsReserved.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -293,7 +351,7 @@ noncomputable def callsReserved.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
 
-/-- go: names.go:68:12 -/
+/-- go: names.go:83:12 -/
 noncomputable def U.callsReserved.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "u"
   (Lam BAnon
@@ -312,7 +370,7 @@ noncomputable def U.callsReserved.impl [GooseExts] [GoGlobalContext] : val :=
     another method: the function, type and global must not resolve to the
     method.
 
-    go: names.go:85:6 -/
+    go: names.go:100:6 -/
 noncomputable def f.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -325,7 +383,7 @@ noncomputable def f.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
 
-/-- go: names.go:93:12 -/
+/-- go: names.go:108:12 -/
 noncomputable def S.f.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
@@ -340,7 +398,7 @@ noncomputable def S.f.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
-/-- go: names.go:94:12 -/
+/-- go: names.go:109:12 -/
 noncomputable def S.T.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
@@ -355,7 +413,7 @@ noncomputable def S.T.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore T.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad T.ty))) (Var "$res0"))))))
 
-/-- go: names.go:95:12 -/
+/-- go: names.go:110:12 -/
 noncomputable def S.gl.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
@@ -370,7 +428,7 @@ noncomputable def S.gl.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
-/-- go: names.go:96:12 -/
+/-- go: names.go:111:12 -/
 noncomputable def S.g.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
@@ -388,8 +446,8 @@ noncomputable def S.g.impl [GooseExts] [GoGlobalContext] : val :=
 /-- Methods named like the names goose and Lean declare in a type's
     namespace, and like framework names.
 
-    go: names.go:100:12 -/
-noncomputable def S.ty.impl [GooseExts] [GoGlobalContext] : val :=
+    go: names.go:115:12 -/
+noncomputable def S.ty''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -403,8 +461,8 @@ noncomputable def S.ty.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
-/-- go: names.go:101:12 -/
-noncomputable def S.underlying.impl [GooseExts] [GoGlobalContext] : val :=
+/-- go: names.go:116:12 -/
+noncomputable def S.underlying''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -418,8 +476,8 @@ noncomputable def S.underlying.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
-/-- go: names.go:102:12 -/
-noncomputable def S.mk.impl [GooseExts] [GoGlobalContext] : val :=
+/-- go: names.go:117:12 -/
+noncomputable def S.mk''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -433,8 +491,8 @@ noncomputable def S.mk.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
-/-- go: names.go:103:12 -/
-noncomputable def S.Val.impl [GooseExts] [GoGlobalContext] : val :=
+/-- go: names.go:118:12 -/
+noncomputable def S.Val''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -448,7 +506,7 @@ noncomputable def S.Val.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
-/-- go: names.go:120:6 -/
+/-- go: names.go:135:6 -/
 noncomputable def unbox.impl [GooseExts] [GoGlobalContext] (Val'' : go.GoType) : val :=
   (LamV "b"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc Val''))) (App (Val (GoInstruction (GoZeroVal Val''))) (Val #())))
@@ -462,7 +520,7 @@ noncomputable def unbox.impl [GooseExts] [GoGlobalContext] (Val'' : go.GoType) :
   (App (Val (GoInstruction (GoStore Val''))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad Val''))) (Var "$res0")))))
 
-/-- go: names.go:125:6 -/
+/-- go: names.go:140:6 -/
 noncomputable def useFoo.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -488,35 +546,35 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (go.GlobalAlloc «at» «def».ty)) (Val #()))))))
+  (App (Val (go.GlobalAlloc at'' def''.ty)) (Val #()))))))
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc gl go.int)) (Val #()))))))))
 
-abbrev «Type» [GooseExts] : Type := w64
+abbrev Type'' [GooseExts] : Type := w64
 
-@[reducible] noncomputable def «Type».underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Type''.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.int64
 
-class «Type».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq «Type».ty «Type».underlying
-  method_set : go.MethodSetIs «Type».ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType «Type».ty) []
+class Type''.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Type''.ty Type''.underlying
+  method_set : go.MethodSetIs Type''.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Type''.ty) []
 
-attribute [instance] «Type».TypeAssumptions.underlying
-  «Type».TypeAssumptions.method_set
-  «Type».TypeAssumptions.ptr_method_set
+attribute [instance] Type''.TypeAssumptions.underlying
+  Type''.TypeAssumptions.method_set
+  Type''.TypeAssumptions.ptr_method_set
 
 structure IntOrString [GooseExts] where
   mk ::
-  Type' : «Type»
-  Other' : «Type»
+  Type' : Type''
+  Other' : Type''
 
 noncomputable instance IntOrString.zero_val [GooseExts] : ZeroVal IntOrString :=
   ⟨IntOrString.mk zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def IntOrString.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"Type" «Type».ty),
-(go.field_decl.FieldDecl go!"Other" «Type».ty)]
+  [(go.field_decl.FieldDecl go!"Type" Type''.ty),
+(go.field_decl.FieldDecl go!"Other" Type''.ty)]
 
 @[irreducible] noncomputable def IntOrString.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   IntOrString.fieldsUnsealed
@@ -532,9 +590,9 @@ class IntOrString.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext]
   type_repr : go.TypeReprUnderlying IntOrString.underlying IntOrString
   underlying : go.UnderlyingDirectedEq IntOrString.ty IntOrString.underlying
   get_Type : ∀ (x : IntOrString), go.IsGoStepPureDetTagged under (StructFieldGet IntOrString.underlying go!"Type") #x (Val #(x.Type'))
-  set_Type : ∀ (x : IntOrString) (y : «Type»), go.IsGoStepPureDetTagged under (StructFieldSet IntOrString.underlying go!"Type") (PairV #x #y) (Val #(({ x with Type' := y } : IntOrString)))
+  set_Type : ∀ (x : IntOrString) (y : Type''), go.IsGoStepPureDetTagged under (StructFieldSet IntOrString.underlying go!"Type") (PairV #x #y) (Val #(({ x with Type' := y } : IntOrString)))
   get_Other : ∀ (x : IntOrString), go.IsGoStepPureDetTagged under (StructFieldGet IntOrString.underlying go!"Other") #x (Val #(x.Other'))
-  set_Other : ∀ (x : IntOrString) (y : «Type»), go.IsGoStepPureDetTagged under (StructFieldSet IntOrString.underlying go!"Other") (PairV #x #y) (Val #(({ x with Other' := y } : IntOrString)))
+  set_Other : ∀ (x : IntOrString) (y : Type''), go.IsGoStepPureDetTagged under (StructFieldSet IntOrString.underlying go!"Other") (PairV #x #y) (Val #(({ x with Other' := y } : IntOrString)))
   method_set : go.MethodSetIs IntOrString.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType IntOrString.ty) []
 
@@ -547,29 +605,29 @@ attribute [instance] IntOrString.TypeAssumptions.type_repr
   IntOrString.TypeAssumptions.method_set
   IntOrString.TypeAssumptions.ptr_method_set
 
-abbrev «def» [GooseExts] : Type := w64
+abbrev def'' [GooseExts] : Type := w64
 
-@[reducible] noncomputable def «def».underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def def''.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.int64
 
-class «def».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq «def».ty «def».underlying
-  method_set : go.MethodSetIs «def».ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType «def».ty) []
+class def''.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq def''.ty def''.underlying
+  method_set : go.MethodSetIs def''.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType def''.ty) []
 
-attribute [instance] «def».TypeAssumptions.underlying
-  «def».TypeAssumptions.method_set
-  «def».TypeAssumptions.ptr_method_set
+attribute [instance] def''.TypeAssumptions.underlying
+  def''.TypeAssumptions.method_set
+  def''.TypeAssumptions.ptr_method_set
 
 structure K [GooseExts] where
   mk ::
-  match' : «def»
+  match' : def''
 
 noncomputable instance K.zero_val [GooseExts] : ZeroVal K :=
   ⟨K.mk zeroValDef⟩
 
 @[reducible] noncomputable def K.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"match" «def».ty)]
+  [(go.field_decl.FieldDecl go!"match" def''.ty)]
 
 @[irreducible] noncomputable def K.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   K.fieldsUnsealed
@@ -585,10 +643,13 @@ class K.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemant
   type_repr : go.TypeReprUnderlying K.underlying K
   underlying : go.UnderlyingDirectedEq K.ty K.underlying
   get_match : ∀ (x : K), go.IsGoStepPureDetTagged under (StructFieldGet K.underlying go!"match") #x (Val #(x.match'))
-  set_match : ∀ (x : K) (y : «def»), go.IsGoStepPureDetTagged under (StructFieldSet K.underlying go!"match") (PairV #x #y) (Val #(({ x with match' := y } : K)))
-  method_set : go.MethodSetIs K.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.show", (some (go.signature.Signature [] false [«def».ty])))]
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType K.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.show", (some (go.signature.Signature [] false [«def».ty])))]
-  show_unfold : MethodUnfold K.ty go!"show" K.«show».impl
+  set_match : ∀ (x : K) (y : def''), go.IsGoStepPureDetTagged under (StructFieldSet K.underlying go!"match") (PairV #x #y) (Val #(({ x with match' := y } : K)))
+  method_set : go.MethodSetIs K.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.end", (some (go.signature.Signature [] false [def''.ty]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.show", (some (go.signature.Signature [] false [def''.ty])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType K.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.end", (some (go.signature.Signature [] false [def''.ty]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.show", (some (go.signature.Signature [] false [def''.ty])))]
+  end_unfold : MethodUnfold K.ty go!"end" K.end''.impl
+  show_unfold : MethodUnfold K.ty go!"show" K.show''.impl
+  ptr_end_unfold : MethodUnfold (go.GoType.PointerType K.ty) go!"end" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve K.ty go!"end"))) (App (Val (GoInstruction (GoLoad K.ty))) (Var "$r"))))
   ptr_show_unfold : MethodUnfold (go.GoType.PointerType K.ty) go!"show" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve K.ty go!"show"))) (App (Val (GoInstruction (GoLoad K.ty))) (Var "$r"))))
 
@@ -598,8 +659,64 @@ attribute [instance] K.TypeAssumptions.type_repr
   K.TypeAssumptions.set_match
   K.TypeAssumptions.method_set
   K.TypeAssumptions.ptr_method_set
+  K.TypeAssumptions.end_unfold
   K.TypeAssumptions.show_unfold
+  K.TypeAssumptions.ptr_end_unfold
   K.TypeAssumptions.ptr_show_unfold
+
+abbrev «é» [GooseExts] : Type := w64
+
+@[reducible] noncomputable def «é».underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  go.int64
+
+class «é».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq «é».ty «é».underlying
+  method_set : go.MethodSetIs «é».ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType «é».ty) []
+
+attribute [instance] «é».TypeAssumptions.underlying
+  «é».TypeAssumptions.method_set
+  «é».TypeAssumptions.ptr_method_set
+
+structure «Ñ» [GooseExts] where
+  mk ::
+  «ñ'» : «é»
+
+noncomputable instance «Ñ».zero_val [GooseExts] : ZeroVal «Ñ» :=
+  ⟨«Ñ».mk zeroValDef⟩
+
+@[reducible] noncomputable def «Ñ».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"ñ" «é».ty)]
+
+@[irreducible] noncomputable def «Ñ».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  «Ñ».fieldsUnsealed
+
+noncomputable instance «equals_unfold_Ñ» [GooseExts] [GoGlobalContext] :
+    EqualsUnfold «Ñ».fields «Ñ».fieldsUnsealed :=
+  ⟨by unfold «Ñ».fields; rfl⟩
+
+@[reducible] noncomputable def «Ñ».underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType «Ñ».fields)
+
+class «Ñ».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying «Ñ».underlying «Ñ»
+  underlying : go.UnderlyingDirectedEq «Ñ».ty «Ñ».underlying
+  «get_ñ» : ∀ (x : «Ñ»), go.IsGoStepPureDetTagged under (StructFieldGet «Ñ».underlying go!"ñ") #x (Val #(x.«ñ'»))
+  «set_ñ» : ∀ (x : «Ñ») (y : «é»), go.IsGoStepPureDetTagged under (StructFieldSet «Ñ».underlying go!"ñ") (PairV #x #y) (Val #(({ x with «ñ'» := y } : «Ñ»)))
+  method_set : go.MethodSetIs «Ñ».ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.ö", (some (go.signature.Signature [] false [«é».ty])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType «Ñ».ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.ö", (some (go.signature.Signature [] false [«é».ty])))]
+  «ö_unfold» : MethodUnfold «Ñ».ty go!"ö" «Ñ».«ö».impl
+  «ptr_ö_unfold» : MethodUnfold (go.GoType.PointerType «Ñ».ty) go!"ö" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve «Ñ».ty go!"ö"))) (App (Val (GoInstruction (GoLoad «Ñ».ty))) (Var "$r"))))
+
+attribute [instance] «Ñ».TypeAssumptions.type_repr
+  «Ñ».TypeAssumptions.underlying
+  «Ñ».TypeAssumptions.«get_ñ»
+  «Ñ».TypeAssumptions.«set_ñ»
+  «Ñ».TypeAssumptions.method_set
+  «Ñ».TypeAssumptions.ptr_method_set
+  «Ñ».TypeAssumptions.«ö_unfold»
+  «Ñ».TypeAssumptions.«ptr_ö_unfold»
 
 abbrev Pair'' [GooseExts] : Type := w64
 
@@ -866,13 +983,13 @@ class S.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemant
   method_set : go.MethodSetIs S.ty [(go!"T", (some (go.signature.Signature [] false [T.ty]))), (go!"Val", (some (go.signature.Signature [] false [go.int]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.f", (some (go.signature.Signature [] false [go.int]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.g", (some (go.signature.Signature [] false [go.int]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.gl", (some (go.signature.Signature [] false [go.int]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.mk", (some (go.signature.Signature [] false [go.int]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.ty", (some (go.signature.Signature [] false [go.int]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.underlying", (some (go.signature.Signature [] false [go.int])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType S.ty) [(go!"T", (some (go.signature.Signature [] false [T.ty]))), (go!"Val", (some (go.signature.Signature [] false [go.int]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.f", (some (go.signature.Signature [] false [go.int]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.g", (some (go.signature.Signature [] false [go.int]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.gl", (some (go.signature.Signature [] false [go.int]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.mk", (some (go.signature.Signature [] false [go.int]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.ty", (some (go.signature.Signature [] false [go.int]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names.underlying", (some (go.signature.Signature [] false [go.int])))]
   T_unfold : MethodUnfold S.ty go!"T" S.T.impl
-  Val_unfold : MethodUnfold S.ty go!"Val" S.Val.impl
+  Val_unfold : MethodUnfold S.ty go!"Val" S.Val''.impl
   f_unfold : MethodUnfold S.ty go!"f" S.f.impl
   g_unfold : MethodUnfold S.ty go!"g" S.g.impl
   gl_unfold : MethodUnfold S.ty go!"gl" S.gl.impl
-  mk_unfold : MethodUnfold S.ty go!"mk" S.mk.impl
-  ty_unfold : MethodUnfold S.ty go!"ty" S.ty.impl
-  underlying_unfold : MethodUnfold S.ty go!"underlying" S.underlying.impl
+  mk_unfold : MethodUnfold S.ty go!"mk" S.mk''.impl
+  ty_unfold : MethodUnfold S.ty go!"ty" S.ty''.impl
+  underlying_unfold : MethodUnfold S.ty go!"underlying" S.underlying''.impl
   ptr_T_unfold : MethodUnfold (go.GoType.PointerType S.ty) go!"T" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve S.ty go!"T"))) (App (Val (GoInstruction (GoLoad S.ty))) (Var "$r"))))
   ptr_Val_unfold : MethodUnfold (go.GoType.PointerType S.ty) go!"Val" (LamV "$r"
@@ -1049,10 +1166,12 @@ attribute [instance] Foo_Assumptions.TypeAssumptions.type_repr
   Foo_Assumptions.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Type_instance : «Type».TypeAssumptions
+  Type_instance : Type''.TypeAssumptions
   IntOrString_instance : IntOrString.TypeAssumptions
-  def_instance : «def».TypeAssumptions
+  def_instance : def''.TypeAssumptions
   K_instance : K.TypeAssumptions
+  «é_instance» : «é».TypeAssumptions
+  «Ñ_instance» : «Ñ».TypeAssumptions
   Pair_instance : Pair''.TypeAssumptions
   HasPair_instance : HasPair.TypeAssumptions
   ty_instance : ty''.TypeAssumptions
@@ -1068,7 +1187,8 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Box2_instance : Box2.TypeAssumptions
   Foo_Assumptions_instance : Foo_Assumptions.TypeAssumptions
   useIntOrString_unfold : FuncUnfold useIntOrString [] useIntOrString.impl
-  fun_unfold : FuncUnfold «fun» [] «fun».impl
+  fun_unfold : FuncUnfold fun'' [] fun''.impl
+  «ü_unfold» : FuncUnfold «ü» [] «ü».impl
   mk_unfold : FuncUnfold mk'' [] mk''.impl
   rec_unfold : FuncUnfold rec'' [] rec''.impl
   impl_unfold : FuncUnfold impl'' [] impl''.impl
@@ -1083,6 +1203,8 @@ attribute [instance] Assumptions.Type_instance
   Assumptions.IntOrString_instance
   Assumptions.def_instance
   Assumptions.K_instance
+  Assumptions.«é_instance»
+  Assumptions.«Ñ_instance»
   Assumptions.Pair_instance
   Assumptions.HasPair_instance
   Assumptions.ty_instance
@@ -1099,6 +1221,7 @@ attribute [instance] Assumptions.Type_instance
   Assumptions.Foo_Assumptions_instance
   Assumptions.useIntOrString_unfold
   Assumptions.fun_unfold
+  Assumptions.«ü_unfold»
   Assumptions.mk_unfold
   Assumptions.rec_unfold
   Assumptions.impl_unfold

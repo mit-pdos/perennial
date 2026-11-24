@@ -4,7 +4,7 @@
 // declarations share a name).
 package names
 
-// A Lean keyword as a type name (written «Type»), and a field of that name
+// A Lean keyword as a type name (Type''), and a field of that name
 // and type (the projection Type'): inside namespace IntOrString, the type
 // must not resolve to the projection.
 type Type int64
@@ -20,7 +20,8 @@ func useIntOrString() Type {
 	return x.Type + x.Other
 }
 
-// Other Lean keywords, as a type, function, global, field and method.
+// Other Lean keywords, as a type, function, global, field and method
+// (def'', fun'', at'', match', show''), and a name Lean cannot lex (é).
 type def int64
 
 var at def
@@ -32,6 +33,20 @@ type K struct {
 }
 
 func (k K) show() def { return k.match }
+
+func (k K) end() def { return k.show() }
+
+// Names Lean's lexer rejects (written in guillemets): a type, function,
+// field and method.
+type é int64
+
+type Ñ struct {
+	ñ é
+}
+
+func ü(x é) é { return x }
+
+func (n Ñ) ö() é { return ü(n.ñ) }
 
 // A framework name the generated code refers to unqualified (Pair), as a
 // type, and a field of that name and type.
