@@ -8,6 +8,7 @@ module
 public import Perennial.Proof.internal.gomodel.Link
 public import Perennial.Proof.internal.reflectcore.Link
 public import Perennial.Proof.iter.Link
+public import Perennial.Proof.reflect.Kind__String
 public import Perennial.Proof.reflect.TypeOf
 public import Perennial.Proof.reflect.ValueOf
 public import Perennial.Proof.reflect.Value__CanAddr
@@ -44,6 +45,9 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : reflect.Assumptions]
+
+theorem reflect.Kind.wp_String : reflect.Kind.String.spec (GF := GF) (hG := hG) :=
+  reflect.Kind.String.wp_proof
 
 theorem reflect.wp_isModelRType : reflect.isModelRType.spec (GF := GF) (hG := hG) :=
   reflect.isModelRType.wp_proof internal.reflectcore.wp_TokOf

@@ -48,10 +48,25 @@ theorem reflect.initialize'.wp_proof
   wp_apply wp_slice_literal (V := GoString) (t := go.string) _
   isplitr
   · ipureintro; rfl
-  iintro %_ ⟨_, _⟩
+  iintro %sl ⟨Hsl, -⟩
+  iapply wp_fupd
   wp_auto
+  ipersist Hk
+  ipersist Hsl
   iframe Hown
   is_pkg_init_finish
+  isplitr
+  · itrivial
+  imodintro
+  imodintro
+  unfold reflect.isInit
+  iexists _
+  iframe Hk
+  have key : ∀ (L : List GoString) (s : GoSlice), L = reflect.kindNamesVal →
+      (s ↦*□ L : IProp GF) ⊢ s ↦*□ reflect.kindNamesVal := by
+    intro L s h; rw [h]
+  iapply key _ _ ?_ $$ Hsl
+  simp [go.arrayLiteralSize, reflect.kindNamesVal, Int.max_def]
 
 end proof
 

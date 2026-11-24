@@ -376,6 +376,22 @@ theorem Type.wp_Kind (rt : Type') (T : go.GoType) {u : go.GoType} [T ↓u u] (k 
   iapply HΦ
   itrivial
 
+/-! ## `Kind.String` -/
+
+/-- `Pointer.String()`: `"ptr"`. -/
+theorem Kind.wp_String_pointer :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
+      (App (Val ((W64 22 : w64) @!! Kind.ty @!! go!"String")) (Val #()))
+    {{ RET #(go!"ptr"); True }} :=
+  (reflect.Kind.wp_String : reflect.Kind.String.spec (GF := GF) (hG := hG)) (W64 22) _ rfl
+
+/-- `Struct.String()`: `"struct"`. -/
+theorem Kind.wp_String_struct :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
+      (App (Val ((W64 25 : w64) @!! Kind.ty @!! go!"String")) (Val #()))
+    {{ RET #(go!"struct"); True }} :=
+  (reflect.Kind.wp_String : reflect.Kind.String.spec (GF := GF) (hG := hG)) (W64 25) _ rfl
+
 end results
 
 end reflect
