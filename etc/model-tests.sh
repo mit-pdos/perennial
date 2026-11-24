@@ -14,14 +14,37 @@
 #            TestBuilderGrow, TestBuilderAllocs, TestBuilderGrowSizeclasses,
 #            TestReplace              allocation counts: Builder.String's model
 #                                     copies the buffer, and copyCheck's stores
-#                                     b in b.addr, so b escapes
+#                                     b in b.addr, so b escapes; and
+#                                     internal/bytealg.MakeNoZero's Go body
+#                                     allocates exactly the length asked for,
+#                                     not gc's size class
 #            TestBuilderCopyPanic     copyCheck's model is stuck (gomodel.Stuck,
 #                                     which blocks in gc) where Go's check
 #                                     fails, and Reset's model keeps b.addr
 #   errors   TestIs                   its uncomparable target (#13): Is's model
 #                                     compares it, which panics in gc (and is
 #                                     stuck in GooseLang)
-# internal/stringslite has no tests; bytes and internal/bytealg run in full.
+#   time     TestAfterStop, TestTimerStopStress, TestChan, TestTicker,
+#            TestReset, TestTimerModifiedEarlier, TestAdjustTimers
+#                                     Stop and Reset: their models do not
+#                                     cancel the firings already armed (each
+#                                     is a schedule of Go's in which Stop or
+#                                     Reset came later), so stopped timers
+#                                     fire, reset tickers keep their old
+#                                     period, and a reset timer's old firing
+#                                     blocks on its unbuffered channel (the
+#                                     last three hang)
+#            TestTimerGC              allocation counts: a model timer's
+#                                     goroutine keeps it alive until it fires
+#   sync     TestMutexMisuse          an Unlock of an unlocked Mutex: fatal's
+#                                     model is stuck (gomodel.Stuck, which
+#                                     blocks in gc) where Go ends the program
+#            TestPool, TestPoolGC, TestPoolRelease
+#                                     the GC clearing pools: the model of
+#                                     Pool has no GC, its Get may return a
+#                                     value Go's GC would have dropped
+# internal/stringslite has no tests; bytes, internal/bytealg and internal/sync
+# run in full.
 #
 # usage: etc/model-tests.sh
 set -euo pipefail
@@ -31,10 +54,14 @@ trap 'rm -rf "$OUT"' EXIT
 cd "$ROOT/goose"
 go build -o "$OUT/goose" ./cmd/goose
 "$OUT/goose" model-overlay -configdir "$ROOT/Perennial/Code" -dir . -tags purego -o "$OUT/ov" \
-  strings bytes errors internal/stringslite internal/bytealg
+  strings bytes errors internal/stringslite internal/bytealg internal/sync sync time
 # go vet does not find the overlay-added internal/gomodel (it changes into the package's directory)
-run() { go test -vet=off -timeout 300s -overlay "$OUT/ov/overlay.json" -tags purego,goose "$@"; }
+run() { go test -vet=off -timeout 600s -overlay "$OUT/ov/overlay.json" -tags purego,goose "$@"; }
 run strings -skip '^(TestSplit|ExampleSplit|TestBuilderGrow|TestBuilderAllocs|TestBuilderGrowSizeclasses|TestReplace|TestBuilderCopyPanic)$'
 run errors -skip '^TestIs$'
-run bytes internal/stringslite internal/bytealg
+run sync -skip '^(TestMutexMisuse|TestPool|TestPoolGC|TestPoolRelease)$'
+# the models' own tests (goose/model/overlaytests: Cond.Wait without a signal blocks, ...)
+run ./model/overlaytests/
+run bytes internal/stringslite internal/bytealg internal/sync
+run time -skip '^(TestAfterStop|TestTimerStopStress|TestChan|TestTicker|TestReset|TestTimerModifiedEarlier|TestAdjustTimers|TestTimerGC)$'
 echo "model-tests: ok"
