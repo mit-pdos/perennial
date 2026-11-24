@@ -51,18 +51,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
 
-/-- `fmt.fmt.fmtSbx.spec` with the premise that the input has fewer than `2^62` bytes: for a
-longer one, `width := 2 * length` overflows to a negative `int` and Go writes nothing. -/
-theorem fmt.fmt.fmtSbx.wp_proof_of_lt :
-    ∀ (f b : Loc) (F : fmtFlags) (wid prec : w64) (bs s : GoString) (sl : GoSlice) (ys : GoString)
-      (q : DFrac) (upper : Bool),
-      F.precPresent' = false → F.widPresent' = false → F.sharp' = false → F.space' = false →
-      (if sl = slice.nil then s else ys).length < 2 ^ 62 →
-      {{ fmtOwn (GF := GF) f b F wid prec ∗ bufferOwn b bs ∗ sl ↦*{q} ys }}
-        (App (App (App (Val (f @!! go.GoType.PointerType fmt.fmt.ty @!! go!"fmtSbx")) (Val #s)) (Val #sl))
-          (Val #(hexDigits upper)))
-      {{ RET #(); fmtOwn f b F wid prec ∗
-          bufferOwn b (bs ++ bytesHex upper (if sl = slice.nil then s else ys)) ∗ sl ↦*{q} ys }} :=
+theorem fmt.fmt.fmtSbx.wp_proof : fmt.fmt.fmtSbx.spec (GF := GF) (hG := hG) :=
     fun f b F wid prec bs s sl ys q upper hp hw hs hsp hshort => by
   rcases F with ⟨wp', pp', mi, pl, sh, sp, ze, pv, sv⟩
   simp only at hp hw hs hsp

@@ -51,7 +51,8 @@ theorem fmt.pp.fmtBytes.wp_proof
     (wp_fmtBs : fmt.fmt.fmtBs.spec (GF := GF) (hG := hG))
     (wp_fmtBx : fmt.fmt.fmtBx.spec (GF := GF) (hG := hG))
     (wp_writeByte : fmt.buffer.writeByte.spec (GF := GF) (hG := hG)) :
-    fmt.pp.fmtBytes.spec (GF := GF) (hG := hG) := fun p x bs wid prec sl ys q verb typeString hverb => by
+    fmt.pp.fmtBytes.spec (GF := GF) (hG := hG) := fun p x bs wid prec sl ys q verb typeString hverb
+    hshort => by
   rcases hverb with rfl | rfl | rfl | rfl
   all_goals
     wp_start as ⟨Hp, Hsl⟩
@@ -68,7 +69,7 @@ theorem fmt.pp.fmtBytes.wp_proof
     iframe
   rotate_right
   · rw [show ldigits = #(hexDigits false) from rfl]
-    wp_apply wp_fmtBx _ (p.[pp, go!"buf"]) noFlags wid prec bs sl ys q false rfl rfl rfl rfl
+    wp_apply wp_fmtBx _ (p.[pp, go!"buf"]) noFlags wid prec bs sl ys q false rfl rfl rfl rfl (hshort rfl)
       $$ [Hfb Hff Hfw Hfp Hb Hsl] as ⟨Hf, Hb, Hsl⟩
     · unfold fmtOwn; iframe
     iapply HΦ

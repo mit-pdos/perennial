@@ -25,10 +25,11 @@ variable [package_sem : fmt.Assumptions]
 
 theorem fmt.fmt.fmtBx.wp_proof (wp_fmtSbx : fmt.fmt.fmtSbx.spec (GF := GF) (hG := hG)) :
     fmt.fmt.fmtBx.spec (GF := GF) (hG := hG) :=
-    fun f b F wid prec bs sl ys q upper hp hw hs hsp => by
+    fun f b F wid prec bs sl ys q upper hp hw hs hsp hshort => by
   wp_start as ⟨Hf, Hb, Hsl⟩
   wp_auto
-  wp_apply wp_fmtSbx f b F wid prec bs go!"" sl ys q upper hp hw hs hsp $$ [Hf Hb Hsl]
+  wp_apply wp_fmtSbx f b F wid prec bs go!"" sl ys q upper hp hw hs hsp
+    (by split <;> simp [hshort]) $$ [Hf Hb Hsl]
     as ⟨Hf, Hb, Hsl⟩
   · iframe
   iapply HΦ
