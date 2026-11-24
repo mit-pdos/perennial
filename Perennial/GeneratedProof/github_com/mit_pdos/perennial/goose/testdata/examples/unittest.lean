@@ -935,6 +935,86 @@ noncomputable instance composite_access_store_b (l : Loc) (v : github_com.mit_pd
 end def_
 end composite
 
+namespace pp
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions]
+
+noncomputable instance pp_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.pp where
+  typedPointstoDef l v dq := iprop(
+    "buf" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.pp go!"buf" l) v.buf' dq ∗
+    "panicking" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.pp go!"panicking" l) v.panicking' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance pp_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.pp github_com.mit_pdos.perennial.goose.testdata.examples.unittest.pp.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance pp_access_load_buf (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.pp) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.pp go!"buf" l) v.buf' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.pp go!"buf" l) v.buf' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance pp_access_store_buf (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.pp) (buf' : GoSlice) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.pp go!"buf" l) v.buf' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.pp go!"buf" l) buf' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with buf' := buf' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.pp) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance pp_access_load_panicking (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.pp) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.pp go!"panicking" l) v.panicking' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.pp go!"panicking" l) v.panicking' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance pp_access_store_panicking (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.pp) (panicking' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.pp go!"panicking" l) v.panicking' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.pp go!"panicking" l) panicking' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with panicking' := panicking' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.pp) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end pp
+
+namespace valCatcher
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions]
+
+noncomputable instance valCatcher_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.valCatcher where
+  typedPointstoDef l v dq := iprop(
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance valCatcher_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.valCatcher github_com.mit_pdos.perennial.goose.testdata.examples.unittest.valCatcher.underlying := by
+  solve_into_val_typed_struct
+
+end def_
+end valCatcher
+
 namespace R
 section def_
 
