@@ -79,7 +79,8 @@ type ModelConfig struct {
 	// replaced bodyless functions are the definitions instead of the
 	// assembly. The builder refuses a file unless every symbol it defines
 	// (TEXT or GLOBL) is a replaced bodyless function of the package or a
-	// file-local symbol (`name<>`), and refuses a replaced function whose
+	// file-local symbol (`name<>`) and it includes only the toolchain's
+	// headers, and refuses a replaced function whose
 	// assembly definition is in a file this list does not name.
 	BlankAsm []string `toml:"blank_asm"`
 }

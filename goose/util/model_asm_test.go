@@ -83,6 +83,10 @@ func TestModelBlankAsmRefused(t *testing.T) {
 			asmReal,
 			asmFile + "\nGLOBL ·tab(SB), RODATA, $8\n",
 			`"F"`, `"f_amd64.s"`, "defines ·tab"},
+		{"local-header",
+			asmReal + "\nfunc H()\n",
+			"#include \"defs_amd64.h\"\n" + asmFile + "\nDEF(·H)\n",
+			`"F"`, `"f_amd64.s"`, `includes "defs_amd64.h", which is not a toolchain header`},
 		{"not-listed", asmReal, asmFile, `"F"`, ``, `replaces "F", defined in assembly at`},
 		{"no-such-file", asmReal, asmFile, `"F"`, `"f_amd64.s", "g_amd64.s"`,
 			`blank_asm "g_amd64.s": not an assembly file of the real package`},
@@ -90,7 +94,8 @@ func TestModelBlankAsmRefused(t *testing.T) {
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			config := "[model]\ndir = \"model\"\nreplaces = [" + c.replaces + "]\nblank_asm = [" + c.blank + "]\n"
-			root := modelModule(t, c.real, asmModel, config, map[string]string{"p/f_amd64.s": c.asm})
+			root := modelModule(t, c.real, asmModel, config, map[string]string{"p/f_amd64.s": c.asm,
+				"p/defs_amd64.h": "#define DEF(name) TEXT name(SB),NOSPLIT,$0; RET\n"})
 			models, err := buildModels(root, "./p")
 			if err == nil {
 				t.Fatalf("no error, want %q", c.want)

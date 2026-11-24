@@ -1580,22 +1580,37 @@ func addedMethodPatternUsed(pattern string, real, over *types.Package) bool {
 // function) or GLOBL (data), with the symbol's name.
 var asmSymbol = regexp.MustCompile(`^\s*(TEXT|GLOBL)\s+([^\s(,]+)\(SB\)`)
 
-// asmDefs returns the symbols an assembly file defines, with their lines.
-func asmDefs(src []byte) (syms []string, lines []int) {
+// asmInclude matches an #include line of Go assembly, with the header's name.
+var asmInclude = regexp.MustCompile(`^\s*#\s*include\s+["<]([^">]+)[">]`)
+
+// asmHeaders are the toolchain's headers, which define no symbols and no
+// macro that does: a blanked file may include only these, since a macro of
+// another header could expand to a TEXT or GLOBL line that asmDefs, which
+// reads lines of the file itself, does not see.
+var asmHeaders = map[string]bool{"textflag.h": true, "go_asm.h": true, "funcdata.h": true, "go_tls.h": true}
+
+// asmDefs returns the symbols an assembly file defines, with their lines, and
+// the headers it includes other than asmHeaders, with theirs.
+func asmDefs(src []byte) (syms []string, lines []int, incs []string, incLines []int) {
 	for i, line := range strings.Split(string(src), "\n") {
 		if m := asmSymbol.FindStringSubmatch(line); m != nil {
 			syms = append(syms, m[2])
 			lines = append(lines, i+1)
 		}
+		if m := asmInclude.FindStringSubmatch(line); m != nil && !asmHeaders[m[1]] {
+			incs = append(incs, m[1])
+			incLines = append(incLines, i+1)
+		}
 	}
-	return syms, lines
+	return syms, lines, incs, incLines
 }
 
 // blankAsm overlays the assembly files [model].blank_asm names with an empty
 // file, after checking that this drops nothing but what the model replaces:
 // every symbol each file defines must be a replaced bodyless function of the
 // package (`·F`, whose model Go body takes its place) or a file-local symbol
-// (`name<>`, which only the file itself can reference). It also refuses a
+// (`name<>`, which only the file itself can reference), and each file may
+// include only the toolchain's headers (asmHeaders). It also refuses a
 // replaced bodyless function whose assembly definition is in a file the list
 // does not name (gc would refuse the overlay: defined in both Go and
 // assembly).
@@ -1625,8 +1640,14 @@ func (b *builder) blankAsm(pm *PackageModel, pkg *packages.Package, realDecls ma
 			errs = append(errs, err)
 			continue
 		}
-		syms, lines := asmDefs(src)
+		syms, lines, incs, incLines := asmDefs(src)
 		ok = true
+		for i, inc := range incs {
+			errs = append(errs, errors.Errorf("blank_asm %q: %s:%d includes %q, which is not a "+
+				"toolchain header (a macro of it could define a symbol the check does not see)",
+				name, path, incLines[i], inc))
+			ok = false
+		}
 		for i, sym := range syms {
 			if strings.HasSuffix(sym, "<>") {
 				continue
@@ -1652,7 +1673,7 @@ func (b *builder) blankAsm(pm *PackageModel, pkg *packages.Package, realDecls ma
 			errs = append(errs, err)
 			continue
 		}
-		syms, lines := asmDefs(src)
+		syms, lines, _, _ := asmDefs(src)
 		for i, sym := range syms {
 			if fn, local := strings.CutPrefix(sym, "·"); local && replacedBodyless(fn) {
 				errs = append(errs, errors.Errorf("replaces %q, defined in assembly at %s:%d, which "+
