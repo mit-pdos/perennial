@@ -141,9 +141,12 @@ theorem fmt.pp.printArg.wp_proof_of_complex
     · simp [Mod.Ok, DirOk] at hok
     · simp [Mod.Ok, PrecOk] at hok
     simp only [Mod.flags, Mod.wid, Mod.precW, Mod.Ok, Mod.Out, DirOk] at hok ⊢
-    have hv := hok
+    have hfb := wp_fmtBool p arg bs (dirWid none) (W64 0) b verb hok
     rcases hok with rfl | rfl
     all_goals
+      first
+        | rw [show (W32 (uint.nat verb_v : Int) : w32) = W32 118 from rfl] at hfb ⊢
+        | rw [show (W32 (uint.nat verb_t : Int) : w32) = W32 116 from rfl] at hfb ⊢
       wp_start as ⟨Hp, Ha⟩
       iunfold isArg at Ha
       icases Ha with %Ha
@@ -153,7 +156,7 @@ theorem fmt.pp.printArg.wp_proof_of_complex
       iunfold isPrinterA at Hp
       icases Hp with ⟨Hbuf, Hfmt, Hib, Harg, ⟨%v0, Hval⟩, Hreo, Hgood, Hpan, Herr, Hwrap, Hwe⟩
       wp_auto
-      wp_apply (wp_fmtBool p _ bs (dirWid none) (W64 0) b _ hv) $$
+      wp_apply hfb $$
         [Hbuf Hfmt Hib Harg Hval Hreo Hgood Hpan Herr Hwrap Hwe] as Hp
       · unfold isPrinterA; iframe
       iapply HΦ
@@ -193,7 +196,7 @@ theorem fmt.pp.printArg.wp_proof_of_complex
         iframe Hp
         isplitl
         · ipureintro
-          simp only [fmt.sint_Z_W64_sint_Z_w8, fmt.sint_Z_W64_sint_Z_w16,
+          try simp only [fmt.sint_Z_W64_sint_Z_w8, fmt.sint_Z_W64_sint_Z_w16,
             fmt.sint_Z_W64_sint_Z_w32, fmt.uint_Z_W64_uint_Z_w8, fmt.uint_Z_W64_uint_Z_w16,
             fmt.uint_Z_W64_uint_Z_w32]
           exact fmt.Mod.Out_int _ hio
