@@ -290,12 +290,13 @@ the reflection primitives of `internal/reflectcore` (`TrustedCode/internal/refle
     `Elem` of an interface holding one) call `gomodel.Stuck` rather than report the model's
     kind.
 - **`==` on `Value`s that hold indirect values is false where gc may say true (sound).** gc's
-  `Value ==` compares the implementation's fields, and for a value stored indirectly (not a
-  pointer, map, channel, func or unsafe.Pointer, or a one-element array or one-field struct of
-  one) the data pointer depends on gc's allocation: two `ValueOf(x)` of the same small integer
-  may share `runtime.staticuint64s`. The model's `ValueOf` boxes each indirect value in a new
-  variable, so two such `Value`s are never `==`. The documentation of `Value` says that `==`
-  does not compare the underlying values. Direct values (pointers) compare as in gc.
+  `Value ==` compares the implementation's fields, and for a value stored indirectly (a type that
+  is not one pointer word: not a pointer, map, channel, func or unsafe.Pointer, a one-element
+  array of one, or a struct whose last field is one and whose other fields are zero-size) the
+  data pointer depends on gc's allocation: two `ValueOf(x)` of the same small integer may share
+  `runtime.staticuint64s`. The model's `ValueOf` boxes each indirect value in a new variable, so
+  two such `Value`s are never `==`. The documentation of `Value` says that `==` does not compare
+  the underlying values. Direct pointers, channels and unsafe.Pointers compare as in gc.
 
 ## Floats
 

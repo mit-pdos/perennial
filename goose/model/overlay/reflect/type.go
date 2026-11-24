@@ -454,10 +454,12 @@ func toType(t any) Type {
 }
 
 // MODEL: whether an interface holding a value of t's type stores the value
-// in its data word (abi.Type.IsDirectIface; gc's types.IsDirectIface): a
-// pointer, channel, map, function or unsafe.Pointer type, or an array of one
-// element or a struct of one field of such a type (no type of the model is
-// not-in-heap).
+// in its data word (abi.Type.IsDirectIface): gc's types.IsDirectIface, a type
+// of one pointer word (size and pointer-data size PtrSize). That is a pointer,
+// channel, map, function or unsafe.Pointer type; an array of one element of
+// such a type; or a struct whose last field has such a type and whose other
+// fields are zero-size (a zero-size last field pads the struct). No type of
+// the model is not-in-heap.
 func isDirectIface(t any) bool {
 	switch Kind(reflectcore.TypeKind(t)) {
 	case Pointer, Chan, Map, Func, UnsafePointer:
@@ -465,7 +467,33 @@ func isDirectIface(t any) bool {
 	case Array:
 		return reflectcore.TypeLen(t) == 1 && isDirectIface(reflectcore.TypeElem(t))
 	case Struct:
-		return reflectcore.TypeNumField(t) == 1 && isDirectIface(reflectcore.TypeFieldType(t, 0))
+		n := reflectcore.TypeNumField(t)
+		if n == 0 || !isDirectIface(reflectcore.TypeFieldType(t, n-1)) {
+			return false
+		}
+		for i := 0; i < n-1; i++ {
+			if !isZeroSize(reflectcore.TypeFieldType(t, i)) {
+				return false
+			}
+		}
+		return true
+	}
+	return false
+}
+
+// MODEL: whether t's type has size zero: an array of length zero or of a
+// zero-size element, or a struct of zero-size fields.
+func isZeroSize(t any) bool {
+	switch Kind(reflectcore.TypeKind(t)) {
+	case Array:
+		return reflectcore.TypeLen(t) == 0 || isZeroSize(reflectcore.TypeElem(t))
+	case Struct:
+		for i := 0; i < reflectcore.TypeNumField(t); i++ {
+			if !isZeroSize(reflectcore.TypeFieldType(t, i)) {
+				return false
+			}
+		}
+		return true
 	}
 	return false
 }
