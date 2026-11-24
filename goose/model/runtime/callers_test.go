@@ -2,11 +2,17 @@ package runtime
 
 // Evidence for the models of runtime.callers and (*runtime.Frames).Next
 // (Perennial/TrustedCode/runtime.lean): Callers writes a prefix of its buffer
-// and returns its length, from 0 to len(pc); Next returns frames whose Func may
-// be nil, and the zero frame with more false once they are exhausted.
+// and returns its length, from 0 to len(pc); a stack deeper than its limit is a
+// fatal error, not a longer result (the model's bound on the frames); Next
+// returns frames whose Func may be nil, and the zero frame with more false once
+// they are exhausted.
 
 import (
+	"os"
+	"os/exec"
 	"runtime"
+	"runtime/debug"
+	"strings"
 	"testing"
 )
 
@@ -89,5 +95,35 @@ func TestFramesNext(t *testing.T) {
 	// exhausted: the zero frame, more false
 	if f, more := frames.Next(); more || f != (runtime.Frame{}) {
 		t.Fatalf("after the last frame: %+v, %v", f, more)
+	}
+}
+
+var depthSink int
+
+func deep(n int) int {
+	var pad [64]byte
+	pad[n%64] = byte(n)
+	return deep(n+1) + int(pad[0])
+}
+
+// A goroutine whose stack outgrows its limit is killed with a fatal error that
+// recover does not catch ("goroutine stack exceeds ...-byte limit"), so no
+// stack walk ever sees more frames than the limit holds.
+func TestStackLimitFatal(t *testing.T) {
+	if os.Getenv("CALLERS_STACK_CHILD") == "1" {
+		debug.SetMaxStack(1 << 20)
+		defer func() { recover(); os.Exit(0) }()
+		depthSink = deep(0)
+		return
+	}
+	cmd := exec.Command(os.Args[0], "-test.run=^TestStackLimitFatal$")
+	cmd.Env = append(os.Environ(), "CALLERS_STACK_CHILD=1")
+	out, err := cmd.CombinedOutput()
+	if ee, ok := err.(*exec.ExitError); !ok || ee.ExitCode() == 0 {
+		t.Fatalf("child exited %v; want a fatal error", err)
+	}
+	if !strings.Contains(string(out), "goroutine stack exceeds 1048576-byte limit") ||
+		!strings.Contains(string(out), "fatal error: stack overflow") {
+		t.Fatalf("child output:\n%s", out)
 	}
 }
