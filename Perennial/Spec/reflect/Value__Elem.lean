@@ -1,0 +1,39 @@
+/-
+`reflect.Value.Elem`'s spec.
+-/
+module
+
+public import Perennial.Proof.reflect.Base
+
+@[expose] public section
+
+noncomputable section
+
+namespace Perennial
+
+open Iris Iris.BI Iris.ProgramLogic Iris.Std
+
+section spec
+variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem : reflect.Assumptions]
+
+/-- `v.Elem()` of a direct `Value` of kind `Pointer` (22) holding a pointer `l : *T`: the zero
+`Value` if `l` is nil, else the addressable `Value` of the `T` at `l` (`v`'s read-only bits,
+`flagIndir`, `flagAddr` and `T`'s kind), which holds `any(l)`. -/
+abbrev reflect.Value.Elem.spec : Prop :=
+  ∀ (v : Value) (T : go.GoType) (k : Nat) (l : Loc),
+  go.kindOf (go.underlying T) = some k →
+  v.typ_' = go.tok (go.PointerType T) → v.ptr' = interface.mkOk (go.PointerType T) #l →
+  v.flag' &&& W64 31 = W64 22 → v.flag' &&& W64 128 = W64 0 →
+    {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
+      (App (Val (v @!! Value.ty @!! go!"Elem")) (Val #()))
+    {{ RET #(if l = null then (zero_val Value) else
+        Value.mk (go.tok T) (interface.mkOk (go.PointerType T) #l)
+          (v.flag' &&& W64 96 ||| W64 128 ||| W64 256 ||| W64 k)); True }}
+
+end spec
+
+end Perennial
