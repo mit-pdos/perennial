@@ -7,6 +7,7 @@ arguments that are all `nil` or `ArgWf` (`fmt.ArgsWf`), for the callers that pas
 -/
 module
 
+public import Perennial.Proof.fmt.PureArgs
 public import Perennial.Proof.fmt.Link
 public import Perennial.Proof.fmt.BytesResults
 public import Perennial.Proof.fmt.OutLemmas
@@ -47,7 +48,7 @@ theorem fmt.wp_Fprintf_bytes :
   have hdo := fmt.wp_doPrintfB internal.gomodel.wp_ChooseUint64 B dqb format args_sl xs dq false
   rw [fmt.modeVerbs_false] at hdo
   wp_apply hdo $$ [$Hsl $Hown $Hok] as %s %wsl %unk ⟨Hsl, Hown, %Hs, -⟩
-  wp_auto
+  try wp_auto
   unfold fmt.isPrinterAny fmt.isPrinter fmt.isPrinterA
   icases Hp with ⟨%hnn, %F, %wid, %prec, %x', Hb, Hrest⟩
   wp_apply fmt.buffer.wp_writeString $$ Hb as Hb
@@ -67,23 +68,36 @@ theorem fmt.wp_Fprintf_bytes :
     · ipureintro; exact hnn
     iexists F, wid, prec, x'
     iframe
-  wp_auto
+  try wp_auto
   iapply HΦ
   iframe
   ipureintro
   exact Hs
 
-/-- `fmt.Sprintf` without method arguments returns `render ps args` (`fmt.Out.eq_render`). -/
+/-- `fmt.Sprintf` without `%q` and without method arguments returns `render ps args`
+(`fmt.Out.eq_render`). -/
 theorem fmt.wp_Sprintf_render :
     ∀ (format : GoString) (ps : List fmt.Piece) (args_sl : GoSlice) (xs : List GoInterface)
       (args : List fmt.Arg) (dq : DFrac),
-    format = fmt.encode ps → fmt.Fits ps args → (∀ a ∈ args, a.NoMethod) →
+    format = fmt.encode ps → fmt.Fits ps args → (∀ a ∈ args, a.NoMethod) → fmt.NoQuote ps →
     {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ args_sl ↦*{dq} xs ∗
         [∗list] x;a ∈ xs;args, fmt.isArg x a }}
       (App (App (Val (@! fmt.Sprintf)) (Val #format)) (Val #args_sl))
     {{ (s : GoString), RET #s; args_sl ↦*{dq} xs ∗ ([∗list] x;a ∈ xs;args, fmt.isArg x a) ∗
         ⌜s = fmt.render ps args⌝ }} :=
   fmt.Sprintf_render_of fmt.wp_Sprintf
+
+/-- `fmt.Sprintf` of arguments that call no method (`fmt.PureArgs`): some string with
+`fmt.Out ps args s`, which is `fmt.render ps args` when the format has no `%q` (`fmt.NoQuote`). -/
+theorem fmt.wp_Sprintf_pure :
+    ∀ (format : GoString) (ps : List fmt.Piece) (args_sl : GoSlice) (xs : List GoInterface)
+      (args : List fmt.Arg) (dq : DFrac),
+    format = fmt.encode ps → fmt.Fits ps args → fmt.PureArgs xs args →
+    {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ args_sl ↦*{dq} xs }}
+      (App (App (Val (@! fmt.Sprintf)) (Val #format)) (Val #args_sl))
+    {{ (s : GoString), RET #s; args_sl ↦*{dq} xs ∗
+        ⌜fmt.Out ps args s ∧ (fmt.NoQuote ps → s = fmt.render ps args)⌝ }} :=
+  fmt.Sprintf_pure_of fmt.wp_Sprintf
 
 /-- `fmt.Sprintf("%016x-%016x.wal", seq, index)` of two `uint64`s (etcd's WAL file names): each
 zero-padded to 16 lowercase hexadecimal digits. -/

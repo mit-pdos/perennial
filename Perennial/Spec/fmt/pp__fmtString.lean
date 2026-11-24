@@ -20,15 +20,15 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
 
-/-- `p.fmtString(v, verb)` without flags, `verb` one of `s v x`: appends `v` (`s`, `v`) or its
-hexadecimal (`x`). -/
+/-- `p.fmtString(v, verb)` without flags, `verb` one of `s v x q`: appends `v` (`s`, `v`), its
+hexadecimal (`x`), or `v` quoted (`q`, some string: `StrOut`). -/
 abbrev fmt.pp.fmtString.spec : Prop :=
   ∀ (p : Loc) (x : GoInterface) (bs : GoString) (wid prec : w64) (v : GoString) (verb : w8),
-    (verb = verb_s ∨ verb = verb_v ∨ verb = verb_x) → (verb = verb_x → v.length < 2 ^ 62) →
-    {{ isPrinterA (GF := GF) p x bs noFlags wid prec }}
+    (verb = verb_s ∨ verb = verb_v ∨ verb = verb_x ∨ verb = verb_q) →
+    (verb = verb_x → v.length < 2 ^ 62) → (verb = verb_q → v.length ≤ maxAddr) →
+    {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ isPrinterA (GF := GF) p x bs noFlags wid prec }}
       (App (App (Val (p @!! go.GoType.PointerType pp.ty @!! go!"fmtString")) (Val #v)) (Val #(W32 (uint.nat verb))))
-    {{ RET #(); isPrinterA p x (bs ++ if verb = verb_x then bytesHex false v else v)
-        noFlags wid prec }}
+    {{ RET #(); ∃ o : GoString, ⌜StrOut verb v o⌝ ∗ isPrinterA p x (bs ++ o) noFlags wid prec }}
 
 end spec
 

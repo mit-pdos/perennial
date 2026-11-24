@@ -20,28 +20,48 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : errors.Assumptions]
 
-/-- Spec of `errors.As(err, target)` for a target `*T`, `l` (axiom). `As` walks the error tree of
-`err` as `AsType[T]` does (its precondition is `wp_AsType`'s), calling the `As` methods with
-`target` itself, and stores a matching error in `*l`; it finds the target's type by reflection
-(`internal/reflectlite`, not translated).
+/-- Spec of `errors.As(err, target)` for a target `*T`, `l`. `As` is a Go model
+(`goose/model/overlay/errors/wrap.go`): Go's `As`, its tree walk `asWalk` Go's `as`, with the
+reflection (`reflectlite`: the checks of the target, `TypeOf(err).AssignableTo(T)` and the store)
+in one function, `asAssign`, the semantics' `AsAssign`.
 
 Go's `As` panics when `target` is `nil`, is not a non-`nil` pointer, or points to a type that
 is neither an interface type nor implements `error`. The target here is the pointer `l` of type
 `*T`, and `l ↦ v` implies `l ≠ null`; the premise `AsTarget T` excludes the third panic.
 
-It is not proved from a translation of `As` as `Is` is (`wp_Is`): `As` and `as` use reflection
-throughout (`reflectlite.ValueOf(target)`, `Kind`, `IsNil`, `Elem`, `Implements(errorType)`,
-`TypeOf(err).AssignableTo(targetType)`, `targetVal.Elem().Set(ValueOf(err))`), with the target
-type a run-time value, so a model would replace most of `as` by axioms about typed reflection
-(what `AsTypeTyped` assumes for `AsType`), not a few small ones. -/
+Three cases:
+* over an error tree `S` of `err` (`isErrorTree`, as `AsType`'s: the `As` methods called with
+  `target` itself), each of whose errors the model decides (`AsDecided`: it does not follow Go's
+  assignability of a type to another of the same underlying type, one of them unnamed, and finds
+  an error of a non-interface type `T` only for a `T` named or a pointer to a named type): some
+  result, `*l` written;
+* **first match**: `err`'s dynamic type is assignable to `T` (`asAssignable`: implements an
+  interface `T`, or is `T`; decided by the model, `AsDecided`): `true`, `err` stored into `*l` (`asStored`; of the target's Lean type,
+  `AsTypeTyped`), no method of `err` called;
+* **no match**: `err` is `nil`, or its walk ends without a match after at most `n` calls of
+  `Unwrap` (`asNoMatch`: leaves and `Unwrap() error` wrappers not assignable to `T`, without an
+  `As(any) bool` method): `false`, the target unchanged. -/
 abbrev errors.As.spec : Prop :=
-  ∀ (S : GoError → Prop) (err : GoError) (l : Loc) {T' : Type} [ZeroVal T']
+  (∀ (S : GoError → Prop) (err : GoError) (l : Loc) {T' : Type} [ZeroVal T']
     [TypedPointsto (GF := GF) T'] {T : go.GoType} [IntoValTyped (GF := GF) T' T] (v : T'),
-    AsTarget T →
+    AsTarget T → (∀ ii, S (interface.ok ii) → AsDecided T ii) →
     {{ isPkgInit (PROP := IProp GF) pkg_id.errors ∗ isErrorTree (GF := GF) S T' T ∗ ⌜S err⌝ ∗
         l ↦ v }}
       (App (App (Val (@! As)) (Val #err)) (Val #(interface.mkOk (go.PointerType T) #l)))
-    {{ (b : Bool) (v' : T'), RET #b; l ↦ v' }}
+    {{ (b : Bool) (v' : T'), RET #b; l ↦ v' }}) ∧
+  (∀ (ii : GoInterfaceOk) (l : Loc) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T']
+    {T : go.GoType} [IntoValTyped (GF := GF) T' T] (v : T'),
+    AsTarget T → AsDecided T ii → asAssignable T ii = true → AsTypeTyped T' T ii →
+    {{ isPkgInit (PROP := IProp GF) pkg_id.errors ∗ l ↦ v }}
+      (App (App (Val (@! As)) (Val #(interface.ok ii)))
+        (Val #(interface.mkOk (go.PointerType T) #l)))
+    {{ (x : T'), RET #true; l ↦ x ∗ ⌜asStored T ii = #x⌝ }}) ∧
+  (∀ (n : Nat) (err : GoError) (l : Loc) {T' : Type} [ZeroVal T']
+    [TypedPointsto (GF := GF) T'] {T : go.GoType} [IntoValTyped (GF := GF) T' T] (v : T'),
+    AsTarget T →
+    {{ isPkgInit (PROP := IProp GF) pkg_id.errors ∗ l ↦ v ∗ asNoMatch (GF := GF) T n err }}
+      (App (App (Val (@! As)) (Val #err)) (Val #(interface.mkOk (go.PointerType T) #l)))
+    {{ RET #false; l ↦ v }})
 
 end spec
 

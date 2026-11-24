@@ -19,6 +19,7 @@ public import Perennial.Proof.fmt.fmt__fmtBoolean
 public import Perennial.Proof.fmt.fmt__fmtBs
 public import Perennial.Proof.fmt.fmt__fmtBx
 public import Perennial.Proof.fmt.fmt__fmtInteger
+public import Perennial.Proof.fmt.fmt__fmtQ
 public import Perennial.Proof.fmt.fmt__fmtS
 public import Perennial.Proof.fmt.fmt__fmtSbx
 public import Perennial.Proof.fmt.fmt__fmtSx
@@ -124,7 +125,7 @@ theorem fmt.fmt.wp_pad : fmt.fmt.pad.spec (GF := GF) (hG := hG) :=
   fmt.fmt.pad.wp_proof fmt.buffer.wp_write fmt.fmt.wp_writePadding unicode.utf8.wp_RuneCount
 
 theorem fmt.fmt.wp_fmtInteger : fmt.fmt.fmtInteger.spec (GF := GF) (hG := hG) :=
-  fmt.fmt.fmtInteger.wp_proof fmt.fmt.wp_pad
+  fmt.fmt.fmtInteger.wp_proof fmt.fmt.wp_pad fmt.fmt.wp_writePadding
 
 theorem fmt.pp.wp_fmtInteger : fmt.pp.fmtInteger.spec (GF := GF) (hG := hG) :=
   fmt.pp.fmtInteger.wp_proof fmt.fmt.wp_fmtInteger
@@ -141,8 +142,11 @@ theorem fmt.fmt.wp_fmtSbx : fmt.fmt.fmtSbx.spec (GF := GF) (hG := hG) :=
 theorem fmt.fmt.wp_fmtSx : fmt.fmt.fmtSx.spec (GF := GF) (hG := hG) :=
   fmt.fmt.fmtSx.wp_proof fmt.fmt.wp_fmtSbx
 
+theorem fmt.fmt.wp_fmtQ : fmt.fmt.fmtQ.spec (GF := GF) (hG := hG) :=
+  fmt.fmt.fmtQ.wp_proof fmt.fmt.wp_truncateString fmt.fmt.wp_pad strconv.wp_AppendQuote
+
 theorem fmt.pp.wp_fmtString : fmt.pp.fmtString.spec (GF := GF) (hG := hG) :=
-  fmt.pp.fmtString.wp_proof fmt.fmt.wp_fmtS fmt.fmt.wp_fmtSx
+  fmt.pp.fmtString.wp_proof fmt.fmt.wp_fmtS fmt.fmt.wp_fmtSx fmt.fmt.wp_fmtQ
 
 theorem fmt.fmt.wp_truncate : fmt.fmt.truncate.spec (GF := GF) (hG := hG) :=
   fmt.fmt.truncate.wp_proof

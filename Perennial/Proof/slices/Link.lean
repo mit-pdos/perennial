@@ -12,7 +12,9 @@ public import Perennial.Proof.slices.AppendSeq
 public import Perennial.Proof.slices.Clone
 public import Perennial.Proof.slices.Collect
 public import Perennial.Proof.slices.Concat
+public import Perennial.Proof.slices.ContainsFunc
 public import Perennial.Proof.slices.Grow
+public import Perennial.Proof.slices.IndexFunc
 public import Perennial.Proof.slices.Sort
 public import Perennial.Proof.slices.SortFunc
 public import Perennial.Proof.slices.Sorted
@@ -51,6 +53,7 @@ public import Perennial.Proof.slices.xorshift__Next
 namespace Perennial
 
 open Iris Iris.BI Iris.ProgramLogic Iris.Std
+open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 
 section link
 variable [GooseExts] [GooseSemantics] [GooseInterp]
@@ -73,6 +76,12 @@ theorem slices.wp_Grow : slices.Grow.spec (GF := GF) (hG := hG) :=
 
 theorem slices.wp_Concat : slices.Concat.spec (GF := GF) (hG := hG) :=
   slices.Concat.wp_proof slices.wp_Grow
+
+theorem slices.wp_IndexFunc : slices.IndexFunc.spec (GF := GF) (hG := hG) :=
+  slices.IndexFunc.wp_proof
+
+theorem slices.wp_ContainsFunc : slices.ContainsFunc.spec (GF := GF) (hG := hG) :=
+  slices.ContainsFunc.wp_proof slices.wp_IndexFunc
 
 theorem slices.wp_insertionSortOrdered : slices.insertionSortOrdered.spec (GF := GF) (hG := hG) :=
   slices.insertionSortOrdered.wp_proof

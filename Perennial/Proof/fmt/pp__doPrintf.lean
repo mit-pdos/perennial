@@ -81,10 +81,11 @@ theorem fmt.pp.doPrintf.wp_proof
       rw [hdrop, fmt.encode_leadLits rest]
     have hhead : ∀ c, (encode (fmt.leadLits rest).2).head? = some c → c = W8 37 := by
       intro c hc
-      rcases fmt.leadLits_rest rest with h | ⟨R', h⟩ | ⟨zw, v, R', h⟩ <;> rw [h] at hc
+      rcases fmt.leadLits_rest rest with h | ⟨R', h⟩ | ⟨zw, v, R', h⟩ | ⟨q, v, R', h⟩ <;> rw [h] at hc
       · simp [encode] at hc
       · simp [fmt.encode_cons, Piece.encode] at hc; exact hc.symm
       · cases zw <;> simp [fmt.encode_cons, Piece.encode] at hc <;> exact hc.symm
+      · simp [fmt.encode_cons, Piece.encode] at hc; exact hc.symm
     have hin : sint.nat i ≤ format.length := by word
     have hLlen : sint.nat i + (fmt.leadLits rest).1.length ≤ format.length := by
       have := congrArg List.length hsplit
@@ -127,7 +128,7 @@ theorem fmt.pp.doPrintf.wp_proof
     · have hsl : (format.drop (sint.nat i)).take (sint.nat j - sint.nat i) = (fmt.leadLits rest).1 := by
         rw [hsplit, hjL, Nat.add_sub_cancel_left, List.take_left]
       simp only [show 0 ≤ sint.Z i ∧ sint.Z i ≤ sint.Z j ∧ sint.Z j ≤ format.length from
-        ⟨hi0, by word, by word⟩, and_self, ite_true, hsl]
+        ⟨hi0, by word, by word⟩, _root_.and_self, ite_true, hsl]
       wp_auto
       wp_apply wp_writeString $$ Hbuf as Hbuf
       rw [List.append_assoc]
@@ -168,7 +169,7 @@ theorem fmt.pp.doPrintf.wp_proof
       rw [hjL, ← List.drop_drop, hsplit, List.drop_left]
     have hjlt : sint.nat j < format.length := by word
     wp_apply wp_clearflags $$ Hfmt as Hfmt
-    rcases fmt.leadLits_rest rest with hR | ⟨R', hR⟩ | ⟨zw, v, R', hR⟩
+    rcases fmt.leadLits_rest rest with hR | ⟨R', hR⟩ | ⟨zw, v, R', hR⟩ | ⟨q, v, R', hR⟩
     · exfalso; rw [hR] at hdropj
       have := congrArg List.length hdropj
       simp [encode] at this; omega
@@ -225,7 +226,7 @@ theorem fmt.pp.doPrintf.wp_proof
         rw [← this]; word
       simp only [show 0 ≤ sint.Z (j + W64 1) ∧ sint.Z (j + W64 1) ≤ sint.Z (W64 (format.length : Int)) ∧
           sint.Z (W64 (format.length : Int)) ≤ format.length from ⟨hj1z, by word, by word⟩,
-        and_self, ite_true, hsl]
+        _root_.and_self, ite_true, hsl]
       wp_auto
       wp_apply wp_DecodeRuneInString as %r %size %Hd
       obtain ⟨rfl, rfl⟩ := Hd.2 _ _ rfl (by decide)
@@ -302,7 +303,7 @@ theorem fmt.pp.doPrintf.wp_proof
           iexists x
           simp only [dirFlags, dirWid, Option.getD]
           iframe
-        wp_apply (wp_printArg p xa a (bs ++ (od ++ (fmt.leadLits rest).1)) none v hdok) $$ [Hpr Hxa]
+        wp_apply (wp_printArg p xa a (bs ++ (od ++ (fmt.leadLits rest).1)) (.width none) v hdok) $$ [Hpr Hxa]
           as ⟨%o, %ho, Hp, Hxa⟩
         · iframe
         ihave Hxs : ([∗list] x;a ∈ xs;args, isArg (GF := GF) x a) $$ [Hxs Hxa]
@@ -311,7 +312,7 @@ theorem fmt.pp.doPrintf.wp_proof
         wp_for_post
         ihave Hp : isPrinterA p xa (bs ++ (od ++ (fmt.leadLits rest).1 ++ o)) (dirFlags none) (dirWid none)
             (W64 0) $$ [Hp]
-        · iExactEq Hp; simp
+        · iExactEq Hp; simp [Mod.flags, Mod.wid, Mod.precW]
         iframe
         iexists (j + W64 1 + W64 1), (argNum + W64 1), R', ar', od ++ (fmt.leadLits rest).1 ++ o
         iexists _, _, _, _
@@ -355,8 +356,10 @@ theorem fmt.pp.doPrintf.wp_proof
         · -- the `0` flag
           wp_if_destruct; rotate_left
           · exfalso; word
-          rw [show sint.nat (j + W64 1 + W64 0) = sint.nat j + 1 by word]
-          simp only [show 0 ≤ sint.Z (j + W64 1 + W64 0) by word, ite_true, hf1]
+          have e1 : sint.nat (j + W64 1 + W64 0) = sint.nat j + 1 := by word
+          have e1z : 0 ≤ sint.Z (j + W64 1 + W64 0) := by word
+          rw [e1]
+          simp only [e1z, ite_true, hf1]
           wp_auto
           wp_for_post
           iframe
@@ -367,8 +370,10 @@ theorem fmt.pp.doPrintf.wp_proof
         · -- the first digit of the width
           wp_if_destruct; rotate_left
           · exfalso; word
-          rw [show sint.nat (j + W64 1 + W64 1) = sint.nat j + 2 by word]
-          simp only [show 0 ≤ sint.Z (j + W64 1 + W64 1) by word, ite_true, hf2]
+          have e2 : sint.nat (j + W64 1 + W64 1) = sint.nat j + 2 := by word
+          have e2z : 0 ≤ sint.Z (j + W64 1 + W64 1) := by word
+          rw [e2]
+          simp only [e2z, ite_true, hf2]
           wp_auto
           rw [decide_eq_false d35]; wp_auto
           rw [decide_eq_false hd00]; wp_auto
@@ -437,11 +442,11 @@ theorem fmt.pp.doPrintf.wp_proof
               sint.Z (W64 ((sint.nat j + 2 + (decimalNat N).length : Nat) : Int)) ≤
                 sint.Z (W64 (format.length : Int)) ∧
               sint.Z (W64 (format.length : Int)) ≤ format.length from ⟨hKz, by word, by word⟩,
-            and_self, ite_true, hslK]
+            _root_.and_self, ite_true, hslK]
           wp_auto
           wp_apply wp_DecodeRuneInString as %r %size %Hd
           obtain ⟨rfl, rfl⟩ := Hd.2 _ _ rfl h128
-          obtain ⟨hw37, hw119, hw118⟩ := fmt.verb_runes (fmt.DirOk_verb hdok)
+          obtain ⟨hw37, hw119, hw118⟩ := fmt.verb_runes (Or.inl (fmt.DirOk_verb hdok))
           have hanz : sint.Z argNum < sint.Z args_sl.len := by word
           rw [decide_eq_false (show ¬ (true = decide (W32 (uint.nat v : Int) = W32 37)) from
             fun h => hw37 (of_decide_eq_true h.symm))]
@@ -454,7 +459,7 @@ theorem fmt.pp.doPrintf.wp_proof
           wp_auto
           by_cases hv : v = W8 118
           · rw [decide_eq_true (show true = decide (W32 (uint.nat v : Int) = W32 118) by
-              simp only [hw118.mpr hv, decide_true])]
+              simp only [hw118.mpr hv, _root_.decide_true])]
             wp_auto
             simp only [show 0 ≤ sint.Z argNum ∧ sint.Z argNum < sint.Z args_sl.len from ⟨ha0, hanz⟩]
             wp_apply (wp_load_slice_index args_sl (sint.Z argNum) xs dq xa ha0) $$ [Hargs] as Hargs
@@ -466,7 +471,7 @@ theorem fmt.pp.doPrintf.wp_proof
               iexists x
               simp only [dirFlags, dirWid, Option.getD]
               iframe
-            wp_apply (wp_printArg p xa a (bs ++ (od ++ (fmt.leadLits rest).1)) (some N) v hdok) $$ [Hpr Hxa]
+            wp_apply (wp_printArg p xa a (bs ++ (od ++ (fmt.leadLits rest).1)) (.width (some N)) v hdok) $$ [Hpr Hxa]
               as ⟨%o, %ho, Hp, Hxa⟩
             · iframe
             ihave Hxs : ([∗list] x;a ∈ xs;args, isArg (GF := GF) x a) $$ [Hxs Hxa]
@@ -474,7 +479,7 @@ theorem fmt.pp.doPrintf.wp_proof
             wp_for_post
             ihave Hp : isPrinterA p xa (bs ++ (od ++ (fmt.leadLits rest).1 ++ o)) (dirFlags (some N))
                 (dirWid (some N)) (W64 0) $$ [Hp]
-            · iExactEq Hp; simp
+            · iExactEq Hp; simp [Mod.flags, Mod.wid, Mod.precW]
             iframe
             iexists (W64 ((sint.nat j + 2 + (decimalNat N).length : Nat) : Int) + W64 1), (argNum + W64 1), R', ar', od ++ (fmt.leadLits rest).1 ++ o
             iexists _, _, _, _
@@ -502,7 +507,7 @@ theorem fmt.pp.doPrintf.wp_proof
               iexists x
               simp only [dirFlags, dirWid, Option.getD]
               iframe
-            wp_apply (wp_printArg p xa a (bs ++ (od ++ (fmt.leadLits rest).1)) (some N) v hdok) $$ [Hpr Hxa]
+            wp_apply (wp_printArg p xa a (bs ++ (od ++ (fmt.leadLits rest).1)) (.width (some N)) v hdok) $$ [Hpr Hxa]
               as ⟨%o, %ho, Hp, Hxa⟩
             · iframe
             ihave Hxs : ([∗list] x;a ∈ xs;args, isArg (GF := GF) x a) $$ [Hxs Hxa]
@@ -510,7 +515,7 @@ theorem fmt.pp.doPrintf.wp_proof
             wp_for_post
             ihave Hp : isPrinterA p xa (bs ++ (od ++ (fmt.leadLits rest).1 ++ o)) (dirFlags (some N))
                 (dirWid (some N)) (W64 0) $$ [Hp]
-            · iExactEq Hp; simp
+            · iExactEq Hp; simp [Mod.flags, Mod.wid, Mod.precW]
             iframe
             iexists (W64 ((sint.nat j + 2 + (decimalNat N).length : Nat) : Int) + W64 1), (argNum + W64 1), R', ar', od ++ (fmt.leadLits rest).1 ++ o
             iexists _, _, _, _
@@ -525,6 +530,164 @@ theorem fmt.pp.doPrintf.wp_proof
             · intro out hout'
               have := hout _ (fmt.Out_leadLits (by rw [hR]; exact Out.dir (some N) v a o R' ar' out ho hout'))
               simpa [List.append_assoc] using this
+    · -- a directive with a precision
+      rw [hR] at hdropj hfl
+      obtain ⟨a, ar', rfl, hpok, hfR⟩ := fmt.Fits_prec_inv hfl.2
+      obtain ⟨hav, hq⟩ := fmt.PrecOk_verb hpok
+      obtain ⟨h91, h128, hnd⟩ := fmt.anyVerb_bytes hav
+      obtain ⟨o35, o48, o43, o45, o32, o97, o91, o42, ond⟩ := fmt.dot_bytes
+      obtain ⟨d0, ds, hdec, hd0⟩ := fmt.decimalNat_head' q
+      obtain ⟨d35, d43, d45, d32, d97, d91, d42⟩ := fmt.digit_bytes hd0
+      have hj1 : sint.nat (j + W64 1) = sint.nat j + 1 := by word
+      have hj1z : 0 ≤ sint.Z (j + W64 1) := by word
+      have hargs' : args[sint.nat argNum]? = some a := by
+        rw [← Nat.add_zero (sint.nat argNum), ← List.getElem?_drop, hargs]; rfl
+      have hanlt : sint.nat argNum < args.length := (List.getElem?_eq_some_iff.mp hargs').1
+      list_elem xs (sint.nat argNum) as xa
+      simp only [fmt.encode_cons, Piece.encode, List.cons_append, List.nil_append,
+        List.append_assoc] at hdropj
+      have hf1 : format[sint.nat j + 1]? = some (W8 46) := by
+        rw [← List.getElem?_drop, hdropj]; rfl
+      have hf2 : format[sint.nat j + 2]? = some d0 := by
+        rw [← List.getElem?_drop, hdropj, hdec]; rfl
+      have hlen3 : sint.nat j + 3 ≤ format.length := by
+        have := congrArg List.length hdropj
+        simp only [List.length_drop, List.length_cons, List.length_append, hdec] at this; omega
+      unfold fmtOwn
+      icases Hfmt with ⟨Hfbuf, Hflags, Hwid, Hprec⟩
+      wp_for
+      wp_if_destruct; rotate_left
+      · exfalso; word
+      simp only [hj1z, ite_true, hj1, hf1]
+      wp_auto
+      wp_for_post
+      wp_apply (wp_argNumber p argNum format (j + W64 1) _ hj1z (by rw [hj1, hf1]; simp))
+      rw [decide_eq_true (show sint.Z (j + W64 1) < sint.Z (W64 (format.length : Int)) by word)]
+      wp_auto
+      simp only [hj1z, ite_true, hj1, hf1]
+      wp_auto
+      -- no width
+      have hel : sint.nat (W64 (format.length : Int)) = format.length := by word
+      have hpn0 : parsenumSpec format (sint.nat (j + W64 1)) (sint.nat (W64 (format.length : Int))) =
+          (0, false, sint.nat (j + W64 1)) := by
+        rw [hel, hj1]; exact fmt.parsenumSpec_nondigit format _ _ hf1 ond
+      wp_apply (wp_parsenum format (j + W64 1) (W64 (format.length : Int)) hj1z (by word))
+      simp only [hpn0]
+      rw [show W64 (sint.nat (j + W64 1) : Int) = j + W64 1 by word]
+      rw [decide_eq_true (show sint.Z (j + W64 1 + W64 1) < sint.Z (W64 (format.length : Int)) by word)]
+      wp_auto
+      simp only [hj1z, ite_true, hj1, hf1]
+      wp_auto
+      -- the precision
+      have hJ2 : sint.nat (j + W64 1 + W64 1) = sint.nat j + 2 := by word
+      have hJ2z : 0 ≤ sint.Z (j + W64 1 + W64 1) := by word
+      wp_apply (wp_argNumber p argNum format (j + W64 1 + W64 1) _ hJ2z
+        (by rw [hJ2, hf2]; simpa using d91))
+      rw [decide_eq_true (show sint.Z (j + W64 1 + W64 1) < sint.Z (W64 (format.length : Int)) by word)]
+      wp_auto
+      simp only [hJ2z, ite_true, hJ2, hf2]
+      wp_auto
+      rw [decide_eq_false d42]
+      wp_auto
+      have hdj2 : format.drop (sint.nat j + 2) = decimalNat q ++ v :: encode R' := by
+        rw [← List.drop_drop, hdropj]; rfl
+      have hpn : parsenumSpec format (sint.nat (j + W64 1 + W64 1)) (sint.nat (W64 (format.length : Int))) =
+          (q, true, sint.nat j + 2 + (decimalNat q).length) := by
+        rw [hel, hJ2]
+        exact fmt.parsenumSpec_decimalNat format _ _ q hdj2
+          (fun c hc => by cases hc; exact hnd) hq
+      wp_apply (wp_parsenum format (j + W64 1 + W64 1) (W64 (format.length : Int)) hJ2z (by word))
+      simp only [hpn]
+      wp_auto
+      -- the verb, after the digits
+      have hdK : format.drop (sint.nat j + 2 + (decimalNat q).length) = v :: encode R' := by
+        rw [← List.drop_drop, hdj2, List.drop_left]
+      have hKlt : sint.nat j + 2 + (decimalNat q).length < format.length := by
+        have := congrArg List.length hdK
+        simp only [List.length_drop, List.length_cons] at this; omega
+      have hfK : format[sint.nat j + 2 + (decimalNat q).length]? = some v := by
+        rw [← Nat.add_zero (sint.nat j + 2 + _), ← List.getElem?_drop, hdK]; rfl
+      have hK : sint.nat (W64 ((sint.nat j + 2 + (decimalNat q).length : Nat) : Int)) =
+          sint.nat j + 2 + (decimalNat q).length := by word
+      have hKz : 0 ≤ sint.Z (W64 ((sint.nat j + 2 + (decimalNat q).length : Nat) : Int)) := by word
+      wp_apply (wp_argNumber p argNum format _ _ hKz (by rw [hK, hfK]; simpa using h91))
+      rw [decide_eq_false (show ¬ sint.Z (W64 (format.length : Int)) ≤
+        sint.Z (W64 ((sint.nat j + 2 + (decimalNat q).length : Nat) : Int)) by word)]
+      wp_auto
+      wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len as %_
+      have hslK : (format.drop (sint.nat (W64 ((sint.nat j + 2 + (decimalNat q).length : Nat) : Int)))).take
+          (sint.nat (W64 (format.length : Int)) -
+            sint.nat (W64 ((sint.nat j + 2 + (decimalNat q).length : Nat) : Int))) = v :: encode R' := by
+        rw [hK, hdK]; apply List.take_of_length_le
+        have := congrArg List.length hdK
+        simp only [List.length_drop] at this
+        rw [← this]; word
+      simp only [show 0 ≤ sint.Z (W64 ((sint.nat j + 2 + (decimalNat q).length : Nat) : Int)) ∧
+          sint.Z (W64 ((sint.nat j + 2 + (decimalNat q).length : Nat) : Int)) ≤
+            sint.Z (W64 (format.length : Int)) ∧
+          sint.Z (W64 (format.length : Int)) ≤ format.length from ⟨hKz, by word, by word⟩,
+        _root_.and_self, ite_true, hslK]
+      wp_auto
+      wp_apply wp_DecodeRuneInString as %r %size %Hd
+      obtain ⟨rfl, rfl⟩ := Hd.2 _ _ rfl h128
+      obtain ⟨hw37, hw119, hw118⟩ := fmt.verb_runes hav
+      have hanz : sint.Z argNum < sint.Z args_sl.len := by word
+      rw [decide_eq_false (show ¬ (true = decide (W32 (uint.nat v : Int) = W32 37)) from
+        fun h => hw37 (of_decide_eq_true h.symm))]
+      wp_auto
+      rw [decide_eq_false (show ¬ (true = decide (sint.Z args_sl.len ≤ sint.Z argNum)) by
+        simp; word)]
+      wp_auto
+      rw [decide_eq_false (show ¬ (true = decide (W32 (uint.nat v : Int) = W32 119)) from
+        fun h => hw119 (of_decide_eq_true h.symm))]
+      wp_auto
+      by_cases hv : v = W8 118
+      all_goals first
+        | rw [decide_eq_true (show true = decide (W32 (uint.nat v : Int) = W32 118) by
+            simp only [hw118.mpr hv, _root_.decide_true])]
+          wp_auto
+        | rw [decide_eq_false (show ¬ (true = decide (W32 (uint.nat v : Int) = W32 118)) from
+            fun h => hv (hw118.mp (of_decide_eq_true h.symm)))]
+          wp_auto
+      all_goals
+        ihave Hflags : p.[pp, go!"fmt"].[fmt.fmt, go!"fmtFlags"] ↦ (Mod.prec q).flags $$ [Hflags]
+        · iExactEq Hflags; simp [Mod.flags, noFlags]
+        ihave Hwid : p.[pp, go!"fmt"].[fmt.fmt, go!"wid"] ↦ (Mod.prec q).wid $$ [Hwid]
+        · iExactEq Hwid; rfl
+        ihave Hprec : p.[pp, go!"fmt"].[fmt.fmt, go!"prec"] ↦ (Mod.prec q).precW $$ [Hprec]
+        · iExactEq Hprec; rfl
+        simp only [show 0 ≤ sint.Z argNum ∧ sint.Z argNum < sint.Z args_sl.len from ⟨ha0, hanz⟩]
+        wp_apply (wp_load_slice_index args_sl (sint.Z argNum) xs dq xa ha0) $$ [Hargs] as Hargs
+        · iframe; ipureintro; exact Hxa_lookup
+        icases (BigSepL2.bigSepL2_lookup_acc Hxa_lookup hargs') $$ Hxs with ⟨Hxa, Hxs⟩
+        ihave Hpr : isPrinter p (bs ++ (od ++ (fmt.leadLits rest).1)) (Mod.prec q).flags (Mod.prec q).wid
+            (Mod.prec q).precW $$ [Hbuf Hfbuf Hflags Hwid Hprec Hib Harg Hval Hreord Hgood Hpanicking Herroring Hwrap Hwe]
+        · unfold isPrinter isPrinterA fmtOwn
+          iexists x
+          iframe
+        wp_apply (wp_printArg p xa a (bs ++ (od ++ (fmt.leadLits rest).1)) (.prec q) v hpok) $$ [Hpr Hxa]
+          as ⟨%o, %ho, Hp, Hxa⟩
+        · iframe
+        ihave Hxs : ([∗list] x;a ∈ xs;args, isArg (GF := GF) x a) $$ [Hxs Hxa]
+        · iapply Hxs; iexact Hxa
+        wp_for_post
+        ihave Hp : isPrinterA p xa (bs ++ (od ++ (fmt.leadLits rest).1 ++ o)) (Mod.prec q).flags
+            (Mod.prec q).wid (Mod.prec q).precW $$ [Hp]
+        · iExactEq Hp; simp
+        iframe
+        iexists (W64 ((sint.nat j + 2 + (decimalNat q).length : Nat) : Int) + W64 1), (argNum + W64 1), R', ar', od ++ (fmt.leadLits rest).1 ++ o
+        iexists _, _, _, _
+        iframe
+        isplitl [Hp]
+        · iExactEq Hp; rfl
+        ipureintro
+        refine ⟨by word, by word, ?_, hfR, ?_, by word, by word, ?_⟩
+        · rw [show sint.nat (W64 ((sint.nat j + 2 + (decimalNat q).length : Nat) : Int) + W64 1) = sint.nat j + 2 + (decimalNat q).length + 1 by word,
+            ← List.drop_drop, hdK]; rfl
+        · rw [show sint.nat (argNum + W64 1) = sint.nat argNum + 1 by word, ← List.drop_drop, hargs]; rfl
+        · intro out hout'
+          have := hout _ (fmt.Out_leadLits (by rw [hR]; exact Out.prec q v a o R' ar' out ho hout'))
+          simpa [List.append_assoc] using this
   · -- the end of the format
     have hie : sint.nat i = format.length := by word
     rw [hie, List.drop_length] at hdrop

@@ -15,6 +15,16 @@ set_option linter.iris.style.nameCheck false
 namespace Perennial
 
 namespace runtime
+
+/-- **The binary's `runtime.buildVersion`**: the string the linker wrote into it (see
+`buildVersion.init`), fixed for the whole run. The model knows nothing of it: it is opaque, nothing
+is proved about it, and a theorem about a program holds whatever string it is. A theorem that
+needs a property of it takes the property as a premise, as `crypto.fips140.GodebugFips140Off` is
+for the `fips140` setting (for example that it is valid UTF-8: a standard `go build` writes the
+toolchain's version, `go1.27.3` or `devel ...`, and only `-ldflags -X runtime.buildVersion=<s>`
+writes an arbitrary string). -/
+opaque buildVersionValue : GoString
+
 section code
 variable [GooseExts] [GoGlobalContext]
 
@@ -41,8 +51,8 @@ replaces an empty value by `"unknown"` before any package is initialized (`proc.
 and a `//go:linkname` pull of it from another package is refused by the default linker (since Go
 1.23; only `-ldflags=-checklinkname=0` allows it, and goose does not model `go:linkname`).
 
-The model allocates the variable and stores an arbitrary string (`fmt.arbitraryString`, which can
-be every string), so it is less defined than Go: every value Go can have is one of its results. It
+The model allocates the variable and stores `buildVersionValue`, the opaque string standing for
+the linker's value: every value Go can have is one it may be, as nothing is known of it. It
 cannot panic, nor can Go's (the value is in the binary). Goose runs it where it would allocate
 a translated variable (before the imported packages' initializers), as for every trusted variable
 without an initializer.
@@ -53,7 +63,7 @@ returns the linker's string. The linker's write is not Go code. `Version` itself
 noncomputable def buildVersion.init : val :=
   λ: <>,
     go.GlobalAlloc go!"runtime.buildVersion" go.string #() ;;
-    GlobalVarAddr go!"runtime.buildVersion" #() <-[go.string] (fmt.arbitraryString #())
+    GlobalVarAddr go!"runtime.buildVersion" #() <-[go.string] #buildVersionValue
 
 /-- `callers(skip int, pcbuf []uintptr) int` (`traceback.go`), which `Callers` (translated) calls
 with a non-empty `pcbuf`: it walks the calling goroutine's stack (`systemstack`, the unwinder) and
@@ -63,12 +73,34 @@ writes the return program counters of the frames after the first `skip` into `pc
 past `len(pcbuf)`, and a `skip` past the stack's depth, or negative, writes fewer entries or the
 whole buffer.
 
+**A stack has fewer than `2^39` frames**, and the model reports at most `2^40 - 1`, so
+`callers` returns `n < len(pcbuf)` once `len(pcbuf) ≥ 2^40` (a caller that grows its buffer
+until it is not filled, as zap's `stacktrace.Capture` does, stops; `README.md`, "Model
+assumption (stack depth)"). The frames it reports are the physical frames of the
+goroutine's stack, each expanded into the calls inlined into it:
+- a goroutine's stack is at most `maxstackceiling = 2 * maxstacksize = 2_000_000_000` bytes on
+  64-bit (`runtime/proc.go`, `main`; `newstack` throws "stack overflow" past it,
+  `runtime/stack.go`), whatever `debug.SetMaxStack` later sets: `setMaxStack` changes
+  `maxstacksize` only, never the ceiling. Each physical frame holds at least its 8-byte return
+  address, so there are at most `250_000_000` of them;
+- the calls inlined into one physical frame are nested at most as deep as the inliner's budget
+  allows: a function is inlined only if its cost is within the budget, and its cost counts the
+  call node and the cost of every call inlined into it, so each level of nesting costs at least
+  one node. With the compiler's default flags and experiments the largest budget is
+  `inlineHotMaxBudget + BudgetExpansion = 2000 + 80` (`cmd/compile/internal/inline/inl.go`,
+  `inlineBudget`: the PGO hot-call budget; 80 otherwise, 800 for a closure called once, 16 x 80
+  with SIMD values), so a physical frame expands into at most `2081` frames. (Only debug flags
+  raise it: `-gcflags=-d=pgoinlinebudget=N`, `-d=inlbudgetslack=N`, or `GOEXPERIMENT=newinliner`,
+  whose call-site scores replace costs.)
+That is fewer than `250_000_000 * 2081 < 2^39` frames. (Exceeding the stack limit is a fatal error, not a longer result:
+`goose/model/runtime/callers_test.go`'s `TestStackLimitFatal`.)
+
 The model is goose's translation of
 
 ```go
 func callers(skip int, pcbuf []uintptr) int {
 	n := 0
-	for n < len(pcbuf) && arbitrary() != 0 {
+	for n < len(pcbuf) && n < 1<<40-1 && arbitrary() != 0 {
 		pcbuf[n] = uintptr(arbitrary())
 		n++
 	}
@@ -78,11 +110,11 @@ func callers(skip int, pcbuf []uintptr) int {
 
 with each call `arbitrary()` replaced by `ArbitraryInt` (an arbitrary `uint64`): it writes some
 prefix of `pcbuf` with arbitrary words and returns its length, every `n` from `0` to
-`len(pcbuf)` (Go: `n < len(pcbuf)` when the stack is shallower, `0` when `skip` is past it,
-`len(pcbuf)` when the buffer is too short: `goose/model/runtime/callers_test.go`). It writes the
-cells one at a time, as Go does, so a concurrent access to `pcbuf` races in the model as in Go.
-Why trusted: the stack walk reads the goroutine's stack and the binary's tables, which the
-semantics does not model. -/
+`min(len(pcbuf), 2^40 - 1)` (Go: `n < len(pcbuf)` when the stack is shallower, `0` when `skip`
+is past it, `len(pcbuf)` when the buffer is too short: `goose/model/runtime/callers_test.go`). It
+writes the cells one at a time, as Go does, so a concurrent access to `pcbuf` races in the model
+as in Go. Why trusted: the stack walk reads the goroutine's stack and the binary's tables, which
+the semantics does not model. -/
 noncomputable def callers.impl : val :=
   (LamV "skip"
   (Lam "pcbuf"
@@ -101,8 +133,8 @@ noncomputable def callers.impl : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (App (App (Val doFor) (Lam BAnon
-  (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uintptr)))) (Var "pcbuf"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uintptr)]))) (Val #())) (Var "$a0"))))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair ArbitraryInt (Val #(W64 0))))) (Val #false)))) (Lam BAnon
+  (If (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uintptr)))) (Var "pcbuf"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uintptr)]))) (Val #())) (Var "$a0"))))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1099511627775)))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair ArbitraryInt (Val #(W64 0))))) (Val #false)))) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.uintptr))) ArbitraryInt)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
