@@ -46,6 +46,9 @@ noncomputable def bump [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def choose [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/modeloverlay.choose"
 
+noncomputable def unmodelled [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/modeloverlay.unmodelled"
+
 /-- MODEL: the first init function, in its place (before the second).
 
     go: model.go:21:6 -/

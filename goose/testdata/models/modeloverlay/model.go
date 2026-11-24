@@ -36,3 +36,9 @@ func bump(c *Counter) {
 func choose() bool {
 	return false
 }
+
+// unmodelled is an addition that names_only lists: translated names-only
+// (its name, no body), although translate matches it.
+func unmodelled() uint64 {
+	panic("unreachable")
+}

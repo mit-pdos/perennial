@@ -129,6 +129,8 @@ SIGNALS = [
     ("model-table", r"^\s*\[model\]", "goose configuration: a Go model overlay (model Go replaces or adds to the real package; R12)"),
     ("model-replaces", r"^\s*(replaces|added_methods)\s*=\s*\[",
      "goose configuration: which real declarations a Go model replaces, or which methods it may add to real types (R12)"),
+    ("model-names-only", r"^\s*names_only\s*=\s*\[",
+     "goose configuration: which Go model declarations are translated names-only (no body: a declaration of the API, R12)"),
     ("gomodel-replace", r"//gomodel:replace\b", "a Go model `init` that replaces a real `init.N` (R12)"),
     ("gomodel-choice", r"\bgomodel\.(Choose|ChooseUint64|Stuck)\s*\(",
      "a choice or stuck point in a Go model: needs a reason (review-trusted)"),
@@ -436,13 +438,15 @@ def config_go_dir(path):
 
 # --------------------------------------------------------------- Go model overlays
 def model_table(text):
-    """The `[model]` table of a goose config: {"dir", "replaces", "added_methods"}, or None."""
+    """The `[model]` table of a goose config: {"dir", "replaces", "added_methods",
+    "names_only"}, or None."""
     m = parse_config(text).get("model") if text else None
     if not isinstance(m, dict):
         return None
     return {"dir": str(m.get("dir", "")).strip("/"),
             "replaces": [str(x) for x in m.get("replaces", [])] if "replaces" in m else None,
-            "added_methods": [str(x) for x in m.get("added_methods", [])]}
+            "added_methods": [str(x) for x in m.get("added_methods", [])],
+            "names_only": [str(x) for x in m.get("names_only", [])]}
 
 def pattern_contains(patterns, name):
     """goose's pattern sets (declfilter): `*` matches anything, `!p` removes, the last
@@ -636,7 +640,8 @@ def fmt_model(t):
     if t is None:
         return "none"
     r = "(missing: a config error)" if t["replaces"] is None else t["replaces"]
-    return f"dir = {t['dir']!r}, replaces = {r}, added_methods = {t['added_methods']}"
+    return (f"dir = {t['dir']!r}, replaces = {r}, added_methods = {t['added_methods']}, "
+            f"names_only = {t['names_only']}")
 
 def report_model(cpath, rev_old, rev_new, changed_paths):
     """The `[model]` section of one goose config: the table before and after; for every
@@ -672,8 +677,9 @@ def report_model(cpath, rev_old, rev_new, changed_paths):
     for n in sorted(rep_old - rep_new - {"*"}):
         print(f"- no longer replaced: `{n}` (the real declaration is back)")
     stubs = lambda n: pattern_contains(trusted, n)
+    names_only = lambda n: pattern_contains(new["names_only"], n)
     if whole:
-        claimed = [n for n in nd if not stubs(n)]
+        claimed = [n for n in nd if not stubs(n) and not names_only(n)]
     else:
         claimed = sorted(rep_new)
     status = lambda n: ("new" if n not in od or (not whole and n not in rep_old) else
@@ -710,7 +716,11 @@ def report_model(cpath, rev_old, rev_new, changed_paths):
             print(f"(`go doc -u -src {pkg}.{n}` found nothing: fetch the real source yourself)\n")
     if same:
         print("Replaced, unchanged: " + ", ".join(f"`{n}`" for n in same) + "\n")
-    adds = [n for n in nd if n not in rep_new and not (whole and not stubs(n))]
+    nonly = sorted(n for n in nd if names_only(n))
+    if nonly:
+        print("Names-only (`names_only`: the declaration is translated without its body, so only its "
+              "name and type are claimed): " + ", ".join(f"`{n}`" for n in nonly) + "\n")
+    adds = [n for n in nd if n not in rep_new and not (whole and not stubs(n)) and not names_only(n)]
     if adds:
         print("Additions (no claim of their own; a primitive stub carries the TrustedCode claim, "
               "R2; an added method must match `added_methods`):\n")

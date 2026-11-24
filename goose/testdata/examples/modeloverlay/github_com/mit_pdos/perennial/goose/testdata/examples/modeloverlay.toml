@@ -4,3 +4,4 @@ trusted = ["choose"]
 [model]
 dir = "goose/testdata/models/modeloverlay"
 replaces = ["Counter", "Counter.Inc", "init.0"]
+names_only = ["unmodelled"]

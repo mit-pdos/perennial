@@ -135,18 +135,31 @@ func (m *Models) merge(opts LoadOptions) (LoadOptions, error) {
 
 // Filter returns df, except that it translates the declarations of the
 // package that come from its model, other than the ones df trusts (the
-// model's primitive stubs).
+// model's primitive stubs) and the ones names_only matches, which it
+// translates names-only.
 func (m *Models) Filter(pkg *packages.Package, df declfilter.DeclFilter) declfilter.DeclFilter {
-	if m == nil || m.Packages[pkg.PkgPath] == nil {
+	pm := m.pkgModel(pkg.PkgPath)
+	if pm == nil {
 		return df
 	}
 	names := make(map[string]bool)
+	namesOnly := make(map[string]bool)
 	for n := range modelDeclNames(pkg, m.modelFiles) {
-		if df.GetAction(n) != declfilter.Trust {
+		switch {
+		case declfilter.MatchesAny(pm.Config.NamesOnly, n):
+			namesOnly[n] = true
+		case df.GetAction(n) != declfilter.Trust:
 			names[n] = true
 		}
 	}
-	return declfilter.WithTranslated(df, names)
+	return declfilter.WithNamesOnly(declfilter.WithTranslated(df, names), namesOnly)
+}
+
+func (m *Models) pkgModel(path string) *PackageModel {
+	if m == nil {
+		return nil
+	}
+	return m.Packages[path]
 }
 
 // modelDeclNames returns the names (as the declaration filter sees them) of
@@ -260,8 +273,8 @@ func (m *Models) WriteGoOverlay(opts LoadOptions, dir string) (string, error) {
 // overlay adds), the graph is computed again under the overlay until no new
 // model appears. It checks each model (the errors are listed in
 // declfilter.ModelConfig and here): the names of replaces both ways, the
-// splice, the overlaid package's type-checking, and that the model keeps
-// the real package's API (CheckAPI).
+// splice, the overlaid package's type-checking, the names_only entries, and
+// that the model keeps the real package's API (CheckAPI).
 func BuildModels(modDir, configDir string, opts LoadOptions, patterns ...string) (*Models, error) {
 	m := &Models{Overlay: make(map[string][]byte), Packages: make(map[string]*PackageModel),
 		modelFiles: make(map[string]bool)}
@@ -1189,7 +1202,8 @@ func firstBodyLine(fset *token.FileSet, b *builder, fn *ast.FuncDecl) string {
 	return strings.TrimSpace(string(src[start:end]))
 }
 
-// check type-checks the overlaid model packages and checks their API
+// check type-checks the overlaid model packages, checks that each
+// names_only entry matches a model declaration, and checks their API
 // against the real packages' (CheckAPI).
 func (b *builder) check() error {
 	merged, err := b.models.merge(b.opts)
@@ -1222,6 +1236,22 @@ func (b *builder) check() error {
 			continue
 		}
 		pm := b.models.Packages[p.PkgPath]
+		if pm != nil {
+			names := modelDeclNames(p, b.models.modelFiles)
+			for _, e := range pm.Config.NamesOnly {
+				if strings.HasPrefix(e, "!") {
+					continue
+				}
+				matched := false
+				for n := range names {
+					matched = matched || declfilter.MatchesAny([]string{e}, n)
+				}
+				if !matched {
+					errs = append(errs, errors.Errorf("model of %s: names_only %q matches no model declaration",
+						p.PkgPath, e))
+				}
+			}
+		}
 		real := b.real[p.PkgPath]
 		if pm == nil || real == nil {
 			continue

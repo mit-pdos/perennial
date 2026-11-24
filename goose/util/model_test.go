@@ -225,6 +225,8 @@ func (t *T) M() {}
 		{"trusted", "func F(x int) int { return 0 }", `"F"`, "", `replaces "F", which is also listed in trusted`},
 		{"star-and-names", "func F(x int) int { return 0 }", `"*", "F"`, "", `replaces "*" (a whole-package model) together with names`},
 		{"glob", "func F(x int) int { return 0 }", `"F*"`, "", `replaces "F*": a pattern`},
+		{"names-only-unmatched", "func F(x int) int { return 0 }\nfunc G() {}", `"F"`, `names_only = ["G", "H*"]`,
+			`names_only "H*" matches no model declaration`},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			model := "package p\n\n" + c.model + "\n"
