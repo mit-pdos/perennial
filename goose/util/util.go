@@ -103,13 +103,18 @@ type LoadOptions struct {
 	// file on disk or add a file that does not exist (see
 	// packages.Config.Overlay, and ReadOverlay).
 	Overlay map[string][]byte
+	// ModelRoot is the directory the dirs of [model] tables are relative
+	// to; if empty, the nearest ancestor of the config directory with a
+	// lakefile (RepoRoot).
+	ModelRoot string
 }
 
 // LoadFlags are the command-line flags that give the LoadOptions: -tags and
 // -overlay. Register them before flag.Parse, and call Options after it.
 type LoadFlags struct {
-	tags    string
-	overlay string
+	tags      string
+	overlay   string
+	modelRoot string
 }
 
 // Register defines -tags and -overlay on fs; note, if not empty, is added to
@@ -120,12 +125,15 @@ func (f *LoadFlags) Register(fs *flag.FlagSet, note string) {
 	}
 	fs.StringVar(&f.tags, "tags", "", TagsUsage+note)
 	fs.StringVar(&f.overlay, "overlay", "", OverlayUsage+note)
+	fs.StringVar(&f.modelRoot, "model-root", "", "the directory the dirs of the goose configs' [model] "+
+		"tables are relative to (default: the nearest ancestor of the config directory with a "+
+		"lakefile.toml or lakefile.lean)"+note)
 }
 
 // Options returns the load options the flags give, reading the overlay file
 // if there is one; on a bad overlay it prints the error and exits.
 func (f *LoadFlags) Options() LoadOptions {
-	opts := LoadOptions{Tags: ParseTags(f.tags)}
+	opts := LoadOptions{Tags: ParseTags(f.tags), ModelRoot: f.modelRoot}
 	if f.overlay != "" {
 		overlay, err := ReadOverlay(f.overlay)
 		if err != nil {
@@ -222,10 +230,11 @@ func ReadConfig(configDir string, pkgPath string) (declfilter.FilterConfig, erro
 
 func Translate(translatePkg PackageTranslator, pkgPatterns []string, outRootDir string, modDir string, configDir string, opts LoadOptions) {
 	red := color.New(color.FgRed).SprintFunc()
-	pkgs, err := packages.Load(NewPackageConfig(modDir, true, opts), pkgPatterns...)
+	pkgs, models, err := LoadPackages(modDir, configDir, true, opts, pkgPatterns...)
 
 	if err != nil {
-		panic(err)
+		fmt.Fprintln(os.Stderr, red(err.Error()))
+		os.Exit(1)
 	} else if len(pkgs) == 0 {
 		panic("patterns matched no packages")
 	}
@@ -236,7 +245,7 @@ func Translate(translatePkg PackageTranslator, pkgPatterns []string, outRootDir 
 		if err != nil {
 			panic(fmt.Sprintf("could not parse config for %s:\n%v", pkg.PkgPath, err))
 		}
-		filter := ExtendFilter(pkg, config, declfilter.New(config))
+		filter := ExtendFilter(pkg, config, models.Filter(pkg, declfilter.New(config)))
 
 		extra := translatePkg(w, pkg, config.Bootstrap.Enabled, filter)
 

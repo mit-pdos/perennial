@@ -2,7 +2,7 @@
 Shared definitions of the `encoding/binary` proofs: the little-endian lemmas
 (`leToU64_8`, `u64Le_8`, `u32Le_4`, `leToU32_4`, `sint_W64_lit`) and the bounds-check tactic
 `idx_if` (scoped in `encoding.binary`), the package's `isPkgInit` (`LittleEndian` holds its
-zero value), and `wp_load_struct_nofields`. The big-endian encoding of `v` is the
+zero value, `errOverflow` its `errors.New`, `errOverflow_of_init`), and `wp_load_struct_nofields`. The big-endian encoding of `v` is the
 little-endian one reversed (`(u64Le v).reverse`), and big-endian decoding of `bs` is
 little-endian decoding of `bs.reverse`.
 -/
@@ -119,10 +119,13 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : encoding.binary.Assumptions]
 
-/-- The package-initialized state: `LittleEndian` holds its zero value. -/
+/-- The package-initialized state: `LittleEndian` and `BigEndian` hold their zero values, and
+`errOverflow` holds `errors.New("binary: varint overflows a 64-bit integer")` (`varint.go:124`;
+`errors.newVar`), what a caller comparing or printing a `ReadUvarint` error needs of it. -/
 abbrev isInit : IProp GF :=
   iprop(typedPointsto (globalAddr LittleEndian) (zero_val littleEndian) DFrac.discard ∗
-    typedPointsto (globalAddr BigEndian) (zero_val bigEndian) DFrac.discard)
+    typedPointsto (globalAddr BigEndian) (zero_val bigEndian) DFrac.discard ∗
+    errors.newVar errOverflow go!"binary: varint overflows a 64-bit integer")
 
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.encoding.binary :=
   define_is_pkg_init isInit
@@ -132,6 +135,15 @@ instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.encoding.binar
 theorem isInit_access :
     isPkgInit (PROP := IProp GF) pkg_id.encoding.binary ⊢ isInit (GF := GF) := by
   with_unfolding_all exact isPkgInit_access (PROP := IProp GF) pkg_id.encoding.binary
+
+/-- `errOverflow` holds `errors.New("binary: varint overflows a 64-bit integer")`. -/
+theorem errOverflow_of_init :
+    isPkgInit (PROP := IProp GF) pkg_id.encoding.binary ⊢
+      errors.newVar (GF := GF) errOverflow go!"binary: varint overflows a 64-bit integer" := by
+  iintro Hinit
+  ihave Hi := isInit_access $$ Hinit
+  icases Hi with ⟨-, -, HO⟩
+  iexact HO
 
 /-- Loading a struct with no fields reads no memory: it needs no points-to, only a
 non-null address (the `bigEndian` methods of the global `BigEndian` load it). -/

@@ -895,6 +895,25 @@ attribute [instance] perThreadSyscallArgs.TypeAssumptions.type_repr
   perThreadSyscallArgs.TypeAssumptions.method_set
   perThreadSyscallArgs.TypeAssumptions.ptr_method_set
 
+class kernelVersion.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying kernelVersion.underlying kernelVersion
+  underlying : go.UnderlyingDirectedEq kernelVersion.ty kernelVersion.underlying
+  get_major : ∀ (x : kernelVersion), go.IsGoStepPureDetTagged under (StructFieldGet kernelVersion.underlying go!"major") #x (Val #(x.major'))
+  set_major : ∀ (x : kernelVersion) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet kernelVersion.underlying go!"major") (PairV #x #y) (Val #(({ x with major' := y } : kernelVersion)))
+  get_minor : ∀ (x : kernelVersion), go.IsGoStepPureDetTagged under (StructFieldGet kernelVersion.underlying go!"minor") #x (Val #(x.minor'))
+  set_minor : ∀ (x : kernelVersion) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet kernelVersion.underlying go!"minor") (PairV #x #y) (Val #(({ x with minor' := y } : kernelVersion)))
+  method_set : go.MethodSetIs kernelVersion.ty [(go!"GE", (some (go.signature.Signature [go.int, go.int] false [go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType kernelVersion.ty) [(go!"GE", (some (go.signature.Signature [go.int, go.int] false [go.bool])))]
+
+attribute [instance] kernelVersion.TypeAssumptions.type_repr
+  kernelVersion.TypeAssumptions.underlying
+  kernelVersion.TypeAssumptions.get_major
+  kernelVersion.TypeAssumptions.set_major
+  kernelVersion.TypeAssumptions.get_minor
+  kernelVersion.TypeAssumptions.set_minor
+  kernelVersion.TypeAssumptions.method_set
+  kernelVersion.TypeAssumptions.ptr_method_set
+
 class sigset.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq sigset.ty sigset.underlying
   method_set : go.MethodSetIs sigset.ty []

@@ -6,7 +6,7 @@ package rangefunc_recover
 func f(seq func(yield func() bool)) {
 	defer func() {
 		for range seq {
-			recover() // ERROR recover() is supported only directly in a function literal deferred by a defer statement
+			recover() // ERROR recover() is supported only directly in a function or method declaration or in a function literal deferred by a defer statement
 		}
 	}()
 	panic("p")

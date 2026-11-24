@@ -887,6 +887,34 @@ func (suite *GoTestSuite) TestCatchTwoDeep() {
 	suite.Equal(true, testCatchTwoDeep())
 }
 
+func (suite *GoTestSuite) TestMethodRecover() {
+	suite.Equal(true, testMethodRecover())
+}
+
+func (suite *GoTestSuite) TestTopRecover() {
+	suite.Equal(true, testTopRecover())
+}
+
+func (suite *GoTestSuite) TestRepanic() {
+	suite.Equal(true, testRepanic())
+}
+
+func (suite *GoTestSuite) TestTwoCells() {
+	suite.Equal(true, testTwoCells())
+}
+
+func (suite *GoTestSuite) TestRecoverNotPanicking() {
+	suite.Equal(true, testRecoverNotPanicking())
+}
+
+func (suite *GoTestSuite) TestOuterSeenByLiteral() {
+	suite.Equal(true, testOuterSeenByLiteral())
+}
+
+func (suite *GoTestSuite) TestDefersOnlyRecovering() {
+	suite.Equal(true, testDefersOnlyRecovering())
+}
+
 func (suite *GoTestSuite) TestShortcircuitAndTF() {
 	suite.Equal(true, testShortcircuitAndTF())
 }
@@ -965,6 +993,18 @@ func (suite *GoTestSuite) TestCopyGenericString() {
 
 func (suite *GoTestSuite) TestCopyGenericBytes() {
 	suite.Equal(true, testCopyGenericBytes())
+}
+
+func (suite *GoTestSuite) TestIndexGenericBytes() {
+	suite.Equal(true, testIndexGenericBytes())
+}
+
+func (suite *GoTestSuite) TestIndexGenericNamedBytes() {
+	suite.Equal(true, testIndexGenericNamedBytes())
+}
+
+func (suite *GoTestSuite) TestIndexGenericString() {
+	suite.Equal(true, testIndexGenericString())
 }
 
 func (suite *GoTestSuite) TestFooBarMutation() {
