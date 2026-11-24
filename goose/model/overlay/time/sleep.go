@@ -107,6 +107,17 @@ func After(d Duration) <-chan Time {
 // makeTimerChan is a timer's channel: synchronous (GODEBUG asynctimerchan=0,
 // Go's default, whose cap and len are 0) or of capacity 1 (asynctimerchan=1).
 // gomodel.Choose: the model does not read GODEBUG.
+//
+// The kind is fixed here, at make. Go's runtime instead re-reads the setting
+// on every cap and len of a timer channel (and at each send), so a program
+// that changes GODEBUG while running (os.Setenv("GODEBUG",
+// "asynctimerchan=1")) sees cap(t.C) of one timer change from 0 to 1, which
+// no channel of the model does (docs/KNOWN_LIMITATIONS.md, "time"). This is
+// sound only because the model's runtime-provided setenv hook is stuck on the
+// key "GODEBUG": no verified program changes the setting mid-run, and with a
+// fixed setting every channel the runtime makes has one kind throughout, which
+// is one of the two choices here (as TrustedCode/crypto/fips140.lean fixes its
+// GODEBUG setting for the whole run).
 func makeTimerChan() chan Time {
 	if gomodel.Choose() {
 		return make(chan Time, 1)

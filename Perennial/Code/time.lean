@@ -2615,7 +2615,18 @@ noncomputable def Unix.impl [GooseExts] [GoGlobalContext] : val :=
     Go's default, whose cap and len are 0) or of capacity 1 (asynctimerchan=1).
     gomodel.Choose: the model does not read GODEBUG.
 
-    go: sleep.go:110:6 -/
+    The kind is fixed here, at make. Go's runtime instead re-reads the setting
+    on every cap and len of a timer channel (and at each send), so a program
+    that changes GODEBUG while running (os.Setenv("GODEBUG",
+    "asynctimerchan=1")) sees cap(t.C) of one timer change from 0 to 1, which
+    no channel of the model does (docs/KNOWN_LIMITATIONS.md, "time"). This is
+    sound only because the model's runtime-provided setenv hook is stuck on the
+    key "GODEBUG": no verified program changes the setting mid-run, and with a
+    fixed setting every channel the runtime makes has one kind throughout, which
+    is one of the two choices here (as TrustedCode/crypto/fips140.lean fixes its
+    GODEBUG setting for the whole run).
+
+    go: sleep.go:121:6 -/
 noncomputable def makeTimerChan.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv Time.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv Time.ty)))) (Val #())))
@@ -2641,7 +2652,7 @@ noncomputable def makeTimerChan.impl [GooseExts] [GoGlobalContext] : val :=
 /-- sendTimes is the model's sendTime: Go's sends Now().Add(Duration(-delta))
     on c without blocking; this one blocks (see NewTimer).
 
-    go: sleep.go:119:6 -/
+    go: sleep.go:130:6 -/
 noncomputable def sendTimes.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "seq"
@@ -2660,7 +2671,7 @@ noncomputable def sendTimes.impl [GooseExts] [GoGlobalContext] : val :=
 /-- timerFunc is a timer's firing: f(arg, seq, delay) with arbitrary seq and
     delay (gomodel.ChooseUint64: the runtime's sequence number and lateness).
 
-    go: sleep.go:125:6 -/
+    go: sleep.go:136:6 -/
 noncomputable def timerFunc.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam "arg"
@@ -2686,7 +2697,7 @@ noncomputable def timerFunc.impl [GooseExts] [GoGlobalContext] : val :=
 /-- checkWhen is stuck where the runtime's timer.modify throws ("timer when
     must be positive", "timer period must be non-negative").
 
-    go: sleep.go:133:6 -/
+    go: sleep.go:144:6 -/
 noncomputable def checkWhen.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "when"
   (Lam "period"
@@ -2703,7 +2714,7 @@ noncomputable def checkWhen.impl [GooseExts] [GoGlobalContext] : val :=
 /-- startTimer arms a timer: a goroutine that waits until the runtime clock
     reaches when, fires, and for period != 0 does so again at the next when.
 
-    go: sleep.go:141:6 -/
+    go: sleep.go:152:6 -/
 noncomputable def startTimer.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "fire"
   (Lam "when"
@@ -2751,7 +2762,7 @@ noncomputable def startTimer.impl [GooseExts] [GoGlobalContext] : val :=
     `when` saturates), or now if that has passed already (the runtime skips the
     missed periods; a value for each would only queue up on the channel).
 
-    go: sleep.go:158:6 -/
+    go: sleep.go:169:6 -/
 noncomputable def nextWhen.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "when"
   (Lam "period"
@@ -2793,7 +2804,7 @@ noncomputable def nextWhen.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- sleepUntil returns once the runtime clock has reached w.
 
-    go: sleep.go:170:6 -/
+    go: sleep.go:181:6 -/
 noncomputable def sleepUntil.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "w"
   (Seq (App (Val exceptionDo)
@@ -2820,7 +2831,7 @@ noncomputable def sleepUntil.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- stopTimerAt is stopTimer at the timer (or ticker) at p.
 
-    go: sleep.go:181:6 -/
+    go: sleep.go:192:6 -/
 noncomputable def stopTimerAt.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -2841,7 +2852,7 @@ noncomputable def stopTimerAt.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- resetTimerAt is resetTimer at the timer (or ticker) at p.
 
-    go: sleep.go:187:6 -/
+    go: sleep.go:198:6 -/
 noncomputable def resetTimerAt.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam "when"
@@ -2880,7 +2891,7 @@ noncomputable def resetTimerAt.impl [GooseExts] [GoGlobalContext] : val :=
     reading, unless another reading got there first (then it reads again), so
     that its results are non-decreasing across goroutines.
 
-    go: sleep.go:238:6 -/
+    go: sleep.go:249:6 -/
 noncomputable def runtimeClockNow.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
@@ -2916,7 +2927,7 @@ noncomputable def runtimeClockNow.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- runtimeClockWaitUntil returns a reading of the runtime clock at least w.
 
-    go: sleep.go:249:6 -/
+    go: sleep.go:260:6 -/
 noncomputable def runtimeClockWaitUntil.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "w"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
@@ -2948,7 +2959,7 @@ noncomputable def runtimeClockWaitUntil.impl [GooseExts] [GoGlobalContext] : val
 
 /-- whenAt is when(d) with now for runtimeNano().
 
-    go: sleep.go:260:6 -/
+    go: sleep.go:271:6 -/
 noncomputable def whenAt.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "now"
   (Lam "d"

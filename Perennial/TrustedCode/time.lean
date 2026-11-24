@@ -40,12 +40,22 @@ def runtimeTimerType : go.GoType := go.GoType.FunctionType (go.signature.Signatu
 
 /-- The address of the runtime's state of the timer whose `Timer` (or `Ticker`) is at `t`. The
 runtime allocates a timer as a `runtime.timeTimer`, the `Timer`'s fields followed by the
-embedded `timer`; this is that `timer`, as one cell, which holds the timer's firing. `timer` is
-no field of `Timer`, so no allocation of the program has a cell at this address. -/
+embedded `timer`; this is that `timer`, as one cell, which holds the timer's firing.
+
+Soundness rests on the choice of this address, not only on `timer` being no field of `Timer` (no
+Go type the program can name has it): `structFieldRef … "timer" t` must be an address that no
+allocation of the program has, so that `runtimeTimerAlloc` can always place the cell there (its
+`AngelicExit` is then only on the model's own choice of address, the `alloc_struct` scheme) and
+`runtimeTimerFire` is stuck at every `Timer` or `Ticker` the runtime did not make (a zero value or a
+copy, where Go's `stopTimer`/`resetTimer` read memory that is not a timer). -/
 def runtimeTimerRef : val :=
   λ: "t", StructFieldRef (go.Named go!"time.Timer" []) go!"timer" "t"
 
-/-- Allocates the runtime's state of the timer at `t`, holding `fire`. -/
+/-- Allocates the runtime's state of the timer at `t`, holding `fire`: a fresh cell, kept only if
+the allocation lands at `runtimeTimerRef t` (`AngelicExit` otherwise). This is sound because
+`runtimeTimerRef t` is chosen to be an address that no allocation of the program has (see
+`runtimeTimerRef`; that no Go type has a field `timer` is not enough by itself): some choice of
+the model's allocator always lands there, so the exit discards no behaviour of Go's. -/
 def runtimeTimerAlloc : val :=
   λ: "t" "fire",
     let: "r" := GoAlloc runtimeTimerType "fire" in
