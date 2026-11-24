@@ -68,18 +68,28 @@ theorem internal.poll.initialize'.wp_proof
   wp_alloc_anon
   wp_auto
   ipersist HDE
-  wp_apply errors.wp_New_errorString as %xNP #ENP
+  wp_apply +noauto errors.wp_New_errorString as %xNP #ENP
+  wp_pures
+  wp_store
+  ipersist HNP
+  wp_auto
   ihave #NND : errors.newVar (GF := GF) ErrNoDeadline go!"file type does not support deadline" $$ []
   · iunfold errors.newVar
     iexists _
     iframe HND END
+  ihave #NNP : errors.newVar (GF := GF) ErrNotPollable go!"not pollable" $$ []
+  · iunfold errors.newVar
+    iexists _
+    iframe HNP ENP
   iframe Hown
   is_pkg_init_finish
   imodintro
   isplitl []
   · iexact NND
+  isplitl []
   · iexists _
     iexact HDE
+  · iexact NNP
 
 end proof
 

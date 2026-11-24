@@ -11,6 +11,11 @@ public import Perennial.Spec.unicode.utf8.initialize
 public import Perennial.Spec.reflect.initialize
 public import Perennial.Spec.strconv.initialize
 public import Perennial.Spec.errors.New
+public import Perennial.Spec.syscall.initialize
+public import Perennial.Spec.io.fs.initialize
+public import Perennial.Spec.internal.poll.initialize
+public import Perennial.Spec.internal.gomodel.initialize
+public import Perennial.Spec.internal.stringslite.initialize
 
 @[expose] public section
 
@@ -34,7 +39,12 @@ theorem fmt.initialize'.wp_proof
     (wp_utf8_initialize : unicode.utf8.initialize'.spec (GF := GF) (hG := hG))
     (wp_reflect_initialize : reflect.initialize'.spec (GF := GF) (hG := hG))
     (wp_strconv_initialize : strconv.initialize'.spec (GF := GF) (hG := hG))
-    (wp_New : errors.New.spec (GF := GF) (hG := hG)) :
+    (wp_New : errors.New.spec (GF := GF) (hG := hG))
+    (wp_syscall_initialize : syscall.initialize'.spec (GF := GF) (hG := hG))
+    (wp_fs_initialize : io.fs.initialize'.spec (GF := GF) (hG := hG))
+    (wp_poll_initialize : internal.poll.initialize'.spec (GF := GF) (hG := hG))
+    (wp_gomodel_initialize : internal.gomodel.initialize'.spec (GF := GF) (hG := hG))
+    (wp_stringslite_initialize : internal.stringslite.initialize'.spec (GF := GF) (hG := hG)) :
     fmt.initialize'.spec (GF := GF) (hG := hG) := by
   intro get_is_pkg_init Hinit
   wp_start as Hown
@@ -46,11 +56,16 @@ theorem fmt.initialize'.wp_proof
   wp_apply wp_GlobalAlloc (V := sync.Pool) ssFree sync.Pool.ty as _
   wp_apply wp_GlobalAlloc (V := GoSlice) space _ as _
   wp_apply wp_GlobalAlloc (V := sync.Pool) ppFree sync.Pool.ty as Hpp
-  wp_apply wp_sync_initialize _ Hinit.2.2.2.2.2.2.1 $$ Hown as ⟨Hown, #Hsync⟩
-  wp_apply wp_reflect_initialize _ Hinit.2.2.2.2.2.1 $$ Hown as ⟨Hown, #Hreflect⟩
-  wp_apply wp_io_initialize _ Hinit.2.2.2.2.1 $$ Hown as ⟨Hown, #Hio⟩
-  wp_apply wp_utf8_initialize _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #Hutf8⟩
-  wp_apply wp_strconv_initialize _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hstrconv⟩
+  wp_apply wp_syscall_initialize _ Hinit.2.2.2.2.2.2.2.2.2.2.2.1 $$ Hown as ⟨Hown, #Hsyscall⟩
+  wp_apply wp_fs_initialize _ Hinit.2.2.2.2.2.2.2.2.2.2.1 $$ Hown as ⟨Hown, #Hfs⟩
+  wp_apply wp_poll_initialize _ Hinit.2.2.2.2.2.2.2.2.2.1 $$ Hown as ⟨Hown, #Hpoll⟩
+  wp_apply wp_gomodel_initialize _ Hinit.2.2.2.2.2.2.2.2.1 $$ Hown as ⟨Hown, #Hgomodel⟩
+  wp_apply wp_sync_initialize _ Hinit.2.2.2.2.2.2.2.1 $$ Hown as ⟨Hown, #Hsync⟩
+  wp_apply wp_reflect_initialize _ Hinit.2.2.2.2.2.2.1 $$ Hown as ⟨Hown, #Hreflect⟩
+  wp_apply wp_io_initialize _ Hinit.2.2.2.2.2.1 $$ Hown as ⟨Hown, #Hio⟩
+  wp_apply wp_utf8_initialize _ Hinit.2.2.2.2.1 $$ Hown as ⟨Hown, #Hutf8⟩
+  wp_apply wp_strconv_initialize _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #Hstrconv⟩
+  wp_apply wp_stringslite_initialize _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hstringslite⟩
   wp_apply wp_errors_initialize _ Hinit.2.1 $$ Hown as ⟨Hown, #Herrors⟩
   repeat (first
     | (wp_apply wp_New as %_ _)

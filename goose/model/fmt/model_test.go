@@ -1,81 +1,28 @@
-package fmt_test
+// Code generated from goose/model/overlay/fmt/printmodel.go by model_copy_test.go; DO NOT EDIT.
 
-// The model of fmt.Sprintf, fmt.Printf, fmt.Fprintf, fmt.Fprint and fmt.Errorf (Perennial/TrustedCode/fmt.lean), as the Go
-// its docstrings quote, for the differential tests of model_diff_test.go. Only tests: nothing here
-// is translated. arbitrary, arbitraryString, underlyingAs and notModelled stand for the model's
-// primitives (ArbitraryInt, an arbitrary string, TypeAssertUnderlying2, the stuck points).
+// The model printer of fmt (Perennial/Code/fmt.toml, [model]): additions that the models of
+// errorf, Fprintf, Printf and pp.doPrint (print.go of this directory) call in place of Go's
+// printer for the formatting the real print path is stuck on. Translated like the rest of fmt;
+// they carry no claim of their own: the claims are the MODEL: comments of the replaced
+// declarations, which call them. goose/model/fmt/model_test.go is this file rewritten for the
+// differential tests (goose/model/fmt/model_copy_test.go checks the rewrite).
+
+package fmt_test
 
 import (
 	"errors"
-	"fmt"
-	"io"
-	"reflect"
 )
 
-type State = fmt.State
-
-// arbitraryMark stands for an arbitrary string in the model's output.
-const arbitraryMark = "\x00<arbitrary>\x00"
-
-func arbitraryString() string { return arbitraryMark }
-
-// arbitraryChoice is what arbitrary() returns (the tests run each choice).
-var arbitraryChoice uint64
-
-func arbitrary() uint64 { return arbitraryChoice }
-
-type notModelledPanic struct{}
-
-func notModelled() { panic(notModelledPanic{}) }
-
-// printerBuf(s) stands for the printer's buffer Fprintf hands Write (the model's primitive
-// printerBuf): the bytes of s in a slice of arbitrary capacity whose spare capacity holds arbitrary
-// bytes (gc's pooled buffer holds earlier output there), or, for an empty s, possibly nil (gc's
-// fresh printer's buffer, or one after a buffer above 64 KiB was dropped): fprintf_alias_test.go.
-func printerBuf(s string) []byte { return []byte(s) }
-
-// retire(b) stands for the model's primitive retire: every cell of b up to its capacity is left
-// unusable (a write begun and never finished), as gc reuses the buffer for later prints.
-func retire(b []byte) {}
-
-// underlyingAs[T](x): reflect.ValueOf(x) read at T's kind, if x's dynamic type has T's underlying
-// type (TypeAssertUnderlying2 T).
-func underlyingAs[T any](x any) (T, bool) {
-	var z T
-	if x == nil {
-		return z, false
-	}
-	v := reflect.ValueOf(x)
-	zt := reflect.TypeOf(z)
-	if v.Kind() != zt.Kind() {
-		return z, false
-	}
-	return v.Convert(zt).Interface().(T), true
-}
-
-// kindIs[T](x): whether x's dynamic type has T's underlying type (the second result of
-// TypeAssertUnderlying2 T).
+// kindIs[T](x): whether x's dynamic type has T's underlying type. A primitive stub (fmt.toml,
+// trusted), as underlyingAs is: its GooseLang model is the second result of TypeAssertUnderlying2 T
+// (Perennial/TrustedCode/fmt.lean), and this body, for gc builds, is underlyingAs's second result.
+// (It is not translated from this body: a translation binds underlyingAs's first result, the value
+// x holds, which the logic cannot step past for an arbitrary argument, as nothing says that value
+// is not a panic value; isIntKind and isStrKind ask kindIs of any argument.)
 func kindIs[T any](x any) bool {
 	_, ok := underlyingAs[T](x)
 	return ok
 }
-
-type wrapError struct {
-	msg string
-	err error
-}
-
-func (e *wrapError) Error() string { return e.msg }
-func (e *wrapError) Unwrap() error { return e.err }
-
-type wrapErrors struct {
-	msg  string
-	errs []error
-}
-
-func (e *wrapErrors) Error() string   { return e.msg }
-func (e *wrapErrors) Unwrap() []error { return e.errs }
-
 
 func intVerb(format string, i int) (int, int, bool) {
 	if i+1 < len(format) && (format[i+1] == 'd' || format[i+1] == 'v') {
@@ -216,7 +163,7 @@ func formatHex(neg bool, mag uint64) string {
 	return digits
 }
 
-func modelStrArg(x any) (string, bool) {
+func strArg(x any) (string, bool) {
 	if _, ok := x.(interface{ Format(State, rune) }); ok {
 		return "", false
 	}
@@ -231,11 +178,11 @@ func modelStrArg(x any) (string, bool) {
 
 func formatArg(format string, i int, x any) (string, int, bool) {
 	if i+1 < len(format) && format[i+1] == 's' {
-		s, ok := modelStrArg(x)
+		s, ok := strArg(x)
 		return s, i + 2, ok
 	}
 	if i+1 < len(format) && format[i+1] == 'v' {
-		if s, ok := modelStrArg(x); ok {
+		if s, ok := strArg(x); ok {
 			return s, i + 2, true
 		}
 	}
@@ -394,10 +341,6 @@ func formatSlice(format string, i int, x any) (string, int, bool) {
 	}
 	return "", 0, false
 }
-
-// The new parts of the model of fmt (Perennial/TrustedCode/fmt.lean). In the scratch package these
-// sit next to the old helpers (oldmodel.go), with stubs for arbitrary, arbitraryString,
-// underlyingAs and notModelled.
 
 // isBasic: whether x's dynamic type is one of the predeclared types that printArg formats by its
 // type switch, without handleMethods (bool, the integer types, uintptr, float32, float64, string;
@@ -644,7 +587,7 @@ func visitRest(format string, i int, a []any, argNum int, wrapErrs bool) ([]int,
 }
 
 // doPrintf: the formatted string, the indices of the arguments of the %w directives, and whether
-// those are unknown (visitRest gave up). It formats as the previous model of Sprintf did, up to
+// those are unknown (visitRest gave up). It formats as the trusted model of Sprintf did before stage 1 of perennial#671, up to
 // the first directive it does not format or whose argument is not inert; from there the output is
 // arbitrary, and visitRest makes the calls Go makes.
 func doPrintf(format string, a []any, wrapErrs bool) (string, []int, bool) {
@@ -681,51 +624,23 @@ func doPrintf(format string, a []any, wrapErrs bool) (string, []int, bool) {
 			}
 		}
 		wrapped, unknown := visitRest(format, i, a, argNum, wrapErrs)
-		return out + arbitraryString(), wrapped, unknown
+		return out + chooseString(), wrapped, unknown
 	}
 	if argNum < len(a) {
 		wrapped, unknown := visitRest(format, i, a, argNum, wrapErrs)
-		return out + arbitraryString(), wrapped, unknown
+		return out + chooseString(), wrapped, unknown
 	}
 	return out, nil, false
 }
 
-// modelSprintf is a test probe of the model's doPrintf, as a Sprintf: the Lean model has no
-// Sprintf (Sprintf is the real fmt's, translated).
-func modelSprintf(format string, a ...any) string {
-	s, _, _ := doPrintf(format, a, false)
-	return s
-}
-
-func modelPrintf(format string, a ...any) (int, error) {
-	doPrintf(format, a, false)
-	n := int(arbitrary())
-	if arbitrary() == 0 {
-		return n, nil
-	}
-	return n, errors.New(arbitraryString())
-}
-
-func modelFprintf(w io.Writer, format string, a ...any) (int, error) {
-	s, _, _ := doPrintf(format, a, false)
-	b := printerBuf(s)
-	n, err := w.Write(b)
-	retire(b)
-	return n, err
-}
-
-func modelFprint(w io.Writer, a ...any) (int, error) {
-	for _, x := range a {
-		visitArg(x, 'v', false, false)
-	}
-	b := printerBuf(arbitraryString())
-	n, err := w.Write(b)
-	retire(b)
-	return n, err
-}
-
-func modelErrorf(format string, a ...any) error {
-	s, wrapped, unknown := doPrintf(format, a, true)
+// errorfResult: the error errorf returns of the message s, the indices wrapped of the arguments
+// of its %w directives, and whether those are unknown (doPrintf's results): errors.New(s) when no
+// %w directive had an argument, a *wrapError holding the argument as an error (nil if it is not
+// one) when one had, a *wrapErrors holding those of the arguments that are errors when several
+// had (Go sorts and deduplicates them only after an argument index, which the model does not
+// follow: parseDirective refuses '['). Where doPrintf gave up on a directive it does not follow,
+// every argument being inert (none is an error), the error is any of the three, holding no error.
+func errorfResult(s string, wrapped []int, unknown bool, a []any) error {
 	if unknown {
 		n := arbitrary()
 		if n == 0 {

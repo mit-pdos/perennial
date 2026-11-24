@@ -1,8 +1,8 @@
 /-
-Specs of the helpers of the model of `fmt` (`Perennial/TrustedCode/fmt.lean`) that call the
+Specs of the helpers of the model printer of `fmt` (`goose/model/overlay/fmt/printmodel.go`) that
+call the
 arguments' formatting methods (`visitRest`, `visitArg`) and decide which arguments the model
-formats exactly (`inert`), with the directive parser (`parseDirective`); none is a function of
-package `fmt`.
+formats exactly (`inert`), with the directive parser (`parseDirective`).
 -/
 module
 
@@ -149,10 +149,9 @@ set_option maxRecDepth 100000 in
 /-- The helper `fmt.isBasic`: whether the argument's dynamic type is a predeclared basic type. -/
 theorem wp_isBasic (x : GoInterface) :
     {{ (True : IProp GF) }}
-      (App (Val isBasic) (Val #x))
+      (App (Val (@! isBasic)) (Val #x))
     {{ (b : Bool), RET #b; ⌜b = true ↔ ∃ ii, x = interface.ok ii ∧ IsBasicType ii.ty⌝ }} := by
-  iintro %Φ - HΦ
-  unfold isBasic
+  wp_start
   wp_auto
   cases x with
   | nil =>
@@ -172,21 +171,17 @@ set_option maxRecDepth 100000 in
 types as its underlying type. -/
 theorem wp_isIntKind (x : GoInterface) :
     {{ (True : IProp GF) }}
-      (App (Val isIntKind) (Val #x))
+      (App (Val (@! isIntKind)) (Val #x))
     {{ (b : Bool), RET #b; ⌜b = true ↔ ∃ ii, x = interface.ok ii ∧ IsIntType (underlying ii.ty)⌝ }} := by
-  iintro %Φ - HΦ
-  unfold isIntKind kindIs
-  wp_auto
+  wp_start
   cases x with
   | nil =>
-    wp_auto
-    iapply HΦ
-    ipureintro
-    simp
+    repeat' (first | wp_if_destruct | wp_auto_kind)
+    all_goals (iapply HΦ; ipureintro)
+    all_goals simp_all
   | ok ii =>
     obtain ⟨ty, v⟩ := ii
-    wp_auto
-    repeat' (first | wp_if_destruct | wp_auto)
+    repeat' (first | wp_if_destruct | wp_auto_kind)
     all_goals (iapply HΦ; ipureintro)
     all_goals simp_all [IsIntType]
 
@@ -194,18 +189,18 @@ theorem wp_isIntKind (x : GoInterface) :
 underlying type. -/
 theorem wp_isStrKind (x : GoInterface) :
     {{ (True : IProp GF) }}
-      (App (Val isStrKind) (Val #x))
+      (App (Val (@! isStrKind)) (Val #x))
     {{ (b : Bool), RET #b; ⌜b = true ↔ ∃ ii, x = interface.ok ii ∧ underlying ii.ty = go.string⌝ }} := by
-  iintro %Φ - HΦ
-  unfold isStrKind kindIs
-  wp_auto
+  wp_start
   cases x with
   | nil =>
+    wp_auto_kind
     iapply HΦ
     ipureintro
     simp
   | ok ii =>
     obtain ⟨ty, v⟩ := ii
+    wp_auto_kind
     iapply HΦ
     ipureintro
     simp
@@ -214,10 +209,9 @@ theorem wp_isStrKind (x : GoInterface) :
 interfaces. -/
 theorem wp_hasFmtMethod (x : GoInterface) :
     {{ (True : IProp GF) }}
-      (App (Val hasFmtMethod) (Val #x))
+      (App (Val (@! hasFmtMethod)) (Val #x))
     {{ (b : Bool), RET #b; ⌜b = true ↔ ∃ ii, x = interface.ok ii ∧ HasFmtSig ii.ty⌝ }} := by
-  iintro %Φ - HΦ
-  unfold hasFmtMethod
+  wp_start
   wp_auto
   cases x with
   | nil =>
@@ -231,17 +225,16 @@ theorem wp_hasFmtMethod (x : GoInterface) :
     simp only [tsc_method1]
     repeat' (first | wp_if_destruct | wp_auto | simp only [tsc_method1])
     all_goals (iapply HΦ; ipureintro)
-    all_goals simp_all [HasFmtSig, formatSig, noArgStringSig]
+    all_goals simp_all [HasFmtSig, formatSig, noArgStringSig, State_ty_eq]
 
 /-- The helper `fmt.inert`: whether Go formats the argument under any directive calling none of
 its methods and reading no memory (`InertTy`). -/
 theorem wp_inert (x : GoInterface) :
     {{ (True : IProp GF) }}
-      (App (Val inert) (Val #x))
+      (App (Val (@! inert)) (Val #x))
     {{ (b : Bool), RET #b;
         ⌜b = true ↔ (x = interface.nil ∨ ∃ ii, x = interface.ok ii ∧ InertTy ii.ty)⌝ }} := by
-  iintro %Φ - HΦ
-  unfold inert
+  wp_start
   wp_auto
   cases x with
   | nil =>
@@ -316,10 +309,9 @@ theorem inertTy_of_argWf {ii : GoInterfaceOk} (h : ArgWf ii) : InertTy ii.ty := 
 /-- The helper `fmt.allInert`, of arguments that are all `nil` or well-formed: `true`. -/
 theorem wp_allInert (sl : GoSlice) (xs : List GoInterface) (dq : DFrac) (Hxs : ArgsWf xs) :
     {{ (sl ↦*{dq} xs : IProp GF) }}
-      (App (Val allInert) (Val #sl))
+      (App (Val (@! allInert)) (Val #sl))
     {{ RET #true; sl ↦*{dq} xs }} := by
-  iintro %Φ Hs HΦ
-  unfold allInert
+  wp_start as Hs
   wp_auto
   ihave %Hlen := ownSlice_len $$ Hs
   ihave IH : iprop(∃ (n : w64) (xv : GoInterface),
@@ -363,7 +355,7 @@ directive (`verb` negative: no directive), or its verb and `%#v`/`%#w`, and the 
 theorem wp_parseDirective (format : GoString) (i : w64)
     (Hi : 0 ≤ sint.Z i ∧ sint.Z i ≤ (format.length : Int)) (Hlen : (format.length : Int) < 2 ^ 63) :
     {{ (True : IProp GF) }}
-      (App (App (Val parseDirective) (Val #format)) (Val #i))
+      (App (App (Val (@! parseDirective)) (Val #format)) (Val #i))
     {{ (verb : w64) (sharpV : Bool) (next : w64) (ok : Bool),
         RET (PairV (PairV (PairV #verb #sharpV) #next) #ok);
         ⌜(ok = false → fmtDirectivesAux (some (false, .flags)) (format.drop (sint.nat i)) = none) ∧
@@ -376,8 +368,7 @@ theorem wp_parseDirective (format : GoString) (i : w64)
             fmtDirectivesAux (some (false, .flags)) (format.drop (sint.nat i)) =
               dirCons (W8 (sint.Z verb)) sharpV
                 (fmtDirectivesAux none (format.drop (sint.nat next)))))⌝ }} := by
-  iintro %Φ - HΦ
-  unfold parseDirective
+  wp_start
   wp_auto
   ihave IH : iprop(∃ (iv : w64) (sh : Bool) (ph nv : w64),
       "i" ∷ i_ptr ↦ iv ∗ "sharp" ∷ sharp_ptr ↦ sh ∗ "phase" ∷ phase_ptr ↦ ph ∗ "n" ∷ n_ptr ↦ nv ∗
@@ -477,10 +468,9 @@ reflection, calling none of its methods, reading no memory). -/
 theorem wp_visitKind (x : GoInterface)
     (Hx : ∃ ii, x = interface.ok ii ∧ (underlying ii.ty = go.string ∨ IsIntType (underlying ii.ty))) :
     {{ (True : IProp GF) }}
-      (App (Val visitKind) (Val #x))
+      (App (Val (@! visitKind)) (Val #x))
     {{ RET #(); True }} := by
-  iintro %Φ - HΦ
-  unfold visitKind
+  wp_start
   wp_auto
   wp_apply wp_isStrKind as %b1 %Hb1
   cases b1
@@ -545,11 +535,10 @@ theorem ne_SliceType_of_argWf {ii : GoInterfaceOk} (t : go.GoType) (h : ArgWf ii
 deferred `recover()` finds no panic. -/
 theorem wp_callError (ii : GoInterfaceOk) :
     {{ stringMethodSpec (GF := GF) ii go!"Error" }}
-      (App (Val callError) (Val #(interface.ok ii)))
+      (App (Val (@! callError)) (Val #(interface.ok ii)))
     {{ RET #(); True }} := by
-  iintro %Φ #HE HΦ
-  unfold callError
-  wp_auto
+  wp_start as #HE
+  try wp_auto
   wp_apply wp_with_defer_recover
   iintro %defer %pnc Hdefer Hpnc
   wp_auto
@@ -566,11 +555,10 @@ theorem wp_callError (ii : GoInterfaceOk) :
 /-- The helper `fmt.callString`: calls `s.String()`, as `wp_callError`. -/
 theorem wp_callString (ii : GoInterfaceOk) :
     {{ stringMethodSpec (GF := GF) ii go!"String" }}
-      (App (Val callString) (Val #(interface.ok ii)))
+      (App (Val (@! callString)) (Val #(interface.ok ii)))
     {{ RET #(); True }} := by
-  iintro %Φ #HS HΦ
-  unfold callString
-  wp_auto
+  wp_start as #HS
+  try wp_auto
   wp_apply wp_with_defer_recover
   iintro %defer %pnc Hdefer Hpnc
   wp_auto
@@ -590,19 +578,17 @@ what Go's `printArg` calls of it (its `Error()` or `String()`, or nothing), and 
 theorem wp_visitArg_argOk (x : GoInterface) (verb : w8) (sharpV wrapErrs : Bool)
     (Hsv : sharpV = true → verb = W8 118 ∨ verb = W8 119) :
     {{ argOkAt (GF := GF) (modeVerbs wrapErrs) ⟨verb, sharpV⟩ x }}
-      (App (App (App (App (Val visitArg) (Val #x)) (Val #verb)) (Val #sharpV)) (Val #wrapErrs))
+      (App (App (App (App (Val (@! visitArg)) (Val #x)) (Val #verb)) (Val #sharpV)) (Val #wrapErrs))
     {{ RET #(); True }} := by
   cases x with
   | nil =>
-    iintro %Φ - HΦ
-    unfold visitArg
+    wp_start
     wp_auto
     iapply HΦ
     itrivial
   | ok ii =>
     simp only [argOkAt]
-    iintro %Φ Hx HΦ
-    unfold visitArg
+    wp_start as Hx
     wp_auto
     -- `%T` and `%p`: nothing
     wp_if_destruct
@@ -707,7 +693,7 @@ verbs); the lent contents come back. -/
 theorem wp_visitArg (B : GoInterface → Option Lent) (dqb : DFrac) (x : GoInterface) (verb : w8)
     (sharpV wrapErrs : Bool) (Hsv : sharpV = true → verb = W8 118 ∨ verb = W8 119) :
     {{ argOkAtB (GF := GF) B (modeVerbs wrapErrs) ⟨verb, sharpV⟩ x ∗ bytesArgOwn dqb B x }}
-      (App (App (App (App (Val visitArg) (Val #x)) (Val #verb)) (Val #sharpV)) (Val #wrapErrs))
+      (App (App (App (App (Val (@! visitArg)) (Val #x)) (Val #verb)) (Val #sharpV)) (Val #wrapErrs))
     {{ RET #(); bytesArgOwn dqb B x }} := by
   iintro %Φ ⟨Hx, Hown⟩ HΦ
   iunfold argOkAtB at Hx
@@ -728,7 +714,8 @@ theorem wp_visitArg (B : GoInterface → Option Lent) (dqb : DFrac) (x : GoInter
       iframe
       ipureintro; exact ⟨rfl, hty, hv⟩
     have hts : ii.ty ≠ go.SliceType go.string := fun h => hbs_ne (hty ▸ h)
-    unfold visitArg
+    wp_func_call
+    wp_call
     wp_auto
     wp_if_destruct
     · iapply HΦ; iapply Hback; iexact Hsl
@@ -758,7 +745,8 @@ theorem wp_visitArg (B : GoInterface → Option Lent) (dqb : DFrac) (x : GoInter
       iframe
       ipureintro; exact ⟨rfl, hts, hv⟩
     have hty : ii.ty ≠ go.SliceType go.byte := fun h => hbs_ne (h ▸ hts)
-    unfold visitArg
+    wp_func_call
+    wp_call
     wp_auto
     wp_if_destruct
     · iapply HΦ; iapply Hback; iexact Hsl
@@ -811,15 +799,14 @@ theorem wp_visitRest (B : GoInterface → Option Lent) (dqb : DFrac) (format : G
     {{ sl ↦*{dq} xs ∗ bytesOwn dqb B xs ∗
         (⌜ArgsWf xs⌝ ∨ ∃ ds, ⌜fmtDirectivesAux none (format.drop (sint.nat i)) = some ds⌝ ∗
           argsOkAtB (GF := GF) B (modeVerbs wrapErrs) ds (xs.drop (sint.nat k))) }}
-      (App (App (App (App (App (Val visitRest) (Val #format)) (Val #i)) (Val #sl)) (Val #k))
+      (App (App (App (App (App (Val (@! visitRest)) (Val #format)) (Val #i)) (Val #sl)) (Val #k))
         (Val #wrapErrs))
     {{ (wsl : GoSlice) (unknown : Bool), RET (PairV #wsl #unknown);
         sl ↦*{dq} xs ∗ bytesOwn dqb B xs ∗ ∃ ws : List w64, wsl ↦* ws ∗
         ⌜(unknown = true → ArgsWf xs ∧ fmtDirectivesAux none (format.drop (sint.nat i)) = none) ∧
          (unknown = false → ∃ ds, fmtDirectivesAux none (format.drop (sint.nat i)) = some ds ∧
             ws = (wrapArgsFrom (sint.nat k) ds xs.length).map (fun j : Nat => W64 (j : Int)))⌝ }} := by
-  iintro %Φ ⟨Hsl, Hown, Hargs⟩ HΦ
-  unfold visitRest
+  wp_start as ⟨Hsl, Hown, Hargs⟩
   wp_auto
   ihave %Hxlen := ownSlice_len $$ Hsl
   ihave Hws0 := ownSlice_nil (V := w64) (GF := GF) (DFrac.own 1)
