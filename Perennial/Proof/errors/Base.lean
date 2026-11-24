@@ -62,12 +62,69 @@ does not decide; `go.identByName` keeps the model from equating struct types Go 
 their unexported fields' packages; and `undecidedKind` excludes the kinds where Go's identity of
 underlying types is not the translation's: a defined struct type's field tags, which the
 translation drops, and channel directions.) -/
-def AsDecided [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType)
+def AsDecidedTy [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType)
     (ii : GoInterfaceOk) : Prop :=
   go.isInterfaceType (underlying T) = false →
     (ii.ty = T → go.identByName T = true) ∧
     (ii.ty ≠ T → underlying ii.ty ≠ underlying T ∧
       (undecidedKind (underlying T) = false ∨ go.kindOf (underlying ii.ty) ≠ go.kindOf (underlying T)))
+
+/-- The model's reflection on an error of dynamic type `t` (`reflectlite.TypeOf`/`ValueOf`,
+`goose/model/overlay/internal/reflectlite`) is defined: `t` is not an interface type (Go's
+typing: no value has an interface type as its dynamic type) nor untyped nil, has a kind, does not
+have the layout of the model's `rtype` (a struct of one field of type `any`, on which the model is
+stuck), and its `isDirectIface` is defined (`directIfaceN`; for a kind other than array and
+struct, at any fuel `n > 0`). -/
+def asModelled [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (t : go.GoType) : Prop :=
+  go.isInterfaceType (underlying t) = false ∧ go.isUntypedNil (underlying t) = false ∧
+  (∃ k, go.kindOf (underlying t) = some k) ∧
+  internal.reflectlite.rtypeLayoutU (underlying t) = false ∧
+  ∃ n b, reflect.directIfaceN n t = some b
+
+/-- The model of `As` decides whether `ii` is assignable to `T` (`AsDecidedTy`), and its
+reflection on `ii` and on `T` is defined: `asModelled ii.ty`, and `T` has a kind and is not
+untyped nil. -/
+def AsDecided [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType)
+    (ii : GoInterfaceOk) : Prop :=
+  asModelled ii.ty ∧ (∃ k, go.kindOf (underlying T) = some k) ∧
+    go.isUntypedNil (underlying T) = false ∧ AsDecidedTy T ii
+
+/-- A kind outside struct, channel and function (`undecidedKind`) of a non-interface type is
+another one than `Chan` (18), `Func` (19), `Interface` (20) and `Struct` (25). -/
+theorem kindOf_decided [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] {u : go.GoType}
+    {k : Nat} (hk : go.kindOf u = some k) (hd : undecidedKind u = false)
+    (hi : go.isInterfaceType u = false) : k ≠ 18 ∧ k ≠ 19 ∧ k ≠ 20 ∧ k ≠ 25 := by
+  refine ⟨fun h => ?_, fun h => ?_, internal.reflectlite.kindOf_ne_20 hk hi,
+    internal.reflectlite.kindOf_ne_25 hk (fun fs he => by subst he; simp [undecidedKind] at hd)⟩
+  · obtain ⟨d, e, rfl⟩ := internal.reflectlite.kindOf_18 hk h
+    simp [undecidedKind] at hd
+  · obtain ⟨sig, rfl⟩ := internal.reflectlite.kindOf_19 hk h
+    simp [undecidedKind] at hd
+
+/-- `AsDecidedTy` gives `reflectlite`'s `directlyAssignable(T, ii.ty)` the cases its model
+decides. -/
+theorem asDecided_da [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] {T : go.GoType}
+    {ii : GoInterfaceOk} {kT ki : Nat} (hkT : go.kindOf (underlying T) = some kT)
+    (hki : go.kindOf (underlying ii.ty) = some ki) (hI : go.isInterfaceType (underlying T) = false)
+    (h : AsDecidedTy T ii) :
+    (T = ii.ty → go.identByName T = true) ∧
+    (T ≠ ii.ty → (internal.reflectlite.isDefinedT T && internal.reflectlite.isDefinedT ii.ty) = true ∨
+      kT ≠ ki ∨ (underlying T ≠ underlying ii.ty ∧ kT ≠ 18 ∧ kT ≠ 19 ∧ kT ≠ 20 ∧ kT ≠ 25)) := by
+  constructor
+  · intro he; exact (h hI).1 he.symm
+  · intro hne
+    obtain ⟨hu, hk⟩ := (h hI).2 (Ne.symm hne)
+    rcases hk with hk | hk
+    · right; right; exact ⟨Ne.symm hu, kindOf_decided hkT hk hI⟩
+    · right; left; intro he; subst he; exact hk (by rw [hki, hkT])
+
+/-- An interface target type has a kind (`Interface`) and is not untyped nil (`AsDecided`'s
+facts of `T`). -/
+theorem asTargetKind_interface [GooseExts] [GoGlobalContext] [GoSemanticsFunctions]
+    {T : go.GoType} (h : go.isInterfaceType (underlying T) = true) :
+    (∃ k, go.kindOf (underlying T) = some k) ∧ go.isUntypedNil (underlying T) = false := by
+  revert h
+  cases underlying T <;> simp [go.isInterfaceType, go.kindOf, go.isUntypedNil]
 
 /-- A non-nil target that Go's `err == target` compares, without panicking, with the errors of the
 tree `S`: its dynamic type's `==` is defined (`CheckComparable` steps) and is the equality of the
@@ -296,6 +353,18 @@ def isLeafError [GoSemanticsFunctions] (ii : GoInterfaceOk) : Prop :=
   methodSet ii.ty !! go!"Unwrap" ≠ some (go.Signature [] false [go.error]) ∧
   methodSet ii.ty !! go!"Unwrap" ≠ some (go.Signature [] false [go.GoType.SliceType go.error])
 
+/-- For an interface target `T`, a Lean representation `W` of `ii`'s dynamic type, of which
+`ii`'s value is (Go's typing): `reflectlite`'s `implements` allocates a zero value of it, and
+`ValueOf` boxes `ii`'s value when its type is not direct. -/
+def asRepr (T : go.GoType) (ii : GoInterfaceOk) : Prop :=
+  go.isInterfaceType (underlying T) = true →
+    ∃ (W : Type) (_ : ZeroVal W) (_ : TypedPointsto (GF := GF) W)
+      (_ : IntoValTyped (GF := GF) W ii.ty) (x : W), ii.v = #x
+
+/-- `asRepr` of a non-nil error `e`. -/
+def errRepr (T : go.GoType) (e : GoError) : Prop :=
+  ∀ ii, e = interface.ok ii → asRepr (GF := GF) T ii
+
 /-- **An error at which `As` stops without a match against `T`**: `nil`, or a leaf error
 (`isLeafError`) not assignable to `T` (`asAssignable`, decided: `AsDecided`). -/
 def asNoMatchLeaf [GoSemanticsFunctions] (T : go.GoType) (e : GoError) : Prop :=
@@ -307,9 +376,9 @@ def asNoMatchLeaf [GoSemanticsFunctions] (T : go.GoType) (e : GoError) : Prop :=
 `As(any) bool` method and an `Unwrap() error` method, whose `Unwrap()` (called once, its WP
 consumed) returns such an error for `n`. -/
 def asNoMatch (T : go.GoType) : Nat → GoError → IProp GF
-  | 0, e => iprop(⌜asNoMatchLeaf T e⌝)
-  | n + 1, e => iprop(⌜asNoMatchLeaf T e⌝ ∨ ∃ ii : GoInterfaceOk,
-      ⌜e = interface.ok ii ∧ asAssignable T ii = false ∧ AsDecided T ii ∧
+  | 0, e => iprop(⌜asNoMatchLeaf T e ∧ errRepr (GF := GF) T e⌝)
+  | n + 1, e => iprop(⌜asNoMatchLeaf T e ∧ errRepr (GF := GF) T e⌝ ∨ ∃ ii : GoInterfaceOk,
+      ⌜e = interface.ok ii ∧ asAssignable T ii = false ∧ AsDecided T ii ∧ asRepr (GF := GF) T ii ∧
         methodSet ii.ty !! go!"As" ≠ some (go.Signature [go.any] false [go.bool]) ∧
         methodSet ii.ty !! go!"Unwrap" = some (go.Signature [] false [go.error])⌝ ∗
       ∀ Φ : val → IProp GF, (∀ e' : GoError, asNoMatch T n e' -∗ Φ #e') -∗
@@ -348,6 +417,35 @@ is a pointer, such as `errors.New`'s `*errorString` (`wp_New_ptr`). Go's `==` on
 is the equality of their types and pointers, Lean's equality of the interface values. -/
 def IsPointerError [GooseExts] [GoGlobalContext] (ii : GoInterfaceOk) : Prop :=
   ∃ (T : go.GoType) (l : Loc), ii.ty = go.PointerType T ∧ ii.v = #l
+
+
+/-- The model's reflection on an error of a pointer type is defined. -/
+theorem asModelled_pointer (X : go.GoType) :
+    asModelled (go.PointerType X) := by
+  have hu : underlying (go.PointerType X) = go.PointerType X := go.is_underlying
+  have hk : go.kindOf (underlying (go.PointerType X)) = some 22 := by simp [hu, go.kindOf]
+  refine ⟨by simp [hu, go.isInterfaceType], by simp [hu, go.isUntypedNil], ⟨22, hk⟩,
+    by simp [hu, internal.reflectlite.rtypeLayoutU], 1, true, ?_⟩
+  exact reflect.directIfaceN_of_kind (u := go.PointerType X) (k := 22) 0 (by simp [go.kindOf]) (by omega)
+    (by omega)
+
+/-- A pointer target type has a kind (`Pointer`) and is not untyped nil. -/
+theorem asTargetKind_pointer (X : go.GoType) :
+    (∃ k, go.kindOf (underlying (go.PointerType X)) = some k) ∧
+      go.isUntypedNil (underlying (go.PointerType X)) = false := by
+  have hu : underlying (go.PointerType X) = go.PointerType X := go.is_underlying
+  rw [hu]
+  exact ⟨⟨22, by simp [go.kindOf]⟩, by simp [go.isUntypedNil]⟩
+
+/-- A pointer error is represented by `Loc`. -/
+theorem asRepr_pointer (T : go.GoType) (ii : GoInterfaceOk) (h : IsPointerError ii) :
+    asRepr (GF := GF) T ii := by
+  obtain ⟨X, l, hty, hv⟩ := h
+  intro _
+  rcases ii with ⟨ty, v⟩
+  simp only at hty hv
+  subst hty hv
+  exact ⟨Loc, inferInstance, inferInstance, inferInstance, l, rfl⟩
 
 /-- The specs `Is(err, target)` needs of one error `ii` of the tree `S`, as relations: `I ii b`,
 that `ii.Is(target)` may return `b`; `U ii cs`, that `ii`'s `Unwrap` may return `cs` (`[e]` for
@@ -640,6 +738,15 @@ theorem isWalk_eq_true {ii : GoInterfaceOk} {b : Bool} (hc : c = true)
   | miss hne => exact absurd heq (hne hc)
 
 end walk
+
+/-- `As`'s target `Value`: `reflectlite.ValueOf(any(l))` for `l : *T`. -/
+abbrev asTargetVal (T : go.GoType) (l : Loc) : internal.reflectlite.Value :=
+  internal.reflectlite.Value.mk (go.tok (go.PointerType T)) (interface.mkOk (go.PointerType T) #l)
+    (W64 22)
+
+/-- `As`'s target type: the `reflectlite.Type` of `T`. -/
+abbrev asTargetType (T : go.GoType) : GoInterface :=
+  interface.mkOk internal.reflectlite.rtype.ty #(internal.reflectlite.rtype.mk (go.tok T))
 
 end wps
 

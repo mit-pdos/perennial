@@ -1,0 +1,457 @@
+/-
+The proof of `errors.as` (the real `wrap.go`'s tree walk, over the Go model of `internal/reflectlite`).
+-/
+module
+
+public import Perennial.Spec.errors.as_
+public import Perennial.Spec.internal.reflectlite.TypeOf
+public import Perennial.Spec.internal.reflectlite.ValueOf
+public import Perennial.Spec.internal.reflectlite.rtype__AssignableTo
+public import Perennial.Spec.internal.reflectlite.Value__Elem
+public import Perennial.Spec.internal.reflectlite.Value__Set
+
+@[expose] public section
+
+noncomputable section
+
+namespace Perennial
+
+open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
+
+namespace errors
+
+/-- An error not assignable to `T` needs no typing of its stored value. -/
+theorem asTypeTyped_of_not_assignable [GooseExts] [GoGlobalContext] [GoSemanticsFunctions]
+    {T' : Type} {T : go.GoType} {ii : GoInterfaceOk} (h : asAssignable T ii = false) :
+    AsTypeTyped T' T ii := by
+  unfold AsTypeTyped
+  unfold asAssignable at h
+  split
+  · rename_i hI
+    simp only [hI, ↓reduceIte] at h
+    intro h'; rw [h] at h'; cases h'
+  · rename_i hI
+    simp only [hI, Bool.false_eq_true, ↓reduceIte, decide_eq_false_iff_not] at h
+    intro h'; exact absurd h' h
+
+end errors
+
+section proof
+variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem : errors.Assumptions]
+
+/-- Whether a type has the one method of a one-method interface. -/
+theorem errors.typeSetContains_method
+    (t : go.GoType) (m : GoString) (sig : go.signature) :
+    go.typeSetContains t (go.InterfaceType [go.MethodElem m sig]) =
+      decide (methodSet t !! m = some sig) := by
+  have hu : underlying (go.InterfaceType [go.MethodElem m sig]) =
+      go.InterfaceType [go.MethodElem m sig] := go.is_underlying
+  simp [go.typeSetContains, hu, go.typeSetElemsContains, go.typeSetElemContains]
+
+/-- `as`'s check `reflectlite.TypeOf(err).AssignableTo(targetType)` of an error the model decides:
+`asAssignable`. -/
+theorem errors.wp_asCheck
+    (wp_TypeOf : internal.reflectlite.TypeOf.spec (GF := GF) (hG := hG))
+    (wp_rtype_AssignableTo : internal.reflectlite.rtype.AssignableTo.spec (GF := GF) (hG := hG))
+    (ty : go.GoType) (iv : val) (T : go.GoType) (hdec : AsDecided T ⟨ty, iv⟩)
+    (hrep : asRepr (GF := GF) T ⟨ty, iv⟩) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.errors }}
+      (App (Val (((internal.reflectlite.rtype.mk (go.tok ty))) @!! internal.reflectlite.rtype.ty @!! go!"AssignableTo"))
+        (Val #(errors.asTargetType T)))
+    {{ RET #(asAssignable T ⟨ty, iv⟩); True }} := by
+  obtain ⟨⟨hIi, hNi, ⟨ki, hki⟩, hLi, -⟩, ⟨kT, hkT⟩, hNT, hdty⟩ := hdec
+  haveI : ty ↓u underlying ty := ⟨rfl⟩
+  haveI : T ↓u underlying T := ⟨rfl⟩
+  iintro %Φ #Hinit HΦ
+  cases hI : go.isInterfaceType (underlying T)
+  · have hda := errors.asDecided_da (ii := ⟨ty, iv⟩) hkT hki hI hdty
+    wp_apply wp_rtype_AssignableTo.1 (T := T) (V := ty) kT ki hkT hki
+      (internal.reflectlite.kindOf_ne_20 hkT hI) hda.1 hda.2
+    rw [show decide (T = ty) = asAssignable T ⟨ty, iv⟩ by simp [asAssignable, hI, eq_comm]]
+    iapply HΦ
+    itrivial
+  · obtain ⟨elems, hUT⟩ : ∃ elems, underlying T = go.InterfaceType elems := by
+      revert hI; cases underlying T <;> simp [go.isInterfaceType]
+    haveI : T ↓u go.InterfaceType elems := ⟨hUT⟩
+    obtain ⟨W, _, _, _, x, -⟩ := hrep hI
+    wp_apply wp_rtype_AssignableTo.2 (T := T) (W := W) (V := ty) ki hki hIi hNi
+    rw [show go.typeSetContains ty T = asAssignable T ⟨ty, iv⟩ by simp [asAssignable, hI]]
+    iapply HΦ
+    itrivial
+
+/-- `TypeOf(any(err))` of an error the model decides. -/
+theorem errors.wp_TypeOf_err
+    (wp_TypeOf : internal.reflectlite.TypeOf.spec (GF := GF) (hG := hG))
+    (ty : go.GoType) (iv : val) (T : go.GoType) (hdec : AsDecided T ⟨ty, iv⟩) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.errors }}
+      (App (Val (@! internal.reflectlite.TypeOf)) (Val #(interface.ok ⟨ty, iv⟩ : GoInterface)))
+    {{ RET #(interface.mkOk internal.reflectlite.rtype.ty #(internal.reflectlite.rtype.mk (go.tok ty))); True }} := by
+  obtain ⟨⟨hIi, hNi, ⟨ki, hki⟩, hLi, ⟨ni, bi, hdi⟩⟩, -⟩ := hdec
+  haveI : ty ↓u underlying ty := ⟨rfl⟩
+  iintro %Φ #Hinit HΦ
+  wp_apply wp_TypeOf.1 (t := ty) ki iv hki
+    (fun fs he => internal.reflectlite.directIfaceN_struct_len hdi he) hLi
+  iapply HΦ
+  itrivial
+
+theorem errors.«as».wp_proof
+    (wp_TypeOf : internal.reflectlite.TypeOf.spec (GF := GF) (hG := hG))
+    (wp_rtype_AssignableTo : internal.reflectlite.rtype.AssignableTo.spec (GF := GF) (hG := hG))
+    (wp_ValueOf : internal.reflectlite.ValueOf.spec (GF := GF) (hG := hG))
+    (wp_Value_Elem : internal.reflectlite.Value.Elem.spec (GF := GF) (hG := hG))
+    (wp_Value_Set : internal.reflectlite.Value.Set.spec (GF := GF) (hG := hG)) :
+    errors.«as».spec (GF := GF) (hG := hG) := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro S ii l T' _ _ T _ v hT hdec
+    iloeb as IH generalizing %ii %v
+    irevert IH
+    iapply asTypeHide_intro
+    iintro #IH
+    wp_start as ⟨#Htree, %HS, Hl⟩
+    icases typedPointsto_not_null_dup _ _ _ $$ Hl with ⟨Hl, %hl⟩
+    wp_auto
+    ihave HI : iprop(∃ (ii' : GoInterfaceOk) (v' : T'),
+        "err" ∷ err_ptr ↦ interface.ok ii' ∗ "%HS" ∷ ⌜S (interface.ok ii')⌝ ∗ "Hl" ∷ l ↦ v')
+        $$ [err Hl]
+    · iexists ii, v
+      iframe
+      ipureintro; exact HS
+    wp_for HI
+    try rw [if_pos (by simp)]
+    ihave Hnode := Htree $$ %ii' %HS
+    iNamed Hnode
+    obtain ⟨hdecI, hrepI⟩ := hdec ii' HS
+    have htyped := Htyped
+    obtain ⟨ty, iv⟩ := ii'
+    try wp_auto
+    wp_apply errors.wp_TypeOf_err wp_TypeOf ty iv T hdecI
+    wp_apply errors.wp_asCheck wp_TypeOf wp_rtype_AssignableTo ty iv T hdecI hrepI
+    cases hA : asAssignable T ⟨ty, iv⟩
+    case true =>
+      wp_auto
+      obtain ⟨⟨hIi, hNi, ⟨ki, hki⟩, hLi, ⟨ni, bi, hdi⟩⟩, ⟨kT, hkT⟩, hNT, hdty⟩ := hdecI
+      haveI : ty ↓u underlying ty := ⟨rfl⟩
+      haveI : T ↓u underlying T := ⟨rfl⟩
+      cases hI : go.isInterfaceType (underlying T)
+      · have hty : ty = T := by simpa [asAssignable, hI] using hA
+        subst hty
+        obtain ⟨x, hx⟩ : ∃ x : T', (#x : val) = iv := by
+          have h := htyped; simp only [AsTypeTyped, hI, Bool.false_eq_true, ↓reduceIte] at h
+          obtain ⟨x, hx⟩ := h rfl; exact ⟨x, hx⟩
+        subst hx
+        wp_apply wp_ValueOf.1 (V := T') (t := ty) ki ni bi x hki hIi hLi hdi as %xv Hxv
+        wp_meth1
+        wp_apply wp_Value_Elem (errors.asTargetVal ty l) ty ki l hki rfl rfl (by decide) (by decide)
+        rw [if_neg hl, internal.reflectlite.elem_flag ki (internal.reflectlite.kindOf_lt hki)]
+        wp_apply wp_Value_Set.1 (V := T') ki l _ x xv hki hIi hNi ((hdty hI).1 rfl) $$ [$Hl $Hxv] as Hl
+        have hst : asStored ty ⟨ty, #x⟩ = #x := by simp [asStored, hI]
+        wp_auto
+        wp_for_post
+        iapply HΦ
+        iexists _
+        iexact Hl
+      · obtain ⟨elems, hUT⟩ : ∃ elems, underlying T = go.InterfaceType elems := by
+          revert hI; cases underlying T <;> simp [go.isInterfaceType]
+        haveI : T ↓u go.InterfaceType elems := ⟨hUT⟩
+        have hts : go.typeSetContains ty T = true := by simpa [asAssignable, hI] using hA
+        obtain ⟨y, hy⟩ : ∃ y : T', (#y : val) = #(interface.ok ⟨ty, iv⟩ : GoInterface) := by
+          have h := htyped; simp only [AsTypeTyped, hI, ↓reduceIte] at h
+          obtain ⟨y, hy⟩ := h hts; exact ⟨y, hy⟩
+        obtain ⟨W, _, _, _, x, hx⟩ := hrepI hI
+        simp only at hx
+        subst hx
+        wp_apply wp_ValueOf.1 (V := W) (t := ty) ki ni bi x hki hIi hLi hdi as %xv Hxv
+        wp_meth1
+        wp_apply wp_Value_Elem (errors.asTargetVal T l) T 20 l
+          (by rw [hUT]; exact internal.reflectlite.kindOf_interface) rfl rfl (by decide) (by decide)
+        rw [if_neg hl, internal.reflectlite.elem_flag 20 (by omega)]
+        wp_apply wp_Value_Set.2 (V := T') (T := T) (W := W) (t := ty) ki l _ y x xv hki hIi hNi hts hy
+          $$ [$Hl $Hxv] as Hl
+        have hst : asStored T ⟨ty, #x⟩ = #y := by simp [asStored, hI, hy]
+        wp_auto
+        wp_for_post
+        iapply HΦ
+        iexists _
+        iexact Hl
+    wp_auto
+    -- the `As` statement, joined before the `Unwrap` switch: it either returns or falls through
+    wp_join (Q := fun r => iprop(
+        (⌜r = executeVal⌝ ∗ ∃ v3 : T', "Hl" ∷ l ↦ v3 ∗
+          "«$res0»" ∷ «$res0_ptr» ↦ zero_val Bool ∗
+          "target" ∷ target_ptr ↦ interface.mkOk (go.PointerType T) #l) ∨
+        (⌜r = returnVal #()⌝ ∗ ∃ v3 : T', l ↦ v3 ∗ «$res0_ptr» ↦ true))) at next
+      with [Hl «$res0» ok x target]
+    · cases hAs : go.typeSetContains ty (go.InterfaceType [go.MethodElem go!"As" (go.Signature [go.any] false [go.bool])])
+      case true =>
+        rw [errors.typeSetContains_method] at hAs
+        simp only [decide_eq_true_eq] at hAs
+        simp only [hAs, ↓reduceIte]
+        wp_auto
+        wp_apply HAs $$ [$Hl] as %b %v3 Hl
+        cases b
+        case true =>
+          wp_auto
+          iright; iframe; ipureintro; rfl
+        wp_auto
+        ileft; iframe; ipureintro; rfl
+      simp only [Bool.false_eq_true, ↓reduceIte]
+      wp_auto
+      ileft; iframe; ipureintro; rfl
+    iintro HQ
+    icases HQ with (⟨%Hv, %v3, Hl, «$res0», target⟩ | ⟨%Hv, %v3, Hl, «$res0»⟩)
+    rotate_left
+    · subst Hv
+      wp_auto
+      wp_for_post
+      iapply HΦ
+      iexists _
+      iexact Hl
+    subst Hv
+    wp_auto
+    cases hU : go.typeSetContains ty (go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.error])])
+    case true =>
+      rw [errors.typeSetContains_method] at hU
+      simp only [decide_eq_true_eq] at hU
+      simp only [hU, ↓reduceIte]
+      wp_auto
+      wp_apply HUnwrap as %e' %HSe'
+      cases e' with
+      | nil =>
+        wp_auto
+        wp_for_post
+        iapply HΦ
+        iexists _
+        iexact Hl
+      | ok ii2 =>
+        wp_auto
+        wp_for_post
+        iframe
+        iexists ii2, v3
+        iframe
+        ipureintro
+        exact HSe'
+    rw [errors.typeSetContains_method] at hU
+    simp only [decide_eq_false_iff_not] at hU
+    simp only [Bool.false_eq_true, ↓reduceIte]
+    wp_auto
+    cases hU2 : go.typeSetContains ty (go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.GoType.SliceType go.error])])
+    case true =>
+      rw [errors.typeSetContains_method] at hU2
+      simp only [decide_eq_true_eq] at hU2
+      simp only [hU, ↓reduceIte]
+      simp only [hU2, ↓reduceIte]
+      wp_auto
+      wp_apply HUnwrap as %s %dq %es ⟨Hs, %Hes⟩
+      ihave %Hlen := ownSlice_len _ _ _ $$ Hs
+      ihave HI2 : (∃ (j : w64) (v4 : T') (e2 : GoError),
+          "i" ∷ i_ptr ↦ j ∗ "Hs" ∷ s ↦*{dq} es ∗ "err" ∷ err_ptr ↦ e2 ∗ "Hl" ∷ l ↦ v4 ∗
+          "%Hj" ∷ ⌜0 ≤ sint.Z j ∧ sint.Z j ≤ sint.Z s.len⌝ : IProp GF) $$ [i Hs err Hl]
+      · iexists W64 0, _, _
+        iframe
+        ipureintro; word
+      wp_for HI2
+      wp_if_destruct
+      · simp only [Hj.1, Hif, _root_.and_self, ↓reduceIte]
+        list_elem es (sint.nat j) as e2'
+        wp_apply wp_load_slice_index s (sint.Z j) es dq e2' Hj.1 $$ [Hs] with Hs
+        · iframe; ipureintro; exact He2'_lookup
+        have HSe2' : S e2' := Hes e2' (List.mem_of_getElem? He2'_lookup)
+        cases e2' with
+        | nil =>
+          wp_auto
+          wp_for_post
+          iframe
+          iexists j + W64 1, _, _
+          iframe
+          ipureintro; word
+        | ok ii2 =>
+          irevert IH
+          iapply asTypeHide_elim
+          iintro #IH
+          wp_auto
+          wp_apply IH $$ %ii2 %v4 [Hl] as %b ⟨%v5, Hl⟩
+          · iframe; iframe #; ipureintro; exact HSe2'
+          cases b
+          case true =>
+            wp_auto
+            wp_for_post
+            wp_for_post
+            iapply HΦ
+            iexists _
+            iexact Hl
+          case false =>
+            wp_auto
+            wp_for_post
+            iframe
+            iexists j + W64 1, _, _
+            iframe
+            ipureintro; word
+      · wp_for_post
+        iapply HΦ
+        iexists _
+        iexact Hl
+    simp only [Bool.false_eq_true, ↓reduceIte]
+    wp_auto
+    wp_for_post
+    iapply HΦ
+    iexists _
+    iexact Hl
+  · intro ii l T' _ _ T _ v hT hdecI hrepI hA htyped
+    wp_start as Hl
+    icases typedPointsto_not_null_dup _ _ _ $$ Hl with ⟨Hl, %hl⟩
+    obtain ⟨ty, iv⟩ := ii
+    wp_auto
+    ihave HI : iprop(err_ptr ↦ interface.ok ⟨ty, iv⟩ ∗ l ↦ v) $$ [err Hl]
+    · iframe
+    wp_for HI
+    try rw [if_pos (by simp)]
+    icases HI with ⟨err, Hl⟩
+    wp_auto
+    wp_apply errors.wp_TypeOf_err wp_TypeOf ty iv T hdecI
+    wp_apply errors.wp_asCheck wp_TypeOf wp_rtype_AssignableTo ty iv T hdecI hrepI
+    rw [hA]
+    wp_auto
+    obtain ⟨⟨hIi, hNi, ⟨ki, hki⟩, hLi, ⟨ni, bi, hdi⟩⟩, ⟨kT, hkT⟩, hNT, hdty⟩ := hdecI
+    haveI : ty ↓u underlying ty := ⟨rfl⟩
+    haveI : T ↓u underlying T := ⟨rfl⟩
+    cases hI : go.isInterfaceType (underlying T)
+    · have hty : ty = T := by simpa [asAssignable, hI] using hA
+      subst hty
+      obtain ⟨x, hx⟩ : ∃ x : T', (#x : val) = iv := by
+        have h := htyped; simp only [AsTypeTyped, hI, Bool.false_eq_true, ↓reduceIte] at h
+        obtain ⟨x, hx⟩ := h rfl; exact ⟨x, hx⟩
+      subst hx
+      wp_apply wp_ValueOf.1 (V := T') (t := ty) ki ni bi x hki hIi hLi hdi as %xv Hxv
+      wp_meth1
+      wp_apply wp_Value_Elem (errors.asTargetVal ty l) ty ki l hki rfl rfl (by decide) (by decide)
+      rw [if_neg hl, internal.reflectlite.elem_flag ki (internal.reflectlite.kindOf_lt hki)]
+      wp_apply wp_Value_Set.1 (V := T') ki l _ x xv hki hIi hNi ((hdty hI).1 rfl) $$ [$Hl $Hxv] as Hl
+      have hst : asStored ty ⟨ty, #x⟩ = #x := by simp [asStored, hI]
+      wp_auto
+      wp_for_post
+      iapply HΦ
+      iframe
+      ipureintro
+      exact ⟨rfl, hst⟩
+    · obtain ⟨elems, hUT⟩ : ∃ elems, underlying T = go.InterfaceType elems := by
+        revert hI; cases underlying T <;> simp [go.isInterfaceType]
+      haveI : T ↓u go.InterfaceType elems := ⟨hUT⟩
+      have hts : go.typeSetContains ty T = true := by simpa [asAssignable, hI] using hA
+      obtain ⟨y, hy⟩ : ∃ y : T', (#y : val) = #(interface.ok ⟨ty, iv⟩ : GoInterface) := by
+        have h := htyped; simp only [AsTypeTyped, hI, ↓reduceIte] at h
+        obtain ⟨y, hy⟩ := h hts; exact ⟨y, hy⟩
+      obtain ⟨W, _, _, _, x, hx⟩ := hrepI hI
+      simp only at hx
+      subst hx
+      wp_apply wp_ValueOf.1 (V := W) (t := ty) ki ni bi x hki hIi hLi hdi as %xv Hxv
+      wp_meth1
+      wp_apply wp_Value_Elem (errors.asTargetVal T l) T 20 l
+        (by rw [hUT]; exact internal.reflectlite.kindOf_interface) rfl rfl (by decide) (by decide)
+      rw [if_neg hl, internal.reflectlite.elem_flag 20 (by omega)]
+      wp_apply wp_Value_Set.2 (V := T') (T := T) (W := W) (t := ty) ki l _ y x xv hki hIi hNi hts hy
+        $$ [$Hl $Hxv] as Hl
+      have hst : asStored T ⟨ty, #x⟩ = #y := by simp [asStored, hI, hy]
+      wp_auto
+      wp_for_post
+      iapply HΦ
+      iframe
+      ipureintro
+      exact ⟨rfl, hst⟩
+  · intro n ii l T' _ _ T _ v hT
+    wp_start as ⟨Hl, Hm⟩
+    wp_auto
+    ihave HI : iprop(∃ (ii' : GoInterfaceOk) (k : Nat),
+        err_ptr ↦ interface.ok ii' ∗ l ↦ v ∗ asNoMatch (GF := GF) T k (interface.ok ii'))
+        $$ [err Hl Hm]
+    · iexists ii, n
+      iframe
+    wp_for HI
+    try rw [if_pos (by simp)]
+    icases HI with ⟨err, Hl, Hm⟩
+    ihave Hm' : iprop(⌜asNoMatchLeaf T (interface.ok ii') ∧ errRepr (GF := GF) T (interface.ok ii')⌝ ∨
+        ∃ (k' : Nat) (ii2 : GoInterfaceOk),
+        ⌜interface.ok ii' = interface.ok ii2 ∧ asAssignable T ii2 = false ∧ AsDecided T ii2 ∧
+          asRepr (GF := GF) T ii2 ∧
+          methodSet ii2.ty !! go!"As" ≠ some (go.Signature [go.any] false [go.bool]) ∧
+          methodSet ii2.ty !! go!"Unwrap" = some (go.Signature [] false [go.error])⌝ ∗
+        ∀ Φ : val → IProp GF, (∀ e' : GoError, asNoMatch (GF := GF) T k' e' -∗ Φ #e') -∗
+          WP (App (Val #(methods ii2.ty go!"Unwrap" ii2.v)) (Val #())) {{ Φ }}) $$ [Hm]
+    · cases k with
+      | zero => iunfold errors.asNoMatch at Hm; ileft; iexact Hm
+      | succ k' =>
+        iunfold errors.asNoMatch at Hm
+        icases Hm with (%H | ⟨%ii2, %H, HW⟩)
+        · ileft; ipureintro; exact H
+        · iright; iexists k', ii2; iframe; ipureintro; exact H
+    icases Hm' with (%Hleaf | ⟨%k', %ii2, %Hw, HW⟩)
+    · obtain ⟨Hleaf, Hrep⟩ := Hleaf
+      rcases Hleaf with h | ⟨ii3, h, hleaf, hA, hdecI⟩
+      · cases h
+      cases h
+      have hrepI := Hrep ii' rfl
+      obtain ⟨ty, iv⟩ := ii'
+      wp_auto
+      wp_apply errors.wp_TypeOf_err wp_TypeOf ty iv T hdecI
+      wp_apply errors.wp_asCheck wp_TypeOf wp_rtype_AssignableTo ty iv T hdecI hrepI
+      rw [hA]
+      wp_auto
+      obtain ⟨hAs, hU1, hU2⟩ := hleaf
+      have hAsF : go.typeSetContains ty (go.InterfaceType [go.MethodElem go!"As" (go.Signature [go.any] false [go.bool])]) = false := by
+        rw [errors.typeSetContains_method]; simpa using hAs
+      have hU1F : go.typeSetContains ty (go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.error])]) = false := by
+        rw [errors.typeSetContains_method]; simpa using hU1
+      have hU2F : go.typeSetContains ty
+          (go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.GoType.SliceType go.error])]) = false := by
+        rw [errors.typeSetContains_method]; simpa using hU2
+      simp only [hAsF, Bool.false_eq_true, ↓reduceIte]
+      wp_auto
+      simp only [hU1F, Bool.false_eq_true, ↓reduceIte]
+      wp_auto
+      simp only [hU2F, Bool.false_eq_true, ↓reduceIte]
+      wp_auto
+      wp_for_post
+      iapply HΦ
+      iframe
+      ipureintro; rfl
+    · obtain ⟨h, hA, hdecI, hrepI, hAs, hU⟩ := Hw
+      injection h with h
+      subst h
+      obtain ⟨ty, iv⟩ := ii'
+      wp_auto
+      wp_apply errors.wp_TypeOf_err wp_TypeOf ty iv T hdecI
+      wp_apply errors.wp_asCheck wp_TypeOf wp_rtype_AssignableTo ty iv T hdecI hrepI
+      rw [hA]
+      wp_auto
+      have hAsF : go.typeSetContains ty (go.InterfaceType [go.MethodElem go!"As" (go.Signature [go.any] false [go.bool])]) = false := by
+        rw [errors.typeSetContains_method]; simpa using hAs
+      have hU1T : go.typeSetContains ty (go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.error])]) = true := by
+        rw [errors.typeSetContains_method]; simpa using hU
+      simp only [hAsF, Bool.false_eq_true, ↓reduceIte]
+      wp_auto
+      simp only [hU1T, ↓reduceIte]
+      wp_auto
+      wp_bind (App (Val #(methods ty go!"Unwrap" iv)) (Val #()))
+      iapply HW
+      iintro %e' He'
+      wp_auto
+      cases e' with
+      | nil =>
+        wp_auto
+        wp_for_post
+        iapply HΦ
+        iframe
+        ipureintro; rfl
+      | ok ii2 =>
+        wp_auto
+        wp_for_post
+        iframe
+        iexists ii2, k'
+        iframe
+
+end proof
+
+end Perennial

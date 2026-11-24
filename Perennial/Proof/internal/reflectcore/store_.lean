@@ -30,10 +30,11 @@ theorem internal.reflectcore.store.wp_proof :
     wp_auto
     iapply HΦ
     iexact Hl
-  · intro T elems _ _ l v ii hts
+  · intro V _ _ T elems _ _ l v y ii hts hy
     wp_start as Hl
     wp_auto
     simp only [hts, ↓reduceIte]
+    rw [← hy]
     wp_auto
     iapply HΦ
     iexact Hl

@@ -29,12 +29,14 @@ theorem internal.reflectlite.TypeOf.wp_proof
     (wp_toRType : internal.reflectlite.toRType.spec (GF := GF) (hG := hG)) :
     internal.reflectlite.TypeOf.spec (GF := GF) (hG := hG) := by
   constructor
-  · intro t u hu k v hk hk25
+  · intro t u hu k v hk hlen hr
     wp_start as #Hinit
     wp_auto
     wp_apply wp_TokOf
     unfold go.tok
-    wp_apply wp_isModelRType k null hk hk25
+    wp_apply wp_isModelRType k null hk hlen
+    rw [hr]
+    wp_auto
     wp_apply wp_toRType
     iapply HΦ
     itrivial

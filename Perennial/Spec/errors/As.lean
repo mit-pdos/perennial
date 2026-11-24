@@ -34,7 +34,8 @@ Three cases:
   `target` itself), each of whose errors the model decides (`AsDecided`: it does not decide Go's
   assignability of a type to another of the same underlying type, one of them unnamed, nor for
   struct, channel and function kinds, and finds an error of a non-interface type `T` only for a
-  `T` named or a pointer to a named type): some
+  `T` named or a pointer to a named type; and the model's reflection on each error is defined, with
+  a Lean representation of its type for an interface `T`, `asRepr`): some
   result, `*l` written;
 * **first match**: `err`'s dynamic type is assignable to `T` (`asAssignable`: implements an
   interface `T`, or is `T`; decided by the model, `AsDecided`): `true`, `err` stored into `*l` (`asStored`; of the target's Lean type,
@@ -45,14 +46,15 @@ Three cases:
 abbrev errors.As.spec : Prop :=
   (∀ (S : GoError → Prop) (err : GoError) (l : Loc) {T' : Type} [ZeroVal T']
     [TypedPointsto (GF := GF) T'] {T : go.GoType} [IntoValTyped (GF := GF) T' T] (v : T'),
-    AsTarget T → (∀ ii, S (interface.ok ii) → AsDecided T ii) →
+    AsTarget T → (∀ ii, S (interface.ok ii) → AsDecided T ii ∧ asRepr (GF := GF) T ii) →
     {{ isPkgInit (PROP := IProp GF) pkg_id.errors ∗ isErrorTree (GF := GF) S T' T ∗ ⌜S err⌝ ∗
         l ↦ v }}
       (App (App (Val (@! As)) (Val #err)) (Val #(interface.mkOk (go.PointerType T) #l)))
     {{ (b : Bool) (v' : T'), RET #b; l ↦ v' }}) ∧
   (∀ (ii : GoInterfaceOk) (l : Loc) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T']
     {T : go.GoType} [IntoValTyped (GF := GF) T' T] (v : T'),
-    AsTarget T → AsDecided T ii → asAssignable T ii = true → AsTypeTyped T' T ii →
+    AsTarget T → AsDecided T ii → asRepr (GF := GF) T ii → asAssignable T ii = true →
+    AsTypeTyped T' T ii →
     {{ isPkgInit (PROP := IProp GF) pkg_id.errors ∗ l ↦ v }}
       (App (App (Val (@! As)) (Val #(interface.ok ii)))
         (Val #(interface.mkOk (go.PointerType T) #l)))

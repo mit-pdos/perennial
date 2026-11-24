@@ -32,11 +32,11 @@ theorem internal.reflectcore.Store.wp_proof
     wp_apply wp_store.1 l v y hT $$ [$Hl] as Hl
     iapply HΦ
     iexact Hl
-  · intro T elems _ _ l v ii hts
+  · intro V _ _ T elems _ _ l v y ii hts hy
     wp_start as Hl
     wp_apply wp_FuncResolveAt (go.Shape.deref go.Shape.self) _ _ _ [T] rfl
     rw [show (go!"internal/reflectcore.store" : GoString) = store from rfl]
-    wp_apply wp_store.2 l v ii hts $$ [$Hl] as Hl
+    wp_apply wp_store.2 l v y ii hts hy $$ [$Hl] as Hl
     iapply HΦ
     iexact Hl
 

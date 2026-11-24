@@ -12,6 +12,7 @@ public import Perennial.Proof.errors.Join
 public import Perennial.Proof.errors.New
 public import Perennial.Proof.errors.Unwrap
 public import Perennial.Proof.errors.asType_
+public import Perennial.Proof.errors.as_
 public import Perennial.Proof.errors.initialize
 public import Perennial.Proof.errors.is_
 public import Perennial.Proof.internal.reflectlite.Link
@@ -29,8 +30,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : errors.Assumptions]
 
+theorem errors.wp_as : errors.«as».spec (GF := GF) (hG := hG) :=
+  errors.«as».wp_proof internal.reflectlite.wp_TypeOf internal.reflectlite.rtype.wp_AssignableTo internal.reflectlite.wp_ValueOf internal.reflectlite.Value.wp_Elem internal.reflectlite.Value.wp_Set
+
 theorem errors.wp_As : errors.As.spec (GF := GF) (hG := hG) :=
-  errors.As.wp_proof
+  errors.As.wp_proof internal.reflectlite.wp_ValueOf internal.reflectlite.Value.wp_Type internal.reflectlite.Value.wp_IsNil internal.reflectlite.rtype.wp_Kind internal.reflectlite.rtype.wp_Elem internal.reflectlite.rtype.wp_Implements errors.wp_as
 
 theorem errors.wp_asType : errors.asType.spec (GF := GF) (hG := hG) :=
   errors.asType.wp_proof

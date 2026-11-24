@@ -29,12 +29,13 @@ abbrev internal.reflectcore.Store.spec : Prop :=
     {{ isPkgInit (PROP := IProp GF) pkg_id.internal.reflectcore ∗ l ↦ v }}
       (App (App (Val (@! Store)) (Val #(interface.mkOk (go.PointerType T) #l))) (Val #(interface.mkOk T #y)))
     {{ RET #(); l ↦ y }}) ∧
-  (∀ {T : go.GoType} {elems : List go.InterfaceElem} [T ↓u go.InterfaceType elems]
-    [IntoValTyped (GF := GF) GoInterface T] (l : Loc) (v : GoInterface) (ii : GoInterfaceOk),
-  go.typeSetContains ii.ty T = true →
+  (∀ {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V] {T : go.GoType}
+    {elems : List go.InterfaceElem} [T ↓u go.InterfaceType elems]
+    [IntoValTyped (GF := GF) V T] (l : Loc) (v y : V) (ii : GoInterfaceOk),
+  go.typeSetContains ii.ty T = true → (#y : val) = #(interface.ok ii : GoInterface) →
     {{ isPkgInit (PROP := IProp GF) pkg_id.internal.reflectcore ∗ l ↦ v }}
       (App (App (Val (@! Store)) (Val #(interface.mkOk (go.PointerType T) #l))) (Val #(interface.ok ii : GoInterface)))
-    {{ RET #(); l ↦ (interface.ok ii : GoInterface) }})
+    {{ RET #(); l ↦ y }})
 
 end spec
 

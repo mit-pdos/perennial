@@ -32,11 +32,11 @@ theorem internal.reflectcore.Load.wp_proof
     wp_apply wp_load.1 q dq x hT hn $$ [$Hq] as Hq
     iapply HΦ
     iexact Hq
-  · intro T elems _ q dq i
+  · intro V _ _ T elems _ _ q dq x i hx
     wp_start as Hq
     wp_apply wp_FuncResolveAt (go.Shape.deref go.Shape.self) _ _ _ [T] rfl
     rw [show (go!"internal/reflectcore.load" : GoString) = load from rfl]
-    wp_apply wp_load.2 q dq i $$ [$Hq] as Hq
+    wp_apply wp_load.2 q dq x i hx $$ [$Hq] as Hq
     iapply HΦ
     iexact Hq
 

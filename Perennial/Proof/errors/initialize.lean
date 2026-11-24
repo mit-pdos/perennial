@@ -44,7 +44,8 @@ theorem errors.initialize'.wp_proof
   -- persistent afterwards
   iapply wp_fupd
   wp_apply errors.wp_New_errorString as %x #E
-  wp_apply wp_TypeOf.1 (t := go.PointerType go.error) 22 _ (by simp [go.kindOf]) (by decide)
+  wp_apply wp_TypeOf.1 (t := go.PointerType go.error) 22 _ (by simp [go.kindOf]) (by simp)
+    (by simp [internal.reflectlite.rtypeLayoutU])
   unfold go.tok
   wp_apply wp_rtype_Elem go.error null (by simp [go.typeQuery, go.is_underlying])
   ipersist HEU

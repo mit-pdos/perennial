@@ -30,9 +30,11 @@ theorem internal.reflectcore.load.wp_proof :
     wp_auto
     iapply HΦ
     iexact Hq
-  · intro T elems _ q dq i
+  · intro V _ _ T elems _ _ q dq x i hx
     wp_start as Hq
     wp_auto
+    rw [hx]
+    try wp_auto
     iapply HΦ
     iexact Hq
 

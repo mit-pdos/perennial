@@ -29,11 +29,13 @@ abbrev internal.reflectcore.load.spec : Prop :=
     {{ isPkgInit (PROP := IProp GF) pkg_id.internal.reflectcore ∗ q ↦{dq} x }}
       (App (Val #(functions load [T])) (Val #(interface.mkOk (go.PointerType T) #q)))
     {{ RET #(interface.mkOk T #x); q ↦{dq} x }}) ∧
-  (∀ {T : go.GoType} {elems : List go.InterfaceElem} [T ↓u go.InterfaceType elems] (q : Loc)
-    (dq : DFrac) (i : GoInterface),
-    {{ isPkgInit (PROP := IProp GF) pkg_id.internal.reflectcore ∗ q ↦{dq} i }}
+  (∀ {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V] {T : go.GoType}
+    {elems : List go.InterfaceElem} [T ↓u go.InterfaceType elems] [IntoValTyped (GF := GF) V T]
+    (q : Loc) (dq : DFrac) (x : V) (i : GoInterface),
+  (#x : val) = #i →
+    {{ isPkgInit (PROP := IProp GF) pkg_id.internal.reflectcore ∗ q ↦{dq} x }}
       (App (Val #(functions load [T])) (Val #(interface.mkOk (go.PointerType T) #q)))
-    {{ RET #i; q ↦{dq} i }})
+    {{ RET #i; q ↦{dq} x }})
 
 end spec
 
