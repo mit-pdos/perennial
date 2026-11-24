@@ -15,3 +15,11 @@ imports = ["!*"]
 # and translating it leaves it zero (MaxLen always 31: more defined than gc). Pending a goose
 # change that gives such a variable an `X.init` hook.
 trusted = ["MakeNoZero", "init.0"]
+
+# `CompareString` (strings.Compare) calls `runtime.cmpstring` (assembly, through a `go:linkname`): a
+# Go model (goose/model/overlay/internal/bytealg). (`Compare`, bytes.Compare's, has no Go body at
+# all, only assembly, so a model body for it would be a duplicate symbol in gc builds: bytes.Compare
+# is modelled in its package instead.)
+[model]
+dir = "goose/model/overlay/internal/bytealg"
+replaces = ["CompareString"]

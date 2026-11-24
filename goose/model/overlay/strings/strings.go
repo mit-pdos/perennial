@@ -1,28 +1,9 @@
-// The Go model of strings' Join and Split (Perennial/Code/strings.toml,
-// [model]), spliced into strings.go in place of the real declarations.
+// The Go model of strings.Split (Perennial/Code/strings.toml, [model]),
+// spliced into strings.go in place of the real declaration.
 
 package strings
 
 import "internal/gomodel"
-
-// MODEL: Join(elems, sep) is the elements of elems separated by sep, computed
-// with string +. Go's Join sums the lengths first, panics if the total
-// overflows int, and then copies into a Builder. The model does not have the
-// overflow panic, which a program can reach (a few gigabytes of aliased
-// elements with a long separator): a known departure, where the model is more
-// defined than Go (README.md, "Model assumptions (overflow)").
-// Translating the real Join (its Builder calls are translated now) would
-// remove it, at the cost of a premise on wp_Join excluding the overflow.
-func Join(elems []string, sep string) string {
-	var s string
-	for i, e := range elems {
-		if i > 0 {
-			s += sep
-		}
-		s += e
-	}
-	return s
-}
 
 // MODEL: Split(s, sep) is the substrings of s between the occurrences of sep
 // (found left to right, not overlapping), as Go's genSplit(s, sep, 0, -1)

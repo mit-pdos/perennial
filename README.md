@@ -191,13 +191,11 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   program *can* reach are not assumed away. `strings.Join` is one: Go sums the
   elements' lengths and panics before allocating anything, so a few gigabytes
   of aliased elements (`make([]string, 1<<30+1)` with a long separator) reach
-  the panic. **Known, not yet fixed:** `Join` is still a Go model
-  (`goose/model/overlay/strings/strings.go`) that omits that panic, and
-  `strings.wp_Join` has no premise excluding it. The fix is to translate the
-  real `Join` over `strings.Builder`, whose methods are now goose's translation
-  of the real Go but for three Go models (`builder.go` there): `String`, which
-  is stuck where Go's `String` aliases the builder's buffer, `copyCheck` and
-  `Reset`. That needs a premise on `wp_Join`. `sync.WaitGroup`'s
+  the panic. Goose translates the real `Join`, over `strings.Builder` (the real
+  Go too, but for three Go models in `goose/model/overlay/strings/builder.go`:
+  `String`, which is stuck where Go's `String` aliases the builder's buffer,
+  `copyCheck` and `Reset`), so the panic is in the model, and `strings.wp_Join`
+  requires the result to be shorter than `2^61` bytes. `sync.WaitGroup`'s
   `int32` counter is another (two `Add(1 << 30)` calls panic in Go): `WaitGroup.Add`
   is Goose's translation, and `WaitGroup.wp_Add` asks its caller to bound the
   new counter by `2^31`. A caller whose counter is backed by one goroutine per

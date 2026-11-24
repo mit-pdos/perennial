@@ -876,11 +876,12 @@ noncomputable def Equal.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- MODEL: Compare(a, b) is -1, 0 or +1 as a is lexicographically less than,
     equal to or greater than b (a nil slice is the empty one). Go's Compare is
-    bytealg.Compare, which is assembly; the model compares the two slices'
-    contents as strings, whose < is bytewise lexicographic, as Equal compares
-    them with ==.
+    bytealg.Compare, which is assembly with no Go body (so the model is here,
+    not in internal/bytealg: a Go body for it would be a duplicate symbol in gc
+    builds); the model compares the two slices' contents as strings, whose < is
+    bytewise lexicographic, as Equal compares them with ==.
 
-    go: bytes.go:11:6 -/
+    go: bytes.go:12:6 -/
 noncomputable def Compare.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam "b"

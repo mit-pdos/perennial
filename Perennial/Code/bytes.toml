@@ -27,7 +27,8 @@ imports = ["!*", "errors", "io"]
 # translate the definitions of all type declarations goose supports
 translate_types = true
 
-# `Compare` calls `internal/bytealg.Compare` (assembly): a Go model (goose/model/overlay/bytes).
+# `Compare` calls `internal/bytealg.Compare` (assembly, no Go body): a Go model
+# (goose/model/overlay/bytes).
 [model]
 dir = "goose/model/overlay/bytes"
 replaces = ["Compare"]

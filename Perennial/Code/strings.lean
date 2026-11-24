@@ -93,7 +93,8 @@ attribute [irreducible] asciiSet.ty
 
 opaque countCutOff [GooseExts] [GoGlobalContext] : val
 
-opaque maxInt [GooseExts] [GoGlobalContext] : val
+@[reducible] noncomputable def maxInt [GooseExts] [GoGlobalContext] : val :=
+  #(W64 9223372036854775807)
 
 opaque repeatedSpaces [GooseExts] [GoGlobalContext] : val
 
@@ -333,8 +334,8 @@ noncomputable def CutPrefix [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def CutSuffix [GooseExts] [GoGlobalContext] : GoString :=
   go!"strings.CutSuffix"
 
-/-- MODEL: copyCheck panics if b is a copy by value of a Builder that has been
-    written to, and on first use records b in b.addr. Go's is
+/-- MODEL: Go's copyCheck panics if b is a copy by value of a Builder that has
+    been written to, and on first use records b in b.addr. Go's is
 
     	if b.addr == nil {
     		b.addr = (*Builder)(abi.NoEscape(unsafe.Pointer(b)))
@@ -347,7 +348,11 @@ noncomputable def CutSuffix [GooseExts] [GoGlobalContext] : GoString :=
     only to a pointer to a plain type (Golang/Defn/Plain.lean), and Builder (a
     pointer and a slice) is not one. The model writes b for that conversion,
     and after setting b.addr makes it read-only for good (gomodel.StartRead), so
-    that any later store to b.addr is stuck (loads still step).
+    that any later store to b.addr is stuck (loads still step). Where Go's check
+    fails, the model is stuck (gomodel.Stuck) instead of panicking: Go's panic
+    can be recovered, and the model cannot tell whether gc's check fails (see
+    below), so a model panic where gc's check passes would be a behaviour Go
+    does not have.
 
     Why read-only: abi.NoEscape hides b from escape analysis, so a Builder that
     does not otherwise escape lives on its goroutine's stack, and b.addr points
@@ -368,18 +373,20 @@ noncomputable def CutSuffix [GooseExts] [GoGlobalContext] : GoString :=
     after the first is stuck, and before it no value with addr = b exists: only
     copyCheck at b makes one, and addr is unexported). In gc that b.addr is b's
     own field, set to &b and moved with b if the stack moves, so gc's check
-    passes too. Everywhere else the model is less defined than Go, never more:
+    passes too. Everywhere else the model is stuck, so less defined than Go,
+    never more:
       - storing a copy back over a used Builder (b = saved, b = strings.Builder{})
         is stuck, though gc does not panic when the stack has not moved;
       - a copy stored into a Builder at another address keeps addr pointing to
-        the original, so the model's copyCheck panics there; gc's may not, when
-        that address is where the original was (a stack slot reused, as by a
-        var b strings.Builder inside a loop: the model allocates a fresh location
-        each time and never reuses one);
-      - Reset leaves b.addr set, where Go clears it, so that a copy of a Builder
-        reset after use panics in the model, not in Go.
+        the original, so the model's copyCheck is stuck there, where gc's
+        panics, or passes when that address is where the original was (a stack
+        slot reused, as by a var b strings.Builder inside a loop: the model
+        allocates a fresh location each time and never reuses one);
+      - Reset leaves b.addr set, where Go clears it, so that the model's
+        copyCheck is stuck at a copy of a Builder reset after use, where Go's
+        passes.
 
-    go: builder.go:54:19 -/
+    go: builder.go:60:19 -/
 noncomputable def Builder.copyCheck.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam BAnon
@@ -395,8 +402,7 @@ noncomputable def Builder.copyCheck.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType Builder.ty)))) (Pair (App (Val (GoInstruction (StructFieldRef Builder.ty go!"addr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Builder.ty)))) (Var "b"))) (Var "$r0"))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType Builder.ty)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Builder.ty)))) (App (Val (GoInstruction (StructFieldRef Builder.ty go!"addr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Builder.ty)))) (Var "b")))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Builder.ty)))) (Var "b"))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"strings: illegal use of non-zero Builder copied by value")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.Stuck []))) (Val #())) (Val #())))
   (App (Val doExecute)
   (Val #()))))))
   (Val #()))))
@@ -424,7 +430,7 @@ noncomputable def Builder.copyCheck.impl [GooseExts] [GoGlobalContext] : val :=
     itself stuck in the model; the read-only bytes keep String's model correct
     on its own, whatever the model of copyCheck.)
 
-    go: builder.go:85:19 -/
+    go: builder.go:91:19 -/
 noncomputable def Builder.String.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam BAnon
@@ -507,10 +513,10 @@ noncomputable def Builder.Cap.impl [GooseExts] [GoGlobalContext] : val :=
     The model leaves out b.addr = nil: copyCheck's model makes b.addr read-only
     once it is set, so that store would be stuck. Keeping addr only makes the
     model less defined: addr is unexported and only copyCheck reads it, which
-    at b passes alike for addr = b and nil, and panics for a copy whose addr is
-    b where Go's, whose addr is nil, would not.
+    at b passes alike for addr = b and nil, and is stuck at a copy whose addr is
+    b where Go's, whose addr is nil, passes.
 
-    go: builder.go:104:19 -/
+    go: builder.go:110:19 -/
 noncomputable def Builder.Reset.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam BAnon
@@ -718,12 +724,14 @@ noncomputable def Builder.WriteString.impl [GooseExts] [GoGlobalContext] : val :
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Builder.ty) go!"copyCheck"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Builder.ty)))) (Var "b"))) (Val #())))))))
   (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1"))))))))
 
-/-- MODEL: Compare(a, b) is -1, 0 or +1 as a is lexicographically less than,
-    equal to or greater than b. Go's Compare is bytealg.CompareString, which is
-    assembly (runtime.cmpstring); the model compares with Go's < and == on
-    strings, which order strings bytewise lexicographically as cmpstring does.
+/-- Compare returns an integer comparing two strings lexicographically.
+    The result will be 0 if a == b, -1 if a < b, and +1 if a > b.
 
-    go: compare.go:10:6 -/
+    Use Compare when you need to perform a three-way comparison (with
+    [slices.SortFunc], for example). It is usually clearer and always faster
+    to use the built-in string comparison operators ==, <, >, and so on.
+
+    go: compare.go:15:6 -/
 noncomputable def Compare.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam "b"
@@ -731,32 +739,14 @@ noncomputable def Compare.impl [GooseExts] [GoGlobalContext] : val :=
   (Seq (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc go.string))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.string))) (Var "a"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Val #(W64 1))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "a")) (App (Val (GoInstruction (GoLoad go.string))) (Var "b")))))
-  (Let "$r0" (Val #(W64 0))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "a"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "b"))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.bytealg.CompareString []))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
-  (App (Val doExecute)
-  (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "a")) (App (Val (GoInstruction (GoLoad go.string))) (Var "b")))))
-  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int))))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
-  (App (Val doExecute)
-  (Val #())))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
 /-- NewReplacer returns a new [Replacer] from a list of old, new string
@@ -799,7 +789,7 @@ noncomputable def NewReplacer.impl [GooseExts] [GoGlobalContext] : val :=
     splits s into its UTF-8 sequences (explode); the model is stuck there, so
     every spec of Split requires sep to be non-empty.
 
-    go: strings.go:34:6 -/
+    go: strings.go:15:6 -/
 noncomputable def Split.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "sep"
@@ -870,16 +860,10 @@ noncomputable def Split.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))))))
   (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "$res0"))))))
 
-/-- MODEL: Join(elems, sep) is the elements of elems separated by sep, computed
-    with string +. Go's Join sums the lengths first, panics if the total
-    overflows int, and then copies into a Builder. The model does not have the
-    overflow panic, which a program can reach (a few gigabytes of aliased
-    elements with a long separator): a known departure, where the model is more
-    defined than Go (README.md, "Model assumptions (overflow)").
-    Translating the real Join (its Builder calls are translated now) would
-    remove it, at the cost of a premise on wp_Join excluding the overflow.
+/-- Join concatenates the elements of its first argument to create a single string. The separator
+    string sep is placed between elements in the resulting string.
 
-    go: strings.go:16:6 -/
+    go: strings.go:487:6 -/
 noncomputable def Join.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "elems"
   (Lam "sep"
@@ -887,17 +871,23 @@ noncomputable def Join.impl [GooseExts] [GoGlobalContext] : val :=
   (Seq (App (Val exceptionDo)
   (Let "sep" (App (Val (GoInstruction (GoAlloc go.string))) (Var "sep"))
   (Let "elems" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (Var "elems"))
-  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "b" (App (Val (GoInstruction (GoAlloc Builder.ty))) (App (Val (GoInstruction (GoZeroVal Builder.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Builder.ty) go!"String"))) (Var "b")) (Val #()))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "elems"))
-  (Let "e" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
-  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Let "$range" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "elems"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.string)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.string)]))) (Val #())) (Var "$s")))))
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
   (App (App (Val (slice.forRange go.string)) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
@@ -905,16 +895,78 @@ noncomputable def Join.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (App (Val (GoInstruction (GoLoad go.string))) (Var "e")))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 0)))))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Builder.ty) go!"WriteString"))) (Var "b")) (Var "$a0"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (App (Val (GoInstruction (GoLoad go.string))) (Var "sep")))))))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "sep"))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Builder.ty) go!"WriteString"))) (Var "b")) (Var "$a0")))))))
+  (App (Val doExecute)
+  (Var "$key")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$value")))))))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.string)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "elems")) (Val #(W64 0)))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Builder.ty) go!"WriteString"))) (Var "b")) (Var "$a0")))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Builder.ty) go!"Grow"))) (Var "b")) (Var "$a0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "elems"))
+  (Let "elem" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val (slice.forRange go.string)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "elem"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "elem"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Val maxInt) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"strings: Join output length overflow")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$key")))))))
+  (Var "$key")))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "e") (Var "$value"))))))))))))))))
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "elem") (Var "$value")))))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "sep"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (App (Val (GoInstruction (GoOp GoMul go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "sep"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "elems"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.string)]))) (Val #())) (Var "$a0"))) (Val #(W64 1)))))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "sep"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (GoOp GoDiv go.int))) (Pair (Val maxInt) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "elems"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.string)]))) (Val #())) (Var "$a0"))) (Val #(W64 1)))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"strings: Join output length overflow")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #()))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (Let "$sw" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "elems"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.string)]))) (Val #())) (Var "$a0")))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Var "$sw") (Val #(W64 0))))
+  (Let "$r0" (Val #(go!""))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Var "$sw") (Val #(W64 1))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.string)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "elems")) (Val #(W64 0)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))))))
   (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
 
 /-- HasPrefix reports whether the string s begins with prefix.

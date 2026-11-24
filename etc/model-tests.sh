@@ -15,13 +15,13 @@
 #            TestReplace              allocation counts: Builder.String's model
 #                                     copies the buffer, and copyCheck's stores
 #                                     b in b.addr, so b escapes
-#            TestBuilderCopyPanic     its Reset case: Reset's model keeps
-#                                     b.addr, so a copy of a reset Builder
-#                                     panics in the model
+#            TestBuilderCopyPanic     copyCheck's model is stuck (gomodel.Stuck,
+#                                     which blocks in gc) where Go's check
+#                                     fails, and Reset's model keeps b.addr
 #   errors   TestIs                   its uncomparable target (#13): Is's model
 #                                     compares it, which panics in gc (and is
 #                                     stuck in GooseLang)
-# internal/stringslite has no tests; bytes runs in full.
+# internal/stringslite has no tests; bytes and internal/bytealg run in full.
 #
 # usage: etc/model-tests.sh
 set -euo pipefail
@@ -31,18 +31,10 @@ trap 'rm -rf "$OUT"' EXIT
 cd "$ROOT/goose"
 go build -o "$OUT/goose" ./cmd/goose
 "$OUT/goose" model-overlay -configdir "$ROOT/Perennial/Code" -dir . -tags purego -o "$OUT/ov" \
-  strings bytes errors internal/stringslite
+  strings bytes errors internal/stringslite internal/bytealg
 # go vet does not find the overlay-added internal/gomodel (it changes into the package's directory)
 run() { go test -vet=off -timeout 300s -overlay "$OUT/ov/overlay.json" -tags purego,goose "$@"; }
 run strings -skip '^(TestSplit|ExampleSplit|TestBuilderGrow|TestBuilderAllocs|TestBuilderGrowSizeclasses|TestReplace|TestBuilderCopyPanic)$'
 run errors -skip '^TestIs$'
-run bytes internal/stringslite
-# the left-out tests' other cases
-out=$(run strings -run '^TestBuilderCopyPanic$' -v 2>&1 || true)
-fails=$(grep -c 'panicked = ' <<<"$out" || true)
-if [ "$fails" != 1 ] || ! grep -q 'Reset: panicked = true; want false' <<<"$out"; then
-  echo "model-tests: TestBuilderCopyPanic: expected only its Reset case to fail" >&2
-  echo "$out" >&2
-  exit 1
-fi
+run bytes internal/stringslite internal/bytealg
 echo "model-tests: ok"

@@ -6,8 +6,8 @@ package strings
 
 import "internal/gomodel"
 
-// MODEL: copyCheck panics if b is a copy by value of a Builder that has been
-// written to, and on first use records b in b.addr. Go's is
+// MODEL: Go's copyCheck panics if b is a copy by value of a Builder that has
+// been written to, and on first use records b in b.addr. Go's is
 //
 //	if b.addr == nil {
 //		b.addr = (*Builder)(abi.NoEscape(unsafe.Pointer(b)))
@@ -20,7 +20,11 @@ import "internal/gomodel"
 // only to a pointer to a plain type (Golang/Defn/Plain.lean), and Builder (a
 // pointer and a slice) is not one. The model writes b for that conversion,
 // and after setting b.addr makes it read-only for good (gomodel.StartRead), so
-// that any later store to b.addr is stuck (loads still step).
+// that any later store to b.addr is stuck (loads still step). Where Go's check
+// fails, the model is stuck (gomodel.Stuck) instead of panicking: Go's panic
+// can be recovered, and the model cannot tell whether gc's check fails (see
+// below), so a model panic where gc's check passes would be a behaviour Go
+// does not have.
 //
 // Why read-only: abi.NoEscape hides b from escape analysis, so a Builder that
 // does not otherwise escape lives on its goroutine's stack, and b.addr points
@@ -41,22 +45,24 @@ import "internal/gomodel"
 // after the first is stuck, and before it no value with addr = b exists: only
 // copyCheck at b makes one, and addr is unexported). In gc that b.addr is b's
 // own field, set to &b and moved with b if the stack moves, so gc's check
-// passes too. Everywhere else the model is less defined than Go, never more:
+// passes too. Everywhere else the model is stuck, so less defined than Go,
+// never more:
 //   - storing a copy back over a used Builder (b = saved, b = strings.Builder{})
 //     is stuck, though gc does not panic when the stack has not moved;
 //   - a copy stored into a Builder at another address keeps addr pointing to
-//     the original, so the model's copyCheck panics there; gc's may not, when
-//     that address is where the original was (a stack slot reused, as by a
-//     var b strings.Builder inside a loop: the model allocates a fresh location
-//     each time and never reuses one);
-//   - Reset leaves b.addr set, where Go clears it, so that a copy of a Builder
-//     reset after use panics in the model, not in Go.
+//     the original, so the model's copyCheck is stuck there, where gc's
+//     panics, or passes when that address is where the original was (a stack
+//     slot reused, as by a var b strings.Builder inside a loop: the model
+//     allocates a fresh location each time and never reuses one);
+//   - Reset leaves b.addr set, where Go clears it, so that the model's
+//     copyCheck is stuck at a copy of a Builder reset after use, where Go's
+//     passes.
 func (b *Builder) copyCheck() {
 	if b.addr == nil {
 		b.addr = b
 		gomodel.StartRead(&b.addr)
 	} else if b.addr != b {
-		panic("strings: illegal use of non-zero Builder copied by value")
+		gomodel.Stuck()
 	}
 }
 
@@ -99,8 +105,8 @@ func (b *Builder) String() string {
 // The model leaves out b.addr = nil: copyCheck's model makes b.addr read-only
 // once it is set, so that store would be stuck. Keeping addr only makes the
 // model less defined: addr is unexported and only copyCheck reads it, which
-// at b passes alike for addr = b and nil, and panics for a copy whose addr is
-// b where Go's, whose addr is nil, would not.
+// at b passes alike for addr = b and nil, and is stuck at a copy whose addr is
+// b where Go's, whose addr is nil, passes.
 func (b *Builder) Reset() {
 	b.buf = nil
 }

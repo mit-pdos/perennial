@@ -10,6 +10,7 @@ public import Perennial.Proof.internal.gomodel.Link
 public import Perennial.Proof.internal.stringslite.Link
 public import Perennial.Proof.io.Link
 public import Perennial.Proof.strings.Builder__Cap
+public import Perennial.Proof.strings.Builder__Grow
 public import Perennial.Proof.strings.Builder__Len
 public import Perennial.Proof.strings.Builder__Reset
 public import Perennial.Proof.strings.Builder__String
@@ -17,6 +18,7 @@ public import Perennial.Proof.strings.Builder__Write
 public import Perennial.Proof.strings.Builder__WriteByte
 public import Perennial.Proof.strings.Builder__WriteString
 public import Perennial.Proof.strings.Builder__copyCheck
+public import Perennial.Proof.strings.Builder__grow_
 public import Perennial.Proof.strings.Compare
 public import Perennial.Proof.strings.Fields
 public import Perennial.Proof.strings.HasPrefix
@@ -46,6 +48,15 @@ variable [package_sem : strings.Assumptions]
 theorem strings.Builder.wp_Cap : strings.Builder.Cap.spec (GF := GF) (hG := hG) :=
   strings.Builder.Cap.wp_proof
 
+theorem strings.Builder.wp_copyCheck : strings.Builder.copyCheck.spec (GF := GF) (hG := hG) :=
+  strings.Builder.copyCheck.wp_proof internal.gomodel.wp_StartRead
+
+theorem strings.Builder.wp_grow : strings.Builder.grow.spec (GF := GF) (hG := hG) :=
+  strings.Builder.grow.wp_proof internal.bytealg.wp_MakeNoZero
+
+theorem strings.Builder.wp_Grow : strings.Builder.Grow.spec (GF := GF) (hG := hG) :=
+  strings.Builder.Grow.wp_proof strings.Builder.wp_copyCheck strings.Builder.wp_grow
+
 theorem strings.Builder.wp_Len : strings.Builder.Len.spec (GF := GF) (hG := hG) :=
   strings.Builder.Len.wp_proof
 
@@ -54,9 +65,6 @@ theorem strings.Builder.wp_Reset : strings.Builder.Reset.spec (GF := GF) (hG := 
 
 theorem strings.Builder.wp_String : strings.Builder.String.spec (GF := GF) (hG := hG) :=
   strings.Builder.String.wp_proof internal.gomodel.wp_StartRead
-
-theorem strings.Builder.wp_copyCheck : strings.Builder.copyCheck.spec (GF := GF) (hG := hG) :=
-  strings.Builder.copyCheck.wp_proof internal.gomodel.wp_StartRead
 
 theorem strings.Builder.wp_Write : strings.Builder.Write.spec (GF := GF) (hG := hG) :=
   strings.Builder.Write.wp_proof strings.Builder.wp_copyCheck
@@ -68,7 +76,7 @@ theorem strings.Builder.wp_WriteString : strings.Builder.WriteString.spec (GF :=
   strings.Builder.WriteString.wp_proof strings.Builder.wp_copyCheck
 
 theorem strings.wp_Compare : strings.Compare.spec (GF := GF) (hG := hG) :=
-  strings.Compare.wp_proof
+  strings.Compare.wp_proof internal.bytealg.wp_CompareString
 
 theorem strings.wp_Fields : strings.Fields.spec (GF := GF) (hG := hG) :=
   strings.Fields.wp_proof
@@ -80,7 +88,7 @@ theorem strings.wp_HasSuffix : strings.HasSuffix.spec (GF := GF) (hG := hG) :=
   strings.HasSuffix.wp_proof internal.stringslite.wp_HasSuffix
 
 theorem strings.wp_Join : strings.Join.spec (GF := GF) (hG := hG) :=
-  strings.Join.wp_proof
+  strings.Join.wp_proof strings.Builder.wp_Grow strings.Builder.wp_WriteString strings.Builder.wp_String
 
 theorem strings.wp_NewReplacer : strings.NewReplacer.spec (GF := GF) (hG := hG) :=
   strings.NewReplacer.wp_proof
