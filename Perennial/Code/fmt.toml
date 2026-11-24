@@ -10,8 +10,8 @@ translate = [
   "*",
   "!pp.printValue", "!pp.fmtComplex",
   "!Print", "!Println",
-  # the primitive stub (trusted, below)
-  "!underlyingAs",
+  # the primitive stubs (trusted, below)
+  "!underlyingAs", "!kindIs",
   # scan.go: only the package variables
   "!Scan", "!Scanln", "!Scanf", "!Sscan", "!Sscanln", "!Sscanf", "!Fscan", "!Fscanln", "!Fscanf",
   "!isSpace", "!notSpace", "!newScanState", "!indexRune", "!hasX", "!hexDigit", "!errorHandler",
@@ -19,9 +19,9 @@ translate = [
 ]
 imports = ["!*", "io", "errors", "sync", "unicode/utf8", "reflect", "strconv", "internal/stringslite",
   "internal/gomodel", "io/fs", "syscall", "internal/poll"]
-# the model's primitive stub `underlyingAs` (goose/model/overlay/fmt/print.go), modelled in
-# TrustedCode/fmt.lean
-trusted = ["underlyingAs"]
+# the model's primitive stubs `underlyingAs` (goose/model/overlay/fmt/print.go) and `kindIs`
+# (printmodel.go), modelled in TrustedCode/fmt.lean
+trusted = ["underlyingAs", "kindIs"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

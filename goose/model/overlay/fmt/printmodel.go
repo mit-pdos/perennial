@@ -12,8 +12,12 @@ import (
 	"internal/gomodel"
 )
 
-// kindIs[T](x): whether x's dynamic type has T's underlying type (the second result of
-// TypeAssertUnderlying2 T).
+// kindIs[T](x): whether x's dynamic type has T's underlying type. A primitive stub (fmt.toml,
+// trusted), as underlyingAs is: its GooseLang model is the second result of TypeAssertUnderlying2 T
+// (Perennial/TrustedCode/fmt.lean), and this body, for gc builds, is underlyingAs's second result.
+// (It is not translated from this body: a translation binds underlyingAs's first result, the value
+// x holds, which the logic cannot step past for an arbitrary argument, as nothing says that value
+// is not a panic value; isIntKind and isStrKind ask kindIs of any argument.)
 func kindIs[T any](x any) bool {
 	_, ok := underlyingAs[T](x)
 	return ok

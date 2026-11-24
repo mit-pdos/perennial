@@ -1,12 +1,7 @@
 /-
-`fmt.Fprintf` (the trusted model's) with the contents of its `[]byte` and `[]string` arguments lent: the
-arguments `B` names (`[]byte`s holding the bytes `B` gives them, `[]string`s holding the strings,
-`fmt.bytesOwn`) are admitted under any directive (`fmt.argsOkB`), Go reads their contents, which come
-back, and the output is `fmt.SprintfOutB B`: `%s`, `%v`, `%d`, `%x`, `%X` of a `[]byte`, and `%q` of
-one of ASCII bytes, are formatted exactly, and `%s` and `%v` of a `[]string` (`fmt.stringsJoin`,
-`fmt.SprintfOutB.strs_inv`).
-With `B` always `none` this is `fmt.Fprintf.spec` (`fmt.wp_doPrintf`). (`Sprintf` is the real `fmt`'s:
-`fmt.Sprintf.spec` lends `[]byte` arguments itself, `fmt.Arg.bytes`.)
+Lemmas on `fmt.SprintfOutB` (the output of `fmt.Fprintf` with the contents of its `[]byte` and
+`[]string` arguments lent, `fmt.wp_Fprintf_bytes` in `Results.lean`): `%s` and `%v` of a lent
+`[]string` give `fmt.stringsJoin` of its strings (`fmt.SprintfOutB.strs_inv`).
 -/
 module
 
@@ -27,42 +22,6 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
-
-/-- `fmt.Fprintf(w, format, args...)` with the contents of the `[]byte` and `[]string` arguments `B`
-names lent: as `fmt.Fprintf.spec`, the formatted `s` with `SprintfOutB B format args s`; the lent
-contents come back. -/
-theorem fmt.wp_Fprintf_bytes :
-    ∀ (B : GoInterface → Option fmt.Lent) (dqb : DFrac) (w : GoInterface) (format : GoString)
-      (args_sl : GoSlice) (xs : List GoInterface) (dq : DFrac) (P : IProp GF)
-      (Q : GoString → w64 → GoInterface → IProp GF),
-    {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ args_sl ↦*{dq} xs ∗ fmt.bytesOwn dqb B xs ∗
-        fmt.argsOkB B fmt.methodVerbs format xs ∗ P ∗
-        ∃ ii, ⌜w = interface.ok ii⌝ ∗ fmt.writeSpec ii P Q }}
-      (App (App (App (Val (@! fmt.Fprintf)) (Val #w)) (Val #format)) (Val #args_sl))
-    {{ (n : w64) (err : GoInterface), RET (PairV #n #err); args_sl ↦*{dq} xs ∗
-        fmt.bytesOwn dqb B xs ∗ ∃ s : GoString, ⌜fmt.SprintfOutB B format xs s⌝ ∗ Q s n err }} := by
-  intro B dqb w format args_sl xs dq P Q
-  wp_start as ⟨Hsl, Hown, Hok, HP, %ii, %Hw, HW⟩
-  subst Hw
-  try wp_auto
-  have hdo := fmt.wp_doPrintfB (GF := GF) B dqb format args_sl xs dq false
-  rw [fmt.modeVerbs_false] at hdo
-  wp_apply hdo $$ [$Hsl $Hown $Hok] as %s %wsl %unk ⟨Hsl, Hown, %Hs, -⟩
-  try wp_auto
-  wp_apply (wp_printerBuf s) as %bsl ⟨Hb, %spare, Hspare⟩
-  try wp_auto
-  wp_bind (App (Val #(methods ii.ty go!"Write" ii.v)) (Val #bsl))
-  iunfold fmt.writeSpec at HW
-  iapply HW $$ HP Hb
-  inext
-  iintro %n %err Hb HQ
-  try wp_auto
-  wp_apply (wp_retire bsl s spare) $$ [$Hb $Hspare]
-  try wp_auto
-  iapply HΦ
-  iframe
-  ipureintro
-  exact Hs
 
 /-- **`%s` or `%v` of a lent `[]string` holding `ss` gives `stringsJoin ss`** (`[a b c]`), and
 consumes the argument: the caller's way to read off the output of, e.g., `Fprintf(w, "%v", ss)`. -/

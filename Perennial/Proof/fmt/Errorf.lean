@@ -1,5 +1,6 @@
 /-
-The proof of `fmt.Errorf`, from the model's `doPrintf` (`Perennial/Proof/fmt/DoPrintf.lean`) and
+The proof of `fmt.Errorf` (Go's) and of the Go model of `errorf` (`goose/model/overlay/fmt`): the
+model printer's `doPrintf` (`Perennial/Proof/fmt/DoPrintf.lean`), then `errorfResult`, from
 `errors.New`'s code (`errors.wp_New_errorString_cell`).
 -/
 module
@@ -7,6 +8,8 @@ module
 public import Perennial.Spec.fmt.Errorf
 public import Perennial.Proof.fmt.DoPrintf
 public import Perennial.Proof.errors.NewVar
+public import Perennial.Spec.internal.stringslite.IndexByte
+public import Perennial.Spec.internal.gomodel.ChooseUint64
 
 @[expose] public section
 
@@ -60,15 +63,23 @@ theorem fmt.W64_nat_inj {a b : Nat} (ha : a < 2 ^ 63) (hb : b < 2 ^ 63)
   rw [uint_Z_W64 _ (by omega) (by omega), uint_Z_W64 _ (by omega) (by omega)] at this
   omega
 
-theorem fmt.Errorf.wp_proof :
-    fmt.Errorf.spec (GF := GF) (hG := hG) := by
-  intro format args_sl xs dq
-  wp_start as ⟨Hsl, Hok⟩
+/-- The model's `errorfResult s wrapped unknown a`, of the results of `doPrintf(format, a, true)`: the
+error `Errorf` returns (`errorfErr`). -/
+theorem fmt.wp_errorfResult
+    (wp_ChooseUint64 : internal.gomodel.ChooseUint64.spec (GF := GF) (hG := hG))
+    (format : GoString) (args_sl : GoSlice) (xs : List GoInterface) (dq : DFrac)
+    (s : GoString) (wsl : GoSlice) (unk : Bool) (ws : List w64) :
+    {{ (args_sl ↦*{dq} xs : IProp GF) ∗ wsl ↦* ws ∗ ⌜SprintfOut format xs s⌝ ∗
+        ⌜(unk = true → ArgsWf xs ∧ fmt.fmtDirectives format = none) ∧
+         (unk = false → ∀ ds, fmt.fmtDirectives format = some ds →
+            ws = (fmt.wrapArgs ds xs.length).map (fun j : Nat => W64 (j : Int))) ∧
+         (unk = false → ∀ w ∈ ws, ∃ j : Nat, w = W64 (j : Int) ∧ j < xs.length)⌝ }}
+      (App (App (App (App (Val (@! fmt.errorfResult)) (Val #s)) (Val #wsl)) (Val #unk)) (Val #args_sl))
+    {{ (err : GoInterfaceOk), RET #(interface.ok err);
+        args_sl ↦*{dq} xs ∗ ∃ s : GoString, ⌜SprintfOut format xs s⌝ ∗ fmt.errorfErr format xs s err }} := by
+  wp_start as ⟨Hsl, Hws, %Hs, %Hwr⟩
   wp_auto
-  have hdo := fmt.wp_doPrintf (GF := GF) format args_sl xs dq true
-  rw [fmt.modeVerbs_true] at hdo
-  wp_apply hdo $$ [$Hsl $Hok] as %s %wsl %unk ⟨Hsl, %Hs, %ws, Hws, %Hwr⟩
-  rw [← fmt.wrapError_ty_eq, ← fmt.wrapErrors_ty_eq]
+  try rw [← fmt.wrapError_ty_eq, ← fmt.wrapErrors_ty_eq]
   cases unk
   · obtain hk := Hwr.2.1 rfl
     obtain hb := Hwr.2.2 rfl
@@ -285,7 +296,7 @@ theorem fmt.Errorf.wp_proof :
     obtain ⟨hwf, hnone⟩ := Hwr.1 rfl
     simp only [fmt.errorfErr, hnone]
     wp_auto
-    wp_apply wp_ArbitraryInt as %n -
+    wp_apply wp_ChooseUint64 as %n -
     wp_if_destruct
     · wp_apply errors.wp_New_errorString_cell as %x ⟨#Hcell, #HErr⟩
       iapply HΦ
@@ -331,6 +342,98 @@ theorem fmt.Errorf.wp_proof :
     rw [method_unfold]
     wp_auto
     iexact HΦ'
+
+/-- A format without `%` gives itself, of no argument. -/
+theorem fmt.SprintfOut_noPct (f : GoString) (h : ∀ j : Nat, f[j]? ≠ some (W8 37)) :
+    SprintfOut f [] f := by
+  induction f with
+  | nil => exact .done
+  | cons c f ih =>
+    have hc : c ≠ W8 37 := fun hc => h 0 (by simp [hc])
+    exact .byte c f [] f hc (ih (fun j hj => h (j + 1) (by simpa using hj)))
+
+/-- A format without `%` has no directive. -/
+theorem fmt.fmtDirectives_noPct (f : GoString) (h : ∀ j : Nat, f[j]? ≠ some (W8 37)) :
+    fmt.fmtDirectives f = some [] := by
+  unfold fmt.fmtDirectives
+  induction f with
+  | nil => rfl
+  | cons c f ih =>
+    have hc : c ≠ W8 37 := fun hc => h 0 (by simp [hc])
+    rw [fmt.fmtDirectivesAux, if_neg hc]
+    exact ih (fun j hj => h (j + 1) (by simpa using hj))
+
+theorem fmt.Errorf.wp_proof
+    (wp_IndexByte : internal.stringslite.IndexByte.spec (GF := GF) (hG := hG))
+    (wp_ChooseUint64 : internal.gomodel.ChooseUint64.spec (GF := GF) (hG := hG)) :
+    fmt.Errorf.spec (GF := GF) (hG := hG) := by
+  intro format args_sl xs dq
+  wp_start as ⟨Hsl, Hok⟩
+  wp_auto
+  -- `errorf(format, a...)`
+  wp_func_call
+  wp_call
+  wp_auto
+  ihave %Hxlen := ownSlice_len $$ Hsl
+  wp_if_destruct
+  · have Hlen0 := Hif
+    wp_apply wp_IndexByte as %Hflen
+    wp_if_destruct
+    · -- Go's shortcut: no argument and no `%`; `errorf` returns `nil`, `Errorf` `errors.New(format)`
+      have hxs : xs = [] := List.eq_nil_of_length_eq_zero (by have := congrArg sint.Z Hlen0; word)
+      subst hxs
+      have hneg : internal.bytealg.indexByte format (W8 37) = -1 := by
+        have := internal.bytealg.indexByte_bounds format (W8 37)
+        have h2 := congrArg sint.Z Hif
+        word
+      have hnp : ∀ j : Nat, format[j]? ≠ some (W8 37) := by
+        rcases internal.bytealg.indexByte_slice_cases format (W8 37) 0 format.length with
+          ⟨r, hr, hrl, -, -⟩ | ⟨-, hn⟩
+        · simp at hr
+          have h' := hneg
+          simp at h'
+          omega
+        · intro j hj
+          have hjl : j < format.length := (List.getElem?_eq_some_iff.mp hj).1
+          exact hn j hjl (by simpa using hj)
+      try wp_auto
+      wp_apply errors.wp_New_errorString_cell as %x ⟨#Hcell, #HErr⟩
+      try wp_auto
+      iapply HΦ
+      iframe
+      iexists format
+      isplitr
+      · ipureintro; exact fmt.SprintfOut_noPct format hnp
+      unfold fmt.errorfErr
+      isplitr
+      · ipureintro; exact ⟨⟨_, x, rfl, rfl⟩, fmt.errorString_facts.1, fmt.errorString_facts.2, .inl rfl⟩
+      isplitr
+      · iexact HErr
+      rw [fmt.fmtDirectives_noPct format hnp]
+      iexists x
+      isplitr
+      · ipureintro; rfl
+      iexact Hcell
+    · try wp_auto
+      have hdo := fmt.wp_doPrintf wp_ChooseUint64 format args_sl xs dq true
+      rw [fmt.modeVerbs_true] at hdo
+      wp_apply hdo $$ [$Hsl $Hok] as %s %wsl %unk ⟨Hsl, %Hs, %ws, Hws, %Hwr⟩
+      try wp_auto
+      wp_apply (fmt.wp_errorfResult wp_ChooseUint64 format args_sl xs dq s wsl unk ws) $$ [$Hsl $Hws] as %err ⟨Hsl, HE⟩
+      · ipureintro; exact ⟨Hs, Hwr⟩
+      try wp_auto
+      iapply HΦ
+      iframe
+  · try wp_auto
+    have hdo := fmt.wp_doPrintf wp_ChooseUint64 format args_sl xs dq true
+    rw [fmt.modeVerbs_true] at hdo
+    wp_apply hdo $$ [$Hsl $Hok] as %s %wsl %unk ⟨Hsl, %Hs, %ws, Hws, %Hwr⟩
+    try wp_auto
+    wp_apply (fmt.wp_errorfResult wp_ChooseUint64 format args_sl xs dq s wsl unk ws) $$ [$Hsl $Hws] as %err ⟨Hsl, HE⟩
+    · ipureintro; exact ⟨Hs, Hwr⟩
+    try wp_auto
+    iapply HΦ
+    iframe
 
 end proof
 

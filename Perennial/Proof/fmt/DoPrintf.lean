@@ -1,6 +1,6 @@
 /-
-The spec of the helper `doPrintf` of the model of `fmt` (`Perennial/TrustedCode/fmt.lean`), which
-`Sprintf`, `Printf` and `Errorf` run: the formatted string (`SprintfOut`), the calls of the
+The spec of the helper `doPrintf` of the model printer of `fmt`
+(`goose/model/overlay/fmt/printmodel.go`), which `Fprintf`, `Printf` and `Errorf` run: the formatted string (`SprintfOut`), the calls of the
 arguments' methods Go makes (through `visitRest`), and the arguments of the `%w` directives.
 -/
 module
@@ -220,10 +220,12 @@ theorem argWf_of_argOkAtB_inert (B : GoInterface → Option Lent) (mv : List w8)
 the formatted string (`SprintfOut`), after the calls Go makes of the arguments' methods; the
 arguments' slice comes back; and the arguments of the `%w` directives, unless the model gave up
 (`unknown`) at a directive `fmtDirectives` refuses, every argument being `ArgWf`. -/
-theorem wp_doPrintfB (B : GoInterface → Option Lent) (dqb : DFrac) (format : GoString)
+theorem wp_doPrintfB
+    (wp_ChooseUint64 : internal.gomodel.ChooseUint64.spec (GF := GF) (hG := hG))
+    (B : GoInterface → Option Lent) (dqb : DFrac) (format : GoString)
     (sl : GoSlice) (xs : List GoInterface) (dq : DFrac) (wrapErrs : Bool) :
     {{ sl ↦*{dq} xs ∗ bytesOwn dqb B xs ∗ argsOkB (GF := GF) B (modeVerbs wrapErrs) format xs }}
-      (App (App (App (Val doPrintf) (Val #format)) (Val #sl)) (Val #wrapErrs))
+      (App (App (App (Val (@! doPrintf)) (Val #format)) (Val #sl)) (Val #wrapErrs))
     {{ (s : GoString) (wsl : GoSlice) (unknown : Bool), RET (PairV (PairV #s #wsl) #unknown);
         sl ↦*{dq} xs ∗ bytesOwn dqb B xs ∗ ⌜SprintfOutB B format xs s⌝ ∗
         ∃ ws : List w64, wsl ↦* ws ∗
@@ -231,8 +233,7 @@ theorem wp_doPrintfB (B : GoInterface → Option Lent) (dqb : DFrac) (format : G
          (unknown = false → ∀ ds, fmtDirectives format = some ds →
             ws = (wrapArgs ds xs.length).map (fun j : Nat => W64 (j : Int))) ∧
          (unknown = false → ∀ w ∈ ws, ∃ j : Nat, w = W64 (j : Int) ∧ j < xs.length)⌝ }} := by
-  iintro %Φ ⟨Hsl, Hown, Hok⟩ HΦ
-  unfold doPrintf
+  wp_start as ⟨Hsl, Hown, Hok⟩
   wp_auto
   ihave %Hxlen := ownSlice_len $$ Hsl
   icases bytesOwn_ty dqb B xs $$ Hown with ⟨Hown, %HBty⟩
@@ -426,7 +427,7 @@ theorem wp_doPrintfB (B : GoInterface → Option Lent) (dqb : DFrac) (format : G
               wp_auto
               wp_apply (wp_visitRest B dqb format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
                 $$ [$Hsl $Hown $Hargs] as %wsl %unk ⟨Hsl, Hown, %ws, Hws, %Hvr⟩
-              wp_apply wp_arbitraryString as %junk -
+              wp_apply (wp_chooseString wp_ChooseUint64) as %junk -
               wp_for_post
               iapply HΦ
               iframe
@@ -475,7 +476,7 @@ theorem wp_doPrintfB (B : GoInterface → Option Lent) (dqb : DFrac) (format : G
               wp_auto
               wp_apply (wp_visitRest B dqb format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
                 $$ [$Hsl $Hown $Hargs] as %wsl %unk ⟨Hsl, Hown, %ws, Hws, %Hvr⟩
-              wp_apply wp_arbitraryString as %junk -
+              wp_apply (wp_chooseString wp_ChooseUint64) as %junk -
               wp_for_post
               iapply HΦ
               iframe
@@ -523,7 +524,7 @@ theorem wp_doPrintfB (B : GoInterface → Option Lent) (dqb : DFrac) (format : G
             try wp_auto
             wp_apply (wp_visitRest B dqb format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
               $$ [$Hsl $Hown $Hargs] as %wsl %unk ⟨Hsl, Hown, %ws, Hws, %Hvr⟩
-            wp_apply wp_arbitraryString as %junk -
+            wp_apply (wp_chooseString wp_ChooseUint64) as %junk -
             wp_for_post
             iapply HΦ
             iframe
@@ -569,7 +570,7 @@ theorem wp_doPrintfB (B : GoInterface → Option Lent) (dqb : DFrac) (format : G
           · try wp_auto
             wp_apply (wp_visitRest B dqb format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
               $$ [$Hsl $Hown $Hargs] as %wsl %unk ⟨Hsl, Hown, %ws, Hws, %Hvr⟩
-            wp_apply wp_arbitraryString as %junk -
+            wp_apply (wp_chooseString wp_ChooseUint64) as %junk -
             wp_for_post
             iapply HΦ
             iframe
@@ -593,7 +594,7 @@ theorem wp_doPrintfB (B : GoInterface → Option Lent) (dqb : DFrac) (format : G
             · wp_auto
               wp_apply (wp_visitRest B dqb format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
                 $$ [$Hsl $Hown $Hargs] as %wsl %unk ⟨Hsl, Hown, %ws, Hws, %Hvr⟩
-              wp_apply wp_arbitraryString as %junk -
+              wp_apply (wp_chooseString wp_ChooseUint64) as %junk -
               wp_for_post
               iapply HΦ
               iframe
@@ -612,7 +613,7 @@ theorem wp_doPrintfB (B : GoInterface → Option Lent) (dqb : DFrac) (format : G
           try wp_auto
           wp_apply (wp_visitRest B dqb format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
             $$ [$Hsl $Hown $Hargs] as %wsl %unk ⟨Hsl, Hown, %ws, Hws, %Hvr⟩
-          wp_apply wp_arbitraryString as %junk -
+          wp_apply (wp_chooseString wp_ChooseUint64) as %junk -
           wp_for_post
           iapply HΦ
           iframe
@@ -658,7 +659,7 @@ theorem wp_doPrintfB (B : GoInterface → Option Lent) (dqb : DFrac) (format : G
     · -- arguments are left: under `%v`
       wp_apply (wp_visitRest B dqb format n sl xs dq k wrapErrs ⟨Hn.1, by word⟩ Hflen' Hk)
         $$ [$Hsl $Hown $Hargs] as %wsl %unk ⟨Hsl, Hown, %ws, Hws, %Hvr⟩
-      wp_apply wp_arbitraryString as %junk -
+      wp_apply (wp_chooseString wp_ChooseUint64) as %junk -
       iapply HΦ
       iframe
       ipureintro
@@ -690,10 +691,12 @@ theorem wp_doPrintfB (B : GoInterface → Option Lent) (dqb : DFrac) (format : G
 under the verbs of its mode, the formatted string (`SprintfOut`), after the calls Go makes of the
 arguments' methods; the arguments' slice comes back; and the arguments of the `%w` directives, unless
 the model gave up (`unknown`) at a directive `fmtDirectives` refuses, every argument being `ArgWf`. -/
-theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (dq : DFrac)
+theorem wp_doPrintf
+    (wp_ChooseUint64 : internal.gomodel.ChooseUint64.spec (GF := GF) (hG := hG))
+    (format : GoString) (sl : GoSlice) (xs : List GoInterface) (dq : DFrac)
     (wrapErrs : Bool) :
     {{ sl ↦*{dq} xs ∗ argsOk (GF := GF) (modeVerbs wrapErrs) format xs }}
-      (App (App (App (Val doPrintf) (Val #format)) (Val #sl)) (Val #wrapErrs))
+      (App (App (App (Val (@! doPrintf)) (Val #format)) (Val #sl)) (Val #wrapErrs))
     {{ (s : GoString) (wsl : GoSlice) (unknown : Bool), RET (PairV (PairV #s #wsl) #unknown);
         sl ↦*{dq} xs ∗ ⌜SprintfOut format xs s⌝ ∗ ∃ ws : List w64, wsl ↦* ws ∗
         ⌜(unknown = true → ArgsWf xs ∧ fmtDirectives format = none) ∧
@@ -703,7 +706,7 @@ theorem wp_doPrintf (format : GoString) (sl : GoSlice) (xs : List GoInterface) (
   iintro %Φ ⟨Hsl, Hok⟩ HΦ
   ihave Hown := bytesOwn_none (GF := GF) (DFrac.own 1) xs
   ihave #HokB := argsOkB_of_argsOk (GF := GF) (fun _ => none) _ _ _ $$ Hok
-  wp_apply (wp_doPrintfB (fun _ => none) (DFrac.own 1) format sl xs dq wrapErrs) $$ [$Hsl $Hown $HokB]
+  wp_apply (wp_doPrintfB wp_ChooseUint64 (fun _ => none) (DFrac.own 1) format sl xs dq wrapErrs) $$ [$Hsl $Hown $HokB]
     as %s %wsl %unk ⟨Hsl, -, %Hs, Hws⟩
   iapply HΦ
   iframe

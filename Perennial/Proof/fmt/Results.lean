@@ -1,9 +1,9 @@
 /-
-Results of `fmt` derived from the linked ones: `Sprintf` without method arguments
-(`fmt.wp_Sprintf_render`) and of `%016x-%016x.wal` (`fmt.wp_Sprintf_walName`); the specs of the
-trusted models of `Errorf` and `Printf` for arguments that are all `nil` or `ArgWf`
-(`fmt.ArgsWf`), the statements they had before the model called the arguments' methods (2026-11),
-for the callers that pass no other argument.
+Results of `fmt` derived from the linked ones: `Fprintf` with the contents of its `[]byte` and
+`[]string` arguments lent (`fmt.wp_Fprintf_bytes`); `Sprintf` without method arguments
+(`fmt.wp_Sprintf_render`) and of `%016x-%016x.wal` (`fmt.wp_Sprintf_walName`); the specs of
+`Errorf` and `Printf` (which format with the Go model's printer, `goose/model/overlay/fmt`) for
+arguments that are all `nil` or `ArgWf` (`fmt.ArgsWf`), for the callers that pass no other argument.
 -/
 module
 
@@ -25,6 +25,53 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
+
+/-- `fmt.Fprintf(w, format, args...)` with the contents of the `[]byte` and `[]string` arguments `B`
+names lent: as `fmt.Fprintf.spec`, the formatted `s` with `SprintfOutB B format args s`; the lent
+contents come back. -/
+theorem fmt.wp_Fprintf_bytes :
+    ∀ (B : GoInterface → Option fmt.Lent) (dqb : DFrac) (w : GoInterface) (format : GoString)
+      (args_sl : GoSlice) (xs : List GoInterface) (dq : DFrac) (P : IProp GF)
+      (Q : GoString → w64 → GoInterface → IProp GF),
+    {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ args_sl ↦*{dq} xs ∗ fmt.bytesOwn dqb B xs ∗
+        fmt.argsOkB B fmt.methodVerbs format xs ∗ P ∗
+        ∃ ii, ⌜w = interface.ok ii⌝ ∗ fmt.writeSpec ii P Q }}
+      (App (App (App (Val (@! fmt.Fprintf)) (Val #w)) (Val #format)) (Val #args_sl))
+    {{ (n : w64) (err : GoInterface), RET (PairV #n #err); args_sl ↦*{dq} xs ∗
+        fmt.bytesOwn dqb B xs ∗ ∃ s : GoString, ⌜fmt.SprintfOutB B format xs s⌝ ∗ Q s n err }} := by
+  intro B dqb w format args_sl xs dq P Q
+  wp_start as ⟨Hsl, Hown, Hok, HP, %ii, %Hw, HW⟩
+  subst Hw
+  wp_auto
+  wp_apply fmt.wp_newPrinter as %p Hp
+  have hdo := fmt.wp_doPrintfB internal.gomodel.wp_ChooseUint64 B dqb format args_sl xs dq false
+  rw [fmt.modeVerbs_false] at hdo
+  wp_apply hdo $$ [$Hsl $Hown $Hok] as %s %wsl %unk ⟨Hsl, Hown, %Hs, -⟩
+  wp_auto
+  unfold fmt.isPrinterAny fmt.isPrinter fmt.isPrinterA
+  icases Hp with ⟨%hnn, %F, %wid, %prec, %x', Hb, Hrest⟩
+  wp_apply fmt.buffer.wp_writeString $$ Hb as Hb
+  unfold fmt.bufferOwn
+  icases Hb with ⟨%sl, Hb, Hbs, Hcap⟩
+  wp_auto
+  wp_bind (App (Val #(methods ii.ty go!"Write" ii.v)) (Val #sl))
+  iunfold fmt.writeSpec at HW
+  iapply HW $$ HP Hbs
+  inext
+  iintro %n %err Hbs HQ
+  wp_auto
+  wp_apply fmt.pp.wp_free p ([] ++ s) $$ [Hb Hbs Hcap Hrest]
+  · iframe
+    unfold fmt.isPrinterAny fmt.isPrinter fmt.isPrinterA fmt.bufferOwn
+    isplitr
+    · ipureintro; exact hnn
+    iexists F, wid, prec, x'
+    iframe
+  wp_auto
+  iapply HΦ
+  iframe
+  ipureintro
+  exact Hs
 
 /-- `fmt.Sprintf` without method arguments returns `render ps args` (`fmt.Out.eq_render`). -/
 theorem fmt.wp_Sprintf_render :

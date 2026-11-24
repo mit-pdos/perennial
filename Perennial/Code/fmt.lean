@@ -5141,37 +5141,7 @@ noncomputable def notModelled.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.Stuck []))) (Val #())) (Val #()))))
   (Val #())))
 
-/-- kindIs[T](x): whether x's dynamic type has T's underlying type (the second result of
-    TypeAssertUnderlying2 T).
-
-    go: printmodel.go:17:6 -/
-noncomputable def kindIs.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
-  (LamV "x"
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Seq (App (Val exceptionDo)
-  (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (Var "x"))
-  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))
-  (App (App (Val (GoInstruction (FuncResolve underlyingAs [T]))) (Val #())) (Var "$a0")))
-  (Let "$ret0" (Fst (Var "__p"))
-  (Let "$ret1" (Snd (Var "__p"))
-  (Let "$r0" (Var "$ret0")
-  (Let "$r1" (Var "$ret1")
-  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
-  (App (Val doExecute)
-  (Var "$r0")))))))))))
-  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
-
-/-- go: printmodel.go:22:6 -/
+/-- go: printmodel.go:26:6 -/
 noncomputable def intVerb.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "format"
   (Lam "i"
@@ -5257,7 +5227,7 @@ noncomputable def intVerb.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))))))
   (Pair (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.int))) (Var "$res1"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res2")))))))))
 
-/-- go: printmodel.go:40:6 -/
+/-- go: printmodel.go:44:6 -/
 noncomputable def intArg.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -5540,7 +5510,7 @@ noncomputable def intArg.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "v") (Var "$r0"))))))))))))))))
   (Pair (Pair (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res1"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res2"))))))))
 
-/-- go: printmodel.go:71:6 -/
+/-- go: printmodel.go:75:6 -/
 noncomputable def namedIntArg.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -5923,7 +5893,7 @@ noncomputable def namedIntArg.impl [GooseExts] [GoGlobalContext] : val :=
   (Var "$r0"))))))))))))
   (Pair (Pair (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res1"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res2"))))))))
 
-/-- go: printmodel.go:111:6 -/
+/-- go: printmodel.go:115:6 -/
 noncomputable def anyIntArg.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -5990,7 +5960,7 @@ noncomputable def anyIntArg.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "neg") (Var "$r0")))))))))))))))))
   (Pair (Pair (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res1"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res2"))))))))
 
-/-- go: printmodel.go:119:6 -/
+/-- go: printmodel.go:123:6 -/
 noncomputable def formatInt.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "neg"
   (Lam "mag"
@@ -6052,7 +6022,7 @@ noncomputable def formatInt.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))))))))
   (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")))))))
 
-/-- go: printmodel.go:140:6 -/
+/-- go: printmodel.go:144:6 -/
 noncomputable def formatHex.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "neg"
   (Lam "mag"
@@ -6110,7 +6080,7 @@ noncomputable def formatHex.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))))
   (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
 
-/-- go: printmodel.go:161:6 -/
+/-- go: printmodel.go:165:6 -/
 noncomputable def strArg.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
@@ -6211,7 +6181,7 @@ noncomputable def strArg.impl [GooseExts] [GoGlobalContext] : val :=
   (Var "$r0"))))))))))))
   (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res1")))))))
 
-/-- go: printmodel.go:174:6 -/
+/-- go: printmodel.go:178:6 -/
 noncomputable def formatArg.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "format"
   (Lam "i"
@@ -6449,7 +6419,7 @@ noncomputable def formatArg.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- hexNibble: the hexadecimal digit of d (below 16), lowercase or uppercase.
 
-    go: printmodel.go:203:6 -/
+    go: printmodel.go:207:6 -/
 noncomputable def hexNibble.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "d"
   (Lam "upper"
@@ -6489,7 +6459,7 @@ noncomputable def hexNibble.impl [GooseExts] [GoGlobalContext] : val :=
     \\, the bytes from 0x20 to 0x7E themselves, the escapes \a \b \f \n \r \t \v, and \xNN for the
     other control bytes and 0x7F. (Of a byte from 0x80 it gives \xNN too; quoteBytes never asks.)
 
-    go: printmodel.go:216:6 -/
+    go: printmodel.go:220:6 -/
 noncomputable def quoteByte.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "c"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
@@ -6609,7 +6579,7 @@ noncomputable def quoteByte.impl [GooseExts] [GoGlobalContext] : val :=
     table (IsPrint is true exactly from 0x20 to 0x7E). ok is false when a byte is not ASCII, where
     strconv decodes UTF-8 and consults its printable-rune tables.
 
-    go: printmodel.go:251:6 -/
+    go: printmodel.go:255:6 -/
 noncomputable def quoteBytes.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
@@ -6665,7 +6635,7 @@ noncomputable def quoteBytes.impl [GooseExts] [GoGlobalContext] : val :=
 /-- decBytes: %v and %d of b, as fmtBytes prints them: its bytes in decimal, separated by spaces,
     in brackets.
 
-    go: printmodel.go:264:6 -/
+    go: printmodel.go:268:6 -/
 noncomputable def decBytes.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
@@ -6710,7 +6680,7 @@ noncomputable def decBytes.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- hexBytes: %x (upper false) and %X of b, as fmtBytes prints them: two hexadecimal digits a byte.
 
-    go: printmodel.go:276:6 -/
+    go: printmodel.go:280:6 -/
 noncomputable def hexBytes.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "upper"
@@ -6750,7 +6720,7 @@ noncomputable def hexBytes.impl [GooseExts] [GoGlobalContext] : val :=
 /-- joinStrings: %v and %s of ss, as printValue prints a []string: its elements (each by fmtS, the
     string itself), separated by spaces, in brackets.
 
-    go: printmodel.go:286:6 -/
+    go: printmodel.go:290:6 -/
 noncomputable def joinStrings.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "ss"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
@@ -6797,7 +6767,7 @@ noncomputable def joinStrings.impl [GooseExts] [GoGlobalContext] : val :=
     to call), if the directive is %s or %v without flags, width or precision (joinStrings). It reads
     every byte or element of x then, as Go does, and nothing otherwise.
 
-    go: printmodel.go:303:6 -/
+    go: printmodel.go:307:6 -/
 noncomputable def formatSlice.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "format"
   (Lam "i"
@@ -7060,7 +7030,7 @@ noncomputable def formatSlice.impl [GooseExts] [GoGlobalContext] : val :=
     not complex64, complex128 or []byte, which the model does not follow, nor reflect.Value, which
     printArg unwraps: visitArg is stuck on a Stringer with a CanInterface() bool method, as it has).
 
-    go: printmodel.go:344:6 -/
+    go: printmodel.go:348:6 -/
 noncomputable def isBasic.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -7090,7 +7060,7 @@ noncomputable def isBasic.impl [GooseExts] [GoGlobalContext] : val :=
 /-- isIntKind: whether x's dynamic type has an integer kind (one of Go's ten integer types as its
     underlying type; not uintptr).
 
-    go: printmodel.go:355:6 -/
+    go: printmodel.go:359:6 -/
 noncomputable def isIntKind.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -7116,7 +7086,7 @@ noncomputable def isIntKind.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- isStrKind: whether x's dynamic type has kind String.
 
-    go: printmodel.go:362:6 -/
+    go: printmodel.go:366:6 -/
 noncomputable def isStrKind.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -7134,7 +7104,7 @@ noncomputable def isStrKind.impl [GooseExts] [GoGlobalContext] : val :=
 /-- hasFmtMethod: whether x implements one of the interfaces handleMethods consults (Formatter,
     GoStringer, error, Stringer).
 
-    go: printmodel.go:368:6 -/
+    go: printmodel.go:372:6 -/
 noncomputable def hasFmtMethod.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -7240,7 +7210,7 @@ noncomputable def hasFmtMethod.impl [GooseExts] [GoGlobalContext] : val :=
     memory: nil, a predeclared basic type, or a type of integer or string kind that implements none
     of handleMethods' interfaces.
 
-    go: printmodel.go:387:6 -/
+    go: printmodel.go:391:6 -/
 noncomputable def inert.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -7300,7 +7270,7 @@ noncomputable def inert.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- allInert: whether every argument is inert.
 
-    go: printmodel.go:404:6 -/
+    go: printmodel.go:408:6 -/
 noncomputable def allInert.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "a"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -7343,7 +7313,7 @@ noncomputable def allInert.impl [GooseExts] [GoGlobalContext] : val :=
     ok is false where the model does not follow Go: a '*' width or precision, an argument index
     '[', or a width or precision of more than 7 digits.
 
-    go: printmodel.go:419:6 -/
+    go: printmodel.go:423:6 -/
 noncomputable def parseDirective.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "format"
   (Lam "i"
@@ -7517,7 +7487,7 @@ noncomputable def parseDirective.impl [GooseExts] [GoGlobalContext] : val :=
 /-- visitKind: printValue of x by its kind, without its methods: the model follows it for the
     integer and string kinds, which read no memory, and is not defined for the others.
 
-    go: printmodel.go:464:6 -/
+    go: printmodel.go:468:6 -/
 noncomputable def visitKind.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Seq (App (Val exceptionDo)
@@ -7546,7 +7516,7 @@ noncomputable def visitKind.impl [GooseExts] [GoGlobalContext] : val :=
     recovers a panic of the method and prints it ("%!v(PANIC=Error method: ...)"), then goes on; the
     model does not follow that: it is stuck there (notModelled), never panicking where Go recovers.
 
-    go: printmodel.go:479:6 -/
+    go: printmodel.go:483:6 -/
 noncomputable def callError.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "e"
   (Seq (App (Val wrapDeferRecover)
@@ -7574,7 +7544,7 @@ noncomputable def callError.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- callString calls s.String(), as callError calls Error().
 
-    go: printmodel.go:489:6 -/
+    go: printmodel.go:493:6 -/
 noncomputable def callString.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Seq (App (Val wrapDeferRecover)
@@ -7600,7 +7570,7 @@ noncomputable def callString.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Var "$oldf") (Val #()))))))))))))))
   (Val #())))
 
-/-- go: printmodel.go:498:6 -/
+/-- go: printmodel.go:502:6 -/
 noncomputable def visitArg.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "verb"
@@ -7819,7 +7789,7 @@ noncomputable def visitArg.impl [GooseExts] [GoGlobalContext] : val :=
     %!(EXTRA ...), under %v). It returns the indices of the arguments of the %w directives, and
     whether it gave up at a directive the model does not follow, every argument being inert.
 
-    go: printmodel.go:550:6 -/
+    go: printmodel.go:554:6 -/
 noncomputable def visitRest.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "format"
   (Lam "i"
@@ -7963,7 +7933,7 @@ noncomputable def visitRest.impl [GooseExts] [GoGlobalContext] : val :=
     the first directive it does not format or whose argument is not inert; from there the output is
     arbitrary, and visitRest makes the calls Go makes.
 
-    go: printmodel.go:588:6 -/
+    go: printmodel.go:592:6 -/
 noncomputable def doPrintf.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "format"
   (Lam "a"
@@ -8184,7 +8154,7 @@ noncomputable def doPrintf.impl [GooseExts] [GoGlobalContext] : val :=
     follow: parseDirective refuses '['). Where doPrintf gave up on a directive it does not follow,
     every argument being inert (none is an error), the error is any of the three, holding no error.
 
-    go: printmodel.go:638:6 -/
+    go: printmodel.go:642:6 -/
 noncomputable def errorfResult.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "wrapped"

@@ -133,11 +133,10 @@ theorem printArgOk_bytesBuffer [bytes.Assumptions]
 /-- The helper `fmt.callError` with the method's spec needing `R`. -/
 theorem wp_callErrorR (ii : GoInterfaceOk) (R : IProp GF) :
     {{ stringMethodSpecR (GF := GF) ii go!"Error" R ∗ R }}
-      (App (Val callError) (Val #(interface.ok ii)))
+      (App (Val (@! callError)) (Val #(interface.ok ii)))
     {{ RET #(); R }} := by
-  iintro %Φ ⟨#HE, HR⟩ HΦ
-  unfold callError
-  wp_auto
+  wp_start as ⟨#HE, HR⟩
+  try wp_auto
   wp_apply wp_with_defer_recover
   iintro %defer %pnc Hdefer Hpnc
   wp_auto
@@ -154,11 +153,10 @@ theorem wp_callErrorR (ii : GoInterfaceOk) (R : IProp GF) :
 /-- The helper `fmt.callString` with the method's spec needing `R`. -/
 theorem wp_callStringR (ii : GoInterfaceOk) (R : IProp GF) :
     {{ stringMethodSpecR (GF := GF) ii go!"String" R ∗ R }}
-      (App (Val callString) (Val #(interface.ok ii)))
+      (App (Val (@! callString)) (Val #(interface.ok ii)))
     {{ RET #(); R }} := by
-  iintro %Φ ⟨#HS, HR⟩ HΦ
-  unfold callString
-  wp_auto
+  wp_start as ⟨#HS, HR⟩
+  try wp_auto
   wp_apply wp_with_defer_recover
   iintro %defer %pnc Hdefer Hpnc
   wp_auto
@@ -178,7 +176,7 @@ set_option maxHeartbeats 4000000 in
 nothing), and returns `R`. -/
 theorem wp_visitArg_print (x : GoInterface) (R : IProp GF) :
     {{ printArgOk (GF := GF) R x ∗ R }}
-      (App (App (App (App (Val visitArg) (Val #x)) (Val #(W8 118))) (Val #false)) (Val #false))
+      (App (App (App (App (Val (@! visitArg)) (Val #x)) (Val #(W8 118))) (Val #false)) (Val #false))
     {{ RET #(); R }} := by
   cases x with
   | nil =>
@@ -193,8 +191,9 @@ theorem wp_visitArg_print (x : GoInterface) (R : IProp GF) :
     · wp_apply (wp_visitArg_argOk (GF := GF) (.ok ii) (W8 118) false false (by simp)) $$ []
       · unfold argOkAt; ileft; ipureintro; exact Hwf
       iapply HΦ $$ HR
-    · unfold visitArg
-      wp_auto
+    · wp_func_call
+      wp_call
+      try wp_auto
       wp_apply wp_isBasic as %b %Hb
       obtain ⟨hF, hE⟩ := hE
       have hnB := ne_SliceType_of_method go.byte hE
@@ -211,8 +210,9 @@ theorem wp_visitArg_print (x : GoInterface) (R : IProp GF) :
       all_goals first
         | (iapply HΦ; iexact HR)
         | (exfalso; simp_all; done)
-    · unfold visitArg
-      wp_auto
+    · wp_func_call
+      wp_call
+      try wp_auto
       wp_apply wp_isBasic as %b %Hb
       obtain ⟨hF, hE, hS, hR⟩ := hS
       have hnB := ne_SliceType_of_method go.byte hS
