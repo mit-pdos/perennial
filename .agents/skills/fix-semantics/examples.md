@@ -1517,3 +1517,30 @@ refinement: functions with no `recover()` get no second version and translate ex
 The owner then chose to emit only `F'deferred` (option (b), 2026-11-23), instead of also a stuck
 ordinary `F`, on the condition that no proof in Perennial or etcd-grove uses the ordinary `F` of a
 recovering function; none does.
+## Case 47 — ACCEPTED: an index read of a slice passes `IndexRef` its operands in order (branch `fix-index-slice-operands`, issue #643)
+
+**Symptom.** Incomplete (stuck where Go runs). `index_slice` stepped `⟦Index (go.SliceType e), (#s, #i)⟧`
+to `GoLoad e (IndexRef (go.SliceType e) (#i, #s))`, and no rule takes `IndexRef` of a slice type with
+the index first (`index_ref_slice` takes `(#s, #i)`), so the read stopped there. Goose emits `Index`
+on a slice only when the operand's type is a type parameter (a read of a slice-typed operand is
+`IndexRef` and a load), so only generic code instantiated at a slice type met it. Reported from a
+proof of `unicode/utf8.Valid`.
+
+**Witness.**
+
+```go
+func first[S ~[]byte | ~string](s S) byte { return s[0] }
+// first([]byte{1}): Go returns 1; the model was stuck.
+```
+
+**Taken.** The operands in `index_slice`'s right-hand side swapped to `(#s, #i)`. Cost: 1 changed
+semantics line, 0 new rules, 0 goose changes. Semantics tests `testIndexGenericBytes`,
+`testIndexGenericNamedBytes` (a named byte-slice type) and `testIndexGenericString` (the string
+instantiation, which never used the rule), all proved; the two slice proofs do not go through with
+the operands reversed.
+
+**Siblings.** None: `index_array`, `string_index`, `index_ref_array` and every use of `IndexRef` in
+`Golang/Defn` take the container first.
+
+**Why.** The user, on the issue's proposed one-line diff: "I think [it] is valid issue. Fix it in a
+branch, so I can make a PR. Also add a regression test for it."
