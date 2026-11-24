@@ -27,7 +27,7 @@ variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.se
 abbrev github_com.mit_pdos.perennial.goose.testdata.examples.semantics.catchTop'deferred.spec : Prop :=
   ∀ (res pnc : Loc) (x w : w64),
     {{ (res ↦ x : IProp GF) ∗ pnc ↦ interface.mkOk go.uint64 #w }}
-      (App (App (Val (@! catchTop'deferred)) (Val #pnc)) (Val #res))
+      (App (App (Val (@! deferred'catchTop)) (Val #pnc)) (Val #res))
     {{ RET #(); res ↦ w ∗ pnc ↦ (interface.nil : GoInterface) }}
 
 end spec
