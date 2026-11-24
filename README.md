@@ -303,7 +303,15 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `crypto/rand.Reader` (stores a value of Go's dynamic type with a placeholder
   inside; needs `crypto/internal/rand` and `drbg`, whose init runs a FIPS
   self-test). (A fifth, `crypto/ed25519.cryptocustomrand`, is now a skip
-  entry: no translated code reads it.) The no-op for `math.useFMA` (a CPU
+  entry: no translated code reads it.) A function of the same standing (R2
+  REWORK, accepted 2026-11-23 to give `math/rand`'s top-level functions
+  proved specs): `math/rand.globalRand`, Go's body with its
+  `randautoseed.Value() == "0"` test (a `GODEBUG` read) replaced by the
+  default outcome, the generator over the runtime's source; its docstring
+  argues that the other outcome's results are among the model's. The fix
+  translates `internal/godebug` (as for `asynctimerchan`) and the seeded path
+  it then reaches (`lockedSource`, `rngSource` and its seeding over
+  `rngCooked`). The no-op for `math.useFMA` (a CPU
   feature the runtime detects) models irreducible behaviour;
   `errors.errorType` and `math/big.hasADX`, the same kind, are skip entries. Each model's docstring says why it is
   faithful.
