@@ -71,6 +71,9 @@ func loadTemplates() *template.Template {
 	funcs := template.FuncMap{
 		"indent": indent,
 		"leanq":  leanq,
+		// the binders of a type parameter p: its go.GoType and its value type
+		"tpdesc": func(p string) string { return glang.LeanIdent(p) },
+		"tpval":  func(p string) string { return glang.LeanQuoteComponent(p + "'") },
 		"trimgo": func(s string) string { return strings.TrimPrefix(s, "go!") },
 	}
 	tmpl, err := tmpl.Funcs(funcs).ParseFS(tmplFS, "*.tmpl")

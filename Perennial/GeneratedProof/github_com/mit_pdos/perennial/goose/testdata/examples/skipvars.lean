@@ -45,11 +45,11 @@ noncomputable instance T_access_load_n (l : Loc) (v : github_com.mit_pdos.perenn
  by
   solve_pointsto_access_struct
 
-noncomputable instance T_access_store_n (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.skipvars.T) (n' : w64) :
+noncomputable instance T_access_store_n (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.skipvars.T) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.skipvars.T go!"n" l) v.n' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.skipvars.T go!"n" l) n' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with n' := n' } : github_com.mit_pdos.perennial.goose.testdata.examples.skipvars.T) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.skipvars.T go!"n" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with n' := y } : github_com.mit_pdos.perennial.goose.testdata.examples.skipvars.T) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

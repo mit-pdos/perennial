@@ -28,7 +28,7 @@ abbrev crypto.rand.Int.spec : Prop :=
   ∀ (rdr : GoInterface) (max : Loc) (mz : _root_.Int), 0 < mz ∧ mz < 2 ^ 63 →
     {{ isPkgInit (PROP := IProp GF) pkg_id.crypto.rand ∗
        globalAddr Reader ↦□ rdr ∗ math.big.ownInt max mz }}
-      (App (App (Val (@! Int')) (Val #rdr)) (Val #max))
+      (App (App (Val (@! Int'')) (Val #rdr)) (Val #max))
     {{ (v : Loc) (z : _root_.Int), RET (PairV #v #interface.nil);
        math.big.ownInt max mz ∗ math.big.ownInt v z ∗ ⌜0 ≤ z ∧ z < mz⌝ }}
 

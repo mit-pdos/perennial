@@ -23,7 +23,7 @@ func indent(spaces int, s string) string {
 // FuncImpl is the name of the GooseLang implementation of a function (the
 // function's own name is a GoString naming it).
 func FuncImpl(name string) string {
-	return name + ".impl"
+	return GoName(name) + ".impl"
 }
 
 type Expr interface {
@@ -32,75 +32,124 @@ type Expr interface {
 	Lean(m LeanMode) string
 }
 
-// primedNames are names that a Go identifier is renamed away from by adding a
-// "'" suffix (see ToIdent): Lean keywords and framework names that the
-// generated code refers to unqualified (see also LeanShadowNames).
-var primedNames = map[string]bool{
-	"Set":                 true,
-	"Type":                true,
-	"is":                  true,
-	"as":                  true,
-	"mod":                 true,
-	"match":               true,
-	"lookup":              true,
-	"list":                true,
-	"True":                true,
-	"False":               true,
-	"val":                 true,
-	"go_string":           true,
-	"deferType":           true,
-	"GoAlloc":             true,
-	"GoZeroVal":           true,
-	"UntypedNil":          true,
-	"GlobalVarAddr":       true,
-	"None":                true,
-	"Some":                true,
-	"KeyedElement":        true,
-	"CompositeLiteral":    true,
-	"LiteralValue":        true,
-	"ElementLiteralValue": true,
-	"KeyField":            true,
-	"KeyExpression":       true,
-	"KeyInteger":          true,
-	"FuncResolve":         true,
-	"MethodResolve":       true,
-	"StructFieldGet":      true,
-	"StructFieldRef":      true,
-	"FullSlice":           true,
-	"Slice":               true,
-	"IndexRef":            true,
-	"Index":               true,
-	"TypeAssert":          true,
-	"TypeAssert2":         true,
-	"Convert":             true,
-	"SelectStmt":          true,
-	"Fst":                 true,
-	"Snd":                 true,
-	"W64":                 true,
-	"W32":                 true,
-	"W16":                 true,
-	"W8":                  true,
-	"w64":                 true,
-	"w32":                 true,
-	"w16":                 true,
-	"w8":                  true,
+// The Lean names of Go identifiers. Each kind of Go name has one rule:
+//
+//   - a struct field F is the projection F' (see recordProjection), and the
+//     value type of a type parameter P is the binder P' (lean_types.go);
+//   - every other Go name X (a type, function, global, method, or the
+//     go.GoType binder of a type parameter) is GoName(X): X itself, or X''
+//     when X is reserved (see reservedName).
+//
+// Names that are not plain Lean identifiers (Lean keywords such as `Type` or
+// `def`, non-ASCII names) are then written in guillemets (LeanQuote), which
+// does not change the name: Go `type Type int64` is `«Type»`, its field
+// `Type` is `Type'`.
+//
+// Why this is collision-free: a field projection or value-type binder ends in
+// exactly one "'" after a Go identifier, and no other Go-derived name does
+// (Go identifiers have no "'", and reserved ones get two), so a projection
+// S.F' in namespace S can never capture a type, function or global, and the
+// binders P' are distinct from the fields of a structure (whose earlier fields
+// are in scope in its later fields' types) only because a model structure
+// names its parameters P (lean_types.go). Every other name that Lean or goose
+// puts next to Go names, or that the output references unqualified, is
+// reserved, so no Go name takes it.
+
+// reservedNames are the Lean names a Go name (other than a field) must not
+// take; GoName renames such a Go name X to X”. A Lean declaration named
+// `A.b` is elaborated inside namespace A, so the names goose (and Lean)
+// declares under a Go name's namespace would capture a same-named Go name
+// referenced there; and a Go name in the package's namespace would capture a
+// same-named framework name the output refers to unqualified. reservedName
+// also covers the name shapes listed there.
+var reservedNames = map[string]bool{}
+
+func init() {
+	// framework names the Lean printer emits unqualified (GooseLang
+	// constructors and Golang/Defn definitions), and Lean names the generated
+	// code refers to unqualified
+	for _, w := range strings.Fields(`Val Var Rec App If Pair Fst Snd Fork Lam
+	Let Seq LamV RecV PairV LitV BAnon BNamed GoInstruction GoOp GoUnOp GoLoad
+	GoStore GoAlloc GoZeroVal FuncResolve MethodResolve StructFieldGet
+	StructFieldRef StructFieldSet GlobalVarAddr Index IndexRef Slice FullSlice
+	TypeAssert TypeAssert2 Convert CompositeLiteral SelectStmt LiteralValue
+	KeyedElement KeyField KeyInteger KeyExpression ElementExpression ElementLiteralValue
+	SelectStmtClauses CommClause SendCase RecvCase UntypedNil into_val
+	exception_seq do_execute do_return exception_do do_break do_continue do_for
+	wrap_defer deferType none some None Some W64 W32 W16 W8 w64 w32 w16 w8 Int Bool Unit
+	List go_string val loc slice array chan interface func pkg_id under
+	FuncUnfold MethodUnfold TypeRepr EqualsUnfold ZeroVal zero_val_def
+	PkgInfo GoEquals GoLt GoLe GoGt GoGe GoPlus GoSub GoMul GoDiv GoRemainder
+	GoAnd GoOr GoXor GoBitClear GoShiftl GoShiftr GoPos GoNeg GoNot GoComplement
+	struct_field_ref intoVal exceptionSeq doExecute doReturn exceptionDo doBreak
+	doContinue doFor catchBreak wrapDefer wrapDeferRecover recoverPanic GoString Loc zeroValDef structFieldRef
+	Set is mod lookup list True False`) {
+		reservedNames[w] = true
+	}
+	// the names goose declares under a Go name's namespace X: X.ty,
+	// X.underlying, X.fields, X.fieldsUnsealed, X.zero_val, X.TypeAssumptions
+	// (types), X.impl (functions, methods); the package's Assumptions class;
+	// the fixed members of the TypeAssumptions classes, which are in scope as
+	// locals in the later members' types
+	for _, w := range strings.Fields(`ty underlying fields fieldsUnsealed zero_val
+	TypeAssumptions impl Assumptions type_repr isUnderlying method_set ptr_method_set`) {
+		reservedNames[w] = true
+	}
+	// the names Lean declares under a structure or class X (X.mk, X.rec, ...)
+	// and the reserved names of a definition X (X.eq_def, X.eq_1, ...; see
+	// Lean.isReservedName), which name resolution finds like declarations
+	for _, w := range strings.Fields(`mk rec recOn casesOn noConfusion
+	noConfusionType ctorIdx _sizeOf_1 _sizeOf_inst eq_def eq_unfold fun_cases
+	congr_simp`) {
+		reservedNames[w] = true
+	}
+	// the binders and section variables of the generated code and proofs,
+	// which a type parameter's binder would shadow
+	for _, w := range strings.Fields(`x y l v dq hlc GF hG go_gctx sem sem_fn pre_sem`) {
+		reservedNames[w] = true
+	}
 }
 
-// ToIdent renames a (possibly qualified) identifier whose last component would
-// clash with a keyword or framework name, by adding a "'" suffix.
-func ToIdent(s string) string {
-	base := s
-	if i := strings.LastIndex(base, "."); i > 0 {
-		base = base[i+1:]
+// reservedName reports whether a Go name must be renamed by GoName: it is in
+// reservedNames or has the shape of a generated name: the members
+// get_F/set_F/M_unfold/ptr_M_unfold of a TypeAssumptions class and
+// T_instance/f_unfold/import_p_Assumption of an Assumptions class (in scope
+// as locals in the later members' types), the instances equals_unfold_T of
+// the package, and Lean's equation lemmas X.eq_<n>.
+func reservedName(x string) bool {
+	if strings.Contains(x, "'") {
+		// not a Go identifier: a generated name, or one GoName renamed
+		return false
 	}
-	if primedNames[base] || LeanShadowNames[base] {
-		return s + "'"
+	if reservedNames[x] {
+		return true
 	}
-	return s
+	for _, p := range []string{"get_", "set_", "import_", "equals_unfold_"} {
+		if strings.HasPrefix(x, p) {
+			return true
+		}
+	}
+	for _, sfx := range []string{"_unfold", "_instance", "_Assumption"} {
+		if strings.HasSuffix(x, sfx) {
+			return true
+		}
+	}
+	if n, ok := strings.CutPrefix(x, "eq_"); ok && n != "" && strings.Trim(n, "0123456789") == "" {
+		return true
+	}
+	return false
 }
 
-// TermIdent is a possibly qualified identifier of a Lean term (renamed away
-// from keywords, see ToIdent).
+// GoName is the Lean name of a Go identifier that is not a struct field: x,
+// or x” if x is reserved (see reservedName). It is idempotent.
+func GoName(x string) string {
+	if reservedName(x) {
+		return x + "''"
+	}
+	return x
+}
+
+// TermIdent is a possibly qualified identifier of a Lean term (see LeanIdent).
 type TermIdent string
 
 // VerbatimExpr is translated literally.
@@ -466,7 +515,7 @@ type Decl interface {
 
 // TypeMethod is the name of the GooseLang implementation of a method.
 func TypeMethod(typeName string, methodName string) string {
-	return fmt.Sprintf("%s.%s.impl", typeName, methodName)
+	return fmt.Sprintf("%s.%s.impl", GoName(typeName), methodName)
 }
 
 // These will not end up in `File.Decls`, they are put into `File.Imports` by `translatePackage`.

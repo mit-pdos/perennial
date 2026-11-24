@@ -35,10 +35,10 @@ noncomputable def Uint8.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] Uint8.ty
 
-noncomputable def Bool'.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+noncomputable def Bool''.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"internal/runtime/atomic.Bool" [])
 
-attribute [irreducible] Bool'.ty
+attribute [irreducible] Bool''.ty
 
 noncomputable def Uint32.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"internal/runtime/atomic.Uint32" [])
@@ -440,40 +440,40 @@ attribute [instance] Uint8.TypeAssumptions.type_repr
   Uint8.TypeAssumptions.method_set
   Uint8.TypeAssumptions.ptr_method_set
 
-structure Bool' [GooseExts] where
+structure Bool'' [GooseExts] where
   mk ::
   u' : Uint8
 
-noncomputable instance Bool'.zero_val [GooseExts] : ZeroVal Bool' :=
-  ⟨Bool'.mk zeroValDef⟩
+noncomputable instance Bool''.zero_val [GooseExts] : ZeroVal Bool'' :=
+  ⟨Bool''.mk zeroValDef⟩
 
-@[reducible] noncomputable def Bool.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Bool''.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"u" Uint8.ty)]
 
-@[irreducible] noncomputable def Bool.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  Bool.fieldsUnsealed
+@[irreducible] noncomputable def Bool''.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  Bool''.fieldsUnsealed
 
 noncomputable instance equals_unfold_Bool [GooseExts] [GoGlobalContext] :
-    EqualsUnfold Bool.fields Bool.fieldsUnsealed :=
-  ⟨by unfold Bool.fields; rfl⟩
+    EqualsUnfold Bool''.fields Bool''.fieldsUnsealed :=
+  ⟨by unfold Bool''.fields; rfl⟩
 
-@[reducible] noncomputable def Bool'.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Bool.fields)
+@[reducible] noncomputable def Bool''.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Bool''.fields)
 
-class Bool.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Bool'.underlying Bool'
-  underlying : go.UnderlyingDirectedEq Bool'.ty Bool'.underlying
-  get_u : ∀ (x : Bool'), go.IsGoStepPureDetTagged under (StructFieldGet Bool'.underlying go!"u") #x (Val #(x.u'))
-  set_u : ∀ (x : Bool') (y : Uint8), go.IsGoStepPureDetTagged under (StructFieldSet Bool'.underlying go!"u") (PairV #x #y) (Val #(({ x with u' := y } : Bool')))
-  method_set : go.MethodSetIs Bool'.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Bool'.ty) [(go!"Load", (some (go.signature.Signature [] false [go.bool]))), (go!"Store", (some (go.signature.Signature [go.bool] false [])))]
+class Bool''.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Bool''.underlying Bool''
+  underlying : go.UnderlyingDirectedEq Bool''.ty Bool''.underlying
+  get_u : ∀ (x : Bool''), go.IsGoStepPureDetTagged under (StructFieldGet Bool''.underlying go!"u") #x (Val #(x.u'))
+  set_u : ∀ (x : Bool'') (y : Uint8), go.IsGoStepPureDetTagged under (StructFieldSet Bool''.underlying go!"u") (PairV #x #y) (Val #(({ x with u' := y } : Bool'')))
+  method_set : go.MethodSetIs Bool''.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Bool''.ty) [(go!"Load", (some (go.signature.Signature [] false [go.bool]))), (go!"Store", (some (go.signature.Signature [go.bool] false [])))]
 
-attribute [instance] Bool.TypeAssumptions.type_repr
-  Bool.TypeAssumptions.underlying
-  Bool.TypeAssumptions.get_u
-  Bool.TypeAssumptions.set_u
-  Bool.TypeAssumptions.method_set
-  Bool.TypeAssumptions.ptr_method_set
+attribute [instance] Bool''.TypeAssumptions.type_repr
+  Bool''.TypeAssumptions.underlying
+  Bool''.TypeAssumptions.get_u
+  Bool''.TypeAssumptions.set_u
+  Bool''.TypeAssumptions.method_set
+  Bool''.TypeAssumptions.ptr_method_set
 
 structure Uint32 [GooseExts] where
   mk ::
@@ -719,7 +719,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Int32_instance : Int32.TypeAssumptions
   Int64_instance : Int64.TypeAssumptions
   Uint8_instance : Uint8.TypeAssumptions
-  Bool_instance : Bool.TypeAssumptions
+  Bool_instance : Bool''.TypeAssumptions
   Uint32_instance : Uint32.TypeAssumptions
   Uint64_instance : Uint64.TypeAssumptions
   Uintptr_instance : Uintptr.TypeAssumptions

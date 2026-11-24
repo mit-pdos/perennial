@@ -47,11 +47,11 @@ noncomputable instance siErrnoCode_access_load_Errno (l : Loc) (v : internal.sys
  by
   solve_pointsto_access_struct
 
-noncomputable instance siErrnoCode_access_store_Errno (l : Loc) (v : internal.syscall.unix.siErrnoCode) (Errno' : w32) :
+noncomputable instance siErrnoCode_access_store_Errno (l : Loc) (v : internal.syscall.unix.siErrnoCode) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.syscall.unix.siErrnoCode go!"Errno" l) v.Errno' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.syscall.unix.siErrnoCode go!"Errno" l) Errno' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Errno' := Errno' } : internal.syscall.unix.siErrnoCode) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.syscall.unix.siErrnoCode go!"Errno" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Errno' := y } : internal.syscall.unix.siErrnoCode) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -63,11 +63,11 @@ noncomputable instance siErrnoCode_access_load_Code (l : Loc) (v : internal.sysc
  by
   solve_pointsto_access_struct
 
-noncomputable instance siErrnoCode_access_store_Code (l : Loc) (v : internal.syscall.unix.siErrnoCode) (Code' : w32) :
+noncomputable instance siErrnoCode_access_store_Code (l : Loc) (v : internal.syscall.unix.siErrnoCode) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.syscall.unix.siErrnoCode go!"Code" l) v.Code' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.syscall.unix.siErrnoCode go!"Code" l) Code' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Code' := Code' } : internal.syscall.unix.siErrnoCode) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.syscall.unix.siErrnoCode go!"Code" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Code' := y } : internal.syscall.unix.siErrnoCode) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -109,11 +109,11 @@ noncomputable instance SiginfoChild_access_load_Signo (l : Loc) (v : internal.sy
  by
   solve_pointsto_access_struct
 
-noncomputable instance SiginfoChild_access_store_Signo (l : Loc) (v : internal.syscall.unix.SiginfoChild) (Signo' : w32) :
+noncomputable instance SiginfoChild_access_store_Signo (l : Loc) (v : internal.syscall.unix.SiginfoChild) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Signo" l) v.Signo' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Signo" l) Signo' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Signo' := Signo' } : internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Signo" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Signo' := y } : internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -125,11 +125,11 @@ noncomputable instance SiginfoChild_access_load_siErrnoCode (l : Loc) (v : inter
  by
   solve_pointsto_access_struct
 
-noncomputable instance SiginfoChild_access_store_siErrnoCode (l : Loc) (v : internal.syscall.unix.SiginfoChild) (siErrnoCode' : internal.syscall.unix.siErrnoCode) :
+noncomputable instance SiginfoChild_access_store_siErrnoCode (l : Loc) (v : internal.syscall.unix.SiginfoChild) (y : internal.syscall.unix.siErrnoCode) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"siErrnoCode" l) v.siErrnoCode' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"siErrnoCode" l) siErrnoCode' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with siErrnoCode' := siErrnoCode' } : internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"siErrnoCode" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with siErrnoCode' := y } : internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -141,11 +141,11 @@ noncomputable instance «SiginfoChild_access_load__#2» (l : Loc) (v : internal.
  by
   solve_pointsto_access_struct
 
-noncomputable instance «SiginfoChild_access_store__#2» (l : Loc) (v : internal.syscall.unix.SiginfoChild) («_#2'» : (GoArray w32 1)) :
+noncomputable instance «SiginfoChild_access_store__#2» (l : Loc) (v : internal.syscall.unix.SiginfoChild) (y : (GoArray w32 1)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"_#2" l) v.«_#2'» (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"_#2" l) «_#2'» (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#2'» := «_#2'» } : internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"_#2" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#2'» := y } : internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -157,11 +157,11 @@ noncomputable instance SiginfoChild_access_load_Pid (l : Loc) (v : internal.sysc
  by
   solve_pointsto_access_struct
 
-noncomputable instance SiginfoChild_access_store_Pid (l : Loc) (v : internal.syscall.unix.SiginfoChild) (Pid' : w32) :
+noncomputable instance SiginfoChild_access_store_Pid (l : Loc) (v : internal.syscall.unix.SiginfoChild) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Pid" l) v.Pid' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Pid" l) Pid' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Pid' := Pid' } : internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Pid" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Pid' := y } : internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -173,11 +173,11 @@ noncomputable instance SiginfoChild_access_load_Uid (l : Loc) (v : internal.sysc
  by
   solve_pointsto_access_struct
 
-noncomputable instance SiginfoChild_access_store_Uid (l : Loc) (v : internal.syscall.unix.SiginfoChild) (Uid' : w32) :
+noncomputable instance SiginfoChild_access_store_Uid (l : Loc) (v : internal.syscall.unix.SiginfoChild) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Uid" l) v.Uid' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Uid" l) Uid' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Uid' := Uid' } : internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Uid" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Uid' := y } : internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -189,11 +189,11 @@ noncomputable instance SiginfoChild_access_load_Status (l : Loc) (v : internal.s
  by
   solve_pointsto_access_struct
 
-noncomputable instance SiginfoChild_access_store_Status (l : Loc) (v : internal.syscall.unix.SiginfoChild) (Status' : w32) :
+noncomputable instance SiginfoChild_access_store_Status (l : Loc) (v : internal.syscall.unix.SiginfoChild) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Status" l) v.Status' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Status" l) Status' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Status' := Status' } : internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"Status" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Status' := y } : internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -205,11 +205,11 @@ noncomputable instance «SiginfoChild_access_load__#6» (l : Loc) (v : internal.
  by
   solve_pointsto_access_struct
 
-noncomputable instance «SiginfoChild_access_store__#6» (l : Loc) (v : internal.syscall.unix.SiginfoChild) («_#6'» : (GoArray w8 100)) :
+noncomputable instance «SiginfoChild_access_store__#6» (l : Loc) (v : internal.syscall.unix.SiginfoChild) (y : (GoArray w8 100)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"_#6" l) v.«_#6'» (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"_#6" l) «_#6'» (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#6'» := «_#6'» } : internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"_#6" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#6'» := y } : internal.syscall.unix.SiginfoChild) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

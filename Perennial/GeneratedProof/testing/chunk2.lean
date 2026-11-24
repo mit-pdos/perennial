@@ -55,11 +55,11 @@ noncomputable instance «struct#b304a786_access_load_Parent» (l : Loc) (v : tes
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#b304a786_access_store_Parent» (l : Loc) (v : testing.«struct#b304a786») (Parent' : GoString) :
+noncomputable instance «struct#b304a786_access_store_Parent» (l : Loc) (v : testing.«struct#b304a786») (y : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Parent" l) v.Parent' (DFrac.own 1))
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Parent" l) Parent' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Parent' := Parent' } : testing.«struct#b304a786») (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Parent" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Parent' := y } : testing.«struct#b304a786») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -71,11 +71,11 @@ noncomputable instance «struct#b304a786_access_load_Path» (l : Loc) (v : testi
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#b304a786_access_store_Path» (l : Loc) (v : testing.«struct#b304a786») (Path' : GoString) :
+noncomputable instance «struct#b304a786_access_store_Path» (l : Loc) (v : testing.«struct#b304a786») (y : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Path" l) v.Path' (DFrac.own 1))
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Path" l) Path' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Path' := Path' } : testing.«struct#b304a786») (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Path" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Path' := y } : testing.«struct#b304a786») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -87,11 +87,11 @@ noncomputable instance «struct#b304a786_access_load_Data» (l : Loc) (v : testi
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#b304a786_access_store_Data» (l : Loc) (v : testing.«struct#b304a786») (Data' : GoSlice) :
+noncomputable instance «struct#b304a786_access_store_Data» (l : Loc) (v : testing.«struct#b304a786») (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Data" l) v.Data' (DFrac.own 1))
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Data" l) Data' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Data' := Data' } : testing.«struct#b304a786») (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Data" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Data' := y } : testing.«struct#b304a786») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -103,11 +103,11 @@ noncomputable instance «struct#b304a786_access_load_Values» (l : Loc) (v : tes
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#b304a786_access_store_Values» (l : Loc) (v : testing.«struct#b304a786») (Values' : GoSlice) :
+noncomputable instance «struct#b304a786_access_store_Values» (l : Loc) (v : testing.«struct#b304a786») (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Values" l) v.Values' (DFrac.own 1))
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Values" l) Values' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Values' := Values' } : testing.«struct#b304a786») (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Values" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Values' := y } : testing.«struct#b304a786») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -119,11 +119,11 @@ noncomputable instance «struct#b304a786_access_load_Generation» (l : Loc) (v :
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#b304a786_access_store_Generation» (l : Loc) (v : testing.«struct#b304a786») (Generation' : w64) :
+noncomputable instance «struct#b304a786_access_store_Generation» (l : Loc) (v : testing.«struct#b304a786») (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Generation" l) v.Generation' (DFrac.own 1))
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Generation" l) Generation' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Generation' := Generation' } : testing.«struct#b304a786») (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Generation" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Generation' := y } : testing.«struct#b304a786») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -135,11 +135,11 @@ noncomputable instance «struct#b304a786_access_load_IsSeed» (l : Loc) (v : tes
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#b304a786_access_store_IsSeed» (l : Loc) (v : testing.«struct#b304a786») (IsSeed' : Bool) :
+noncomputable instance «struct#b304a786_access_store_IsSeed» (l : Loc) (v : testing.«struct#b304a786») (y : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.«struct#b304a786» go!"IsSeed" l) v.IsSeed' (DFrac.own 1))
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"IsSeed" l) IsSeed' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with IsSeed' := IsSeed' } : testing.«struct#b304a786») (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"IsSeed" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with IsSeed' := y } : testing.«struct#b304a786») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

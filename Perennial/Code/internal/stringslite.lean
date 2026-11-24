@@ -30,7 +30,7 @@ noncomputable def HasSuffix [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def IndexByte [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/stringslite.IndexByte"
 
-noncomputable def Index' [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def Index'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/stringslite.Index"
 
 noncomputable def Cut [GooseExts] [GoGlobalContext] : GoString :=

@@ -823,7 +823,7 @@ class mOS.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSema
   get_profileTimer : ∀ (x : mOS), go.IsGoStepPureDetTagged under (StructFieldGet mOS.underlying go!"profileTimer") #x (Val #(x.profileTimer'))
   set_profileTimer : ∀ (x : mOS) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet mOS.underlying go!"profileTimer") (PairV #x #y) (Val #(({ x with profileTimer' := y } : mOS)))
   get_profileTimerValid : ∀ (x : mOS), go.IsGoStepPureDetTagged under (StructFieldGet mOS.underlying go!"profileTimerValid") #x (Val #(x.profileTimerValid'))
-  set_profileTimerValid : ∀ (x : mOS) (y : _root_.Perennial.internal.runtime.atomic.Bool'), go.IsGoStepPureDetTagged under (StructFieldSet mOS.underlying go!"profileTimerValid") (PairV #x #y) (Val #(({ x with profileTimerValid' := y } : mOS)))
+  set_profileTimerValid : ∀ (x : mOS) (y : _root_.Perennial.internal.runtime.atomic.Bool''), go.IsGoStepPureDetTagged under (StructFieldSet mOS.underlying go!"profileTimerValid") (PairV #x #y) (Val #(({ x with profileTimerValid' := y } : mOS)))
   get_needPerThreadSyscall : ∀ (x : mOS), go.IsGoStepPureDetTagged under (StructFieldGet mOS.underlying go!"needPerThreadSyscall") #x (Val #(x.needPerThreadSyscall'))
   set_needPerThreadSyscall : ∀ (x : mOS) (y : _root_.Perennial.internal.runtime.atomic.Uint8), go.IsGoStepPureDetTagged under (StructFieldSet mOS.underlying go!"needPerThreadSyscall") (PairV #x #y) (Val #(({ x with needPerThreadSyscall' := y } : mOS)))
   get_vgetrandomState : ∀ (x : mOS), go.IsGoStepPureDetTagged under (StructFieldGet mOS.underlying go!"vgetrandomState") #x (Val #(x.vgetrandomState'))

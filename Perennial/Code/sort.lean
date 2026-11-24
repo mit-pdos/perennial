@@ -86,7 +86,7 @@ noncomputable def SearchFloat64s [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def SearchStrings [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.SearchStrings"
 
-noncomputable def Slice' [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def Slice'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.Slice"
 
 noncomputable def SliceStable [GooseExts] [GoGlobalContext] : GoString :=

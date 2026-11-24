@@ -523,11 +523,11 @@ noncomputable instance Value_access_load_typ_ (l : Loc) (v : reflect.Value) (dq 
  by
   solve_pointsto_access_struct
 
-noncomputable instance Value_access_store_typ_ (l : Loc) (v : reflect.Value) (typ_' : Loc) :
+noncomputable instance Value_access_store_typ_ (l : Loc) (v : reflect.Value) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef reflect.Value go!"typ_" l) v.typ_' (DFrac.own 1))
-      (typedPointsto (structFieldRef reflect.Value go!"typ_" l) typ_' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with typ_' := typ_' } : reflect.Value) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef reflect.Value go!"typ_" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with typ_' := y } : reflect.Value) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -539,11 +539,11 @@ noncomputable instance Value_access_load_ptr (l : Loc) (v : reflect.Value) (dq :
  by
   solve_pointsto_access_struct
 
-noncomputable instance Value_access_store_ptr (l : Loc) (v : reflect.Value) (ptr' : Loc) :
+noncomputable instance Value_access_store_ptr (l : Loc) (v : reflect.Value) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef reflect.Value go!"ptr" l) v.ptr' (DFrac.own 1))
-      (typedPointsto (structFieldRef reflect.Value go!"ptr" l) ptr' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ptr' := ptr' } : reflect.Value) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef reflect.Value go!"ptr" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ptr' := y } : reflect.Value) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -555,11 +555,11 @@ noncomputable instance Value_access_load_flag (l : Loc) (v : reflect.Value) (dq 
  by
   solve_pointsto_access_struct
 
-noncomputable instance Value_access_store_flag (l : Loc) (v : reflect.Value) (flag' : reflect.flag) :
+noncomputable instance Value_access_store_flag (l : Loc) (v : reflect.Value) (y : reflect.flag) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef reflect.Value go!"flag" l) v.flag' (DFrac.own 1))
-      (typedPointsto (structFieldRef reflect.Value go!"flag" l) flag' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with flag' := flag' } : reflect.Value) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef reflect.Value go!"flag" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with flag' := y } : reflect.Value) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

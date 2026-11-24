@@ -271,7 +271,7 @@ noncomputable def ReplaceAll [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def EqualFold [GooseExts] [GoGlobalContext] : GoString :=
   go!"bytes.EqualFold"
 
-noncomputable def Index' [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def Index'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"bytes.Index"
 
 noncomputable def Cut [GooseExts] [GoGlobalContext] : GoString :=

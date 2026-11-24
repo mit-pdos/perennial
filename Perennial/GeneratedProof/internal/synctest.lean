@@ -46,11 +46,11 @@ noncomputable instance Bubble_access_load_b (l : Loc) (v : internal.synctest.Bub
  by
   solve_pointsto_access_struct
 
-noncomputable instance Bubble_access_store_b (l : Loc) (v : internal.synctest.Bubble) (b' : GoInterface) :
+noncomputable instance Bubble_access_store_b (l : Loc) (v : internal.synctest.Bubble) (y : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.synctest.Bubble go!"b" l) v.b' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.synctest.Bubble go!"b" l) b' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with b' := b' } : internal.synctest.Bubble) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.synctest.Bubble go!"b" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with b' := y } : internal.synctest.Bubble) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

@@ -48,11 +48,11 @@ noncomputable instance lessSwap_access_load_Less (l : Loc) (v : sort.lessSwap) (
  by
   solve_pointsto_access_struct
 
-noncomputable instance lessSwap_access_store_Less (l : Loc) (v : sort.lessSwap) (Less' : GoFunc) :
+noncomputable instance lessSwap_access_store_Less (l : Loc) (v : sort.lessSwap) (y : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sort.lessSwap go!"Less" l) v.Less' (DFrac.own 1))
-      (typedPointsto (structFieldRef sort.lessSwap go!"Less" l) Less' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Less' := Less' } : sort.lessSwap) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef sort.lessSwap go!"Less" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Less' := y } : sort.lessSwap) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -64,11 +64,11 @@ noncomputable instance lessSwap_access_load_Swap (l : Loc) (v : sort.lessSwap) (
  by
   solve_pointsto_access_struct
 
-noncomputable instance lessSwap_access_store_Swap (l : Loc) (v : sort.lessSwap) (Swap' : GoFunc) :
+noncomputable instance lessSwap_access_store_Swap (l : Loc) (v : sort.lessSwap) (y : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sort.lessSwap go!"Swap" l) v.Swap' (DFrac.own 1))
-      (typedPointsto (structFieldRef sort.lessSwap go!"Swap" l) Swap' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Swap' := Swap' } : sort.lessSwap) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef sort.lessSwap go!"Swap" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Swap' := y } : sort.lessSwap) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -104,11 +104,11 @@ noncomputable instance reverse_access_load_Interface (l : Loc) (v : sort.reverse
  by
   solve_pointsto_access_struct
 
-noncomputable instance reverse_access_store_Interface (l : Loc) (v : sort.reverse) (Interface' : sort.Interface) :
+noncomputable instance reverse_access_store_Interface (l : Loc) (v : sort.reverse) (y : sort.Interface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sort.reverse go!"Interface" l) v.Interface' (DFrac.own 1))
-      (typedPointsto (structFieldRef sort.reverse go!"Interface" l) Interface' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Interface' := Interface' } : sort.reverse) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef sort.reverse go!"Interface" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Interface' := y } : sort.reverse) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

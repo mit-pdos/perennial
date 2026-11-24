@@ -13,11 +13,43 @@ func TestImportToLeanPath(t *testing.T) {
 
 func TestLeanIdent(t *testing.T) {
 	assert := assert.New(t)
-	assert.Equal("lookup'", LeanIdent("lookup"))
+	// keywords are quoted, not renamed
+	assert.Equal("«Type»", LeanIdent("Type"))
+	assert.Equal("«end»", LeanIdent("end"))
+	assert.Equal("«Type».underlying", LeanIdent(TypeImpl("Type")))
+	assert.Equal("«def».impl", LeanIdent(FuncImpl("def")))
+	// reserved names get "''", in every name built from them
+	assert.Equal("lookup''", LeanIdent("lookup"))
+	assert.Equal("Pair''", LeanIdent("Pair"))
+	assert.Equal("Pair''.underlying", LeanIdent(TypeImpl("Pair")))
+	assert.Equal("Pair''.TypeAssumptions", LeanIdent("Pair'assumptions"))
+	assert.Equal("Pair''.fields", LeanIdent("Pair'fds"))
+	assert.Equal("Index''.impl", LeanIdent(FuncImpl("Index")))
+	assert.Equal("ty''.M.impl", LeanIdent(TypeMethod("ty", "M")))
+	assert.Equal("_root_.Perennial.math.big.Int''", LeanIdent("_root_.Perennial.math.big.Int"))
+	// a Go name that looks like a generated one is not decoded
+	assert.Equal("Foo_Assumptions", LeanIdent("Foo_Assumptions"))
+	// methods and other names are unchanged
 	assert.Equal("Foo.impl", LeanIdent(FuncImpl("Foo")))
 	assert.Equal("T.M.impl", LeanIdent(TypeMethod("T", "M")))
+	assert.Equal("T.Index.impl", LeanIdent(TypeMethod("T", "Index")))
 	assert.Equal("«_».impl", LeanIdent(FuncImpl("_")))
 	assert.Equal("T.underlying", LeanIdent(TypeImpl("T")))
 	assert.Equal("go.GoType.Named", LeanIdent("go.Named"))
-	assert.Equal("«end»", LeanIdent("end"))
+	assert.Equal("go.uint64", LeanIdent("go.uint64"))
+	assert.Equal("T'", LeanIdent("T'"))
+}
+
+func TestGoName(t *testing.T) {
+	assert := assert.New(t)
+	for _, x := range []string{"Val", "Int", "x", "ty", "underlying", "impl", "mk",
+		"rec", "eq_def", "eq_1", "eq_23", "get_a", "set_a", "a_unfold", "ptr_a_unfold",
+		"A_instance", "import_p_Assumption", "equals_unfold_S", "Assumptions", "GF"} {
+		assert.Equal(x+"''", GoName(x), x)
+		// idempotent
+		assert.Equal(x+"''", GoName(GoName(x)), x)
+	}
+	for _, x := range []string{"Type", "def", "T", "Foo", "eq_", "eq_x", "getter", "unfold", "init"} {
+		assert.Equal(x, GoName(x), x)
+	}
 }

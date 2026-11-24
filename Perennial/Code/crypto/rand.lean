@@ -40,7 +40,7 @@ noncomputable def Text [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def Prime [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/rand.Prime"
 
-noncomputable def Int' [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def Int'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/rand.Int"
 
 noncomputable instance info' : PkgInfo pkg_id.crypto.rand where
@@ -62,7 +62,7 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.math.big.initialize') (Val #()))))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Int_unfold : FuncUnfold Int' [] Int.impl
+  Int_unfold : FuncUnfold Int'' [] Int''.impl
   import_io_Assumption : _root_.Perennial.io.Assumptions
   import_big_Assumption : _root_.Perennial.math.big.Assumptions
 

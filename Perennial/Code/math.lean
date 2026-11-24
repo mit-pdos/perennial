@@ -855,7 +855,7 @@ noncomputable def ilogb [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def Mod [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Mod"
 
-noncomputable def mod' [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def mod'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.mod"
 
 noncomputable def Modf [GooseExts] [GoGlobalContext] : GoString :=

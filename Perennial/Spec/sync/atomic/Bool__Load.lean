@@ -26,7 +26,7 @@ abbrev sync.atomic.Bool.Load.spec : Prop :=
   ∀ (u : Loc) (dq : DFrac),
   ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
     (|={⊤,∅}=> ▷ ∃ v : Bool, ownBool u dq v ∗ (ownBool u dq v ={∅,⊤}=∗ Φ #v)) -∗
-    WP (App (Val (u @!! go.GoType.PointerType Bool'.ty @!! go!"Load")) (Val #())) {{ Φ }}
+    WP (App (Val (u @!! go.GoType.PointerType Bool''.ty @!! go!"Load")) (Val #())) {{ Φ }}
 
 end spec
 

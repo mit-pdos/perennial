@@ -52,11 +52,11 @@ noncomputable instance JoinHandle_access_load_mu (l : Loc) (v : github_com.goose
  by
   solve_pointsto_access_struct
 
-noncomputable instance JoinHandle_access_store_mu (l : Loc) (v : github_com.goose_lang.std.JoinHandle) (mu' : Loc) :
+noncomputable instance JoinHandle_access_store_mu (l : Loc) (v : github_com.goose_lang.std.JoinHandle) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.goose_lang.std.JoinHandle go!"mu" l) v.mu' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.goose_lang.std.JoinHandle go!"mu" l) mu' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := mu' } : github_com.goose_lang.std.JoinHandle) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.goose_lang.std.JoinHandle go!"mu" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := y } : github_com.goose_lang.std.JoinHandle) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -68,11 +68,11 @@ noncomputable instance JoinHandle_access_load_done (l : Loc) (v : github_com.goo
  by
   solve_pointsto_access_struct
 
-noncomputable instance JoinHandle_access_store_done (l : Loc) (v : github_com.goose_lang.std.JoinHandle) (done' : Bool) :
+noncomputable instance JoinHandle_access_store_done (l : Loc) (v : github_com.goose_lang.std.JoinHandle) (y : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.goose_lang.std.JoinHandle go!"done" l) v.done' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.goose_lang.std.JoinHandle go!"done" l) done' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with done' := done' } : github_com.goose_lang.std.JoinHandle) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.goose_lang.std.JoinHandle go!"done" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with done' := y } : github_com.goose_lang.std.JoinHandle) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -84,11 +84,11 @@ noncomputable instance JoinHandle_access_load_cond (l : Loc) (v : github_com.goo
  by
   solve_pointsto_access_struct
 
-noncomputable instance JoinHandle_access_store_cond (l : Loc) (v : github_com.goose_lang.std.JoinHandle) (cond' : Loc) :
+noncomputable instance JoinHandle_access_store_cond (l : Loc) (v : github_com.goose_lang.std.JoinHandle) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.goose_lang.std.JoinHandle go!"cond" l) v.cond' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.goose_lang.std.JoinHandle go!"cond" l) cond' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cond' := cond' } : github_com.goose_lang.std.JoinHandle) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef github_com.goose_lang.std.JoinHandle go!"cond" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cond' := y } : github_com.goose_lang.std.JoinHandle) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

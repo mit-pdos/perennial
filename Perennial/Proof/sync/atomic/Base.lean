@@ -176,7 +176,7 @@ theorem b32w_inj {b1 b2 : Bool} (h : b32w b1 = b32w b2) : b1 = b2 := by
   cases b1 <;> cases b2 <;> first | rfl | (exfalso; revert h; decide)
 
 def ownBoolDef (u : Loc) (dq : DFrac) (v : Bool) : IProp GF :=
-  typedPointsto (GF := GF) u ({ «_#0'» := zero_val _, v' := b32w v } : Bool') dq
+  typedPointsto (GF := GF) u ({ «_#0'» := zero_val _, v' := b32w v } : Bool'') dq
 @[irreducible] def ownBool (u : Loc) (dq : DFrac) (v : Bool) : IProp GF := ownBoolDef u dq v
 theorem ownBool_unseal : @ownBool = @ownBoolDef := by funext; with_unfolding_all rfl
 
@@ -201,7 +201,7 @@ instance ownBool_combines_gives (u : Loc) (v v' : Bool) (dq dq' : DFrac) :
     iintro ⟨H1, H2⟩
     icombine H1 H2 gives %Heq
     imodintro; ipureintro
-    exact b32w_inj (congrArg Bool'.v' Heq)
+    exact b32w_inj (congrArg Bool''.v' Heq)
 
 /-! ### Value
 

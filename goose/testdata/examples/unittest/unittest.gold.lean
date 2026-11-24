@@ -1037,7 +1037,7 @@ noncomputable def stringAppend [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def stringLength [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.stringLength"
 
-noncomputable def x [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def x'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.x"
 
 noncomputable def appendString [GooseExts] [GoGlobalContext] : GoString :=
@@ -5680,7 +5680,7 @@ noncomputable def stringLength.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0")))))
 
 /-- go: strings.go:11:6 -/
-noncomputable def x.impl [GooseExts] [GoGlobalContext] : val :=
+noncomputable def x''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Seq (App (Val exceptionDo)
   (App (Val doExecute)
@@ -8529,7 +8529,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   loopSpawn_unfold : FuncUnfold loopSpawn [] loopSpawn.impl
   stringAppend_unfold : FuncUnfold stringAppend [] stringAppend.impl
   stringLength_unfold : FuncUnfold stringLength [] stringLength.impl
-  x_unfold : FuncUnfold x [] x.impl
+  x_unfold : FuncUnfold x'' [] x''.impl
   appendString_unfold : FuncUnfold appendString [] appendString.impl
   UseAdd_unfold : FuncUnfold UseAdd [] UseAdd.impl
   UseAddWithLiteral_unfold : FuncUnfold UseAddWithLiteral [] UseAddWithLiteral.impl

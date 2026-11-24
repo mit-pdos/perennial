@@ -21,10 +21,10 @@ end pkg_id
 
 namespace sync.atomic
 
-noncomputable def Bool'.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+noncomputable def Bool''.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync/atomic.Bool" [])
 
-attribute [irreducible] Bool'.ty
+attribute [irreducible] Bool''.ty
 
 noncomputable def Pointer.ty [GooseExts] [GoGlobalContext] (T : go.GoType) : go.GoType :=
   (go.GoType.Named go!"sync/atomic.Pointer" [T])
@@ -208,13 +208,13 @@ noncomputable def runtime_procUnpin [GooseExts] [GoGlobalContext] : GoString :=
 /-- Load atomically loads and returns the value stored in x.
 
     go: type.go:19:16 -/
-noncomputable def Bool.Load.impl [GooseExts] [GoGlobalContext] : val :=
+noncomputable def Bool''.Load.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Bool'.ty)))) (Var "x"))
-  (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (Let "$a0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Bool''.ty)))) (Var "x"))
+  (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (Let "$a0" (App (Val (GoInstruction (StructFieldRef Bool''.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool''.ty)))) (Var "x")))
   (App (App (Val (GoInstruction (FuncResolve LoadUint32 []))) (Val #())) (Var "$a0"))) (Val #(W32 0)))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -226,14 +226,14 @@ noncomputable def Bool.Load.impl [GooseExts] [GoGlobalContext] : val :=
 /-- Store atomically stores val into x.
 
     go: type.go:22:16 -/
-noncomputable def Bool.Store.impl [GooseExts] [GoGlobalContext] : val :=
+noncomputable def Bool''.Store.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "val"
   (Seq (App (Val exceptionDo)
-  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Bool'.ty)))) (Var "x"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Bool''.ty)))) (Var "x"))
   (Let "val" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "val"))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
+  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Bool''.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool''.ty)))) (Var "x")))
   (Let "$a1" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "val"))
   (App (App (Val (GoInstruction (FuncResolve b32 []))) (Val #())) (Var "$a0")))
   (App (App (App (Val (GoInstruction (FuncResolve StoreUint32 []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
@@ -242,15 +242,15 @@ noncomputable def Bool.Store.impl [GooseExts] [GoGlobalContext] : val :=
 /-- Swap atomically stores new into x and returns the previous value.
 
     go: type.go:25:16 -/
-noncomputable def Bool.Swap.impl [GooseExts] [GoGlobalContext] : val :=
+noncomputable def Bool''.Swap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "new"
   (Let "old" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$res0" (Var "old")
   (Seq (App (Val exceptionDo)
-  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Bool'.ty)))) (Var "x"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Bool''.ty)))) (Var "x"))
   (Let "new" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "new"))
-  (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (Let "$a0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
+  (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (Let "$a0" (App (Val (GoInstruction (StructFieldRef Bool''.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool''.ty)))) (Var "x")))
   (Let "$a1" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "new"))
   (App (App (Val (GoInstruction (FuncResolve b32 []))) (Val #())) (Var "$a0")))
   (App (App (App (Val (GoInstruction (FuncResolve SwapUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W32 0)))))
@@ -264,17 +264,17 @@ noncomputable def Bool.Swap.impl [GooseExts] [GoGlobalContext] : val :=
 /-- CompareAndSwap executes the compare-and-swap operation for the boolean value x.
 
     go: type.go:28:16 -/
-noncomputable def Bool.CompareAndSwap.impl [GooseExts] [GoGlobalContext] : val :=
+noncomputable def Bool''.CompareAndSwap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "old"
   (Lam "new"
   (Let "swapped" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "$res0" (Var "swapped")
   (Seq (App (Val exceptionDo)
-  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Bool'.ty)))) (Var "x"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Bool''.ty)))) (Var "x"))
   (Let "new" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "new"))
   (Let "old" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "old"))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Bool''.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool''.ty)))) (Var "x")))
   (Let "$a1" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "old"))
   (App (App (Val (GoInstruction (FuncResolve b32 []))) (Val #())) (Var "$a0")))
   (Let "$a2" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "new"))
@@ -965,54 +965,54 @@ attribute [instance] noCopy.TypeAssumptions.type_repr
   noCopy.TypeAssumptions.method_set
   noCopy.TypeAssumptions.ptr_method_set
 
-structure Bool' [GooseExts] where
+structure Bool'' [GooseExts] where
   mk ::
   «_#0'» : noCopy
   v' : w32
 
-noncomputable instance Bool'.zero_val [GooseExts] : ZeroVal Bool' :=
-  ⟨Bool'.mk zeroValDef zeroValDef⟩
+noncomputable instance Bool''.zero_val [GooseExts] : ZeroVal Bool'' :=
+  ⟨Bool''.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Bool.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Bool''.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_#0" noCopy.ty),
 (go.field_decl.FieldDecl go!"v" go.uint32)]
 
-@[irreducible] noncomputable def Bool.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  Bool.fieldsUnsealed
+@[irreducible] noncomputable def Bool''.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  Bool''.fieldsUnsealed
 
 noncomputable instance equals_unfold_Bool [GooseExts] [GoGlobalContext] :
-    EqualsUnfold Bool.fields Bool.fieldsUnsealed :=
-  ⟨by unfold Bool.fields; rfl⟩
+    EqualsUnfold Bool''.fields Bool''.fieldsUnsealed :=
+  ⟨by unfold Bool''.fields; rfl⟩
 
-@[reducible] noncomputable def Bool'.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Bool.fields)
+@[reducible] noncomputable def Bool''.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Bool''.fields)
 
-class Bool.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Bool'.underlying Bool'
-  underlying : go.UnderlyingDirectedEq Bool'.ty Bool'.underlying
-  «get__#0» : ∀ (x : Bool'), go.IsGoStepPureDetTagged under (StructFieldGet Bool'.underlying go!"_#0") #x (Val #(x.«_#0'»))
-  «set__#0» : ∀ (x : Bool') (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Bool'.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Bool')))
-  get_v : ∀ (x : Bool'), go.IsGoStepPureDetTagged under (StructFieldGet Bool'.underlying go!"v") #x (Val #(x.v'))
-  set_v : ∀ (x : Bool') (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Bool'.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Bool')))
-  method_set : go.MethodSetIs Bool'.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Bool'.ty) [(go!"CompareAndSwap", (some (go.signature.Signature [go.bool, go.bool] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [go.bool]))), (go!"Store", (some (go.signature.Signature [go.bool] false []))), (go!"Swap", (some (go.signature.Signature [go.bool] false [go.bool])))]
-  ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Bool'.ty) go!"CompareAndSwap" Bool.CompareAndSwap.impl
-  ptr_Load_unfold : MethodUnfold (go.GoType.PointerType Bool'.ty) go!"Load" Bool.Load.impl
-  ptr_Store_unfold : MethodUnfold (go.GoType.PointerType Bool'.ty) go!"Store" Bool.Store.impl
-  ptr_Swap_unfold : MethodUnfold (go.GoType.PointerType Bool'.ty) go!"Swap" Bool.Swap.impl
+class Bool''.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Bool''.underlying Bool''
+  underlying : go.UnderlyingDirectedEq Bool''.ty Bool''.underlying
+  «get__#0» : ∀ (x : Bool''), go.IsGoStepPureDetTagged under (StructFieldGet Bool''.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : Bool'') (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Bool''.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Bool'')))
+  get_v : ∀ (x : Bool''), go.IsGoStepPureDetTagged under (StructFieldGet Bool''.underlying go!"v") #x (Val #(x.v'))
+  set_v : ∀ (x : Bool'') (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Bool''.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Bool'')))
+  method_set : go.MethodSetIs Bool''.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Bool''.ty) [(go!"CompareAndSwap", (some (go.signature.Signature [go.bool, go.bool] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [go.bool]))), (go!"Store", (some (go.signature.Signature [go.bool] false []))), (go!"Swap", (some (go.signature.Signature [go.bool] false [go.bool])))]
+  ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Bool''.ty) go!"CompareAndSwap" Bool''.CompareAndSwap.impl
+  ptr_Load_unfold : MethodUnfold (go.GoType.PointerType Bool''.ty) go!"Load" Bool''.Load.impl
+  ptr_Store_unfold : MethodUnfold (go.GoType.PointerType Bool''.ty) go!"Store" Bool''.Store.impl
+  ptr_Swap_unfold : MethodUnfold (go.GoType.PointerType Bool''.ty) go!"Swap" Bool''.Swap.impl
 
-attribute [instance] Bool.TypeAssumptions.type_repr
-  Bool.TypeAssumptions.underlying
-  Bool.TypeAssumptions.«get__#0»
-  Bool.TypeAssumptions.«set__#0»
-  Bool.TypeAssumptions.get_v
-  Bool.TypeAssumptions.set_v
-  Bool.TypeAssumptions.method_set
-  Bool.TypeAssumptions.ptr_method_set
-  Bool.TypeAssumptions.ptr_CompareAndSwap_unfold
-  Bool.TypeAssumptions.ptr_Load_unfold
-  Bool.TypeAssumptions.ptr_Store_unfold
-  Bool.TypeAssumptions.ptr_Swap_unfold
+attribute [instance] Bool''.TypeAssumptions.type_repr
+  Bool''.TypeAssumptions.underlying
+  Bool''.TypeAssumptions.«get__#0»
+  Bool''.TypeAssumptions.«set__#0»
+  Bool''.TypeAssumptions.get_v
+  Bool''.TypeAssumptions.set_v
+  Bool''.TypeAssumptions.method_set
+  Bool''.TypeAssumptions.ptr_method_set
+  Bool''.TypeAssumptions.ptr_CompareAndSwap_unfold
+  Bool''.TypeAssumptions.ptr_Load_unfold
+  Bool''.TypeAssumptions.ptr_Store_unfold
+  Bool''.TypeAssumptions.ptr_Swap_unfold
 
 structure Pointer [GooseExts] (T : Type) where
   mk ::
@@ -1457,7 +1457,7 @@ attribute [instance] efaceWords.TypeAssumptions.type_repr
   efaceWords.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Bool_instance : Bool.TypeAssumptions
+  Bool_instance : Bool''.TypeAssumptions
   Pointer_instance : Pointer.TypeAssumptions
   Int32_instance : Int32.TypeAssumptions
   Int64_instance : Int64.TypeAssumptions

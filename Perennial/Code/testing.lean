@@ -353,7 +353,7 @@ noncomputable def gocoverdir [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def matchList [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.matchList"
 
-noncomputable def match' [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def «match» [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.match"
 
 noncomputable def skip [GooseExts] [GoGlobalContext] : GoString :=
@@ -802,8 +802,8 @@ structure common [GooseExts] where
   isSynctest' : Bool
   chatty' : Loc
   bench' : Bool
-  hasSub' : _root_.Perennial.sync.atomic.Bool'
-  cleanupStarted' : _root_.Perennial.sync.atomic.Bool'
+  hasSub' : _root_.Perennial.sync.atomic.Bool''
+  cleanupStarted' : _root_.Perennial.sync.atomic.Bool''
   runner' : GoString
   isParallel' : Bool
   parent' : Loc
@@ -818,7 +818,7 @@ structure common [GooseExts] where
   signal' : GoChan
   sub' : GoSlice
   lastRaceErrors' : _root_.Perennial.sync.atomic.Int64
-  raceErrorLogged' : _root_.Perennial.sync.atomic.Bool'
+  raceErrorLogged' : _root_.Perennial.sync.atomic.Bool''
   tempDirMu' : _root_.Perennial.sync.Mutex
   tempDir' : GoString
   tempDirErr' : GoError
@@ -851,8 +851,8 @@ noncomputable instance common.zero_val [GooseExts] : ZeroVal common :=
 (go.field_decl.FieldDecl go!"isSynctest" go.bool),
 (go.field_decl.FieldDecl go!"chatty" (go.GoType.PointerType chattyPrinter.ty)),
 (go.field_decl.FieldDecl go!"bench" go.bool),
-(go.field_decl.FieldDecl go!"hasSub" _root_.Perennial.sync.atomic.Bool'.ty),
-(go.field_decl.FieldDecl go!"cleanupStarted" _root_.Perennial.sync.atomic.Bool'.ty),
+(go.field_decl.FieldDecl go!"hasSub" _root_.Perennial.sync.atomic.Bool''.ty),
+(go.field_decl.FieldDecl go!"cleanupStarted" _root_.Perennial.sync.atomic.Bool''.ty),
 (go.field_decl.FieldDecl go!"runner" go.string),
 (go.field_decl.FieldDecl go!"isParallel" go.bool),
 (go.field_decl.FieldDecl go!"parent" (go.GoType.PointerType common.ty)),
@@ -867,7 +867,7 @@ noncomputable instance common.zero_val [GooseExts] : ZeroVal common :=
 (go.field_decl.FieldDecl go!"signal" (go.GoType.ChannelType go.ChanDir.sendrecv go.bool)),
 (go.field_decl.FieldDecl go!"sub" (go.GoType.SliceType (go.GoType.PointerType T.ty))),
 (go.field_decl.FieldDecl go!"lastRaceErrors" _root_.Perennial.sync.atomic.Int64.ty),
-(go.field_decl.FieldDecl go!"raceErrorLogged" _root_.Perennial.sync.atomic.Bool'.ty),
+(go.field_decl.FieldDecl go!"raceErrorLogged" _root_.Perennial.sync.atomic.Bool''.ty),
 (go.field_decl.FieldDecl go!"tempDirMu" _root_.Perennial.sync.Mutex.ty),
 (go.field_decl.FieldDecl go!"tempDir" go.string),
 (go.field_decl.FieldDecl go!"tempDirErr" go.error),
@@ -928,9 +928,9 @@ class common.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   get_bench : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"bench") #x (Val #(x.bench'))
   set_bench : ∀ (x : common) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"bench") (PairV #x #y) (Val #(({ x with bench' := y } : common)))
   get_hasSub : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"hasSub") #x (Val #(x.hasSub'))
-  set_hasSub : ∀ (x : common) (y : _root_.Perennial.sync.atomic.Bool'), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"hasSub") (PairV #x #y) (Val #(({ x with hasSub' := y } : common)))
+  set_hasSub : ∀ (x : common) (y : _root_.Perennial.sync.atomic.Bool''), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"hasSub") (PairV #x #y) (Val #(({ x with hasSub' := y } : common)))
   get_cleanupStarted : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"cleanupStarted") #x (Val #(x.cleanupStarted'))
-  set_cleanupStarted : ∀ (x : common) (y : _root_.Perennial.sync.atomic.Bool'), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"cleanupStarted") (PairV #x #y) (Val #(({ x with cleanupStarted' := y } : common)))
+  set_cleanupStarted : ∀ (x : common) (y : _root_.Perennial.sync.atomic.Bool''), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"cleanupStarted") (PairV #x #y) (Val #(({ x with cleanupStarted' := y } : common)))
   get_runner : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"runner") #x (Val #(x.runner'))
   set_runner : ∀ (x : common) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"runner") (PairV #x #y) (Val #(({ x with runner' := y } : common)))
   get_isParallel : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"isParallel") #x (Val #(x.isParallel'))
@@ -960,7 +960,7 @@ class common.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   get_lastRaceErrors : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"lastRaceErrors") #x (Val #(x.lastRaceErrors'))
   set_lastRaceErrors : ∀ (x : common) (y : _root_.Perennial.sync.atomic.Int64), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"lastRaceErrors") (PairV #x #y) (Val #(({ x with lastRaceErrors' := y } : common)))
   get_raceErrorLogged : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"raceErrorLogged") #x (Val #(x.raceErrorLogged'))
-  set_raceErrorLogged : ∀ (x : common) (y : _root_.Perennial.sync.atomic.Bool'), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"raceErrorLogged") (PairV #x #y) (Val #(({ x with raceErrorLogged' := y } : common)))
+  set_raceErrorLogged : ∀ (x : common) (y : _root_.Perennial.sync.atomic.Bool''), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"raceErrorLogged") (PairV #x #y) (Val #(({ x with raceErrorLogged' := y } : common)))
   get_tempDirMu : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"tempDirMu") #x (Val #(x.tempDirMu'))
   set_tempDirMu : ∀ (x : common) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet common.underlying go!"tempDirMu") (PairV #x #y) (Val #(({ x with tempDirMu' := y } : common)))
   get_tempDir : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"tempDir") #x (Val #(x.tempDir'))

@@ -46,11 +46,11 @@ noncomputable instance errorString_access_load_s (l : Loc) (v : errors.errorStri
  by
   solve_pointsto_access_struct
 
-noncomputable instance errorString_access_store_s (l : Loc) (v : errors.errorString) (s' : GoString) :
+noncomputable instance errorString_access_store_s (l : Loc) (v : errors.errorString) (y : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef errors.errorString go!"s" l) v.s' (DFrac.own 1))
-      (typedPointsto (structFieldRef errors.errorString go!"s" l) s' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with s' := s' } : errors.errorString) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef errors.errorString go!"s" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with s' := y } : errors.errorString) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -86,11 +86,11 @@ noncomputable instance joinError_access_load_errs (l : Loc) (v : errors.joinErro
  by
   solve_pointsto_access_struct
 
-noncomputable instance joinError_access_store_errs (l : Loc) (v : errors.joinError) (errs' : GoSlice) :
+noncomputable instance joinError_access_store_errs (l : Loc) (v : errors.joinError) (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef errors.joinError go!"errs" l) v.errs' (DFrac.own 1))
-      (typedPointsto (structFieldRef errors.joinError go!"errs" l) errs' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with errs' := errs' } : errors.joinError) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef errors.joinError go!"errs" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with errs' := y } : errors.joinError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

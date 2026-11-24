@@ -144,32 +144,6 @@ func init() {
 	}
 }
 
-// LeanShadowNames are names that the Lean printer emits unqualified (GooseLang
-// constructors and Golang/Defn definitions). A Go identifier with one of these
-// names would shadow them inside the package's namespace, so (like
-// primedNames) such identifiers get a "'" suffix (see ToIdent).
-var LeanShadowNames = map[string]bool{}
-
-func init() {
-	for _, w := range strings.Fields(`Val Var Rec App If Pair Fst Snd Fork Lam
-	Let Seq LamV RecV PairV LitV BAnon BNamed GoInstruction GoOp GoUnOp GoLoad
-	GoStore GoAlloc GoZeroVal FuncResolve MethodResolve StructFieldGet
-	StructFieldRef StructFieldSet GlobalVarAddr Index IndexRef Slice FullSlice
-	TypeAssert TypeAssert2 Convert CompositeLiteral SelectStmt LiteralValue
-	KeyedElement KeyField KeyInteger KeyExpression ElementExpression ElementLiteralValue
-	SelectStmtClauses CommClause SendCase RecvCase UntypedNil into_val
-	exception_seq do_execute do_return exception_do do_break do_continue do_for
-	wrap_defer deferType none some W64 W32 W16 W8 w64 w32 w16 w8 Int Bool Unit
-	List go_string val loc slice array chan interface func pkg_id under
-	FuncUnfold MethodUnfold TypeRepr EqualsUnfold ZeroVal zero_val_def
-	PkgInfo GoEquals GoLt GoLe GoGt GoGe GoPlus GoSub GoMul GoDiv GoRemainder
-	GoAnd GoOr GoXor GoBitClear GoShiftl GoShiftr GoPos GoNeg GoNot GoComplement
-	struct_field_ref intoVal exceptionSeq doExecute doReturn exceptionDo doBreak
-	doContinue doFor catchBreak wrapDefer wrapDeferRecover recoverPanic GoString Loc zeroValDef structFieldRef`) {
-		LeanShadowNames[w] = true
-	}
-}
-
 // leanIdentRest reports whether r can appear in a Lean identifier without
 // quoting (conservatively: ASCII only).
 func leanIdentRest(r rune) bool {
@@ -265,15 +239,17 @@ var leanRenames = map[string]string{
 // translator uses internally, into Lean namespaces:
 // X'underlying -> X.underlying (see TypeImpl), X'fds -> X.fields,
 // X'fds_unsealed -> X.fieldsUnsealed, X'init -> X.init,
-// X_Assumptions -> X.TypeAssumptions (the per-type assumptions class; the
+// X'assumptions -> X.TypeAssumptions (the per-type assumptions class; the
 // package-level class is `Assumptions`, and a type named like its package
-// would make `pkg.Assumptions` ambiguous). ok is false if s has none of these forms.
+// would make `pkg.Assumptions` ambiguous). The suffixes start with "'", which
+// no Go identifier contains, so no Go name is mistaken for an encoded one; the
+// Go name X is renamed by GoName. ok is false if s has none of these forms.
 func leanEncoded(s string) (string, bool) {
 	prefix, last := "", s
 	if i := strings.LastIndex(s, "."); i >= 0 {
 		prefix, last = s[:i], s[i+1:]
 	}
-	q := LeanQuoteComponent
+	q := func(x string) string { return LeanQuoteComponent(GoName(x)) }
 	var comps []string
 	switch {
 	case strings.HasSuffix(last, "'underlying") && last != "'underlying":
@@ -284,8 +260,8 @@ func leanEncoded(s string) (string, bool) {
 		comps = []string{q(strings.TrimSuffix(last, "'fds")), "fields"}
 	case strings.HasSuffix(last, "'init") && last != "'init":
 		comps = []string{q(strings.TrimSuffix(last, "'init")), "init"}
-	case strings.HasSuffix(last, "_Assumptions") && last != "_Assumptions":
-		comps = []string{q(strings.TrimSuffix(last, "_Assumptions")), "TypeAssumptions"}
+	case strings.HasSuffix(last, "'assumptions") && last != "'assumptions":
+		comps = []string{q(strings.TrimSuffix(last, "'assumptions")), "TypeAssumptions"}
 	default:
 		return "", false
 	}
@@ -338,9 +314,12 @@ func LeanEncodedName(s string) string {
 	return LeanQuote(s)
 }
 
-// LeanIdent renders a (possibly qualified) identifier of a term as a Lean
-// identifier: applies the keyword renaming of ToIdent to the last component,
-// and quotes components as needed.
+// LeanIdent renders an identifier of a term as a Lean identifier, quoting
+// components as needed. The Go name in it is renamed by GoName: an atomic
+// name, or the last component of a reference `_root_.Perennial.<pkg>.X` to
+// another package; the other forms are framework names (go.uint64), the
+// encoded names of leanEncoded, and the dotted names of FuncImpl and
+// TypeMethod, which apply GoName themselves.
 func LeanIdent(s string) string {
 	if r, ok := leanEncoded(s); ok {
 		return r
@@ -351,8 +330,19 @@ func LeanIdent(s string) string {
 	if c, ok := leanRenames[s]; ok {
 		return c
 	}
-	return LeanQuote(ToIdent(s))
+	if !strings.Contains(s, ".") {
+		return LeanQuoteComponent(GoName(s))
+	}
+	if strings.HasPrefix(s, rootPrefix) {
+		i := strings.LastIndex(s, ".")
+		return LeanQuote(s[:i]) + "." + LeanQuoteComponent(GoName(s[i+1:]))
+	}
+	return LeanQuote(s)
 }
+
+// rootPrefix starts a rooted reference to a declaration of a translated
+// package (see goose's pkgRef).
+const rootPrefix = "_root_.Perennial."
 
 // LeanNamespace is the Lean namespace for a Go package: GoPathToIdentPath of
 // the package path with "/" replaced by ".", e.g. "github.com/goose-lang/std" becomes

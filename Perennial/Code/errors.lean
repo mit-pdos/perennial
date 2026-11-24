@@ -46,13 +46,13 @@ noncomputable def Unwrap [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def Is [GooseExts] [GoGlobalContext] : GoString :=
   go!"errors.Is"
 
-noncomputable def is' [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def is'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"errors.is"
 
 noncomputable def As [GooseExts] [GoGlobalContext] : GoString :=
   go!"errors.As"
 
-noncomputable def as' [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def «as» [GooseExts] [GoGlobalContext] : GoString :=
   go!"errors.as"
 
 noncomputable def AsType [GooseExts] [GoGlobalContext] : GoString :=
@@ -222,7 +222,7 @@ noncomputable def Unwrap.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.error))) (Var "$res0")))))
 
 /-- go: wrap.go:54:6 -/
-noncomputable def is.impl [GooseExts] [GoGlobalContext] : val :=
+noncomputable def is''.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "err"
   (Lam "target"
   (Lam "targetComparable"
@@ -276,7 +276,7 @@ noncomputable def is.impl [GooseExts] [GoGlobalContext] : val :=
   (If (Let "$a0" (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.error))) (Var "target"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.bool))) (Var "targetComparable"))
-  (App (App (App (App (Val (GoInstruction (FuncResolve is' []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve is'' []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
   (Let "$r0" (Val #true)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -643,7 +643,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Join_unfold : FuncUnfold Join [] Join.impl
   Unwrap_unfold : FuncUnfold Unwrap [] Unwrap.impl
   Is_unfold : FuncUnfold Is [] Is.impl
-  is_unfold : FuncUnfold is' [] is.impl
+  is_unfold : FuncUnfold is'' [] is''.impl
   AsType_unfold : ∀ (E : go.GoType), FuncUnfold AsType [E] (AsType.impl E)
   asType_unfold : ∀ (E : go.GoType), FuncUnfold asType [E] (asType.impl E)
 

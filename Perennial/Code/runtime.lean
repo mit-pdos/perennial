@@ -318,7 +318,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   sigctxt_instance : sigctxt.TypeAssumptions
   sigTabT_instance : sigTabT.TypeAssumptions
   gsignalStack_instance : gsignalStack.TypeAssumptions
-  slice_instance : slice.TypeAssumptions
+  slice_instance : slice''.TypeAssumptions
   notInHeapSlice_instance : notInHeapSlice.TypeAssumptions
   stackpoolItem_instance : stackpoolItem.TypeAssumptions
   adjustinfo_instance : adjustinfo.TypeAssumptions

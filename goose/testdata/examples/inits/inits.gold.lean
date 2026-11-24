@@ -21,10 +21,10 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.inits
 
-noncomputable def x [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def x'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/inits.x"
 
-noncomputable def y [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def y'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/inits.y"
 
 noncomputable def z [GooseExts] [GoGlobalContext] : GoString :=
@@ -61,7 +61,7 @@ noncomputable def init.«0».impl [GooseExts] [GoGlobalContext] : val :=
   (Seq (App (Val exceptionDo)
   (Let "$r0" (Val #(W64 1))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GlobalVarAddr x))) (Val #())) (Var "$r0"))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GlobalVarAddr x''))) (Val #())) (Var "$r0"))))))
   (Val #())))
 
 /-- go: inits.go:22:6 -/
@@ -122,9 +122,9 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val w.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val (go.GlobalAlloc x go.uint64)) (Val #()))))))
+  (App (Val (go.GlobalAlloc x'' go.uint64)) (Val #()))))))
   (App (Val doExecute)
-  (App (Val (go.GlobalAlloc y go.uint64)) (Val #()))))))))
+  (App (Val (go.GlobalAlloc y'' go.uint64)) (Val #()))))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl

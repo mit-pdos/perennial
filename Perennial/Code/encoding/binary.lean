@@ -768,7 +768,7 @@ noncomputable def Read.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType decoder.ty)))) (Pair (Var "d") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "size")) (Val #(W64 0)))))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (Val #(go!"binary.Read: invalid type ")) (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.reflect.Type'.ty go!"String"))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "data"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (Val #(go!"binary.Read: invalid type ")) (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.reflect.«Type».ty go!"String"))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "data"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.reflect.TypeOf []))) (Val #())) (Var "$a0")))) (Val #()))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1243,7 +1243,7 @@ noncomputable def Write.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "buf") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "size")) (Val #(W64 0)))))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (Val #(go!"binary.Write: some values are not fixed-sized in type ")) (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.reflect.Type'.ty go!"String"))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "data"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (Val #(go!"binary.Write: some values are not fixed-sized in type ")) (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.reflect.«Type».ty go!"String"))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "data"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.reflect.TypeOf []))) (Val #())) (Var "$a0")))) (Val #()))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon

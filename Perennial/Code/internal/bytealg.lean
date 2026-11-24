@@ -95,7 +95,7 @@ noncomputable def init.«0» [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def Cutover [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/bytealg.Cutover"
 
-noncomputable def Index' [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def Index'' [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/bytealg.Index"
 
 noncomputable def IndexString [GooseExts] [GoGlobalContext] : GoString :=
