@@ -298,6 +298,149 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   func h[T ~int64]() T { return T(1e18 + 1) } // gc: 1000000000000000000; model: 1000000000000000001
   ```
 
+## Grove (`grove_ffi`)
+
+- **The process is assumed not to run out of file descriptors or similar resources
+  (environment assumption).** The API has no `Close`: a `Listener` and a `Connection` hold
+  their descriptor until the connection fails, and `FileWrite` never closes its temporary
+  file (`ioutil.TempFile`; the `*os.File` is closed only by its finalizer, when the garbage
+  collector finds it). At the descriptor limit (`EMFILE`), Go's `FileRead` returns an empty
+  slice, `FileAppend`, `Listen` and `Accept` panic, and `FileWrite` exits the process
+  (`log.Fatal`). The model has no such failure (`IsGroveStep` "FileRead", "FileAppend",
+  "Listen", "Accept", "FileWrite", `Ext/Grove/Impl.lean`): it assumes they do not happen.
+
+  ```go
+  for {
+  	grove_ffi.FileWrite("f", []byte("x")) // leaks a descriptor per call
+  	_ = grove_ffi.FileRead("f")            // Go: []byte{} once the limit is reached; the model: "x"
+  }
+  ```
+
+- **Reading an existing file in `durable/` is assumed to hit no I/O error (environment
+  assumption).** Go's `grove_ffi.FileRead` (`goose/testdata/gokv/grove_ffi`) returns an
+  empty slice when `os.ReadFile` fails, for an existing file (`EIO`, `EACCES` after a
+  permission change, `EMFILE`, above) as for a missing one. The model returns an existing
+  file's contents (`IsGroveStep` "FileRead", `Ext/Grove/Impl.lean`; `FileRead.impl`,
+  `TrustedCode/github_com/mit_pdos/gokv/grove_ffi.lean`): it assumes reading it hits no
+  I/O error. (A missing file reads as an empty slice in both.)
+
+  ```go
+  // "f" exists, but reading durable/f fails (EIO, or a permission change)
+  d := grove_ffi.FileRead("f") // Go: []byte{}; the model: the file's contents
+  ```
+
+- **A node's `durable/` and `tmp/` directories are assumed private, writable, unaliased and
+  on one filesystem, and `durable/` to hold exactly the node's initial files when it starts
+  (environment assumption).** `FileWrite` creates its temporary file in `tmp/` (in the working
+  directory) and renames it into `durable/`; Go's `FileWrite` exits the process (`log.Fatal`)
+  when `tmp/` is not a writable directory, is full, or is on another filesystem than `durable/`
+  (`rename(2)` fails with `EXDEV`), where the model's returns. A file in
+  `durable/` that is missing from the initial `groveNodeFiles` reads as its contents in Go but
+  as empty in the model (`FileRead` of a missing name), so the initial state must list every
+  file there. The model keeps each valid file name's contents independently
+  (`groveNodeFiles`, `Ext/Grove/Impl.lean`). Go's files are `durable/<name>` in the working
+  directory, so names alias when `durable/` holds symbolic or hard links, is on a
+  case-insensitive filesystem, or is shared with another process or another node started in
+  the same directory; and `FileAppend` panics (recoverably) when the file or filesystem is
+  read-only. The model assumes none of this happens. Rarely (two concurrent `FileWrite`s of
+  one name drawing the same random temporary name, probability about 2^-64), Go's
+  `FileWrite` can also rename another call's half-written temporary file; the model writes
+  atomically.
+
+  ```go
+  // durable/s is a symbolic link to durable/a
+  grove_ffi.FileAppend("s", []byte("2")) // Go: FileRead("a") changes too; the model: only "s"
+  ```
+
+- **`FileAppend` is assumed to write all of its data (environment assumption).** Go's
+  `grove_ffi.FileAppend` ignores the result of `f.Write(data)`: on a full disk (`ENOSPC`)
+  the write may stop part-way, and the file then ends with a prefix of `data` (the `Sync`
+  that follows may still succeed). The model appends all of `data`, in pieces
+  (`FileAppend.impl`, `TrustedCode/github_com/mit_pdos/gokv/grove_ffi.lean`; `IsGroveStep`
+  "FileAppend", `Ext/Grove/Impl.lean`).
+
+  ```go
+  grove_ffi.FileAppend("log", rec) // disk full: Go: "log" may end with rec[:k];
+  d := grove_ffi.FileRead("log")   // the model: d ends with rec
+  ```
+
+- **`Listen` and `Accept` are assumed to succeed on a free endpoint outside the ephemeral
+  port range (environment assumption).** `Listen` is stuck on an endpoint it does not
+  accept (`ListenEndpoint`: not `ValidEndpoint`, that is bits 48-63 set, which
+  `AddressToStr` ignores, IP `0.0.0.0` or port 0; or a port below 1024, which needs
+  privilege to bind on Linux's default `net.ipv4.ip_unprivileged_port_start`; the model also
+  assumes that sysctl is at least 1024), on one the program already listens on, and on the local endpoint of
+  a connection (`Connect` picks a local endpoint that is not a key of `groveListen`,
+  `IsFreshChan`; `Listen` is stuck on an endpoint that is not a key) (`IsGroveStep`
+  "Listen", `Ext/Grove/Impl.lean`). Otherwise Go's `grove_ffi.Listen` panics when
+  `net.Listen` fails, and `Accept` when `Accept` fails: the model assumes the endpoint is
+  not used by another process, its port is outside the ephemeral port range from which the
+  OS picks the local endpoints of outgoing connections (Linux:
+  `/proc/sys/net/ipv4/ip_local_port_range`, 32768-60999 by default), its IP is an address
+  of the node (otherwise `net.Listen` fails with `EADDRNOTAVAIL`), and no resource limit is
+  hit (above), so a Go run in which they panic, possibly recovered by the program, is not a
+  run of the model. (The model's `Connect` never picks an endpoint the program may listen
+  on, a key of `groveListen`; Go's OS may pick one whose port is ephemeral, and the
+  program's later `Listen` of it panics.)
+
+  ```go
+  l := grove_ffi.Listen(a) // Go: panics if another process listens on a, or a's IP
+                           // is not the node's; the model: a listener
+  c := grove_ffi.Connect(srv) // Go: the OS picks the local endpoint, e.g. 127.0.0.1:48688
+  m := grove_ffi.Listen(b)    // b = 127.0.0.1:48688: Go: panics (bind: address already
+                              // in use); the model: c's local endpoint is not b
+  ```
+
+- **The network is closed: only Grove nodes send to Grove endpoints (environment
+  assumption).** The model's `Receive` returns only a message some `Send` sent to the
+  endpoint (`IsGroveStep` "Receive", `Ext/Grove/Impl.lean`). Over TCP, any peer can connect
+  to a listener and send arbitrary bytes; `grove_ffi.Receive` reads an 8-byte length header
+  and then `make([]byte, dataLen)`, which panics for a header of `2^63` or more.
+
+  ```go
+  // a foreign peer connects to a Grove listener and sends 8 bytes 0xff...
+  r := grove_ffi.Receive(c) // Go: panics (makeslice: len out of range); the model: a sent message
+  ```
+
+- **`GetTimeRange` assumes the wall clock stays within 10ms below one global time that never
+  decreases (environment assumption).** Go's `grove_ffi.GetTimeRange` returns
+  `(now, now+10ms)` for the node's wall clock `now` (`time.Now().UnixNano()`). The model
+  returns a range that contains a global time which never decreases, across all nodes
+  (`IsGroveStep` "GetTimeRange", `Ext/Grove/Impl.lean`): it assumes every node's clock reads
+  a value in `[t-10ms, t]` of that time `t`. A clock step (NTP, `settimeofday`) back by more
+  than 10ms, or a skew of more than 10ms between nodes, breaks it. It also assumes the clock
+  reads, as `uint64` nanoseconds, below `2^64 - 10ms` (Go's `t + 10e6` then does not wrap):
+  a clock in the 10ms before 1970-01-01 (`UnixNano` negative) makes Go return `h < l`, where
+  the model's range has `l <= h`.
+
+  ```go
+  l1, _ := grove_ffi.GetTimeRange()
+  // the clock is stepped back by 1s, or l1 is sent to a node whose clock is 1s behind
+  _, h2 := grove_ffi.GetTimeRange()
+  if h2 < l1 { panic("time went backwards") } // Go: panics; the model: l1 <= h2
+  ```
+
+- **`GetTSC` assumes the TSC is monotone across the cores the goroutine runs on
+  (environment assumption).** Go's `grove_ffi.GetTSC` is a bare `RDTSC` on amd64
+  (`CNTVCT_EL0` on arm64), with no serializing instruction and no pinning to a core. The
+  model's TSC never decreases on a node (`IsGroveStep` "GetTSC", `Ext/Grove/Impl.lean`):
+  it assumes the counters of the node's cores are synchronized, so that a read after a
+  goroutine moves to another core, or one the CPU executes early, is not smaller.
+
+  ```go
+  a := grove_ffi.GetTSC()
+  runtime.Gosched() // the goroutine may resume on another core
+  b := grove_ffi.GetTSC()
+  if b < a { panic("tsc went backwards") } // Go: panics on unsynchronized TSCs; the model: a <= b
+  ```
+
+- **A crash leaves a Grove node's state arbitrary; files are not durable.** The extension's
+  crash relation is `True` (`ExtSemantics.crash`, `Ext/Grove/Impl.lean`): after a crash a
+  node's files and TSC may be anything, so nothing a node wrote is known to survive. There
+  is no crash adequacy theorem for Grove: `grove_single_node_adequacy`
+  (`Ext/Grove/Adequacy.lean`) is fail-stop, and a verified Grove program is verified only
+  for executions without crashes.
+
 ## The step bound of the adequacy theorems
 
 Not unsound, but hard to read. Every adequacy theorem (`goose_adequacy`,

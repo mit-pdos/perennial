@@ -44,7 +44,8 @@ attribute [local instance] groveExts_hasGrove
 
 open grove_ext in
 /-- Adequacy for a single Grove node (fail-stop). The proof gets ownership of the
-initial network and of the node's initial files, and the main thread's token. As
+initial network and listened-on endpoints, of the node's initial files, and the main
+thread's token. As
 for `goose_adequacy`, the WP is proved for arbitrary time-receipt and thread
 bounds `N` and `T` (`receiptBound GF = N`, `threadBound GF = T`) with a
 postcondition `φ` that excludes panics (`hφ`), and the conclusion is about real
@@ -58,7 +59,8 @@ theorem grove_single_node_adequacy [GoGlobalContext] {GF : BundledGFunctors}
       receiptBound GF = N →
       threadBound GF = T →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ ([∗map] e ↦ ms ∈ (extGlobal groveExt g.globalWorld).groveNet, (e c↦ ms : IProp GF)) -∗
+      ⊢ (([∗map] e ↦ ms ∈ (extGlobal groveExt g.globalWorld).groveNet, (e c↦ ms : IProp GF)) ∗
+          [∗map] e ↦ b ∈ (extGlobal groveExt g.globalWorld).groveListen, (e l↦ b : IProp GF)) -∗
         ([∗map] f ↦ c ∈ (extLocal groveExt σ.world).groveNodeFiles, (f f↦ c : IProp GF)) -∗
         ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
@@ -73,7 +75,8 @@ theorem grove_single_node_adequacy [GoGlobalContext] {GF : BundledGFunctors}
   intro hG HN HT Hlctx
   -- the start resources of `[groveExt]` are Grove's
   have Hg : extsGlobalStart (GF := GF) g.globalWorld ⊢
-      [∗map] e ↦ ms ∈ (extGlobal groveExt g.globalWorld).groveNet, (e c↦ ms : IProp GF) :=
+      ([∗map] e ↦ ms ∈ (extGlobal groveExt g.globalWorld).groveNet, (e c↦ ms : IProp GF)) ∗
+        [∗map] e ↦ b ∈ (extGlobal groveExt g.globalWorld).groveListen, (e l↦ b : IProp GF) :=
     sep_elim_left
   have Hl : extsLocalStart (GF := GF) σ.world ⊢
       [∗map] f ↦ c ∈ (extLocal groveExt σ.world).groveNodeFiles, (f f↦ c : IProp GF) :=
