@@ -29,7 +29,11 @@ import (
 //   - appends a newline, takes std.outMu (held only by output, never while
 //     the arguments' methods run) and writes the bytes to standard error,
 //     ignoring the result: an effect outside the program, which the model
-//     drops, as it drops Fprintf's bytes (modelDiscard).
+//     drops, as it drops Fprintf's bytes (modelDiscard). The write can also
+//     block (a full stderr pipe, holding std.outMu) or end the process
+//     (EPIPE on fd 2: os.File.Write's epipecheck raises SIGPIPE): both stop
+//     the program there, so their traces are prefixes of the model's, which
+//     returns (partial correctness, as for an exit).
 //
 // Neither can panic other than through the arguments' methods.
 func Printf(format string, v ...any) {

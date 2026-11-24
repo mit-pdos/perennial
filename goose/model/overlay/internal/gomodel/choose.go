@@ -14,10 +14,15 @@ func ChooseString() string {
 }
 
 // ChooseStrings is an arbitrary []string (nil or not, of any length, every
-// element any string). It is translated Go over Choose and ChooseString. In Go
-// it is nil.
+// element any string; in particular both nil and a non-nil empty slice: Go's
+// os.runtime_args and syscall.runtime_envs return append([]string{}, ...),
+// never nil). It is translated Go over Choose and ChooseString. In Go it is
+// nil.
 func ChooseStrings() []string {
 	var a []string
+	if Choose() {
+		a = []string{}
+	}
 	for Choose() {
 		a = append(a, ChooseString())
 	}

@@ -138,7 +138,7 @@ noncomputable def Output [GooseExts] [GoGlobalContext] : GoString :=
     cannot panic. log/slog and log/internal are not translated, so no execution
     of the model reads that variable, and the model does nothing.
 
-    go: log.go:64:6 -/
+    go: log.go:68:6 -/
 noncomputable def init.«0».impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Seq (App (Val exceptionDo)
@@ -166,11 +166,15 @@ noncomputable def init.«0».impl [GooseExts] [GoGlobalContext] : val :=
       - appends a newline, takes std.outMu (held only by output, never while
         the arguments' methods run) and writes the bytes to standard error,
         ignoring the result: an effect outside the program, which the model
-        drops, as it drops Fprintf's bytes (modelDiscard).
+        drops, as it drops Fprintf's bytes (modelDiscard). The write can also
+        block (a full stderr pipe, holding std.outMu) or end the process
+        (EPIPE on fd 2: os.File.Write's epipecheck raises SIGPIPE): both stop
+        the program there, so their traces are prefixes of the model's, which
+        returns (partial correctness, as for an exit).
 
     Neither can panic other than through the arguments' methods.
 
-    go: log.go:35:6 -/
+    go: log.go:39:6 -/
 noncomputable def Printf.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "format"
   (Lam "v"
@@ -191,7 +195,7 @@ noncomputable def Printf.impl [GooseExts] [GoGlobalContext] : val :=
     place of Appendf: the model formats the arguments with fmt.Fprintln, which
     runs the same newPrinter, doPrintln and free.
 
-    go: log.go:44:6 -/
+    go: log.go:48:6 -/
 noncomputable def Println.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Seq (App (Val exceptionDo)
@@ -205,7 +209,7 @@ noncomputable def Println.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))))
   (Val #())))
 
-/-- go: log.go:54:21 -/
+/-- go: log.go:58:21 -/
 noncomputable def modelDiscard.Write.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "p"

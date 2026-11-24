@@ -28,37 +28,76 @@ theorem internal.gomodel.ChooseStrings.wp_proof
     internal.gomodel.ChooseStrings.spec (GF := GF) (hG := hG) := by
   wp_start
   wp_auto
-  ihave HI : iprop(∃ (sl : GoSlice) (xs : List GoString),
+  -- `a` starts `nil` or a non-nil empty slice (`[]string{}`)
+  wp_apply wp_Choose as %c0 -
+  rcases c0 with _ | _ <;> simp only [intoVal_eq_iff, decide_false, decide_true,
+    Bool.false_eq_true, ↓reduceIte]
+  · wp_auto
+    ihave HI : iprop(∃ (sl : GoSlice) (xs : List GoString),
       "a" ∷ a_ptr ↦ sl ∗ "Hsl" ∷ sl ↦* xs ∗
       "Hcap" ∷ ownSliceCap GoString sl (DFrac.own 1)) $$ [a]
-  · iexists slice.nil, []
-    iframe
-    isplitl []
-    · iapply ownSlice_nil
-    · iapply ownSliceCap_nil
-  wp_for HI
-  wp_apply wp_Choose as %c -
-  rcases c with _ | _ <;> simp only [intoVal_eq_iff, decide_false, decide_true,
-    Bool.false_eq_true, ↓reduceIte]
-  -- `false`: the loop ends
+    · iexists slice.nil, []
+      iframe
+      isplitl []
+      · iapply ownSlice_nil
+      · iapply ownSliceCap_nil
+    wp_for HI
+    wp_apply wp_Choose as %c -
+    rcases c with _ | _ <;> simp only [intoVal_eq_iff, decide_false, decide_true,
+      Bool.false_eq_true, ↓reduceIte]
+    -- `false`: the loop ends
+    · wp_auto
+      iapply HΦ
+      iexists _
+      iframe
+    -- `true`: one more element
+    · wp_auto
+      wp_apply wp_ChooseString as %str -
+      wp_apply wp_slice_literal (V := GoString) [str]
+      isplitr
+      · ipureintro; rfl
+      iintro %sl2 ⟨Hsl2, -⟩
+      wp_auto
+      wp_apply wp_slice_append $$ [Hsl Hcap Hsl2] with %sl' ⟨Hsl, Hcap, -⟩
+      · iframe
+      wp_for_post
+      iframe
+      iexists _, _
+      iframe
   · wp_auto
-    iapply HΦ
-    iexists _
-    iframe
-  -- `true`: one more element
-  · wp_auto
-    wp_apply wp_ChooseString as %str -
-    wp_apply wp_slice_literal (V := GoString) [str]
+    wp_apply wp_slice_literal (V := GoString) []
     isplitr
     · ipureintro; rfl
-    iintro %sl2 ⟨Hsl2, -⟩
+    iintro %sl0 ⟨Hsl0, Hcap0⟩
     wp_auto
-    wp_apply wp_slice_append $$ [Hsl Hcap Hsl2] with %sl' ⟨Hsl, Hcap, -⟩
-    · iframe
-    wp_for_post
-    iframe
-    iexists _, _
-    iframe
+    ihave HI : iprop(∃ (sl : GoSlice) (xs : List GoString),
+      "a" ∷ a_ptr ↦ sl ∗ "Hsl" ∷ sl ↦* xs ∗
+      "Hcap" ∷ ownSliceCap GoString sl (DFrac.own 1)) $$ [a Hsl0 Hcap0]
+    · iexists _, []
+      iframe
+    wp_for HI
+    wp_apply wp_Choose as %c -
+    rcases c with _ | _ <;> simp only [intoVal_eq_iff, decide_false, decide_true,
+      Bool.false_eq_true, ↓reduceIte]
+    -- `false`: the loop ends
+    · wp_auto
+      iapply HΦ
+      iexists _
+      iframe
+    -- `true`: one more element
+    · wp_auto
+      wp_apply wp_ChooseString as %str -
+      wp_apply wp_slice_literal (V := GoString) [str]
+      isplitr
+      · ipureintro; rfl
+      iintro %sl2 ⟨Hsl2, -⟩
+      wp_auto
+      wp_apply wp_slice_append $$ [Hsl Hcap Hsl2] with %sl' ⟨Hsl, Hcap, -⟩
+      · iframe
+      wp_for_post
+      iframe
+      iexists _, _
+      iframe
 
 end proof
 

@@ -71,15 +71,18 @@ noncomputable def ChooseString.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")))))
 
 /-- ChooseStrings is an arbitrary []string (nil or not, of any length, every
-    element any string). It is translated Go over Choose and ChooseString. In Go
-    it is nil.
+    element any string; in particular both nil and a non-nil empty slice: Go's
+    os.runtime_args and syscall.runtime_envs return append([]string{}, ...),
+    never nil). It is translated Go over Choose and ChooseString. In Go it is
+    nil.
 
-    go: choose.go:19:6 -/
+    go: choose.go:21:6 -/
 noncomputable def ChooseStrings.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.string)))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.string)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "a"))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -96,6 +99,12 @@ noncomputable def ChooseStrings.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.string)))) (Pair (Var "a") (Var "$r0")))))))
   (Lam BAnon
+  (Val #()))))))
+  (If (App (App (Val (GoInstruction (FuncResolve Choose []))) (Val #())) (Val #()))
+  (Let "$r0" (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.string)))) (LiteralValue []))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.string)))) (Pair (Var "a") (Var "$r0")))))
+  (App (Val doExecute)
   (Val #()))))))
   (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "$res0")))))
 
