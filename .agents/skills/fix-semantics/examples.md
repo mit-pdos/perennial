@@ -1575,3 +1575,31 @@ declaration silently).
 **Why.** The plan "Go model overlays" (#692), decisions D1–D7 approved by the owner as recommended,
 2026-11-23. The toolchain check found that go1.26.0's `go list` does not find a standard-library
 package added by an overlay through `go/packages`; go1.26.11 and go1.27 do.
+
+## Case 49 — ACCEPTED: the zero values and `==` of `complex64` and `complex128` (branch `semantics-complex-zero`)
+
+**Symptom.** Incomplete. `go.complex64` and `go.complex128` had no `↓u` fact and no
+`TypeRepr`, so `GoZeroVal` and with it `TypeAssert2` at them were stuck: a type switch with a
+`case complex64:` (fmt's `printArg`, whose complex cases precede the integer, string and `[]byte`
+ones) was stuck on every argument.
+
+**Witness.** `var x any = float32(0); switch x.(type) { case complex64: ...; case float32: return
+true }` returns true in Go; the model is stuck at `TypeAssert2 go.complex64`.
+
+**Taken.** The float scheme for the two complex types: `Complex64Semantics` and
+`Complex128Semantics`, siblings of `Float32Semantics`/`Float64Semantics` with their
+`go_zero_val_*` (`TypeReprUnderlying go.complex64 (w32 × w32)`, the real and imaginary parts as
+`float32` bit patterns; `w64 × w64` for `complex128`), `comparable_*`, `underlying_*` and `eq_*`
+(`==` is the float `==` of both parts, the spec's "equal if both `real(u) == real(v)` and `imag(u) ==
+imag(v)`"), and a `ZeroVal (V × W)` instance (the pair of zero values: `0+0i`, both parts `+0`).
+Cost: 8 rules (2 classes of 4 fields), 1 instance, 0 goose changes. Semantics tests
+`testTypeSwitchComplex`, `testAssertComplexFails`, `testComplexZeroValue` (`complex_types.go`,
+Go-checked and proved). Arithmetic, conversions, `real`/`imag`/`complex`, complex constants and
+loads and stores (a complex variable, field or element in memory) stay stuck or refused by goose.
+
+**Not taken.** A carve-out for `TypeAssert2` at the complex types (a rule that a complex assertion
+on a non-complex interface fails); a byte-cell (`IsPlainScalar`) representation, which has no
+16-byte word for `complex128`.
+
+**Why.** Approved by the owner (upamanyus) as a self-contained semantics improvement, 2026-11-24
+(relayed by coordinator-E): complete the uniform scheme the way `float32`/`float64` are done.
