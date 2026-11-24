@@ -139,7 +139,9 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   programs are built by gc for linux/amd64. Every allocation address lies in
   `(0, maxAddr]`, `maxAddr = 2^47` (`GooseLang/Lang.lean`, `IsFresh`/`IsFreshBytes`),
   gc's user address space there, and proofs use that bound to rule out address
-  overflow (`unsafe.Slice`, `unsafe.Add`). The bound is false elsewhere, where
+  overflow (`unsafe.Slice`, `unsafe.Add`). A string is no longer than `maxAddr`
+  either: `len` of a longer one is an `AngelicExit` (`internal_string_len_step`,
+  `Golang/Defn/String.lean`; "Model assumptions (overflow)" below). The bound is false elsewhere, where
   a proof may claim "no panic" for a program gc stops:
   * aix/ppc64: gc's heap hints lie above `0xa0<<52`.
   * linux/arm64 PIE and android: globals and `zerobase` load near
@@ -185,6 +187,13 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
     memory bounds the length, and Go panics where the model assumes:
     `x := make([]struct{}, 1<<62); x = append(x, x...)` panics with
     "growslice: len out of range". A program with that bug verifies.
+
+  * a string's length (`internal_string_len_step`, `Golang/Defn/String.lean`): `len`
+    of a string longer than `maxAddr` is an `AngelicExit`. Every string goose
+    translates has its bytes in memory, which gc keeps below `maxAddr`
+    ("Platform"). `unsafe.String` can build a longer view, so goose's refusal
+    of it is what keeps this sound; a future rule for it must check the backing
+    allocation.
 
   Only a length that must exist in memory may be assumed away; a length Go
   computes and checks *before* allocating is reachable. Overflows that a

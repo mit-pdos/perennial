@@ -20,10 +20,9 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : strconv.Assumptions]
 
-/-- `quoteWith(s, quote, ASCIIonly, graphicOnly)`: `s` quoted by `quote` as a Go literal; here, some string. Only without `graphicOnly`, and for `s` no longer than memory (`maxAddr`, as `appendQuotedWith`; Go also computes `3*len(s)/2`). -/
+/-- `quoteWith(s, quote, ASCIIonly, graphicOnly)`: `s` quoted by `quote` as a Go literal; here, some string. Only without `graphicOnly`. -/
 abbrev strconv.quoteWith.spec : Prop :=
   ∀ (s : GoString) (quote : w8) (ASCIIonly : Bool),
-    s.length ≤ maxAddr →
     {{ isPkgInit (PROP := IProp GF) pkg_id.strconv }}
       (App (App (App (App (Val (@! quoteWith)) (Val #s)) (Val #quote)) (Val #ASCIIonly))
         (Val #false))

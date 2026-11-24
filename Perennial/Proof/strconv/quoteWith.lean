@@ -25,15 +25,15 @@ variable [package_sem : strconv.Assumptions]
 theorem strconv.quoteWith.wp_proof
     (wp_appendQuotedWith : strconv.appendQuotedWith.spec (GF := GF) (hG := hG)) :
     strconv.quoteWith.spec (GF := GF) (hG := hG) := by
-  intro s quote ASCIIonly Hs
+  intro s quote ASCIIonly
   wp_start
   wp_auto
-  wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len as %Hl
+  wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len_maxAddr as %Hs
   have hcap := strconv.quoteWith_cap s.length (by unfold maxAddr at Hs; exact Hs)
   wp_apply wp_slice_make3 (V := w8) (t := go.byte) _ _ ⟨by decide, by simpa using hcap⟩
     as %b ⟨Hb, Hcap, -⟩
   try wp_auto
-  wp_apply wp_appendQuotedWith _ _ _ _ _ Hs $$ [$Hb $Hcap] as %b' ⟨%q, Hb', -⟩
+  wp_apply wp_appendQuotedWith _ _ _ _ _ $$ [$Hb $Hcap] as %b' ⟨%q, Hb', -⟩
   wp_apply wp_bytes_to_string $$ [$Hb'] as -
   iapply HΦ
   itrivial

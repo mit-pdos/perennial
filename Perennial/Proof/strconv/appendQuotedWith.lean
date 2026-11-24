@@ -37,14 +37,15 @@ theorem strconv.appendQuotedWith.wp_proof
     (wp_appendEscapedRune : strconv.appendEscapedRune.spec (GF := GF) (hG := hG))
     (wp_DecodeRuneInString : unicode.utf8.DecodeRuneInString.spec (GF := GF) (hG := hG)) :
     strconv.appendQuotedWith.spec (GF := GF) (hG := hG) := by
-  intro buf bs s quote ASCIIonly Hs
+  intro buf bs s quote ASCIIonly
   wp_start as ⟨Hb, Hcap⟩
   ihave #Hutf8 : isPkgInit (PROP := IProp GF) pkg_id.unicode.utf8 $$ []
   · iPkgInit
   ihave %Hblen := ownSlice_len _ _ _ $$ Hb
   ihave %Hbmax := bytes.ownSlice_bytes_len_le _ _ _ $$ Hb
   wp_auto
-  wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len as %Hslen
+  wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len_maxAddr as %Hs
+  have Hslen : s.length < 2 ^ 63 := by unfold maxAddr at Hs; omega
   have hbl : (bs.length : Int) = sint.Z buf.len := by
     obtain ⟨h1, h2⟩ := Hblen; simp only [sint.nat, sint.Z] at h1 h2 ⊢; omega
   wp_join iprop(∃ b : GoSlice, "buf" ∷ buf_ptr ↦ b ∗ "Hb" ∷ b ↦* bs ∗

@@ -63,8 +63,8 @@ macro "fmt_encode" : tactic => `(tactic| (simp [_root_.Perennial.fmt.encode,
   _root_.Perennial.fmt.verb_v, _root_.Perennial.fmt.verb_x, _root_.Perennial.fmt.verb_q,
   _root_.Perennial.fmt.verb_t, _root_.Perennial.fmt.verb_X]))
 
-/-- `fmt.Fits ps args` for literal pieces and arguments (`%q` of a string `s` needs
-`s.length ≤ maxAddr` in the context). -/
+/-- `fmt.Fits ps args` for literal pieces and arguments (`%x` of a string `s` needs
+`s.length < 2 ^ 62` in the context). -/
 macro "fmt_fits" : tactic => `(tactic| (repeat' (first
   | exact _root_.Perennial.fmt.Fits.nil
   | refine _root_.Perennial.fmt.Fits.lit _ _ _ (by decide) ?_

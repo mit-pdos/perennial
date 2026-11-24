@@ -35,7 +35,21 @@ theorem wp_string_len (str : GoString) {t : go.GoType} [t ↓u go.string] :
       (App (Val #(functions go.len [t])) (Val #str)) @ s; E
     {{ RET #(W64 str.length); ⌜str.length < 2 ^ 63⌝ }} := by
   wp_start
-  by_cases h : str.length < 2 ^ 63
+  by_cases h : (str.length : Int) ≤ maxAddr
+  · rw [ite_eq_left h]
+    wp_pures
+    iapply HΦ
+    ipureintro; unfold maxAddr at h; omega
+  · rw [ite_eq_right h]
+    iapply wp_AngelicExit
+
+/-- `len(s)` of a string: no longer than the address space (`maxAddr`), as a slice. -/
+theorem wp_string_len_maxAddr (str : GoString) {t : go.GoType} [t ↓u go.string] :
+    {{ (True : IProp GF) }}
+      (App (Val #(functions go.len [t])) (Val #str)) @ s; E
+    {{ RET #(W64 str.length); ⌜(str.length : Int) ≤ maxAddr⌝ }} := by
+  wp_start
+  by_cases h : (str.length : Int) ≤ maxAddr
   · rw [ite_eq_left h]
     wp_pures
     iapply HΦ
