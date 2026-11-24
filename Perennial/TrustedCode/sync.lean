@@ -1,7 +1,12 @@
 /-
 Trusted code for `sync` (namespace `sync`, as the generated package): the one primitive stub of
-its Go model (`goose/model/overlay/sync`, `Perennial/Code/sync.toml`). Everything else the model
-replaces (the runtime hooks, `copyChecker`, `Pool.Get`/`Put`) is translated Go.
+its Go model (`goose/model/overlay/sync`, `Perennial/Code/sync.toml`), `poolModelAt`, and
+`copyChecker` with its `check`, the one item of `sync` still modelled in Lean. Everything else the
+model replaces (the runtime hooks, `Pool.Get`/`Put`) is translated Go.
+
+`copyChecker` stays here because a Go model of it (`struct{ p unsafe.Pointer }`) changes the kind and
+underlying type of an unexported type, which the overlay's API check refuses (it compares every
+replaced type); relaxing that check is a follow-up.
 -/
 module
 

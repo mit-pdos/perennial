@@ -33,14 +33,15 @@ imports = ["sync/atomic", "internal/race", "internal/synctest", "internal/sync",
 
 # The Go model (goose/model/overlay/sync): each declaration's MODEL: comment says why it has at least
 # Go's behaviours. The runtime hooks (`runtime_Semacquire*`, `runtime_Semrelease`, `runtime_notifyList*`,
-# `runtime_registerPoolCleanup`: no Go body, defined by the runtime's push linknames), `copyChecker` and
-# its `check` (a `uintptr` holding its own address), and `Pool.Get`/`Put` (per-P pools reached by pointer
-# arithmetic). `poolModelAt` is a primitive stub (TrustedCode/sync.lean).
+# `runtime_registerPoolCleanup`: no Go body, defined by the runtime's push linknames) and
+# `Pool.Get`/`Put` (per-P pools reached by pointer arithmetic). `poolModelAt` is a primitive stub
+# (TrustedCode/sync.lean).
 trusted = [
   "poolModelAt",
-  # PENDING (copyChecker model): `copyChecker` is a `uintptr` holding its own address, and `check`
-  # converts `unsafe.Pointer(c)` to `uintptr` and CASes it; the semantics has neither conversion, so
-  # both are modeled in TrustedCode/sync.lean (as an `unsafe.Pointer`).
+  # `copyChecker` is a `uintptr` holding its own address, and `check` converts `unsafe.Pointer(c)` to
+  # `uintptr` and CASes it; the semantics has neither conversion, so both are modelled in
+  # TrustedCode/sync.lean (as an `unsafe.Pointer`). A Go model would change an unexported type's
+  # kind, which the overlay's API check refuses (follow-up).
   "copyChecker",
   "copyChecker.*",
 ]
