@@ -21,17 +21,17 @@ variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.gokv.grove_ffi.Assumptions]
 
 theorem github_com.mit_pdos.gokv.grove_ffi.Listen.wp_proof :
-    github_com.mit_pdos.gokv.grove_ffi.Listen.spec (GF := GF) (hG := hG) := fun host => by
-  wp_start
+    github_com.mit_pdos.gokv.grove_ffi.Listen.spec (GF := GF) (hG := hG) := fun host Hhost => by
+  wp_start as Hlis
   wp_bind (ExternalOp _ _ _)
-  wp_apply wp_ListenOp
+  wp_apply wp_ListenOp host Hhost $$ Hlis with Hlis
   iapply wp_fupd
   wp_apply wp_alloc_untyped _ (by simp [val.isPanic]) with %l Hl
   ipersist Hl
   imodintro
   iapply HΦ
   unfold isListener
-  iframe Hl Hpkg
+  iframe Hl Hpkg Hlis
 
 end proof
 

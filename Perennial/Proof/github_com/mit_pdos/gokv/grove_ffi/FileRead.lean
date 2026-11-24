@@ -36,8 +36,17 @@ theorem github_com.mit_pdos.gokv.grove_ffi.FileRead.wp_proof :
   iintro Hf
   imod Hclose $$ Hf with HΦ
   imodintro
-  wp_apply wp_string_to_bytes c with %s ⟨Hs, Hcap⟩
-  iapply HΦ $$ Hs Hcap
+  wp_apply wp_string_to_bytes c with %b ⟨Hb, -⟩
+  ihave %Hblen := ownSlice_len _ _ _ $$ Hb
+  wp_apply wp_new_cap with %cap %Hcap
+  wp_apply wp_slice_make3 (V := w8) b.len cap ⟨Hblen.2, Hcap⟩ with %sl ⟨Hs, Hscap, -⟩
+  wp_apply wp_slice_copy sl _ b c (DFrac.own 1) $$ [Hs Hb] with %n ⟨-, Hs, -⟩
+  · iframe Hs Hb
+  try wp_auto
+  have Hlen : (List.replicate (sint.nat b.len) (zero_val w8)).length = c.length := by
+    simp [Hblen.1]
+  rw [Hlen, List.take_length, List.drop_of_length_le (by omega), List.append_nil]
+  iapply HΦ $$ Hs Hscap
 
 end proof
 

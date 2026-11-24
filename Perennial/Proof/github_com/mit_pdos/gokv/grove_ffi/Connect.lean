@@ -21,10 +21,10 @@ variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.gokv.grove_ffi.Assumptions]
 
 theorem github_com.mit_pdos.gokv.grove_ffi.Connect.wp_proof :
-    github_com.mit_pdos.gokv.grove_ffi.Connect.spec (GF := GF) (hG := hG) := fun c_r => by
+    github_com.mit_pdos.gokv.grove_ffi.Connect.spec (GF := GF) (hG := hG) := fun c_r Hc_r => by
   wp_start
   wp_bind (ExternalOp _ _ _)
-  wp_apply wp_ConnectOp c_r with %err %c_l Hc
+  wp_apply wp_ConnectOp c_r Hc_r with %err %c_l Hc
   rw [named_ConnectRet, named_Connection]
   cases err
   · iapply wp_fupd

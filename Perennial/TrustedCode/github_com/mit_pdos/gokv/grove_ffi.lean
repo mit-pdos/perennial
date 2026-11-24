@@ -5,8 +5,9 @@ the Grove extension of `Perennial.GooseLang.Ext.Grove.Impl` (`ExternalOp groveEx
 ...), for any program whose extensions include it. The package's types are translated.
 
 The extension's operations take and return byte strings as Go string values (`#data`); the
-model converts between them and `[]byte`. A `Listener` or `Connection` is a fresh cell holding
-the extension's socket value.
+model converts between them and `[]byte`. `FileRead`'s result has an arbitrary capacity at
+least its length (`slice._new_cap`, the capacity `append` chooses), as `os.ReadFile`'s does.
+A `Listener` or `Connection` is a fresh cell holding the extension's socket value.
 -/
 module
 
@@ -69,7 +70,12 @@ def Receive.impl : val :=
 /-- Type: func(string) []byte -/
 def FileRead.impl : val :=
   λ: "filename",
-    Convert go.string (go.SliceType go.byte) (ExternalOp groveExt.name "FileRead" "filename")
+    let: "b" := Convert go.string (go.SliceType go.byte)
+      (ExternalOp groveExt.name "FileRead" "filename") in
+    let: "n" := FuncResolve go.len [go.SliceType go.byte] #() "b" in
+    let: "s" := FuncResolve go.make3 [go.SliceType go.byte] #() "n" (slice._new_cap "n") in
+    FuncResolve go.copy [go.SliceType go.byte] #() "s" "b" ;;
+    "s"
 
 /-- Type: func(string, []byte) -/
 def FileWrite.impl : val :=

@@ -20,12 +20,13 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.gokv.grove_ffi.Assumptions]
 
-/-- `Listen(host)`: a `Listener` on `host`. -/
+/-- `Listen(host)`, for a valid `host` not yet listened on: a `Listener` on `host`, which is
+now listened on. -/
 abbrev github_com.mit_pdos.gokv.grove_ffi.Listen.spec : Prop :=
-  ∀ (host : Endpoint),
-    {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.mit_pdos.gokv.grove_ffi }}
+  ∀ (host : Endpoint), ValidEndpoint host →
+    {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.mit_pdos.gokv.grove_ffi ∗ host l↦ false }}
       (App (Val (@! Listen)) (Val #host))
-    {{ (l : Loc), RET #l; isListener l host }}
+    {{ (l : Loc), RET #l; isListener l host ∗ host l↦ true }}
 
 end spec
 

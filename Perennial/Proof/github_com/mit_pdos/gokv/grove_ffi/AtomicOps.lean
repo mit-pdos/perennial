@@ -39,7 +39,7 @@ theorem wp_SendOp_atomic (c_l c_r : Endpoint) (data : List w8) (Φ : val → IPr
   obtain ⟨rfl, He⟩ := Hstep
   have H := He data c_l c_r rfl
   imod HAU with ⟨%ms, Hc, Hclose⟩
-  icases (grove_global_ctx_eq g1).mp $$ Hg with ⟨Hnet, Htime⟩
+  icases (grove_global_ctx_eq g1).mp $$ Hg with ⟨Hnet, Hlis, Htime⟩
   unfold chanPointsto
   icases genHeap_lookup (G := (gooseGroveGS (G := G)).groveGNetHeapG) $$ Hnet Hc with %Heq
   change g1.groveNet !! c_r = some ms at Heq
@@ -51,7 +51,7 @@ theorem wp_SendOp_atomic (c_l c_r : Endpoint) (data : List w8) (Φ : val → IPr
   imod Hclose $$ Hc with HΦ
   imodintro
   iframe Hl
-  isplitl [Hnet Htime]
+  isplitl [Hnet Hlis Htime]
   · iapply (grove_global_ctx_eq _).mpr; unfold groveTimeAuth; iframe
   iapply wp_value'
   iapply HΦ
@@ -70,7 +70,7 @@ theorem wp_RecvOp_atomic (c_l c_r : Endpoint) (Φ : val → IProp GF) :
   obtain ⟨rfl, rfl, He⟩ := Hstep
   obtain ⟨err, H⟩ := He c_l c_r rfl
   imod HAU with ⟨%ms, Hc, Hclose⟩
-  icases (grove_global_ctx_eq g1).mp $$ Hg with ⟨Hnet, Htime⟩
+  icases (grove_global_ctx_eq g1).mp $$ Hg with ⟨Hnet, Hlis, Htime⟩
   unfold chanPointsto
   icases genHeap_lookup (G := (gooseGroveGS (G := G)).groveGNetHeapG) $$ Hnet Hc with %Heq
   change g1.groveNet !! c_l = some ms at Heq
@@ -78,7 +78,7 @@ theorem wp_RecvOp_atomic (c_l c_r : Endpoint) (Φ : val → IProp GF) :
   imod Hclose $$ Hc with HΦ
   imodintro
   iframe Hl
-  isplitl [Hnet Htime]
+  isplitl [Hnet Hlis Htime]
   · iapply (grove_global_ctx_eq _).mpr; unfold groveTimeAuth; iframe
   cases err with
   | true =>

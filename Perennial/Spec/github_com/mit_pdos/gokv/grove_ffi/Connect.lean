@@ -20,10 +20,10 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.gokv.grove_ffi.Assumptions]
 
-/-- `Connect(remote)`: either an error (`Err` set, `Connection` nil) or a new connection to
+/-- `Connect(remote)`, for a valid `remote`: either an error (`Err` set, `Connection` nil) or a new connection to
 `remote` from a fresh local endpoint `c_l`, whose channel is empty. -/
 abbrev github_com.mit_pdos.gokv.grove_ffi.Connect.spec : Prop :=
-  ∀ (c_r : Endpoint),
+  ∀ (c_r : Endpoint), ValidEndpoint c_r →
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.mit_pdos.gokv.grove_ffi }}
       (App (Val (@! Connect)) (Val #c_r))
     {{ (err : Bool) (c : Loc), RET #(ConnectRet.mk err c);
