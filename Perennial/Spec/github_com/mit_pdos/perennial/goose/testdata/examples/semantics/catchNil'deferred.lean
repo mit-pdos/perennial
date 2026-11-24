@@ -27,7 +27,7 @@ variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.se
 abbrev github_com.mit_pdos.perennial.goose.testdata.examples.semantics.catchNil'deferred.spec : Prop :=
   ∀ (isNil pnc : Loc) (b : Bool),
     {{ (isNil ↦ b : IProp GF) ∗ pnc ↦ (interface.nil : GoInterface) }}
-      (App (App (Val (@! catchNil'deferred)) (Val #pnc)) (Val #isNil))
+      (App (App (Val (@! deferred'catchNil)) (Val #pnc)) (Val #isNil))
     {{ RET #(); isNil ↦ true ∗ pnc ↦ (interface.nil : GoInterface) }}
 
 end spec
