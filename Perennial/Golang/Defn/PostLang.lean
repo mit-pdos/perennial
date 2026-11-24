@@ -418,6 +418,16 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
   structFieldRef_step (t : go.GoType) (f : GoString) (l : Loc) {V : Type} [ZeroVal V]
     [TypeRepr t V] : ⟦StructFieldRef t f, #l⟧ ⤳[under] #(structFieldRef V f l)
 
+  /-- The address of a field of a struct at a non-nil address is not nil. In Go, `&p.f` for a
+  non-nil `p` is `p` plus the field's offset, inside `p`'s object (an allocation, at an address
+  in `(0, maxAddr)`, `IsFresh`; a pointer to a non-plain struct type is made by no other
+  operation: `convert_unsafe_to_pointer` covers plain types only, for which
+  `structFieldRef_plain` gives `l + offset`). Without it, code comparing a field's address
+  with `nil` is unverifiable: `mapping.find` in net/http (`if h == nil`, with `h` the address
+  `&n.children` of a field of a routing-tree node) may take its `nil` branch. -/
+  structFieldRef_not_null (V : Type) (f : GoString) (l : Loc) :
+    l ≠ null → structFieldRef V f l ≠ null
+
   /-- The language spec doesn't say anything about the addresses of zero-sized
   allocation. But, in the runtime, these addresses are non-nil, so the
   semantics assumes it here; like every allocation's, the address is in `(0, maxAddr)` (`IsFresh`).
@@ -582,7 +592,7 @@ export CoreSemantics (basic_into_val_inj underlying_not_named convert_underlying
   fullSlice_underlying index_underlying index_ref_underlying check_comparable_underlying
   struct_field_get_underlying struct_field_set_underlying structFieldRef_step_underlying
   go_zero_val_step_underlying go_func_resolve_step go_method_resolve_step go_global_var_addr_step
-  structFieldRef_step go_prealloc_step angelic_exit_step intoVal_unfold_func
+  structFieldRef_step structFieldRef_not_null go_prealloc_step angelic_exit_step intoVal_unfold_func
   intoVal_unfold_bool intoVal_unfold_w64 intoVal_unfold_w32 intoVal_unfold_w16
   intoVal_unfold_w8 intoVal_unfold_string intoVal_unfold_loc intoVal_unfold_unit
   go_zero_val_step go_zero_val_pointer go_zero_val_function go_zero_val_slice
