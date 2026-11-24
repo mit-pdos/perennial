@@ -22,14 +22,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : crypto.ed25519.Assumptions]
+variable [package_sem' : _root_.Perennial.crypto.ed25519.Assumptions]
 
 noncomputable instance typed_pointsto'Options :
-    TypedPointsto (GF := GF) crypto.ed25519.Options :=
+    TypedPointsto (GF := GF) _root_.Perennial.crypto.ed25519.Options :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'Options :
-    IntoValTypedUnderlying (GF := GF) crypto.ed25519.Options crypto.ed25519.Options.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.crypto.ed25519.Options _root_.Perennial.crypto.ed25519.Options.underlying :=
   sorry -- axiomatized type
 
 end def_

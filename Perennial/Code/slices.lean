@@ -868,7 +868,7 @@ noncomputable def pdqsortCmpFunc.impl [GooseExts] [GoGlobalContext] (E₀ : go.G
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
   (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
-  (let maxInsertion₀ := #(12 : Int);
+  (let maxInsertion₁ := #(12 : Int);
   (Let "$r0" (Val #true)
   (Let "wasPartitioned" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1044,7 +1044,7 @@ noncomputable def pdqsortCmpFunc.impl [GooseExts] [GoGlobalContext] (E₀ : go.G
   (App (App (App (App (App (Val (GoInstruction (FuncResolve heapSortCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))
   (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "length")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxInsertion₀)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "length")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxInsertion₁)))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -1334,8 +1334,8 @@ noncomputable def partialInsertionSortCmpFunc.impl [GooseExts] [GoGlobalContext]
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
   (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
-  (let maxSteps₀ := #(5 : Int);
-  (let shortestShifting₀ := #(50 : Int);
+  (let maxSteps₁ := #(5 : Int);
+  (let shortestShifting₁ := #(50 : Int);
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 1))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1350,7 +1350,7 @@ noncomputable def partialInsertionSortCmpFunc.impl [GooseExts] [GoGlobalContext]
   (Let "j" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
-  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxSteps₀)))))) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxSteps₁)))))) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1423,7 +1423,7 @@ noncomputable def partialInsertionSortCmpFunc.impl [GooseExts] [GoGlobalContext]
   (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val shortestShifting₀)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val shortestShifting₁)))))
   (Let "$r0" (Val #false)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -1544,8 +1544,8 @@ noncomputable def choosePivotCmpFunc.impl [GooseExts] [GoGlobalContext] (E₀ : 
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
   (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
-  (let shortestNinther₀ := #(50 : Int);
-  (let maxSwaps₀ := #(12 : Int);
+  (let shortestNinther₁ := #(50 : Int);
+  (let maxSwaps₁ := #(12 : Int);
   (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
   (Let "l" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1572,7 +1572,7 @@ noncomputable def choosePivotCmpFunc.impl [GooseExts] [GoGlobalContext] (E₀ : 
   (App (Val (GoInstruction (GoStore sortedHint.ty))) (Pair (Var "$res1") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
-  (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Var "$sw") (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxSwaps₀))))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Var "$sw") (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxSwaps₁))))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))
   (Let "$r1" (Val decreasingHint)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1604,7 +1604,7 @@ noncomputable def choosePivotCmpFunc.impl [GooseExts] [GoGlobalContext] (E₀ : 
   (App (App (App (App (App (App (App (Val (GoInstruction (FuncResolve medianCmpFunc [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")) (Var "$a5"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "j") (Var "$r0")))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "l")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val shortestNinther₀)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "l")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val shortestNinther₁)))))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
   (Let "$a2" (Var "swaps")
@@ -2460,7 +2460,7 @@ noncomputable def pdqsortOrdered.impl [GooseExts] [GoGlobalContext] (E₀ : go.G
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
   (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
-  (let maxInsertion₀ := #(12 : Int);
+  (let maxInsertion₁ := #(12 : Int);
   (Let "$r0" (Val #true)
   (Let "wasPartitioned" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2627,7 +2627,7 @@ noncomputable def pdqsortOrdered.impl [GooseExts] [GoGlobalContext] (E₀ : go.G
   (App (App (App (App (Val (GoInstruction (FuncResolve heapSortOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))
   (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "length")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxInsertion₀)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "length")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxInsertion₁)))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -2910,8 +2910,8 @@ noncomputable def partialInsertionSortOrdered.impl [GooseExts] [GoGlobalContext]
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
   (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
-  (let maxSteps₀ := #(5 : Int);
-  (let shortestShifting₀ := #(50 : Int);
+  (let maxSteps₁ := #(5 : Int);
+  (let shortestShifting₁ := #(50 : Int);
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 1))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2926,7 +2926,7 @@ noncomputable def partialInsertionSortOrdered.impl [GooseExts] [GoGlobalContext]
   (Let "j" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
-  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxSteps₀)))))) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxSteps₁)))))) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2999,7 +2999,7 @@ noncomputable def partialInsertionSortOrdered.impl [GooseExts] [GoGlobalContext]
   (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore E₀))) (Pair (Var "$l0") (Var "$r0")))))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val shortestShifting₀)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val shortestShifting₁)))))
   (Let "$r0" (Val #false)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -3116,8 +3116,8 @@ noncomputable def choosePivotOrdered.impl [GooseExts] [GoGlobalContext] (E₀ : 
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
   (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType E₀)))) (Var "data"))
-  (let shortestNinther₀ := #(50 : Int);
-  (let maxSwaps₀ := #(12 : Int);
+  (let shortestNinther₁ := #(50 : Int);
+  (let maxSwaps₁ := #(12 : Int);
   (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
   (Let "l" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -3144,7 +3144,7 @@ noncomputable def choosePivotOrdered.impl [GooseExts] [GoGlobalContext] (E₀ : 
   (App (Val (GoInstruction (GoStore sortedHint.ty))) (Pair (Var "$res1") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
-  (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Var "$sw") (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxSwaps₀))))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Var "$sw") (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxSwaps₁))))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))
   (Let "$r1" (Val decreasingHint)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -3175,7 +3175,7 @@ noncomputable def choosePivotOrdered.impl [GooseExts] [GoGlobalContext] (E₀ : 
   (App (App (App (App (App (App (Val (GoInstruction (FuncResolve medianOrdered [E₀]))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "j") (Var "$r0")))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "l")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val shortestNinther₀)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "l")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val shortestNinther₁)))))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
   (Let "$a2" (Var "swaps")

@@ -552,7 +552,7 @@ noncomputable def ParseUint.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "bitSize" (App (Val (GoInstruction (GoAlloc go.int))) (Var "bitSize"))
   (Let "base" (App (Val (GoInstruction (GoAlloc go.int))) (Var "base"))
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
-  (let fnParseUint₀ := #(go!"ParseUint");
+  (let fnParseUint₁ := #(go!"ParseUint");
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "base")) (Val #(W64 0))))
   (Let "base0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -846,7 +846,7 @@ noncomputable def ParseInt.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "bitSize" (App (Val (GoInstruction (GoAlloc go.int))) (Var "bitSize"))
   (Let "base" (App (Val (GoInstruction (GoAlloc go.int))) (Var "base"))
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
-  (let fnParseInt₀ := #(go!"ParseInt");
+  (let fnParseInt₁ := #(go!"ParseInt");
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #false)
   (Let "neg" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -986,7 +986,7 @@ noncomputable def Atoi.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$res1" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
-  (let fnAtoi₀ := #(go!"Atoi");
+  (let fnAtoi₁ := #(go!"Atoi");
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
   (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))
   (Let "sLen" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))

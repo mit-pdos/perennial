@@ -23,34 +23,34 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.synctest.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.synctest.Assumptions]
 
 noncomputable instance typed_pointsto'Bubble :
-    TypedPointsto (GF := GF) internal.synctest.Bubble where
+    TypedPointsto (GF := GF) _root_.Perennial.internal.synctest.Bubble where
   typedPointstoDef l v dq := iprop(
-    "b" ∷ typedPointsto (structFieldRef internal.synctest.Bubble go!"b" l) v.b' dq ∗
+    "b" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.synctest.Bubble go!"b" l) v.b' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'Bubble :
-    IntoValTypedUnderlying (GF := GF) internal.synctest.Bubble internal.synctest.Bubble.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.synctest.Bubble _root_.Perennial.internal.synctest.Bubble.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'Bubble'b (l : Loc) (v : internal.synctest.Bubble) (dq : DFrac) :
+noncomputable instance access_load'Bubble'b (l : Loc) (v : _root_.Perennial.internal.synctest.Bubble) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.synctest.Bubble go!"b" l) v.b' dq)
-      (typedPointsto (structFieldRef internal.synctest.Bubble go!"b" l) v.b' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.synctest.Bubble go!"b" l) v.b' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.synctest.Bubble go!"b" l) v.b' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Bubble'b (l : Loc) (v : internal.synctest.Bubble) (y : GoInterface) :
+noncomputable instance access_store'Bubble'b (l : Loc) (v : _root_.Perennial.internal.synctest.Bubble) (y : GoInterface) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.synctest.Bubble go!"b" l) v.b' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.synctest.Bubble go!"b" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with b' := y } : internal.synctest.Bubble) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.synctest.Bubble go!"b" l) v.b' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.synctest.Bubble go!"b" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with b' := y } : _root_.Perennial.internal.synctest.Bubble) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

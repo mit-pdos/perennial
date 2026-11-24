@@ -22,10 +22,10 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : iter.Assumptions]
+variable [package_sem' : _root_.Perennial.iter.Assumptions]
 
 noncomputable instance typed_pointsto'coro :
-    TypedPointsto (GF := GF) iter.coro where
+    TypedPointsto (GF := GF) _root_.Perennial.iter.coro where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -33,7 +33,7 @@ noncomputable instance typed_pointsto'coro :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'coro :
-    IntoValTypedUnderlying (GF := GF) iter.coro iter.coro.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.iter.coro _root_.Perennial.iter.coro.underlying := by
   solve_into_val_typed_struct
 
 end def_

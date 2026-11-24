@@ -974,7 +974,7 @@ noncomputable def convertToInterface [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def topCatch [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.topCatch"
 
-noncomputable def topCatch'deferred [GooseExts] [GoGlobalContext] : GoString :=
+noncomputable def deferred'topCatch [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.topCatch'deferred"
 
 noncomputable def deferFuncValue [GooseExts] [GoGlobalContext] : GoString :=
@@ -2660,8 +2660,8 @@ noncomputable def negUnderflowConsts.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$res4" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
   (Let "$res5" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (let local₀ := #(mkRat (-1 : Int) 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
-  (let local32₀ := #(W32 0);
+  (let local₁ := #(mkRat (-1 : Int) 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
+  (let local32₁ := #(W32 0);
   (Let "$r0" (Val #(W32 0))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -2742,7 +2742,7 @@ noncomputable def float32Consts.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.float32)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.float32)))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (let local₀ := #(W32 1065353217);
+  (let local₁ := #(W32 1065353217);
   (Let "$r0" (Val #(W32 1065353217))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -4954,7 +4954,7 @@ noncomputable def ReassignVars.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))
 
 /-- go: recover_deferred.go:13:14 -/
-noncomputable def pp.catchPanic'deferred.impl [GooseExts] [GoGlobalContext] : val :=
+noncomputable def pp.deferred'catchPanic.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam "$recover"
   (Lam "verb"
@@ -5071,7 +5071,7 @@ noncomputable def pp.handleMethods.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))))
 
 /-- go: recover_deferred.go:43:19 -/
-noncomputable def valCatcher.catch'deferred.impl [GooseExts] [GoGlobalContext] : val :=
+noncomputable def valCatcher.deferred'catch.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "$recover"
   (Lam BAnon
@@ -5187,7 +5187,7 @@ noncomputable def convertToInterface.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad catcherI.ty))) (Var "$res0")))))
 
 /-- go: recover_deferred.go:83:6 -/
-noncomputable def topCatch'deferred.impl [GooseExts] [GoGlobalContext] : val :=
+noncomputable def deferred'topCatch.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "$recover"
   (Lam BAnon
   (Seq (App (Val exceptionDo)
@@ -6504,9 +6504,9 @@ noncomputable def LocalConsts.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "x" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "$res0" (Var "x")
   (Seq (App (Val exceptionDo)
-  (let c₀ := #(10 : Int);
-  (let d₀ := #(15 : Int);
-  (let e₀ := #(8 : Int);
+  (let c₁ := #(10 : Int);
+  (let d₁ := #(15 : Int);
+  (let e₁ := #(8 : Int);
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "x"))
@@ -6516,9 +6516,9 @@ noncomputable def LocalConsts.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val d₀))))))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val d₁))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val c₀))))))))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val c₁))))))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest where
@@ -7748,7 +7748,7 @@ class pp.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSeman
   set'panicking : ∀ (x : pp) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet pp.underlying go!"panicking") (PairV #x #y) (Val #(({ x with panicking' := y } : pp)))
   method_set : go.MethodSetIs pp.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType pp.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.catchPanic", (some (go.signature.Signature [go.byte, go.string] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.handleMethods", (some (go.signature.Signature [go.any, go.byte] false [go.bool])))]
-  ptr_unfold'catchPanic'deferred : MethodUnfold (go.GoType.PointerType pp.ty) go!"catchPanic'deferred" pp.catchPanic'deferred.impl
+  ptr_unfold'catchPanic'deferred : MethodUnfold (go.GoType.PointerType pp.ty) go!"catchPanic'deferred" pp.deferred'catchPanic.impl
   ptr_unfold'handleMethods : MethodUnfold (go.GoType.PointerType pp.ty) go!"handleMethods" pp.handleMethods.impl
 
 attribute [instance] pp.TypeAssumptions.type_repr
@@ -7800,7 +7800,7 @@ class valCatcher.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] 
   underlying : go.UnderlyingDirectedEq valCatcher.ty valCatcher.underlying
   method_set : go.MethodSetIs valCatcher.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.catch", (some (go.signature.Signature [] false [])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType valCatcher.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.catch", (some (go.signature.Signature [] false [])))]
-  unfold'catch'deferred : MethodUnfold valCatcher.ty go!"catch'deferred" valCatcher.catch'deferred.impl
+  unfold'catch'deferred : MethodUnfold valCatcher.ty go!"catch'deferred" valCatcher.deferred'catch.impl
   ptr_unfold'catch'deferred : MethodUnfold (go.GoType.PointerType valCatcher.ty) go!"catch'deferred" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve valCatcher.ty go!"catch'deferred"))) (App (Val (GoInstruction (GoLoad valCatcher.ty))) (Var "$r"))))
 
@@ -8592,7 +8592,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   unfold'deferInterfaceMethod : FuncUnfold deferInterfaceMethod [] deferInterfaceMethod.impl
   unfold'directCall : FuncUnfold directCall [] directCall.impl
   unfold'convertToInterface : FuncUnfold convertToInterface [] convertToInterface.impl
-  unfold'topCatch'deferred : FuncUnfold topCatch'deferred [] topCatch'deferred.impl
+  unfold'topCatch'deferred : FuncUnfold deferred'topCatch [] deferred'topCatch.impl
   unfold'deferFuncValue : FuncUnfold deferFuncValue [] deferFuncValue.impl
   unfold'recur : FuncUnfold recur [] recur.impl
   unfold'useRenamedImport : FuncUnfold useRenamedImport [] useRenamedImport.impl

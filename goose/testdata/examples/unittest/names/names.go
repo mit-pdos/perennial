@@ -4,6 +4,8 @@
 // declarations share a name).
 package names
 
+import gopkg "github.com/mit-pdos/perennial/goose/testdata/examples/unittest/names/go"
+
 // A Lean keyword as a type name (Type”), and a field of that name
 // and type (the projection Type'): inside namespace IntOrString, the type
 // must not resolve to the projection.
@@ -182,3 +184,29 @@ func localConst() int {
 type 名 int64
 
 func λ(x 名) 名 { return x }
+
+// The builtin len (the framework's go.len) next to an imported package at a
+// path ending in `go` that declares len.
+func usesBuiltinLen(s []int) int {
+	gopkg.Used()
+	return len(s)
+}
+
+// A function that calls recover() (translated only as its recovering variant,
+// deferred'instance) next to a type named `deferred` (whose Assumptions member
+// is instance'deferred).
+type deferred int64
+
+func instance() { recover() }
+
+func usesInstance() {
+	defer instance()
+}
+
+// A function-local constant that shadows the type parameter (T₁ and T₀).
+func shadowTP[T any](x T) int {
+	{
+		const T = 5
+		return T
+	}
+}

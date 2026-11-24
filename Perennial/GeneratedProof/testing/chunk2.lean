@@ -27,119 +27,119 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : testing.Assumptions]
+variable [package_sem' : _root_.Perennial.testing.Assumptions]
 
 noncomputable instance «typed_pointsto'struct#b304a786» :
-    TypedPointsto (GF := GF) testing.«struct#b304a786» where
+    TypedPointsto (GF := GF) _root_.Perennial.testing.«struct#b304a786» where
   typedPointstoDef l v dq := iprop(
-    "Parent" ∷ typedPointsto (structFieldRef testing.«struct#b304a786» go!"Parent" l) v.Parent' dq ∗
-    "Path" ∷ typedPointsto (structFieldRef testing.«struct#b304a786» go!"Path" l) v.Path' dq ∗
-    "Data" ∷ typedPointsto (structFieldRef testing.«struct#b304a786» go!"Data" l) v.Data' dq ∗
-    "Values" ∷ typedPointsto (structFieldRef testing.«struct#b304a786» go!"Values" l) v.Values' dq ∗
-    "Generation" ∷ typedPointsto (structFieldRef testing.«struct#b304a786» go!"Generation" l) v.Generation' dq ∗
-    "IsSeed" ∷ typedPointsto (structFieldRef testing.«struct#b304a786» go!"IsSeed" l) v.IsSeed' dq ∗
+    "Parent" ∷ typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Parent" l) v.Parent' dq ∗
+    "Path" ∷ typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Path" l) v.Path' dq ∗
+    "Data" ∷ typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Data" l) v.Data' dq ∗
+    "Values" ∷ typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Values" l) v.Values' dq ∗
+    "Generation" ∷ typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Generation" l) v.Generation' dq ∗
+    "IsSeed" ∷ typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"IsSeed" l) v.IsSeed' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance «into_val_typed'struct#b304a786» :
-    IntoValTypedUnderlying (GF := GF) testing.«struct#b304a786» testing.«struct#b304a786».underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.testing.«struct#b304a786» _root_.Perennial.testing.«struct#b304a786».underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance «access_load'struct#b304a786'Parent» (l : Loc) (v : testing.«struct#b304a786») (dq : DFrac) :
+noncomputable instance «access_load'struct#b304a786'Parent» (l : Loc) (v : _root_.Perennial.testing.«struct#b304a786») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Parent" l) v.Parent' dq)
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Parent" l) v.Parent' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Parent" l) v.Parent' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Parent" l) v.Parent' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'struct#b304a786'Parent» (l : Loc) (v : testing.«struct#b304a786») (y : GoString) :
+noncomputable instance «access_store'struct#b304a786'Parent» (l : Loc) (v : _root_.Perennial.testing.«struct#b304a786») (y : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Parent" l) v.Parent' (DFrac.own 1))
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Parent" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Parent' := y } : testing.«struct#b304a786») (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Parent" l) v.Parent' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Parent" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Parent' := y } : _root_.Perennial.testing.«struct#b304a786») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_load'struct#b304a786'Path» (l : Loc) (v : testing.«struct#b304a786») (dq : DFrac) :
+noncomputable instance «access_load'struct#b304a786'Path» (l : Loc) (v : _root_.Perennial.testing.«struct#b304a786») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Path" l) v.Path' dq)
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Path" l) v.Path' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Path" l) v.Path' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Path" l) v.Path' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'struct#b304a786'Path» (l : Loc) (v : testing.«struct#b304a786») (y : GoString) :
+noncomputable instance «access_store'struct#b304a786'Path» (l : Loc) (v : _root_.Perennial.testing.«struct#b304a786») (y : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Path" l) v.Path' (DFrac.own 1))
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Path" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Path' := y } : testing.«struct#b304a786») (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Path" l) v.Path' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Path" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Path' := y } : _root_.Perennial.testing.«struct#b304a786») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_load'struct#b304a786'Data» (l : Loc) (v : testing.«struct#b304a786») (dq : DFrac) :
+noncomputable instance «access_load'struct#b304a786'Data» (l : Loc) (v : _root_.Perennial.testing.«struct#b304a786») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Data" l) v.Data' dq)
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Data" l) v.Data' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Data" l) v.Data' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Data" l) v.Data' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'struct#b304a786'Data» (l : Loc) (v : testing.«struct#b304a786») (y : GoSlice) :
+noncomputable instance «access_store'struct#b304a786'Data» (l : Loc) (v : _root_.Perennial.testing.«struct#b304a786») (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Data" l) v.Data' (DFrac.own 1))
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Data" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Data' := y } : testing.«struct#b304a786») (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Data" l) v.Data' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Data" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Data' := y } : _root_.Perennial.testing.«struct#b304a786») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_load'struct#b304a786'Values» (l : Loc) (v : testing.«struct#b304a786») (dq : DFrac) :
+noncomputable instance «access_load'struct#b304a786'Values» (l : Loc) (v : _root_.Perennial.testing.«struct#b304a786») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Values" l) v.Values' dq)
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Values" l) v.Values' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Values" l) v.Values' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Values" l) v.Values' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'struct#b304a786'Values» (l : Loc) (v : testing.«struct#b304a786») (y : GoSlice) :
+noncomputable instance «access_store'struct#b304a786'Values» (l : Loc) (v : _root_.Perennial.testing.«struct#b304a786») (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Values" l) v.Values' (DFrac.own 1))
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Values" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Values' := y } : testing.«struct#b304a786») (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Values" l) v.Values' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Values" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Values' := y } : _root_.Perennial.testing.«struct#b304a786») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_load'struct#b304a786'Generation» (l : Loc) (v : testing.«struct#b304a786») (dq : DFrac) :
+noncomputable instance «access_load'struct#b304a786'Generation» (l : Loc) (v : _root_.Perennial.testing.«struct#b304a786») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Generation" l) v.Generation' dq)
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Generation" l) v.Generation' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Generation" l) v.Generation' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Generation" l) v.Generation' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'struct#b304a786'Generation» (l : Loc) (v : testing.«struct#b304a786») (y : w64) :
+noncomputable instance «access_store'struct#b304a786'Generation» (l : Loc) (v : _root_.Perennial.testing.«struct#b304a786») (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Generation" l) v.Generation' (DFrac.own 1))
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"Generation" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Generation' := y } : testing.«struct#b304a786») (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Generation" l) v.Generation' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"Generation" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Generation' := y } : _root_.Perennial.testing.«struct#b304a786») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_load'struct#b304a786'IsSeed» (l : Loc) (v : testing.«struct#b304a786») (dq : DFrac) :
+noncomputable instance «access_load'struct#b304a786'IsSeed» (l : Loc) (v : _root_.Perennial.testing.«struct#b304a786») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"IsSeed" l) v.IsSeed' dq)
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"IsSeed" l) v.IsSeed' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"IsSeed" l) v.IsSeed' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"IsSeed" l) v.IsSeed' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «access_store'struct#b304a786'IsSeed» (l : Loc) (v : testing.«struct#b304a786») (y : Bool) :
+noncomputable instance «access_store'struct#b304a786'IsSeed» (l : Loc) (v : _root_.Perennial.testing.«struct#b304a786») (y : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"IsSeed" l) v.IsSeed' (DFrac.own 1))
-      (typedPointsto (structFieldRef testing.«struct#b304a786» go!"IsSeed" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with IsSeed' := y } : testing.«struct#b304a786») (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"IsSeed" l) v.IsSeed' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.testing.«struct#b304a786» go!"IsSeed" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with IsSeed' := y } : _root_.Perennial.testing.«struct#b304a786») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

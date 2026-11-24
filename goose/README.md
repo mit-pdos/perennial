@@ -51,8 +51,8 @@ printed as plain constructor applications of `Perennial/GooseLang/Lang.lean`.
 One rule per kind of name (`glang/syntax.go`):
 
 - a struct field `F` is the projection `F'`;
-- a name bound inside a declaration, a type parameter or a function-local
-  constant `P`, is `P₀` (a type parameter's value type is `P₀'`; `BinderName`);
+- a type parameter `P` is `P₀` (its value type `P₀'`; `BinderName`), a
+  function-local constant `c` is `c₁` (`LocalConstName`);
 - every other Go name `X` (type, function, global, method) is `X`, or `X''` when
   `X` is reserved (`GoName`): a Lean keyword (`Type`, `def`, `at`, ...), a
   framework, Iris or Lean name the output refers to unqualified (`Val`, `Pair`,
@@ -63,24 +63,31 @@ One rule per kind of name (`glang/syntax.go`):
   field `Type` is `Type'`;
 - a generated name derived from a Go name `x` is `tag'x` (`MemberName`): the class
   members `get'F`, `set'F`, `unfold'M`, `ptr_unfold'M`, `instance'T`, `unfold'f`,
-  `import'p`, and the instances `equals_unfold'T`, `typed_pointsto'T`,
-  `into_val_typed'T`, `access_load'T'F`, `access_store'T'F`.
+  `import'p`, the instances `equals_unfold'T`, `typed_pointsto'T`,
+  `into_val_typed'T`, `access_load'T'F`, `access_store'T'F`, and `deferred'F`, the
+  variant goose translates a function that calls `recover()` to;
+- a package's namespace is its path's components, a component that is a framework
+  namespace (`go`, `chan`, `map`, `slice`, `pkg_id`, ...) renamed `c''`
+  (`NamespacePath`: `go/token` is `go''.token`).
 
 Guillemets are a lexing fallback, not a conflict rule: Go identifiers may use
 Unicode letters and digits that Lean's identifier lexer rejects (`名`, `λ`), and
 such a name is written in guillemets (`«名»`; goose quotes every non-ASCII name,
-`«é»` too), which does not change the name.
-(Goose also quotes its own encoded names, `«struct#<h>»`, `«_#0'»`, `init.«0»`,
-which are not Go identifiers, and package-path components that are Lean keywords
-in namespaces, `pkg_id.«unsafe»`.)
+`«é»` too), which does not change the name. (Goose also quotes its own encoded
+names, `«struct#<h>»`, `«_#0'»`, `init.«0»`, which are not Go identifiers, and
+package-path components that are Lean keywords, `pkg_id.«unsafe»`.)
 
-Go identifiers contain no `'` and no subscript digit, so the four forms cannot
-meet: a field projection `S.F'` or a class member cannot capture a type,
-function, global or method, a binder cannot capture a package-level name, and
-no two generated names coincide. Every other name the output refers to
-unqualified is reserved; `TestOutputNamesReserved` checks this against the
-outputs of the test packages, and `testdata/examples/unittest/names` has a case
-for each kind of capture.
+Go identifiers contain no `'` and no subscript digit, so these forms cannot meet:
+a field projection `S.F'` or a class member cannot capture a type, function,
+global or method, a binder cannot capture a package-level name, and no two
+generated names coincide. References to other packages are rooted
+(`_root_.Perennial.<ns>.X`, in goose's and proofgen's output); every other name
+the output refers to unqualified is reserved, and every relative dotted reference
+(`go.len`, `chan.send`) starts with a reserved name, a Go name of the package or a
+framework namespace, which no package namespace contains. `TestOutputNamesReserved`
+checks this against goose's and (freshly generated) proofgen's outputs of the test
+packages, and `testdata/examples/unittest/names` has a case for each kind of
+capture.
 
 ## Running goose
 

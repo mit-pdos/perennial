@@ -23,51 +23,51 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics]
-variable [package_sem' : github_com.mit_pdos.perennial.goose.model.pool.Assumptions]
+variable [package_sem' : _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Assumptions]
 
 noncomputable instance typed_pointsto'Pool :
-    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.model.pool.Pool where
+    TypedPointsto (GF := GF) _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool where
   typedPointstoDef l v dq := iprop(
-    "mu" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.model.pool.Pool go!"mu" l) v.mu' dq ∗
-    "items" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.model.pool.Pool go!"items" l) v.items' dq ∗
+    "mu" ∷ typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool go!"mu" l) v.mu' dq ∗
+    "items" ∷ typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool go!"items" l) v.items' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'Pool :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.model.pool.Pool github_com.mit_pdos.perennial.goose.model.pool.Pool.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'Pool'mu (l : Loc) (v : github_com.mit_pdos.perennial.goose.model.pool.Pool) (dq : DFrac) :
+noncomputable instance access_load'Pool'mu (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.model.pool.Pool go!"mu" l) v.mu' dq)
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.model.pool.Pool go!"mu" l) v.mu' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool go!"mu" l) v.mu' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool go!"mu" l) v.mu' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Pool'mu (l : Loc) (v : github_com.mit_pdos.perennial.goose.model.pool.Pool) (y : _root_.Perennial.github_com.goose_lang.primitive.Mutex) :
+noncomputable instance access_store'Pool'mu (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool) (y : _root_.Perennial._root_.Perennial.github_com.goose_lang.primitive.Mutex) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.model.pool.Pool go!"mu" l) v.mu' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.model.pool.Pool go!"mu" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := y } : github_com.mit_pdos.perennial.goose.model.pool.Pool) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool go!"mu" l) v.mu' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool go!"mu" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := y } : _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Pool'items (l : Loc) (v : github_com.mit_pdos.perennial.goose.model.pool.Pool) (dq : DFrac) :
+noncomputable instance access_load'Pool'items (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.model.pool.Pool go!"items" l) v.items' dq)
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.model.pool.Pool go!"items" l) v.items' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool go!"items" l) v.items' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool go!"items" l) v.items' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Pool'items (l : Loc) (v : github_com.mit_pdos.perennial.goose.model.pool.Pool) (y : GoSlice) :
+noncomputable instance access_store'Pool'items (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool) (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.model.pool.Pool go!"items" l) v.items' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.model.pool.Pool go!"items" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with items' := y } : github_com.mit_pdos.perennial.goose.model.pool.Pool) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool go!"items" l) v.items' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool go!"items" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with items' := y } : _root_.Perennial.github_com.mit_pdos.perennial.goose.model.pool.Pool) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

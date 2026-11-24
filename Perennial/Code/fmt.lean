@@ -2494,8 +2494,8 @@ noncomputable def tooLarge.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.int))) (Var "x"))
-  (let max₀ := #(W64 1000000);
-  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (Val max₀))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (App (Val (GoInstruction (GoUnOp GoNeg go.int))) (Val max₀)))))
+  (let max₁ := #(W64 1000000);
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (Val max₁))) (Val #true) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (App (Val (GoInstruction (GoUnOp GoNeg go.int))) (Val max₁)))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -3092,7 +3092,7 @@ noncomputable def pp.fmtPointer.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))))
 
 /-- go: print.go:588:14 -/
-noncomputable def pp.catchPanic'deferred.impl [GooseExts] [GoGlobalContext] : val :=
+noncomputable def pp.deferred'catchPanic.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam "$recover"
   (Lam "arg"
@@ -5176,7 +5176,7 @@ class pp.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSeman
   ptr_unfold'argNumber : MethodUnfold (go.GoType.PointerType pp.ty) go!"argNumber" pp.argNumber.impl
   ptr_unfold'badArgNum : MethodUnfold (go.GoType.PointerType pp.ty) go!"badArgNum" pp.badArgNum.impl
   ptr_unfold'badVerb : MethodUnfold (go.GoType.PointerType pp.ty) go!"badVerb" pp.badVerb.impl
-  ptr_unfold'catchPanic'deferred : MethodUnfold (go.GoType.PointerType pp.ty) go!"catchPanic'deferred" pp.catchPanic'deferred.impl
+  ptr_unfold'catchPanic'deferred : MethodUnfold (go.GoType.PointerType pp.ty) go!"catchPanic'deferred" pp.deferred'catchPanic.impl
   ptr_unfold'doPrint : MethodUnfold (go.GoType.PointerType pp.ty) go!"doPrint" pp.doPrint.impl
   ptr_unfold'doPrintf : MethodUnfold (go.GoType.PointerType pp.ty) go!"doPrintf" pp.doPrintf.impl
   ptr_unfold'doPrintln : MethodUnfold (go.GoType.PointerType pp.ty) go!"doPrintln" pp.doPrintln.impl

@@ -23,14 +23,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : github_com.mit_pdos.gokv.grove_ffi.Assumptions]
+variable [package_sem' : _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.Assumptions]
 
 noncomputable instance typed_pointsto'listener :
-    TypedPointsto (GF := GF) github_com.mit_pdos.gokv.grove_ffi.listener :=
+    TypedPointsto (GF := GF) _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.listener :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'listener :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.gokv.grove_ffi.listener github_com.mit_pdos.gokv.grove_ffi.listener.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.listener _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.listener.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -42,14 +42,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : github_com.mit_pdos.gokv.grove_ffi.Assumptions]
+variable [package_sem' : _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.Assumptions]
 
 noncomputable instance typed_pointsto'connection :
-    TypedPointsto (GF := GF) github_com.mit_pdos.gokv.grove_ffi.connection :=
+    TypedPointsto (GF := GF) _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.connection :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'connection :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.gokv.grove_ffi.connection github_com.mit_pdos.gokv.grove_ffi.connection.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.connection _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.connection.underlying :=
   sorry -- axiomatized type
 
 end def_
@@ -61,51 +61,51 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : github_com.mit_pdos.gokv.grove_ffi.Assumptions]
+variable [package_sem' : _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.Assumptions]
 
 noncomputable instance typed_pointsto'ConnectRet :
-    TypedPointsto (GF := GF) github_com.mit_pdos.gokv.grove_ffi.ConnectRet where
+    TypedPointsto (GF := GF) _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ConnectRet where
   typedPointstoDef l v dq := iprop(
-    "Err" ∷ typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Err" l) v.Err' dq ∗
-    "Connection" ∷ typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Connection" l) v.Connection' dq ∗
+    "Err" ∷ typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Err" l) v.Err' dq ∗
+    "Connection" ∷ typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Connection" l) v.Connection' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'ConnectRet :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.gokv.grove_ffi.ConnectRet github_com.mit_pdos.gokv.grove_ffi.ConnectRet.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ConnectRet _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ConnectRet.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'ConnectRet'Err (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (dq : DFrac) :
+noncomputable instance access_load'ConnectRet'Err (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Err" l) v.Err' dq)
-      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Err" l) v.Err' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Err" l) v.Err' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Err" l) v.Err' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'ConnectRet'Err (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (y : Bool) :
+noncomputable instance access_store'ConnectRet'Err (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (y : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Err" l) v.Err' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Err" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Err' := y } : github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Err" l) v.Err' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Err" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Err' := y } : _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'ConnectRet'Connection (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (dq : DFrac) :
+noncomputable instance access_load'ConnectRet'Connection (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Connection" l) v.Connection' dq)
-      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Connection" l) v.Connection' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Connection" l) v.Connection' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Connection" l) v.Connection' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'ConnectRet'Connection (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (y : github_com.mit_pdos.gokv.grove_ffi.Connection) :
+noncomputable instance access_store'ConnectRet'Connection (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (y : _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.Connection) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Connection" l) v.Connection' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Connection" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Connection' := y } : github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Connection" l) v.Connection' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ConnectRet go!"Connection" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Connection' := y } : _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ConnectRet) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -118,51 +118,51 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : github_com.mit_pdos.gokv.grove_ffi.Assumptions]
+variable [package_sem' : _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.Assumptions]
 
 noncomputable instance typed_pointsto'ReceiveRet :
-    TypedPointsto (GF := GF) github_com.mit_pdos.gokv.grove_ffi.ReceiveRet where
+    TypedPointsto (GF := GF) _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ReceiveRet where
   typedPointstoDef l v dq := iprop(
-    "Err" ∷ typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Err" l) v.Err' dq ∗
-    "Data" ∷ typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Data" l) v.Data' dq ∗
+    "Err" ∷ typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Err" l) v.Err' dq ∗
+    "Data" ∷ typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Data" l) v.Data' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'ReceiveRet :
-    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.gokv.grove_ffi.ReceiveRet github_com.mit_pdos.gokv.grove_ffi.ReceiveRet.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ReceiveRet _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ReceiveRet.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'ReceiveRet'Err (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (dq : DFrac) :
+noncomputable instance access_load'ReceiveRet'Err (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Err" l) v.Err' dq)
-      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Err" l) v.Err' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Err" l) v.Err' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Err" l) v.Err' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'ReceiveRet'Err (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (y : Bool) :
+noncomputable instance access_store'ReceiveRet'Err (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (y : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Err" l) v.Err' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Err" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Err' := y } : github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Err" l) v.Err' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Err" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Err' := y } : _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'ReceiveRet'Data (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (dq : DFrac) :
+noncomputable instance access_load'ReceiveRet'Data (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Data" l) v.Data' dq)
-      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Data" l) v.Data' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Data" l) v.Data' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Data" l) v.Data' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'ReceiveRet'Data (l : Loc) (v : github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (y : GoSlice) :
+noncomputable instance access_store'ReceiveRet'Data (l : Loc) (v : _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Data" l) v.Data' (DFrac.own 1))
-      (typedPointsto (structFieldRef github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Data" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Data' := y } : github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Data" l) v.Data' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ReceiveRet go!"Data" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Data' := y } : _root_.Perennial.github_com.mit_pdos.gokv.grove_ffi.ReceiveRet) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

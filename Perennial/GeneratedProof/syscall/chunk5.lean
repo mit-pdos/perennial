@@ -24,170 +24,170 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : syscall.Assumptions]
+variable [package_sem' : _root_.Perennial.syscall.Assumptions]
 
 noncomputable instance typed_pointsto'Termios :
-    TypedPointsto (GF := GF) syscall.Termios where
+    TypedPointsto (GF := GF) _root_.Perennial.syscall.Termios where
   typedPointstoDef l v dq := iprop(
-    "Iflag" ∷ typedPointsto (structFieldRef syscall.Termios go!"Iflag" l) v.Iflag' dq ∗
-    "Oflag" ∷ typedPointsto (structFieldRef syscall.Termios go!"Oflag" l) v.Oflag' dq ∗
-    "Cflag" ∷ typedPointsto (structFieldRef syscall.Termios go!"Cflag" l) v.Cflag' dq ∗
-    "Lflag" ∷ typedPointsto (structFieldRef syscall.Termios go!"Lflag" l) v.Lflag' dq ∗
-    "Line" ∷ typedPointsto (structFieldRef syscall.Termios go!"Line" l) v.Line' dq ∗
-    "Cc" ∷ typedPointsto (structFieldRef syscall.Termios go!"Cc" l) v.Cc' dq ∗
-    "Pad_cgo_0" ∷ typedPointsto (structFieldRef syscall.Termios go!"Pad_cgo_0" l) v.Pad_cgo_0' dq ∗
-    "Ispeed" ∷ typedPointsto (structFieldRef syscall.Termios go!"Ispeed" l) v.Ispeed' dq ∗
-    "Ospeed" ∷ typedPointsto (structFieldRef syscall.Termios go!"Ospeed" l) v.Ospeed' dq ∗
+    "Iflag" ∷ typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Iflag" l) v.Iflag' dq ∗
+    "Oflag" ∷ typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Oflag" l) v.Oflag' dq ∗
+    "Cflag" ∷ typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Cflag" l) v.Cflag' dq ∗
+    "Lflag" ∷ typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Lflag" l) v.Lflag' dq ∗
+    "Line" ∷ typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Line" l) v.Line' dq ∗
+    "Cc" ∷ typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Cc" l) v.Cc' dq ∗
+    "Pad_cgo_0" ∷ typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Pad_cgo_0" l) v.Pad_cgo_0' dq ∗
+    "Ispeed" ∷ typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Ispeed" l) v.Ispeed' dq ∗
+    "Ospeed" ∷ typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Ospeed" l) v.Ospeed' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'Termios :
-    IntoValTypedUnderlying (GF := GF) syscall.Termios syscall.Termios.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.syscall.Termios _root_.Perennial.syscall.Termios.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'Termios'Iflag (l : Loc) (v : syscall.Termios) (dq : DFrac) :
+noncomputable instance access_load'Termios'Iflag (l : Loc) (v : _root_.Perennial.syscall.Termios) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef syscall.Termios go!"Iflag" l) v.Iflag' dq)
-      (typedPointsto (structFieldRef syscall.Termios go!"Iflag" l) v.Iflag' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Iflag" l) v.Iflag' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Iflag" l) v.Iflag' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Termios'Iflag (l : Loc) (v : syscall.Termios) (y : w32) :
+noncomputable instance access_store'Termios'Iflag (l : Loc) (v : _root_.Perennial.syscall.Termios) (y : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef syscall.Termios go!"Iflag" l) v.Iflag' (DFrac.own 1))
-      (typedPointsto (structFieldRef syscall.Termios go!"Iflag" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Iflag' := y } : syscall.Termios) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Iflag" l) v.Iflag' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Iflag" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Iflag' := y } : _root_.Perennial.syscall.Termios) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Termios'Oflag (l : Loc) (v : syscall.Termios) (dq : DFrac) :
+noncomputable instance access_load'Termios'Oflag (l : Loc) (v : _root_.Perennial.syscall.Termios) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef syscall.Termios go!"Oflag" l) v.Oflag' dq)
-      (typedPointsto (structFieldRef syscall.Termios go!"Oflag" l) v.Oflag' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Oflag" l) v.Oflag' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Oflag" l) v.Oflag' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Termios'Oflag (l : Loc) (v : syscall.Termios) (y : w32) :
+noncomputable instance access_store'Termios'Oflag (l : Loc) (v : _root_.Perennial.syscall.Termios) (y : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef syscall.Termios go!"Oflag" l) v.Oflag' (DFrac.own 1))
-      (typedPointsto (structFieldRef syscall.Termios go!"Oflag" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Oflag' := y } : syscall.Termios) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Oflag" l) v.Oflag' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Oflag" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Oflag' := y } : _root_.Perennial.syscall.Termios) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Termios'Cflag (l : Loc) (v : syscall.Termios) (dq : DFrac) :
+noncomputable instance access_load'Termios'Cflag (l : Loc) (v : _root_.Perennial.syscall.Termios) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef syscall.Termios go!"Cflag" l) v.Cflag' dq)
-      (typedPointsto (structFieldRef syscall.Termios go!"Cflag" l) v.Cflag' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Cflag" l) v.Cflag' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Cflag" l) v.Cflag' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Termios'Cflag (l : Loc) (v : syscall.Termios) (y : w32) :
+noncomputable instance access_store'Termios'Cflag (l : Loc) (v : _root_.Perennial.syscall.Termios) (y : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef syscall.Termios go!"Cflag" l) v.Cflag' (DFrac.own 1))
-      (typedPointsto (structFieldRef syscall.Termios go!"Cflag" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Cflag' := y } : syscall.Termios) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Cflag" l) v.Cflag' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Cflag" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Cflag' := y } : _root_.Perennial.syscall.Termios) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Termios'Lflag (l : Loc) (v : syscall.Termios) (dq : DFrac) :
+noncomputable instance access_load'Termios'Lflag (l : Loc) (v : _root_.Perennial.syscall.Termios) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef syscall.Termios go!"Lflag" l) v.Lflag' dq)
-      (typedPointsto (structFieldRef syscall.Termios go!"Lflag" l) v.Lflag' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Lflag" l) v.Lflag' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Lflag" l) v.Lflag' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Termios'Lflag (l : Loc) (v : syscall.Termios) (y : w32) :
+noncomputable instance access_store'Termios'Lflag (l : Loc) (v : _root_.Perennial.syscall.Termios) (y : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef syscall.Termios go!"Lflag" l) v.Lflag' (DFrac.own 1))
-      (typedPointsto (structFieldRef syscall.Termios go!"Lflag" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Lflag' := y } : syscall.Termios) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Lflag" l) v.Lflag' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Lflag" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Lflag' := y } : _root_.Perennial.syscall.Termios) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Termios'Line (l : Loc) (v : syscall.Termios) (dq : DFrac) :
+noncomputable instance access_load'Termios'Line (l : Loc) (v : _root_.Perennial.syscall.Termios) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef syscall.Termios go!"Line" l) v.Line' dq)
-      (typedPointsto (structFieldRef syscall.Termios go!"Line" l) v.Line' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Line" l) v.Line' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Line" l) v.Line' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Termios'Line (l : Loc) (v : syscall.Termios) (y : w8) :
+noncomputable instance access_store'Termios'Line (l : Loc) (v : _root_.Perennial.syscall.Termios) (y : w8) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef syscall.Termios go!"Line" l) v.Line' (DFrac.own 1))
-      (typedPointsto (structFieldRef syscall.Termios go!"Line" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Line' := y } : syscall.Termios) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Line" l) v.Line' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Line" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Line' := y } : _root_.Perennial.syscall.Termios) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Termios'Cc (l : Loc) (v : syscall.Termios) (dq : DFrac) :
+noncomputable instance access_load'Termios'Cc (l : Loc) (v : _root_.Perennial.syscall.Termios) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef syscall.Termios go!"Cc" l) v.Cc' dq)
-      (typedPointsto (structFieldRef syscall.Termios go!"Cc" l) v.Cc' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Cc" l) v.Cc' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Cc" l) v.Cc' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Termios'Cc (l : Loc) (v : syscall.Termios) (y : (GoArray w8 32)) :
+noncomputable instance access_store'Termios'Cc (l : Loc) (v : _root_.Perennial.syscall.Termios) (y : (GoArray w8 32)) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef syscall.Termios go!"Cc" l) v.Cc' (DFrac.own 1))
-      (typedPointsto (structFieldRef syscall.Termios go!"Cc" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Cc' := y } : syscall.Termios) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Cc" l) v.Cc' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Cc" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Cc' := y } : _root_.Perennial.syscall.Termios) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Termios'Pad_cgo_0 (l : Loc) (v : syscall.Termios) (dq : DFrac) :
+noncomputable instance access_load'Termios'Pad_cgo_0 (l : Loc) (v : _root_.Perennial.syscall.Termios) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef syscall.Termios go!"Pad_cgo_0" l) v.Pad_cgo_0' dq)
-      (typedPointsto (structFieldRef syscall.Termios go!"Pad_cgo_0" l) v.Pad_cgo_0' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Pad_cgo_0" l) v.Pad_cgo_0' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Pad_cgo_0" l) v.Pad_cgo_0' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Termios'Pad_cgo_0 (l : Loc) (v : syscall.Termios) (y : (GoArray w8 3)) :
+noncomputable instance access_store'Termios'Pad_cgo_0 (l : Loc) (v : _root_.Perennial.syscall.Termios) (y : (GoArray w8 3)) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef syscall.Termios go!"Pad_cgo_0" l) v.Pad_cgo_0' (DFrac.own 1))
-      (typedPointsto (structFieldRef syscall.Termios go!"Pad_cgo_0" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Pad_cgo_0' := y } : syscall.Termios) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Pad_cgo_0" l) v.Pad_cgo_0' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Pad_cgo_0" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Pad_cgo_0' := y } : _root_.Perennial.syscall.Termios) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Termios'Ispeed (l : Loc) (v : syscall.Termios) (dq : DFrac) :
+noncomputable instance access_load'Termios'Ispeed (l : Loc) (v : _root_.Perennial.syscall.Termios) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef syscall.Termios go!"Ispeed" l) v.Ispeed' dq)
-      (typedPointsto (structFieldRef syscall.Termios go!"Ispeed" l) v.Ispeed' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Ispeed" l) v.Ispeed' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Ispeed" l) v.Ispeed' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Termios'Ispeed (l : Loc) (v : syscall.Termios) (y : w32) :
+noncomputable instance access_store'Termios'Ispeed (l : Loc) (v : _root_.Perennial.syscall.Termios) (y : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef syscall.Termios go!"Ispeed" l) v.Ispeed' (DFrac.own 1))
-      (typedPointsto (structFieldRef syscall.Termios go!"Ispeed" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Ispeed' := y } : syscall.Termios) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Ispeed" l) v.Ispeed' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Ispeed" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Ispeed' := y } : _root_.Perennial.syscall.Termios) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'Termios'Ospeed (l : Loc) (v : syscall.Termios) (dq : DFrac) :
+noncomputable instance access_load'Termios'Ospeed (l : Loc) (v : _root_.Perennial.syscall.Termios) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef syscall.Termios go!"Ospeed" l) v.Ospeed' dq)
-      (typedPointsto (structFieldRef syscall.Termios go!"Ospeed" l) v.Ospeed' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Ospeed" l) v.Ospeed' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Ospeed" l) v.Ospeed' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'Termios'Ospeed (l : Loc) (v : syscall.Termios) (y : w32) :
+noncomputable instance access_store'Termios'Ospeed (l : Loc) (v : _root_.Perennial.syscall.Termios) (y : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef syscall.Termios go!"Ospeed" l) v.Ospeed' (DFrac.own 1))
-      (typedPointsto (structFieldRef syscall.Termios go!"Ospeed" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Ospeed' := y } : syscall.Termios) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Ospeed" l) v.Ospeed' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.syscall.Termios go!"Ospeed" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Ospeed' := y } : _root_.Perennial.syscall.Termios) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

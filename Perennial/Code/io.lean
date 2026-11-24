@@ -800,7 +800,7 @@ noncomputable def NewSectionReader.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "off" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "off"))
   (Let "r" (App (Val (GoInstruction (GoAlloc ReaderAt.ty))) (Var "r"))
   (Let "remaining" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
-  (let maxint64₀ := #(9223372036854775807 : Int);
+  (let maxint64₁ := #(9223372036854775807 : Int);
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoAlloc SectionReader.ty))) (Let "$v0" (App (Val (GoInstruction (GoLoad ReaderAt.ty))) (Var "r"))
   (Let "$v1" (App (Val (GoInstruction (GoLoad go.int64))) (Var "off"))
@@ -813,11 +813,11 @@ noncomputable def NewSectionReader.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType SectionReader.ty)))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "off")) (App (Val (GoInstruction (GoOp GoSub go.int64))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (Val maxint64₀)) (App (Val (GoInstruction (GoLoad go.int64))) (Var "n")))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "off")) (App (Val (GoInstruction (GoOp GoSub go.int64))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (Val maxint64₁)) (App (Val (GoInstruction (GoLoad go.int64))) (Var "n")))))))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "n")) (App (Val (GoInstruction (GoLoad go.int64))) (Var "off"))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "remaining") (Var "$r0")))))
-  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (Val maxint64₀))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (Val maxint64₁))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "remaining") (Var "$r0")))))))))))))
   (App (Val (GoInstruction (GoLoad (go.GoType.PointerType SectionReader.ty)))) (Var "$res0")))))))

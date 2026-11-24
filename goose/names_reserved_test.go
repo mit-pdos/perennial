@@ -12,6 +12,8 @@ import (
 	"testing"
 
 	"github.com/mit-pdos/perennial/goose/glang"
+	"github.com/mit-pdos/perennial/goose/proofgen"
+	"github.com/mit-pdos/perennial/goose/util"
 )
 
 // goKeywords cannot be Go identifiers, so an output name that is one cannot be
@@ -83,11 +85,11 @@ var (
 // bareNames are the identifiers of a Lean file that name-resolution looks up
 // unqualified: every identifier not preceded by "." (the first component of a
 // dotted name included), outside comments, strings, and the module header.
-func bareNames(src string) map[string]bool {
+func bareNames(src string) (bare, dotted map[string]bool) {
 	src = leanBlockComment.ReplaceAllString(src, " ")
 	src = leanLineComment.ReplaceAllString(src, " ")
 	src = leanString.ReplaceAllString(src, `""`)
-	names := map[string]bool{}
+	bare, dotted = map[string]bool{}, map[string]bool{}
 	for _, line := range strings.Split(src, "\n") {
 		f := strings.Fields(line)
 		if len(f) > 0 && (f[0] == "module" || f[0] == "import" || f[0] == "namespace" ||
@@ -109,10 +111,14 @@ func bareNames(src string) map[string]bool {
 					continue
 				}
 			}
-			names[line[loc[0]:loc[1]]] = true
+			if loc[1] < len(line) && line[loc[1]] == '.' {
+				dotted[line[loc[0]:loc[1]]] = true
+			} else {
+				bare[line[loc[0]:loc[1]]] = true
+			}
 		}
 	}
-	return names
+	return bare, dotted
 }
 
 // TestOutputNamesReserved checks the premise of the naming scheme's
@@ -121,6 +127,14 @@ func bareNames(src string) map[string]bool {
 // refer to unqualified is either the Lean name of a Go declaration of the
 // package or a reserved name, so a Go declaration can never capture it.
 func TestOutputNamesReserved(t *testing.T) {
+	// proofgen's output of the test packages, generated afresh
+	genProof := t.TempDir()
+	util.Translate(proofgen.Package, []string{"./filteredimport", "./skipvars", "./semantics",
+		"./unittest/...", "./channel/...", "./crashfs/...", "./netfs/...", "./grovefile/...",
+		"./unsafememory/...", "./xpkgalias/...", "./modeloverlay"},
+		genProof, "testdata/examples", "../Perennial/Code", util.LoadOptions{})
+	genProof = filepath.Join(genProof, "github_com/mit_pdos/perennial/goose/testdata/examples")
+
 	missing := map[string][]string{}
 	check := func(dir, leanFile string) {
 		src, err := os.ReadFile(leanFile)
@@ -136,24 +150,29 @@ func TestOutputNamesReserved(t *testing.T) {
 		for g := range declaredGoNames(t, dir) {
 			declared[glang.GoName(g)] = true
 		}
-		for n := range bareNames(string(src)) {
-			// proofgen refers to the package's own declarations by their full
-			// namespace (github_com.….T): Lean resolves the whole name first,
-			// and a Go declaration named like its first component could add
-			// only a candidate with field projections on a constant, which
-			// does not elaborate (an error, not a capture)
-			if n == "github_com" {
-				continue
-			}
+		// generated names (tag'x, binders P₀, c₁) and quoted names are not Go
+		// names a declaration could take
+		generated := func(n string) bool { return strings.ContainsAny(n, "'«₀₁") }
+		bare, dotted := bareNames(string(src))
+		for n := range bare {
 			// go!"…" is a notation: its `go` cannot be a Go identifier
-			if strings.ContainsAny(n, "'«₀") || declared[n] || goKeywords[strings.TrimSuffix(n, "!")] || glang.IsReservedName(n) {
+			if generated(n) || declared[n] || goKeywords[strings.TrimSuffix(n, "!")] || glang.IsReservedName(n) {
 				continue
 			}
 			missing[n] = append(missing[n], leanFile)
 		}
+		// a relative dotted reference resolves inside every enclosing
+		// namespace first, so it must start with a Go name of the package, a
+		// reserved name (no Go declaration takes it), or a framework namespace
+		// (no package namespace has it as a component; glang.NamespacePath)
+		for n := range dotted {
+			if n == "_root_" || generated(n) || declared[n] || glang.IsReservedName(n) || glang.FrameworkNamespaces[n] {
+				continue
+			}
+			missing[n+"."] = append(missing[n+"."], leanFile)
+		}
 	}
 	root := "testdata/examples"
-	genProof := "../Perennial/GeneratedProof/github_com/mit_pdos/perennial/goose/testdata/examples"
 	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil || !d.IsDir() {
 			return err
@@ -163,7 +182,7 @@ func TestOutputNamesReserved(t *testing.T) {
 			check(path, g)
 		}
 		if rel, err := filepath.Rel(root, path); err == nil && rel != "." && len(golds) > 0 {
-			check(path, filepath.Join(genProof, rel+".lean"))
+			check(path, filepath.Join(genProof, glang.GoPathToIdentPath(rel)+".lean"))
 		}
 		return nil
 	})
@@ -176,6 +195,6 @@ func TestOutputNamesReserved(t *testing.T) {
 	}
 	sort.Strings(ns)
 	for _, n := range ns {
-		t.Errorf("unqualified output name %q is not reserved (glang.reservedNames); e.g. in %s", n, missing[n][0])
+		t.Errorf("unqualified output name %q is not reserved (glang.reservedNames) or a framework namespace; e.g. in %s", n, missing[n][0])
 	}
 }

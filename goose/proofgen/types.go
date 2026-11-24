@@ -69,7 +69,7 @@ func (tr *typesTranslator) leanFields(s *types.Struct) []tmpl.LeanField {
 // (goose.AnonStructs), modeled like a defined struct type.
 func (tr *typesTranslator) anonStructDecl(a goose.AnonStruct) tmpl.TypeDecl {
 	decl := tmpl.TypeDecl{
-		PkgName:    glang.LeanNamespace(tr.pkg.PkgPath),
+		PkgName:    glang.LeanRootedNamespace(tr.pkg.PkgPath),
 		Name:       glang.LeanQuoteComponent(a.Name),
 		RawName:    a.Name,
 		ImplName:   glang.LeanIdent(glang.TypeImpl(a.Name)),
@@ -255,7 +255,7 @@ func translateTypesDeps(pkg *packages.Package, filter declfilter.DeclFilter) []t
 
 func (tr *typesTranslator) newTypeDecl(spec *ast.TypeSpec, axiomatize bool) tmpl.TypeDecl {
 	return tmpl.TypeDecl{
-		PkgName:    glang.LeanNamespace(tr.pkg.PkgPath),
+		PkgName:    glang.LeanRootedNamespace(tr.pkg.PkgPath),
 		Name:       glang.LeanIdent(spec.Name.Name),
 		RawName:    spec.Name.Name,
 		ImplName:   glang.LeanIdent(glang.TypeImpl(spec.Name.Name)),
@@ -302,7 +302,7 @@ func (tr *typesTranslator) toLeanType(t types.Type) string {
 	case *types.Named:
 		var base string
 		if pkg := t.Obj().Pkg(); pkg != nil {
-			base = glang.LeanNamespace(pkg.Path()) + "." + glang.LeanIdent(t.Obj().Name())
+			base = glang.LeanRootedNamespace(pkg.Path()) + "." + glang.LeanIdent(t.Obj().Name())
 			if pkg.Path() != tr.pkg.PkgPath {
 				// rooted, as goose's references to other packages (pkgRef): a relative
 				// `sync.Mutex` from inside namespace `internal.testlog` would resolve to
@@ -327,7 +327,7 @@ func (tr *typesTranslator) toLeanType(t types.Type) string {
 		if t.NumFields() == 0 {
 			return "Unit"
 		}
-		base := glang.LeanNamespace(tr.pkg.PkgPath) + "." + glang.LeanQuoteComponent(util.AnonStructName(t))
+		base := glang.LeanRootedNamespace(tr.pkg.PkgPath) + "." + glang.LeanQuoteComponent(util.AnonStructName(t))
 		var params []string
 		for _, p := range util.AnonStructParams(t) {
 			params = append(params, tr.toLeanType(p))

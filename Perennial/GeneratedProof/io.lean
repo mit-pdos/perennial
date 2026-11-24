@@ -24,51 +24,51 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : io.Assumptions]
+variable [package_sem' : _root_.Perennial.io.Assumptions]
 
 noncomputable instance typed_pointsto'LimitedReader :
-    TypedPointsto (GF := GF) io.LimitedReader where
+    TypedPointsto (GF := GF) _root_.Perennial.io.LimitedReader where
   typedPointstoDef l v dq := iprop(
-    "R" ∷ typedPointsto (structFieldRef io.LimitedReader go!"R" l) v.R' dq ∗
-    "N" ∷ typedPointsto (structFieldRef io.LimitedReader go!"N" l) v.N' dq ∗
+    "R" ∷ typedPointsto (structFieldRef _root_.Perennial.io.LimitedReader go!"R" l) v.R' dq ∗
+    "N" ∷ typedPointsto (structFieldRef _root_.Perennial.io.LimitedReader go!"N" l) v.N' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'LimitedReader :
-    IntoValTypedUnderlying (GF := GF) io.LimitedReader io.LimitedReader.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.io.LimitedReader _root_.Perennial.io.LimitedReader.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'LimitedReader'R (l : Loc) (v : io.LimitedReader) (dq : DFrac) :
+noncomputable instance access_load'LimitedReader'R (l : Loc) (v : _root_.Perennial.io.LimitedReader) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.LimitedReader go!"R" l) v.R' dq)
-      (typedPointsto (structFieldRef io.LimitedReader go!"R" l) v.R' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.LimitedReader go!"R" l) v.R' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.LimitedReader go!"R" l) v.R' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'LimitedReader'R (l : Loc) (v : io.LimitedReader) (y : io.Reader) :
+noncomputable instance access_store'LimitedReader'R (l : Loc) (v : _root_.Perennial.io.LimitedReader) (y : _root_.Perennial.io.Reader) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.LimitedReader go!"R" l) v.R' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.LimitedReader go!"R" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with R' := y } : io.LimitedReader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.LimitedReader go!"R" l) v.R' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.LimitedReader go!"R" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with R' := y } : _root_.Perennial.io.LimitedReader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'LimitedReader'N (l : Loc) (v : io.LimitedReader) (dq : DFrac) :
+noncomputable instance access_load'LimitedReader'N (l : Loc) (v : _root_.Perennial.io.LimitedReader) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.LimitedReader go!"N" l) v.N' dq)
-      (typedPointsto (structFieldRef io.LimitedReader go!"N" l) v.N' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.LimitedReader go!"N" l) v.N' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.LimitedReader go!"N" l) v.N' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'LimitedReader'N (l : Loc) (v : io.LimitedReader) (y : w64) :
+noncomputable instance access_store'LimitedReader'N (l : Loc) (v : _root_.Perennial.io.LimitedReader) (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.LimitedReader go!"N" l) v.N' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.LimitedReader go!"N" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with N' := y } : io.LimitedReader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.LimitedReader go!"N" l) v.N' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.LimitedReader go!"N" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with N' := y } : _root_.Perennial.io.LimitedReader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -81,102 +81,102 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : io.Assumptions]
+variable [package_sem' : _root_.Perennial.io.Assumptions]
 
 noncomputable instance typed_pointsto'SectionReader :
-    TypedPointsto (GF := GF) io.SectionReader where
+    TypedPointsto (GF := GF) _root_.Perennial.io.SectionReader where
   typedPointstoDef l v dq := iprop(
-    "r" ∷ typedPointsto (structFieldRef io.SectionReader go!"r" l) v.r' dq ∗
-    "base" ∷ typedPointsto (structFieldRef io.SectionReader go!"base" l) v.base' dq ∗
-    "off" ∷ typedPointsto (structFieldRef io.SectionReader go!"off" l) v.off' dq ∗
-    "limit" ∷ typedPointsto (structFieldRef io.SectionReader go!"limit" l) v.limit' dq ∗
-    "n" ∷ typedPointsto (structFieldRef io.SectionReader go!"n" l) v.n' dq ∗
+    "r" ∷ typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"r" l) v.r' dq ∗
+    "base" ∷ typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"base" l) v.base' dq ∗
+    "off" ∷ typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"off" l) v.off' dq ∗
+    "limit" ∷ typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"limit" l) v.limit' dq ∗
+    "n" ∷ typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"n" l) v.n' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'SectionReader :
-    IntoValTypedUnderlying (GF := GF) io.SectionReader io.SectionReader.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.io.SectionReader _root_.Perennial.io.SectionReader.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'SectionReader'r (l : Loc) (v : io.SectionReader) (dq : DFrac) :
+noncomputable instance access_load'SectionReader'r (l : Loc) (v : _root_.Perennial.io.SectionReader) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.SectionReader go!"r" l) v.r' dq)
-      (typedPointsto (structFieldRef io.SectionReader go!"r" l) v.r' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"r" l) v.r' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"r" l) v.r' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'SectionReader'r (l : Loc) (v : io.SectionReader) (y : io.ReaderAt) :
+noncomputable instance access_store'SectionReader'r (l : Loc) (v : _root_.Perennial.io.SectionReader) (y : _root_.Perennial.io.ReaderAt) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.SectionReader go!"r" l) v.r' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.SectionReader go!"r" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r' := y } : io.SectionReader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"r" l) v.r' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"r" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r' := y } : _root_.Perennial.io.SectionReader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'SectionReader'base (l : Loc) (v : io.SectionReader) (dq : DFrac) :
+noncomputable instance access_load'SectionReader'base (l : Loc) (v : _root_.Perennial.io.SectionReader) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.SectionReader go!"base" l) v.base' dq)
-      (typedPointsto (structFieldRef io.SectionReader go!"base" l) v.base' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"base" l) v.base' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"base" l) v.base' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'SectionReader'base (l : Loc) (v : io.SectionReader) (y : w64) :
+noncomputable instance access_store'SectionReader'base (l : Loc) (v : _root_.Perennial.io.SectionReader) (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.SectionReader go!"base" l) v.base' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.SectionReader go!"base" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with base' := y } : io.SectionReader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"base" l) v.base' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"base" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with base' := y } : _root_.Perennial.io.SectionReader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'SectionReader'off (l : Loc) (v : io.SectionReader) (dq : DFrac) :
+noncomputable instance access_load'SectionReader'off (l : Loc) (v : _root_.Perennial.io.SectionReader) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.SectionReader go!"off" l) v.off' dq)
-      (typedPointsto (structFieldRef io.SectionReader go!"off" l) v.off' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"off" l) v.off' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"off" l) v.off' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'SectionReader'off (l : Loc) (v : io.SectionReader) (y : w64) :
+noncomputable instance access_store'SectionReader'off (l : Loc) (v : _root_.Perennial.io.SectionReader) (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.SectionReader go!"off" l) v.off' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.SectionReader go!"off" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with off' := y } : io.SectionReader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"off" l) v.off' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"off" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with off' := y } : _root_.Perennial.io.SectionReader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'SectionReader'limit (l : Loc) (v : io.SectionReader) (dq : DFrac) :
+noncomputable instance access_load'SectionReader'limit (l : Loc) (v : _root_.Perennial.io.SectionReader) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.SectionReader go!"limit" l) v.limit' dq)
-      (typedPointsto (structFieldRef io.SectionReader go!"limit" l) v.limit' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"limit" l) v.limit' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"limit" l) v.limit' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'SectionReader'limit (l : Loc) (v : io.SectionReader) (y : w64) :
+noncomputable instance access_store'SectionReader'limit (l : Loc) (v : _root_.Perennial.io.SectionReader) (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.SectionReader go!"limit" l) v.limit' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.SectionReader go!"limit" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with limit' := y } : io.SectionReader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"limit" l) v.limit' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"limit" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with limit' := y } : _root_.Perennial.io.SectionReader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'SectionReader'n (l : Loc) (v : io.SectionReader) (dq : DFrac) :
+noncomputable instance access_load'SectionReader'n (l : Loc) (v : _root_.Perennial.io.SectionReader) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.SectionReader go!"n" l) v.n' dq)
-      (typedPointsto (structFieldRef io.SectionReader go!"n" l) v.n' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"n" l) v.n' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"n" l) v.n' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'SectionReader'n (l : Loc) (v : io.SectionReader) (y : w64) :
+noncomputable instance access_store'SectionReader'n (l : Loc) (v : _root_.Perennial.io.SectionReader) (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.SectionReader go!"n" l) v.n' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.SectionReader go!"n" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with n' := y } : io.SectionReader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"n" l) v.n' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.SectionReader go!"n" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with n' := y } : _root_.Perennial.io.SectionReader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -189,68 +189,68 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : io.Assumptions]
+variable [package_sem' : _root_.Perennial.io.Assumptions]
 
 noncomputable instance typed_pointsto'OffsetWriter :
-    TypedPointsto (GF := GF) io.OffsetWriter where
+    TypedPointsto (GF := GF) _root_.Perennial.io.OffsetWriter where
   typedPointstoDef l v dq := iprop(
-    "w" ∷ typedPointsto (structFieldRef io.OffsetWriter go!"w" l) v.w' dq ∗
-    "base" ∷ typedPointsto (structFieldRef io.OffsetWriter go!"base" l) v.base' dq ∗
-    "off" ∷ typedPointsto (structFieldRef io.OffsetWriter go!"off" l) v.off' dq ∗
+    "w" ∷ typedPointsto (structFieldRef _root_.Perennial.io.OffsetWriter go!"w" l) v.w' dq ∗
+    "base" ∷ typedPointsto (structFieldRef _root_.Perennial.io.OffsetWriter go!"base" l) v.base' dq ∗
+    "off" ∷ typedPointsto (structFieldRef _root_.Perennial.io.OffsetWriter go!"off" l) v.off' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'OffsetWriter :
-    IntoValTypedUnderlying (GF := GF) io.OffsetWriter io.OffsetWriter.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.io.OffsetWriter _root_.Perennial.io.OffsetWriter.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'OffsetWriter'w (l : Loc) (v : io.OffsetWriter) (dq : DFrac) :
+noncomputable instance access_load'OffsetWriter'w (l : Loc) (v : _root_.Perennial.io.OffsetWriter) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.OffsetWriter go!"w" l) v.w' dq)
-      (typedPointsto (structFieldRef io.OffsetWriter go!"w" l) v.w' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.OffsetWriter go!"w" l) v.w' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.OffsetWriter go!"w" l) v.w' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'OffsetWriter'w (l : Loc) (v : io.OffsetWriter) (y : io.WriterAt) :
+noncomputable instance access_store'OffsetWriter'w (l : Loc) (v : _root_.Perennial.io.OffsetWriter) (y : _root_.Perennial.io.WriterAt) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.OffsetWriter go!"w" l) v.w' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.OffsetWriter go!"w" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with w' := y } : io.OffsetWriter) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.OffsetWriter go!"w" l) v.w' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.OffsetWriter go!"w" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with w' := y } : _root_.Perennial.io.OffsetWriter) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'OffsetWriter'base (l : Loc) (v : io.OffsetWriter) (dq : DFrac) :
+noncomputable instance access_load'OffsetWriter'base (l : Loc) (v : _root_.Perennial.io.OffsetWriter) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.OffsetWriter go!"base" l) v.base' dq)
-      (typedPointsto (structFieldRef io.OffsetWriter go!"base" l) v.base' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.OffsetWriter go!"base" l) v.base' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.OffsetWriter go!"base" l) v.base' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'OffsetWriter'base (l : Loc) (v : io.OffsetWriter) (y : w64) :
+noncomputable instance access_store'OffsetWriter'base (l : Loc) (v : _root_.Perennial.io.OffsetWriter) (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.OffsetWriter go!"base" l) v.base' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.OffsetWriter go!"base" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with base' := y } : io.OffsetWriter) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.OffsetWriter go!"base" l) v.base' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.OffsetWriter go!"base" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with base' := y } : _root_.Perennial.io.OffsetWriter) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'OffsetWriter'off (l : Loc) (v : io.OffsetWriter) (dq : DFrac) :
+noncomputable instance access_load'OffsetWriter'off (l : Loc) (v : _root_.Perennial.io.OffsetWriter) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.OffsetWriter go!"off" l) v.off' dq)
-      (typedPointsto (structFieldRef io.OffsetWriter go!"off" l) v.off' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.OffsetWriter go!"off" l) v.off' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.OffsetWriter go!"off" l) v.off' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'OffsetWriter'off (l : Loc) (v : io.OffsetWriter) (y : w64) :
+noncomputable instance access_store'OffsetWriter'off (l : Loc) (v : _root_.Perennial.io.OffsetWriter) (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.OffsetWriter go!"off" l) v.off' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.OffsetWriter go!"off" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with off' := y } : io.OffsetWriter) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.OffsetWriter go!"off" l) v.off' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.OffsetWriter go!"off" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with off' := y } : _root_.Perennial.io.OffsetWriter) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -263,51 +263,51 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : io.Assumptions]
+variable [package_sem' : _root_.Perennial.io.Assumptions]
 
 noncomputable instance typed_pointsto'teeReader :
-    TypedPointsto (GF := GF) io.teeReader where
+    TypedPointsto (GF := GF) _root_.Perennial.io.teeReader where
   typedPointstoDef l v dq := iprop(
-    "r" ∷ typedPointsto (structFieldRef io.teeReader go!"r" l) v.r' dq ∗
-    "w" ∷ typedPointsto (structFieldRef io.teeReader go!"w" l) v.w' dq ∗
+    "r" ∷ typedPointsto (structFieldRef _root_.Perennial.io.teeReader go!"r" l) v.r' dq ∗
+    "w" ∷ typedPointsto (structFieldRef _root_.Perennial.io.teeReader go!"w" l) v.w' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'teeReader :
-    IntoValTypedUnderlying (GF := GF) io.teeReader io.teeReader.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.io.teeReader _root_.Perennial.io.teeReader.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'teeReader'r (l : Loc) (v : io.teeReader) (dq : DFrac) :
+noncomputable instance access_load'teeReader'r (l : Loc) (v : _root_.Perennial.io.teeReader) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.teeReader go!"r" l) v.r' dq)
-      (typedPointsto (structFieldRef io.teeReader go!"r" l) v.r' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.teeReader go!"r" l) v.r' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.teeReader go!"r" l) v.r' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'teeReader'r (l : Loc) (v : io.teeReader) (y : io.Reader) :
+noncomputable instance access_store'teeReader'r (l : Loc) (v : _root_.Perennial.io.teeReader) (y : _root_.Perennial.io.Reader) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.teeReader go!"r" l) v.r' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.teeReader go!"r" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r' := y } : io.teeReader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.teeReader go!"r" l) v.r' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.teeReader go!"r" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r' := y } : _root_.Perennial.io.teeReader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'teeReader'w (l : Loc) (v : io.teeReader) (dq : DFrac) :
+noncomputable instance access_load'teeReader'w (l : Loc) (v : _root_.Perennial.io.teeReader) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.teeReader go!"w" l) v.w' dq)
-      (typedPointsto (structFieldRef io.teeReader go!"w" l) v.w' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.teeReader go!"w" l) v.w' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.teeReader go!"w" l) v.w' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'teeReader'w (l : Loc) (v : io.teeReader) (y : io.Writer) :
+noncomputable instance access_store'teeReader'w (l : Loc) (v : _root_.Perennial.io.teeReader) (y : _root_.Perennial.io.Writer) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.teeReader go!"w" l) v.w' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.teeReader go!"w" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with w' := y } : io.teeReader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.teeReader go!"w" l) v.w' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.teeReader go!"w" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with w' := y } : _root_.Perennial.io.teeReader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -320,10 +320,10 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : io.Assumptions]
+variable [package_sem' : _root_.Perennial.io.Assumptions]
 
 noncomputable instance typed_pointsto'discard :
-    TypedPointsto (GF := GF) io.discard where
+    TypedPointsto (GF := GF) _root_.Perennial.io.discard where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -331,7 +331,7 @@ noncomputable instance typed_pointsto'discard :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'discard :
-    IntoValTypedUnderlying (GF := GF) io.discard io.discard.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.io.discard _root_.Perennial.io.discard.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -343,34 +343,34 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : io.Assumptions]
+variable [package_sem' : _root_.Perennial.io.Assumptions]
 
 noncomputable instance typed_pointsto'nopCloser :
-    TypedPointsto (GF := GF) io.nopCloser where
+    TypedPointsto (GF := GF) _root_.Perennial.io.nopCloser where
   typedPointstoDef l v dq := iprop(
-    "Reader" ∷ typedPointsto (structFieldRef io.nopCloser go!"Reader" l) v.Reader' dq ∗
+    "Reader" ∷ typedPointsto (structFieldRef _root_.Perennial.io.nopCloser go!"Reader" l) v.Reader' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'nopCloser :
-    IntoValTypedUnderlying (GF := GF) io.nopCloser io.nopCloser.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.io.nopCloser _root_.Perennial.io.nopCloser.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'nopCloser'Reader (l : Loc) (v : io.nopCloser) (dq : DFrac) :
+noncomputable instance access_load'nopCloser'Reader (l : Loc) (v : _root_.Perennial.io.nopCloser) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.nopCloser go!"Reader" l) v.Reader' dq)
-      (typedPointsto (structFieldRef io.nopCloser go!"Reader" l) v.Reader' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.nopCloser go!"Reader" l) v.Reader' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.nopCloser go!"Reader" l) v.Reader' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'nopCloser'Reader (l : Loc) (v : io.nopCloser) (y : io.Reader) :
+noncomputable instance access_store'nopCloser'Reader (l : Loc) (v : _root_.Perennial.io.nopCloser) (y : _root_.Perennial.io.Reader) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.nopCloser go!"Reader" l) v.Reader' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.nopCloser go!"Reader" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Reader' := y } : io.nopCloser) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.nopCloser go!"Reader" l) v.Reader' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.nopCloser go!"Reader" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Reader' := y } : _root_.Perennial.io.nopCloser) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -383,34 +383,34 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : io.Assumptions]
+variable [package_sem' : _root_.Perennial.io.Assumptions]
 
 noncomputable instance typed_pointsto'nopCloserWriterTo :
-    TypedPointsto (GF := GF) io.nopCloserWriterTo where
+    TypedPointsto (GF := GF) _root_.Perennial.io.nopCloserWriterTo where
   typedPointstoDef l v dq := iprop(
-    "Reader" ∷ typedPointsto (structFieldRef io.nopCloserWriterTo go!"Reader" l) v.Reader' dq ∗
+    "Reader" ∷ typedPointsto (structFieldRef _root_.Perennial.io.nopCloserWriterTo go!"Reader" l) v.Reader' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'nopCloserWriterTo :
-    IntoValTypedUnderlying (GF := GF) io.nopCloserWriterTo io.nopCloserWriterTo.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.io.nopCloserWriterTo _root_.Perennial.io.nopCloserWriterTo.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'nopCloserWriterTo'Reader (l : Loc) (v : io.nopCloserWriterTo) (dq : DFrac) :
+noncomputable instance access_load'nopCloserWriterTo'Reader (l : Loc) (v : _root_.Perennial.io.nopCloserWriterTo) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.nopCloserWriterTo go!"Reader" l) v.Reader' dq)
-      (typedPointsto (structFieldRef io.nopCloserWriterTo go!"Reader" l) v.Reader' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.nopCloserWriterTo go!"Reader" l) v.Reader' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.nopCloserWriterTo go!"Reader" l) v.Reader' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'nopCloserWriterTo'Reader (l : Loc) (v : io.nopCloserWriterTo) (y : io.Reader) :
+noncomputable instance access_store'nopCloserWriterTo'Reader (l : Loc) (v : _root_.Perennial.io.nopCloserWriterTo) (y : _root_.Perennial.io.Reader) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.nopCloserWriterTo go!"Reader" l) v.Reader' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.nopCloserWriterTo go!"Reader" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Reader' := y } : io.nopCloserWriterTo) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.nopCloserWriterTo go!"Reader" l) v.Reader' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.nopCloserWriterTo go!"Reader" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Reader' := y } : _root_.Perennial.io.nopCloserWriterTo) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -423,10 +423,10 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : io.Assumptions]
+variable [package_sem' : _root_.Perennial.io.Assumptions]
 
 noncomputable instance typed_pointsto'eofReader :
-    TypedPointsto (GF := GF) io.eofReader where
+    TypedPointsto (GF := GF) _root_.Perennial.io.eofReader where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -434,7 +434,7 @@ noncomputable instance typed_pointsto'eofReader :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'eofReader :
-    IntoValTypedUnderlying (GF := GF) io.eofReader io.eofReader.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.io.eofReader _root_.Perennial.io.eofReader.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -446,34 +446,34 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : io.Assumptions]
+variable [package_sem' : _root_.Perennial.io.Assumptions]
 
 noncomputable instance typed_pointsto'multiReader :
-    TypedPointsto (GF := GF) io.multiReader where
+    TypedPointsto (GF := GF) _root_.Perennial.io.multiReader where
   typedPointstoDef l v dq := iprop(
-    "readers" ∷ typedPointsto (structFieldRef io.multiReader go!"readers" l) v.readers' dq ∗
+    "readers" ∷ typedPointsto (structFieldRef _root_.Perennial.io.multiReader go!"readers" l) v.readers' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'multiReader :
-    IntoValTypedUnderlying (GF := GF) io.multiReader io.multiReader.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.io.multiReader _root_.Perennial.io.multiReader.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'multiReader'readers (l : Loc) (v : io.multiReader) (dq : DFrac) :
+noncomputable instance access_load'multiReader'readers (l : Loc) (v : _root_.Perennial.io.multiReader) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.multiReader go!"readers" l) v.readers' dq)
-      (typedPointsto (structFieldRef io.multiReader go!"readers" l) v.readers' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.multiReader go!"readers" l) v.readers' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.multiReader go!"readers" l) v.readers' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'multiReader'readers (l : Loc) (v : io.multiReader) (y : GoSlice) :
+noncomputable instance access_store'multiReader'readers (l : Loc) (v : _root_.Perennial.io.multiReader) (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.multiReader go!"readers" l) v.readers' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.multiReader go!"readers" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with readers' := y } : io.multiReader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.multiReader go!"readers" l) v.readers' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.multiReader go!"readers" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with readers' := y } : _root_.Perennial.io.multiReader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -486,34 +486,34 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : io.Assumptions]
+variable [package_sem' : _root_.Perennial.io.Assumptions]
 
 noncomputable instance typed_pointsto'multiWriter :
-    TypedPointsto (GF := GF) io.multiWriter where
+    TypedPointsto (GF := GF) _root_.Perennial.io.multiWriter where
   typedPointstoDef l v dq := iprop(
-    "writers" ∷ typedPointsto (structFieldRef io.multiWriter go!"writers" l) v.writers' dq ∗
+    "writers" ∷ typedPointsto (structFieldRef _root_.Perennial.io.multiWriter go!"writers" l) v.writers' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'multiWriter :
-    IntoValTypedUnderlying (GF := GF) io.multiWriter io.multiWriter.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.io.multiWriter _root_.Perennial.io.multiWriter.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'multiWriter'writers (l : Loc) (v : io.multiWriter) (dq : DFrac) :
+noncomputable instance access_load'multiWriter'writers (l : Loc) (v : _root_.Perennial.io.multiWriter) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.multiWriter go!"writers" l) v.writers' dq)
-      (typedPointsto (structFieldRef io.multiWriter go!"writers" l) v.writers' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.multiWriter go!"writers" l) v.writers' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.multiWriter go!"writers" l) v.writers' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'multiWriter'writers (l : Loc) (v : io.multiWriter) (y : GoSlice) :
+noncomputable instance access_store'multiWriter'writers (l : Loc) (v : _root_.Perennial.io.multiWriter) (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.multiWriter go!"writers" l) v.writers' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.multiWriter go!"writers" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with writers' := y } : io.multiWriter) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.multiWriter go!"writers" l) v.writers' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.multiWriter go!"writers" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with writers' := y } : _root_.Perennial.io.multiWriter) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -526,51 +526,51 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : io.Assumptions]
+variable [package_sem' : _root_.Perennial.io.Assumptions]
 
 noncomputable instance typed_pointsto'onceError :
-    TypedPointsto (GF := GF) io.onceError where
+    TypedPointsto (GF := GF) _root_.Perennial.io.onceError where
   typedPointstoDef l v dq := iprop(
-    "Mutex" ∷ typedPointsto (structFieldRef io.onceError go!"Mutex" l) v.Mutex' dq ∗
-    "err" ∷ typedPointsto (structFieldRef io.onceError go!"err" l) v.err' dq ∗
+    "Mutex" ∷ typedPointsto (structFieldRef _root_.Perennial.io.onceError go!"Mutex" l) v.Mutex' dq ∗
+    "err" ∷ typedPointsto (structFieldRef _root_.Perennial.io.onceError go!"err" l) v.err' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'onceError :
-    IntoValTypedUnderlying (GF := GF) io.onceError io.onceError.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.io.onceError _root_.Perennial.io.onceError.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'onceError'Mutex (l : Loc) (v : io.onceError) (dq : DFrac) :
+noncomputable instance access_load'onceError'Mutex (l : Loc) (v : _root_.Perennial.io.onceError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.onceError go!"Mutex" l) v.Mutex' dq)
-      (typedPointsto (structFieldRef io.onceError go!"Mutex" l) v.Mutex' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.onceError go!"Mutex" l) v.Mutex' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.onceError go!"Mutex" l) v.Mutex' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'onceError'Mutex (l : Loc) (v : io.onceError) (y : _root_.Perennial.sync.Mutex) :
+noncomputable instance access_store'onceError'Mutex (l : Loc) (v : _root_.Perennial.io.onceError) (y : _root_.Perennial._root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.onceError go!"Mutex" l) v.Mutex' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.onceError go!"Mutex" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Mutex' := y } : io.onceError) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.onceError go!"Mutex" l) v.Mutex' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.onceError go!"Mutex" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Mutex' := y } : _root_.Perennial.io.onceError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'onceError'err (l : Loc) (v : io.onceError) (dq : DFrac) :
+noncomputable instance access_load'onceError'err (l : Loc) (v : _root_.Perennial.io.onceError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.onceError go!"err" l) v.err' dq)
-      (typedPointsto (structFieldRef io.onceError go!"err" l) v.err' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.onceError go!"err" l) v.err' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.onceError go!"err" l) v.err' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'onceError'err (l : Loc) (v : io.onceError) (y : GoError) :
+noncomputable instance access_store'onceError'err (l : Loc) (v : _root_.Perennial.io.onceError) (y : GoError) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.onceError go!"err" l) v.err' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.onceError go!"err" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with err' := y } : io.onceError) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.onceError go!"err" l) v.err' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.onceError go!"err" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with err' := y } : _root_.Perennial.io.onceError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -583,136 +583,136 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : io.Assumptions]
+variable [package_sem' : _root_.Perennial.io.Assumptions]
 
 noncomputable instance typed_pointsto'pipe :
-    TypedPointsto (GF := GF) io.pipe where
+    TypedPointsto (GF := GF) _root_.Perennial.io.pipe where
   typedPointstoDef l v dq := iprop(
-    "wrMu" ∷ typedPointsto (structFieldRef io.pipe go!"wrMu" l) v.wrMu' dq ∗
-    "wrCh" ∷ typedPointsto (structFieldRef io.pipe go!"wrCh" l) v.wrCh' dq ∗
-    "rdCh" ∷ typedPointsto (structFieldRef io.pipe go!"rdCh" l) v.rdCh' dq ∗
-    "once" ∷ typedPointsto (structFieldRef io.pipe go!"once" l) v.once' dq ∗
-    "done" ∷ typedPointsto (structFieldRef io.pipe go!"done" l) v.done' dq ∗
-    "rerr" ∷ typedPointsto (structFieldRef io.pipe go!"rerr" l) v.rerr' dq ∗
-    "werr" ∷ typedPointsto (structFieldRef io.pipe go!"werr" l) v.werr' dq ∗
+    "wrMu" ∷ typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"wrMu" l) v.wrMu' dq ∗
+    "wrCh" ∷ typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"wrCh" l) v.wrCh' dq ∗
+    "rdCh" ∷ typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"rdCh" l) v.rdCh' dq ∗
+    "once" ∷ typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"once" l) v.once' dq ∗
+    "done" ∷ typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"done" l) v.done' dq ∗
+    "rerr" ∷ typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"rerr" l) v.rerr' dq ∗
+    "werr" ∷ typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"werr" l) v.werr' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'pipe :
-    IntoValTypedUnderlying (GF := GF) io.pipe io.pipe.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.io.pipe _root_.Perennial.io.pipe.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'pipe'wrMu (l : Loc) (v : io.pipe) (dq : DFrac) :
+noncomputable instance access_load'pipe'wrMu (l : Loc) (v : _root_.Perennial.io.pipe) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.pipe go!"wrMu" l) v.wrMu' dq)
-      (typedPointsto (structFieldRef io.pipe go!"wrMu" l) v.wrMu' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"wrMu" l) v.wrMu' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"wrMu" l) v.wrMu' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'pipe'wrMu (l : Loc) (v : io.pipe) (y : _root_.Perennial.sync.Mutex) :
+noncomputable instance access_store'pipe'wrMu (l : Loc) (v : _root_.Perennial.io.pipe) (y : _root_.Perennial._root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.pipe go!"wrMu" l) v.wrMu' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.pipe go!"wrMu" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wrMu' := y } : io.pipe) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"wrMu" l) v.wrMu' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"wrMu" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wrMu' := y } : _root_.Perennial.io.pipe) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'pipe'wrCh (l : Loc) (v : io.pipe) (dq : DFrac) :
+noncomputable instance access_load'pipe'wrCh (l : Loc) (v : _root_.Perennial.io.pipe) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.pipe go!"wrCh" l) v.wrCh' dq)
-      (typedPointsto (structFieldRef io.pipe go!"wrCh" l) v.wrCh' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"wrCh" l) v.wrCh' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"wrCh" l) v.wrCh' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'pipe'wrCh (l : Loc) (v : io.pipe) (y : GoChan) :
+noncomputable instance access_store'pipe'wrCh (l : Loc) (v : _root_.Perennial.io.pipe) (y : GoChan) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.pipe go!"wrCh" l) v.wrCh' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.pipe go!"wrCh" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wrCh' := y } : io.pipe) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"wrCh" l) v.wrCh' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"wrCh" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wrCh' := y } : _root_.Perennial.io.pipe) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'pipe'rdCh (l : Loc) (v : io.pipe) (dq : DFrac) :
+noncomputable instance access_load'pipe'rdCh (l : Loc) (v : _root_.Perennial.io.pipe) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.pipe go!"rdCh" l) v.rdCh' dq)
-      (typedPointsto (structFieldRef io.pipe go!"rdCh" l) v.rdCh' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"rdCh" l) v.rdCh' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"rdCh" l) v.rdCh' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'pipe'rdCh (l : Loc) (v : io.pipe) (y : GoChan) :
+noncomputable instance access_store'pipe'rdCh (l : Loc) (v : _root_.Perennial.io.pipe) (y : GoChan) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.pipe go!"rdCh" l) v.rdCh' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.pipe go!"rdCh" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rdCh' := y } : io.pipe) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"rdCh" l) v.rdCh' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"rdCh" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rdCh' := y } : _root_.Perennial.io.pipe) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'pipe'once (l : Loc) (v : io.pipe) (dq : DFrac) :
+noncomputable instance access_load'pipe'once (l : Loc) (v : _root_.Perennial.io.pipe) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.pipe go!"once" l) v.once' dq)
-      (typedPointsto (structFieldRef io.pipe go!"once" l) v.once' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"once" l) v.once' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"once" l) v.once' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'pipe'once (l : Loc) (v : io.pipe) (y : _root_.Perennial.sync.Once) :
+noncomputable instance access_store'pipe'once (l : Loc) (v : _root_.Perennial.io.pipe) (y : _root_.Perennial._root_.Perennial.sync.Once) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.pipe go!"once" l) v.once' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.pipe go!"once" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with once' := y } : io.pipe) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"once" l) v.once' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"once" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with once' := y } : _root_.Perennial.io.pipe) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'pipe'done (l : Loc) (v : io.pipe) (dq : DFrac) :
+noncomputable instance access_load'pipe'done (l : Loc) (v : _root_.Perennial.io.pipe) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.pipe go!"done" l) v.done' dq)
-      (typedPointsto (structFieldRef io.pipe go!"done" l) v.done' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"done" l) v.done' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"done" l) v.done' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'pipe'done (l : Loc) (v : io.pipe) (y : GoChan) :
+noncomputable instance access_store'pipe'done (l : Loc) (v : _root_.Perennial.io.pipe) (y : GoChan) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.pipe go!"done" l) v.done' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.pipe go!"done" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with done' := y } : io.pipe) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"done" l) v.done' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"done" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with done' := y } : _root_.Perennial.io.pipe) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'pipe'rerr (l : Loc) (v : io.pipe) (dq : DFrac) :
+noncomputable instance access_load'pipe'rerr (l : Loc) (v : _root_.Perennial.io.pipe) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.pipe go!"rerr" l) v.rerr' dq)
-      (typedPointsto (structFieldRef io.pipe go!"rerr" l) v.rerr' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"rerr" l) v.rerr' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"rerr" l) v.rerr' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'pipe'rerr (l : Loc) (v : io.pipe) (y : io.onceError) :
+noncomputable instance access_store'pipe'rerr (l : Loc) (v : _root_.Perennial.io.pipe) (y : _root_.Perennial.io.onceError) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.pipe go!"rerr" l) v.rerr' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.pipe go!"rerr" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rerr' := y } : io.pipe) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"rerr" l) v.rerr' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"rerr" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rerr' := y } : _root_.Perennial.io.pipe) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'pipe'werr (l : Loc) (v : io.pipe) (dq : DFrac) :
+noncomputable instance access_load'pipe'werr (l : Loc) (v : _root_.Perennial.io.pipe) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.pipe go!"werr" l) v.werr' dq)
-      (typedPointsto (structFieldRef io.pipe go!"werr" l) v.werr' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"werr" l) v.werr' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"werr" l) v.werr' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'pipe'werr (l : Loc) (v : io.pipe) (y : io.onceError) :
+noncomputable instance access_store'pipe'werr (l : Loc) (v : _root_.Perennial.io.pipe) (y : _root_.Perennial.io.onceError) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.pipe go!"werr" l) v.werr' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.pipe go!"werr" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with werr' := y } : io.pipe) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"werr" l) v.werr' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.pipe go!"werr" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with werr' := y } : _root_.Perennial.io.pipe) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -725,34 +725,34 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : io.Assumptions]
+variable [package_sem' : _root_.Perennial.io.Assumptions]
 
 noncomputable instance typed_pointsto'PipeReader :
-    TypedPointsto (GF := GF) io.PipeReader where
+    TypedPointsto (GF := GF) _root_.Perennial.io.PipeReader where
   typedPointstoDef l v dq := iprop(
-    "pipe" ∷ typedPointsto (structFieldRef io.PipeReader go!"pipe" l) v.pipe' dq ∗
+    "pipe" ∷ typedPointsto (structFieldRef _root_.Perennial.io.PipeReader go!"pipe" l) v.pipe' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'PipeReader :
-    IntoValTypedUnderlying (GF := GF) io.PipeReader io.PipeReader.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.io.PipeReader _root_.Perennial.io.PipeReader.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'PipeReader'pipe (l : Loc) (v : io.PipeReader) (dq : DFrac) :
+noncomputable instance access_load'PipeReader'pipe (l : Loc) (v : _root_.Perennial.io.PipeReader) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.PipeReader go!"pipe" l) v.pipe' dq)
-      (typedPointsto (structFieldRef io.PipeReader go!"pipe" l) v.pipe' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.PipeReader go!"pipe" l) v.pipe' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.PipeReader go!"pipe" l) v.pipe' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'PipeReader'pipe (l : Loc) (v : io.PipeReader) (y : io.pipe) :
+noncomputable instance access_store'PipeReader'pipe (l : Loc) (v : _root_.Perennial.io.PipeReader) (y : _root_.Perennial.io.pipe) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.PipeReader go!"pipe" l) v.pipe' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.PipeReader go!"pipe" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pipe' := y } : io.PipeReader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.PipeReader go!"pipe" l) v.pipe' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.PipeReader go!"pipe" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pipe' := y } : _root_.Perennial.io.PipeReader) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -765,34 +765,34 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : io.Assumptions]
+variable [package_sem' : _root_.Perennial.io.Assumptions]
 
 noncomputable instance typed_pointsto'PipeWriter :
-    TypedPointsto (GF := GF) io.PipeWriter where
+    TypedPointsto (GF := GF) _root_.Perennial.io.PipeWriter where
   typedPointstoDef l v dq := iprop(
-    "r" ∷ typedPointsto (structFieldRef io.PipeWriter go!"r" l) v.r' dq ∗
+    "r" ∷ typedPointsto (structFieldRef _root_.Perennial.io.PipeWriter go!"r" l) v.r' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'PipeWriter :
-    IntoValTypedUnderlying (GF := GF) io.PipeWriter io.PipeWriter.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.io.PipeWriter _root_.Perennial.io.PipeWriter.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'PipeWriter'r (l : Loc) (v : io.PipeWriter) (dq : DFrac) :
+noncomputable instance access_load'PipeWriter'r (l : Loc) (v : _root_.Perennial.io.PipeWriter) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.PipeWriter go!"r" l) v.r' dq)
-      (typedPointsto (structFieldRef io.PipeWriter go!"r" l) v.r' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.PipeWriter go!"r" l) v.r' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.io.PipeWriter go!"r" l) v.r' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'PipeWriter'r (l : Loc) (v : io.PipeWriter) (y : io.PipeReader) :
+noncomputable instance access_store'PipeWriter'r (l : Loc) (v : _root_.Perennial.io.PipeWriter) (y : _root_.Perennial.io.PipeReader) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef io.PipeWriter go!"r" l) v.r' (DFrac.own 1))
-      (typedPointsto (structFieldRef io.PipeWriter go!"r" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r' := y } : io.PipeWriter) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.io.PipeWriter go!"r" l) v.r' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.io.PipeWriter go!"r" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r' := y } : _root_.Perennial.io.PipeWriter) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

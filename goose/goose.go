@@ -1069,7 +1069,7 @@ func (ctx *Ctx) identExpr(e *ast.Ident, multipleBindings bool) glang.Expr {
 		// functionConstSpec)
 		name := e.Name
 		if constObj.Pkg() != nil && constObj.Parent() != constObj.Pkg().Scope() {
-			name = glang.BinderName(name)
+			name = glang.LocalConstName(name)
 		}
 		constE := ctx.termIdent(name)
 		return ctx.handleImplicitConversion(e, constObj.Type(), ctx.typeOf(e), constE)
@@ -2997,7 +2997,7 @@ func (ctx *Ctx) functionConstSpec(spec *ast.ValueSpec, cont glang.Expr) glang.Ex
 		}
 		constVal := ctx.constantLiteral(spec.Names[i])
 		e = glang.TermLetExpr{
-			Name:    glang.BinderName(spec.Names[i].Name),
+			Name:    glang.LocalConstName(spec.Names[i].Name),
 			ValExpr: constVal,
 			Cont:    e,
 		}
@@ -3198,7 +3198,7 @@ func (ctx *Ctx) pkgRef(pkg *types.Package) string {
 	// References are rooted (`_root_.Perennial.<ns>`): a relative reference
 	// `errors.X` from inside namespace `a.errors` would resolve to
 	// `a.errors.X`.
-	return "_root_.Perennial." + strings.ReplaceAll(glang.GoPathToIdentPath(pkg.Path()), "/", ".")
+	return "_root_.Perennial." + glang.NamespacePath(pkg.Path())
 }
 
 func (ctx *Ctx) importAssumptionName(pkg *types.Package) string {

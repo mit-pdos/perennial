@@ -23,7 +23,7 @@ func indent(spaces int, s string) string {
 // FuncImpl is the name of the GooseLang implementation of a function (the
 // function's own name is a GoString naming it).
 func FuncImpl(name string) string {
-	return GoName(name) + ".impl"
+	return declName(name) + ".impl"
 }
 
 type Expr interface {
@@ -35,17 +35,19 @@ type Expr interface {
 // The Lean names of Go identifiers. Each kind of name has one rule:
 //
 //   - a struct field F is the projection F' (see recordProjection);
-//   - a name goose binds inside a declaration, a type parameter or a
-//     function-local constant P, is P₀ (and a type parameter's value type is
-//     P₀'; see BinderName);
+//   - a type parameter P is P₀ (its value type P₀'; BinderName), a
+//     function-local constant c is c₁ (LocalConstName);
 //   - every other Go name X (a type, function, global or method) is
 //     GoName(X): X, or X'' when X is reserved (see reservedName). Lean
 //     keywords are reserved like every other conflicting name: Go `type Type
 //     int64` is `Type''`, `def` is `def''`, `Int` is `Int''`; the field `Type`
 //     is `Type'`;
-//   - a generated name derived from a Go name x (a class member or an
-//     instance) is tag'x (see MemberName): get'F, unfold'M, instance'T,
-//     typed_pointsto'T, access_load'T'F, ...
+//   - a generated name derived from a Go name x (a class member, an instance,
+//     the recovering variant of a function) is tag'x (see MemberName):
+//     get'F, unfold'M, instance'T, typed_pointsto'T, access_load'T'F,
+//     deferred'F, ...;
+//   - a package's namespace is its path's components, a component that is a
+//     framework namespace (go, chan, pkg_id, ...) renamed c'' (NamespacePath).
 //
 // Guillemets are only a lexing fallback, not a conflict rule: a Go identifier
 // may contain Unicode letters and digits that Lean's identifier lexer rejects
@@ -55,17 +57,21 @@ type Expr interface {
 // not change the name.
 //
 // Why this is collision-free. Go identifiers contain no "'" and no subscript
-// digit, so the four forms are disjoint: a name ending in exactly one "'"
-// after a Go identifier is a field projection (or P₀', a value binder); one
-// ending in "''" is a reserved Go name; one containing ₀ is a binder; one with
-// a "'" before its end is a generated name, whose fixed tag (no "'") and Go
+// digit, so the forms are disjoint: a name ending in exactly one "'" after a
+// Go identifier is a field projection (or P₀', a value binder); one ending in
+// "''" is a reserved Go name; one containing ₀ or ₁ is a binder; one with a
+// "'" before its end is a generated name, whose fixed tag (no "'") and Go
 // name it determines. So a field projection S.F' or a class member in scope
 // can never capture a type, function, global or method, a binder never
-// captures a package-level name, and no two generated names coincide. Every
+// captures a package-level name, and no two generated names coincide.
+// References to other packages' declarations are rooted
+// (_root_.Perennial.<ns>.X, in goose's and proofgen's output alike); every
 // other name the output refers to unqualified (framework, Iris and Lean names,
-// the generated code's own binders) is reserved, so no Go name takes it;
-// TestOutputNamesReserved checks that against the outputs of goose's test
-// packages.
+// the generated code's own binders) is reserved, so no Go name takes it, and
+// every relative dotted reference starts with a reserved name, a Go name of
+// the package or a framework namespace, which no package namespace contains.
+// TestOutputNamesReserved checks the last two against goose's and (freshly
+// generated) proofgen's outputs of the test packages.
 
 // reservedNames are the Lean names a Go name (other than a field) must not
 // take; GoName renames such a Go name X to X”. A Lean declaration named
@@ -160,17 +166,23 @@ func reservedName(x string) bool {
 	return false
 }
 
-// BinderName is the Lean name of a Go name that goose binds inside a
-// declaration rather than declares: a type parameter p (its go.GoType binder
-// and, in a model structure, its Type parameter; its value type is the binder
-// p₀') and a function-local constant (a `let`). It is p₀: Go identifiers
-// cannot contain a subscript digit (Unicode category No), so no other
-// Go-derived name is p₀ or p₀', and such a binder cannot capture a
-// package-level or framework name referenced in its scope (Go `type U = T;
-// type Box[T any] struct{ u U }`; a local `const Val = 1`), nor can the
-// fields F' of a structure capture its parameters.
+// BinderName is the Lean name of a Go type parameter p: p₀, its go.GoType
+// binder (and, in a model structure, its Type parameter); its value type is
+// the binder p₀'. Go identifiers cannot contain a subscript digit (Unicode
+// category No), so no other Go-derived name is p₀ or p₀': a type parameter
+// cannot capture a package-level or framework name referenced in its scope
+// (Go `type U = T; type Box[T any] struct{ u U }`), nor can the fields F' of a
+// structure capture its parameters.
 func BinderName(p string) string {
 	return p + "₀"
+}
+
+// LocalConstName is the Lean name of a function-local Go constant c, which
+// goose binds with a `let`: c₁ (see BinderName; a distinct subscript, since Go
+// lets a local constant shadow a type parameter of the same name while goose
+// may still refer to the type parameter in that scope).
+func LocalConstName(c string) string {
+	return c + "₁"
 }
 
 // MemberName is the name of a generated declaration or class member derived
@@ -558,7 +570,7 @@ type Decl interface {
 
 // TypeMethod is the name of the GooseLang implementation of a method.
 func TypeMethod(typeName string, methodName string) string {
-	return fmt.Sprintf("%s.%s.impl", GoName(typeName), GoName(methodName))
+	return fmt.Sprintf("%s.%s.impl", GoName(typeName), declName(methodName))
 }
 
 // These will not end up in `File.Decls`, they are put into `File.Imports` by `translatePackage`.
@@ -616,6 +628,17 @@ type CommClause struct {
 type SelectStmtClauses struct {
 	Default Expr // nil for None
 	Clauses []CommClause
+}
+
+// declName is the Lean name of a function or method: GoName of its Go name,
+// or, for the recovering variant goose declares instead of a function F that
+// calls recover() (internally `F'deferred`, the name its GoString keeps),
+// the generated name deferred'F (MemberName).
+func declName(x string) string {
+	if base, ok := strings.CutSuffix(x, "'deferred"); ok {
+		return MemberName("deferred", base)
+	}
+	return GoName(x)
 }
 
 // IsReservedName reports whether GoName renames x (for tests).

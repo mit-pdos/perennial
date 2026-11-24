@@ -24,51 +24,51 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : sort.Assumptions]
+variable [package_sem' : _root_.Perennial.sort.Assumptions]
 
 noncomputable instance typed_pointsto'lessSwap :
-    TypedPointsto (GF := GF) sort.lessSwap where
+    TypedPointsto (GF := GF) _root_.Perennial.sort.lessSwap where
   typedPointstoDef l v dq := iprop(
-    "Less" ∷ typedPointsto (structFieldRef sort.lessSwap go!"Less" l) v.Less' dq ∗
-    "Swap" ∷ typedPointsto (structFieldRef sort.lessSwap go!"Swap" l) v.Swap' dq ∗
+    "Less" ∷ typedPointsto (structFieldRef _root_.Perennial.sort.lessSwap go!"Less" l) v.Less' dq ∗
+    "Swap" ∷ typedPointsto (structFieldRef _root_.Perennial.sort.lessSwap go!"Swap" l) v.Swap' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'lessSwap :
-    IntoValTypedUnderlying (GF := GF) sort.lessSwap sort.lessSwap.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.sort.lessSwap _root_.Perennial.sort.lessSwap.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'lessSwap'Less (l : Loc) (v : sort.lessSwap) (dq : DFrac) :
+noncomputable instance access_load'lessSwap'Less (l : Loc) (v : _root_.Perennial.sort.lessSwap) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sort.lessSwap go!"Less" l) v.Less' dq)
-      (typedPointsto (structFieldRef sort.lessSwap go!"Less" l) v.Less' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sort.lessSwap go!"Less" l) v.Less' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sort.lessSwap go!"Less" l) v.Less' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'lessSwap'Less (l : Loc) (v : sort.lessSwap) (y : GoFunc) :
+noncomputable instance access_store'lessSwap'Less (l : Loc) (v : _root_.Perennial.sort.lessSwap) (y : GoFunc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sort.lessSwap go!"Less" l) v.Less' (DFrac.own 1))
-      (typedPointsto (structFieldRef sort.lessSwap go!"Less" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Less' := y } : sort.lessSwap) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.sort.lessSwap go!"Less" l) v.Less' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.sort.lessSwap go!"Less" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Less' := y } : _root_.Perennial.sort.lessSwap) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'lessSwap'Swap (l : Loc) (v : sort.lessSwap) (dq : DFrac) :
+noncomputable instance access_load'lessSwap'Swap (l : Loc) (v : _root_.Perennial.sort.lessSwap) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sort.lessSwap go!"Swap" l) v.Swap' dq)
-      (typedPointsto (structFieldRef sort.lessSwap go!"Swap" l) v.Swap' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sort.lessSwap go!"Swap" l) v.Swap' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sort.lessSwap go!"Swap" l) v.Swap' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'lessSwap'Swap (l : Loc) (v : sort.lessSwap) (y : GoFunc) :
+noncomputable instance access_store'lessSwap'Swap (l : Loc) (v : _root_.Perennial.sort.lessSwap) (y : GoFunc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sort.lessSwap go!"Swap" l) v.Swap' (DFrac.own 1))
-      (typedPointsto (structFieldRef sort.lessSwap go!"Swap" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Swap' := y } : sort.lessSwap) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.sort.lessSwap go!"Swap" l) v.Swap' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.sort.lessSwap go!"Swap" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Swap' := y } : _root_.Perennial.sort.lessSwap) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -81,34 +81,34 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : sort.Assumptions]
+variable [package_sem' : _root_.Perennial.sort.Assumptions]
 
 noncomputable instance typed_pointsto'reverse :
-    TypedPointsto (GF := GF) sort.reverse where
+    TypedPointsto (GF := GF) _root_.Perennial.sort.reverse where
   typedPointstoDef l v dq := iprop(
-    "Interface" ∷ typedPointsto (structFieldRef sort.reverse go!"Interface" l) v.Interface' dq ∗
+    "Interface" ∷ typedPointsto (structFieldRef _root_.Perennial.sort.reverse go!"Interface" l) v.Interface' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'reverse :
-    IntoValTypedUnderlying (GF := GF) sort.reverse sort.reverse.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.sort.reverse _root_.Perennial.sort.reverse.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'reverse'Interface (l : Loc) (v : sort.reverse) (dq : DFrac) :
+noncomputable instance access_load'reverse'Interface (l : Loc) (v : _root_.Perennial.sort.reverse) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sort.reverse go!"Interface" l) v.Interface' dq)
-      (typedPointsto (structFieldRef sort.reverse go!"Interface" l) v.Interface' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sort.reverse go!"Interface" l) v.Interface' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.sort.reverse go!"Interface" l) v.Interface' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'reverse'Interface (l : Loc) (v : sort.reverse) (y : sort.Interface) :
+noncomputable instance access_store'reverse'Interface (l : Loc) (v : _root_.Perennial.sort.reverse) (y : _root_.Perennial.sort.Interface) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sort.reverse go!"Interface" l) v.Interface' (DFrac.own 1))
-      (typedPointsto (structFieldRef sort.reverse go!"Interface" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Interface' := y } : sort.reverse) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.sort.reverse go!"Interface" l) v.Interface' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.sort.reverse go!"Interface" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Interface' := y } : _root_.Perennial.sort.reverse) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

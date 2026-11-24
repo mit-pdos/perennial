@@ -26,10 +26,10 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.poll.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.poll.Assumptions]
 
 noncomputable instance typed_pointsto'errNetClosing :
-    TypedPointsto (GF := GF) internal.poll.errNetClosing where
+    TypedPointsto (GF := GF) _root_.Perennial.internal.poll.errNetClosing where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -37,7 +37,7 @@ noncomputable instance typed_pointsto'errNetClosing :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'errNetClosing :
-    IntoValTypedUnderlying (GF := GF) internal.poll.errNetClosing internal.poll.errNetClosing.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.poll.errNetClosing _root_.Perennial.internal.poll.errNetClosing.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -49,10 +49,10 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.poll.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.poll.Assumptions]
 
 noncomputable instance typed_pointsto'DeadlineExceededError :
-    TypedPointsto (GF := GF) internal.poll.DeadlineExceededError where
+    TypedPointsto (GF := GF) _root_.Perennial.internal.poll.DeadlineExceededError where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -60,7 +60,7 @@ noncomputable instance typed_pointsto'DeadlineExceededError :
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'DeadlineExceededError :
-    IntoValTypedUnderlying (GF := GF) internal.poll.DeadlineExceededError internal.poll.DeadlineExceededError.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.poll.DeadlineExceededError _root_.Perennial.internal.poll.DeadlineExceededError.underlying := by
   solve_into_val_typed_struct
 
 end def_
@@ -72,68 +72,68 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.poll.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.poll.Assumptions]
 
 noncomputable instance typed_pointsto'fdMutex :
-    TypedPointsto (GF := GF) internal.poll.fdMutex where
+    TypedPointsto (GF := GF) _root_.Perennial.internal.poll.fdMutex where
   typedPointstoDef l v dq := iprop(
-    "state" ∷ typedPointsto (structFieldRef internal.poll.fdMutex go!"state" l) v.state' dq ∗
-    "rsema" ∷ typedPointsto (structFieldRef internal.poll.fdMutex go!"rsema" l) v.rsema' dq ∗
-    "wsema" ∷ typedPointsto (structFieldRef internal.poll.fdMutex go!"wsema" l) v.wsema' dq ∗
+    "state" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.poll.fdMutex go!"state" l) v.state' dq ∗
+    "rsema" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.poll.fdMutex go!"rsema" l) v.rsema' dq ∗
+    "wsema" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.poll.fdMutex go!"wsema" l) v.wsema' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'fdMutex :
-    IntoValTypedUnderlying (GF := GF) internal.poll.fdMutex internal.poll.fdMutex.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.poll.fdMutex _root_.Perennial.internal.poll.fdMutex.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'fdMutex'state (l : Loc) (v : internal.poll.fdMutex) (dq : DFrac) :
+noncomputable instance access_load'fdMutex'state (l : Loc) (v : _root_.Perennial.internal.poll.fdMutex) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.fdMutex go!"state" l) v.state' dq)
-      (typedPointsto (structFieldRef internal.poll.fdMutex go!"state" l) v.state' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.fdMutex go!"state" l) v.state' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.fdMutex go!"state" l) v.state' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'fdMutex'state (l : Loc) (v : internal.poll.fdMutex) (y : w64) :
+noncomputable instance access_store'fdMutex'state (l : Loc) (v : _root_.Perennial.internal.poll.fdMutex) (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.fdMutex go!"state" l) v.state' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.poll.fdMutex go!"state" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with state' := y } : internal.poll.fdMutex) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.fdMutex go!"state" l) v.state' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.fdMutex go!"state" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with state' := y } : _root_.Perennial.internal.poll.fdMutex) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'fdMutex'rsema (l : Loc) (v : internal.poll.fdMutex) (dq : DFrac) :
+noncomputable instance access_load'fdMutex'rsema (l : Loc) (v : _root_.Perennial.internal.poll.fdMutex) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.fdMutex go!"rsema" l) v.rsema' dq)
-      (typedPointsto (structFieldRef internal.poll.fdMutex go!"rsema" l) v.rsema' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.fdMutex go!"rsema" l) v.rsema' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.fdMutex go!"rsema" l) v.rsema' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'fdMutex'rsema (l : Loc) (v : internal.poll.fdMutex) (y : w32) :
+noncomputable instance access_store'fdMutex'rsema (l : Loc) (v : _root_.Perennial.internal.poll.fdMutex) (y : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.fdMutex go!"rsema" l) v.rsema' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.poll.fdMutex go!"rsema" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rsema' := y } : internal.poll.fdMutex) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.fdMutex go!"rsema" l) v.rsema' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.fdMutex go!"rsema" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rsema' := y } : _root_.Perennial.internal.poll.fdMutex) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'fdMutex'wsema (l : Loc) (v : internal.poll.fdMutex) (dq : DFrac) :
+noncomputable instance access_load'fdMutex'wsema (l : Loc) (v : _root_.Perennial.internal.poll.fdMutex) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.fdMutex go!"wsema" l) v.wsema' dq)
-      (typedPointsto (structFieldRef internal.poll.fdMutex go!"wsema" l) v.wsema' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.fdMutex go!"wsema" l) v.wsema' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.fdMutex go!"wsema" l) v.wsema' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'fdMutex'wsema (l : Loc) (v : internal.poll.fdMutex) (y : w32) :
+noncomputable instance access_store'fdMutex'wsema (l : Loc) (v : _root_.Perennial.internal.poll.fdMutex) (y : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.fdMutex go!"wsema" l) v.wsema' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.poll.fdMutex go!"wsema" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wsema' := y } : internal.poll.fdMutex) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.fdMutex go!"wsema" l) v.wsema' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.fdMutex go!"wsema" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wsema' := y } : _root_.Perennial.internal.poll.fdMutex) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -146,34 +146,34 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.poll.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.poll.Assumptions]
 
 noncomputable instance typed_pointsto'pollDesc :
-    TypedPointsto (GF := GF) internal.poll.pollDesc where
+    TypedPointsto (GF := GF) _root_.Perennial.internal.poll.pollDesc where
   typedPointstoDef l v dq := iprop(
-    "runtimeCtx" ∷ typedPointsto (structFieldRef internal.poll.pollDesc go!"runtimeCtx" l) v.runtimeCtx' dq ∗
+    "runtimeCtx" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.poll.pollDesc go!"runtimeCtx" l) v.runtimeCtx' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'pollDesc :
-    IntoValTypedUnderlying (GF := GF) internal.poll.pollDesc internal.poll.pollDesc.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.poll.pollDesc _root_.Perennial.internal.poll.pollDesc.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'pollDesc'runtimeCtx (l : Loc) (v : internal.poll.pollDesc) (dq : DFrac) :
+noncomputable instance access_load'pollDesc'runtimeCtx (l : Loc) (v : _root_.Perennial.internal.poll.pollDesc) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.pollDesc go!"runtimeCtx" l) v.runtimeCtx' dq)
-      (typedPointsto (structFieldRef internal.poll.pollDesc go!"runtimeCtx" l) v.runtimeCtx' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.pollDesc go!"runtimeCtx" l) v.runtimeCtx' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.pollDesc go!"runtimeCtx" l) v.runtimeCtx' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'pollDesc'runtimeCtx (l : Loc) (v : internal.poll.pollDesc) (y : w64) :
+noncomputable instance access_store'pollDesc'runtimeCtx (l : Loc) (v : _root_.Perennial.internal.poll.pollDesc) (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.pollDesc go!"runtimeCtx" l) v.runtimeCtx' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.poll.pollDesc go!"runtimeCtx" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with runtimeCtx' := y } : internal.poll.pollDesc) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.pollDesc go!"runtimeCtx" l) v.runtimeCtx' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.pollDesc go!"runtimeCtx" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with runtimeCtx' := y } : _root_.Perennial.internal.poll.pollDesc) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -186,34 +186,34 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.poll.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.poll.Assumptions]
 
 noncomputable instance typed_pointsto'SysFile :
-    TypedPointsto (GF := GF) internal.poll.SysFile where
+    TypedPointsto (GF := GF) _root_.Perennial.internal.poll.SysFile where
   typedPointstoDef l v dq := iprop(
-    "iovecs" ∷ typedPointsto (structFieldRef internal.poll.SysFile go!"iovecs" l) v.iovecs' dq ∗
+    "iovecs" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.poll.SysFile go!"iovecs" l) v.iovecs' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'SysFile :
-    IntoValTypedUnderlying (GF := GF) internal.poll.SysFile internal.poll.SysFile.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.poll.SysFile _root_.Perennial.internal.poll.SysFile.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'SysFile'iovecs (l : Loc) (v : internal.poll.SysFile) (dq : DFrac) :
+noncomputable instance access_load'SysFile'iovecs (l : Loc) (v : _root_.Perennial.internal.poll.SysFile) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.SysFile go!"iovecs" l) v.iovecs' dq)
-      (typedPointsto (structFieldRef internal.poll.SysFile go!"iovecs" l) v.iovecs' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.SysFile go!"iovecs" l) v.iovecs' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.SysFile go!"iovecs" l) v.iovecs' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'SysFile'iovecs (l : Loc) (v : internal.poll.SysFile) (y : Loc) :
+noncomputable instance access_store'SysFile'iovecs (l : Loc) (v : _root_.Perennial.internal.poll.SysFile) (y : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.SysFile go!"iovecs" l) v.iovecs' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.poll.SysFile go!"iovecs" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with iovecs' := y } : internal.poll.SysFile) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.SysFile go!"iovecs" l) v.iovecs' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.SysFile go!"iovecs" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with iovecs' := y } : _root_.Perennial.internal.poll.SysFile) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -226,170 +226,170 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.poll.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.poll.Assumptions]
 
 noncomputable instance typed_pointsto'FD :
-    TypedPointsto (GF := GF) internal.poll.FD where
+    TypedPointsto (GF := GF) _root_.Perennial.internal.poll.FD where
   typedPointstoDef l v dq := iprop(
-    "fdmu" ∷ typedPointsto (structFieldRef internal.poll.FD go!"fdmu" l) v.fdmu' dq ∗
-    "Sysfd" ∷ typedPointsto (structFieldRef internal.poll.FD go!"Sysfd" l) v.Sysfd' dq ∗
-    "SysFile" ∷ typedPointsto (structFieldRef internal.poll.FD go!"SysFile" l) v.SysFile' dq ∗
-    "pd" ∷ typedPointsto (structFieldRef internal.poll.FD go!"pd" l) v.pd' dq ∗
-    "csema" ∷ typedPointsto (structFieldRef internal.poll.FD go!"csema" l) v.csema' dq ∗
-    "isBlocking" ∷ typedPointsto (structFieldRef internal.poll.FD go!"isBlocking" l) v.isBlocking' dq ∗
-    "IsStream" ∷ typedPointsto (structFieldRef internal.poll.FD go!"IsStream" l) v.IsStream' dq ∗
-    "ZeroReadIsEOF" ∷ typedPointsto (structFieldRef internal.poll.FD go!"ZeroReadIsEOF" l) v.ZeroReadIsEOF' dq ∗
-    "isFile" ∷ typedPointsto (structFieldRef internal.poll.FD go!"isFile" l) v.isFile' dq ∗
+    "fdmu" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"fdmu" l) v.fdmu' dq ∗
+    "Sysfd" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"Sysfd" l) v.Sysfd' dq ∗
+    "SysFile" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"SysFile" l) v.SysFile' dq ∗
+    "pd" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"pd" l) v.pd' dq ∗
+    "csema" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"csema" l) v.csema' dq ∗
+    "isBlocking" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"isBlocking" l) v.isBlocking' dq ∗
+    "IsStream" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"IsStream" l) v.IsStream' dq ∗
+    "ZeroReadIsEOF" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"ZeroReadIsEOF" l) v.ZeroReadIsEOF' dq ∗
+    "isFile" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"isFile" l) v.isFile' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'FD :
-    IntoValTypedUnderlying (GF := GF) internal.poll.FD internal.poll.FD.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.poll.FD _root_.Perennial.internal.poll.FD.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'FD'fdmu (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
+noncomputable instance access_load'FD'fdmu (l : Loc) (v : _root_.Perennial.internal.poll.FD) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.FD go!"fdmu" l) v.fdmu' dq)
-      (typedPointsto (structFieldRef internal.poll.FD go!"fdmu" l) v.fdmu' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"fdmu" l) v.fdmu' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"fdmu" l) v.fdmu' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'FD'fdmu (l : Loc) (v : internal.poll.FD) (y : internal.poll.fdMutex) :
+noncomputable instance access_store'FD'fdmu (l : Loc) (v : _root_.Perennial.internal.poll.FD) (y : _root_.Perennial.internal.poll.fdMutex) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.FD go!"fdmu" l) v.fdmu' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.poll.FD go!"fdmu" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with fdmu' := y } : internal.poll.FD) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"fdmu" l) v.fdmu' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"fdmu" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with fdmu' := y } : _root_.Perennial.internal.poll.FD) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'FD'Sysfd (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
+noncomputable instance access_load'FD'Sysfd (l : Loc) (v : _root_.Perennial.internal.poll.FD) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.FD go!"Sysfd" l) v.Sysfd' dq)
-      (typedPointsto (structFieldRef internal.poll.FD go!"Sysfd" l) v.Sysfd' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"Sysfd" l) v.Sysfd' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"Sysfd" l) v.Sysfd' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'FD'Sysfd (l : Loc) (v : internal.poll.FD) (y : w64) :
+noncomputable instance access_store'FD'Sysfd (l : Loc) (v : _root_.Perennial.internal.poll.FD) (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.FD go!"Sysfd" l) v.Sysfd' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.poll.FD go!"Sysfd" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Sysfd' := y } : internal.poll.FD) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"Sysfd" l) v.Sysfd' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"Sysfd" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Sysfd' := y } : _root_.Perennial.internal.poll.FD) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'FD'SysFile (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
+noncomputable instance access_load'FD'SysFile (l : Loc) (v : _root_.Perennial.internal.poll.FD) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.FD go!"SysFile" l) v.SysFile' dq)
-      (typedPointsto (structFieldRef internal.poll.FD go!"SysFile" l) v.SysFile' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"SysFile" l) v.SysFile' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"SysFile" l) v.SysFile' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'FD'SysFile (l : Loc) (v : internal.poll.FD) (y : internal.poll.SysFile) :
+noncomputable instance access_store'FD'SysFile (l : Loc) (v : _root_.Perennial.internal.poll.FD) (y : _root_.Perennial.internal.poll.SysFile) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.FD go!"SysFile" l) v.SysFile' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.poll.FD go!"SysFile" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with SysFile' := y } : internal.poll.FD) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"SysFile" l) v.SysFile' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"SysFile" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with SysFile' := y } : _root_.Perennial.internal.poll.FD) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'FD'pd (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
+noncomputable instance access_load'FD'pd (l : Loc) (v : _root_.Perennial.internal.poll.FD) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.FD go!"pd" l) v.pd' dq)
-      (typedPointsto (structFieldRef internal.poll.FD go!"pd" l) v.pd' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"pd" l) v.pd' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"pd" l) v.pd' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'FD'pd (l : Loc) (v : internal.poll.FD) (y : internal.poll.pollDesc) :
+noncomputable instance access_store'FD'pd (l : Loc) (v : _root_.Perennial.internal.poll.FD) (y : _root_.Perennial.internal.poll.pollDesc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.FD go!"pd" l) v.pd' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.poll.FD go!"pd" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pd' := y } : internal.poll.FD) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"pd" l) v.pd' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"pd" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pd' := y } : _root_.Perennial.internal.poll.FD) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'FD'csema (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
+noncomputable instance access_load'FD'csema (l : Loc) (v : _root_.Perennial.internal.poll.FD) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.FD go!"csema" l) v.csema' dq)
-      (typedPointsto (structFieldRef internal.poll.FD go!"csema" l) v.csema' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"csema" l) v.csema' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"csema" l) v.csema' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'FD'csema (l : Loc) (v : internal.poll.FD) (y : w32) :
+noncomputable instance access_store'FD'csema (l : Loc) (v : _root_.Perennial.internal.poll.FD) (y : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.FD go!"csema" l) v.csema' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.poll.FD go!"csema" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with csema' := y } : internal.poll.FD) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"csema" l) v.csema' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"csema" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with csema' := y } : _root_.Perennial.internal.poll.FD) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'FD'isBlocking (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
+noncomputable instance access_load'FD'isBlocking (l : Loc) (v : _root_.Perennial.internal.poll.FD) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.FD go!"isBlocking" l) v.isBlocking' dq)
-      (typedPointsto (structFieldRef internal.poll.FD go!"isBlocking" l) v.isBlocking' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"isBlocking" l) v.isBlocking' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"isBlocking" l) v.isBlocking' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'FD'isBlocking (l : Loc) (v : internal.poll.FD) (y : w32) :
+noncomputable instance access_store'FD'isBlocking (l : Loc) (v : _root_.Perennial.internal.poll.FD) (y : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.FD go!"isBlocking" l) v.isBlocking' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.poll.FD go!"isBlocking" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with isBlocking' := y } : internal.poll.FD) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"isBlocking" l) v.isBlocking' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"isBlocking" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with isBlocking' := y } : _root_.Perennial.internal.poll.FD) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'FD'IsStream (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
+noncomputable instance access_load'FD'IsStream (l : Loc) (v : _root_.Perennial.internal.poll.FD) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.FD go!"IsStream" l) v.IsStream' dq)
-      (typedPointsto (structFieldRef internal.poll.FD go!"IsStream" l) v.IsStream' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"IsStream" l) v.IsStream' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"IsStream" l) v.IsStream' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'FD'IsStream (l : Loc) (v : internal.poll.FD) (y : Bool) :
+noncomputable instance access_store'FD'IsStream (l : Loc) (v : _root_.Perennial.internal.poll.FD) (y : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.FD go!"IsStream" l) v.IsStream' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.poll.FD go!"IsStream" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with IsStream' := y } : internal.poll.FD) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"IsStream" l) v.IsStream' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"IsStream" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with IsStream' := y } : _root_.Perennial.internal.poll.FD) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'FD'ZeroReadIsEOF (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
+noncomputable instance access_load'FD'ZeroReadIsEOF (l : Loc) (v : _root_.Perennial.internal.poll.FD) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.FD go!"ZeroReadIsEOF" l) v.ZeroReadIsEOF' dq)
-      (typedPointsto (structFieldRef internal.poll.FD go!"ZeroReadIsEOF" l) v.ZeroReadIsEOF' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"ZeroReadIsEOF" l) v.ZeroReadIsEOF' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"ZeroReadIsEOF" l) v.ZeroReadIsEOF' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'FD'ZeroReadIsEOF (l : Loc) (v : internal.poll.FD) (y : Bool) :
+noncomputable instance access_store'FD'ZeroReadIsEOF (l : Loc) (v : _root_.Perennial.internal.poll.FD) (y : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.FD go!"ZeroReadIsEOF" l) v.ZeroReadIsEOF' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.poll.FD go!"ZeroReadIsEOF" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ZeroReadIsEOF' := y } : internal.poll.FD) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"ZeroReadIsEOF" l) v.ZeroReadIsEOF' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"ZeroReadIsEOF" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ZeroReadIsEOF' := y } : _root_.Perennial.internal.poll.FD) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'FD'isFile (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
+noncomputable instance access_load'FD'isFile (l : Loc) (v : _root_.Perennial.internal.poll.FD) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.FD go!"isFile" l) v.isFile' dq)
-      (typedPointsto (structFieldRef internal.poll.FD go!"isFile" l) v.isFile' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"isFile" l) v.isFile' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"isFile" l) v.isFile' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'FD'isFile (l : Loc) (v : internal.poll.FD) (y : Bool) :
+noncomputable instance access_store'FD'isFile (l : Loc) (v : _root_.Perennial.internal.poll.FD) (y : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.FD go!"isFile" l) v.isFile' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.poll.FD go!"isFile" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with isFile' := y } : internal.poll.FD) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"isFile" l) v.isFile' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.FD go!"isFile" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with isFile' := y } : _root_.Perennial.internal.poll.FD) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -402,68 +402,68 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.poll.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.poll.Assumptions]
 
 noncomputable instance typed_pointsto'splicePipeFields :
-    TypedPointsto (GF := GF) internal.poll.splicePipeFields where
+    TypedPointsto (GF := GF) _root_.Perennial.internal.poll.splicePipeFields where
   typedPointstoDef l v dq := iprop(
-    "rfd" ∷ typedPointsto (structFieldRef internal.poll.splicePipeFields go!"rfd" l) v.rfd' dq ∗
-    "wfd" ∷ typedPointsto (structFieldRef internal.poll.splicePipeFields go!"wfd" l) v.wfd' dq ∗
-    "data" ∷ typedPointsto (structFieldRef internal.poll.splicePipeFields go!"data" l) v.data' dq ∗
+    "rfd" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.poll.splicePipeFields go!"rfd" l) v.rfd' dq ∗
+    "wfd" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.poll.splicePipeFields go!"wfd" l) v.wfd' dq ∗
+    "data" ∷ typedPointsto (structFieldRef _root_.Perennial.internal.poll.splicePipeFields go!"data" l) v.data' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance into_val_typed'splicePipeFields :
-    IntoValTypedUnderlying (GF := GF) internal.poll.splicePipeFields internal.poll.splicePipeFields.underlying := by
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.poll.splicePipeFields _root_.Perennial.internal.poll.splicePipeFields.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance access_load'splicePipeFields'rfd (l : Loc) (v : internal.poll.splicePipeFields) (dq : DFrac) :
+noncomputable instance access_load'splicePipeFields'rfd (l : Loc) (v : _root_.Perennial.internal.poll.splicePipeFields) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"rfd" l) v.rfd' dq)
-      (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"rfd" l) v.rfd' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.splicePipeFields go!"rfd" l) v.rfd' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.splicePipeFields go!"rfd" l) v.rfd' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'splicePipeFields'rfd (l : Loc) (v : internal.poll.splicePipeFields) (y : w64) :
+noncomputable instance access_store'splicePipeFields'rfd (l : Loc) (v : _root_.Perennial.internal.poll.splicePipeFields) (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"rfd" l) v.rfd' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"rfd" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rfd' := y } : internal.poll.splicePipeFields) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.splicePipeFields go!"rfd" l) v.rfd' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.splicePipeFields go!"rfd" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rfd' := y } : _root_.Perennial.internal.poll.splicePipeFields) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'splicePipeFields'wfd (l : Loc) (v : internal.poll.splicePipeFields) (dq : DFrac) :
+noncomputable instance access_load'splicePipeFields'wfd (l : Loc) (v : _root_.Perennial.internal.poll.splicePipeFields) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"wfd" l) v.wfd' dq)
-      (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"wfd" l) v.wfd' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.splicePipeFields go!"wfd" l) v.wfd' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.splicePipeFields go!"wfd" l) v.wfd' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'splicePipeFields'wfd (l : Loc) (v : internal.poll.splicePipeFields) (y : w64) :
+noncomputable instance access_store'splicePipeFields'wfd (l : Loc) (v : _root_.Perennial.internal.poll.splicePipeFields) (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"wfd" l) v.wfd' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"wfd" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wfd' := y } : internal.poll.splicePipeFields) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.splicePipeFields go!"wfd" l) v.wfd' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.splicePipeFields go!"wfd" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wfd' := y } : _root_.Perennial.internal.poll.splicePipeFields) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_load'splicePipeFields'data (l : Loc) (v : internal.poll.splicePipeFields) (dq : DFrac) :
+noncomputable instance access_load'splicePipeFields'data (l : Loc) (v : _root_.Perennial.internal.poll.splicePipeFields) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"data" l) v.data' dq)
-      (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"data" l) v.data' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.splicePipeFields go!"data" l) v.data' dq)
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.splicePipeFields go!"data" l) v.data' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance access_store'splicePipeFields'data (l : Loc) (v : internal.poll.splicePipeFields) (y : w64) :
+noncomputable instance access_store'splicePipeFields'data (l : Loc) (v : _root_.Perennial.internal.poll.splicePipeFields) (y : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"data" l) v.data' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"data" l) y (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with data' := y } : internal.poll.splicePipeFields) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.splicePipeFields go!"data" l) v.data' (DFrac.own 1))
+      (typedPointsto (structFieldRef _root_.Perennial.internal.poll.splicePipeFields go!"data" l) y (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with data' := y } : _root_.Perennial.internal.poll.splicePipeFields) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -476,14 +476,14 @@ section def_
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem' : internal.poll.Assumptions]
+variable [package_sem' : _root_.Perennial.internal.poll.Assumptions]
 
 noncomputable instance typed_pointsto'splicePipe :
-    TypedPointsto (GF := GF) internal.poll.splicePipe :=
+    TypedPointsto (GF := GF) _root_.Perennial.internal.poll.splicePipe :=
   sorry -- axiomatized type
 
 noncomputable instance into_val_typed'splicePipe :
-    IntoValTypedUnderlying (GF := GF) internal.poll.splicePipe internal.poll.splicePipe.underlying :=
+    IntoValTypedUnderlying (GF := GF) _root_.Perennial.internal.poll.splicePipe _root_.Perennial.internal.poll.splicePipe.underlying :=
   sorry -- axiomatized type
 
 end def_
