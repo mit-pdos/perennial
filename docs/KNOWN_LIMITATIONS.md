@@ -192,7 +192,8 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   nothing produces a string of `2^63 - 2` bytes, for which `strconv.Quote`'s
   `len(s)+2` capacity would wrap. The exit removes only executions on strings no
   implementation of this platform can produce. A heap byte slice gets the same bound from
-  allocation (`IsFresh`), not from an exit.
+  allocation (`IsFresh`), not from an exit. Approved by Upamanyu on 2026-11-24
+  (`.agents/skills/fix-semantics/examples.md`, Case 51).
 - **Out of memory is outside the model.** The heap is bounded: every allocation lies in
   `(0, maxAddr]`, `maxAddr = 2^47` (`GooseLang/Lang.lean`; valid only for gc on
   linux/amd64, "Platform" above). When no free range is left, an allocation steps to itself forever
