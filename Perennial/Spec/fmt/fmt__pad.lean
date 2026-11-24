@@ -27,7 +27,7 @@ abbrev fmt.fmt.pad.spec : Prop :=
   ∀ (f b : Loc) (F : fmtFlags) (wid prec : w64) (bs : GoString) (sl : GoSlice) (ys : GoString)
     (q : DFrac),
     F.widPresent' = false ∨ wid = W64 0 ∨
-      ((∀ c ∈ ys, uint.Z c < 128) ∧ sint.Z wid ≤ ys.length) →
+      ((∀ c ∈ ys, uint.Z c < 128) ∧ 0 ≤ sint.Z wid ∧ sint.Z wid ≤ ys.length) →
     {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ fmtOwn (GF := GF) f b F wid prec ∗ bufferOwn b bs ∗ sl ↦*{q} ys }}
       (App (Val (f @!! go.GoType.PointerType fmt.fmt.ty @!! go!"pad")) (Val #sl))
     {{ RET #(); fmtOwn f b F wid prec ∗ bufferOwn b (bs ++ ys) ∗ sl ↦*{q} ys }}

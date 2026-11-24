@@ -29,16 +29,7 @@ theorem fmt.fmt.pad.wp_proof
     (wp_write : fmt.buffer.write.spec (GF := GF) (hG := hG))
     (wp_writePadding : fmt.fmt.writePadding.spec (GF := GF) (hG := hG))
     (wp_RuneCount : unicode.utf8.RuneCount.spec (GF := GF) (hG := hG)) :
-    -- `fmt.fmt.pad.spec` with `0 ≤ sint.Z wid` in its third case: without it, `wid - RuneCount(p)`
-    -- can wrap (`wid = MinInt64`), and `writePadding` then gets a positive count.
-    (∀ (f b : Loc) (F : fmtFlags) (wid prec : w64) (bs : GoString) (sl : GoSlice) (ys : GoString)
-      (q : DFrac),
-      F.widPresent' = false ∨ wid = W64 0 ∨
-        ((∀ c ∈ ys, uint.Z c < 128) ∧ 0 ≤ sint.Z wid ∧ sint.Z wid ≤ ys.length) →
-      {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ fmtOwn (GF := GF) f b F wid prec ∗ bufferOwn b bs ∗
-          sl ↦*{q} ys }}
-        (App (Val (f @!! go.GoType.PointerType fmt.fmt.ty @!! go!"pad")) (Val #sl))
-      {{ RET #(); fmtOwn f b F wid prec ∗ bufferOwn b (bs ++ ys) ∗ sl ↦*{q} ys }}) :=
+    fmt.fmt.pad.spec (GF := GF) (hG := hG) :=
     fun f b F wid prec bs sl ys q Hcase => by
   wp_start as ⟨Hf, Hb, Hs⟩
   unfold fmt.fmtOwn
