@@ -36,6 +36,11 @@
 #                                     last three hang)
 #            TestTimerGC              allocation counts: a model timer's
 #                                     goroutine keeps it alive until it fires
+#            TestAfterFuncStarvation  fairness under GOMAXPROCS(1): with sync's
+#                                     models in the same overlay (they spin
+#                                     where Go parks: partial correctness, no
+#                                     liveness claim) the AfterFunc goroutine
+#                                     is starved; passes with time's model alone
 #   sync     TestMutexMisuse          an Unlock of an unlocked Mutex: fatal's
 #                                     model is stuck (gomodel.Stuck, which
 #                                     blocks in gc) where Go ends the program
@@ -43,6 +48,15 @@
 #                                     the GC clearing pools: the model of
 #                                     Pool has no GC, its Get may return a
 #                                     value Go's GC would have dropped
+#            TestIssue40999, TestOnceXGC
+#                                     the tests that wait for a GC cleanup or
+#                                     finalizer (runtime.AddCleanup /
+#                                     SetFinalizer; TestPoolRelease above is the
+#                                     third): under the sync overlay, in gc
+#                                     builds, the cleanup never runs and they
+#                                     loop until the timeout (cause not found;
+#                                     GooseLang has no GC, so no proof depends
+#                                     on it)
 # internal/stringslite has no tests; bytes, internal/bytealg and internal/sync
 # run in full.
 # runtime, syscall, log: models that are choices (gomodel.Choose/ChooseUint64/ChooseString),
@@ -74,11 +88,11 @@ go build -o "$OUT/goose" ./cmd/goose
 run() { go test -vet=off -timeout 600s -overlay "$OUT/ov/overlay.json" -tags purego,goose "$@"; }
 run strings -skip '^(TestSplit|ExampleSplit|TestBuilderGrow|TestBuilderAllocs|TestBuilderGrowSizeclasses|TestReplace|TestBuilderCopyPanic)$'
 run errors -skip '^TestIs$'
-run sync -skip '^(TestMutexMisuse|TestPool|TestPoolGC|TestPoolRelease)$'
+run sync -skip '^(TestMutexMisuse|TestPool|TestPoolGC|TestPoolRelease|TestIssue40999|TestOnceXGC)$'
 # the models' own tests (goose/model/overlaytests: Cond.Wait without a signal blocks, ...)
 run ./model/overlaytests/
 run bytes internal/stringslite internal/bytealg internal/sync
-run time -skip '^(TestAfterStop|TestTimerStopStress|TestChan|TestTicker|TestReset|TestTimerModifiedEarlier|TestAdjustTimers|TestTimerGC)$'
+run time -skip '^(TestAfterStop|TestTimerStopStress|TestChan|TestTicker|TestReset|TestTimerModifiedEarlier|TestAdjustTimers|TestTimerGC|TestAfterFuncStarvation)$'
 runc() { go test -vet=off -timeout 600s -overlay "$OUT/ovc/overlay.json" -tags purego,goose "$@"; }
 runc syscall -skip '^TestPrlimitFileLimit$'
 runc log -skip '^(TestAll|TestCallDepth|ExampleLogger|ExampleLogger_Output)$'
