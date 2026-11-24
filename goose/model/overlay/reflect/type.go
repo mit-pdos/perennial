@@ -16,6 +16,7 @@
 package reflect
 
 import (
+	"internal/gomodel"
 	"internal/reflectcore"
 	"iter"
 	"strconv"
@@ -422,7 +423,18 @@ func TypeOf(i any) Type {
 	if i == nil {
 		return nil
 	}
-	return toRType(reflectcore.TokOf(i))
+	t := reflectcore.TokOf(i)
+	if isModelRType(t) {
+		gomodel.Stuck()
+	}
+	return toRType(t)
+}
+
+// MODEL: whether t is the token of the model's rtype. Real's Type values
+// are *rtype, the model's are rtype values: reflection on them is not
+// modelled.
+func isModelRType(t any) bool {
+	return t == reflectcore.TokOf(rtype{})
 }
 
 func stringFor(t any) string {

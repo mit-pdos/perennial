@@ -285,6 +285,10 @@ the reflection primitives of `internal/reflectcore` (`TrustedCode/internal/refle
     `Value.Interface` of the zero Value) are modelled.
   - Method values (`flagMethod`, from `Value.Method`) are not modelled: `Value.Type` and
     `Value.Interface` of one are stuck.
+  - Reflection on `reflect`'s own `Type` values is stuck: real's are `*rtype` pointers, the
+    model's are `rtype` structs, so `TypeOf` and `ValueOf` of one (`TypeOf(TypeOf(0))`, or
+    `Elem` of an interface holding one) call `gomodel.Stuck` rather than report the model's
+    kind.
 - **`==` on `Value`s that hold indirect values is false where gc may say true (sound).** gc's
   `Value ==` compares the implementation's fields, and for a value stored indirectly (not a
   pointer, map, channel, func or unsafe.Pointer, or a one-element array or one-field struct of
