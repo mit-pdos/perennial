@@ -1079,6 +1079,18 @@ func (suite *GoTestSuite) TestListTypesEqual() {
 	suite.Equal(true, testListTypesEqual())
 }
 
+func (suite *GoTestSuite) TestUnaryPlusInt() {
+	suite.Equal(true, testUnaryPlusInt())
+}
+
+func (suite *GoTestSuite) TestUnaryPlusUntypedAndNamed() {
+	suite.Equal(true, testUnaryPlusUntypedAndNamed())
+}
+
+func (suite *GoTestSuite) TestUnaryPlusFloat() {
+	suite.Equal(true, testUnaryPlusFloat())
+}
+
 func (suite *GoTestSuite) TestVariadicCall() {
 	suite.Equal(true, testVariadicCall())
 }
