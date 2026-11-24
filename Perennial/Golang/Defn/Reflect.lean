@@ -147,7 +147,7 @@ class ReflectSemantics : Prop where
   array_slice_at_step {a e : go.GoType} {n : Int} [a ↓u go.ArrayType n e] (l : Loc)
       (hl : l ≠ null) :
     ⟦ArraySliceAt, #(interface.mkOk (go.PointerType a) #l)⟧ ⤳
-      Convert (go.SliceType e) go.any (Slice a (#l, #(W64 0), #(W64 n)))
+      Convert (go.SliceType e) go.any (Slice (go.ArrayType n e) (#l, #(W64 0), #(W64 n)))
   /-- `x == nil` at `x`'s dynamic type. -/
   eq_nil_at_step {t u : go.GoType} [t ↓u u] [IsNilable u] (v : val) {z : val}
       [⟦GoZeroVal t, #()⟧ ⤳ Val z] :
