@@ -20,14 +20,14 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.gokv.grove_ffi.Assumptions]
 
-/-- `FileAppend(f, data)`: `data` is appended to file `f`, a logically atomic spec; the data
-slice is only read. -/
+/-- `FileAppend(f, data)`, for a valid file name `f`: `data` is appended to file `f`; the data
+slice is only read. Not logically atomic (the append takes several steps, and another thread
+may see part of it), so the caller owns the file. -/
 abbrev github_com.mit_pdos.gokv.grove_ffi.FileAppend.spec : Prop :=
-  ∀ (f : GoString) (s : GoSlice) (dq : DFrac) (data : List w8),
-  ⊢ ∀ Φ : val → IProp GF, s ↦*{dq} data -∗
-      (|={⊤,∅}=> ∃ old : List w8, f f↦ old ∗
-        (f f↦ (old ++ data) ={∅,⊤}=∗ s ↦*{dq} data -∗ Φ #())) -∗
-      WP (App (App (Val (@! FileAppend)) (Val #f)) (Val #s)) {{ Φ }}
+  ∀ (f : GoString) (s : GoSlice) (dq : DFrac) (data old : List w8), ValidFileName f →
+    {{ (s ↦*{dq} data : IProp GF) ∗ f f↦ old }}
+      (App (App (Val (@! FileAppend)) (Val #f)) (Val #s))
+    {{ RET #(); s ↦*{dq} data ∗ f f↦ (old ++ data) }}
 
 end spec
 

@@ -22,13 +22,13 @@ variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.gokv.grove_ffi.Assumptions]
 
 theorem github_com.mit_pdos.gokv.grove_ffi.FileRead.wp_proof :
-    github_com.mit_pdos.gokv.grove_ffi.FileRead.spec (GF := GF) (hG := hG) := fun f => by
+    github_com.mit_pdos.gokv.grove_ffi.FileRead.spec (GF := GF) (hG := hG) := fun f Hf => by
   iintro %Φ HAU
   wp_func_call
   unfold FileRead.impl
   wp_pures
   wp_bind (ExternalOp _ _ _)
-  iapply wp_FileReadOp_atomic
+  iapply wp_FileReadOp_atomic f Hf
   imod HAU with ⟨%dq, %c, Hf, Hclose⟩
   imodintro
   iexists dq, c

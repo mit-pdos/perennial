@@ -7,6 +7,8 @@ the Grove extension of `Perennial.GooseLang.Ext.Grove.Impl` (`ExternalOp groveEx
 The extension's operations take and return byte strings as Go string values (`#data`); the
 model converts between them and `[]byte`. `FileRead`'s result has an arbitrary capacity at
 least its length (`slice._new_cap`, the capacity `append` chooses), as `os.ReadFile`'s does.
+`FileAppend` appends in pieces of arbitrary sizes, each one step, as a concurrent `FileRead` may
+see part of a `write(2)`.
 A `Listener` or `Connection` is a fresh cell holding the extension's socket value.
 -/
 module
@@ -83,11 +85,27 @@ def FileWrite.impl : val :=
     ExternalOp groveExt.name "FileWrite"
       ("filename", Convert (go.SliceType go.byte) go.string "content")
 
+/-- An arbitrary length (`ArbitraryInt`) in `1..n`, or `n` (a helper of `FileAppend.impl`, not
+a function of `grove_ffi`). -/
+def FileAppend.pieceLen : val :=
+  λ: "n",
+    let: "k" := ArbitraryInt in
+    if: (#(W64 0) <⟨go.int⟩ "k") && ("k" ≤⟨go.int⟩ "n") then "k" else "n"
+
+/-- Appends the string `s` to file `filename` in one or more pieces, first to last (a helper of
+`FileAppend.impl`, not a function of `grove_ffi`): each piece is a prefix of what remains, of
+arbitrary length (`FileAppend.pieceLen`), non-empty unless `s` is empty (one empty piece). -/
+def FileAppend.appendPieces : val :=
+  rec: "loop" "filename" "s" :=
+    let: "n" := FuncResolve go.len [go.string] #() "s" in
+    let: "k" := FileAppend.pieceLen "n" in
+    ExternalOp groveExt.name "FileAppend" ("filename", Slice go.string ("s", #(W64 0), "k")) ;;
+    if: "k" <⟨go.int⟩ "n" then "loop" "filename" (Slice go.string ("s", "k", "n")) else #()
+
 /-- Type: func(string, []byte) -/
 def FileAppend.impl : val :=
   λ: "filename" "data",
-    ExternalOp groveExt.name "FileAppend"
-      ("filename", Convert (go.SliceType go.byte) go.string "data")
+    FileAppend.appendPieces "filename" (Convert (go.SliceType go.byte) go.string "data")
 
 /-- Type: func() uint64 -/
 def GetTSC.impl : val :=

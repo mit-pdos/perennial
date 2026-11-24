@@ -308,7 +308,8 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
 - **`FileAppend` is assumed to write all of its data (environment assumption).** Go's
   `grove_ffi.FileAppend` ignores the result of `f.Write(data)`: on a full disk (`ENOSPC`)
   the write may stop part-way, and the file then ends with a prefix of `data` (the `Sync`
-  that follows may still succeed). The model appends all of `data` (`IsGroveStep`
+  that follows may still succeed). The model appends all of `data`, in pieces
+  (`FileAppend.impl`, `TrustedCode/github_com/mit_pdos/gokv/grove_ffi.lean`; `IsGroveStep`
   "FileAppend", `Ext/Grove/Impl.lean`).
 
   ```go
@@ -316,19 +317,30 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   d := grove_ffi.FileRead("log")   // the model: d ends with rec
   ```
 
-- **`Listen` and `Accept` are assumed to succeed on a valid, free endpoint (environment
-  assumption).** `Listen` of an endpoint that is not valid (`ValidEndpoint`: bits 48-63
-  set, which `AddressToStr` ignores; IP `0.0.0.0`; port 0) or that the program already
-  listens on is stuck (`IsGroveStep` "Listen", `Ext/Grove/Impl.lean`). Otherwise Go's
-  `grove_ffi.Listen` panics when `net.Listen` fails, and `Accept` when `Accept` fails: the
-  model assumes the endpoint is not used by another process, its IP is an address of the
-  node (otherwise `net.Listen` fails with `EADDRNOTAVAIL`), and no resource limit is hit
-  (above), so a Go run in which they panic, possibly recovered by the program, is not a run
-  of the model.
+- **`Listen` and `Accept` are assumed to succeed on a free endpoint outside the ephemeral
+  port range (environment assumption).** `Listen` is stuck on an endpoint it does not
+  accept (`ListenEndpoint`: not `ValidEndpoint`, that is bits 48-63 set, which
+  `AddressToStr` ignores, IP `0.0.0.0` or port 0; or a port below 1024, which needs
+  privilege to bind), on one the program already listens on, and on the local endpoint of
+  a connection (`Connect` picks a local endpoint that is not a key of `groveListen`,
+  `IsFreshChan`; `Listen` is stuck on an endpoint that is not a key) (`IsGroveStep`
+  "Listen", `Ext/Grove/Impl.lean`). Otherwise Go's `grove_ffi.Listen` panics when
+  `net.Listen` fails, and `Accept` when `Accept` fails: the model assumes the endpoint is
+  not used by another process, its port is outside the ephemeral port range from which the
+  OS picks the local endpoints of outgoing connections (Linux:
+  `/proc/sys/net/ipv4/ip_local_port_range`, 32768-60999 by default), its IP is an address
+  of the node (otherwise `net.Listen` fails with `EADDRNOTAVAIL`), and no resource limit is
+  hit (above), so a Go run in which they panic, possibly recovered by the program, is not a
+  run of the model. (The model's `Connect` never picks an endpoint the program may listen
+  on, a key of `groveListen`; Go's OS may pick one whose port is ephemeral, and the
+  program's later `Listen` of it panics.)
 
   ```go
   l := grove_ffi.Listen(a) // Go: panics if another process listens on a, or a's IP
                            // is not the node's; the model: a listener
+  c := grove_ffi.Connect(srv) // Go: the OS picks the local endpoint, e.g. 127.0.0.1:48688
+  m := grove_ffi.Listen(b)    // b = 127.0.0.1:48688: Go: panics (bind: address already
+                              // in use); the model: c's local endpoint is not b
   ```
 
 - **The network is closed: only Grove nodes send to Grove endpoints (environment

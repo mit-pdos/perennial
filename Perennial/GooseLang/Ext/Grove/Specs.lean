@@ -270,7 +270,7 @@ theorem wp_GroveOp (op : String) (v : val) (Φ : val → IProp GF) (Hop : op ∈
     imodintro
     iframe
 
-theorem wp_ListenOp (c : Endpoint) (Hc : ValidEndpoint c) :
+theorem wp_ListenOp (c : Endpoint) (Hc : ListenEndpoint c) :
     {{ (c l↦ false : IProp GF) }} (ExternalOp groveExt.name "Listen" (Val (#c))) @ s; E
     {{ RET listen_socket c; c l↦ true }} := by
   iintro %Φ Hlc HΦ
@@ -327,7 +327,7 @@ theorem wp_ConnectOp (c_r : Endpoint) (Hc : ValidEndpoint c_r) :
     obtain ⟨rfl, rfl⟩ := H
     icases (grove_global_ctx_eq g1).mp $$ Hg with ⟨Hnet, Hlis, Htime⟩
     imod genHeap_alloc' (G := (gooseGroveGS (G := G)).groveGNetHeapG) (v := (∅ : GSet message))
-      (show g1.groveNet !! c_l = none from Hfresh) $$ Hnet with ⟨Hnet, Hc, -⟩
+      (show g1.groveNet !! c_l = none from Hfresh.1) $$ Hnet with ⟨Hnet, Hc, -⟩
     imodintro
     iframe Hl
     isplitl [Hnet Hlis Htime]
@@ -425,7 +425,7 @@ theorem wp_RecvOp (c_l c_r : Endpoint) (ms : GSet message) :
     iframe Hc
     ipureintro; simpa using Hd
 
-theorem wp_FileReadOp (f : GoString) (q : DFrac) (c : List w8) :
+theorem wp_FileReadOp (f : GoString) (q : DFrac) (c : List w8) (Hf : ValidFileName f) :
     {{ (f f↦{q} c : IProp GF) }} (ExternalOp groveExt.name "FileRead" (Val (#f))) @ s; E
     {{ RET #c; f f↦{q} c }} := by
   iintro %Φ Hc HΦ
@@ -436,6 +436,7 @@ theorem wp_FileReadOp (f : GoString) (q : DFrac) (c : List w8) :
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
   obtain ⟨rfl, rfl, He⟩ := Hstep
   have H := He f rfl
+  rw [if_pos Hf] at H
   icases (grove_local_ctx_eq σ1).mp $$ Hl with ⟨Htsc, Hfiles⟩
   unfold filePointsto
   icases genHeap_lookup (G := (gooseGroveNodeGS (L := L)).groveGFilesHeapG) $$ Hfiles Hc
@@ -451,7 +452,7 @@ theorem wp_FileReadOp (f : GoString) (q : DFrac) (c : List w8) :
   iapply HΦ
   iexact Hc
 
-theorem wp_FileWriteOp (f : GoString) (old new : List w8) :
+theorem wp_FileWriteOp (f : GoString) (old new : List w8) (Hf : ValidFileName f) :
     {{ (f f↦ old : IProp GF) }} (ExternalOp groveExt.name "FileWrite" (Val (PairV (#f) (#new)))) @ s; E
     {{ RET #(); f f↦ new }} := by
   iintro %Φ Hc HΦ
@@ -461,7 +462,9 @@ theorem wp_FileWriteOp (f : GoString) (old new : List w8) :
   inext
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
   obtain ⟨rfl, He⟩ := Hstep
-  obtain ⟨rfl, rfl⟩ := He f new rfl
+  have H := He f new rfl
+  rw [if_pos Hf] at H
+  obtain ⟨rfl, rfl⟩ := H
   icases (grove_local_ctx_eq σ1).mp $$ Hl with ⟨Htsc, Hfiles⟩
   unfold filePointsto
   imod genHeap_update' (G := (gooseGroveNodeGS (L := L)).groveGFilesHeapG) (v₂ := new)
@@ -475,7 +478,7 @@ theorem wp_FileWriteOp (f : GoString) (old new : List w8) :
   iapply HΦ
   iexact Hc
 
-theorem wp_FileAppendOp (f : GoString) (old new : List w8) :
+theorem wp_FileAppendOp (f : GoString) (old new : List w8) (Hf : ValidFileName f) :
     {{ (f f↦ old : IProp GF) }} (ExternalOp groveExt.name "FileAppend" (Val (PairV (#f) (#new)))) @ s; E
     {{ RET #(); f f↦ (old ++ new) }} := by
   iintro %Φ Hc HΦ
@@ -486,6 +489,7 @@ theorem wp_FileAppendOp (f : GoString) (old new : List w8) :
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
   obtain ⟨rfl, He⟩ := Hstep
   have H := He f new rfl
+  rw [if_pos Hf] at H
   icases (grove_local_ctx_eq σ1).mp $$ Hl with ⟨Htsc, Hfiles⟩
   unfold filePointsto
   icases genHeap_lookup (G := (gooseGroveNodeGS (L := L)).groveGFilesHeapG) $$ Hfiles Hc

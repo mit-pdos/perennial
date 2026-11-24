@@ -22,14 +22,14 @@ variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.gokv.grove_ffi.Assumptions]
 
 theorem github_com.mit_pdos.gokv.grove_ffi.FileWrite.wp_proof :
-    github_com.mit_pdos.gokv.grove_ffi.FileWrite.spec (GF := GF) (hG := hG) := fun f s dq data => by
+    github_com.mit_pdos.gokv.grove_ffi.FileWrite.spec (GF := GF) (hG := hG) := fun f s dq data Hf => by
   iintro %Φ Hs HAU
   wp_func_call
   unfold FileWrite.impl
   wp_pures
   wp_apply wp_bytes_to_string s data dq $$ Hs with Hs
   try wp_pures
-  iapply wp_FileWriteOp_atomic f data
+  iapply wp_FileWriteOp_atomic f data Hf
   imod HAU with ⟨%old, Hf, Hclose⟩
   imodintro
   iexists old

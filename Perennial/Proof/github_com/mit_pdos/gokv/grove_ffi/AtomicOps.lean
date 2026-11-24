@@ -4,7 +4,8 @@ call (`Perennial/GooseLang/Ext/Grove/Specs.lean` has their Hoare triples): the c
 mask-changing update runs at the operation's step. An operation may stutter before it steps,
 so it is not `Atomic` and a triple cannot be opened around it; these lemmas run the update
 inside `wp_GroveOp`'s step instead. `wp_SendOp_atomic` also states that the message is always
-added (the step does, whatever it returns).
+added (the step does, whatever it returns). (`FileAppend`'s model appends in several steps; its
+proof uses `wp_FileAppendOp` for each.)
 -/
 module
 
@@ -92,7 +93,7 @@ theorem wp_RecvOp_atomic (c_l c_r : Endpoint) (Φ : val → IProp GF) :
     iapply HΦ $$ %false %d
     ipureintro; simpa using Hd
 
-theorem wp_FileReadOp_atomic (f : GoString) (Φ : val → IProp GF) :
+theorem wp_FileReadOp_atomic (f : GoString) (Hf : ValidFileName f) (Φ : val → IProp GF) :
     (|={E,∅}=> ∃ (q : DFrac) (c : List w8), f f↦{q} c ∗ (f f↦{q} c ={∅,E}=∗ Φ #c))
     ⊢ WP (ExternalOp groveExt.name "FileRead" (Val (#f))) @ s; E {{ Φ }} := by
   iintro HAU
@@ -103,6 +104,7 @@ theorem wp_FileReadOp_atomic (f : GoString) (Φ : val → IProp GF) :
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
   obtain ⟨rfl, rfl, He⟩ := Hstep
   have H := He f rfl
+  rw [if_pos Hf] at H
   imod HAU with ⟨%q, %c, Hc, Hclose⟩
   icases (grove_local_ctx_eq σ1).mp $$ Hl with ⟨Htsc, Hfiles⟩
   unfold filePointsto
@@ -119,7 +121,8 @@ theorem wp_FileReadOp_atomic (f : GoString) (Φ : val → IProp GF) :
   iapply wp_value'
   iexact HΦ
 
-theorem wp_FileWriteOp_atomic (f : GoString) (new : List w8) (Φ : val → IProp GF) :
+theorem wp_FileWriteOp_atomic (f : GoString) (new : List w8) (Hf : ValidFileName f)
+    (Φ : val → IProp GF) :
     (|={E,∅}=> ∃ old : List w8, f f↦ old ∗ (f f↦ new ={∅,E}=∗ Φ #()))
     ⊢ WP (ExternalOp groveExt.name "FileWrite" (Val (PairV (#f) (#new)))) @ s; E {{ Φ }} := by
   iintro HAU
@@ -129,41 +132,13 @@ theorem wp_FileWriteOp_atomic (f : GoString) (new : List w8) (Φ : val → IProp
   inext
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
   obtain ⟨rfl, He⟩ := Hstep
-  obtain ⟨rfl, rfl⟩ := He f new rfl
+  have H := He f new rfl
+  rw [if_pos Hf] at H
+  obtain ⟨rfl, rfl⟩ := H
   imod HAU with ⟨%old, Hc, Hclose⟩
   icases (grove_local_ctx_eq σ1).mp $$ Hl with ⟨Htsc, Hfiles⟩
   unfold filePointsto
   imod genHeap_update' (G := (gooseGroveNodeGS (L := L)).groveGFilesHeapG) (v₂ := new)
-    $$ [Hfiles Hc] with ⟨Hfiles, Hc⟩
-  · iframe
-  imod Hclose $$ Hc with HΦ
-  imodintro
-  iframe Hg
-  isplitl [Htsc Hfiles]
-  · iapply (grove_local_ctx_eq _).mpr; unfold groveTscAuth; iframe
-  iapply wp_value'
-  iexact HΦ
-
-theorem wp_FileAppendOp_atomic (f : GoString) (new : List w8) (Φ : val → IProp GF) :
-    (|={E,∅}=> ∃ old : List w8, f f↦ old ∗ (f f↦ (old ++ new) ={∅,E}=∗ Φ #()))
-    ⊢ WP (ExternalOp groveExt.name "FileAppend" (Val (PairV (#f) (#new)))) @ s; E {{ Φ }} := by
-  iintro HAU
-  iapply wp_GroveOp
-  case Hop => decide
-  case Hv => simp [val.isPanic]
-  inext
-  iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
-  obtain ⟨rfl, He⟩ := Hstep
-  have H := He f new rfl
-  imod HAU with ⟨%old, Hc, Hclose⟩
-  icases (grove_local_ctx_eq σ1).mp $$ Hl with ⟨Htsc, Hfiles⟩
-  unfold filePointsto
-  icases genHeap_lookup (G := (gooseGroveNodeGS (L := L)).groveGFilesHeapG) $$ Hfiles Hc
-    with %Heq
-  change σ1.groveNodeFiles !! f = some old at Heq
-  rw [Heq] at H
-  obtain ⟨rfl, rfl⟩ := H
-  imod genHeap_update' (G := (gooseGroveNodeGS (L := L)).groveGFilesHeapG) (v₂ := old ++ new)
     $$ [Hfiles Hc] with ⟨Hfiles, Hc⟩
   · iframe
   imod Hclose $$ Hc with HΦ

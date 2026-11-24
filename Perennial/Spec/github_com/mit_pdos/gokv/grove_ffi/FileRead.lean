@@ -20,9 +20,10 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.gokv.grove_ffi.Assumptions]
 
-/-- `FileRead(f)`: a new slice holding the contents of file `f`, a logically atomic spec. -/
+/-- `FileRead(f)`, for a valid file name `f`: a new slice holding the contents of file `f`, a
+logically atomic spec. -/
 abbrev github_com.mit_pdos.gokv.grove_ffi.FileRead.spec : Prop :=
-  ∀ (f : GoString),
+  ∀ (f : GoString), ValidFileName f →
   ⊢ ∀ Φ : val → IProp GF,
       (|={⊤,∅}=> ∃ (dq : DFrac) (c : List w8), f f↦{dq} c ∗
         (f f↦{dq} c ={∅,⊤}=∗

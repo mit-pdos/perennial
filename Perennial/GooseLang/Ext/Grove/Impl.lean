@@ -98,10 +98,30 @@ def ValidEndpoint (a : Endpoint) : Prop :=
 instance (a : Endpoint) : Decidable (ValidEndpoint a) := by
   unfold ValidEndpoint; infer_instance
 
+/-- An endpoint `Listen` accepts: a valid endpoint whose port is at least 1024 (binding a lower
+port needs privilege). -/
+def ListenEndpoint (a : Endpoint) : Prop :=
+  ValidEndpoint a ∧ 1024 ≤ (a >>> 32) &&& 0xffff
+
+instance (a : Endpoint) : Decidable (ListenEndpoint a) := by
+  unfold ListenEndpoint; infer_instance
+
+/-- A file name `FileRead`, `FileWrite` and `FileAppend` accept: non-empty, with no `/` (47)
+and no NUL byte, not `.` (46) or `..`, and at most 244 bytes (`FileWrite`'s temporary file is
+named by the name, `_` and up to 10 digits, at most 255 bytes, Linux's `NAME_MAX`). -/
+def ValidFileName (name : GoString) : Prop :=
+  name ≠ [] ∧ (47 : w8) ∉ name ∧ (0 : w8) ∉ name ∧ name ≠ [(46 : w8)] ∧
+    name ≠ [(46 : w8), 46] ∧ name.length ≤ 244
+
+instance (name : GoString) : Decidable (ValidFileName name) := by
+  unfold ValidFileName; infer_instance
+
+/-- A local endpoint `Connect` may pick: none (it fails), or one that is neither a channel nor
+an endpoint `Listen` may be called on. -/
 def IsFreshChan (fg : GroveGlobalState) (c : Option Endpoint) : Prop :=
   match c with
   | none => True -- failure (to allocate a channel) is always an option
-  | some c => fg.groveNet !! c = none
+  | some c => fg.groveNet !! c = none ∧ fg.groveListen !! c = none
 
 theorem gen_isFreshChan (σg : GroveGlobalState) : IsFreshChan σg none := trivial
 
@@ -111,7 +131,7 @@ def IsGroveStep (op : String) (v : val) (e' : Expr)
   | "Listen" =>
       σ = σ' ∧
       (∀ c : Endpoint, v = #c →
-        if ValidEndpoint c ∧ g.groveListen !! c = some false then
+        if ListenEndpoint c ∧ g.groveListen !! c = some false then
           g' = { g with groveListen := <[c := true]> g.groveListen } ∧
             e' = Val (groveV (ListenSocketV c))
         else e' = Panic "invalid")
@@ -149,21 +169,27 @@ def IsGroveStep (op : String) (v : val) (e' : Expr)
   | "FileRead" =>
       σ = σ' ∧ g = g' ∧
       (∀ name : GoString, v = #name →
-        match σ.groveNodeFiles !! name with
-        | some data => e' = Val (#data)
-        | none => e' = Panic "invalid")
+        if ValidFileName name then
+          match σ.groveNodeFiles !! name with
+          | some data => e' = Val (#data)
+          | none => e' = Panic "invalid"
+        else e' = Panic "invalid")
   | "FileWrite" =>
       g = g' ∧
       (∀ (name : GoString) (data : List w8), v = PairV (#name) (#data) →
-        e' = Val (#()) ∧ σ' = { σ with groveNodeFiles := <[name := data]> σ.groveNodeFiles })
+        if ValidFileName name then
+          e' = Val (#()) ∧ σ' = { σ with groveNodeFiles := <[name := data]> σ.groveNodeFiles }
+        else e' = Panic "invalid")
   | "FileAppend" =>
       g = g' ∧
       (∀ (name : GoString) (data : List w8), v = PairV (#name) (#data) →
-        match σ.groveNodeFiles !! name with
-        | some old =>
-            σ' = { σ with groveNodeFiles := <[name := old ++ data]> σ.groveNodeFiles } ∧
-            e' = Val (#())
-        | none => e' = Panic "invalid")
+        if ValidFileName name then
+          match σ.groveNodeFiles !! name with
+          | some old =>
+              σ' = { σ with groveNodeFiles := <[name := old ++ data]> σ.groveNodeFiles } ∧
+              e' = Val (#())
+          | none => e' = Panic "invalid"
+        else e' = Panic "invalid")
   | "GetTSC" =>
       g = g' ∧
       ∃ new_time : w64,

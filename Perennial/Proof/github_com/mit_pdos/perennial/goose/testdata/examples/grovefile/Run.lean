@@ -31,10 +31,12 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.grovefile.Run.wp_p
     (wp_FileRead : github_com.mit_pdos.gokv.grove_ffi.FileRead.spec (GF := GF) (hG := hG))
     (wp_GetTSC : github_com.mit_pdos.gokv.grove_ffi.GetTSC.spec (GF := GF) (hG := hG)) :
     github_com.mit_pdos.perennial.goose.testdata.examples.grovefile.Run.spec (GF := GF) (hG := hG) := fun old => by
-  have wp_FileWrite' := fun f s dq data =>
-    (FuncUnfold.func_unfold (f := github_com.mit_pdos.gokv.grove_ffi.FileWrite) (type_args := [])) ▸ wp_FileWrite f s dq data
-  have wp_FileRead' := fun f =>
-    (FuncUnfold.func_unfold (f := github_com.mit_pdos.gokv.grove_ffi.FileRead) (type_args := [])) ▸ wp_FileRead f
+  have wp_FileWrite' := fun f s dq data hf =>
+    (FuncUnfold.func_unfold (f := github_com.mit_pdos.gokv.grove_ffi.FileWrite) (type_args := [])) ▸ wp_FileWrite f s dq data hf
+  have wp_FileRead' := fun f hf =>
+    (FuncUnfold.func_unfold (f := github_com.mit_pdos.gokv.grove_ffi.FileRead) (type_args := [])) ▸ wp_FileRead f hf
+  -- the file name `"f"` is valid
+  have Hvalid : ValidFileName go!"f" := by decide
   have wp_GetTSC' : ⊢ ∀ Φ : val → IProp GF,
       (|={⊤,∅}=> ∃ prev : Nat, tscLb prev ∗
         (∀ t : w64, ⌜prev ≤ t.toNat⌝ -∗ tscLb t.toNat ={∅,⊤}=∗ Φ #t)) -∗
@@ -45,7 +47,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.grovefile.Run.wp_p
   wp_apply wp_string_to_bytes go!"hello" with %sl ⟨Hsl, Hcap⟩
   -- write the file
   wp_func_call
-  wp_apply_core wp_FileWrite' go!"f" sl (DFrac.own 1) go!"hello" $$ Hsl
+  wp_apply_core wp_FileWrite' go!"f" sl (DFrac.own 1) go!"hello" Hvalid $$ Hsl
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
   iexists old
@@ -57,7 +59,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.grovefile.Run.wp_p
   try wp_auto
   -- read it back
   wp_func_call
-  wp_apply_core wp_FileRead' go!"f"
+  wp_apply_core wp_FileRead' go!"f" Hvalid
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
   iexists (DFrac.own 1), go!"hello"
