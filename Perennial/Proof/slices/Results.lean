@@ -2,7 +2,8 @@
 Results of `slices` derived from the linked ones: `wp_siftDownCmpFunc_Trivial` and
 `wp_siftDownOrdered_Trivial` (the second conjuncts of the specs of `siftDownCmpFunc` and
 `siftDownOrdered`, under their old names), `lessImplements_uint64` (from `cmp.wp_Less_uint64`)
-and `wp_Sort_uint64` (`Sort` on `[]uint64`).
+`wp_Sort_uint64` (`Sort` on `[]uint64`) and `wp_ContainsFunc_pure` (`ContainsFunc` of a function
+computing a pure predicate).
 -/
 module
 
@@ -114,6 +115,42 @@ theorem wp_Sort_uint64 {S : go.GoType} [S ↓u go.SliceType go.uint64] (data : G
   omega
 
 end uint64
+
+section containsFunc
+variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem : slices.Assumptions]
+
+/-- `slices.ContainsFunc(s, f)` of an `f` computing a pure predicate `p` on the elements of `s`:
+whether some element satisfies `p` (`xs.any p`, that is `decide (∃ x ∈ xs, p x)`). -/
+theorem wp_ContainsFunc_pure {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V] {Et : go.GoType}
+    [IntoValTyped (GF := GF) V Et] {S : go.GoType} [S ↓u go.SliceType Et]
+    (s : GoSlice) (dq : DFrac) (xs : List V) (f : GoFunc) (p : V → Bool) :
+    {{ s ↦*{dq} xs ∗ funcAnswers (GF := GF) (fun x b => b = p x) xs f }}
+      (App (App (Val #(functions ContainsFunc [S, Et])) (Val #s)) (Val #f))
+    {{ RET #(xs.any p); s ↦*{dq} xs }} := by
+  wp_start_folded as ⟨Hs, #Hf⟩
+  wp_apply wp_ContainsFunc s dq xs f (fun x b => b = p x) $$ [Hs] as %b ⟨Hs, %Hb⟩
+  · iframe; iframe #
+  have hb : b = xs.any p := by
+    cases b
+    · simp only [Bool.false_eq_true, ↓reduceIte] at Hb
+      symm
+      rw [List.any_eq_false]
+      intro x hx
+      simp [Hb x hx]
+    · simp only [↓reduceIte] at Hb
+      obtain ⟨x, hx, hpx⟩ := Hb
+      symm
+      rw [List.any_eq_true]
+      exact ⟨x, hx, hpx.symm⟩
+  subst hb
+  iapply HΦ
+  iexact Hs
+
+end containsFunc
 
 end slices
 

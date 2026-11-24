@@ -26,7 +26,7 @@ theorem fmt.pp.handleMethods.wp_proof
     (wp_fmtString : fmt.pp.fmtString.spec (GF := GF) (hG := hG))
     (wp_catchPanic : fmt.pp.catchPanic'deferred.spec (GF := GF) (hG := hG)) :
     fmt.pp.handleMethods.spec (GF := GF) (hG := hG) :=
-    fun p x ii m P bs wid prec verb hx hm hverb hlen => by
+    fun p x ii m P bs wid prec verb hx hm hverb hlen hqlen => by
   subst hx
   obtain ⟨hsw, hF, hm⟩ := hm
   wp_start as ⟨Hp, #Hm⟩
@@ -34,15 +34,16 @@ theorem fmt.pp.handleMethods.wp_proof
   icases Hp with ⟨Hbuf, Hfmt, Hib, Harg, Hval, Hreo, Hgood, Hpan, Herr, Hwrap, Hwe⟩
   iunfold fmtOwn at Hfmt
   icases Hfmt with ⟨Hfbuf, Hflags, Hwid, Hprec⟩
-  have hfs := fun s (hs : verb = verb_x → s.length < 2 ^ 62) =>
-    wp_fmtString p (GoInterface.ok ii) bs wid prec s verb hverb hs
+  have hfs := fun s (hs : verb = verb_x → s.length < 2 ^ 62) (hq : verb = verb_q → s.length ≤ maxAddr) =>
+    wp_fmtString p (GoInterface.ok ii) bs wid prec s verb hverb hs hq
   iunfold methodSpec at Hm
-  rcases hverb with rfl | rfl | rfl <;>
+  rcases hverb with rfl | rfl | rfl | rfl <;>
   rcases hm with ⟨rfl, hE⟩ | ⟨rfl, hE, hS⟩ <;>
   · first
       | rw [show (W32 (uint.nat verb_s : Int) : w32) = W32 115 from rfl] at hfs ⊢
       | rw [show (W32 (uint.nat verb_v : Int) : w32) = W32 118 from rfl] at hfs ⊢
       | rw [show (W32 (uint.nat verb_x : Int) : w32) = W32 120 from rfl] at hfs ⊢
+      | rw [show (W32 (uint.nat verb_q : Int) : w32) = W32 113 from rfl] at hfs ⊢
     wp_auto
     wp_apply wp_with_defer_recover as %defer %pnc defer pnc
     simp only [hF, Bool.false_eq_true, ↓reduceIte]
@@ -55,15 +56,15 @@ theorem fmt.pp.handleMethods.wp_proof
     inext
     iintro %s %Hs
     wp_auto
-    wp_apply (hfs s (fun hv => hlen hv s Hs)) $$
-      [Hbuf Hfbuf Hflags Hwid Hprec Hib Harg Hval Hreo Hgood Hpan Herr Hwrap Hwe] as Hp
+    wp_apply (hfs s (fun hv => hlen hv s Hs) (fun hv => hqlen hv s Hs)) $$
+      [Hbuf Hfbuf Hflags Hwid Hprec Hib Harg Hval Hreo Hgood Hpan Herr Hwrap Hwe] as ⟨%o, %Ho, Hp⟩
     · iunfold isPrinterA; iunfold fmtOwn; iframe
     wp_apply wp_catchPanic $$ [$pnc] as pnc
     iapply HΦ
-    iexists s
+    iexists s, o
     iframe
     ipureintro
-    exact Hs
+    exact ⟨Hs, Ho⟩
 
 end proof
 

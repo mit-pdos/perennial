@@ -18,22 +18,40 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 
 section pure
 
-/-- The flags of `%verb` and `%0Nverb` are in `fmt.fmtInteger`'s precondition. -/
-theorem fmt.dirFlags_int [GooseExts] (zw : Option Nat) (hzw : fmt.ZeroWidthOk zw) :
-    (fmt.dirFlags zw).sharp' = false ∧ (fmt.dirFlags zw).plus' = false ∧
-    (fmt.dirFlags zw).space' = false ∧ (fmt.dirFlags zw).minus' = false ∧
-    (fmt.dirFlags zw).precPresent' = false ∧ (fmt.dirFlags zw).sharpV' = false ∧
-    ((fmt.dirFlags zw).widPresent' = true → (fmt.dirFlags zw).zero' = true ∧
-      0 ≤ sint.Z (fmt.dirWid zw) ∧ sint.Z (fmt.dirWid zw) ≤ 1000000 ∧ W64 0 = W64 0) ∧
-    (if (fmt.dirFlags zw).widPresent' then sint.nat (fmt.dirWid zw) else 0) = zw.getD 0 := by
-  cases zw with
-  | none => simp [fmt.dirFlags, fmt.noFlags]
-  | some n =>
-    obtain ⟨h1, h2⟩ := hzw
-    have h : sint.Z (W64 (n : Int)) = n := by word
-    have h' : sint.nat (W64 (n : Int)) = n := by word
-    simp only [fmt.dirFlags, fmt.noFlags, fmt.dirWid, Option.getD_some, ↓reduceIte, true_implies,
-      true_and, and_true, h, h']
+/-- The flags, width and precision of an integer directive (`Mod.IntOk`) are in
+`fmt.fmtInteger`'s precondition, and its output is `Mod.intOut`. -/
+theorem fmt.Mod_intOk [GooseExts] (md : fmt.Mod) (verb : w8) (h : md.IntOk verb) :
+    md.flags.sharp' = false ∧ md.flags.plus' = false ∧ md.flags.space' = false ∧
+    md.flags.minus' = false ∧ md.flags.sharpV' = false ∧
+    (md.flags.precPresent' = true → md.flags.widPresent' = false ∧ md.wid = W64 0 ∧
+      0 ≤ sint.Z md.precW ∧ sint.Z md.precW ≤ 1000000) ∧
+    (md.flags.widPresent' = true → md.flags.zero' = true ∧ 0 ≤ sint.Z md.wid ∧
+      sint.Z md.wid ≤ 1000000 ∧ md.precW = W64 0) ∧
+    ∀ z : Int, (if md.flags.precPresent' then
+        fmt.precPad (fmt.verbBase verb) (decide (verb = fmt.verb_X)) (sint.nat md.precW) z
+      else fmt.widthPad (fmt.verbBase verb) (decide (verb = fmt.verb_X))
+        (if md.flags.widPresent' then sint.nat md.wid else 0) z) = md.intOut verb z := by
+  cases md with
+  | width zw =>
+    obtain ⟨-, hzw⟩ := h
+    cases zw with
+    | none =>
+      simp [fmt.Mod.flags, fmt.dirFlags, fmt.noFlags, fmt.Mod.intOut, fmt.Mod.wid, fmt.Mod.precW]
+    | some n =>
+      obtain ⟨h1, h2⟩ := hzw
+      have h : sint.Z (W64 (n : Int)) = n := by word
+      have h' : sint.nat (W64 (n : Int)) = n := by word
+      simp only [fmt.Mod.flags, fmt.Mod.wid, fmt.Mod.precW, fmt.Mod.intOut, fmt.dirFlags,
+        fmt.noFlags, fmt.dirWid, Option.getD_some, ↓reduceIte, true_implies, true_and, and_true,
+        h, h', Bool.false_eq_true, false_implies, implies_true]
+      omega
+  | prec p =>
+    obtain ⟨-, hp⟩ := h
+    have h : sint.Z (W64 (p : Int)) = p := by word
+    have h' : sint.nat (W64 (p : Int)) = p := by word
+    simp only [fmt.Mod.flags, fmt.Mod.wid, fmt.Mod.precW, fmt.Mod.intOut, fmt.noFlags,
+      ↓reduceIte, true_implies, true_and, and_true, h, h', Bool.false_eq_true, false_implies,
+      implies_true]
     omega
 
 end pure
@@ -48,9 +66,13 @@ variable [package_sem : fmt.Assumptions]
 theorem fmt.pp.fmtInteger.wp_proof
     (wp_fmtInteger : fmt.fmt.fmtInteger.spec (GF := GF) (hG := hG)) :
     fmt.pp.fmtInteger.spec (GF := GF) (hG := hG) :=
-  fun p x bs zw v isSigned verb hverb hzw => by
-  obtain ⟨hsh, hpl, hsp, hmi, hpp, hsV, hwid, hout⟩ := fmt.dirFlags_int zw hzw
-  rcases hverb with rfl | rfl | rfl
+  fun p x bs md v isSigned verb hok => by
+  obtain ⟨hsh, hpl, hsp, hmi, hsV, hprecP, hwid, hout⟩ := fmt.Mod_intOk md verb hok
+  have hv : verb = fmt.verb_d ∨ verb = fmt.verb_v ∨ verb = fmt.verb_x ∨ verb = fmt.verb_X := by
+    cases md with
+    | width zw => rcases hok.1 with h | h | h <;> simp [h]
+    | prec p => exact hok.1
+  rcases hv with rfl | rfl | rfl | rfl
   all_goals
     wp_start as Hp
     unfold fmt.isPrinterA
@@ -59,32 +81,45 @@ theorem fmt.pp.fmtInteger.wp_proof
     icases Hf with ⟨Hfb, Hff, Hfw, Hfp⟩
     wp_auto
   · rw [show ldigits = #(fmt.hexDigits false) from rfl]
-    wp_apply wp_fmtInteger (p.[fmt.pp, go!"fmt"]) (p.[fmt.pp, go!"buf"]) (fmt.dirFlags zw)
-      (fmt.dirWid zw) (W64 0) bs v (W64 10) isSigned (W32 ((100 : Nat) : Int)) (Or.inl rfl) (by decide)
-      hsh hpl hsp hmi hpp hwid $$ [Hfb Hff Hfw Hfp Hib Hb] as ⟨Hf, Hib, Hb⟩
+    wp_apply wp_fmtInteger (p.[fmt.pp, go!"fmt"]) (p.[fmt.pp, go!"buf"]) md.flags md.wid md.precW
+      bs v (W64 10) isSigned (W32 ((100 : Nat) : Int)) false (Or.inl rfl)
+      (by decide) hsh hpl hsp hmi hprecP hwid $$ [Hfb Hff Hfw Hfp Hib Hb] as ⟨Hf, Hib, Hb⟩
     · unfold fmt.fmtOwn; iframe
     iapply HΦ
-    rw [hout, show (if fmt.verb_d = fmt.verb_x then 16 else 10) = uint.nat (W64 10) by decide]
+    rw [← hout, show fmt.verbBase fmt.verb_d = uint.nat (W64 10) by decide,
+      show decide (fmt.verb_d = fmt.verb_X) = false by decide]
     unfold fmt.fmtOwn
     iframe
   · rw [hsV]
     wp_auto
     rw [show ldigits = #(fmt.hexDigits false) from rfl]
-    wp_apply wp_fmtInteger (p.[fmt.pp, go!"fmt"]) (p.[fmt.pp, go!"buf"]) (fmt.dirFlags zw)
-      (fmt.dirWid zw) (W64 0) bs v (W64 10) isSigned (W32 ((118 : Nat) : Int)) (Or.inl rfl) (by decide)
-      hsh hpl hsp hmi hpp hwid $$ [Hfb Hff Hfw Hfp Hib Hb] as ⟨Hf, Hib, Hb⟩
+    wp_apply wp_fmtInteger (p.[fmt.pp, go!"fmt"]) (p.[fmt.pp, go!"buf"]) md.flags md.wid md.precW
+      bs v (W64 10) isSigned (W32 ((118 : Nat) : Int)) false (Or.inl rfl)
+      (by decide) hsh hpl hsp hmi hprecP hwid $$ [Hfb Hff Hfw Hfp Hib Hb] as ⟨Hf, Hib, Hb⟩
     · unfold fmt.fmtOwn; iframe
     iapply HΦ
-    rw [hout, show (if fmt.verb_v = fmt.verb_x then 16 else 10) = uint.nat (W64 10) by decide]
+    rw [← hout, show fmt.verbBase fmt.verb_v = uint.nat (W64 10) by decide,
+      show decide (fmt.verb_v = fmt.verb_X) = false by decide]
     unfold fmt.fmtOwn
     iframe
   · rw [show ldigits = #(fmt.hexDigits false) from rfl]
-    wp_apply wp_fmtInteger (p.[fmt.pp, go!"fmt"]) (p.[fmt.pp, go!"buf"]) (fmt.dirFlags zw)
-      (fmt.dirWid zw) (W64 0) bs v (W64 16) isSigned (W32 ((120 : Nat) : Int)) (Or.inr rfl) (by decide)
-      hsh hpl hsp hmi hpp hwid $$ [Hfb Hff Hfw Hfp Hib Hb] as ⟨Hf, Hib, Hb⟩
+    wp_apply wp_fmtInteger (p.[fmt.pp, go!"fmt"]) (p.[fmt.pp, go!"buf"]) md.flags md.wid md.precW
+      bs v (W64 16) isSigned (W32 ((120 : Nat) : Int)) false (Or.inr rfl)
+      (by decide) hsh hpl hsp hmi hprecP hwid $$ [Hfb Hff Hfw Hfp Hib Hb] as ⟨Hf, Hib, Hb⟩
     · unfold fmt.fmtOwn; iframe
     iapply HΦ
-    rw [hout, show (if fmt.verb_x = fmt.verb_x then 16 else 10) = uint.nat (W64 16) by decide]
+    rw [← hout, show fmt.verbBase fmt.verb_x = uint.nat (W64 16) by decide,
+      show decide (fmt.verb_x = fmt.verb_X) = false by decide]
+    unfold fmt.fmtOwn
+    iframe
+  · rw [show udigits = #(fmt.hexDigits true) from rfl]
+    wp_apply wp_fmtInteger (p.[fmt.pp, go!"fmt"]) (p.[fmt.pp, go!"buf"]) md.flags md.wid md.precW
+      bs v (W64 16) isSigned (W32 ((88 : Nat) : Int)) true (Or.inr rfl)
+      (by decide) hsh hpl hsp hmi hprecP hwid $$ [Hfb Hff Hfw Hfp Hib Hb] as ⟨Hf, Hib, Hb⟩
+    · unfold fmt.fmtOwn; iframe
+    iapply HΦ
+    rw [← hout, show fmt.verbBase fmt.verb_X = uint.nat (W64 16) by decide,
+      show decide (fmt.verb_X = fmt.verb_X) = true by decide]
     unfold fmt.fmtOwn
     iframe
 

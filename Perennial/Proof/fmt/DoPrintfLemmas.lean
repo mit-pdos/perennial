@@ -154,18 +154,22 @@ theorem encode_leadLits (ps : List Piece) :
     | lit s => rw [leadLits_lit, encode_cons, ih]; simp [Piece.encode]
     | percent => rfl
     | dir zw v => rfl
+    | prec p v => rfl
 
-/-- What comes after the leading literals: nothing, `%%`, or a directive. -/
+/-- What comes after the leading literals: nothing, `%%`, a directive or a directive with a
+precision. -/
 theorem leadLits_rest (ps : List Piece) :
     (leadLits ps).2 = [] ∨ (∃ ps', (leadLits ps).2 = .percent :: ps') ∨
-      (∃ zw v ps', (leadLits ps).2 = .dir zw v :: ps') := by
+      (∃ zw v ps', (leadLits ps).2 = .dir zw v :: ps') ∨
+      (∃ q v ps', (leadLits ps).2 = .prec q v :: ps') := by
   induction ps with
   | nil => exact Or.inl rfl
   | cons p ps ih =>
     cases p with
     | lit s => rw [leadLits_lit]; exact ih
     | percent => exact Or.inr (Or.inl ⟨ps, rfl⟩)
-    | dir zw v => exact Or.inr (Or.inr ⟨zw, v, ps, rfl⟩)
+    | dir zw v => exact Or.inr (Or.inr (Or.inl ⟨zw, v, ps, rfl⟩))
+    | prec q v => exact Or.inr (Or.inr (Or.inr ⟨q, v, ps, rfl⟩))
 
 theorem Fits_leadLits {ps : List Piece} {args : List Arg} (h : Fits ps args) :
     W8 37 ∉ (leadLits ps).1 ∧ Fits (leadLits ps).2 args := by
@@ -178,6 +182,7 @@ theorem Fits_leadLits {ps : List Piece} {args : List Arg} (h : Fits ps args) :
     exact ⟨hs, ih.1⟩
   | percent ps args hf => exact ⟨by simp [leadLits], Fits.percent ps args hf⟩
   | dir zw v a ps args hd hf => exact ⟨by simp [leadLits], Fits.dir zw v a ps args hd hf⟩
+  | prec q v a ps args hd hf => exact ⟨by simp [leadLits], Fits.prec q v a ps args hd hf⟩
 
 theorem Out_leadLits {ps : List Piece} {args : List Arg} {o : GoString}
     (h : Out (leadLits ps).2 args o) : Out ps args ((leadLits ps).1 ++ o) := by
@@ -191,6 +196,7 @@ theorem Out_leadLits {ps : List Piece} {args : List Arg} {o : GoString}
       exact Out.lit s ps args _ (ih h)
     | percent => exact h
     | dir zw v => exact h
+    | prec q v => exact h
 
 /-- A format with no bytes left: only empty literals, no argument, no output. -/
 theorem Fits_encode_nil {ps : List Piece} {args : List Arg} (h : Fits ps args)
@@ -206,6 +212,7 @@ theorem Fits_encode_nil {ps : List Piece} {args : List Arg} (h : Fits ps args)
   | percent ps args _ _ => simp [encode_cons, Piece.encode] at he
   | dir zw v a ps args _ _ _ =>
     cases zw <;> simp [encode_cons, Piece.encode] at he
+  | prec q v a ps args _ _ _ => simp [encode_cons, Piece.encode] at he
 
 /-- The `k`-th byte of `L` where `format.drop i = L ++ R`. -/
 theorem getElem?_of_drop_append {format L R : GoString} {i k : Nat}
@@ -237,22 +244,58 @@ theorem Fits_dir_inv {zw : Option Nat} {v : w8} {ps : List Piece} {args : List A
   cases h with
   | dir _ _ a _ args' hd hf => exact ⟨a, args', rfl, hd, hf⟩
 
-/-- The verbs of the verified subset. -/
-theorem DirOk_verb {zw : Option Nat} {v : w8} {a : Arg} (h : DirOk zw v a) :
-    v = verb_d ∨ v = verb_s ∨ v = verb_v ∨ v = verb_x := by
+theorem Fits_prec_inv {q : Nat} {v : w8} {ps : List Piece} {args : List Arg}
+    (h : Fits (.prec q v :: ps) args) :
+    ∃ a args', args = a :: args' ∧ PrecOk q v a ∧ Fits ps args' := by
+  cases h with
+  | prec _ _ a _ args' hd hf => exact ⟨a, args', rfl, hd, hf⟩
+
+/-- The verbs of `Piece.dir` in the verified subset (lowercase letters). -/
+def DirVerb (v : w8) : Prop :=
+  v = verb_d ∨ v = verb_s ∨ v = verb_v ∨ v = verb_x ∨ v = verb_t ∨ v = verb_q
+
+/-- The verbs of the verified subset (`DirVerb`, and `X` of `Piece.prec`). -/
+def AnyVerb (v : w8) : Prop := DirVerb v ∨ v = verb_X
+
+theorem DirOk_verb {zw : Option Nat} {v : w8} {a : Arg} (h : DirOk zw v a) : DirVerb v := by
+  unfold DirVerb
   by_cases h1 : v = verb_d; · exact Or.inl h1
   by_cases h2 : v = verb_s; · exact Or.inr (Or.inl h2)
   by_cases h3 : v = verb_v; · exact Or.inr (Or.inr (Or.inl h3))
-  by_cases h4 : v = verb_x; · exact Or.inr (Or.inr (Or.inr h4))
+  by_cases h4 : v = verb_x; · exact Or.inr (Or.inr (Or.inr (Or.inl h4)))
+  by_cases h5 : v = verb_t; · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl h5))))
+  by_cases h6 : v = verb_q; · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr h6))))
   exfalso
   cases zw <;> cases a <;> simp_all [DirOk]
 
+theorem PrecOk_verb {q : Nat} {v : w8} {a : Arg} (h : PrecOk q v a) :
+    AnyVerb v ∧ q ≤ 1000000 := by
+  cases a <;> simp only [PrecOk] at h
+  obtain ⟨hv, hq⟩ := h
+  refine ⟨?_, hq⟩
+  unfold AnyVerb DirVerb
+  rcases hv with h | h | h | h <;> simp [h]
+
 /-- What the format loop checks of a verb: not a flag, a lowercase letter, not `w`. -/
-theorem verb_bytes {v : w8} (h : v = verb_d ∨ v = verb_s ∨ v = verb_v ∨ v = verb_x) :
+theorem verb_bytes {v : w8} (h : DirVerb v) :
     v ≠ W8 35 ∧ v ≠ W8 48 ∧ v ≠ W8 43 ∧ v ≠ W8 45 ∧ v ≠ W8 32 ∧ v ≠ W8 119 ∧ v ≠ W8 37 ∧
       v ≠ W8 46 ∧ v ≠ W8 42 ∧ v ≠ W8 91 ∧ uint.Z (W8 97) ≤ uint.Z v ∧ uint.Z v ≤ uint.Z (W8 122) ∧
       uint.Z v < 128 ∧ ¬ IsDigit v := by
-  rcases h with rfl | rfl | rfl | rfl <;> (unfold IsDigit; decide)
+  unfold DirVerb at h
+  rcases h with rfl | rfl | rfl | rfl | rfl | rfl <;> (unfold IsDigit; decide)
+
+/-- What the format loop checks of a verb after a precision: not `[`, below 128, not a digit. -/
+theorem anyVerb_bytes {v : w8} (h : AnyVerb v) :
+    v ≠ W8 91 ∧ uint.Z v < 128 ∧ ¬ IsDigit v := by
+  unfold AnyVerb DirVerb at h
+  rcases h with (rfl | rfl | rfl | rfl | rfl | rfl) | rfl <;> (unfold IsDigit; decide)
+
+/-- What the format loop checks of the `.` of a precision: not a flag or a lowercase letter, not
+`[` or `*`. -/
+theorem dot_bytes :
+    W8 46 ≠ W8 35 ∧ W8 46 ≠ W8 48 ∧ W8 46 ≠ W8 43 ∧ W8 46 ≠ W8 45 ∧ W8 46 ≠ W8 32 ∧
+      ¬ uint.Z (W8 97) ≤ uint.Z (W8 46) ∧ W8 46 ≠ W8 91 ∧ W8 46 ≠ W8 42 ∧ ¬ IsDigit (W8 46) := by
+  unfold IsDigit; decide
 
 theorem DirOk_some_width {N : Nat} {v : w8} {a : Arg} (h : DirOk (some N) v a) :
     1 ≤ N ∧ N ≤ 1000000 := by
@@ -283,10 +326,17 @@ theorem digit_bytes {d : w8} (h : IsDigit d) :
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> word
 
 /-- The verbs as runes: not `%` or `w`. -/
-theorem verb_runes {v : w8} (h : v = verb_d ∨ v = verb_s ∨ v = verb_v ∨ v = verb_x) :
+theorem verb_runes {v : w8} (h : AnyVerb v) :
     W32 (uint.nat v : Int) ≠ W32 37 ∧ W32 (uint.nat v : Int) ≠ W32 119 ∧
       (W32 (uint.nat v : Int) = W32 118 ↔ v = W8 118) := by
-  rcases h with rfl | rfl | rfl | rfl <;> decide
+  unfold AnyVerb DirVerb at h
+  rcases h with (rfl | rfl | rfl | rfl | rfl | rfl) | rfl <;> decide
+
+/-- The first digit of a precision (`decimalNat`, `0` for 0): a digit. -/
+theorem decimalNat_head' (N : Nat) : ∃ d ds, decimalNat N = d :: ds ∧ IsDigit d := by
+  cases h : decimalNat N with
+  | nil => exact absurd h (decimalNat_ne_nil N)
+  | cons d ds => exact ⟨d, ds, rfl, decimalNat_isDigit N d (by rw [h]; simp)⟩
 
 end fmt
 

@@ -363,6 +363,65 @@ noncomputable def Sorted.impl [GooseExts] [GoGlobalContext] (E₀ : go.GoType) :
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType E₀)))) (Pair (Var "s") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E₀)))) (Var "$res0")))))
 
+/-- IndexFunc returns the first index i satisfying f(s[i]),
+    or -1 if none do.
+
+    go: slices.go:107:6 -/
+noncomputable def IndexFunc.impl [GooseExts] [GoGlobalContext] (S₀ E₀ : go.GoType) : val :=
+  (LamV "s"
+  (Lam "f"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E₀] false [go.bool]))))) (Var "f"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc S₀))) (Var "s"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad S₀))) (Var "s"))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val (slice.forRange E₀)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (Let "$a0" (App (Val (GoInstruction (GoLoad E₀))) (App (Val (GoInstruction (IndexRef S₀))) (Pair (App (Val (GoInstruction (GoLoad S₀))) (Var "s")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀] false [go.bool]))))) (Var "f")) (Var "$a0")))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$key"))))))))))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
+
+/-- ContainsFunc reports whether at least one
+    element e of s satisfies f(e).
+
+    go: slices.go:123:6 -/
+noncomputable def ContainsFunc.impl [GooseExts] [GoGlobalContext] (S₀ E₀ : go.GoType) : val :=
+  (LamV "s"
+  (Lam "f"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [E₀] false [go.bool]))))) (Var "f"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc S₀))) (Var "s"))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad S₀))) (Var "s"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [E₀] false [go.bool]))))) (Var "f"))
+  (App (App (App (Val (GoInstruction (FuncResolve IndexFunc [S₀, E₀]))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))
+
 /-- Clone returns a copy of the slice.
     The elements are copied using assignment, so this is a shallow clone.
     The result may have additional unused capacity.
@@ -3798,6 +3857,8 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   unfold'AppendSeq : ∀ (Slice₀ E₀ : go.GoType), FuncUnfold AppendSeq [Slice₀, E₀] (AppendSeq.impl Slice₀ E₀)
   unfold'Collect : ∀ (E₀ : go.GoType), FuncUnfold Collect [E₀] (Collect.impl E₀)
   unfold'Sorted : ∀ (E₀ : go.GoType), FuncUnfold Sorted [E₀] (Sorted.impl E₀)
+  unfold'IndexFunc : ∀ (S₀ E₀ : go.GoType), FuncUnfold IndexFunc [S₀, E₀] (IndexFunc.impl S₀ E₀)
+  unfold'ContainsFunc : ∀ (S₀ E₀ : go.GoType), FuncUnfold ContainsFunc [S₀, E₀] (ContainsFunc.impl S₀ E₀)
   unfold'Clone : ∀ (S₀ E₀ : go.GoType), FuncUnfold Clone [S₀, E₀] (Clone.impl S₀ E₀)
   unfold'Grow : ∀ (S₀ E₀ : go.GoType), FuncUnfold Grow [S₀, E₀] (Grow.impl S₀ E₀)
   unfold'Concat : ∀ (S₀ E₀ : go.GoType), FuncUnfold Concat [S₀, E₀] (Concat.impl S₀ E₀)
@@ -3847,6 +3908,8 @@ attribute [instance] Assumptions.instance'sortedHint
   Assumptions.unfold'AppendSeq
   Assumptions.unfold'Collect
   Assumptions.unfold'Sorted
+  Assumptions.unfold'IndexFunc
+  Assumptions.unfold'ContainsFunc
   Assumptions.unfold'Clone
   Assumptions.unfold'Grow
   Assumptions.unfold'Concat

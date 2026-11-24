@@ -160,6 +160,12 @@ inductive GoInstruction where
   the same dynamic type (both `nil` counts as the same). Not a Go expression: goose never emits it;
   trusted models use it (the model of `sync/atomic.Value`). -/
   | TypeOfEq
+  /-- `errors.As`'s reflection on its target: given an error `err` and a target `*T` (an interface
+  value holding a pointer `l` to a `T`), whether `err`'s dynamic type is assignable to `T`
+  (`reflectlite.TypeOf(err).AssignableTo(T)`), storing `err` into `*l` if it is
+  (`reflectlite.ValueOf(target).Elem().Set(reflectlite.ValueOf(err))`). Not a Go expression: goose
+  never emits it; trusted models use it (the model of `errors.As`). -/
+  | AsAssign
   | PackageInitCheck (pkg_name : GoString)
   | PackageInitStart (pkg_name : GoString)
   | PackageInitFinish (pkg_name : GoString)
@@ -320,7 +326,7 @@ export GoOperator (GoEquals GoLt GoLe GoGt GoGe GoPlus GoSub GoMul GoDiv GoRemai
   GoOr GoXor GoBitClear GoShiftl GoShiftr)
 export GoUnaryOperator (GoPos GoNeg GoNot GoComplement)
 export GoInstruction (AngelicExit Convert GoOp GoUnOp CheckComparable GoLoad GoStore GoAlloc
-  GoPrealloc GoZeroVal FuncResolve MethodResolve TypeAssert TypeAssert2 TypeAssertUnderlying2 TypeOfEq PackageInitCheck
+  GoPrealloc GoZeroVal FuncResolve MethodResolve TypeAssert TypeAssert2 TypeAssertUnderlying2 TypeOfEq AsAssign PackageInitCheck
   PackageInitStart PackageInitFinish GlobalVarAddr StructFieldRef StructFieldGet StructFieldSet
   InternalSliceLen InternalSliceCap InternalDynamicArrayAlloc InternalMakeSlice IndexRef Index
   Slice FullSlice ArraySet ArrayLength InternalMapCheckKey InternalMapLookup InternalMapInsert
