@@ -24,7 +24,7 @@ variable [package_sem : fmt.Assumptions]
 abbrev fmt.newPrinter.spec : Prop :=
   {{ isPkgInit (PROP := IProp GF) pkg_id.fmt }}
       (App (Val (@! newPrinter)) (Val #()))
-    {{ (p : Loc), RET #p; ∃ x : GoInterface, isPrinterA p x [] noFlags (W64 0) (W64 0) }}
+    {{ (p : Loc), RET #p; isPrinterAny p [] }}
 
 end spec
 

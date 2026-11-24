@@ -292,9 +292,13 @@ def isPrinterA (p : Loc) (x : GoInterface) (bs : GoString) (F : fmtFlags) (wid p
 def isPrinter (p : Loc) (bs : GoString) (F : fmtFlags) (wid prec : w64) : IProp GF :=
   iprop(∃ x : GoInterface, isPrinterA p x bs F wid prec)
 
-/-- `isPrinter`, whatever the flags, width and precision. -/
+/-- `isPrinter`, whatever the flags, width and precision, of a printer at a non-`nil` address,
+whose `fmt` is not at `nil` either (what `pp.free` needs to give the whole struct back to the
+pool, `ppFreeElem`: a typed points-to of a struct says its address is not `nil`; the field
+points-tos of `isPrinterA` don't). -/
 def isPrinterAny (p : Loc) (bs : GoString) : IProp GF :=
-  iprop(∃ (F : fmtFlags) (wid prec : w64), isPrinter p bs F wid prec)
+  iprop(⌜p ≠ null ∧ p.[pp, go!"fmt"] ≠ null⌝ ∗
+    ∃ (F : fmtFlags) (wid prec : w64), isPrinter p bs F wid prec)
 
 end iprops
 
