@@ -216,6 +216,88 @@ theorem wp_bag_send (γ : ChanNames) (ch : Loc) (v : V) (P : V → IProp GF) :
   iapply HΦ
   itrivial
 
+/-- **A bag channel's non-blocking send** (a `select` send case with a `default`): the atomic update
+of a send that completes (a buffered slot, or a waiting receiver) hands `P v` to the invariant; one
+that cannot completes nothing, and the caller keeps `P v` in the `default` branch
+(`nonblockingSendAu`'s `∧`). With `Φ` now and no later credit. -/
+theorem bag_nb_send_au_now (γ : ChanNames) (ch : Loc) (P : V → IProp GF) (v : V) (Φ : IProp GF) :
+    ⊢ isChanBag γ ch P -∗ P v -∗ Φ -∗ nonblockingSendAuInner γ v Φ := by
+  rw [isChanBag_unseal]; unfold isChanBagDef nonblockingSendAuInner
+  iintro ⟨#Hch, #Hinv⟩ HP HΦ
+  iapply ncfupd_of_fupd
+  iinv Hinv with Hi Hclose
+  iapply fupd_mask_intro Std.LawfulSet.empty_subset
+  iintro Hmask
+  inext
+  unfold chanBagInv
+  icases Hi with ⟨%s, Hoc0, Hi⟩
+  iexists s
+  iframe Hoc0
+  rcases s with buff | _ | _ | _ | _ | _ | _
+  all_goals dsimp only
+  case Buffered =>
+    iintro Hoc
+    imod Hmask with -
+    imod Hclose $$ [Hoc Hi HP] with -
+    · inext; iexists .Buffered (buff ++ [v])
+      dsimp only
+      iframe Hoc
+      iapply BigSepL.bigSepL_append.2
+      iframe Hi
+      iapply BigSepL.bigSepL_singleton.2
+      iexact HP
+    imodintro
+    iexact HΦ
+  case RcvPending =>
+    iintro Hoc
+    imod Hmask with -
+    imod Hclose $$ [Hoc HP] with -
+    · inext; iexists .SndCommit v; iframe
+    imodintro
+    iexact HΦ
+  all_goals first | itrivial | (iexfalso; iexact Hi)
+
+/-- **A bag channel's non-blocking send**, with `▷ Φ`, paying a later credit (see
+`bag_nb_send_au_now`). -/
+theorem bag_nb_send_au (γ : ChanNames) (ch : Loc) (P : V → IProp GF) (v : V) (Φ : IProp GF) :
+    ⊢ £ 1 -∗ isChanBag γ ch P -∗ P v -∗ ▷ Φ -∗ nonblockingSendAuInner γ v Φ := by
+  rw [isChanBag_unseal]; unfold isChanBagDef nonblockingSendAuInner
+  iintro Hlc1 ⟨#Hch, #Hinv⟩ HP HΦ
+  iapply ncfupd_of_fupd
+  iinv Hinv with Hi Hclose
+  imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi
+  unfold chanBagInv
+  icases Hi with ⟨%s, Hoc0, Hi⟩
+  iapply fupd_mask_intro Std.LawfulSet.empty_subset
+  iintro Hmask
+  inext
+  iexists s
+  iframe Hoc0
+  rcases s with buff | _ | _ | _ | _ | _ | _
+  all_goals dsimp only
+  case Buffered =>
+    iintro Hoc
+    imod Hmask with -
+    imod Hclose $$ [Hoc Hi HP] with -
+    · inext; iexists .Buffered (buff ++ [v])
+      dsimp only
+      iframe Hoc
+      iapply BigSepL.bigSepL_append.2
+      iframe Hi
+      iapply BigSepL.bigSepL_singleton.2
+      iexact HP
+    imodintro
+    iexact HΦ
+  case RcvPending =>
+    iintro Hoc
+    imod Hmask with -
+    imod Hclose $$ [Hoc HP] with -
+    · inext; iexists .SndCommit v; iframe
+    imodintro
+    iexact HΦ
+  all_goals first | itrivial | (iexfalso; iexact Hi)
+
 end proof
+
 
 end Perennial
