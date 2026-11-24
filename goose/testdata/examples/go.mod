@@ -19,3 +19,5 @@ require (
 )
 
 replace github.com/tchajed/marshal => github.com/upamanyus/marshal v0.0.0-20260212025754-cf86d74f6773
+
+replace github.com/mit-pdos/gokv => ../gokv

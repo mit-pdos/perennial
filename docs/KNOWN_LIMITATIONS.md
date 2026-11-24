@@ -304,30 +304,29 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   (environment assumption).** The API has no `Close`: a `Listener` and a `Connection` hold
   their descriptor until the connection fails, and `FileWrite` never closes its temporary
   file (`ioutil.TempFile`; the `*os.File` is closed only by its finalizer, when the garbage
-  collector finds it). At the descriptor limit (`EMFILE`), Go's `FileRead` returns nil,
-  `FileAppend`, `Listen` and `Accept` panic, and `FileWrite` exits the process
+  collector finds it). At the descriptor limit (`EMFILE`), Go's `FileRead` returns an empty
+  slice, `FileAppend`, `Listen` and `Accept` panic, and `FileWrite` exits the process
   (`log.Fatal`). The model has no such failure (`IsGroveStep` "FileRead", "FileAppend",
   "Listen", "Accept", "FileWrite", `Ext/Grove/Impl.lean`): it assumes they do not happen.
 
   ```go
   for {
-  	grove_ffi.FileWrite("f", nil) // leaks a descriptor per call
-  	_ = grove_ffi.FileRead("f")    // Go: nil once the limit is reached; the model: []byte{}
+  	grove_ffi.FileWrite("f", []byte("x")) // leaks a descriptor per call
+  	_ = grove_ffi.FileRead("f")            // Go: []byte{} once the limit is reached; the model: "x"
   }
   ```
 
-- **`FileRead` of an existing file is assumed not to fail (environment assumption).**
-  Go's `grove_ffi.FileRead` ignores the error of `ioutil.ReadFile`: when the file cannot be
-  opened (`EMFILE`, above; `EACCES` after a permission change) it returns nil, and when a
-  read fails part-way (`EIO`) it returns the bytes read so far. The model returns the
-  file's whole contents (`IsGroveStep` "FileRead", `Ext/Grove/Impl.lean`; `FileRead.impl`,
-  `TrustedCode/github_com/mit_pdos/gokv/grove_ffi.lean`): it assumes such reads do not
-  fail. (A read of a file the node does not have is stuck, so a proof shows the file
-  exists.)
+- **Reading an existing file in `durable/` is assumed to hit no I/O error (environment
+  assumption).** Go's `grove_ffi.FileRead` (`goose/testdata/gokv/grove_ffi`) returns an
+  empty slice when `os.ReadFile` fails, for an existing file (`EIO`, `EACCES` after a
+  permission change, `EMFILE`, above) as for a missing one. The model returns an existing
+  file's contents (`IsGroveStep` "FileRead", `Ext/Grove/Impl.lean`; `FileRead.impl`,
+  `TrustedCode/github_com/mit_pdos/gokv/grove_ffi.lean`): it assumes reading it hits no
+  I/O error. (A missing file reads as an empty slice in both.)
 
   ```go
   // "f" exists, but reading durable/f fails (EIO, or a permission change)
-  d := grove_ffi.FileRead("f") // Go: nil or a prefix; the model: the file's contents
+  d := grove_ffi.FileRead("f") // Go: []byte{}; the model: the file's contents
   ```
 
 - **A node's `durable/` directory is assumed private, writable and unaliased (environment

@@ -50,7 +50,6 @@ projs = [
     create_proj(repo="tchajed/marshal"),
     create_proj(repo="goose-lang/primitive", pkgs=["."]),
     create_proj(repo="mit-pdos/go-liveness"),
-    create_proj(repo="mit-pdos/gokv", pkgs=["./grove_ffi"]),
 ]
 
 
@@ -152,6 +151,11 @@ def main():
         help="translate (parts of) Go standard library",
         action="store_true",
     )
+    parser.add_argument(
+        "--gokv",
+        help="translate gokv's grove_ffi, vendored in goose/testdata/gokv",
+        action="store_true",
+    )
     for proj in projs:
         parser.add_argument(
             f"--{proj.name}",
@@ -169,6 +173,7 @@ def main():
         setattr(args, "std_lib", True)
         setattr(args, "models", True)
         setattr(args, "goose_examples", True)
+        setattr(args, "gokv", True)
         for proj in projs:
             proj_path = path.join(args.all, proj.name)
             proj_arg = proj.name.replace("-", "_")
@@ -322,6 +327,11 @@ def main():
             "./xpkgalias/...",
             "./modeloverlay",
         )
+
+    # goose/testdata/gokv is loaded through the examples module, which replaces
+    # github.com/mit-pdos/gokv by it
+    if args.gokv:
+        run_goose(path.join(goose_dir, "testdata/examples"), "github.com/mit-pdos/gokv/grove_ffi")
 
     if args.models:
         run_goose(goose_dir, "./model/channel")

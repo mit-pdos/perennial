@@ -172,7 +172,7 @@ def IsGroveStep (op : String) (v : val) (e' : Expr)
         if ValidFileName name then
           match σ.groveNodeFiles !! name with
           | some data => e' = Val (#data)
-          | none => e' = Panic "invalid"
+          | none => e' = Val (#([] : List w8))
         else e' = Panic "invalid")
   | "FileWrite" =>
       g = g' ∧
