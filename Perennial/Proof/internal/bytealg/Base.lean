@@ -1,7 +1,7 @@
 /-
 Shared definitions of the proofs of `internal/bytealg`: its `isPkgInit` (`MaxLen`'s value), and
 the pure functions its specs are written in (the first index of a byte or a substring, the
-Rabin-Karp hashes) with their laws.
+Rabin-Karp hashes, what `CompareString` returns) with their laws.
 -/
 module
 
@@ -18,6 +18,11 @@ namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 
 namespace internal.bytealg
+
+/-- What `bytealg.CompareString(a, b)` returns: `-1`, `0` or `+1` as `a` is lexicographically less
+than, equal to or greater than `b` (Go's `<` on strings, `GoStringLt`). -/
+def compareResult [GooseExts] (a b : GoString) : w64 :=
+  if go.GoStringLt a b then W64 (-1) else if a = b then W64 0 else W64 1
 
 /-! ## The first index of a substring -/
 

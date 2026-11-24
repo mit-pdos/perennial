@@ -21,7 +21,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : errors.Assumptions]
 
-/-- Proved from the trusted model of `Is` (`Perennial/TrustedCode/errors.lean`) and
+/-- Proved from the Go model of `Is` (`goose/model/overlay/errors/wrap.go`), translated, and
 `is`'s spec. -/
 theorem errors.Is.wp_proof
     (wp_is : errors.is.spec (GF := GF) (hG := hG)) :
@@ -58,7 +58,6 @@ theorem errors.Is.wp_proof
       dsimp only
       wp_auto
       (try wp_auto)
-      rw [show (go!"errors.is" : GoString) = is' from rfl]
       wp_apply wp_is S I U (interface.ok ii) (interface.ok tii) true HS
         (fun _ => ⟨tii, rfl, htarget tii rfl⟩) $$ [] as %b %Hb
       · iframe #

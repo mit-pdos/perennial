@@ -157,7 +157,7 @@ it OK. It accepted the docstring's reason and called the length assumption
   automatically: a hand-written model loses exactly the things its author did
   not think of.
 
-**The fix (pending, branch `join-translation`).**
+**The fix (done in go-model overlays S1, #692).**
 - Translate `Join` and the `Builder` methods; trust only the three
   primitives; `wp_Join` gains a premise that excludes the overflow.
 - Its review found a further R4 BLOCK in the `Builder.String` model

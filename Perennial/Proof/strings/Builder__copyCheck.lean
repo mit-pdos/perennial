@@ -4,6 +4,7 @@ The proof of `strings.Builder.copyCheck`.
 module
 
 public import Perennial.Spec.strings.Builder__copyCheck
+public import Perennial.Spec.internal.gomodel.StartRead
 
 @[expose] public section
 
@@ -29,11 +30,11 @@ theorem strings.loc_typedPointsto_heap (l v : Loc) (dq : DFrac) :
   iintro ⟨H, -⟩
   iexact H
 
-theorem strings.Builder.copyCheck.wp_proof :
+theorem strings.Builder.copyCheck.wp_proof
+    (wp_StartRead : internal.gomodel.StartRead.spec (GF := GF) (hG := hG)) :
     strings.Builder.copyCheck.spec (GF := GF) (hG := hG) := by
   intro l used
   wp_start as ⟨%Hnn, Haddr⟩
-  rw [show go.GoType.Named go!"strings.Builder" [] = strings.Builder.ty by with_unfolding_all rfl]
   unfold strings.ownBuilderAddr
   cases used
   · -- nil: `b.addr = b`, then a reader on `b.addr` for good
@@ -41,10 +42,7 @@ theorem strings.Builder.copyCheck.wp_proof :
     wp_auto
     ipersist Haddr
     ihave Hh := strings.loc_typedPointsto_heap _ _ _ $$ Haddr
-    wp_bind (StartRead _)
-    wp_apply_core (wp_start_read _ DFrac.discard _) $$ Hh
-    iintro -
-    wp_pures
+    wp_apply wp_StartRead $$ Hh
     iapply HΦ
     iexact Haddr
   · -- `b.addr == b`: no panic

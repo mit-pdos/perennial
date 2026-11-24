@@ -1,9 +1,10 @@
 /-
-The proof of `strings.Builder.String` (its trusted model, `TrustedCode/strings.lean`).
+The proof of `strings.Builder.String` (its Go model, `goose/model/overlay/strings/builder.go`).
 -/
 module
 
 public import Perennial.Spec.strings.Builder__String
+public import Perennial.Spec.internal.gomodel.StartRead
 
 @[expose] public section
 
@@ -28,58 +29,55 @@ theorem strings.w8_typedPointsto_heap (l : Loc) (b : w8) (dq : DFrac) :
   iintro ⟨H, -⟩
   iexact H
 
-/-- The model's `Builder.readLock sl i` (a helper of `String`'s model): it leaves a reader on
-each byte of `sl[i:]`, which needs only a persistent points-to of them. -/
-theorem strings.wp_Builder_readLock (sl : GoSlice) (bs : List w8) :
-    ⊢ (sl ↦*□ bs -∗ ∀ (i : w64) (Φ : val → IProp GF), ⌜0 ≤ sint.Z i⌝ -∗ Φ #() -∗
-        WP (App (App (Val strings.Builder.readLock) (Val #sl)) (Val #i)) {{ Φ }}) := by
-  iintro #Hsl
-  unfold strings.Builder.readLock
-  iloeb as IH
-  iintro %i %Φ %Hi HΦ
-  wp_pures
-  wp_if_destruct
-  · ihave %Hlen := ownSlice_len $$ Hsl
-    obtain ⟨b, hb⟩ : ∃ b, bs[(sint.Z i).toNat]? = some b :=
-      ⟨_, List.getElem?_eq_getElem (by word)⟩
-    icases ownSlice_elem_acc (sint.Z i) b sl DFrac.discard bs Hi hb $$ Hsl with ⟨He, -⟩
-    wp_pures
-    rw [if_pos ⟨Hi, Hif⟩]
-    ihave He := strings.w8_typedPointsto_heap _ _ _ $$ He
-    wp_bind (StartRead _)
-    wp_apply_core (wp_start_read (sliceIndexRef w8 (sint.Z i) sl) DFrac.discard #b) $$ He
-    iintro -
-    -- the `;;` (a lambda and its beta step), then `i + 1` (a pair and the addition), stopping
-    -- before the recursive call, which is `IH`'s
-    wp_pure
-    wp_pure
-    wp_pure
-    wp_pure
-    iapply IH
-    · ipureintro; word
-    iexact HΦ
-  · iapply HΦ
-
-theorem strings.Builder.String.wp_proof :
+theorem strings.Builder.String.wp_proof
+    (wp_StartRead : internal.gomodel.StartRead.spec (GF := GF) (hG := hG)) :
     strings.Builder.String.spec (GF := GF) (hG := hG) := by
   intro l s
   wp_start as Hown
   unfold strings.ownBuilder
   icases Hown with ⟨%used, %buf, %dq, %Hnn, Haddr, Hbf, Hbuf, Hcap, %Hdq⟩
   imod ownSlice_persist $$ Hbuf with #Hbuf
-  rw [show go.GoType.Named go!"strings.Builder" [] = strings.Builder.ty by with_unfolding_all rfl]
   wp_auto
   wp_apply wp_bytes_to_string buf s DFrac.discard $$ Hbuf as -
-  -- leave a reader on each byte of `buf` (the model's `readLock`)
-  wp_bind (App (App (Val strings.Builder.readLock) (Val #buf)) (Val #(W64 0)))
-  ihave HL := strings.wp_Builder_readLock buf s $$ Hbuf
-  iapply HL
-  · ipureintro; decide
-  wp_pures
-  iapply HΦ
-  iexists used, buf, DFrac.discard
-  iframe Haddr Hbf Hbuf Hcap
-  ipureintro; exact ⟨Hnn, DFrac.valid_discard⟩
+  ihave %Hlen := ownSlice_len $$ Hbuf
+  -- `forRange`'s counter is `i`; the model's own `i` (the key) is shadowed
+  rename_i k_ptr
+  irename : (k_ptr ↦ Perennial.zero_val w64 : IProp GF) => k
+  -- the loop leaves a reader on each byte of `buf`, which needs only `Hbuf`
+  ihave IH : iprop(∃ (n kv : w64),
+      "i" ∷ i_ptr ↦ n ∗
+      "k" ∷ k_ptr ↦ kv ∗
+      "%Hn" ∷ ⌜0 ≤ sint.Z n ∧ sint.Z n ≤ (s.length : Int)⌝) $$ [i k]
+  · iexists _, _
+    iframe
+    ipureintro
+    exact ⟨by word, by word⟩
+  wp_for IH
+  wp_if_destruct
+  · have Hlt : (sint.Z n).toNat < s.length := by word
+    obtain ⟨x, Hx⟩ : ∃ x, s[(sint.Z n).toNat]? = some x :=
+      ⟨_, List.getElem?_eq_getElem Hlt⟩
+    simp only [show 0 ≤ sint.Z n ∧ sint.Z n < sint.Z buf.len from ⟨Hn.1, Hif⟩]
+    wp_apply wp_load_slice_index buf (sint.Z n) s DFrac.discard x Hn.1 $$ [Hbuf]
+    · isplit
+      · iexact Hbuf
+      · ipureintro; exact Hx
+    iintro -
+    wp_auto
+    simp only [show 0 ≤ sint.Z n ∧ sint.Z n < sint.Z buf.len from ⟨Hn.1, Hif⟩]
+    icases ownSlice_elem_acc (sint.Z n) x buf DFrac.discard s Hn.1 Hx $$ Hbuf with ⟨He, -⟩
+    ihave He := strings.w8_typedPointsto_heap _ _ _ $$ He
+    wp_apply wp_StartRead $$ He
+    wp_for_post
+    iframe
+    iexists _, _
+    iframe
+    ipureintro
+    exact ⟨by word, by word⟩
+  · iapply HΦ
+    iexists used, buf, DFrac.discard
+    iframe Haddr Hbf Hbuf Hcap
+    ipureintro; exact ⟨Hnn, DFrac.valid_discard⟩
 
 end proof
 

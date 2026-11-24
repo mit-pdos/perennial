@@ -358,6 +358,48 @@ noncomputable def IndexRabinKarp.impl [GooseExts] [GoGlobalContext] (T : go.GoTy
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "hashss") (Var "$r0")))))))))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
+/-- MODEL: CompareString(a, b) is -1, 0 or +1 as a is lexicographically less
+    than, equal to or greater than b. Go's is runtime.cmpstring (through
+    abigen_runtime_cmpstring), which is assembly; the model compares with Go's <
+    and == on strings, which order strings bytewise lexicographically as
+    cmpstring does.
+
+    go: compare_native.go:11:6 -/
+noncomputable def CompareString.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "a"
+  (Lam "b"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc go.string))) (Var "b"))
+  (Let "a" (App (Val (GoInstruction (GoAlloc go.string))) (Var "a"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "a")) (App (Val (GoInstruction (GoLoad go.string))) (Var "b")))))
+  (Let "$r0" (Val #(W64 0))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "a")) (App (Val (GoInstruction (GoLoad go.string))) (Var "b")))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
+
 /-- Cutover reports the number of failures of IndexByte we should tolerate
     before switching over to Index.
     n is the number of bytes processed so far.
@@ -622,6 +664,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   HashStrRev_unfold : ∀ (T : go.GoType), FuncUnfold HashStrRev [T] (HashStrRev.impl T)
   IndexRabinKarp_unfold : ∀ (T : go.GoType), FuncUnfold IndexRabinKarp [T] (IndexRabinKarp.impl T)
   MakeNoZero_unfold : FuncUnfold MakeNoZero [] MakeNoZero.impl
+  CompareString_unfold : FuncUnfold CompareString [] CompareString.impl
   «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
   Cutover_unfold : FuncUnfold Cutover [] Cutover.impl
   Index_unfold : FuncUnfold Index' [] Index.impl
@@ -635,6 +678,7 @@ attribute [instance] Assumptions.HashStr_unfold
   Assumptions.HashStrRev_unfold
   Assumptions.IndexRabinKarp_unfold
   Assumptions.MakeNoZero_unfold
+  Assumptions.CompareString_unfold
   Assumptions.«init.0_unfold»
   Assumptions.Cutover_unfold
   Assumptions.Index_unfold

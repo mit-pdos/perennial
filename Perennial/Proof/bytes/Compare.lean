@@ -20,27 +20,29 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : bytes.Assumptions]
 
+/-- Proved from the Go model of `Compare` (`goose/model/overlay/bytes/bytes.go`), translated. -/
 theorem bytes.Compare.wp_proof :
     bytes.Compare.spec (GF := GF) (hG := hG) := by
   intro sl_a sl_b da db a b
   wp_start
   iNamed Hpre
+  wp_auto
   wp_apply wp_bytes_to_string $$ Ha with Ha
   wp_apply wp_bytes_to_string $$ Hb with Hb
   unfold bytes.compareResult
   by_cases hlt : go.GoStringLt a b
-  · simp only [hlt, decide_true, ↓reduceIte]
+  · simp only [hlt, _root_.decide_true, ↓reduceIte]
     wp_auto
     iapply HΦ
     iframe
-  · simp only [hlt, decide_false, ↓reduceIte]
+  · simp only [hlt, _root_.decide_false, ↓reduceIte]
     wp_auto
     by_cases heq : a = b
-    · simp only [heq, decide_true, ↓reduceIte]
+    · simp only [heq, _root_.decide_true, ↓reduceIte]
       wp_auto
       iapply HΦ
       iframe
-    · simp only [heq, decide_false, ↓reduceIte]
+    · simp only [heq, _root_.decide_false, ↓reduceIte]
       wp_auto
       iapply HΦ
       iframe

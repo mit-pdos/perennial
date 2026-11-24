@@ -2,7 +2,6 @@
 module
 
 public import Perennial.Golang.Defn
-public import Perennial.TrustedCode.errors
 
 @[expose] public section
 
@@ -220,6 +219,61 @@ noncomputable def Unwrap.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error]))])))) (Pair (Var "u") (Var "$r0"))))))))))))))
   (App (Val (GoInstruction (GoLoad go.error))) (Var "$res0")))))
+
+/-- MODEL: Is reports whether any error in err's tree matches target. Go's is
+
+    	if err == nil || target == nil {
+    		return err == target
+    	}
+    	isComparable := reflectlite.TypeOf(target).Comparable()
+    	return is(err, target, isComparable)
+
+    (is, which walks the error tree, is the real Go, translated). The model
+    replaces the reflection call by true: the semantics cannot inspect the
+    dynamic type of an interface value, so the model takes every target to be
+    comparable. For a target whose dynamic type is not comparable (a slice
+    type, say), Go's is skips err == target; the model performs it, and when
+    some error of the tree has target's dynamic type that comparison is stuck
+    (CheckComparable has no rule for an uncomparable type); comparing with an
+    error of another dynamic type is false, as Go's skipped comparison would
+    have been. The model is thus less defined than Go there, never different:
+    wp_Is only admits nil and pointer targets. A semantics rule testing the
+    comparability of an interface's dynamic type would let goose translate the
+    real Is.
+
+    go: wrap.go:26:6 -/
+noncomputable def Is.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "err"
+  (Lam "target"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "target" (App (Val (GoInstruction (GoAlloc go.error))) (Var "target"))
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (Var "err"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #true)
+  (Let "isComparable" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.error))) (Var "target"))
+  (Let "$a2" (App (Val (GoInstruction (GoLoad go.bool))) (Var "isComparable"))
+  (App (App (App (App (Val (GoInstruction (FuncResolve is' []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "isComparable") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil)))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "target")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (GoLoad go.error))) (Var "target"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))
 
 /-- go: wrap.go:54:6 -/
 noncomputable def is.impl [GooseExts] [GoGlobalContext] : val :=

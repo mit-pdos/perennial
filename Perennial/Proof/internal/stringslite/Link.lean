@@ -12,6 +12,7 @@ public import Perennial.Proof.internal.stringslite.HasPrefix
 public import Perennial.Proof.internal.stringslite.HasSuffix
 public import Perennial.Proof.internal.stringslite.Index
 public import Perennial.Proof.internal.stringslite.IndexByte
+public import Perennial.Proof.internal.stringslite.TrimPrefix
 public import Perennial.Proof.internal.stringslite.TrimSuffix
 public import Perennial.Proof.internal.stringslite.initialize
 
@@ -45,6 +46,9 @@ theorem internal.stringslite.wp_HasPrefix : internal.stringslite.HasPrefix.spec 
 
 theorem internal.stringslite.wp_HasSuffix : internal.stringslite.HasSuffix.spec (GF := GF) (hG := hG) :=
   internal.stringslite.HasSuffix.wp_proof
+
+theorem internal.stringslite.wp_TrimPrefix : internal.stringslite.TrimPrefix.spec (GF := GF) (hG := hG) :=
+  internal.stringslite.TrimPrefix.wp_proof internal.stringslite.wp_HasPrefix
 
 theorem internal.stringslite.wp_TrimSuffix : internal.stringslite.TrimSuffix.spec (GF := GF) (hG := hG) :=
   internal.stringslite.TrimSuffix.wp_proof internal.stringslite.wp_HasSuffix

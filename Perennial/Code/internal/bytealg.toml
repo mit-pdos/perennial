@@ -31,7 +31,11 @@ trusted = ["MakeNoZero", "init.0"]
 # nothing but two of the replaced functions and a file-local helper (`indexbytebody<>`,
 # `indexbody<>`), and includes only toolchain headers. Difftest: goose/util's
 # TestModelBytealgDifftest (Go's own strings and bytes tests under this overlay).
+# `CompareString` (strings.Compare) calls `runtime.cmpstring` (assembly, through a `go:linkname`): a
+# Go model too, compare_native.go. (`Compare`, bytes.Compare's, has no Go body, and
+# compare_amd64.s, which defines it, also defines `runtime.cmpstring`, which gc's string
+# comparisons call, so that file cannot be blanked: bytes.Compare is modelled in its package.)
 [model]
 dir = "goose/model/overlay/internal/bytealg"
-replaces = ["IndexByte", "IndexByteString", "Index", "IndexString"]
+replaces = ["IndexByte", "IndexByteString", "Index", "IndexString", "CompareString"]
 blank_asm = ["indexbyte_amd64.s", "index_amd64.s"]
