@@ -6,7 +6,6 @@ public import Perennial.Code.internal.reflectcore
 public import Perennial.Code.iter
 public import Perennial.Code.strconv
 public import Perennial.Code.«unsafe»
-public import Perennial.Code.runtime
 public import Perennial.Golang.Defn
 
 @[expose] public section
@@ -102,6 +101,20 @@ noncomputable def ValueError.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 attribute [irreducible] ValueError.ty
 
 opaque MapIter.underlying [GooseExts] [GoGlobalContext] : go.GoType
+
+opaque Method.underlying [GooseExts] [GoGlobalContext] : go.GoType
+
+opaque StructField.underlying [GooseExts] [GoGlobalContext] : go.GoType
+
+opaque StructTag.underlying [GooseExts] [GoGlobalContext] : go.GoType
+
+opaque StringHeader.underlying [GooseExts] [GoGlobalContext] : go.GoType
+
+opaque SliceHeader.underlying [GooseExts] [GoGlobalContext] : go.GoType
+
+opaque SelectDir.underlying [GooseExts] [GoGlobalContext] : go.GoType
+
+opaque SelectCase.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
 @[reducible] noncomputable def Invalid [GooseExts] [GoGlobalContext] : val :=
   #(W64 0)
@@ -666,7 +679,7 @@ noncomputable def isDirectIface.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
-/-- go: value.go:85:15 -/
+/-- go: value.go:84:15 -/
 noncomputable def flag.kind.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam BAnon
@@ -681,7 +694,7 @@ noncomputable def flag.kind.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore Kind.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad Kind.ty))) (Var "$res0"))))))
 
-/-- go: value.go:89:15 -/
+/-- go: value.go:88:15 -/
 noncomputable def flag.ro.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam BAnon
@@ -712,7 +725,7 @@ noncomputable def flag.ro.impl [GooseExts] [GoGlobalContext] : val :=
 
     MODEL: the token typ_.
 
-    go: value.go:101:16 -/
+    go: value.go:100:16 -/
 noncomputable def Value.typ.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -729,7 +742,7 @@ noncomputable def Value.typ.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- packEface converts v to the empty interface.
 
-    go: value.go:106:6 -/
+    go: value.go:105:6 -/
 noncomputable def packEface.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
@@ -750,7 +763,7 @@ noncomputable def packEface.impl [GooseExts] [GoGlobalContext] : val :=
     MODEL: the whole interface (a GooseLang interface value holds the data, not
     a data word); Load copies the data out, as real copies an addressable value.
 
-    go: value.go:115:6 -/
+    go: value.go:114:6 -/
 noncomputable def packEfaceData.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
@@ -798,7 +811,7 @@ noncomputable def packEfaceData.impl [GooseExts] [GoGlobalContext] : val :=
 
     MODEL: an indirect value is boxed (a new variable holding i's value).
 
-    go: value.go:137:6 -/
+    go: value.go:136:6 -/
 noncomputable def unpackEface.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "i"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc Value.ty))) (App (Val (GoInstruction (GoZeroVal Value.ty))) (Val #())))
@@ -855,7 +868,7 @@ noncomputable def unpackEface.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
   (App (Val (GoInstruction (GoLoad Value.ty))) (Var "$res0")))))
 
-/-- go: value.go:158:22 -/
+/-- go: value.go:157:22 -/
 noncomputable def ValueError.Error.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam BAnon
@@ -880,86 +893,6 @@ noncomputable def ValueError.Error.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
   (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
 
-/-- valueMethodName returns the name of the exported calling method on Value.
-
-    go: value.go:166:6 -/
-noncomputable def valueMethodName.impl [GooseExts] [GoGlobalContext] : val :=
-  (LamV BAnon
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
-  (Seq (App (Val exceptionDo)
-  (Let "pc" (App (Val (GoInstruction (GoAlloc (go.GoType.ArrayType 5 go.uintptr)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ArrayType 5 go.uintptr)))) (Val #())))
-  (Let "$r0" (Let "$a0" (Val #(W64 1))
-  (Let "$a1" (Let "$s" (Var "pc")
-  (App (Val (GoInstruction (Slice (go.GoType.ArrayType 5 go.uintptr)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Val #(W64 5)))))
-  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.runtime.Callers []))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (Let "$s" (Var "pc")
-  (App (Val (GoInstruction (Slice (go.GoType.ArrayType 5 go.uintptr)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))))
-  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.runtime.CallersFrames []))) (Val #())) (Var "$a0")))
-  (Let "frames" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.runtime.Frames.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.runtime.Frames.ty)))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "frame" (App (Val (GoInstruction (GoAlloc _root_.Perennial.runtime.Frame.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.runtime.Frame.ty))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Val #(go!"unknown method"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (Let "$r0" (Val #true)
-  (Let "more" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (App (Val doFor) (Lam BAnon
-  (App (Val (GoInstruction (GoLoad go.bool))) (Var "more")))) (Lam BAnon
-  (let «prefix» := #(go!"reflect.Value.");
-  (Let "__p" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.runtime.Frames.ty) go!"Next"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.runtime.Frames.ty)))) (Var "frames"))) (Val #()))
-  (Let "$ret0" (Fst (Var "__p"))
-  (Let "$ret1" (Snd (Var "__p"))
-  (Let "$r0" (Var "$ret0")
-  (Let "$r1" (Var "$ret1")
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.runtime.Frame.ty go!"Function"))) (Var "frame")))
-  (Let "name" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "name"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (Val #(W64 14)))) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "name"))
-  (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Val #(W64 14))))) (App (Val (GoInstruction (Convert go.untypedString go.string))) (Val «prefix»)))) (Val #false)))
-  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "name"))
-  (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (Val #(W64 14))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s")))))
-  (Let "methodName" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (If (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "methodName"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoLe go.byte))) (Pair (Val #(W8 65)) (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "methodName")) (Val #(W64 0)))))) (Val #false)) (App (Val (GoInstruction (GoOp GoLe go.byte))) (Pair (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "methodName")) (Val #(W64 0)))) (Val #(W8 90)))) (Val #false)))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (Var "name"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))
-  (App (Val doExecute)
-  (Val #())))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "methodName") (Var "$r0")))))))
-  (App (Val doExecute)
-  (Val #())))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "name") (Var "$r0")))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "more") (Var "$r1")))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore _root_.Perennial.runtime.Frame.ty))) (Pair (Var "frame") (Var "$r0")))))))))))))
-  (Lam BAnon
-  (Val #())))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "more") (Var "$r0")))))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.runtime.Frames.ty)))) (Pair (Var "frames") (Var "$r0")))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))))
-  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")))))
-
 /-- mustBe panics if f's kind is not expected.
     Making this a method on flag instead of on Value
     (and embedding flag in Value) means that we can write
@@ -967,7 +900,7 @@ noncomputable def valueMethodName.impl [GooseExts] [GoGlobalContext] : val :=
     v.flag.mustBe(Bool), which will only bother to copy the
     single important word for the receiver.
 
-    go: value.go:191:15 -/
+    go: value.go:180:15 -/
 noncomputable def flag.mustBe.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam "expected"
@@ -987,7 +920,7 @@ noncomputable def flag.mustBe.impl [GooseExts] [GoGlobalContext] : val :=
 /-- mustBeExported panics if f records that the value was obtained using
     an unexported field.
 
-    go: value.go:200:15 -/
+    go: value.go:189:15 -/
 noncomputable def flag.mustBeExported.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam BAnon
@@ -1000,7 +933,7 @@ noncomputable def flag.mustBeExported.impl [GooseExts] [GoGlobalContext] : val :
   (Val #())))))
   (Val #()))))
 
-/-- go: value.go:206:15 -/
+/-- go: value.go:195:15 -/
 noncomputable def flag.mustBeExportedSlow.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam BAnon
@@ -1027,7 +960,7 @@ noncomputable def flag.mustBeExportedSlow.impl [GooseExts] [GoGlobalContext] : v
     which is to say that either it was obtained using an unexported field
     or it is not addressable.
 
-    go: value.go:218:15 -/
+    go: value.go:207:15 -/
 noncomputable def flag.mustBeAssignable.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam BAnon
@@ -1040,7 +973,7 @@ noncomputable def flag.mustBeAssignable.impl [GooseExts] [GoGlobalContext] : val
   (Val #())))))
   (Val #()))))
 
-/-- go: value.go:224:15 -/
+/-- go: value.go:213:15 -/
 noncomputable def flag.mustBeAssignableSlow.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam BAnon
@@ -1076,7 +1009,7 @@ noncomputable def flag.mustBeAssignableSlow.impl [GooseExts] [GoGlobalContext] :
     a field of an addressable struct, or the result of dereferencing a pointer.
     If CanAddr returns false, calling [Value.Addr] will panic.
 
-    go: value.go:242:16 -/
+    go: value.go:231:16 -/
 noncomputable def Value.CanAddr.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -1097,7 +1030,7 @@ noncomputable def Value.CanAddr.impl [GooseExts] [GoGlobalContext] : val :=
     If CanSet returns false, calling [Value.Set] or any type-specific
     setter (e.g., [Value.SetBool], [Value.SetInt]) will panic.
 
-    go: value.go:251:16 -/
+    go: value.go:240:16 -/
 noncomputable def Value.CanSet.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -1117,7 +1050,7 @@ noncomputable def Value.CanSet.impl [GooseExts] [GoGlobalContext] : val :=
     It panics if v's Kind is not [Interface] or [Pointer].
     It returns the zero Value if v is nil.
 
-    go: value.go:259:16 -/
+    go: value.go:248:16 -/
 noncomputable def Value.Elem.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -1214,7 +1147,7 @@ noncomputable def Value.Elem.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- CanInterface reports whether [Value.Interface] can be used without panicking.
 
-    go: value.go:286:16 -/
+    go: value.go:275:16 -/
 noncomputable def Value.CanInterface.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -1246,7 +1179,7 @@ noncomputable def Value.CanInterface.impl [GooseExts] [GoGlobalContext] : val :=
     It panics if the Value was obtained by accessing
     unexported struct fields.
 
-    go: value.go:300:16 -/
+    go: value.go:289:16 -/
 noncomputable def Value.Interface.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -1264,7 +1197,7 @@ noncomputable def Value.Interface.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.any))) (Var "$res0")))))))
 
-/-- go: value.go:304:6 -/
+/-- go: value.go:293:6 -/
 noncomputable def valueInterface.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam "safe"
@@ -1323,7 +1256,7 @@ noncomputable def valueInterface.impl [GooseExts] [GoGlobalContext] : val :=
 
     MODEL: the interface value *v.ptr, converted to any (for both layouts).
 
-    go: value.go:331:6 -/
+    go: value.go:320:6 -/
 noncomputable def packIfaceValueIntoEmptyIface.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
@@ -1346,7 +1279,7 @@ noncomputable def packIfaceValueIntoEmptyIface.impl [GooseExts] [GoGlobalContext
     i==nil will be true but v.IsNil will panic as v will be the zero
     Value.
 
-    go: value.go:342:16 -/
+    go: value.go:331:16 -/
 noncomputable def Value.IsNil.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -1423,7 +1356,7 @@ noncomputable def Value.IsNil.impl [GooseExts] [GoGlobalContext] : val :=
     Most functions and methods never return an invalid Value.
     If one does, its documentation states the conditions explicitly.
 
-    go: value.go:369:16 -/
+    go: value.go:358:16 -/
 noncomputable def Value.IsValid.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -1441,7 +1374,7 @@ noncomputable def Value.IsValid.impl [GooseExts] [GoGlobalContext] : val :=
 /-- Kind returns v's Kind.
     If v is the zero Value ([Value.IsValid] returns false), Kind returns Invalid.
 
-    go: value.go:375:16 -/
+    go: value.go:364:16 -/
 noncomputable def Value.Kind.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -1458,7 +1391,7 @@ noncomputable def Value.Kind.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- Type returns v's type.
 
-    go: value.go:380:16 -/
+    go: value.go:369:16 -/
 noncomputable def Value.«Type».impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -1484,7 +1417,7 @@ noncomputable def Value.«Type».impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
   (App (Val (GoInstruction (GoLoad Type'.ty))) (Var "$res0"))))))
 
-/-- go: value.go:387:16 -/
+/-- go: value.go:376:16 -/
 noncomputable def Value.typeSlow.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -1500,7 +1433,7 @@ noncomputable def Value.typeSlow.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore Type'.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad Type'.ty))) (Var "$res0"))))))
 
-/-- go: value.go:391:16 -/
+/-- go: value.go:380:16 -/
 noncomputable def Value.abiTypeSlow.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam BAnon
@@ -1538,7 +1471,7 @@ noncomputable def Value.abiTypeSlow.impl [GooseExts] [GoGlobalContext] : val :=
     If v is a nil pointer, Indirect returns a zero Value.
     If v is not a pointer, Indirect returns v.
 
-    go: value.go:411:6 -/
+    go: value.go:400:6 -/
 noncomputable def Indirect.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc Value.ty))) (App (Val (GoInstruction (GoZeroVal Value.ty))) (Val #())))
@@ -1565,7 +1498,7 @@ noncomputable def Indirect.impl [GooseExts] [GoGlobalContext] : val :=
 /-- ValueOf returns a new Value initialized to the concrete value
     stored in the interface i. ValueOf(nil) returns the zero Value.
 
-    go: value.go:420:6 -/
+    go: value.go:409:6 -/
 noncomputable def ValueOf.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "i"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc Value.ty))) (App (Val (GoInstruction (GoZeroVal Value.ty))) (Val #())))
@@ -1591,7 +1524,7 @@ noncomputable def ValueOf.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad Value.ty))) (Var "$res0")))))
 
 noncomputable instance info' : PkgInfo pkg_id.reflect where
-  pkgImportedPkgs := [pkg_id.internal.gomodel, pkg_id.internal.reflectcore, pkg_id.iter, pkg_id.strconv, pkg_id.«unsafe», pkg_id.runtime]
+  pkgImportedPkgs := [pkg_id.internal.gomodel, pkg_id.internal.reflectcore, pkg_id.iter, pkg_id.strconv, pkg_id.«unsafe»]
 
 opaque «_».init [GooseExts] [GoGlobalContext] : val
 
@@ -1599,7 +1532,6 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.reflect)) (Lam BAnon
   (App (Val exceptionDo)
-  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1646,8 +1578,6 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.strconv.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.«unsafe».initialize') (Val #()))))))
-  (App (Val doExecute)
-  (App (Val _root_.Perennial.runtime.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc kindNames (go.GoType.SliceType go.string))) (Val #()))))))))
 
@@ -1771,6 +1701,139 @@ attribute [instance] MapIter.TypeAssumptions.type_repr
   MapIter.TypeAssumptions.isUnderlying
   MapIter.TypeAssumptions.method_set
   MapIter.TypeAssumptions.ptr_method_set
+
+opaque Method.nonempty_type : NonemptyType.{0}
+def Method : Type := Method.nonempty_type.type
+instance Method.nonempty : Nonempty Method := Method.nonempty_type.property
+opaque Method.zero_val : ZeroVal Method := ⟨Classical.ofNonempty⟩
+attribute [instance] Method.zero_val
+
+class Method.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying Method.underlying Method
+  underlying : go.UnderlyingDirectedEq Method.ty Method.underlying
+  isUnderlying : go.IsUnderlying Method.underlying Method.underlying
+  method_set : go.MethodSetIs Method.ty [(go!"IsExported", (some (go.signature.Signature [] false [go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Method.ty) [(go!"IsExported", (some (go.signature.Signature [] false [go.bool])))]
+
+attribute [instance] Method.TypeAssumptions.type_repr
+  Method.TypeAssumptions.underlying
+  Method.TypeAssumptions.isUnderlying
+  Method.TypeAssumptions.method_set
+  Method.TypeAssumptions.ptr_method_set
+
+opaque StructField.nonempty_type : NonemptyType.{0}
+def StructField : Type := StructField.nonempty_type.type
+instance StructField.nonempty : Nonempty StructField := StructField.nonempty_type.property
+opaque StructField.zero_val : ZeroVal StructField := ⟨Classical.ofNonempty⟩
+attribute [instance] StructField.zero_val
+
+class StructField.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying StructField.underlying StructField
+  underlying : go.UnderlyingDirectedEq StructField.ty StructField.underlying
+  isUnderlying : go.IsUnderlying StructField.underlying StructField.underlying
+  method_set : go.MethodSetIs StructField.ty [(go!"IsExported", (some (go.signature.Signature [] false [go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType StructField.ty) [(go!"IsExported", (some (go.signature.Signature [] false [go.bool])))]
+
+attribute [instance] StructField.TypeAssumptions.type_repr
+  StructField.TypeAssumptions.underlying
+  StructField.TypeAssumptions.isUnderlying
+  StructField.TypeAssumptions.method_set
+  StructField.TypeAssumptions.ptr_method_set
+
+opaque StructTag.nonempty_type : NonemptyType.{0}
+def StructTag : Type := StructTag.nonempty_type.type
+instance StructTag.nonempty : Nonempty StructTag := StructTag.nonempty_type.property
+opaque StructTag.zero_val : ZeroVal StructTag := ⟨Classical.ofNonempty⟩
+attribute [instance] StructTag.zero_val
+
+class StructTag.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying StructTag.underlying StructTag
+  underlying : go.UnderlyingDirectedEq StructTag.ty StructTag.underlying
+  isUnderlying : go.IsUnderlying StructTag.underlying StructTag.underlying
+  method_set : go.MethodSetIs StructTag.ty [(go!"Get", (some (go.signature.Signature [go.string] false [go.string]))), (go!"Lookup", (some (go.signature.Signature [go.string] false [go.string, go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType StructTag.ty) [(go!"Get", (some (go.signature.Signature [go.string] false [go.string]))), (go!"Lookup", (some (go.signature.Signature [go.string] false [go.string, go.bool])))]
+
+attribute [instance] StructTag.TypeAssumptions.type_repr
+  StructTag.TypeAssumptions.underlying
+  StructTag.TypeAssumptions.isUnderlying
+  StructTag.TypeAssumptions.method_set
+  StructTag.TypeAssumptions.ptr_method_set
+
+opaque StringHeader.nonempty_type : NonemptyType.{0}
+def StringHeader : Type := StringHeader.nonempty_type.type
+instance StringHeader.nonempty : Nonempty StringHeader := StringHeader.nonempty_type.property
+opaque StringHeader.zero_val : ZeroVal StringHeader := ⟨Classical.ofNonempty⟩
+attribute [instance] StringHeader.zero_val
+
+class StringHeader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying StringHeader.underlying StringHeader
+  underlying : go.UnderlyingDirectedEq StringHeader.ty StringHeader.underlying
+  isUnderlying : go.IsUnderlying StringHeader.underlying StringHeader.underlying
+  method_set : go.MethodSetIs StringHeader.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType StringHeader.ty) []
+
+attribute [instance] StringHeader.TypeAssumptions.type_repr
+  StringHeader.TypeAssumptions.underlying
+  StringHeader.TypeAssumptions.isUnderlying
+  StringHeader.TypeAssumptions.method_set
+  StringHeader.TypeAssumptions.ptr_method_set
+
+opaque SliceHeader.nonempty_type : NonemptyType.{0}
+def SliceHeader : Type := SliceHeader.nonempty_type.type
+instance SliceHeader.nonempty : Nonempty SliceHeader := SliceHeader.nonempty_type.property
+opaque SliceHeader.zero_val : ZeroVal SliceHeader := ⟨Classical.ofNonempty⟩
+attribute [instance] SliceHeader.zero_val
+
+class SliceHeader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying SliceHeader.underlying SliceHeader
+  underlying : go.UnderlyingDirectedEq SliceHeader.ty SliceHeader.underlying
+  isUnderlying : go.IsUnderlying SliceHeader.underlying SliceHeader.underlying
+  method_set : go.MethodSetIs SliceHeader.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType SliceHeader.ty) []
+
+attribute [instance] SliceHeader.TypeAssumptions.type_repr
+  SliceHeader.TypeAssumptions.underlying
+  SliceHeader.TypeAssumptions.isUnderlying
+  SliceHeader.TypeAssumptions.method_set
+  SliceHeader.TypeAssumptions.ptr_method_set
+
+opaque SelectDir.nonempty_type : NonemptyType.{0}
+def SelectDir : Type := SelectDir.nonempty_type.type
+instance SelectDir.nonempty : Nonempty SelectDir := SelectDir.nonempty_type.property
+opaque SelectDir.zero_val : ZeroVal SelectDir := ⟨Classical.ofNonempty⟩
+attribute [instance] SelectDir.zero_val
+
+class SelectDir.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying SelectDir.underlying SelectDir
+  underlying : go.UnderlyingDirectedEq SelectDir.ty SelectDir.underlying
+  isUnderlying : go.IsUnderlying SelectDir.underlying SelectDir.underlying
+  method_set : go.MethodSetIs SelectDir.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType SelectDir.ty) []
+
+attribute [instance] SelectDir.TypeAssumptions.type_repr
+  SelectDir.TypeAssumptions.underlying
+  SelectDir.TypeAssumptions.isUnderlying
+  SelectDir.TypeAssumptions.method_set
+  SelectDir.TypeAssumptions.ptr_method_set
+
+opaque SelectCase.nonempty_type : NonemptyType.{0}
+def SelectCase : Type := SelectCase.nonempty_type.type
+instance SelectCase.nonempty : Nonempty SelectCase := SelectCase.nonempty_type.property
+opaque SelectCase.zero_val : ZeroVal SelectCase := ⟨Classical.ofNonempty⟩
+attribute [instance] SelectCase.zero_val
+
+class SelectCase.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying SelectCase.underlying SelectCase
+  underlying : go.UnderlyingDirectedEq SelectCase.ty SelectCase.underlying
+  isUnderlying : go.IsUnderlying SelectCase.underlying SelectCase.underlying
+  method_set : go.MethodSetIs SelectCase.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType SelectCase.ty) []
+
+attribute [instance] SelectCase.TypeAssumptions.type_repr
+  SelectCase.TypeAssumptions.underlying
+  SelectCase.TypeAssumptions.isUnderlying
+  SelectCase.TypeAssumptions.method_set
+  SelectCase.TypeAssumptions.ptr_method_set
 
 abbrev flag [GooseExts] : Type := w64
 
@@ -1933,299 +1996,6 @@ attribute [instance] Value.TypeAssumptions.type_repr
   Value.TypeAssumptions.ptr_typ_unfold
   Value.TypeAssumptions.ptr_typeSlow_unfold
 
-structure Method [GooseExts] where
-  mk ::
-  Name' : GoString
-  PkgPath' : GoString
-  Type' : Type'
-  Func' : Value
-  Index' : w64
-
-noncomputable instance Method.zero_val [GooseExts] : ZeroVal Method :=
-  ⟨Method.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-
-@[reducible] noncomputable def Method.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"Name" go.string),
-(go.field_decl.FieldDecl go!"PkgPath" go.string),
-(go.field_decl.FieldDecl go!"Type" Type'.ty),
-(go.field_decl.FieldDecl go!"Func" Value.ty),
-(go.field_decl.FieldDecl go!"Index" go.int)]
-
-@[irreducible] noncomputable def Method.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  Method.fieldsUnsealed
-
-noncomputable instance equals_unfold_Method [GooseExts] [GoGlobalContext] :
-    EqualsUnfold Method.fields Method.fieldsUnsealed :=
-  ⟨by unfold Method.fields; rfl⟩
-
-@[reducible] noncomputable def Method.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Method.fields)
-
-class Method.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Method.underlying Method
-  underlying : go.UnderlyingDirectedEq Method.ty Method.underlying
-  get_Name : ∀ (x : Method), go.IsGoStepPureDetTagged under (StructFieldGet Method.underlying go!"Name") #x (Val #(x.Name'))
-  set_Name : ∀ (x : Method) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Method.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : Method)))
-  get_PkgPath : ∀ (x : Method), go.IsGoStepPureDetTagged under (StructFieldGet Method.underlying go!"PkgPath") #x (Val #(x.PkgPath'))
-  set_PkgPath : ∀ (x : Method) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Method.underlying go!"PkgPath") (PairV #x #y) (Val #(({ x with PkgPath' := y } : Method)))
-  get_Type : ∀ (x : Method), go.IsGoStepPureDetTagged under (StructFieldGet Method.underlying go!"Type") #x (Val #(x.Type'))
-  set_Type : ∀ (x : Method) (y : Type'), go.IsGoStepPureDetTagged under (StructFieldSet Method.underlying go!"Type") (PairV #x #y) (Val #(({ x with Type' := y } : Method)))
-  get_Func : ∀ (x : Method), go.IsGoStepPureDetTagged under (StructFieldGet Method.underlying go!"Func") #x (Val #(x.Func'))
-  set_Func : ∀ (x : Method) (y : Value), go.IsGoStepPureDetTagged under (StructFieldSet Method.underlying go!"Func") (PairV #x #y) (Val #(({ x with Func' := y } : Method)))
-  get_Index : ∀ (x : Method), go.IsGoStepPureDetTagged under (StructFieldGet Method.underlying go!"Index") #x (Val #(x.Index'))
-  set_Index : ∀ (x : Method) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Method.underlying go!"Index") (PairV #x #y) (Val #(({ x with Index' := y } : Method)))
-  method_set : go.MethodSetIs Method.ty [(go!"IsExported", (some (go.signature.Signature [] false [go.bool])))]
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Method.ty) [(go!"IsExported", (some (go.signature.Signature [] false [go.bool])))]
-
-attribute [instance] Method.TypeAssumptions.type_repr
-  Method.TypeAssumptions.underlying
-  Method.TypeAssumptions.get_Name
-  Method.TypeAssumptions.set_Name
-  Method.TypeAssumptions.get_PkgPath
-  Method.TypeAssumptions.set_PkgPath
-  Method.TypeAssumptions.get_Type
-  Method.TypeAssumptions.set_Type
-  Method.TypeAssumptions.get_Func
-  Method.TypeAssumptions.set_Func
-  Method.TypeAssumptions.get_Index
-  Method.TypeAssumptions.set_Index
-  Method.TypeAssumptions.method_set
-  Method.TypeAssumptions.ptr_method_set
-
-abbrev StructTag [GooseExts] : Type := GoString
-
-@[reducible] noncomputable def StructTag.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
-  go.string
-
-class StructTag.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq StructTag.ty StructTag.underlying
-  method_set : go.MethodSetIs StructTag.ty [(go!"Get", (some (go.signature.Signature [go.string] false [go.string]))), (go!"Lookup", (some (go.signature.Signature [go.string] false [go.string, go.bool])))]
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType StructTag.ty) [(go!"Get", (some (go.signature.Signature [go.string] false [go.string]))), (go!"Lookup", (some (go.signature.Signature [go.string] false [go.string, go.bool])))]
-
-attribute [instance] StructTag.TypeAssumptions.underlying
-  StructTag.TypeAssumptions.method_set
-  StructTag.TypeAssumptions.ptr_method_set
-
-structure StructField [GooseExts] where
-  mk ::
-  Name' : GoString
-  PkgPath' : GoString
-  Type' : Type'
-  Tag' : StructTag
-  Offset' : w64
-  Index' : GoSlice
-  Anonymous' : Bool
-
-noncomputable instance StructField.zero_val [GooseExts] : ZeroVal StructField :=
-  ⟨StructField.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
-
-@[reducible] noncomputable def StructField.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"Name" go.string),
-(go.field_decl.FieldDecl go!"PkgPath" go.string),
-(go.field_decl.FieldDecl go!"Type" Type'.ty),
-(go.field_decl.FieldDecl go!"Tag" StructTag.ty),
-(go.field_decl.FieldDecl go!"Offset" go.uintptr),
-(go.field_decl.FieldDecl go!"Index" (go.GoType.SliceType go.int)),
-(go.field_decl.FieldDecl go!"Anonymous" go.bool)]
-
-@[irreducible] noncomputable def StructField.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  StructField.fieldsUnsealed
-
-noncomputable instance equals_unfold_StructField [GooseExts] [GoGlobalContext] :
-    EqualsUnfold StructField.fields StructField.fieldsUnsealed :=
-  ⟨by unfold StructField.fields; rfl⟩
-
-@[reducible] noncomputable def StructField.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType StructField.fields)
-
-class StructField.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying StructField.underlying StructField
-  underlying : go.UnderlyingDirectedEq StructField.ty StructField.underlying
-  get_Name : ∀ (x : StructField), go.IsGoStepPureDetTagged under (StructFieldGet StructField.underlying go!"Name") #x (Val #(x.Name'))
-  set_Name : ∀ (x : StructField) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet StructField.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : StructField)))
-  get_PkgPath : ∀ (x : StructField), go.IsGoStepPureDetTagged under (StructFieldGet StructField.underlying go!"PkgPath") #x (Val #(x.PkgPath'))
-  set_PkgPath : ∀ (x : StructField) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet StructField.underlying go!"PkgPath") (PairV #x #y) (Val #(({ x with PkgPath' := y } : StructField)))
-  get_Type : ∀ (x : StructField), go.IsGoStepPureDetTagged under (StructFieldGet StructField.underlying go!"Type") #x (Val #(x.Type'))
-  set_Type : ∀ (x : StructField) (y : Type'), go.IsGoStepPureDetTagged under (StructFieldSet StructField.underlying go!"Type") (PairV #x #y) (Val #(({ x with Type' := y } : StructField)))
-  get_Tag : ∀ (x : StructField), go.IsGoStepPureDetTagged under (StructFieldGet StructField.underlying go!"Tag") #x (Val #(x.Tag'))
-  set_Tag : ∀ (x : StructField) (y : StructTag), go.IsGoStepPureDetTagged under (StructFieldSet StructField.underlying go!"Tag") (PairV #x #y) (Val #(({ x with Tag' := y } : StructField)))
-  get_Offset : ∀ (x : StructField), go.IsGoStepPureDetTagged under (StructFieldGet StructField.underlying go!"Offset") #x (Val #(x.Offset'))
-  set_Offset : ∀ (x : StructField) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet StructField.underlying go!"Offset") (PairV #x #y) (Val #(({ x with Offset' := y } : StructField)))
-  get_Index : ∀ (x : StructField), go.IsGoStepPureDetTagged under (StructFieldGet StructField.underlying go!"Index") #x (Val #(x.Index'))
-  set_Index : ∀ (x : StructField) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet StructField.underlying go!"Index") (PairV #x #y) (Val #(({ x with Index' := y } : StructField)))
-  get_Anonymous : ∀ (x : StructField), go.IsGoStepPureDetTagged under (StructFieldGet StructField.underlying go!"Anonymous") #x (Val #(x.Anonymous'))
-  set_Anonymous : ∀ (x : StructField) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet StructField.underlying go!"Anonymous") (PairV #x #y) (Val #(({ x with Anonymous' := y } : StructField)))
-  method_set : go.MethodSetIs StructField.ty [(go!"IsExported", (some (go.signature.Signature [] false [go.bool])))]
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType StructField.ty) [(go!"IsExported", (some (go.signature.Signature [] false [go.bool])))]
-
-attribute [instance] StructField.TypeAssumptions.type_repr
-  StructField.TypeAssumptions.underlying
-  StructField.TypeAssumptions.get_Name
-  StructField.TypeAssumptions.set_Name
-  StructField.TypeAssumptions.get_PkgPath
-  StructField.TypeAssumptions.set_PkgPath
-  StructField.TypeAssumptions.get_Type
-  StructField.TypeAssumptions.set_Type
-  StructField.TypeAssumptions.get_Tag
-  StructField.TypeAssumptions.set_Tag
-  StructField.TypeAssumptions.get_Offset
-  StructField.TypeAssumptions.set_Offset
-  StructField.TypeAssumptions.get_Index
-  StructField.TypeAssumptions.set_Index
-  StructField.TypeAssumptions.get_Anonymous
-  StructField.TypeAssumptions.set_Anonymous
-  StructField.TypeAssumptions.method_set
-  StructField.TypeAssumptions.ptr_method_set
-
-structure StringHeader [GooseExts] where
-  mk ::
-  Data' : w64
-  Len' : w64
-
-noncomputable instance StringHeader.zero_val [GooseExts] : ZeroVal StringHeader :=
-  ⟨StringHeader.mk zeroValDef zeroValDef⟩
-
-@[reducible] noncomputable def StringHeader.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"Data" go.uintptr),
-(go.field_decl.FieldDecl go!"Len" go.int)]
-
-@[irreducible] noncomputable def StringHeader.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  StringHeader.fieldsUnsealed
-
-noncomputable instance equals_unfold_StringHeader [GooseExts] [GoGlobalContext] :
-    EqualsUnfold StringHeader.fields StringHeader.fieldsUnsealed :=
-  ⟨by unfold StringHeader.fields; rfl⟩
-
-@[reducible] noncomputable def StringHeader.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType StringHeader.fields)
-
-class StringHeader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying StringHeader.underlying StringHeader
-  underlying : go.UnderlyingDirectedEq StringHeader.ty StringHeader.underlying
-  get_Data : ∀ (x : StringHeader), go.IsGoStepPureDetTagged under (StructFieldGet StringHeader.underlying go!"Data") #x (Val #(x.Data'))
-  set_Data : ∀ (x : StringHeader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet StringHeader.underlying go!"Data") (PairV #x #y) (Val #(({ x with Data' := y } : StringHeader)))
-  get_Len : ∀ (x : StringHeader), go.IsGoStepPureDetTagged under (StructFieldGet StringHeader.underlying go!"Len") #x (Val #(x.Len'))
-  set_Len : ∀ (x : StringHeader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet StringHeader.underlying go!"Len") (PairV #x #y) (Val #(({ x with Len' := y } : StringHeader)))
-  method_set : go.MethodSetIs StringHeader.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType StringHeader.ty) []
-
-attribute [instance] StringHeader.TypeAssumptions.type_repr
-  StringHeader.TypeAssumptions.underlying
-  StringHeader.TypeAssumptions.get_Data
-  StringHeader.TypeAssumptions.set_Data
-  StringHeader.TypeAssumptions.get_Len
-  StringHeader.TypeAssumptions.set_Len
-  StringHeader.TypeAssumptions.method_set
-  StringHeader.TypeAssumptions.ptr_method_set
-
-structure SliceHeader [GooseExts] where
-  mk ::
-  Data' : w64
-  Len' : w64
-  Cap' : w64
-
-noncomputable instance SliceHeader.zero_val [GooseExts] : ZeroVal SliceHeader :=
-  ⟨SliceHeader.mk zeroValDef zeroValDef zeroValDef⟩
-
-@[reducible] noncomputable def SliceHeader.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"Data" go.uintptr),
-(go.field_decl.FieldDecl go!"Len" go.int),
-(go.field_decl.FieldDecl go!"Cap" go.int)]
-
-@[irreducible] noncomputable def SliceHeader.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  SliceHeader.fieldsUnsealed
-
-noncomputable instance equals_unfold_SliceHeader [GooseExts] [GoGlobalContext] :
-    EqualsUnfold SliceHeader.fields SliceHeader.fieldsUnsealed :=
-  ⟨by unfold SliceHeader.fields; rfl⟩
-
-@[reducible] noncomputable def SliceHeader.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType SliceHeader.fields)
-
-class SliceHeader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying SliceHeader.underlying SliceHeader
-  underlying : go.UnderlyingDirectedEq SliceHeader.ty SliceHeader.underlying
-  get_Data : ∀ (x : SliceHeader), go.IsGoStepPureDetTagged under (StructFieldGet SliceHeader.underlying go!"Data") #x (Val #(x.Data'))
-  set_Data : ∀ (x : SliceHeader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet SliceHeader.underlying go!"Data") (PairV #x #y) (Val #(({ x with Data' := y } : SliceHeader)))
-  get_Len : ∀ (x : SliceHeader), go.IsGoStepPureDetTagged under (StructFieldGet SliceHeader.underlying go!"Len") #x (Val #(x.Len'))
-  set_Len : ∀ (x : SliceHeader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet SliceHeader.underlying go!"Len") (PairV #x #y) (Val #(({ x with Len' := y } : SliceHeader)))
-  get_Cap : ∀ (x : SliceHeader), go.IsGoStepPureDetTagged under (StructFieldGet SliceHeader.underlying go!"Cap") #x (Val #(x.Cap'))
-  set_Cap : ∀ (x : SliceHeader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet SliceHeader.underlying go!"Cap") (PairV #x #y) (Val #(({ x with Cap' := y } : SliceHeader)))
-  method_set : go.MethodSetIs SliceHeader.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType SliceHeader.ty) []
-
-attribute [instance] SliceHeader.TypeAssumptions.type_repr
-  SliceHeader.TypeAssumptions.underlying
-  SliceHeader.TypeAssumptions.get_Data
-  SliceHeader.TypeAssumptions.set_Data
-  SliceHeader.TypeAssumptions.get_Len
-  SliceHeader.TypeAssumptions.set_Len
-  SliceHeader.TypeAssumptions.get_Cap
-  SliceHeader.TypeAssumptions.set_Cap
-  SliceHeader.TypeAssumptions.method_set
-  SliceHeader.TypeAssumptions.ptr_method_set
-
-abbrev SelectDir [GooseExts] : Type := w64
-
-@[reducible] noncomputable def SelectDir.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
-  go.int
-
-class SelectDir.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq SelectDir.ty SelectDir.underlying
-  method_set : go.MethodSetIs SelectDir.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType SelectDir.ty) []
-
-attribute [instance] SelectDir.TypeAssumptions.underlying
-  SelectDir.TypeAssumptions.method_set
-  SelectDir.TypeAssumptions.ptr_method_set
-
-structure SelectCase [GooseExts] where
-  mk ::
-  Dir' : SelectDir
-  Chan' : Value
-  Send' : Value
-
-noncomputable instance SelectCase.zero_val [GooseExts] : ZeroVal SelectCase :=
-  ⟨SelectCase.mk zeroValDef zeroValDef zeroValDef⟩
-
-@[reducible] noncomputable def SelectCase.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"Dir" SelectDir.ty),
-(go.field_decl.FieldDecl go!"Chan" Value.ty),
-(go.field_decl.FieldDecl go!"Send" Value.ty)]
-
-@[irreducible] noncomputable def SelectCase.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  SelectCase.fieldsUnsealed
-
-noncomputable instance equals_unfold_SelectCase [GooseExts] [GoGlobalContext] :
-    EqualsUnfold SelectCase.fields SelectCase.fieldsUnsealed :=
-  ⟨by unfold SelectCase.fields; rfl⟩
-
-@[reducible] noncomputable def SelectCase.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType SelectCase.fields)
-
-class SelectCase.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying SelectCase.underlying SelectCase
-  underlying : go.UnderlyingDirectedEq SelectCase.ty SelectCase.underlying
-  get_Dir : ∀ (x : SelectCase), go.IsGoStepPureDetTagged under (StructFieldGet SelectCase.underlying go!"Dir") #x (Val #(x.Dir'))
-  set_Dir : ∀ (x : SelectCase) (y : SelectDir), go.IsGoStepPureDetTagged under (StructFieldSet SelectCase.underlying go!"Dir") (PairV #x #y) (Val #(({ x with Dir' := y } : SelectCase)))
-  get_Chan : ∀ (x : SelectCase), go.IsGoStepPureDetTagged under (StructFieldGet SelectCase.underlying go!"Chan") #x (Val #(x.Chan'))
-  set_Chan : ∀ (x : SelectCase) (y : Value), go.IsGoStepPureDetTagged under (StructFieldSet SelectCase.underlying go!"Chan") (PairV #x #y) (Val #(({ x with Chan' := y } : SelectCase)))
-  get_Send : ∀ (x : SelectCase), go.IsGoStepPureDetTagged under (StructFieldGet SelectCase.underlying go!"Send") #x (Val #(x.Send'))
-  set_Send : ∀ (x : SelectCase) (y : Value), go.IsGoStepPureDetTagged under (StructFieldSet SelectCase.underlying go!"Send") (PairV #x #y) (Val #(({ x with Send' := y } : SelectCase)))
-  method_set : go.MethodSetIs SelectCase.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType SelectCase.ty) []
-
-attribute [instance] SelectCase.TypeAssumptions.type_repr
-  SelectCase.TypeAssumptions.underlying
-  SelectCase.TypeAssumptions.get_Dir
-  SelectCase.TypeAssumptions.set_Dir
-  SelectCase.TypeAssumptions.get_Chan
-  SelectCase.TypeAssumptions.set_Chan
-  SelectCase.TypeAssumptions.get_Send
-  SelectCase.TypeAssumptions.set_Send
-  SelectCase.TypeAssumptions.method_set
-  SelectCase.TypeAssumptions.ptr_method_set
-
 structure ValueError [GooseExts] where
   mk ::
   Method' : GoString
@@ -2294,7 +2064,6 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   packEface_unfold : FuncUnfold packEface [] packEface.impl
   packEfaceData_unfold : FuncUnfold packEfaceData [] packEfaceData.impl
   unpackEface_unfold : FuncUnfold unpackEface [] unpackEface.impl
-  valueMethodName_unfold : FuncUnfold valueMethodName [] valueMethodName.impl
   valueInterface_unfold : FuncUnfold valueInterface [] valueInterface.impl
   packIfaceValueIntoEmptyIface_unfold : FuncUnfold packIfaceValueIntoEmptyIface [] packIfaceValueIntoEmptyIface.impl
   Indirect_unfold : FuncUnfold Indirect [] Indirect.impl
@@ -2304,7 +2073,6 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   import_iter_Assumption : _root_.Perennial.iter.Assumptions
   import_strconv_Assumption : _root_.Perennial.strconv.Assumptions
   import_unsafe_Assumption : _root_.Perennial.«unsafe».Assumptions
-  import_runtime_Assumption : _root_.Perennial.runtime.Assumptions
 
 attribute [instance] Assumptions.Type_instance
   Assumptions.Kind_instance
@@ -2330,7 +2098,6 @@ attribute [instance] Assumptions.Type_instance
   Assumptions.packEface_unfold
   Assumptions.packEfaceData_unfold
   Assumptions.unpackEface_unfold
-  Assumptions.valueMethodName_unfold
   Assumptions.valueInterface_unfold
   Assumptions.packIfaceValueIntoEmptyIface_unfold
   Assumptions.Indirect_unfold
@@ -2340,7 +2107,6 @@ attribute [instance] Assumptions.Type_instance
   Assumptions.import_iter_Assumption
   Assumptions.import_strconv_Assumption
   Assumptions.import_unsafe_Assumption
-  Assumptions.import_runtime_Assumption
 
 end reflect
 
