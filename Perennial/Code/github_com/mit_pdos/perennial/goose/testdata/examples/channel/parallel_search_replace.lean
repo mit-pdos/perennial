@@ -195,13 +195,13 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.sync.initialize') (Val #())))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  worker_unfold : FuncUnfold worker [] worker.impl
-  SearchReplace_unfold : FuncUnfold SearchReplace [] SearchReplace.impl
-  import_sync_Assumption : _root_.Perennial.sync.Assumptions
+  unfold'worker : FuncUnfold worker [] worker.impl
+  unfold'SearchReplace : FuncUnfold SearchReplace [] SearchReplace.impl
+  import'sync : _root_.Perennial.sync.Assumptions
 
-attribute [instance] Assumptions.worker_unfold
-  Assumptions.SearchReplace_unfold
-  Assumptions.import_sync_Assumption
+attribute [instance] Assumptions.unfold'worker
+  Assumptions.unfold'SearchReplace
+  Assumptions.import'sync
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace
 

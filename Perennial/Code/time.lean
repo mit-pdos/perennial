@@ -2324,7 +2324,7 @@ noncomputable instance ParseError.zero_val [GooseExts] : ZeroVal ParseError :=
 @[irreducible] noncomputable def ParseError.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   ParseError.fieldsUnsealed
 
-noncomputable instance equals_unfold_ParseError [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'ParseError [GooseExts] [GoGlobalContext] :
     EqualsUnfold ParseError.fields ParseError.fieldsUnsealed :=
   ⟨by unfold ParseError.fields; rfl⟩
 
@@ -2334,31 +2334,31 @@ noncomputable instance equals_unfold_ParseError [GooseExts] [GoGlobalContext] :
 class ParseError.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying ParseError.underlying ParseError
   underlying : go.UnderlyingDirectedEq ParseError.ty ParseError.underlying
-  get_Layout : ∀ (x : ParseError), go.IsGoStepPureDetTagged under (StructFieldGet ParseError.underlying go!"Layout") #x (Val #(x.Layout'))
-  set_Layout : ∀ (x : ParseError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ParseError.underlying go!"Layout") (PairV #x #y) (Val #(({ x with Layout' := y } : ParseError)))
-  get_Value : ∀ (x : ParseError), go.IsGoStepPureDetTagged under (StructFieldGet ParseError.underlying go!"Value") #x (Val #(x.Value'))
-  set_Value : ∀ (x : ParseError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ParseError.underlying go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : ParseError)))
-  get_LayoutElem : ∀ (x : ParseError), go.IsGoStepPureDetTagged under (StructFieldGet ParseError.underlying go!"LayoutElem") #x (Val #(x.LayoutElem'))
-  set_LayoutElem : ∀ (x : ParseError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ParseError.underlying go!"LayoutElem") (PairV #x #y) (Val #(({ x with LayoutElem' := y } : ParseError)))
-  get_ValueElem : ∀ (x : ParseError), go.IsGoStepPureDetTagged under (StructFieldGet ParseError.underlying go!"ValueElem") #x (Val #(x.ValueElem'))
-  set_ValueElem : ∀ (x : ParseError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ParseError.underlying go!"ValueElem") (PairV #x #y) (Val #(({ x with ValueElem' := y } : ParseError)))
-  get_Message : ∀ (x : ParseError), go.IsGoStepPureDetTagged under (StructFieldGet ParseError.underlying go!"Message") #x (Val #(x.Message'))
-  set_Message : ∀ (x : ParseError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ParseError.underlying go!"Message") (PairV #x #y) (Val #(({ x with Message' := y } : ParseError)))
+  get'Layout : ∀ (x : ParseError), go.IsGoStepPureDetTagged under (StructFieldGet ParseError.underlying go!"Layout") #x (Val #(x.Layout'))
+  set'Layout : ∀ (x : ParseError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ParseError.underlying go!"Layout") (PairV #x #y) (Val #(({ x with Layout' := y } : ParseError)))
+  get'Value : ∀ (x : ParseError), go.IsGoStepPureDetTagged under (StructFieldGet ParseError.underlying go!"Value") #x (Val #(x.Value'))
+  set'Value : ∀ (x : ParseError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ParseError.underlying go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : ParseError)))
+  get'LayoutElem : ∀ (x : ParseError), go.IsGoStepPureDetTagged under (StructFieldGet ParseError.underlying go!"LayoutElem") #x (Val #(x.LayoutElem'))
+  set'LayoutElem : ∀ (x : ParseError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ParseError.underlying go!"LayoutElem") (PairV #x #y) (Val #(({ x with LayoutElem' := y } : ParseError)))
+  get'ValueElem : ∀ (x : ParseError), go.IsGoStepPureDetTagged under (StructFieldGet ParseError.underlying go!"ValueElem") #x (Val #(x.ValueElem'))
+  set'ValueElem : ∀ (x : ParseError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ParseError.underlying go!"ValueElem") (PairV #x #y) (Val #(({ x with ValueElem' := y } : ParseError)))
+  get'Message : ∀ (x : ParseError), go.IsGoStepPureDetTagged under (StructFieldGet ParseError.underlying go!"Message") #x (Val #(x.Message'))
+  set'Message : ∀ (x : ParseError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ParseError.underlying go!"Message") (PairV #x #y) (Val #(({ x with Message' := y } : ParseError)))
   method_set : go.MethodSetIs ParseError.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType ParseError.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string])))]
 
 attribute [instance] ParseError.TypeAssumptions.type_repr
   ParseError.TypeAssumptions.underlying
-  ParseError.TypeAssumptions.get_Layout
-  ParseError.TypeAssumptions.set_Layout
-  ParseError.TypeAssumptions.get_Value
-  ParseError.TypeAssumptions.set_Value
-  ParseError.TypeAssumptions.get_LayoutElem
-  ParseError.TypeAssumptions.set_LayoutElem
-  ParseError.TypeAssumptions.get_ValueElem
-  ParseError.TypeAssumptions.set_ValueElem
-  ParseError.TypeAssumptions.get_Message
-  ParseError.TypeAssumptions.set_Message
+  ParseError.TypeAssumptions.get'Layout
+  ParseError.TypeAssumptions.set'Layout
+  ParseError.TypeAssumptions.get'Value
+  ParseError.TypeAssumptions.set'Value
+  ParseError.TypeAssumptions.get'LayoutElem
+  ParseError.TypeAssumptions.set'LayoutElem
+  ParseError.TypeAssumptions.get'ValueElem
+  ParseError.TypeAssumptions.set'ValueElem
+  ParseError.TypeAssumptions.get'Message
+  ParseError.TypeAssumptions.set'Message
   ParseError.TypeAssumptions.method_set
   ParseError.TypeAssumptions.ptr_method_set
 
@@ -2377,7 +2377,7 @@ noncomputable instance parseDurationError.zero_val [GooseExts] : ZeroVal parseDu
 @[irreducible] noncomputable def parseDurationError.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   parseDurationError.fieldsUnsealed
 
-noncomputable instance equals_unfold_parseDurationError [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'parseDurationError [GooseExts] [GoGlobalContext] :
     EqualsUnfold parseDurationError.fields parseDurationError.fieldsUnsealed :=
   ⟨by unfold parseDurationError.fields; rfl⟩
 
@@ -2387,19 +2387,19 @@ noncomputable instance equals_unfold_parseDurationError [GooseExts] [GoGlobalCon
 class parseDurationError.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying parseDurationError.underlying parseDurationError
   underlying : go.UnderlyingDirectedEq parseDurationError.ty parseDurationError.underlying
-  get_message : ∀ (x : parseDurationError), go.IsGoStepPureDetTagged under (StructFieldGet parseDurationError.underlying go!"message") #x (Val #(x.message'))
-  set_message : ∀ (x : parseDurationError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet parseDurationError.underlying go!"message") (PairV #x #y) (Val #(({ x with message' := y } : parseDurationError)))
-  get_value : ∀ (x : parseDurationError), go.IsGoStepPureDetTagged under (StructFieldGet parseDurationError.underlying go!"value") #x (Val #(x.value'))
-  set_value : ∀ (x : parseDurationError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet parseDurationError.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : parseDurationError)))
+  get'message : ∀ (x : parseDurationError), go.IsGoStepPureDetTagged under (StructFieldGet parseDurationError.underlying go!"message") #x (Val #(x.message'))
+  set'message : ∀ (x : parseDurationError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet parseDurationError.underlying go!"message") (PairV #x #y) (Val #(({ x with message' := y } : parseDurationError)))
+  get'value : ∀ (x : parseDurationError), go.IsGoStepPureDetTagged under (StructFieldGet parseDurationError.underlying go!"value") #x (Val #(x.value'))
+  set'value : ∀ (x : parseDurationError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet parseDurationError.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : parseDurationError)))
   method_set : go.MethodSetIs parseDurationError.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType parseDurationError.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string])))]
 
 attribute [instance] parseDurationError.TypeAssumptions.type_repr
   parseDurationError.TypeAssumptions.underlying
-  parseDurationError.TypeAssumptions.get_message
-  parseDurationError.TypeAssumptions.set_message
-  parseDurationError.TypeAssumptions.get_value
-  parseDurationError.TypeAssumptions.set_value
+  parseDurationError.TypeAssumptions.get'message
+  parseDurationError.TypeAssumptions.set'message
+  parseDurationError.TypeAssumptions.get'value
+  parseDurationError.TypeAssumptions.set'value
   parseDurationError.TypeAssumptions.method_set
   parseDurationError.TypeAssumptions.ptr_method_set
 
@@ -2418,7 +2418,7 @@ noncomputable instance Timer.zero_val [GooseExts] : ZeroVal Timer :=
 @[irreducible] noncomputable def Timer.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Timer.fieldsUnsealed
 
-noncomputable instance equals_unfold_Timer [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Timer [GooseExts] [GoGlobalContext] :
     EqualsUnfold Timer.fields Timer.fieldsUnsealed :=
   ⟨by unfold Timer.fields; rfl⟩
 
@@ -2428,25 +2428,25 @@ noncomputable instance equals_unfold_Timer [GooseExts] [GoGlobalContext] :
 class Timer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Timer.underlying Timer
   underlying : go.UnderlyingDirectedEq Timer.ty Timer.underlying
-  get_C : ∀ (x : Timer), go.IsGoStepPureDetTagged under (StructFieldGet Timer.underlying go!"C") #x (Val #(x.C'))
-  set_C : ∀ (x : Timer) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Timer.underlying go!"C") (PairV #x #y) (Val #(({ x with C' := y } : Timer)))
-  get_initTimer : ∀ (x : Timer), go.IsGoStepPureDetTagged under (StructFieldGet Timer.underlying go!"initTimer") #x (Val #(x.initTimer'))
-  set_initTimer : ∀ (x : Timer) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Timer.underlying go!"initTimer") (PairV #x #y) (Val #(({ x with initTimer' := y } : Timer)))
+  get'C : ∀ (x : Timer), go.IsGoStepPureDetTagged under (StructFieldGet Timer.underlying go!"C") #x (Val #(x.C'))
+  set'C : ∀ (x : Timer) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Timer.underlying go!"C") (PairV #x #y) (Val #(({ x with C' := y } : Timer)))
+  get'initTimer : ∀ (x : Timer), go.IsGoStepPureDetTagged under (StructFieldGet Timer.underlying go!"initTimer") #x (Val #(x.initTimer'))
+  set'initTimer : ∀ (x : Timer) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Timer.underlying go!"initTimer") (PairV #x #y) (Val #(({ x with initTimer' := y } : Timer)))
   method_set : go.MethodSetIs Timer.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Timer.ty) [(go!"Reset", (some (go.signature.Signature [Duration.ty] false [go.bool]))), (go!"Stop", (some (go.signature.Signature [] false [go.bool])))]
-  ptr_Reset_unfold : MethodUnfold (go.GoType.PointerType Timer.ty) go!"Reset" Timer.Reset.impl
-  ptr_Stop_unfold : MethodUnfold (go.GoType.PointerType Timer.ty) go!"Stop" Timer.Stop.impl
+  ptr_unfold'Reset : MethodUnfold (go.GoType.PointerType Timer.ty) go!"Reset" Timer.Reset.impl
+  ptr_unfold'Stop : MethodUnfold (go.GoType.PointerType Timer.ty) go!"Stop" Timer.Stop.impl
 
 attribute [instance] Timer.TypeAssumptions.type_repr
   Timer.TypeAssumptions.underlying
-  Timer.TypeAssumptions.get_C
-  Timer.TypeAssumptions.set_C
-  Timer.TypeAssumptions.get_initTimer
-  Timer.TypeAssumptions.set_initTimer
+  Timer.TypeAssumptions.get'C
+  Timer.TypeAssumptions.set'C
+  Timer.TypeAssumptions.get'initTimer
+  Timer.TypeAssumptions.set'initTimer
   Timer.TypeAssumptions.method_set
   Timer.TypeAssumptions.ptr_method_set
-  Timer.TypeAssumptions.ptr_Reset_unfold
-  Timer.TypeAssumptions.ptr_Stop_unfold
+  Timer.TypeAssumptions.ptr_unfold'Reset
+  Timer.TypeAssumptions.ptr_unfold'Stop
 
 structure Ticker [GooseExts] where
   mk ::
@@ -2463,7 +2463,7 @@ noncomputable instance Ticker.zero_val [GooseExts] : ZeroVal Ticker :=
 @[irreducible] noncomputable def Ticker.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Ticker.fieldsUnsealed
 
-noncomputable instance equals_unfold_Ticker [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Ticker [GooseExts] [GoGlobalContext] :
     EqualsUnfold Ticker.fields Ticker.fieldsUnsealed :=
   ⟨by unfold Ticker.fields; rfl⟩
 
@@ -2473,25 +2473,25 @@ noncomputable instance equals_unfold_Ticker [GooseExts] [GoGlobalContext] :
 class Ticker.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Ticker.underlying Ticker
   underlying : go.UnderlyingDirectedEq Ticker.ty Ticker.underlying
-  get_C : ∀ (x : Ticker), go.IsGoStepPureDetTagged under (StructFieldGet Ticker.underlying go!"C") #x (Val #(x.C'))
-  set_C : ∀ (x : Ticker) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Ticker.underlying go!"C") (PairV #x #y) (Val #(({ x with C' := y } : Ticker)))
-  get_initTicker : ∀ (x : Ticker), go.IsGoStepPureDetTagged under (StructFieldGet Ticker.underlying go!"initTicker") #x (Val #(x.initTicker'))
-  set_initTicker : ∀ (x : Ticker) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Ticker.underlying go!"initTicker") (PairV #x #y) (Val #(({ x with initTicker' := y } : Ticker)))
+  get'C : ∀ (x : Ticker), go.IsGoStepPureDetTagged under (StructFieldGet Ticker.underlying go!"C") #x (Val #(x.C'))
+  set'C : ∀ (x : Ticker) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Ticker.underlying go!"C") (PairV #x #y) (Val #(({ x with C' := y } : Ticker)))
+  get'initTicker : ∀ (x : Ticker), go.IsGoStepPureDetTagged under (StructFieldGet Ticker.underlying go!"initTicker") #x (Val #(x.initTicker'))
+  set'initTicker : ∀ (x : Ticker) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Ticker.underlying go!"initTicker") (PairV #x #y) (Val #(({ x with initTicker' := y } : Ticker)))
   method_set : go.MethodSetIs Ticker.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Ticker.ty) [(go!"Reset", (some (go.signature.Signature [Duration.ty] false []))), (go!"Stop", (some (go.signature.Signature [] false [])))]
-  ptr_Reset_unfold : MethodUnfold (go.GoType.PointerType Ticker.ty) go!"Reset" Ticker.Reset.impl
-  ptr_Stop_unfold : MethodUnfold (go.GoType.PointerType Ticker.ty) go!"Stop" Ticker.Stop.impl
+  ptr_unfold'Reset : MethodUnfold (go.GoType.PointerType Ticker.ty) go!"Reset" Ticker.Reset.impl
+  ptr_unfold'Stop : MethodUnfold (go.GoType.PointerType Ticker.ty) go!"Stop" Ticker.Stop.impl
 
 attribute [instance] Ticker.TypeAssumptions.type_repr
   Ticker.TypeAssumptions.underlying
-  Ticker.TypeAssumptions.get_C
-  Ticker.TypeAssumptions.set_C
-  Ticker.TypeAssumptions.get_initTicker
-  Ticker.TypeAssumptions.set_initTicker
+  Ticker.TypeAssumptions.get'C
+  Ticker.TypeAssumptions.set'C
+  Ticker.TypeAssumptions.get'initTicker
+  Ticker.TypeAssumptions.set'initTicker
   Ticker.TypeAssumptions.method_set
   Ticker.TypeAssumptions.ptr_method_set
-  Ticker.TypeAssumptions.ptr_Reset_unfold
-  Ticker.TypeAssumptions.ptr_Stop_unfold
+  Ticker.TypeAssumptions.ptr_unfold'Reset
+  Ticker.TypeAssumptions.ptr_unfold'Stop
 
 structure Time [GooseExts] where
   mk ::
@@ -2510,7 +2510,7 @@ noncomputable instance Time.zero_val [GooseExts] : ZeroVal Time :=
 @[irreducible] noncomputable def Time.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Time.fieldsUnsealed
 
-noncomputable instance equals_unfold_Time [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Time [GooseExts] [GoGlobalContext] :
     EqualsUnfold Time.fields Time.fieldsUnsealed :=
   ⟨by unfold Time.fields; rfl⟩
 
@@ -2520,80 +2520,80 @@ noncomputable instance equals_unfold_Time [GooseExts] [GoGlobalContext] :
 class Time.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Time.underlying Time
   underlying : go.UnderlyingDirectedEq Time.ty Time.underlying
-  get_wall : ∀ (x : Time), go.IsGoStepPureDetTagged under (StructFieldGet Time.underlying go!"wall") #x (Val #(x.wall'))
-  set_wall : ∀ (x : Time) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Time.underlying go!"wall") (PairV #x #y) (Val #(({ x with wall' := y } : Time)))
-  get_ext : ∀ (x : Time), go.IsGoStepPureDetTagged under (StructFieldGet Time.underlying go!"ext") #x (Val #(x.ext'))
-  set_ext : ∀ (x : Time) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Time.underlying go!"ext") (PairV #x #y) (Val #(({ x with ext' := y } : Time)))
-  get_loc : ∀ (x : Time), go.IsGoStepPureDetTagged under (StructFieldGet Time.underlying go!"loc") #x (Val #(x.loc'))
-  set_loc : ∀ (x : Time) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Time.underlying go!"loc") (PairV #x #y) (Val #(({ x with loc' := y } : Time)))
+  get'wall : ∀ (x : Time), go.IsGoStepPureDetTagged under (StructFieldGet Time.underlying go!"wall") #x (Val #(x.wall'))
+  set'wall : ∀ (x : Time) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Time.underlying go!"wall") (PairV #x #y) (Val #(({ x with wall' := y } : Time)))
+  get'ext : ∀ (x : Time), go.IsGoStepPureDetTagged under (StructFieldGet Time.underlying go!"ext") #x (Val #(x.ext'))
+  set'ext : ∀ (x : Time) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Time.underlying go!"ext") (PairV #x #y) (Val #(({ x with ext' := y } : Time)))
+  get'loc : ∀ (x : Time), go.IsGoStepPureDetTagged under (StructFieldGet Time.underlying go!"loc") #x (Val #(x.loc'))
+  set'loc : ∀ (x : Time) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Time.underlying go!"loc") (PairV #x #y) (Val #(({ x with loc' := y } : Time)))
   method_set : go.MethodSetIs Time.ty [(go!"Add", (some (go.signature.Signature [Duration.ty] false [Time.ty]))), (go!"AddDate", (some (go.signature.Signature [go.int, go.int, go.int] false [Time.ty]))), (go!"After", (some (go.signature.Signature [Time.ty] false [go.bool]))), (go!"AppendBinary", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.SliceType go.byte), go.error]))), (go!"AppendFormat", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.string] false [(go.GoType.SliceType go.byte)]))), (go!"AppendText", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Before", (some (go.signature.Signature [Time.ty] false [go.bool]))), (go!"Clock", (some (go.signature.Signature [] false [go.int, go.int, go.int]))), (go!"Compare", (some (go.signature.Signature [Time.ty] false [go.int]))), (go!"Date", (some (go.signature.Signature [] false [go.int, Month.ty, go.int]))), (go!"Day", (some (go.signature.Signature [] false [go.int]))), (go!"Equal", (some (go.signature.Signature [Time.ty] false [go.bool]))), (go!"Format", (some (go.signature.Signature [go.string] false [go.string]))), (go!"GoString", (some (go.signature.Signature [] false [go.string]))), (go!"GobEncode", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Hour", (some (go.signature.Signature [] false [go.int]))), (go!"ISOWeek", (some (go.signature.Signature [] false [go.int, go.int]))), (go!"In", (some (go.signature.Signature [(go.GoType.PointerType Location.ty)] false [Time.ty]))), (go!"IsDST", (some (go.signature.Signature [] false [go.bool]))), (go!"IsZero", (some (go.signature.Signature [] false [go.bool]))), (go!"Local", (some (go.signature.Signature [] false [Time.ty]))), (go!"Location", (some (go.signature.Signature [] false [(go.GoType.PointerType Location.ty)]))), (go!"MarshalBinary", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"MarshalJSON", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"MarshalText", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Minute", (some (go.signature.Signature [] false [go.int]))), (go!"Month", (some (go.signature.Signature [] false [Month.ty]))), (go!"Nanosecond", (some (go.signature.Signature [] false [go.int]))), (go!"Round", (some (go.signature.Signature [Duration.ty] false [Time.ty]))), (go!"Second", (some (go.signature.Signature [] false [go.int]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Sub", (some (go.signature.Signature [Time.ty] false [Duration.ty]))), (go!"Truncate", (some (go.signature.Signature [Duration.ty] false [Time.ty]))), (go!"UTC", (some (go.signature.Signature [] false [Time.ty]))), (go!"Unix", (some (go.signature.Signature [] false [go.int64]))), (go!"UnixMicro", (some (go.signature.Signature [] false [go.int64]))), (go!"UnixMilli", (some (go.signature.Signature [] false [go.int64]))), (go!"UnixNano", (some (go.signature.Signature [] false [go.int64]))), (go!"Weekday", (some (go.signature.Signature [] false [Weekday.ty]))), (go!"Year", (some (go.signature.Signature [] false [go.int]))), (go!"YearDay", (some (go.signature.Signature [] false [go.int]))), (go!"Zone", (some (go.signature.Signature [] false [go.string, go.int]))), (go!"ZoneBounds", (some (go.signature.Signature [] false [Time.ty, Time.ty]))), (go!"time.absSec", (some (go.signature.Signature [] false [absSeconds.ty]))), (go!"time.appendFormat", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.string] false [(go.GoType.SliceType go.byte)]))), (go!"time.appendFormatRFC3339", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.bool] false [(go.GoType.SliceType go.byte)]))), (go!"time.appendStrictRFC3339", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.SliceType go.byte), go.error]))), (go!"time.appendTo", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.string] false [(go.GoType.SliceType go.byte), go.error]))), (go!"time.locabs", (some (go.signature.Signature [] false [go.string, go.int, absSeconds.ty])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Time.ty) [(go!"Add", (some (go.signature.Signature [Duration.ty] false [Time.ty]))), (go!"AddDate", (some (go.signature.Signature [go.int, go.int, go.int] false [Time.ty]))), (go!"After", (some (go.signature.Signature [Time.ty] false [go.bool]))), (go!"AppendBinary", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.SliceType go.byte), go.error]))), (go!"AppendFormat", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.string] false [(go.GoType.SliceType go.byte)]))), (go!"AppendText", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Before", (some (go.signature.Signature [Time.ty] false [go.bool]))), (go!"Clock", (some (go.signature.Signature [] false [go.int, go.int, go.int]))), (go!"Compare", (some (go.signature.Signature [Time.ty] false [go.int]))), (go!"Date", (some (go.signature.Signature [] false [go.int, Month.ty, go.int]))), (go!"Day", (some (go.signature.Signature [] false [go.int]))), (go!"Equal", (some (go.signature.Signature [Time.ty] false [go.bool]))), (go!"Format", (some (go.signature.Signature [go.string] false [go.string]))), (go!"GoString", (some (go.signature.Signature [] false [go.string]))), (go!"GobDecode", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.error]))), (go!"GobEncode", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Hour", (some (go.signature.Signature [] false [go.int]))), (go!"ISOWeek", (some (go.signature.Signature [] false [go.int, go.int]))), (go!"In", (some (go.signature.Signature [(go.GoType.PointerType Location.ty)] false [Time.ty]))), (go!"IsDST", (some (go.signature.Signature [] false [go.bool]))), (go!"IsZero", (some (go.signature.Signature [] false [go.bool]))), (go!"Local", (some (go.signature.Signature [] false [Time.ty]))), (go!"Location", (some (go.signature.Signature [] false [(go.GoType.PointerType Location.ty)]))), (go!"MarshalBinary", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"MarshalJSON", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"MarshalText", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Minute", (some (go.signature.Signature [] false [go.int]))), (go!"Month", (some (go.signature.Signature [] false [Month.ty]))), (go!"Nanosecond", (some (go.signature.Signature [] false [go.int]))), (go!"Round", (some (go.signature.Signature [Duration.ty] false [Time.ty]))), (go!"Second", (some (go.signature.Signature [] false [go.int]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Sub", (some (go.signature.Signature [Time.ty] false [Duration.ty]))), (go!"Truncate", (some (go.signature.Signature [Duration.ty] false [Time.ty]))), (go!"UTC", (some (go.signature.Signature [] false [Time.ty]))), (go!"Unix", (some (go.signature.Signature [] false [go.int64]))), (go!"UnixMicro", (some (go.signature.Signature [] false [go.int64]))), (go!"UnixMilli", (some (go.signature.Signature [] false [go.int64]))), (go!"UnixNano", (some (go.signature.Signature [] false [go.int64]))), (go!"UnmarshalBinary", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.error]))), (go!"UnmarshalJSON", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.error]))), (go!"UnmarshalText", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.error]))), (go!"Weekday", (some (go.signature.Signature [] false [Weekday.ty]))), (go!"Year", (some (go.signature.Signature [] false [go.int]))), (go!"YearDay", (some (go.signature.Signature [] false [go.int]))), (go!"Zone", (some (go.signature.Signature [] false [go.string, go.int]))), (go!"ZoneBounds", (some (go.signature.Signature [] false [Time.ty, Time.ty]))), (go!"time.absSec", (some (go.signature.Signature [] false [absSeconds.ty]))), (go!"time.addSec", (some (go.signature.Signature [go.int64] false []))), (go!"time.appendFormat", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.string] false [(go.GoType.SliceType go.byte)]))), (go!"time.appendFormatRFC3339", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.bool] false [(go.GoType.SliceType go.byte)]))), (go!"time.appendStrictRFC3339", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.SliceType go.byte), go.error]))), (go!"time.appendTo", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.string] false [(go.GoType.SliceType go.byte), go.error]))), (go!"time.locabs", (some (go.signature.Signature [] false [go.string, go.int, absSeconds.ty]))), (go!"time.mono", (some (go.signature.Signature [] false [go.int64]))), (go!"time.nsec", (some (go.signature.Signature [] false [go.int32]))), (go!"time.sec", (some (go.signature.Signature [] false [go.int64]))), (go!"time.setLoc", (some (go.signature.Signature [(go.GoType.PointerType Location.ty)] false []))), (go!"time.setMono", (some (go.signature.Signature [go.int64] false []))), (go!"time.stripMono", (some (go.signature.Signature [] false []))), (go!"time.unixSec", (some (go.signature.Signature [] false [go.int64])))]
-  Add_unfold : MethodUnfold Time.ty go!"Add" Time.Add.impl
-  After_unfold : MethodUnfold Time.ty go!"After" Time.After.impl
-  Before_unfold : MethodUnfold Time.ty go!"Before" Time.Before.impl
-  Equal_unfold : MethodUnfold Time.ty go!"Equal" Time.Equal.impl
-  IsZero_unfold : MethodUnfold Time.ty go!"IsZero" Time.IsZero.impl
-  Location_unfold : MethodUnfold Time.ty go!"Location" Time.Location.impl
-  Sub_unfold : MethodUnfold Time.ty go!"Sub" Time.Sub.impl
-  Unix_unfold : MethodUnfold Time.ty go!"Unix" Time.Unix.impl
-  UnixNano_unfold : MethodUnfold Time.ty go!"UnixNano" Time.UnixNano.impl
-  ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"Add" (LamV "$r"
+  unfold'Add : MethodUnfold Time.ty go!"Add" Time.Add.impl
+  unfold'After : MethodUnfold Time.ty go!"After" Time.After.impl
+  unfold'Before : MethodUnfold Time.ty go!"Before" Time.Before.impl
+  unfold'Equal : MethodUnfold Time.ty go!"Equal" Time.Equal.impl
+  unfold'IsZero : MethodUnfold Time.ty go!"IsZero" Time.IsZero.impl
+  unfold'Location : MethodUnfold Time.ty go!"Location" Time.Location.impl
+  unfold'Sub : MethodUnfold Time.ty go!"Sub" Time.Sub.impl
+  unfold'Unix : MethodUnfold Time.ty go!"Unix" Time.Unix.impl
+  unfold'UnixNano : MethodUnfold Time.ty go!"UnixNano" Time.UnixNano.impl
+  ptr_unfold'Add : MethodUnfold (go.GoType.PointerType Time.ty) go!"Add" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Time.ty go!"Add"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$r"))))
-  ptr_After_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"After" (LamV "$r"
+  ptr_unfold'After : MethodUnfold (go.GoType.PointerType Time.ty) go!"After" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Time.ty go!"After"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$r"))))
-  ptr_Before_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"Before" (LamV "$r"
+  ptr_unfold'Before : MethodUnfold (go.GoType.PointerType Time.ty) go!"Before" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Time.ty go!"Before"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$r"))))
-  ptr_Equal_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"Equal" (LamV "$r"
+  ptr_unfold'Equal : MethodUnfold (go.GoType.PointerType Time.ty) go!"Equal" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Time.ty go!"Equal"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$r"))))
-  ptr_IsZero_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"IsZero" (LamV "$r"
+  ptr_unfold'IsZero : MethodUnfold (go.GoType.PointerType Time.ty) go!"IsZero" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Time.ty go!"IsZero"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$r"))))
-  ptr_Location_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"Location" (LamV "$r"
+  ptr_unfold'Location : MethodUnfold (go.GoType.PointerType Time.ty) go!"Location" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Time.ty go!"Location"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$r"))))
-  ptr_Sub_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"Sub" (LamV "$r"
+  ptr_unfold'Sub : MethodUnfold (go.GoType.PointerType Time.ty) go!"Sub" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Time.ty go!"Sub"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$r"))))
-  ptr_Unix_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"Unix" (LamV "$r"
+  ptr_unfold'Unix : MethodUnfold (go.GoType.PointerType Time.ty) go!"Unix" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Time.ty go!"Unix"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$r"))))
-  ptr_UnixNano_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"UnixNano" (LamV "$r"
+  ptr_unfold'UnixNano : MethodUnfold (go.GoType.PointerType Time.ty) go!"UnixNano" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Time.ty go!"UnixNano"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$r"))))
-  ptr_addSec_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"addSec" Time.addSec.impl
-  ptr_nsec_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"nsec" Time.nsec.impl
-  ptr_sec_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"sec" Time.sec.impl
-  ptr_stripMono_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"stripMono" Time.stripMono.impl
-  ptr_unixSec_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"unixSec" Time.unixSec.impl
+  ptr_unfold'addSec : MethodUnfold (go.GoType.PointerType Time.ty) go!"addSec" Time.addSec.impl
+  ptr_unfold'nsec : MethodUnfold (go.GoType.PointerType Time.ty) go!"nsec" Time.nsec.impl
+  ptr_unfold'sec : MethodUnfold (go.GoType.PointerType Time.ty) go!"sec" Time.sec.impl
+  ptr_unfold'stripMono : MethodUnfold (go.GoType.PointerType Time.ty) go!"stripMono" Time.stripMono.impl
+  ptr_unfold'unixSec : MethodUnfold (go.GoType.PointerType Time.ty) go!"unixSec" Time.unixSec.impl
 
 attribute [instance] Time.TypeAssumptions.type_repr
   Time.TypeAssumptions.underlying
-  Time.TypeAssumptions.get_wall
-  Time.TypeAssumptions.set_wall
-  Time.TypeAssumptions.get_ext
-  Time.TypeAssumptions.set_ext
-  Time.TypeAssumptions.get_loc
-  Time.TypeAssumptions.set_loc
+  Time.TypeAssumptions.get'wall
+  Time.TypeAssumptions.set'wall
+  Time.TypeAssumptions.get'ext
+  Time.TypeAssumptions.set'ext
+  Time.TypeAssumptions.get'loc
+  Time.TypeAssumptions.set'loc
   Time.TypeAssumptions.method_set
   Time.TypeAssumptions.ptr_method_set
-  Time.TypeAssumptions.Add_unfold
-  Time.TypeAssumptions.After_unfold
-  Time.TypeAssumptions.Before_unfold
-  Time.TypeAssumptions.Equal_unfold
-  Time.TypeAssumptions.IsZero_unfold
-  Time.TypeAssumptions.Location_unfold
-  Time.TypeAssumptions.Sub_unfold
-  Time.TypeAssumptions.Unix_unfold
-  Time.TypeAssumptions.UnixNano_unfold
-  Time.TypeAssumptions.ptr_Add_unfold
-  Time.TypeAssumptions.ptr_After_unfold
-  Time.TypeAssumptions.ptr_Before_unfold
-  Time.TypeAssumptions.ptr_Equal_unfold
-  Time.TypeAssumptions.ptr_IsZero_unfold
-  Time.TypeAssumptions.ptr_Location_unfold
-  Time.TypeAssumptions.ptr_Sub_unfold
-  Time.TypeAssumptions.ptr_Unix_unfold
-  Time.TypeAssumptions.ptr_UnixNano_unfold
-  Time.TypeAssumptions.ptr_addSec_unfold
-  Time.TypeAssumptions.ptr_nsec_unfold
-  Time.TypeAssumptions.ptr_sec_unfold
-  Time.TypeAssumptions.ptr_stripMono_unfold
-  Time.TypeAssumptions.ptr_unixSec_unfold
+  Time.TypeAssumptions.unfold'Add
+  Time.TypeAssumptions.unfold'After
+  Time.TypeAssumptions.unfold'Before
+  Time.TypeAssumptions.unfold'Equal
+  Time.TypeAssumptions.unfold'IsZero
+  Time.TypeAssumptions.unfold'Location
+  Time.TypeAssumptions.unfold'Sub
+  Time.TypeAssumptions.unfold'Unix
+  Time.TypeAssumptions.unfold'UnixNano
+  Time.TypeAssumptions.ptr_unfold'Add
+  Time.TypeAssumptions.ptr_unfold'After
+  Time.TypeAssumptions.ptr_unfold'Before
+  Time.TypeAssumptions.ptr_unfold'Equal
+  Time.TypeAssumptions.ptr_unfold'IsZero
+  Time.TypeAssumptions.ptr_unfold'Location
+  Time.TypeAssumptions.ptr_unfold'Sub
+  Time.TypeAssumptions.ptr_unfold'Unix
+  Time.TypeAssumptions.ptr_unfold'UnixNano
+  Time.TypeAssumptions.ptr_unfold'addSec
+  Time.TypeAssumptions.ptr_unfold'nsec
+  Time.TypeAssumptions.ptr_unfold'sec
+  Time.TypeAssumptions.ptr_unfold'stripMono
+  Time.TypeAssumptions.ptr_unfold'unixSec
 
 abbrev Month [GooseExts] : Type := w64
 
@@ -2744,45 +2744,45 @@ class Duration.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [G
   underlying : go.UnderlyingDirectedEq Duration.ty Duration.underlying
   method_set : go.MethodSetIs Duration.ty [(go!"Abs", (some (go.signature.Signature [] false [Duration.ty]))), (go!"Hours", (some (go.signature.Signature [] false [go.float64]))), (go!"Microseconds", (some (go.signature.Signature [] false [go.int64]))), (go!"Milliseconds", (some (go.signature.Signature [] false [go.int64]))), (go!"Minutes", (some (go.signature.Signature [] false [go.float64]))), (go!"Nanoseconds", (some (go.signature.Signature [] false [go.int64]))), (go!"Round", (some (go.signature.Signature [Duration.ty] false [Duration.ty]))), (go!"Seconds", (some (go.signature.Signature [] false [go.float64]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Truncate", (some (go.signature.Signature [Duration.ty] false [Duration.ty]))), (go!"time.format", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.ArrayType 32 go.byte))] false [go.int])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Duration.ty) [(go!"Abs", (some (go.signature.Signature [] false [Duration.ty]))), (go!"Hours", (some (go.signature.Signature [] false [go.float64]))), (go!"Microseconds", (some (go.signature.Signature [] false [go.int64]))), (go!"Milliseconds", (some (go.signature.Signature [] false [go.int64]))), (go!"Minutes", (some (go.signature.Signature [] false [go.float64]))), (go!"Nanoseconds", (some (go.signature.Signature [] false [go.int64]))), (go!"Round", (some (go.signature.Signature [Duration.ty] false [Duration.ty]))), (go!"Seconds", (some (go.signature.Signature [] false [go.float64]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Truncate", (some (go.signature.Signature [Duration.ty] false [Duration.ty]))), (go!"time.format", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.ArrayType 32 go.byte))] false [go.int])))]
-  Abs_unfold : MethodUnfold Duration.ty go!"Abs" Duration.Abs.impl
-  Microseconds_unfold : MethodUnfold Duration.ty go!"Microseconds" Duration.Microseconds.impl
-  Milliseconds_unfold : MethodUnfold Duration.ty go!"Milliseconds" Duration.Milliseconds.impl
-  Nanoseconds_unfold : MethodUnfold Duration.ty go!"Nanoseconds" Duration.Nanoseconds.impl
-  Seconds_unfold : MethodUnfold Duration.ty go!"Seconds" Duration.Seconds.impl
-  String_unfold : MethodUnfold Duration.ty go!"String" Duration.String.impl
-  format_unfold : MethodUnfold Duration.ty go!"format" Duration.format.impl
-  ptr_Abs_unfold : MethodUnfold (go.GoType.PointerType Duration.ty) go!"Abs" (LamV "$r"
+  unfold'Abs : MethodUnfold Duration.ty go!"Abs" Duration.Abs.impl
+  unfold'Microseconds : MethodUnfold Duration.ty go!"Microseconds" Duration.Microseconds.impl
+  unfold'Milliseconds : MethodUnfold Duration.ty go!"Milliseconds" Duration.Milliseconds.impl
+  unfold'Nanoseconds : MethodUnfold Duration.ty go!"Nanoseconds" Duration.Nanoseconds.impl
+  unfold'Seconds : MethodUnfold Duration.ty go!"Seconds" Duration.Seconds.impl
+  unfold'String : MethodUnfold Duration.ty go!"String" Duration.String.impl
+  unfold'format : MethodUnfold Duration.ty go!"format" Duration.format.impl
+  ptr_unfold'Abs : MethodUnfold (go.GoType.PointerType Duration.ty) go!"Abs" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Duration.ty go!"Abs"))) (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "$r"))))
-  ptr_Microseconds_unfold : MethodUnfold (go.GoType.PointerType Duration.ty) go!"Microseconds" (LamV "$r"
+  ptr_unfold'Microseconds : MethodUnfold (go.GoType.PointerType Duration.ty) go!"Microseconds" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Duration.ty go!"Microseconds"))) (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "$r"))))
-  ptr_Milliseconds_unfold : MethodUnfold (go.GoType.PointerType Duration.ty) go!"Milliseconds" (LamV "$r"
+  ptr_unfold'Milliseconds : MethodUnfold (go.GoType.PointerType Duration.ty) go!"Milliseconds" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Duration.ty go!"Milliseconds"))) (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "$r"))))
-  ptr_Nanoseconds_unfold : MethodUnfold (go.GoType.PointerType Duration.ty) go!"Nanoseconds" (LamV "$r"
+  ptr_unfold'Nanoseconds : MethodUnfold (go.GoType.PointerType Duration.ty) go!"Nanoseconds" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Duration.ty go!"Nanoseconds"))) (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "$r"))))
-  ptr_Seconds_unfold : MethodUnfold (go.GoType.PointerType Duration.ty) go!"Seconds" (LamV "$r"
+  ptr_unfold'Seconds : MethodUnfold (go.GoType.PointerType Duration.ty) go!"Seconds" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Duration.ty go!"Seconds"))) (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "$r"))))
-  ptr_String_unfold : MethodUnfold (go.GoType.PointerType Duration.ty) go!"String" (LamV "$r"
+  ptr_unfold'String : MethodUnfold (go.GoType.PointerType Duration.ty) go!"String" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Duration.ty go!"String"))) (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "$r"))))
-  ptr_format_unfold : MethodUnfold (go.GoType.PointerType Duration.ty) go!"format" (LamV "$r"
+  ptr_unfold'format : MethodUnfold (go.GoType.PointerType Duration.ty) go!"format" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Duration.ty go!"format"))) (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "$r"))))
 
 attribute [instance] Duration.TypeAssumptions.underlying
   Duration.TypeAssumptions.method_set
   Duration.TypeAssumptions.ptr_method_set
-  Duration.TypeAssumptions.Abs_unfold
-  Duration.TypeAssumptions.Microseconds_unfold
-  Duration.TypeAssumptions.Milliseconds_unfold
-  Duration.TypeAssumptions.Nanoseconds_unfold
-  Duration.TypeAssumptions.Seconds_unfold
-  Duration.TypeAssumptions.String_unfold
-  Duration.TypeAssumptions.format_unfold
-  Duration.TypeAssumptions.ptr_Abs_unfold
-  Duration.TypeAssumptions.ptr_Microseconds_unfold
-  Duration.TypeAssumptions.ptr_Milliseconds_unfold
-  Duration.TypeAssumptions.ptr_Nanoseconds_unfold
-  Duration.TypeAssumptions.ptr_Seconds_unfold
-  Duration.TypeAssumptions.ptr_String_unfold
-  Duration.TypeAssumptions.ptr_format_unfold
+  Duration.TypeAssumptions.unfold'Abs
+  Duration.TypeAssumptions.unfold'Microseconds
+  Duration.TypeAssumptions.unfold'Milliseconds
+  Duration.TypeAssumptions.unfold'Nanoseconds
+  Duration.TypeAssumptions.unfold'Seconds
+  Duration.TypeAssumptions.unfold'String
+  Duration.TypeAssumptions.unfold'format
+  Duration.TypeAssumptions.ptr_unfold'Abs
+  Duration.TypeAssumptions.ptr_unfold'Microseconds
+  Duration.TypeAssumptions.ptr_unfold'Milliseconds
+  Duration.TypeAssumptions.ptr_unfold'Nanoseconds
+  Duration.TypeAssumptions.ptr_unfold'Seconds
+  Duration.TypeAssumptions.ptr_unfold'String
+  Duration.TypeAssumptions.ptr_unfold'format
 
 structure Location [GooseExts] where
   mk ::
@@ -2809,7 +2809,7 @@ noncomputable instance Location.zero_val [GooseExts] : ZeroVal Location :=
 @[irreducible] noncomputable def Location.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Location.fieldsUnsealed
 
-noncomputable instance equals_unfold_Location [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Location [GooseExts] [GoGlobalContext] :
     EqualsUnfold Location.fields Location.fieldsUnsealed :=
   ⟨by unfold Location.fields; rfl⟩
 
@@ -2819,39 +2819,39 @@ noncomputable instance equals_unfold_Location [GooseExts] [GoGlobalContext] :
 class Location.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Location.underlying Location
   underlying : go.UnderlyingDirectedEq Location.ty Location.underlying
-  get_name : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"name") #x (Val #(x.name'))
-  set_name : ∀ (x : Location) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : Location)))
-  get_zone : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"zone") #x (Val #(x.zone'))
-  set_zone : ∀ (x : Location) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"zone") (PairV #x #y) (Val #(({ x with zone' := y } : Location)))
-  get_tx : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"tx") #x (Val #(x.tx'))
-  set_tx : ∀ (x : Location) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"tx") (PairV #x #y) (Val #(({ x with tx' := y } : Location)))
-  get_extend : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"extend") #x (Val #(x.extend'))
-  set_extend : ∀ (x : Location) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"extend") (PairV #x #y) (Val #(({ x with extend' := y } : Location)))
-  get_cacheStart : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"cacheStart") #x (Val #(x.cacheStart'))
-  set_cacheStart : ∀ (x : Location) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"cacheStart") (PairV #x #y) (Val #(({ x with cacheStart' := y } : Location)))
-  get_cacheEnd : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"cacheEnd") #x (Val #(x.cacheEnd'))
-  set_cacheEnd : ∀ (x : Location) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"cacheEnd") (PairV #x #y) (Val #(({ x with cacheEnd' := y } : Location)))
-  get_cacheZone : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"cacheZone") #x (Val #(x.cacheZone'))
-  set_cacheZone : ∀ (x : Location) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"cacheZone") (PairV #x #y) (Val #(({ x with cacheZone' := y } : Location)))
+  get'name : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"name") #x (Val #(x.name'))
+  set'name : ∀ (x : Location) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : Location)))
+  get'zone : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"zone") #x (Val #(x.zone'))
+  set'zone : ∀ (x : Location) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"zone") (PairV #x #y) (Val #(({ x with zone' := y } : Location)))
+  get'tx : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"tx") #x (Val #(x.tx'))
+  set'tx : ∀ (x : Location) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"tx") (PairV #x #y) (Val #(({ x with tx' := y } : Location)))
+  get'extend : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"extend") #x (Val #(x.extend'))
+  set'extend : ∀ (x : Location) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"extend") (PairV #x #y) (Val #(({ x with extend' := y } : Location)))
+  get'cacheStart : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"cacheStart") #x (Val #(x.cacheStart'))
+  set'cacheStart : ∀ (x : Location) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"cacheStart") (PairV #x #y) (Val #(({ x with cacheStart' := y } : Location)))
+  get'cacheEnd : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"cacheEnd") #x (Val #(x.cacheEnd'))
+  set'cacheEnd : ∀ (x : Location) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"cacheEnd") (PairV #x #y) (Val #(({ x with cacheEnd' := y } : Location)))
+  get'cacheZone : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"cacheZone") #x (Val #(x.cacheZone'))
+  set'cacheZone : ∀ (x : Location) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"cacheZone") (PairV #x #y) (Val #(({ x with cacheZone' := y } : Location)))
   method_set : go.MethodSetIs Location.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Location.ty) [(go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"time.firstZoneUsed", (some (go.signature.Signature [] false [go.bool]))), (go!"time.get", (some (go.signature.Signature [] false [(go.GoType.PointerType Location.ty)]))), (go!"time.lookup", (some (go.signature.Signature [go.int64] false [go.string, go.int, go.int64, go.int64, go.bool]))), (go!"time.lookupFirstZone", (some (go.signature.Signature [] false [go.int]))), (go!"time.lookupName", (some (go.signature.Signature [go.string, go.int64] false [go.int, go.bool])))]
 
 attribute [instance] Location.TypeAssumptions.type_repr
   Location.TypeAssumptions.underlying
-  Location.TypeAssumptions.get_name
-  Location.TypeAssumptions.set_name
-  Location.TypeAssumptions.get_zone
-  Location.TypeAssumptions.set_zone
-  Location.TypeAssumptions.get_tx
-  Location.TypeAssumptions.set_tx
-  Location.TypeAssumptions.get_extend
-  Location.TypeAssumptions.set_extend
-  Location.TypeAssumptions.get_cacheStart
-  Location.TypeAssumptions.set_cacheStart
-  Location.TypeAssumptions.get_cacheEnd
-  Location.TypeAssumptions.set_cacheEnd
-  Location.TypeAssumptions.get_cacheZone
-  Location.TypeAssumptions.set_cacheZone
+  Location.TypeAssumptions.get'name
+  Location.TypeAssumptions.set'name
+  Location.TypeAssumptions.get'zone
+  Location.TypeAssumptions.set'zone
+  Location.TypeAssumptions.get'tx
+  Location.TypeAssumptions.set'tx
+  Location.TypeAssumptions.get'extend
+  Location.TypeAssumptions.set'extend
+  Location.TypeAssumptions.get'cacheStart
+  Location.TypeAssumptions.set'cacheStart
+  Location.TypeAssumptions.get'cacheEnd
+  Location.TypeAssumptions.set'cacheEnd
+  Location.TypeAssumptions.get'cacheZone
+  Location.TypeAssumptions.set'cacheZone
   Location.TypeAssumptions.method_set
   Location.TypeAssumptions.ptr_method_set
 
@@ -2872,7 +2872,7 @@ noncomputable instance zone.zero_val [GooseExts] : ZeroVal zone :=
 @[irreducible] noncomputable def zone.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   zone.fieldsUnsealed
 
-noncomputable instance equals_unfold_zone [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'zone [GooseExts] [GoGlobalContext] :
     EqualsUnfold zone.fields zone.fieldsUnsealed :=
   ⟨by unfold zone.fields; rfl⟩
 
@@ -2882,23 +2882,23 @@ noncomputable instance equals_unfold_zone [GooseExts] [GoGlobalContext] :
 class zone.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying zone.underlying zone
   underlying : go.UnderlyingDirectedEq zone.ty zone.underlying
-  get_name : ∀ (x : zone), go.IsGoStepPureDetTagged under (StructFieldGet zone.underlying go!"name") #x (Val #(x.name'))
-  set_name : ∀ (x : zone) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet zone.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : zone)))
-  get_offset : ∀ (x : zone), go.IsGoStepPureDetTagged under (StructFieldGet zone.underlying go!"offset") #x (Val #(x.offset'))
-  set_offset : ∀ (x : zone) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet zone.underlying go!"offset") (PairV #x #y) (Val #(({ x with offset' := y } : zone)))
-  get_isDST : ∀ (x : zone), go.IsGoStepPureDetTagged under (StructFieldGet zone.underlying go!"isDST") #x (Val #(x.isDST'))
-  set_isDST : ∀ (x : zone) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet zone.underlying go!"isDST") (PairV #x #y) (Val #(({ x with isDST' := y } : zone)))
+  get'name : ∀ (x : zone), go.IsGoStepPureDetTagged under (StructFieldGet zone.underlying go!"name") #x (Val #(x.name'))
+  set'name : ∀ (x : zone) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet zone.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : zone)))
+  get'offset : ∀ (x : zone), go.IsGoStepPureDetTagged under (StructFieldGet zone.underlying go!"offset") #x (Val #(x.offset'))
+  set'offset : ∀ (x : zone) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet zone.underlying go!"offset") (PairV #x #y) (Val #(({ x with offset' := y } : zone)))
+  get'isDST : ∀ (x : zone), go.IsGoStepPureDetTagged under (StructFieldGet zone.underlying go!"isDST") #x (Val #(x.isDST'))
+  set'isDST : ∀ (x : zone) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet zone.underlying go!"isDST") (PairV #x #y) (Val #(({ x with isDST' := y } : zone)))
   method_set : go.MethodSetIs zone.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType zone.ty) []
 
 attribute [instance] zone.TypeAssumptions.type_repr
   zone.TypeAssumptions.underlying
-  zone.TypeAssumptions.get_name
-  zone.TypeAssumptions.set_name
-  zone.TypeAssumptions.get_offset
-  zone.TypeAssumptions.set_offset
-  zone.TypeAssumptions.get_isDST
-  zone.TypeAssumptions.set_isDST
+  zone.TypeAssumptions.get'name
+  zone.TypeAssumptions.set'name
+  zone.TypeAssumptions.get'offset
+  zone.TypeAssumptions.set'offset
+  zone.TypeAssumptions.get'isDST
+  zone.TypeAssumptions.set'isDST
   zone.TypeAssumptions.method_set
   zone.TypeAssumptions.ptr_method_set
 
@@ -2921,7 +2921,7 @@ noncomputable instance zoneTrans.zero_val [GooseExts] : ZeroVal zoneTrans :=
 @[irreducible] noncomputable def zoneTrans.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   zoneTrans.fieldsUnsealed
 
-noncomputable instance equals_unfold_zoneTrans [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'zoneTrans [GooseExts] [GoGlobalContext] :
     EqualsUnfold zoneTrans.fields zoneTrans.fieldsUnsealed :=
   ⟨by unfold zoneTrans.fields; rfl⟩
 
@@ -2931,27 +2931,27 @@ noncomputable instance equals_unfold_zoneTrans [GooseExts] [GoGlobalContext] :
 class zoneTrans.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying zoneTrans.underlying zoneTrans
   underlying : go.UnderlyingDirectedEq zoneTrans.ty zoneTrans.underlying
-  get_when : ∀ (x : zoneTrans), go.IsGoStepPureDetTagged under (StructFieldGet zoneTrans.underlying go!"when") #x (Val #(x.when'))
-  set_when : ∀ (x : zoneTrans) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet zoneTrans.underlying go!"when") (PairV #x #y) (Val #(({ x with when' := y } : zoneTrans)))
-  get_index : ∀ (x : zoneTrans), go.IsGoStepPureDetTagged under (StructFieldGet zoneTrans.underlying go!"index") #x (Val #(x.index'))
-  set_index : ∀ (x : zoneTrans) (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet zoneTrans.underlying go!"index") (PairV #x #y) (Val #(({ x with index' := y } : zoneTrans)))
-  get_isstd : ∀ (x : zoneTrans), go.IsGoStepPureDetTagged under (StructFieldGet zoneTrans.underlying go!"isstd") #x (Val #(x.isstd'))
-  set_isstd : ∀ (x : zoneTrans) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet zoneTrans.underlying go!"isstd") (PairV #x #y) (Val #(({ x with isstd' := y } : zoneTrans)))
-  get_isutc : ∀ (x : zoneTrans), go.IsGoStepPureDetTagged under (StructFieldGet zoneTrans.underlying go!"isutc") #x (Val #(x.isutc'))
-  set_isutc : ∀ (x : zoneTrans) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet zoneTrans.underlying go!"isutc") (PairV #x #y) (Val #(({ x with isutc' := y } : zoneTrans)))
+  get'when : ∀ (x : zoneTrans), go.IsGoStepPureDetTagged under (StructFieldGet zoneTrans.underlying go!"when") #x (Val #(x.when'))
+  set'when : ∀ (x : zoneTrans) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet zoneTrans.underlying go!"when") (PairV #x #y) (Val #(({ x with when' := y } : zoneTrans)))
+  get'index : ∀ (x : zoneTrans), go.IsGoStepPureDetTagged under (StructFieldGet zoneTrans.underlying go!"index") #x (Val #(x.index'))
+  set'index : ∀ (x : zoneTrans) (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet zoneTrans.underlying go!"index") (PairV #x #y) (Val #(({ x with index' := y } : zoneTrans)))
+  get'isstd : ∀ (x : zoneTrans), go.IsGoStepPureDetTagged under (StructFieldGet zoneTrans.underlying go!"isstd") #x (Val #(x.isstd'))
+  set'isstd : ∀ (x : zoneTrans) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet zoneTrans.underlying go!"isstd") (PairV #x #y) (Val #(({ x with isstd' := y } : zoneTrans)))
+  get'isutc : ∀ (x : zoneTrans), go.IsGoStepPureDetTagged under (StructFieldGet zoneTrans.underlying go!"isutc") #x (Val #(x.isutc'))
+  set'isutc : ∀ (x : zoneTrans) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet zoneTrans.underlying go!"isutc") (PairV #x #y) (Val #(({ x with isutc' := y } : zoneTrans)))
   method_set : go.MethodSetIs zoneTrans.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType zoneTrans.ty) []
 
 attribute [instance] zoneTrans.TypeAssumptions.type_repr
   zoneTrans.TypeAssumptions.underlying
-  zoneTrans.TypeAssumptions.get_when
-  zoneTrans.TypeAssumptions.set_when
-  zoneTrans.TypeAssumptions.get_index
-  zoneTrans.TypeAssumptions.set_index
-  zoneTrans.TypeAssumptions.get_isstd
-  zoneTrans.TypeAssumptions.set_isstd
-  zoneTrans.TypeAssumptions.get_isutc
-  zoneTrans.TypeAssumptions.set_isutc
+  zoneTrans.TypeAssumptions.get'when
+  zoneTrans.TypeAssumptions.set'when
+  zoneTrans.TypeAssumptions.get'index
+  zoneTrans.TypeAssumptions.set'index
+  zoneTrans.TypeAssumptions.get'isstd
+  zoneTrans.TypeAssumptions.set'isstd
+  zoneTrans.TypeAssumptions.get'isutc
+  zoneTrans.TypeAssumptions.set'isutc
   zoneTrans.TypeAssumptions.method_set
   zoneTrans.TypeAssumptions.ptr_method_set
 
@@ -2990,7 +2990,7 @@ noncomputable instance rule.zero_val [GooseExts] : ZeroVal rule :=
 @[irreducible] noncomputable def rule.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   rule.fieldsUnsealed
 
-noncomputable instance equals_unfold_rule [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'rule [GooseExts] [GoGlobalContext] :
     EqualsUnfold rule.fields rule.fieldsUnsealed :=
   ⟨by unfold rule.fields; rfl⟩
 
@@ -3000,31 +3000,31 @@ noncomputable instance equals_unfold_rule [GooseExts] [GoGlobalContext] :
 class rule.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying rule.underlying rule
   underlying : go.UnderlyingDirectedEq rule.ty rule.underlying
-  get_kind : ∀ (x : rule), go.IsGoStepPureDetTagged under (StructFieldGet rule.underlying go!"kind") #x (Val #(x.kind'))
-  set_kind : ∀ (x : rule) (y : ruleKind), go.IsGoStepPureDetTagged under (StructFieldSet rule.underlying go!"kind") (PairV #x #y) (Val #(({ x with kind' := y } : rule)))
-  get_day : ∀ (x : rule), go.IsGoStepPureDetTagged under (StructFieldGet rule.underlying go!"day") #x (Val #(x.day'))
-  set_day : ∀ (x : rule) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet rule.underlying go!"day") (PairV #x #y) (Val #(({ x with day' := y } : rule)))
-  get_week : ∀ (x : rule), go.IsGoStepPureDetTagged under (StructFieldGet rule.underlying go!"week") #x (Val #(x.week'))
-  set_week : ∀ (x : rule) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet rule.underlying go!"week") (PairV #x #y) (Val #(({ x with week' := y } : rule)))
-  get_mon : ∀ (x : rule), go.IsGoStepPureDetTagged under (StructFieldGet rule.underlying go!"mon") #x (Val #(x.mon'))
-  set_mon : ∀ (x : rule) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet rule.underlying go!"mon") (PairV #x #y) (Val #(({ x with mon' := y } : rule)))
-  get_time : ∀ (x : rule), go.IsGoStepPureDetTagged under (StructFieldGet rule.underlying go!"time") #x (Val #(x.time'))
-  set_time : ∀ (x : rule) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet rule.underlying go!"time") (PairV #x #y) (Val #(({ x with time' := y } : rule)))
+  get'kind : ∀ (x : rule), go.IsGoStepPureDetTagged under (StructFieldGet rule.underlying go!"kind") #x (Val #(x.kind'))
+  set'kind : ∀ (x : rule) (y : ruleKind), go.IsGoStepPureDetTagged under (StructFieldSet rule.underlying go!"kind") (PairV #x #y) (Val #(({ x with kind' := y } : rule)))
+  get'day : ∀ (x : rule), go.IsGoStepPureDetTagged under (StructFieldGet rule.underlying go!"day") #x (Val #(x.day'))
+  set'day : ∀ (x : rule) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet rule.underlying go!"day") (PairV #x #y) (Val #(({ x with day' := y } : rule)))
+  get'week : ∀ (x : rule), go.IsGoStepPureDetTagged under (StructFieldGet rule.underlying go!"week") #x (Val #(x.week'))
+  set'week : ∀ (x : rule) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet rule.underlying go!"week") (PairV #x #y) (Val #(({ x with week' := y } : rule)))
+  get'mon : ∀ (x : rule), go.IsGoStepPureDetTagged under (StructFieldGet rule.underlying go!"mon") #x (Val #(x.mon'))
+  set'mon : ∀ (x : rule) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet rule.underlying go!"mon") (PairV #x #y) (Val #(({ x with mon' := y } : rule)))
+  get'time : ∀ (x : rule), go.IsGoStepPureDetTagged under (StructFieldGet rule.underlying go!"time") #x (Val #(x.time'))
+  set'time : ∀ (x : rule) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet rule.underlying go!"time") (PairV #x #y) (Val #(({ x with time' := y } : rule)))
   method_set : go.MethodSetIs rule.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType rule.ty) []
 
 attribute [instance] rule.TypeAssumptions.type_repr
   rule.TypeAssumptions.underlying
-  rule.TypeAssumptions.get_kind
-  rule.TypeAssumptions.set_kind
-  rule.TypeAssumptions.get_day
-  rule.TypeAssumptions.set_day
-  rule.TypeAssumptions.get_week
-  rule.TypeAssumptions.set_week
-  rule.TypeAssumptions.get_mon
-  rule.TypeAssumptions.set_mon
-  rule.TypeAssumptions.get_time
-  rule.TypeAssumptions.set_time
+  rule.TypeAssumptions.get'kind
+  rule.TypeAssumptions.set'kind
+  rule.TypeAssumptions.get'day
+  rule.TypeAssumptions.set'day
+  rule.TypeAssumptions.get'week
+  rule.TypeAssumptions.set'week
+  rule.TypeAssumptions.get'mon
+  rule.TypeAssumptions.set'mon
+  rule.TypeAssumptions.get'time
+  rule.TypeAssumptions.set'time
   rule.TypeAssumptions.method_set
   rule.TypeAssumptions.ptr_method_set
 
@@ -3057,7 +3057,7 @@ noncomputable instance dataIO.zero_val [GooseExts] : ZeroVal dataIO :=
 @[irreducible] noncomputable def dataIO.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   dataIO.fieldsUnsealed
 
-noncomputable instance equals_unfold_dataIO [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'dataIO [GooseExts] [GoGlobalContext] :
     EqualsUnfold dataIO.fields dataIO.fieldsUnsealed :=
   ⟨by unfold dataIO.fields; rfl⟩
 
@@ -3067,116 +3067,116 @@ noncomputable instance equals_unfold_dataIO [GooseExts] [GoGlobalContext] :
 class dataIO.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying dataIO.underlying dataIO
   underlying : go.UnderlyingDirectedEq dataIO.ty dataIO.underlying
-  get_p : ∀ (x : dataIO), go.IsGoStepPureDetTagged under (StructFieldGet dataIO.underlying go!"p") #x (Val #(x.p'))
-  set_p : ∀ (x : dataIO) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet dataIO.underlying go!"p") (PairV #x #y) (Val #(({ x with p' := y } : dataIO)))
-  get_error : ∀ (x : dataIO), go.IsGoStepPureDetTagged under (StructFieldGet dataIO.underlying go!"error") #x (Val #(x.error'))
-  set_error : ∀ (x : dataIO) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet dataIO.underlying go!"error") (PairV #x #y) (Val #(({ x with error' := y } : dataIO)))
+  get'p : ∀ (x : dataIO), go.IsGoStepPureDetTagged under (StructFieldGet dataIO.underlying go!"p") #x (Val #(x.p'))
+  set'p : ∀ (x : dataIO) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet dataIO.underlying go!"p") (PairV #x #y) (Val #(({ x with p' := y } : dataIO)))
+  get'error : ∀ (x : dataIO), go.IsGoStepPureDetTagged under (StructFieldGet dataIO.underlying go!"error") #x (Val #(x.error'))
+  set'error : ∀ (x : dataIO) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet dataIO.underlying go!"error") (PairV #x #y) (Val #(({ x with error' := y } : dataIO)))
   method_set : go.MethodSetIs dataIO.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType dataIO.ty) [(go!"time.big4", (some (go.signature.Signature [] false [go.uint32, go.bool]))), (go!"time.big8", (some (go.signature.Signature [] false [go.uint64, go.bool]))), (go!"time.byte", (some (go.signature.Signature [] false [go.byte, go.bool]))), (go!"time.read", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType go.byte)]))), (go!"time.rest", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)])))]
 
 attribute [instance] dataIO.TypeAssumptions.type_repr
   dataIO.TypeAssumptions.underlying
-  dataIO.TypeAssumptions.get_p
-  dataIO.TypeAssumptions.set_p
-  dataIO.TypeAssumptions.get_error
-  dataIO.TypeAssumptions.set_error
+  dataIO.TypeAssumptions.get'p
+  dataIO.TypeAssumptions.set'p
+  dataIO.TypeAssumptions.get'error
+  dataIO.TypeAssumptions.set'error
   dataIO.TypeAssumptions.method_set
   dataIO.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  ParseError_instance : ParseError.TypeAssumptions
-  parseDurationError_instance : parseDurationError.TypeAssumptions
-  Timer_instance : Timer.TypeAssumptions
-  Ticker_instance : Ticker.TypeAssumptions
-  Time_instance : Time.TypeAssumptions
-  Month_instance : Month.TypeAssumptions
-  Weekday_instance : Weekday.TypeAssumptions
-  absSeconds_instance : absSeconds.TypeAssumptions
-  absDays_instance : absDays.TypeAssumptions
-  absCentury_instance : absCentury.TypeAssumptions
-  absCyear_instance : absCyear.TypeAssumptions
-  absYday_instance : absYday.TypeAssumptions
-  absMonth_instance : absMonth.TypeAssumptions
-  absLeap_instance : absLeap.TypeAssumptions
-  absJanFeb_instance : absJanFeb.TypeAssumptions
-  Duration_instance : Duration.TypeAssumptions
-  Location_instance : Location.TypeAssumptions
-  zone_instance : zone.TypeAssumptions
-  zoneTrans_instance : zoneTrans.TypeAssumptions
-  ruleKind_instance : ruleKind.TypeAssumptions
-  rule_instance : rule.TypeAssumptions
-  fileSizeError_instance : fileSizeError.TypeAssumptions
-  dataIO_instance : dataIO.TypeAssumptions
-  Sleep_unfold : FuncUnfold Sleep [] Sleep.impl
-  syncTimer_unfold : FuncUnfold syncTimer [] syncTimer.impl
-  when_unfold : FuncUnfold when [] when.impl
-  newTimer_unfold : FuncUnfold newTimer [] newTimer.impl
-  stopTimer_unfold : FuncUnfold stopTimer [] stopTimer.impl
-  resetTimer_unfold : FuncUnfold resetTimer [] resetTimer.impl
-  NewTimer_unfold : FuncUnfold NewTimer [] NewTimer.impl
-  After_unfold : FuncUnfold After [] After.impl
-  AfterFunc_unfold : FuncUnfold AfterFunc [] AfterFunc.impl
-  goFunc_unfold : FuncUnfold goFunc [] goFunc.impl
-  NewTicker_unfold : FuncUnfold NewTicker [] NewTicker.impl
-  fmtFrac_unfold : FuncUnfold fmtFrac [] fmtFrac.impl
-  fmtInt_unfold : FuncUnfold fmtInt [] fmtInt.impl
-  subMono_unfold : FuncUnfold subMono [] subMono.impl
-  Since_unfold : FuncUnfold Since [] Since.impl
-  Until_unfold : FuncUnfold Until [] Until.impl
-  runtimeNow_unfold : FuncUnfold runtimeNow [] runtimeNow.impl
-  runtimeNano_unfold : FuncUnfold runtimeNano [] runtimeNano.impl
-  runtimeIsBubbled_unfold : FuncUnfold runtimeIsBubbled [] runtimeIsBubbled.impl
-  Now_unfold : FuncUnfold Now [] Now.impl
-  unixTime_unfold : FuncUnfold unixTime [] unixTime.impl
-  Unix_unfold : FuncUnfold Unix [] Unix.impl
-  import_errors_Assumption : _root_.Perennial.errors.Assumptions
+  instance'ParseError : ParseError.TypeAssumptions
+  instance'parseDurationError : parseDurationError.TypeAssumptions
+  instance'Timer : Timer.TypeAssumptions
+  instance'Ticker : Ticker.TypeAssumptions
+  instance'Time : Time.TypeAssumptions
+  instance'Month : Month.TypeAssumptions
+  instance'Weekday : Weekday.TypeAssumptions
+  instance'absSeconds : absSeconds.TypeAssumptions
+  instance'absDays : absDays.TypeAssumptions
+  instance'absCentury : absCentury.TypeAssumptions
+  instance'absCyear : absCyear.TypeAssumptions
+  instance'absYday : absYday.TypeAssumptions
+  instance'absMonth : absMonth.TypeAssumptions
+  instance'absLeap : absLeap.TypeAssumptions
+  instance'absJanFeb : absJanFeb.TypeAssumptions
+  instance'Duration : Duration.TypeAssumptions
+  instance'Location : Location.TypeAssumptions
+  instance'zone : zone.TypeAssumptions
+  instance'zoneTrans : zoneTrans.TypeAssumptions
+  instance'ruleKind : ruleKind.TypeAssumptions
+  instance'rule : rule.TypeAssumptions
+  instance'fileSizeError : fileSizeError.TypeAssumptions
+  instance'dataIO : dataIO.TypeAssumptions
+  unfold'Sleep : FuncUnfold Sleep [] Sleep.impl
+  unfold'syncTimer : FuncUnfold syncTimer [] syncTimer.impl
+  unfold'when : FuncUnfold when [] when.impl
+  unfold'newTimer : FuncUnfold newTimer [] newTimer.impl
+  unfold'stopTimer : FuncUnfold stopTimer [] stopTimer.impl
+  unfold'resetTimer : FuncUnfold resetTimer [] resetTimer.impl
+  unfold'NewTimer : FuncUnfold NewTimer [] NewTimer.impl
+  unfold'After : FuncUnfold After [] After.impl
+  unfold'AfterFunc : FuncUnfold AfterFunc [] AfterFunc.impl
+  unfold'goFunc : FuncUnfold goFunc [] goFunc.impl
+  unfold'NewTicker : FuncUnfold NewTicker [] NewTicker.impl
+  unfold'fmtFrac : FuncUnfold fmtFrac [] fmtFrac.impl
+  unfold'fmtInt : FuncUnfold fmtInt [] fmtInt.impl
+  unfold'subMono : FuncUnfold subMono [] subMono.impl
+  unfold'Since : FuncUnfold Since [] Since.impl
+  unfold'Until : FuncUnfold Until [] Until.impl
+  unfold'runtimeNow : FuncUnfold runtimeNow [] runtimeNow.impl
+  unfold'runtimeNano : FuncUnfold runtimeNano [] runtimeNano.impl
+  unfold'runtimeIsBubbled : FuncUnfold runtimeIsBubbled [] runtimeIsBubbled.impl
+  unfold'Now : FuncUnfold Now [] Now.impl
+  unfold'unixTime : FuncUnfold unixTime [] unixTime.impl
+  unfold'Unix : FuncUnfold Unix [] Unix.impl
+  import'errors : _root_.Perennial.errors.Assumptions
 
-attribute [instance] Assumptions.ParseError_instance
-  Assumptions.parseDurationError_instance
-  Assumptions.Timer_instance
-  Assumptions.Ticker_instance
-  Assumptions.Time_instance
-  Assumptions.Month_instance
-  Assumptions.Weekday_instance
-  Assumptions.absSeconds_instance
-  Assumptions.absDays_instance
-  Assumptions.absCentury_instance
-  Assumptions.absCyear_instance
-  Assumptions.absYday_instance
-  Assumptions.absMonth_instance
-  Assumptions.absLeap_instance
-  Assumptions.absJanFeb_instance
-  Assumptions.Duration_instance
-  Assumptions.Location_instance
-  Assumptions.zone_instance
-  Assumptions.zoneTrans_instance
-  Assumptions.ruleKind_instance
-  Assumptions.rule_instance
-  Assumptions.fileSizeError_instance
-  Assumptions.dataIO_instance
-  Assumptions.Sleep_unfold
-  Assumptions.syncTimer_unfold
-  Assumptions.when_unfold
-  Assumptions.newTimer_unfold
-  Assumptions.stopTimer_unfold
-  Assumptions.resetTimer_unfold
-  Assumptions.NewTimer_unfold
-  Assumptions.After_unfold
-  Assumptions.AfterFunc_unfold
-  Assumptions.goFunc_unfold
-  Assumptions.NewTicker_unfold
-  Assumptions.fmtFrac_unfold
-  Assumptions.fmtInt_unfold
-  Assumptions.subMono_unfold
-  Assumptions.Since_unfold
-  Assumptions.Until_unfold
-  Assumptions.runtimeNow_unfold
-  Assumptions.runtimeNano_unfold
-  Assumptions.runtimeIsBubbled_unfold
-  Assumptions.Now_unfold
-  Assumptions.unixTime_unfold
-  Assumptions.Unix_unfold
-  Assumptions.import_errors_Assumption
+attribute [instance] Assumptions.instance'ParseError
+  Assumptions.instance'parseDurationError
+  Assumptions.instance'Timer
+  Assumptions.instance'Ticker
+  Assumptions.instance'Time
+  Assumptions.instance'Month
+  Assumptions.instance'Weekday
+  Assumptions.instance'absSeconds
+  Assumptions.instance'absDays
+  Assumptions.instance'absCentury
+  Assumptions.instance'absCyear
+  Assumptions.instance'absYday
+  Assumptions.instance'absMonth
+  Assumptions.instance'absLeap
+  Assumptions.instance'absJanFeb
+  Assumptions.instance'Duration
+  Assumptions.instance'Location
+  Assumptions.instance'zone
+  Assumptions.instance'zoneTrans
+  Assumptions.instance'ruleKind
+  Assumptions.instance'rule
+  Assumptions.instance'fileSizeError
+  Assumptions.instance'dataIO
+  Assumptions.unfold'Sleep
+  Assumptions.unfold'syncTimer
+  Assumptions.unfold'when
+  Assumptions.unfold'newTimer
+  Assumptions.unfold'stopTimer
+  Assumptions.unfold'resetTimer
+  Assumptions.unfold'NewTimer
+  Assumptions.unfold'After
+  Assumptions.unfold'AfterFunc
+  Assumptions.unfold'goFunc
+  Assumptions.unfold'NewTicker
+  Assumptions.unfold'fmtFrac
+  Assumptions.unfold'fmtInt
+  Assumptions.unfold'subMono
+  Assumptions.unfold'Since
+  Assumptions.unfold'Until
+  Assumptions.unfold'runtimeNow
+  Assumptions.unfold'runtimeNano
+  Assumptions.unfold'runtimeIsBubbled
+  Assumptions.unfold'Now
+  Assumptions.unfold'unixTime
+  Assumptions.unfold'Unix
+  Assumptions.import'errors
 
 end time
 

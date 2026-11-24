@@ -242,27 +242,27 @@ noncomputable def BytesClone.impl [GooseExts] [GoGlobalContext] : val :=
     no longer safe to append to the first slice.
 
     go: goose_std.go:69:6 -/
-noncomputable def SliceSplit.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def SliceSplit.impl [GooseExts] [GoGlobalContext] (T₀ : go.GoType) : val :=
   (LamV "xs"
   (Lam "n"
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType T)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType T)))) (Val #())))
-  (Let "$res1" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType T)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType T)))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType T₀)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType T₀)))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType T₀)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType T₀)))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "n" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "n"))
-  (Let "xs" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType T)))) (Var "xs"))
-  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (Var "xs"))
-  (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n")))))
-  (Let "$r1" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (Var "xs"))
-  (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n"))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (Var "$s")))))
+  (Let "xs" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType T₀)))) (Var "xs"))
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T₀)))) (Var "xs"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType T₀)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n")))))
+  (Let "$r1" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T₀)))) (Var "xs"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType T₀)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n"))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T₀)]))) (Val #())) (Var "$s")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType T)))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType T₀)))) (Pair (Var "$res1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType T)))) (Pair (Var "$res0") (Var "$r0"))))))))))
-  (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (Var "$res0")) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (Var "$res1"))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType T₀)))) (Pair (Var "$res0") (Var "$r0"))))))))))
+  (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T₀)))) (Var "$res0")) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T₀)))) (Var "$res1"))))))))
 
 /-- go: goose_std.go:84:6 -/
 noncomputable def newJoinHandle.impl [GooseExts] [GoGlobalContext] : val :=
@@ -565,7 +565,7 @@ noncomputable instance JoinHandle.zero_val [GooseExts] : ZeroVal JoinHandle :=
 @[irreducible] noncomputable def JoinHandle.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   JoinHandle.fieldsUnsealed
 
-noncomputable instance equals_unfold_JoinHandle [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'JoinHandle [GooseExts] [GoGlobalContext] :
     EqualsUnfold JoinHandle.fields JoinHandle.fieldsUnsealed :=
   ⟨by unfold JoinHandle.fields; rfl⟩
 
@@ -575,68 +575,68 @@ noncomputable instance equals_unfold_JoinHandle [GooseExts] [GoGlobalContext] :
 class JoinHandle.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying JoinHandle.underlying JoinHandle
   underlying : go.UnderlyingDirectedEq JoinHandle.ty JoinHandle.underlying
-  get_mu : ∀ (x : JoinHandle), go.IsGoStepPureDetTagged under (StructFieldGet JoinHandle.underlying go!"mu") #x (Val #(x.mu'))
-  set_mu : ∀ (x : JoinHandle) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet JoinHandle.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : JoinHandle)))
-  get_done : ∀ (x : JoinHandle), go.IsGoStepPureDetTagged under (StructFieldGet JoinHandle.underlying go!"done") #x (Val #(x.done'))
-  set_done : ∀ (x : JoinHandle) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet JoinHandle.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : JoinHandle)))
-  get_cond : ∀ (x : JoinHandle), go.IsGoStepPureDetTagged under (StructFieldGet JoinHandle.underlying go!"cond") #x (Val #(x.cond'))
-  set_cond : ∀ (x : JoinHandle) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet JoinHandle.underlying go!"cond") (PairV #x #y) (Val #(({ x with cond' := y } : JoinHandle)))
+  get'mu : ∀ (x : JoinHandle), go.IsGoStepPureDetTagged under (StructFieldGet JoinHandle.underlying go!"mu") #x (Val #(x.mu'))
+  set'mu : ∀ (x : JoinHandle) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet JoinHandle.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : JoinHandle)))
+  get'done : ∀ (x : JoinHandle), go.IsGoStepPureDetTagged under (StructFieldGet JoinHandle.underlying go!"done") #x (Val #(x.done'))
+  set'done : ∀ (x : JoinHandle) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet JoinHandle.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : JoinHandle)))
+  get'cond : ∀ (x : JoinHandle), go.IsGoStepPureDetTagged under (StructFieldGet JoinHandle.underlying go!"cond") #x (Val #(x.cond'))
+  set'cond : ∀ (x : JoinHandle) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet JoinHandle.underlying go!"cond") (PairV #x #y) (Val #(({ x with cond' := y } : JoinHandle)))
   method_set : go.MethodSetIs JoinHandle.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType JoinHandle.ty) [(go!"Join", (some (go.signature.Signature [] false []))), (go!"github.com/goose-lang/std.finish", (some (go.signature.Signature [] false [])))]
-  ptr_Join_unfold : MethodUnfold (go.GoType.PointerType JoinHandle.ty) go!"Join" JoinHandle.Join.impl
-  ptr_finish_unfold : MethodUnfold (go.GoType.PointerType JoinHandle.ty) go!"finish" JoinHandle.finish.impl
+  ptr_unfold'Join : MethodUnfold (go.GoType.PointerType JoinHandle.ty) go!"Join" JoinHandle.Join.impl
+  ptr_unfold'finish : MethodUnfold (go.GoType.PointerType JoinHandle.ty) go!"finish" JoinHandle.finish.impl
 
 attribute [instance] JoinHandle.TypeAssumptions.type_repr
   JoinHandle.TypeAssumptions.underlying
-  JoinHandle.TypeAssumptions.get_mu
-  JoinHandle.TypeAssumptions.set_mu
-  JoinHandle.TypeAssumptions.get_done
-  JoinHandle.TypeAssumptions.set_done
-  JoinHandle.TypeAssumptions.get_cond
-  JoinHandle.TypeAssumptions.set_cond
+  JoinHandle.TypeAssumptions.get'mu
+  JoinHandle.TypeAssumptions.set'mu
+  JoinHandle.TypeAssumptions.get'done
+  JoinHandle.TypeAssumptions.set'done
+  JoinHandle.TypeAssumptions.get'cond
+  JoinHandle.TypeAssumptions.set'cond
   JoinHandle.TypeAssumptions.method_set
   JoinHandle.TypeAssumptions.ptr_method_set
-  JoinHandle.TypeAssumptions.ptr_Join_unfold
-  JoinHandle.TypeAssumptions.ptr_finish_unfold
+  JoinHandle.TypeAssumptions.ptr_unfold'Join
+  JoinHandle.TypeAssumptions.ptr_unfold'finish
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  JoinHandle_instance : JoinHandle.TypeAssumptions
-  Assert_unfold : FuncUnfold Assert [] Assert.impl
-  SumNoOverflow_unfold : FuncUnfold SumNoOverflow [] SumNoOverflow.impl
-  SumAssumeNoOverflow_unfold : FuncUnfold SumAssumeNoOverflow [] SumAssumeNoOverflow.impl
-  SignedSumAssumeNoOverflow_unfold : FuncUnfold SignedSumAssumeNoOverflow [] SignedSumAssumeNoOverflow.impl
-  BytesEqual_unfold : FuncUnfold BytesEqual [] BytesEqual.impl
-  BytesClone_unfold : FuncUnfold BytesClone [] BytesClone.impl
-  SliceSplit_unfold : ∀ (T : go.GoType), FuncUnfold SliceSplit [T] (SliceSplit.impl T)
-  newJoinHandle_unfold : FuncUnfold newJoinHandle [] newJoinHandle.impl
-  Spawn_unfold : FuncUnfold Spawn [] Spawn.impl
-  Multipar_unfold : FuncUnfold Multipar [] Multipar.impl
-  Skip_unfold : FuncUnfold Skip [] Skip.impl
-  WaitTimeout_unfold : FuncUnfold WaitTimeout [] WaitTimeout.impl
-  import_math_Assumption : _root_.Perennial.math.Assumptions
-  import_sync_Assumption : _root_.Perennial.sync.Assumptions
-  import_time_Assumption : _root_.Perennial.time.Assumptions
-  import_primitive_Assumption : _root_.Perennial.github_com.goose_lang.primitive.Assumptions
-  import_std_core_Assumption : _root_.Perennial.github_com.goose_lang.std.std_core.Assumptions
+  instance'JoinHandle : JoinHandle.TypeAssumptions
+  unfold'Assert : FuncUnfold Assert [] Assert.impl
+  unfold'SumNoOverflow : FuncUnfold SumNoOverflow [] SumNoOverflow.impl
+  unfold'SumAssumeNoOverflow : FuncUnfold SumAssumeNoOverflow [] SumAssumeNoOverflow.impl
+  unfold'SignedSumAssumeNoOverflow : FuncUnfold SignedSumAssumeNoOverflow [] SignedSumAssumeNoOverflow.impl
+  unfold'BytesEqual : FuncUnfold BytesEqual [] BytesEqual.impl
+  unfold'BytesClone : FuncUnfold BytesClone [] BytesClone.impl
+  unfold'SliceSplit : ∀ (T₀ : go.GoType), FuncUnfold SliceSplit [T₀] (SliceSplit.impl T₀)
+  unfold'newJoinHandle : FuncUnfold newJoinHandle [] newJoinHandle.impl
+  unfold'Spawn : FuncUnfold Spawn [] Spawn.impl
+  unfold'Multipar : FuncUnfold Multipar [] Multipar.impl
+  unfold'Skip : FuncUnfold Skip [] Skip.impl
+  unfold'WaitTimeout : FuncUnfold WaitTimeout [] WaitTimeout.impl
+  import'math : _root_.Perennial.math.Assumptions
+  import'sync : _root_.Perennial.sync.Assumptions
+  import'time : _root_.Perennial.time.Assumptions
+  import'primitive : _root_.Perennial.github_com.goose_lang.primitive.Assumptions
+  import'std_core : _root_.Perennial.github_com.goose_lang.std.std_core.Assumptions
 
-attribute [instance] Assumptions.JoinHandle_instance
-  Assumptions.Assert_unfold
-  Assumptions.SumNoOverflow_unfold
-  Assumptions.SumAssumeNoOverflow_unfold
-  Assumptions.SignedSumAssumeNoOverflow_unfold
-  Assumptions.BytesEqual_unfold
-  Assumptions.BytesClone_unfold
-  Assumptions.SliceSplit_unfold
-  Assumptions.newJoinHandle_unfold
-  Assumptions.Spawn_unfold
-  Assumptions.Multipar_unfold
-  Assumptions.Skip_unfold
-  Assumptions.WaitTimeout_unfold
-  Assumptions.import_math_Assumption
-  Assumptions.import_sync_Assumption
-  Assumptions.import_time_Assumption
-  Assumptions.import_primitive_Assumption
-  Assumptions.import_std_core_Assumption
+attribute [instance] Assumptions.instance'JoinHandle
+  Assumptions.unfold'Assert
+  Assumptions.unfold'SumNoOverflow
+  Assumptions.unfold'SumAssumeNoOverflow
+  Assumptions.unfold'SignedSumAssumeNoOverflow
+  Assumptions.unfold'BytesEqual
+  Assumptions.unfold'BytesClone
+  Assumptions.unfold'SliceSplit
+  Assumptions.unfold'newJoinHandle
+  Assumptions.unfold'Spawn
+  Assumptions.unfold'Multipar
+  Assumptions.unfold'Skip
+  Assumptions.unfold'WaitTimeout
+  Assumptions.import'math
+  Assumptions.import'sync
+  Assumptions.import'time
+  Assumptions.import'primitive
+  Assumptions.import'std_core
 
 end github_com.goose_lang.std
 

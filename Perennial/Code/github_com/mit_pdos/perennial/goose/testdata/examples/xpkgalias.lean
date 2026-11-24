@@ -98,7 +98,7 @@ noncomputable instance withAliases.zero_val [GooseExts] : ZeroVal withAliases :=
 @[irreducible] noncomputable def withAliases.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   withAliases.fieldsUnsealed
 
-noncomputable instance equals_unfold_withAliases [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'withAliases [GooseExts] [GoGlobalContext] :
     EqualsUnfold withAliases.fields withAliases.fieldsUnsealed :=
   ⟨by unfold withAliases.fields; rfl⟩
 
@@ -108,35 +108,35 @@ noncomputable instance equals_unfold_withAliases [GooseExts] [GoGlobalContext] :
 class withAliases.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying withAliases.underlying withAliases
   underlying : go.UnderlyingDirectedEq withAliases.ty withAliases.underlying
-  get_a : ∀ (x : withAliases), go.IsGoStepPureDetTagged under (StructFieldGet withAliases.underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : withAliases) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.X), go.IsGoStepPureDetTagged under (StructFieldSet withAliases.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : withAliases)))
-  get_c : ∀ (x : withAliases), go.IsGoStepPureDetTagged under (StructFieldGet withAliases.underlying go!"c") #x (Val #(x.c'))
-  set_c : ∀ (x : withAliases) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.X), go.IsGoStepPureDetTagged under (StructFieldSet withAliases.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : withAliases)))
-  get_p : ∀ (x : withAliases), go.IsGoStepPureDetTagged under (StructFieldGet withAliases.underlying go!"p") #x (Val #(x.p'))
-  set_p : ∀ (x : withAliases) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet withAliases.underlying go!"p") (PairV #x #y) (Val #(({ x with p' := y } : withAliases)))
-  get_g : ∀ (x : withAliases), go.IsGoStepPureDetTagged under (StructFieldGet withAliases.underlying go!"g") #x (Val #(x.g'))
-  set_g : ∀ (x : withAliases) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet withAliases.underlying go!"g") (PairV #x #y) (Val #(({ x with g' := y } : withAliases)))
-  get_m : ∀ (x : withAliases), go.IsGoStepPureDetTagged under (StructFieldGet withAliases.underlying go!"m") #x (Val #(x.m'))
-  set_m : ∀ (x : withAliases) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet withAliases.underlying go!"m") (PairV #x #y) (Val #(({ x with m' := y } : withAliases)))
-  get_t : ∀ (x : withAliases), go.IsGoStepPureDetTagged under (StructFieldGet withAliases.underlying go!"t") #x (Val #(x.t'))
-  set_t : ∀ (x : withAliases) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet withAliases.underlying go!"t") (PairV #x #y) (Val #(({ x with t' := y } : withAliases)))
+  get'a : ∀ (x : withAliases), go.IsGoStepPureDetTagged under (StructFieldGet withAliases.underlying go!"a") #x (Val #(x.a'))
+  set'a : ∀ (x : withAliases) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.X), go.IsGoStepPureDetTagged under (StructFieldSet withAliases.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : withAliases)))
+  get'c : ∀ (x : withAliases), go.IsGoStepPureDetTagged under (StructFieldGet withAliases.underlying go!"c") #x (Val #(x.c'))
+  set'c : ∀ (x : withAliases) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.X), go.IsGoStepPureDetTagged under (StructFieldSet withAliases.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : withAliases)))
+  get'p : ∀ (x : withAliases), go.IsGoStepPureDetTagged under (StructFieldGet withAliases.underlying go!"p") #x (Val #(x.p'))
+  set'p : ∀ (x : withAliases) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet withAliases.underlying go!"p") (PairV #x #y) (Val #(({ x with p' := y } : withAliases)))
+  get'g : ∀ (x : withAliases), go.IsGoStepPureDetTagged under (StructFieldGet withAliases.underlying go!"g") #x (Val #(x.g'))
+  set'g : ∀ (x : withAliases) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet withAliases.underlying go!"g") (PairV #x #y) (Val #(({ x with g' := y } : withAliases)))
+  get'm : ∀ (x : withAliases), go.IsGoStepPureDetTagged under (StructFieldGet withAliases.underlying go!"m") #x (Val #(x.m'))
+  set'm : ∀ (x : withAliases) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet withAliases.underlying go!"m") (PairV #x #y) (Val #(({ x with m' := y } : withAliases)))
+  get't : ∀ (x : withAliases), go.IsGoStepPureDetTagged under (StructFieldGet withAliases.underlying go!"t") #x (Val #(x.t'))
+  set't : ∀ (x : withAliases) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet withAliases.underlying go!"t") (PairV #x #y) (Val #(({ x with t' := y } : withAliases)))
   method_set : go.MethodSetIs withAliases.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType withAliases.ty) []
 
 attribute [instance] withAliases.TypeAssumptions.type_repr
   withAliases.TypeAssumptions.underlying
-  withAliases.TypeAssumptions.get_a
-  withAliases.TypeAssumptions.set_a
-  withAliases.TypeAssumptions.get_c
-  withAliases.TypeAssumptions.set_c
-  withAliases.TypeAssumptions.get_p
-  withAliases.TypeAssumptions.set_p
-  withAliases.TypeAssumptions.get_g
-  withAliases.TypeAssumptions.set_g
-  withAliases.TypeAssumptions.get_m
-  withAliases.TypeAssumptions.set_m
-  withAliases.TypeAssumptions.get_t
-  withAliases.TypeAssumptions.set_t
+  withAliases.TypeAssumptions.get'a
+  withAliases.TypeAssumptions.set'a
+  withAliases.TypeAssumptions.get'c
+  withAliases.TypeAssumptions.set'c
+  withAliases.TypeAssumptions.get'p
+  withAliases.TypeAssumptions.set'p
+  withAliases.TypeAssumptions.get'g
+  withAliases.TypeAssumptions.set'g
+  withAliases.TypeAssumptions.get'm
+  withAliases.TypeAssumptions.set'm
+  withAliases.TypeAssumptions.get't
+  withAliases.TypeAssumptions.set't
   withAliases.TypeAssumptions.method_set
   withAliases.TypeAssumptions.ptr_method_set
 
@@ -160,15 +160,15 @@ attribute [instance] withAxiomatizedAlias.TypeAssumptions.type_repr
   withAxiomatizedAlias.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  withAliases_instance : withAliases.TypeAssumptions
-  withAxiomatizedAlias_instance : withAxiomatizedAlias.TypeAssumptions
-  useAliases_unfold : FuncUnfold useAliases [] useAliases.impl
-  import_dep_Assumption : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.Assumptions
+  instance'withAliases : withAliases.TypeAssumptions
+  instance'withAxiomatizedAlias : withAxiomatizedAlias.TypeAssumptions
+  unfold'useAliases : FuncUnfold useAliases [] useAliases.impl
+  import'dep : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.Assumptions
 
-attribute [instance] Assumptions.withAliases_instance
-  Assumptions.withAxiomatizedAlias_instance
-  Assumptions.useAliases_unfold
-  Assumptions.import_dep_Assumption
+attribute [instance] Assumptions.instance'withAliases
+  Assumptions.instance'withAxiomatizedAlias
+  Assumptions.unfold'useAliases
+  Assumptions.import'dep
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias
 

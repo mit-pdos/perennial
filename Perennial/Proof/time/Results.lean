@@ -35,7 +35,7 @@ theorem Time.wp_UnixNano' (t : time.Time) :
     {{ (x : w64), RET #x; True }} :=
   Time.wp_UnixNano t
 
-/-- `(*Time).UnixNano`: the value method on `*l` (`ptr_UnixNano_unfold`). (Was
+/-- `(*Time).UnixNano`: the value method on `*l` (`ptr_unfold'UnixNano`). (Was
 `Time.wp_UnixNano`, which is now the value method's spec.) -/
 theorem Time.wp_ptr_UnixNano (l : Loc) (t : time.Time) :
     {{ (l ↦ t : IProp GF) }}
@@ -46,7 +46,7 @@ theorem Time.wp_ptr_UnixNano (l : Loc) (t : time.Time) :
   wp_apply Time.wp_UnixNano as %x -
   iapply HΦ $$ Hl
 
-/-- `(*Time).Add`: the value method on `*l` (`ptr_Add_unfold`, the method set of `*Time`). -/
+/-- `(*Time).Add`: the value method on `*l` (`ptr_unfold'Add`, the method set of `*Time`). -/
 theorem Time.wp_ptr_Add (l : Loc) (t : time.Time) (d : time.Duration) :
     {{ (l ↦ t : IProp GF) }}
       (App (Val (l @!! go.GoType.PointerType time.Time.ty @!! go!"Add")) (Val #d))

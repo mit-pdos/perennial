@@ -53,11 +53,11 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  A_unfold : FuncUnfold A [] A.impl
-  B_unfold : FuncUnfold B [] B.impl
+  unfold'A : FuncUnfold A [] A.impl
+  unfold'B : FuncUnfold B [] B.impl
 
-attribute [instance] Assumptions.A_unfold
-  Assumptions.B_unfold
+attribute [instance] Assumptions.unfold'A
+  Assumptions.unfold'B
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.mutualrec
 

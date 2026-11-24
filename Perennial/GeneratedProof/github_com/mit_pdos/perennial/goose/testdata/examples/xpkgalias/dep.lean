@@ -26,7 +26,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.Assumptions]
 
-noncomputable instance X_typed_pointsto :
+noncomputable instance typed_pointsto'X :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.X where
   typedPointstoDef l v dq := iprop(
     "n" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.X go!"n" l) v.n' dq ∗
@@ -35,11 +35,11 @@ noncomputable instance X_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance X_into_val_typed :
+noncomputable instance into_val_typed'X :
     IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.X github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.X.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance X_access_load_n (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.X) (dq : DFrac) :
+noncomputable instance access_load'X'n (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.X) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.X go!"n" l) v.n' dq)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.X go!"n" l) v.n' dq)
@@ -47,7 +47,7 @@ noncomputable instance X_access_load_n (l : Loc) (v : github_com.mit_pdos.perenn
  by
   solve_pointsto_access_struct
 
-noncomputable instance X_access_store_n (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.X) (y : w64) :
+noncomputable instance access_store'X'n (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.X) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.X go!"n" l) v.n' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.X go!"n" l) y (DFrac.own 1))
@@ -66,7 +66,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.Assumptions]
 
-noncomputable instance «struct#d5167f74_typed_pointsto» :
+noncomputable instance «typed_pointsto'struct#d5167f74» :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.«struct#d5167f74» where
   typedPointstoDef l v dq := iprop(
     "f" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.«struct#d5167f74» go!"f" l) v.f' dq ∗
@@ -75,11 +75,11 @@ noncomputable instance «struct#d5167f74_typed_pointsto» :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance «struct#d5167f74_into_val_typed» :
+noncomputable instance «into_val_typed'struct#d5167f74» :
     IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.«struct#d5167f74» github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.«struct#d5167f74».underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance «struct#d5167f74_access_load_f» (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.«struct#d5167f74») (dq : DFrac) :
+noncomputable instance «access_load'struct#d5167f74'f» (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.«struct#d5167f74») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.«struct#d5167f74» go!"f" l) v.f' dq)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.«struct#d5167f74» go!"f" l) v.f' dq)
@@ -87,7 +87,7 @@ noncomputable instance «struct#d5167f74_access_load_f» (l : Loc) (v : github_c
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#d5167f74_access_store_f» (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.«struct#d5167f74») (y : w64) :
+noncomputable instance «access_store'struct#d5167f74'f» (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.«struct#d5167f74») (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.«struct#d5167f74» go!"f" l) v.f' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.xpkgalias.dep.«struct#d5167f74» go!"f" l) y (DFrac.own 1))

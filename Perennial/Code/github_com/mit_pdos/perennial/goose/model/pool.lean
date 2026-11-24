@@ -145,7 +145,7 @@ noncomputable instance Pool.zero_val [GooseExts] : ZeroVal Pool :=
 @[irreducible] noncomputable def Pool.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Pool.fieldsUnsealed
 
-noncomputable instance equals_unfold_Pool [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Pool [GooseExts] [GoGlobalContext] :
     EqualsUnfold Pool.fields Pool.fieldsUnsealed :=
   ⟨by unfold Pool.fields; rfl⟩
 
@@ -155,32 +155,32 @@ noncomputable instance equals_unfold_Pool [GooseExts] [GoGlobalContext] :
 class Pool.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Pool.underlying Pool
   underlying : go.UnderlyingDirectedEq Pool.ty Pool.underlying
-  get_mu : ∀ (x : Pool), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"mu") #x (Val #(x.mu'))
-  set_mu : ∀ (x : Pool) (y : _root_.Perennial.github_com.goose_lang.primitive.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : Pool)))
-  get_items : ∀ (x : Pool), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"items") #x (Val #(x.items'))
-  set_items : ∀ (x : Pool) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"items") (PairV #x #y) (Val #(({ x with items' := y } : Pool)))
+  get'mu : ∀ (x : Pool), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"mu") #x (Val #(x.mu'))
+  set'mu : ∀ (x : Pool) (y : _root_.Perennial.github_com.goose_lang.primitive.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : Pool)))
+  get'items : ∀ (x : Pool), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"items") #x (Val #(x.items'))
+  set'items : ∀ (x : Pool) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"items") (PairV #x #y) (Val #(({ x with items' := y } : Pool)))
   method_set : go.MethodSetIs Pool.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Pool.ty) [(go!"Get", (some (go.signature.Signature [] false [go.any]))), (go!"Put", (some (go.signature.Signature [go.any] false [])))]
-  ptr_Get_unfold : MethodUnfold (go.GoType.PointerType Pool.ty) go!"Get" Pool.Get.impl
-  ptr_Put_unfold : MethodUnfold (go.GoType.PointerType Pool.ty) go!"Put" Pool.Put.impl
+  ptr_unfold'Get : MethodUnfold (go.GoType.PointerType Pool.ty) go!"Get" Pool.Get.impl
+  ptr_unfold'Put : MethodUnfold (go.GoType.PointerType Pool.ty) go!"Put" Pool.Put.impl
 
 attribute [instance] Pool.TypeAssumptions.type_repr
   Pool.TypeAssumptions.underlying
-  Pool.TypeAssumptions.get_mu
-  Pool.TypeAssumptions.set_mu
-  Pool.TypeAssumptions.get_items
-  Pool.TypeAssumptions.set_items
+  Pool.TypeAssumptions.get'mu
+  Pool.TypeAssumptions.set'mu
+  Pool.TypeAssumptions.get'items
+  Pool.TypeAssumptions.set'items
   Pool.TypeAssumptions.method_set
   Pool.TypeAssumptions.ptr_method_set
-  Pool.TypeAssumptions.ptr_Get_unfold
-  Pool.TypeAssumptions.ptr_Put_unfold
+  Pool.TypeAssumptions.ptr_unfold'Get
+  Pool.TypeAssumptions.ptr_unfold'Put
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Pool_instance : Pool.TypeAssumptions
-  import_primitive_Assumption : _root_.Perennial.github_com.goose_lang.primitive.Assumptions
+  instance'Pool : Pool.TypeAssumptions
+  import'primitive : _root_.Perennial.github_com.goose_lang.primitive.Assumptions
 
-attribute [instance] Assumptions.Pool_instance
-  Assumptions.import_primitive_Assumption
+attribute [instance] Assumptions.instance'Pool
+  Assumptions.import'primitive
 
 end github_com.mit_pdos.perennial.goose.model.pool
 

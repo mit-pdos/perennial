@@ -44,11 +44,11 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.initialize') (Val #())))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  f_unfold : FuncUnfold f [] f.impl
-  import_unittest_Assumption : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions
+  unfold'f : FuncUnfold f [] f.impl
+  import'unittest : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions
 
-attribute [instance] Assumptions.f_unfold
-  Assumptions.import_unittest_Assumption
+attribute [instance] Assumptions.unfold'f
+  Assumptions.import'unittest
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals
 

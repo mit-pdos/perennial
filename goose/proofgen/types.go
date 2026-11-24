@@ -38,7 +38,7 @@ func (tr *typesTranslator) translateStructType(spec *ast.TypeSpec, s *types.Stru
 	if spec.TypeParams != nil {
 		for _, tp := range spec.TypeParams.List {
 			for _, name := range tp.Names {
-				decl.TypeParams = append(decl.TypeParams, name.Name)
+				decl.TypeParams = append(decl.TypeParams, glang.BinderName(name.Name))
 			}
 		}
 	}
@@ -88,7 +88,7 @@ func (tr *typesTranslator) translateType(spec *ast.TypeSpec) []tmpl.TypeDecl {
 		if spec.TypeParams != nil {
 			for _, tp := range spec.TypeParams.List {
 				for _, name := range tp.Names {
-					decl.TypeParams = append(decl.TypeParams, name.Name)
+					decl.TypeParams = append(decl.TypeParams, glang.BinderName(name.Name))
 				}
 			}
 		}
@@ -322,7 +322,7 @@ func (tr *typesTranslator) toLeanType(t types.Type) string {
 		}
 		return base
 	case *types.TypeParam:
-		return glang.LeanQuote(t.Obj().Name() + "'")
+		return glang.LeanQuote(glang.BinderName(t.Obj().Name()) + "'")
 	case *types.Struct:
 		if t.NumFields() == 0 {
 			return "Unit"

@@ -127,15 +127,15 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val (go.GlobalAlloc y'' go.uint64)) (Val #()))))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
-  «init.1_unfold» : FuncUnfold init.«1» [] init.«1».impl
-  computeZ_unfold : FuncUnfold computeZ [] computeZ.impl
-  pair_unfold : FuncUnfold pair [] pair.impl
+  «unfold'init.0» : FuncUnfold init.«0» [] init.«0».impl
+  «unfold'init.1» : FuncUnfold init.«1» [] init.«1».impl
+  unfold'computeZ : FuncUnfold computeZ [] computeZ.impl
+  unfold'pair : FuncUnfold pair [] pair.impl
 
-attribute [instance] Assumptions.«init.0_unfold»
-  Assumptions.«init.1_unfold»
-  Assumptions.computeZ_unfold
-  Assumptions.pair_unfold
+attribute [instance] Assumptions.«unfold'init.0»
+  Assumptions.«unfold'init.1»
+  Assumptions.unfold'computeZ
+  Assumptions.unfold'pair
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.inits
 

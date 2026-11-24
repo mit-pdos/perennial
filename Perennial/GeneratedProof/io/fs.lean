@@ -28,7 +28,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : io.fs.Assumptions]
 
-noncomputable instance PathError_typed_pointsto :
+noncomputable instance typed_pointsto'PathError :
     TypedPointsto (GF := GF) io.fs.PathError where
   typedPointstoDef l v dq := iprop(
     "Op" ∷ typedPointsto (structFieldRef io.fs.PathError go!"Op" l) v.Op' dq ∗
@@ -39,11 +39,11 @@ noncomputable instance PathError_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance PathError_into_val_typed :
+noncomputable instance into_val_typed'PathError :
     IntoValTypedUnderlying (GF := GF) io.fs.PathError io.fs.PathError.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance PathError_access_load_Op (l : Loc) (v : io.fs.PathError) (dq : DFrac) :
+noncomputable instance access_load'PathError'Op (l : Loc) (v : io.fs.PathError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.fs.PathError go!"Op" l) v.Op' dq)
       (typedPointsto (structFieldRef io.fs.PathError go!"Op" l) v.Op' dq)
@@ -51,7 +51,7 @@ noncomputable instance PathError_access_load_Op (l : Loc) (v : io.fs.PathError) 
  by
   solve_pointsto_access_struct
 
-noncomputable instance PathError_access_store_Op (l : Loc) (v : io.fs.PathError) (y : GoString) :
+noncomputable instance access_store'PathError'Op (l : Loc) (v : io.fs.PathError) (y : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.fs.PathError go!"Op" l) v.Op' (DFrac.own 1))
       (typedPointsto (structFieldRef io.fs.PathError go!"Op" l) y (DFrac.own 1))
@@ -59,7 +59,7 @@ noncomputable instance PathError_access_store_Op (l : Loc) (v : io.fs.PathError)
  by
   solve_pointsto_access_struct
 
-noncomputable instance PathError_access_load_Path (l : Loc) (v : io.fs.PathError) (dq : DFrac) :
+noncomputable instance access_load'PathError'Path (l : Loc) (v : io.fs.PathError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.fs.PathError go!"Path" l) v.Path' dq)
       (typedPointsto (structFieldRef io.fs.PathError go!"Path" l) v.Path' dq)
@@ -67,7 +67,7 @@ noncomputable instance PathError_access_load_Path (l : Loc) (v : io.fs.PathError
  by
   solve_pointsto_access_struct
 
-noncomputable instance PathError_access_store_Path (l : Loc) (v : io.fs.PathError) (y : GoString) :
+noncomputable instance access_store'PathError'Path (l : Loc) (v : io.fs.PathError) (y : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.fs.PathError go!"Path" l) v.Path' (DFrac.own 1))
       (typedPointsto (structFieldRef io.fs.PathError go!"Path" l) y (DFrac.own 1))
@@ -75,7 +75,7 @@ noncomputable instance PathError_access_store_Path (l : Loc) (v : io.fs.PathErro
  by
   solve_pointsto_access_struct
 
-noncomputable instance PathError_access_load_Err (l : Loc) (v : io.fs.PathError) (dq : DFrac) :
+noncomputable instance access_load'PathError'Err (l : Loc) (v : io.fs.PathError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.fs.PathError go!"Err" l) v.Err' dq)
       (typedPointsto (structFieldRef io.fs.PathError go!"Err" l) v.Err' dq)
@@ -83,7 +83,7 @@ noncomputable instance PathError_access_load_Err (l : Loc) (v : io.fs.PathError)
  by
   solve_pointsto_access_struct
 
-noncomputable instance PathError_access_store_Err (l : Loc) (v : io.fs.PathError) (y : GoError) :
+noncomputable instance access_store'PathError'Err (l : Loc) (v : io.fs.PathError) (y : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.fs.PathError go!"Err" l) v.Err' (DFrac.own 1))
       (typedPointsto (structFieldRef io.fs.PathError go!"Err" l) y (DFrac.own 1))
@@ -102,7 +102,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : io.fs.Assumptions]
 
-noncomputable instance dirInfo_typed_pointsto :
+noncomputable instance typed_pointsto'dirInfo :
     TypedPointsto (GF := GF) io.fs.dirInfo where
   typedPointstoDef l v dq := iprop(
     "fileInfo" ∷ typedPointsto (structFieldRef io.fs.dirInfo go!"fileInfo" l) v.fileInfo' dq ∗
@@ -111,11 +111,11 @@ noncomputable instance dirInfo_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance dirInfo_into_val_typed :
+noncomputable instance into_val_typed'dirInfo :
     IntoValTypedUnderlying (GF := GF) io.fs.dirInfo io.fs.dirInfo.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance dirInfo_access_load_fileInfo (l : Loc) (v : io.fs.dirInfo) (dq : DFrac) :
+noncomputable instance access_load'dirInfo'fileInfo (l : Loc) (v : io.fs.dirInfo) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.fs.dirInfo go!"fileInfo" l) v.fileInfo' dq)
       (typedPointsto (structFieldRef io.fs.dirInfo go!"fileInfo" l) v.fileInfo' dq)
@@ -123,7 +123,7 @@ noncomputable instance dirInfo_access_load_fileInfo (l : Loc) (v : io.fs.dirInfo
  by
   solve_pointsto_access_struct
 
-noncomputable instance dirInfo_access_store_fileInfo (l : Loc) (v : io.fs.dirInfo) (y : io.fs.FileInfo) :
+noncomputable instance access_store'dirInfo'fileInfo (l : Loc) (v : io.fs.dirInfo) (y : io.fs.FileInfo) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.fs.dirInfo go!"fileInfo" l) v.fileInfo' (DFrac.own 1))
       (typedPointsto (structFieldRef io.fs.dirInfo go!"fileInfo" l) y (DFrac.own 1))
@@ -142,7 +142,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : io.fs.Assumptions]
 
-noncomputable instance subFS_typed_pointsto :
+noncomputable instance typed_pointsto'subFS :
     TypedPointsto (GF := GF) io.fs.subFS where
   typedPointstoDef l v dq := iprop(
     "fsys" ∷ typedPointsto (structFieldRef io.fs.subFS go!"fsys" l) v.fsys' dq ∗
@@ -152,11 +152,11 @@ noncomputable instance subFS_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance subFS_into_val_typed :
+noncomputable instance into_val_typed'subFS :
     IntoValTypedUnderlying (GF := GF) io.fs.subFS io.fs.subFS.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance subFS_access_load_fsys (l : Loc) (v : io.fs.subFS) (dq : DFrac) :
+noncomputable instance access_load'subFS'fsys (l : Loc) (v : io.fs.subFS) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.fs.subFS go!"fsys" l) v.fsys' dq)
       (typedPointsto (structFieldRef io.fs.subFS go!"fsys" l) v.fsys' dq)
@@ -164,7 +164,7 @@ noncomputable instance subFS_access_load_fsys (l : Loc) (v : io.fs.subFS) (dq : 
  by
   solve_pointsto_access_struct
 
-noncomputable instance subFS_access_store_fsys (l : Loc) (v : io.fs.subFS) (y : io.fs.FS) :
+noncomputable instance access_store'subFS'fsys (l : Loc) (v : io.fs.subFS) (y : io.fs.FS) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.fs.subFS go!"fsys" l) v.fsys' (DFrac.own 1))
       (typedPointsto (structFieldRef io.fs.subFS go!"fsys" l) y (DFrac.own 1))
@@ -172,7 +172,7 @@ noncomputable instance subFS_access_store_fsys (l : Loc) (v : io.fs.subFS) (y : 
  by
   solve_pointsto_access_struct
 
-noncomputable instance subFS_access_load_dir (l : Loc) (v : io.fs.subFS) (dq : DFrac) :
+noncomputable instance access_load'subFS'dir (l : Loc) (v : io.fs.subFS) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.fs.subFS go!"dir" l) v.dir' dq)
       (typedPointsto (structFieldRef io.fs.subFS go!"dir" l) v.dir' dq)
@@ -180,7 +180,7 @@ noncomputable instance subFS_access_load_dir (l : Loc) (v : io.fs.subFS) (dq : D
  by
   solve_pointsto_access_struct
 
-noncomputable instance subFS_access_store_dir (l : Loc) (v : io.fs.subFS) (y : GoString) :
+noncomputable instance access_store'subFS'dir (l : Loc) (v : io.fs.subFS) (y : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.fs.subFS go!"dir" l) v.dir' (DFrac.own 1))
       (typedPointsto (structFieldRef io.fs.subFS go!"dir" l) y (DFrac.own 1))

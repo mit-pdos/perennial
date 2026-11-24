@@ -117,7 +117,7 @@ noncomputable instance T.zero_val [GooseExts] : ZeroVal T :=
 @[irreducible] noncomputable def T.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   T.fieldsUnsealed
 
-noncomputable instance equals_unfold_T [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'T [GooseExts] [GoGlobalContext] :
     EqualsUnfold T.fields T.fieldsUnsealed :=
   ⟨by unfold T.fields; rfl⟩
 
@@ -127,15 +127,15 @@ noncomputable instance equals_unfold_T [GooseExts] [GoGlobalContext] :
 class T.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying T.underlying T
   underlying : go.UnderlyingDirectedEq T.ty T.underlying
-  get_n : ∀ (x : T), go.IsGoStepPureDetTagged under (StructFieldGet T.underlying go!"n") #x (Val #(x.n'))
-  set_n : ∀ (x : T) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet T.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : T)))
+  get'n : ∀ (x : T), go.IsGoStepPureDetTagged under (StructFieldGet T.underlying go!"n") #x (Val #(x.n'))
+  set'n : ∀ (x : T) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet T.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : T)))
   method_set : go.MethodSetIs T.ty [(go!"Use", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/filteredimport/dep.X" []))] false [])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType T.ty) [(go!"Get", (some (go.signature.Signature [] false [go.uint64]))), (go!"Use", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/filteredimport/dep.X" []))] false [])))]
 
 attribute [instance] T.TypeAssumptions.type_repr
   T.TypeAssumptions.underlying
-  T.TypeAssumptions.get_n
-  T.TypeAssumptions.set_n
+  T.TypeAssumptions.get'n
+  T.TypeAssumptions.set'n
   T.TypeAssumptions.method_set
   T.TypeAssumptions.ptr_method_set
 
@@ -201,21 +201,21 @@ attribute [instance] PlainCloser.TypeAssumptions.underlying
   PlainCloser.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  T_instance : T.TypeAssumptions
-  withDep_instance : withDep.TypeAssumptions
-  Getter_instance : Getter.TypeAssumptions
-  plain_instance : plain.TypeAssumptions
-  PlainCloser_instance : PlainCloser.TypeAssumptions
-  IsWindows_unfold : FuncUnfold IsWindows [] IsWindows.impl
-  DepConsts_unfold : FuncUnfold DepConsts [] DepConsts.impl
+  instance'T : T.TypeAssumptions
+  instance'withDep : withDep.TypeAssumptions
+  instance'Getter : Getter.TypeAssumptions
+  instance'plain : plain.TypeAssumptions
+  instance'PlainCloser : PlainCloser.TypeAssumptions
+  unfold'IsWindows : FuncUnfold IsWindows [] IsWindows.impl
+  unfold'DepConsts : FuncUnfold DepConsts [] DepConsts.impl
 
-attribute [instance] Assumptions.T_instance
-  Assumptions.withDep_instance
-  Assumptions.Getter_instance
-  Assumptions.plain_instance
-  Assumptions.PlainCloser_instance
-  Assumptions.IsWindows_unfold
-  Assumptions.DepConsts_unfold
+attribute [instance] Assumptions.instance'T
+  Assumptions.instance'withDep
+  Assumptions.instance'Getter
+  Assumptions.instance'plain
+  Assumptions.instance'PlainCloser
+  Assumptions.unfold'IsWindows
+  Assumptions.unfold'DepConsts
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport
 

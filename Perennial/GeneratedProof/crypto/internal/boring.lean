@@ -26,7 +26,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : crypto.internal.boring.Assumptions]
 
-noncomputable instance PublicKeyECDSA_typed_pointsto :
+noncomputable instance typed_pointsto'PublicKeyECDSA :
     TypedPointsto (GF := GF) crypto.internal.boring.PublicKeyECDSA where
   typedPointstoDef l v dq := iprop(
     "«_#0»" ∷ typedPointsto (structFieldRef crypto.internal.boring.PublicKeyECDSA go!"_#0" l) v.«_#0'» dq ∗
@@ -35,11 +35,11 @@ noncomputable instance PublicKeyECDSA_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance PublicKeyECDSA_into_val_typed :
+noncomputable instance into_val_typed'PublicKeyECDSA :
     IntoValTypedUnderlying (GF := GF) crypto.internal.boring.PublicKeyECDSA crypto.internal.boring.PublicKeyECDSA.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance «PublicKeyECDSA_access_load__#0» (l : Loc) (v : crypto.internal.boring.PublicKeyECDSA) (dq : DFrac) :
+noncomputable instance «access_load'PublicKeyECDSA'_#0» (l : Loc) (v : crypto.internal.boring.PublicKeyECDSA) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef crypto.internal.boring.PublicKeyECDSA go!"_#0" l) v.«_#0'» dq)
       (typedPointsto (structFieldRef crypto.internal.boring.PublicKeyECDSA go!"_#0" l) v.«_#0'» dq)
@@ -47,7 +47,7 @@ noncomputable instance «PublicKeyECDSA_access_load__#0» (l : Loc) (v : crypto.
  by
   solve_pointsto_access_struct
 
-noncomputable instance «PublicKeyECDSA_access_store__#0» (l : Loc) (v : crypto.internal.boring.PublicKeyECDSA) (y : w64) :
+noncomputable instance «access_store'PublicKeyECDSA'_#0» (l : Loc) (v : crypto.internal.boring.PublicKeyECDSA) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef crypto.internal.boring.PublicKeyECDSA go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef crypto.internal.boring.PublicKeyECDSA go!"_#0" l) y (DFrac.own 1))
@@ -66,7 +66,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : crypto.internal.boring.Assumptions]
 
-noncomputable instance PrivateKeyECDSA_typed_pointsto :
+noncomputable instance typed_pointsto'PrivateKeyECDSA :
     TypedPointsto (GF := GF) crypto.internal.boring.PrivateKeyECDSA where
   typedPointstoDef l v dq := iprop(
     "«_#0»" ∷ typedPointsto (structFieldRef crypto.internal.boring.PrivateKeyECDSA go!"_#0" l) v.«_#0'» dq ∗
@@ -75,11 +75,11 @@ noncomputable instance PrivateKeyECDSA_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance PrivateKeyECDSA_into_val_typed :
+noncomputable instance into_val_typed'PrivateKeyECDSA :
     IntoValTypedUnderlying (GF := GF) crypto.internal.boring.PrivateKeyECDSA crypto.internal.boring.PrivateKeyECDSA.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance «PrivateKeyECDSA_access_load__#0» (l : Loc) (v : crypto.internal.boring.PrivateKeyECDSA) (dq : DFrac) :
+noncomputable instance «access_load'PrivateKeyECDSA'_#0» (l : Loc) (v : crypto.internal.boring.PrivateKeyECDSA) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef crypto.internal.boring.PrivateKeyECDSA go!"_#0" l) v.«_#0'» dq)
       (typedPointsto (structFieldRef crypto.internal.boring.PrivateKeyECDSA go!"_#0" l) v.«_#0'» dq)
@@ -87,7 +87,7 @@ noncomputable instance «PrivateKeyECDSA_access_load__#0» (l : Loc) (v : crypto
  by
   solve_pointsto_access_struct
 
-noncomputable instance «PrivateKeyECDSA_access_store__#0» (l : Loc) (v : crypto.internal.boring.PrivateKeyECDSA) (y : w64) :
+noncomputable instance «access_store'PrivateKeyECDSA'_#0» (l : Loc) (v : crypto.internal.boring.PrivateKeyECDSA) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef crypto.internal.boring.PrivateKeyECDSA go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef crypto.internal.boring.PrivateKeyECDSA go!"_#0" l) y (DFrac.own 1))
@@ -106,7 +106,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : crypto.internal.boring.Assumptions]
 
-noncomputable instance PublicKeyRSA_typed_pointsto :
+noncomputable instance typed_pointsto'PublicKeyRSA :
     TypedPointsto (GF := GF) crypto.internal.boring.PublicKeyRSA where
   typedPointstoDef l v dq := iprop(
     "«_#0»" ∷ typedPointsto (structFieldRef crypto.internal.boring.PublicKeyRSA go!"_#0" l) v.«_#0'» dq ∗
@@ -115,11 +115,11 @@ noncomputable instance PublicKeyRSA_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance PublicKeyRSA_into_val_typed :
+noncomputable instance into_val_typed'PublicKeyRSA :
     IntoValTypedUnderlying (GF := GF) crypto.internal.boring.PublicKeyRSA crypto.internal.boring.PublicKeyRSA.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance «PublicKeyRSA_access_load__#0» (l : Loc) (v : crypto.internal.boring.PublicKeyRSA) (dq : DFrac) :
+noncomputable instance «access_load'PublicKeyRSA'_#0» (l : Loc) (v : crypto.internal.boring.PublicKeyRSA) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef crypto.internal.boring.PublicKeyRSA go!"_#0" l) v.«_#0'» dq)
       (typedPointsto (structFieldRef crypto.internal.boring.PublicKeyRSA go!"_#0" l) v.«_#0'» dq)
@@ -127,7 +127,7 @@ noncomputable instance «PublicKeyRSA_access_load__#0» (l : Loc) (v : crypto.in
  by
   solve_pointsto_access_struct
 
-noncomputable instance «PublicKeyRSA_access_store__#0» (l : Loc) (v : crypto.internal.boring.PublicKeyRSA) (y : w64) :
+noncomputable instance «access_store'PublicKeyRSA'_#0» (l : Loc) (v : crypto.internal.boring.PublicKeyRSA) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef crypto.internal.boring.PublicKeyRSA go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef crypto.internal.boring.PublicKeyRSA go!"_#0" l) y (DFrac.own 1))
@@ -146,7 +146,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : crypto.internal.boring.Assumptions]
 
-noncomputable instance PrivateKeyRSA_typed_pointsto :
+noncomputable instance typed_pointsto'PrivateKeyRSA :
     TypedPointsto (GF := GF) crypto.internal.boring.PrivateKeyRSA where
   typedPointstoDef l v dq := iprop(
     "«_#0»" ∷ typedPointsto (structFieldRef crypto.internal.boring.PrivateKeyRSA go!"_#0" l) v.«_#0'» dq ∗
@@ -155,11 +155,11 @@ noncomputable instance PrivateKeyRSA_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance PrivateKeyRSA_into_val_typed :
+noncomputable instance into_val_typed'PrivateKeyRSA :
     IntoValTypedUnderlying (GF := GF) crypto.internal.boring.PrivateKeyRSA crypto.internal.boring.PrivateKeyRSA.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance «PrivateKeyRSA_access_load__#0» (l : Loc) (v : crypto.internal.boring.PrivateKeyRSA) (dq : DFrac) :
+noncomputable instance «access_load'PrivateKeyRSA'_#0» (l : Loc) (v : crypto.internal.boring.PrivateKeyRSA) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef crypto.internal.boring.PrivateKeyRSA go!"_#0" l) v.«_#0'» dq)
       (typedPointsto (structFieldRef crypto.internal.boring.PrivateKeyRSA go!"_#0" l) v.«_#0'» dq)
@@ -167,7 +167,7 @@ noncomputable instance «PrivateKeyRSA_access_load__#0» (l : Loc) (v : crypto.i
  by
   solve_pointsto_access_struct
 
-noncomputable instance «PrivateKeyRSA_access_store__#0» (l : Loc) (v : crypto.internal.boring.PrivateKeyRSA) (y : w64) :
+noncomputable instance «access_store'PrivateKeyRSA'_#0» (l : Loc) (v : crypto.internal.boring.PrivateKeyRSA) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef crypto.internal.boring.PrivateKeyRSA go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef crypto.internal.boring.PrivateKeyRSA go!"_#0" l) y (DFrac.own 1))
@@ -186,7 +186,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : crypto.internal.boring.Assumptions]
 
-noncomputable instance PublicKeyECDH_typed_pointsto :
+noncomputable instance typed_pointsto'PublicKeyECDH :
     TypedPointsto (GF := GF) crypto.internal.boring.PublicKeyECDH where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
@@ -194,7 +194,7 @@ noncomputable instance PublicKeyECDH_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance PublicKeyECDH_into_val_typed :
+noncomputable instance into_val_typed'PublicKeyECDH :
     IntoValTypedUnderlying (GF := GF) crypto.internal.boring.PublicKeyECDH crypto.internal.boring.PublicKeyECDH.underlying := by
   solve_into_val_typed_struct
 
@@ -209,7 +209,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : crypto.internal.boring.Assumptions]
 
-noncomputable instance PrivateKeyECDH_typed_pointsto :
+noncomputable instance typed_pointsto'PrivateKeyECDH :
     TypedPointsto (GF := GF) crypto.internal.boring.PrivateKeyECDH where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
@@ -217,7 +217,7 @@ noncomputable instance PrivateKeyECDH_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance PrivateKeyECDH_into_val_typed :
+noncomputable instance into_val_typed'PrivateKeyECDH :
     IntoValTypedUnderlying (GF := GF) crypto.internal.boring.PrivateKeyECDH crypto.internal.boring.PrivateKeyECDH.underlying := by
   solve_into_val_typed_struct
 

@@ -24,7 +24,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : unicode.utf8.Assumptions]
 
-noncomputable instance acceptRange_typed_pointsto :
+noncomputable instance typed_pointsto'acceptRange :
     TypedPointsto (GF := GF) unicode.utf8.acceptRange where
   typedPointstoDef l v dq := iprop(
     "lo" ∷ typedPointsto (structFieldRef unicode.utf8.acceptRange go!"lo" l) v.lo' dq ∗
@@ -34,11 +34,11 @@ noncomputable instance acceptRange_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance acceptRange_into_val_typed :
+noncomputable instance into_val_typed'acceptRange :
     IntoValTypedUnderlying (GF := GF) unicode.utf8.acceptRange unicode.utf8.acceptRange.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance acceptRange_access_load_lo (l : Loc) (v : unicode.utf8.acceptRange) (dq : DFrac) :
+noncomputable instance access_load'acceptRange'lo (l : Loc) (v : unicode.utf8.acceptRange) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef unicode.utf8.acceptRange go!"lo" l) v.lo' dq)
       (typedPointsto (structFieldRef unicode.utf8.acceptRange go!"lo" l) v.lo' dq)
@@ -46,7 +46,7 @@ noncomputable instance acceptRange_access_load_lo (l : Loc) (v : unicode.utf8.ac
  by
   solve_pointsto_access_struct
 
-noncomputable instance acceptRange_access_store_lo (l : Loc) (v : unicode.utf8.acceptRange) (y : w8) :
+noncomputable instance access_store'acceptRange'lo (l : Loc) (v : unicode.utf8.acceptRange) (y : w8) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef unicode.utf8.acceptRange go!"lo" l) v.lo' (DFrac.own 1))
       (typedPointsto (structFieldRef unicode.utf8.acceptRange go!"lo" l) y (DFrac.own 1))
@@ -54,7 +54,7 @@ noncomputable instance acceptRange_access_store_lo (l : Loc) (v : unicode.utf8.a
  by
   solve_pointsto_access_struct
 
-noncomputable instance acceptRange_access_load_hi (l : Loc) (v : unicode.utf8.acceptRange) (dq : DFrac) :
+noncomputable instance access_load'acceptRange'hi (l : Loc) (v : unicode.utf8.acceptRange) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef unicode.utf8.acceptRange go!"hi" l) v.hi' dq)
       (typedPointsto (structFieldRef unicode.utf8.acceptRange go!"hi" l) v.hi' dq)
@@ -62,7 +62,7 @@ noncomputable instance acceptRange_access_load_hi (l : Loc) (v : unicode.utf8.ac
  by
   solve_pointsto_access_struct
 
-noncomputable instance acceptRange_access_store_hi (l : Loc) (v : unicode.utf8.acceptRange) (y : w8) :
+noncomputable instance access_store'acceptRange'hi (l : Loc) (v : unicode.utf8.acceptRange) (y : w8) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef unicode.utf8.acceptRange go!"hi" l) v.hi' (DFrac.own 1))
       (typedPointsto (structFieldRef unicode.utf8.acceptRange go!"hi" l) y (DFrac.own 1))

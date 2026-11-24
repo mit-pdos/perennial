@@ -75,11 +75,11 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val enabled.init) (Val #())))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Enforced_unfold : FuncUnfold Enforced [] Enforced.impl
-  isBypassed_unfold : FuncUnfold isBypassed [] isBypassed.impl
+  unfold'Enforced : FuncUnfold Enforced [] Enforced.impl
+  unfold'isBypassed : FuncUnfold isBypassed [] isBypassed.impl
 
-attribute [instance] Assumptions.Enforced_unfold
-  Assumptions.isBypassed_unfold
+attribute [instance] Assumptions.unfold'Enforced
+  Assumptions.unfold'isBypassed
 
 end crypto.fips140
 

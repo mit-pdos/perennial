@@ -24,8 +24,8 @@ func (ctx *Ctx) typeDecl(spec *ast.TypeSpec) {
 		var typeParamsList glang.ListExpr
 		if tps := namedType.TypeParams(); tps != nil {
 			for i := range tps.Len() {
-				typeParams = append(typeParams, tps.At(i).Obj().Name())
-				typeParamsList = append(typeParamsList, glang.TermIdent(tps.At(i).Obj().Name()))
+				typeParams = append(typeParams, glang.BinderName(tps.At(i).Obj().Name()))
+				typeParamsList = append(typeParamsList, glang.TermIdent(glang.BinderName(tps.At(i).Obj().Name())))
 			}
 		}
 		ctx.out.typeNamedDecls = append(ctx.out.typeNamedDecls, glang.TypeDecl{
@@ -55,7 +55,7 @@ func (ctx *Ctx) typeDecl(spec *ast.TypeSpec) {
 			if tps := named.TypeParams(); tps != nil && tps.Len() > 0 {
 				var params []string
 				for i := 0; i < tps.Len(); i++ {
-					params = append(params, tps.At(i).Obj().Name())
+					params = append(params, glang.BinderName(tps.At(i).Obj().Name()))
 				}
 				typeStr = glang.GenericTypeExpr{Params: params}
 			}
@@ -76,7 +76,7 @@ func (ctx *Ctx) aliasDecl(spec *ast.TypeSpec, alias *types.Alias) (d glang.TypeD
 	d = glang.TypeDecl{Name: spec.Name.Name, Alias: true}
 	if tps := alias.TypeParams(); tps != nil {
 		for i := range tps.Len() {
-			d.TypeParams = append(d.TypeParams, tps.At(i).Obj().Name())
+			d.TypeParams = append(d.TypeParams, glang.BinderName(tps.At(i).Obj().Name()))
 		}
 	}
 	if ctx.filter.GetAction(spec.Name.Name) != declfilter.Translate {
@@ -313,7 +313,7 @@ func (ctx *Ctx) glangType(n locatable, t types.Type) glang.Expr {
 		}
 		return glang.CallExpr{MethodName: glang.TermIdent(glang.TypeImpl(a.name)), Args: args}
 	case *types.TypeParam:
-		return glang.TermIdent(t.Obj().Name())
+		return glang.TermIdent(glang.BinderName(t.Obj().Name()))
 	case *types.Basic:
 		return ctx.basicType(t)
 	case *types.Pointer:

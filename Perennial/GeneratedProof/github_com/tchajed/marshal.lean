@@ -26,7 +26,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.tchajed.marshal.Assumptions]
 
-noncomputable instance Enc_typed_pointsto :
+noncomputable instance typed_pointsto'Enc :
     TypedPointsto (GF := GF) github_com.tchajed.marshal.Enc where
   typedPointstoDef l v dq := iprop(
     "b" ∷ typedPointsto (structFieldRef github_com.tchajed.marshal.Enc go!"b" l) v.b' dq ∗
@@ -36,11 +36,11 @@ noncomputable instance Enc_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance Enc_into_val_typed :
+noncomputable instance into_val_typed'Enc :
     IntoValTypedUnderlying (GF := GF) github_com.tchajed.marshal.Enc github_com.tchajed.marshal.Enc.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance Enc_access_load_b (l : Loc) (v : github_com.tchajed.marshal.Enc) (dq : DFrac) :
+noncomputable instance access_load'Enc'b (l : Loc) (v : github_com.tchajed.marshal.Enc) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.tchajed.marshal.Enc go!"b" l) v.b' dq)
       (typedPointsto (structFieldRef github_com.tchajed.marshal.Enc go!"b" l) v.b' dq)
@@ -48,7 +48,7 @@ noncomputable instance Enc_access_load_b (l : Loc) (v : github_com.tchajed.marsh
  by
   solve_pointsto_access_struct
 
-noncomputable instance Enc_access_store_b (l : Loc) (v : github_com.tchajed.marshal.Enc) (y : GoSlice) :
+noncomputable instance access_store'Enc'b (l : Loc) (v : github_com.tchajed.marshal.Enc) (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.tchajed.marshal.Enc go!"b" l) v.b' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.tchajed.marshal.Enc go!"b" l) y (DFrac.own 1))
@@ -56,7 +56,7 @@ noncomputable instance Enc_access_store_b (l : Loc) (v : github_com.tchajed.mars
  by
   solve_pointsto_access_struct
 
-noncomputable instance Enc_access_load_off (l : Loc) (v : github_com.tchajed.marshal.Enc) (dq : DFrac) :
+noncomputable instance access_load'Enc'off (l : Loc) (v : github_com.tchajed.marshal.Enc) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.tchajed.marshal.Enc go!"off" l) v.off' dq)
       (typedPointsto (structFieldRef github_com.tchajed.marshal.Enc go!"off" l) v.off' dq)
@@ -64,7 +64,7 @@ noncomputable instance Enc_access_load_off (l : Loc) (v : github_com.tchajed.mar
  by
   solve_pointsto_access_struct
 
-noncomputable instance Enc_access_store_off (l : Loc) (v : github_com.tchajed.marshal.Enc) (y : Loc) :
+noncomputable instance access_store'Enc'off (l : Loc) (v : github_com.tchajed.marshal.Enc) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.tchajed.marshal.Enc go!"off" l) v.off' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.tchajed.marshal.Enc go!"off" l) y (DFrac.own 1))
@@ -83,7 +83,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.tchajed.marshal.Assumptions]
 
-noncomputable instance Dec_typed_pointsto :
+noncomputable instance typed_pointsto'Dec :
     TypedPointsto (GF := GF) github_com.tchajed.marshal.Dec where
   typedPointstoDef l v dq := iprop(
     "b" ∷ typedPointsto (structFieldRef github_com.tchajed.marshal.Dec go!"b" l) v.b' dq ∗
@@ -93,11 +93,11 @@ noncomputable instance Dec_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance Dec_into_val_typed :
+noncomputable instance into_val_typed'Dec :
     IntoValTypedUnderlying (GF := GF) github_com.tchajed.marshal.Dec github_com.tchajed.marshal.Dec.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance Dec_access_load_b (l : Loc) (v : github_com.tchajed.marshal.Dec) (dq : DFrac) :
+noncomputable instance access_load'Dec'b (l : Loc) (v : github_com.tchajed.marshal.Dec) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.tchajed.marshal.Dec go!"b" l) v.b' dq)
       (typedPointsto (structFieldRef github_com.tchajed.marshal.Dec go!"b" l) v.b' dq)
@@ -105,7 +105,7 @@ noncomputable instance Dec_access_load_b (l : Loc) (v : github_com.tchajed.marsh
  by
   solve_pointsto_access_struct
 
-noncomputable instance Dec_access_store_b (l : Loc) (v : github_com.tchajed.marshal.Dec) (y : GoSlice) :
+noncomputable instance access_store'Dec'b (l : Loc) (v : github_com.tchajed.marshal.Dec) (y : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.tchajed.marshal.Dec go!"b" l) v.b' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.tchajed.marshal.Dec go!"b" l) y (DFrac.own 1))
@@ -113,7 +113,7 @@ noncomputable instance Dec_access_store_b (l : Loc) (v : github_com.tchajed.mars
  by
   solve_pointsto_access_struct
 
-noncomputable instance Dec_access_load_off (l : Loc) (v : github_com.tchajed.marshal.Dec) (dq : DFrac) :
+noncomputable instance access_load'Dec'off (l : Loc) (v : github_com.tchajed.marshal.Dec) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.tchajed.marshal.Dec go!"off" l) v.off' dq)
       (typedPointsto (structFieldRef github_com.tchajed.marshal.Dec go!"off" l) v.off' dq)
@@ -121,7 +121,7 @@ noncomputable instance Dec_access_load_off (l : Loc) (v : github_com.tchajed.mar
  by
   solve_pointsto_access_struct
 
-noncomputable instance Dec_access_store_off (l : Loc) (v : github_com.tchajed.marshal.Dec) (y : Loc) :
+noncomputable instance access_store'Dec'off (l : Loc) (v : github_com.tchajed.marshal.Dec) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.tchajed.marshal.Dec go!"off" l) v.off' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.tchajed.marshal.Dec go!"off" l) y (DFrac.own 1))

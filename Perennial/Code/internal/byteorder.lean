@@ -513,43 +513,43 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  LEUint16_unfold : FuncUnfold LEUint16 [] LEUint16.impl
-  LEPutUint16_unfold : FuncUnfold LEPutUint16 [] LEPutUint16.impl
-  LEAppendUint16_unfold : FuncUnfold LEAppendUint16 [] LEAppendUint16.impl
-  LEUint32_unfold : FuncUnfold LEUint32 [] LEUint32.impl
-  LEPutUint32_unfold : FuncUnfold LEPutUint32 [] LEPutUint32.impl
-  LEAppendUint32_unfold : FuncUnfold LEAppendUint32 [] LEAppendUint32.impl
-  LEUint64_unfold : FuncUnfold LEUint64 [] LEUint64.impl
-  LEPutUint64_unfold : FuncUnfold LEPutUint64 [] LEPutUint64.impl
-  LEAppendUint64_unfold : FuncUnfold LEAppendUint64 [] LEAppendUint64.impl
-  BEUint16_unfold : FuncUnfold BEUint16 [] BEUint16.impl
-  BEPutUint16_unfold : FuncUnfold BEPutUint16 [] BEPutUint16.impl
-  BEAppendUint16_unfold : FuncUnfold BEAppendUint16 [] BEAppendUint16.impl
-  BEUint32_unfold : FuncUnfold BEUint32 [] BEUint32.impl
-  BEPutUint32_unfold : FuncUnfold BEPutUint32 [] BEPutUint32.impl
-  BEAppendUint32_unfold : FuncUnfold BEAppendUint32 [] BEAppendUint32.impl
-  BEUint64_unfold : FuncUnfold BEUint64 [] BEUint64.impl
-  BEPutUint64_unfold : FuncUnfold BEPutUint64 [] BEPutUint64.impl
-  BEAppendUint64_unfold : FuncUnfold BEAppendUint64 [] BEAppendUint64.impl
+  unfold'LEUint16 : FuncUnfold LEUint16 [] LEUint16.impl
+  unfold'LEPutUint16 : FuncUnfold LEPutUint16 [] LEPutUint16.impl
+  unfold'LEAppendUint16 : FuncUnfold LEAppendUint16 [] LEAppendUint16.impl
+  unfold'LEUint32 : FuncUnfold LEUint32 [] LEUint32.impl
+  unfold'LEPutUint32 : FuncUnfold LEPutUint32 [] LEPutUint32.impl
+  unfold'LEAppendUint32 : FuncUnfold LEAppendUint32 [] LEAppendUint32.impl
+  unfold'LEUint64 : FuncUnfold LEUint64 [] LEUint64.impl
+  unfold'LEPutUint64 : FuncUnfold LEPutUint64 [] LEPutUint64.impl
+  unfold'LEAppendUint64 : FuncUnfold LEAppendUint64 [] LEAppendUint64.impl
+  unfold'BEUint16 : FuncUnfold BEUint16 [] BEUint16.impl
+  unfold'BEPutUint16 : FuncUnfold BEPutUint16 [] BEPutUint16.impl
+  unfold'BEAppendUint16 : FuncUnfold BEAppendUint16 [] BEAppendUint16.impl
+  unfold'BEUint32 : FuncUnfold BEUint32 [] BEUint32.impl
+  unfold'BEPutUint32 : FuncUnfold BEPutUint32 [] BEPutUint32.impl
+  unfold'BEAppendUint32 : FuncUnfold BEAppendUint32 [] BEAppendUint32.impl
+  unfold'BEUint64 : FuncUnfold BEUint64 [] BEUint64.impl
+  unfold'BEPutUint64 : FuncUnfold BEPutUint64 [] BEPutUint64.impl
+  unfold'BEAppendUint64 : FuncUnfold BEAppendUint64 [] BEAppendUint64.impl
 
-attribute [instance] Assumptions.LEUint16_unfold
-  Assumptions.LEPutUint16_unfold
-  Assumptions.LEAppendUint16_unfold
-  Assumptions.LEUint32_unfold
-  Assumptions.LEPutUint32_unfold
-  Assumptions.LEAppendUint32_unfold
-  Assumptions.LEUint64_unfold
-  Assumptions.LEPutUint64_unfold
-  Assumptions.LEAppendUint64_unfold
-  Assumptions.BEUint16_unfold
-  Assumptions.BEPutUint16_unfold
-  Assumptions.BEAppendUint16_unfold
-  Assumptions.BEUint32_unfold
-  Assumptions.BEPutUint32_unfold
-  Assumptions.BEAppendUint32_unfold
-  Assumptions.BEUint64_unfold
-  Assumptions.BEPutUint64_unfold
-  Assumptions.BEAppendUint64_unfold
+attribute [instance] Assumptions.unfold'LEUint16
+  Assumptions.unfold'LEPutUint16
+  Assumptions.unfold'LEAppendUint16
+  Assumptions.unfold'LEUint32
+  Assumptions.unfold'LEPutUint32
+  Assumptions.unfold'LEAppendUint32
+  Assumptions.unfold'LEUint64
+  Assumptions.unfold'LEPutUint64
+  Assumptions.unfold'LEAppendUint64
+  Assumptions.unfold'BEUint16
+  Assumptions.unfold'BEPutUint16
+  Assumptions.unfold'BEAppendUint16
+  Assumptions.unfold'BEUint32
+  Assumptions.unfold'BEPutUint32
+  Assumptions.unfold'BEAppendUint32
+  Assumptions.unfold'BEUint64
+  Assumptions.unfold'BEPutUint64
+  Assumptions.unfold'BEAppendUint64
 
 end internal.byteorder
 

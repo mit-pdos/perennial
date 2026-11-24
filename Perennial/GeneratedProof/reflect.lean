@@ -25,11 +25,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance abiStep_typed_pointsto :
+noncomputable instance typed_pointsto'abiStep :
     TypedPointsto (GF := GF) reflect.abiStep :=
   sorry -- axiomatized type
 
-noncomputable instance abiStep_into_val_typed :
+noncomputable instance into_val_typed'abiStep :
     IntoValTypedUnderlying (GF := GF) reflect.abiStep reflect.abiStep.underlying :=
   sorry -- axiomatized type
 
@@ -44,11 +44,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance abiStepKind_typed_pointsto :
+noncomputable instance typed_pointsto'abiStepKind :
     TypedPointsto (GF := GF) reflect.abiStepKind :=
   sorry -- axiomatized type
 
-noncomputable instance abiStepKind_into_val_typed :
+noncomputable instance into_val_typed'abiStepKind :
     IntoValTypedUnderlying (GF := GF) reflect.abiStepKind reflect.abiStepKind.underlying :=
   sorry -- axiomatized type
 
@@ -63,11 +63,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance abiSeq_typed_pointsto :
+noncomputable instance typed_pointsto'abiSeq :
     TypedPointsto (GF := GF) reflect.abiSeq :=
   sorry -- axiomatized type
 
-noncomputable instance abiSeq_into_val_typed :
+noncomputable instance into_val_typed'abiSeq :
     IntoValTypedUnderlying (GF := GF) reflect.abiSeq reflect.abiSeq.underlying :=
   sorry -- axiomatized type
 
@@ -82,11 +82,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance abiDesc_typed_pointsto :
+noncomputable instance typed_pointsto'abiDesc :
     TypedPointsto (GF := GF) reflect.abiDesc :=
   sorry -- axiomatized type
 
-noncomputable instance abiDesc_into_val_typed :
+noncomputable instance into_val_typed'abiDesc :
     IntoValTypedUnderlying (GF := GF) reflect.abiDesc reflect.abiDesc.underlying :=
   sorry -- axiomatized type
 
@@ -101,11 +101,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance visit_typed_pointsto :
+noncomputable instance typed_pointsto'visit :
     TypedPointsto (GF := GF) reflect.visit :=
   sorry -- axiomatized type
 
-noncomputable instance visit_into_val_typed :
+noncomputable instance into_val_typed'visit :
     IntoValTypedUnderlying (GF := GF) reflect.visit reflect.visit.underlying :=
   sorry -- axiomatized type
 
@@ -120,11 +120,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance makeFuncImpl_typed_pointsto :
+noncomputable instance typed_pointsto'makeFuncImpl :
     TypedPointsto (GF := GF) reflect.makeFuncImpl :=
   sorry -- axiomatized type
 
-noncomputable instance makeFuncImpl_into_val_typed :
+noncomputable instance into_val_typed'makeFuncImpl :
     IntoValTypedUnderlying (GF := GF) reflect.makeFuncImpl reflect.makeFuncImpl.underlying :=
   sorry -- axiomatized type
 
@@ -139,11 +139,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance methodValue_typed_pointsto :
+noncomputable instance typed_pointsto'methodValue :
     TypedPointsto (GF := GF) reflect.methodValue :=
   sorry -- axiomatized type
 
-noncomputable instance methodValue_into_val_typed :
+noncomputable instance into_val_typed'methodValue :
     IntoValTypedUnderlying (GF := GF) reflect.methodValue reflect.methodValue.underlying :=
   sorry -- axiomatized type
 
@@ -158,11 +158,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance makeFuncCtxt_typed_pointsto :
+noncomputable instance typed_pointsto'makeFuncCtxt :
     TypedPointsto (GF := GF) reflect.makeFuncCtxt :=
   sorry -- axiomatized type
 
-noncomputable instance makeFuncCtxt_into_val_typed :
+noncomputable instance into_val_typed'makeFuncCtxt :
     IntoValTypedUnderlying (GF := GF) reflect.makeFuncCtxt reflect.makeFuncCtxt.underlying :=
   sorry -- axiomatized type
 
@@ -177,11 +177,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance MapIter_typed_pointsto :
+noncomputable instance typed_pointsto'MapIter :
     TypedPointsto (GF := GF) reflect.MapIter :=
   sorry -- axiomatized type
 
-noncomputable instance MapIter_into_val_typed :
+noncomputable instance into_val_typed'MapIter :
     IntoValTypedUnderlying (GF := GF) reflect.MapIter reflect.MapIter.underlying :=
   sorry -- axiomatized type
 
@@ -196,11 +196,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance common_typed_pointsto :
+noncomputable instance typed_pointsto'common :
     TypedPointsto (GF := GF) reflect.common :=
   sorry -- axiomatized type
 
-noncomputable instance common_into_val_typed :
+noncomputable instance into_val_typed'common :
     IntoValTypedUnderlying (GF := GF) reflect.common reflect.common.underlying :=
   sorry -- axiomatized type
 
@@ -215,11 +215,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance rtype_typed_pointsto :
+noncomputable instance typed_pointsto'rtype :
     TypedPointsto (GF := GF) reflect.rtype :=
   sorry -- axiomatized type
 
-noncomputable instance rtype_into_val_typed :
+noncomputable instance into_val_typed'rtype :
     IntoValTypedUnderlying (GF := GF) reflect.rtype reflect.rtype.underlying :=
   sorry -- axiomatized type
 
@@ -234,11 +234,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance ChanDir_typed_pointsto :
+noncomputable instance typed_pointsto'ChanDir :
     TypedPointsto (GF := GF) reflect.ChanDir :=
   sorry -- axiomatized type
 
-noncomputable instance ChanDir_into_val_typed :
+noncomputable instance into_val_typed'ChanDir :
     IntoValTypedUnderlying (GF := GF) reflect.ChanDir reflect.ChanDir.underlying :=
   sorry -- axiomatized type
 
@@ -253,11 +253,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance interfaceType_typed_pointsto :
+noncomputable instance typed_pointsto'interfaceType :
     TypedPointsto (GF := GF) reflect.interfaceType :=
   sorry -- axiomatized type
 
-noncomputable instance interfaceType_into_val_typed :
+noncomputable instance into_val_typed'interfaceType :
     IntoValTypedUnderlying (GF := GF) reflect.interfaceType reflect.interfaceType.underlying :=
   sorry -- axiomatized type
 
@@ -272,11 +272,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance ptrType_typed_pointsto :
+noncomputable instance typed_pointsto'ptrType :
     TypedPointsto (GF := GF) reflect.ptrType :=
   sorry -- axiomatized type
 
-noncomputable instance ptrType_into_val_typed :
+noncomputable instance into_val_typed'ptrType :
     IntoValTypedUnderlying (GF := GF) reflect.ptrType reflect.ptrType.underlying :=
   sorry -- axiomatized type
 
@@ -291,11 +291,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance sliceType_typed_pointsto :
+noncomputable instance typed_pointsto'sliceType :
     TypedPointsto (GF := GF) reflect.sliceType :=
   sorry -- axiomatized type
 
-noncomputable instance sliceType_into_val_typed :
+noncomputable instance into_val_typed'sliceType :
     IntoValTypedUnderlying (GF := GF) reflect.sliceType reflect.sliceType.underlying :=
   sorry -- axiomatized type
 
@@ -310,11 +310,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance structType_typed_pointsto :
+noncomputable instance typed_pointsto'structType :
     TypedPointsto (GF := GF) reflect.structType :=
   sorry -- axiomatized type
 
-noncomputable instance structType_into_val_typed :
+noncomputable instance into_val_typed'structType :
     IntoValTypedUnderlying (GF := GF) reflect.structType reflect.structType.underlying :=
   sorry -- axiomatized type
 
@@ -329,11 +329,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance Method_typed_pointsto :
+noncomputable instance typed_pointsto'Method :
     TypedPointsto (GF := GF) reflect.Method :=
   sorry -- axiomatized type
 
-noncomputable instance Method_into_val_typed :
+noncomputable instance into_val_typed'Method :
     IntoValTypedUnderlying (GF := GF) reflect.Method reflect.Method.underlying :=
   sorry -- axiomatized type
 
@@ -348,11 +348,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance StructField_typed_pointsto :
+noncomputable instance typed_pointsto'StructField :
     TypedPointsto (GF := GF) reflect.StructField :=
   sorry -- axiomatized type
 
-noncomputable instance StructField_into_val_typed :
+noncomputable instance into_val_typed'StructField :
     IntoValTypedUnderlying (GF := GF) reflect.StructField reflect.StructField.underlying :=
   sorry -- axiomatized type
 
@@ -367,11 +367,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance StructTag_typed_pointsto :
+noncomputable instance typed_pointsto'StructTag :
     TypedPointsto (GF := GF) reflect.StructTag :=
   sorry -- axiomatized type
 
-noncomputable instance StructTag_into_val_typed :
+noncomputable instance into_val_typed'StructTag :
     IntoValTypedUnderlying (GF := GF) reflect.StructTag reflect.StructTag.underlying :=
   sorry -- axiomatized type
 
@@ -386,11 +386,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance fieldScan_typed_pointsto :
+noncomputable instance typed_pointsto'fieldScan :
     TypedPointsto (GF := GF) reflect.fieldScan :=
   sorry -- axiomatized type
 
-noncomputable instance fieldScan_into_val_typed :
+noncomputable instance into_val_typed'fieldScan :
     IntoValTypedUnderlying (GF := GF) reflect.fieldScan reflect.fieldScan.underlying :=
   sorry -- axiomatized type
 
@@ -405,11 +405,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance cacheKey_typed_pointsto :
+noncomputable instance typed_pointsto'cacheKey :
     TypedPointsto (GF := GF) reflect.cacheKey :=
   sorry -- axiomatized type
 
-noncomputable instance cacheKey_into_val_typed :
+noncomputable instance into_val_typed'cacheKey :
     IntoValTypedUnderlying (GF := GF) reflect.cacheKey reflect.cacheKey.underlying :=
   sorry -- axiomatized type
 
@@ -424,11 +424,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance structTypeUncommon_typed_pointsto :
+noncomputable instance typed_pointsto'structTypeUncommon :
     TypedPointsto (GF := GF) reflect.structTypeUncommon :=
   sorry -- axiomatized type
 
-noncomputable instance structTypeUncommon_into_val_typed :
+noncomputable instance into_val_typed'structTypeUncommon :
     IntoValTypedUnderlying (GF := GF) reflect.structTypeUncommon reflect.structTypeUncommon.underlying :=
   sorry -- axiomatized type
 
@@ -443,11 +443,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance layoutKey_typed_pointsto :
+noncomputable instance typed_pointsto'layoutKey :
     TypedPointsto (GF := GF) reflect.layoutKey :=
   sorry -- axiomatized type
 
-noncomputable instance layoutKey_into_val_typed :
+noncomputable instance into_val_typed'layoutKey :
     IntoValTypedUnderlying (GF := GF) reflect.layoutKey reflect.layoutKey.underlying :=
   sorry -- axiomatized type
 
@@ -462,11 +462,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance layoutType_typed_pointsto :
+noncomputable instance typed_pointsto'layoutType :
     TypedPointsto (GF := GF) reflect.layoutType :=
   sorry -- axiomatized type
 
-noncomputable instance layoutType_into_val_typed :
+noncomputable instance into_val_typed'layoutType :
     IntoValTypedUnderlying (GF := GF) reflect.layoutType reflect.layoutType.underlying :=
   sorry -- axiomatized type
 
@@ -481,11 +481,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance bitVector_typed_pointsto :
+noncomputable instance typed_pointsto'bitVector :
     TypedPointsto (GF := GF) reflect.bitVector :=
   sorry -- axiomatized type
 
-noncomputable instance bitVector_into_val_typed :
+noncomputable instance into_val_typed'bitVector :
     IntoValTypedUnderlying (GF := GF) reflect.bitVector reflect.bitVector.underlying :=
   sorry -- axiomatized type
 
@@ -500,7 +500,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance Value_typed_pointsto :
+noncomputable instance typed_pointsto'Value :
     TypedPointsto (GF := GF) reflect.Value where
   typedPointstoDef l v dq := iprop(
     "typ_" ∷ typedPointsto (structFieldRef reflect.Value go!"typ_" l) v.typ_' dq ∗
@@ -511,11 +511,11 @@ noncomputable instance Value_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance Value_into_val_typed :
+noncomputable instance into_val_typed'Value :
     IntoValTypedUnderlying (GF := GF) reflect.Value reflect.Value.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance Value_access_load_typ_ (l : Loc) (v : reflect.Value) (dq : DFrac) :
+noncomputable instance access_load'Value'typ_ (l : Loc) (v : reflect.Value) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef reflect.Value go!"typ_" l) v.typ_' dq)
       (typedPointsto (structFieldRef reflect.Value go!"typ_" l) v.typ_' dq)
@@ -523,7 +523,7 @@ noncomputable instance Value_access_load_typ_ (l : Loc) (v : reflect.Value) (dq 
  by
   solve_pointsto_access_struct
 
-noncomputable instance Value_access_store_typ_ (l : Loc) (v : reflect.Value) (y : Loc) :
+noncomputable instance access_store'Value'typ_ (l : Loc) (v : reflect.Value) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef reflect.Value go!"typ_" l) v.typ_' (DFrac.own 1))
       (typedPointsto (structFieldRef reflect.Value go!"typ_" l) y (DFrac.own 1))
@@ -531,7 +531,7 @@ noncomputable instance Value_access_store_typ_ (l : Loc) (v : reflect.Value) (y 
  by
   solve_pointsto_access_struct
 
-noncomputable instance Value_access_load_ptr (l : Loc) (v : reflect.Value) (dq : DFrac) :
+noncomputable instance access_load'Value'ptr (l : Loc) (v : reflect.Value) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef reflect.Value go!"ptr" l) v.ptr' dq)
       (typedPointsto (structFieldRef reflect.Value go!"ptr" l) v.ptr' dq)
@@ -539,7 +539,7 @@ noncomputable instance Value_access_load_ptr (l : Loc) (v : reflect.Value) (dq :
  by
   solve_pointsto_access_struct
 
-noncomputable instance Value_access_store_ptr (l : Loc) (v : reflect.Value) (y : Loc) :
+noncomputable instance access_store'Value'ptr (l : Loc) (v : reflect.Value) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef reflect.Value go!"ptr" l) v.ptr' (DFrac.own 1))
       (typedPointsto (structFieldRef reflect.Value go!"ptr" l) y (DFrac.own 1))
@@ -547,7 +547,7 @@ noncomputable instance Value_access_store_ptr (l : Loc) (v : reflect.Value) (y :
  by
   solve_pointsto_access_struct
 
-noncomputable instance Value_access_load_flag (l : Loc) (v : reflect.Value) (dq : DFrac) :
+noncomputable instance access_load'Value'flag (l : Loc) (v : reflect.Value) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef reflect.Value go!"flag" l) v.flag' dq)
       (typedPointsto (structFieldRef reflect.Value go!"flag" l) v.flag' dq)
@@ -555,7 +555,7 @@ noncomputable instance Value_access_load_flag (l : Loc) (v : reflect.Value) (dq 
  by
   solve_pointsto_access_struct
 
-noncomputable instance Value_access_store_flag (l : Loc) (v : reflect.Value) (y : reflect.flag) :
+noncomputable instance access_store'Value'flag (l : Loc) (v : reflect.Value) (y : reflect.flag) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef reflect.Value go!"flag" l) v.flag' (DFrac.own 1))
       (typedPointsto (structFieldRef reflect.Value go!"flag" l) y (DFrac.own 1))
@@ -574,11 +574,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance ValueError_typed_pointsto :
+noncomputable instance typed_pointsto'ValueError :
     TypedPointsto (GF := GF) reflect.ValueError :=
   sorry -- axiomatized type
 
-noncomputable instance ValueError_into_val_typed :
+noncomputable instance into_val_typed'ValueError :
     IntoValTypedUnderlying (GF := GF) reflect.ValueError reflect.ValueError.underlying :=
   sorry -- axiomatized type
 
@@ -593,11 +593,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance nonEmptyInterface_typed_pointsto :
+noncomputable instance typed_pointsto'nonEmptyInterface :
     TypedPointsto (GF := GF) reflect.nonEmptyInterface :=
   sorry -- axiomatized type
 
-noncomputable instance nonEmptyInterface_into_val_typed :
+noncomputable instance into_val_typed'nonEmptyInterface :
     IntoValTypedUnderlying (GF := GF) reflect.nonEmptyInterface reflect.nonEmptyInterface.underlying :=
   sorry -- axiomatized type
 
@@ -612,11 +612,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance StringHeader_typed_pointsto :
+noncomputable instance typed_pointsto'StringHeader :
     TypedPointsto (GF := GF) reflect.StringHeader :=
   sorry -- axiomatized type
 
-noncomputable instance StringHeader_into_val_typed :
+noncomputable instance into_val_typed'StringHeader :
     IntoValTypedUnderlying (GF := GF) reflect.StringHeader reflect.StringHeader.underlying :=
   sorry -- axiomatized type
 
@@ -631,11 +631,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance SliceHeader_typed_pointsto :
+noncomputable instance typed_pointsto'SliceHeader :
     TypedPointsto (GF := GF) reflect.SliceHeader :=
   sorry -- axiomatized type
 
-noncomputable instance SliceHeader_into_val_typed :
+noncomputable instance into_val_typed'SliceHeader :
     IntoValTypedUnderlying (GF := GF) reflect.SliceHeader reflect.SliceHeader.underlying :=
   sorry -- axiomatized type
 
@@ -650,11 +650,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance runtimeSelect_typed_pointsto :
+noncomputable instance typed_pointsto'runtimeSelect :
     TypedPointsto (GF := GF) reflect.runtimeSelect :=
   sorry -- axiomatized type
 
-noncomputable instance runtimeSelect_into_val_typed :
+noncomputable instance into_val_typed'runtimeSelect :
     IntoValTypedUnderlying (GF := GF) reflect.runtimeSelect reflect.runtimeSelect.underlying :=
   sorry -- axiomatized type
 
@@ -669,11 +669,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance SelectDir_typed_pointsto :
+noncomputable instance typed_pointsto'SelectDir :
     TypedPointsto (GF := GF) reflect.SelectDir :=
   sorry -- axiomatized type
 
-noncomputable instance SelectDir_into_val_typed :
+noncomputable instance into_val_typed'SelectDir :
     IntoValTypedUnderlying (GF := GF) reflect.SelectDir reflect.SelectDir.underlying :=
   sorry -- axiomatized type
 
@@ -688,11 +688,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance SelectCase_typed_pointsto :
+noncomputable instance typed_pointsto'SelectCase :
     TypedPointsto (GF := GF) reflect.SelectCase :=
   sorry -- axiomatized type
 
-noncomputable instance SelectCase_into_val_typed :
+noncomputable instance into_val_typed'SelectCase :
     IntoValTypedUnderlying (GF := GF) reflect.SelectCase reflect.SelectCase.underlying :=
   sorry -- axiomatized type
 
@@ -707,11 +707,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : reflect.Assumptions]
 
-noncomputable instance visibleFieldsWalker_typed_pointsto :
+noncomputable instance typed_pointsto'visibleFieldsWalker :
     TypedPointsto (GF := GF) reflect.visibleFieldsWalker :=
   sorry -- axiomatized type
 
-noncomputable instance visibleFieldsWalker_into_val_typed :
+noncomputable instance into_val_typed'visibleFieldsWalker :
     IntoValTypedUnderlying (GF := GF) reflect.visibleFieldsWalker reflect.visibleFieldsWalker.underlying :=
   sorry -- axiomatized type
 

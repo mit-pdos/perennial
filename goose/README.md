@@ -48,32 +48,38 @@ printed as plain constructor applications of `Perennial/GooseLang/Lang.lean`.
 
 ### Lean names of Go identifiers
 
-One rule per kind of name (`GoName` in `glang/syntax.go`):
+One rule per kind of name (`glang/syntax.go`):
 
-- a struct field `F` is the projection `F'`, and a type parameter `P`'s value
-  type is the binder `P'`;
-- every other Go name `X` (type, function, global, method, a type parameter's
-  `go.GoType` binder) is `X`, or `X''` when `X` is reserved: a Lean keyword
-  (`Type`, `def`, `at`, ...), a framework name the output refers to unqualified
-  (`Val`, `Pair`, `Index`, `Int`, `Bool`, `Set`, `list`, ...), a name goose or
-  Lean declares under a type's or function's namespace (`ty`, `underlying`,
-  `fields`, `impl`, `mk`, `rec`, `eq_def`, ...), a generated member shape
-  (`get_F`, `set_F`, `M_unfold`, `T_instance`, ...), or a binder of the
-  generated code (`x`, `y`, `l`, `GF`, ...). Go `type Type int64` is `Type''`,
-  its field `Type` is `Type'`.
+- a struct field `F` is the projection `F'`;
+- a name bound inside a declaration, a type parameter or a function-local
+  constant `P`, is `P₀` (a type parameter's value type is `P₀'`; `BinderName`);
+- every other Go name `X` (type, function, global, method) is `X`, or `X''` when
+  `X` is reserved (`GoName`): a Lean keyword (`Type`, `def`, `at`, ...), a
+  framework, Iris or Lean name the output refers to unqualified (`Val`, `Pair`,
+  `Index`, `Int`, `GoSlice`, `GooseExts`, `TypedPointsto`, `true`, ...), a name
+  goose or Lean declares under a type's or function's namespace (`ty`,
+  `underlying`, `fields`, `impl`, `mk`, `rec`, `eq_def`, ...), or a binder of the
+  generated code (`x`, `y`, `l`, `GF`, ...). Go `type Type int64` is `Type''`, its
+  field `Type` is `Type'`;
+- a generated name derived from a Go name `x` is `tag'x` (`MemberName`): the class
+  members `get'F`, `set'F`, `unfold'M`, `ptr_unfold'M`, `instance'T`, `unfold'f`,
+  `import'p`, and the instances `equals_unfold'T`, `typed_pointsto'T`,
+  `into_val_typed'T`, `access_load'T'F`, `access_store'T'F`.
 
 Guillemets are a lexing fallback, not a conflict rule: Go identifiers may use
-Unicode letters and digits that Lean's identifier lexer rejects (`é`, `名`), and
-such a name is written in guillemets (`«é»`), which does not change the name.
-(Goose also quotes its own encoded names, `«struct#<h>»`, `«_#0'»`, which are
-not Go identifiers, and package-path components that are Lean keywords in
-namespaces, `pkg_id.«unsafe»`.)
+Unicode letters and digits that Lean's identifier lexer rejects (`é`, `名`, `λ`),
+and such a name is written in guillemets (`«é»`), which does not change the name.
+(Goose also quotes its own encoded names, `«struct#<h>»`, `«_#0'»`, `init.«0»`,
+which are not Go identifiers, and package-path components that are Lean keywords
+in namespaces, `pkg_id.«unsafe»`.)
 
-Go identifiers contain no `'`, so a name ending in exactly one `'` is always a
-field projection (or a value binder), and nothing else Go-derived ends that way:
-a projection `S.F'` cannot capture a type, function, global or method referenced
-inside namespace `S`. `testdata/examples/unittest/names` has a case for each
-kind of capture.
+Go identifiers contain no `'` and no subscript digit, so the four forms cannot
+meet: a field projection `S.F'` or a class member cannot capture a type,
+function, global or method, a binder cannot capture a package-level name, and
+no two generated names coincide. Every other name the output refers to
+unqualified is reserved; `TestOutputNamesReserved` checks this against the
+outputs of the test packages, and `testdata/examples/unittest/names` has a case
+for each kind of capture.
 
 ## Running goose
 

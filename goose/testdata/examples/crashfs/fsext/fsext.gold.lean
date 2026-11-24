@@ -273,19 +273,19 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val (go.GlobalAlloc mu _root_.Perennial.sync.Mutex.ty)) (Val #()))))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Read_unfold : FuncUnfold Read [] Read.impl
-  Write_unfold : FuncUnfold Write [] Write.impl
-  tryWrite_unfold : FuncUnfold tryWrite [] tryWrite.impl
-  import_os_Assumption : _root_.Perennial.os.Assumptions
-  import_filepath_Assumption : _root_.Perennial.path.filepath.Assumptions
-  import_sync_Assumption : _root_.Perennial.sync.Assumptions
+  unfold'Read : FuncUnfold Read [] Read.impl
+  unfold'Write : FuncUnfold Write [] Write.impl
+  unfold'tryWrite : FuncUnfold tryWrite [] tryWrite.impl
+  import'os : _root_.Perennial.os.Assumptions
+  import'filepath : _root_.Perennial.path.filepath.Assumptions
+  import'sync : _root_.Perennial.sync.Assumptions
 
-attribute [instance] Assumptions.Read_unfold
-  Assumptions.Write_unfold
-  Assumptions.tryWrite_unfold
-  Assumptions.import_os_Assumption
-  Assumptions.import_filepath_Assumption
-  Assumptions.import_sync_Assumption
+attribute [instance] Assumptions.unfold'Read
+  Assumptions.unfold'Write
+  Assumptions.unfold'tryWrite
+  Assumptions.import'os
+  Assumptions.import'filepath
+  Assumptions.import'sync
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext
 

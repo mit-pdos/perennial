@@ -26,7 +26,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : syscall.Assumptions]
 
-noncomputable instance Termios_typed_pointsto :
+noncomputable instance typed_pointsto'Termios :
     TypedPointsto (GF := GF) syscall.Termios where
   typedPointstoDef l v dq := iprop(
     "Iflag" ∷ typedPointsto (structFieldRef syscall.Termios go!"Iflag" l) v.Iflag' dq ∗
@@ -43,11 +43,11 @@ noncomputable instance Termios_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance Termios_into_val_typed :
+noncomputable instance into_val_typed'Termios :
     IntoValTypedUnderlying (GF := GF) syscall.Termios syscall.Termios.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance Termios_access_load_Iflag (l : Loc) (v : syscall.Termios) (dq : DFrac) :
+noncomputable instance access_load'Termios'Iflag (l : Loc) (v : syscall.Termios) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Iflag" l) v.Iflag' dq)
       (typedPointsto (structFieldRef syscall.Termios go!"Iflag" l) v.Iflag' dq)
@@ -55,7 +55,7 @@ noncomputable instance Termios_access_load_Iflag (l : Loc) (v : syscall.Termios)
  by
   solve_pointsto_access_struct
 
-noncomputable instance Termios_access_store_Iflag (l : Loc) (v : syscall.Termios) (y : w32) :
+noncomputable instance access_store'Termios'Iflag (l : Loc) (v : syscall.Termios) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Iflag" l) v.Iflag' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Termios go!"Iflag" l) y (DFrac.own 1))
@@ -63,7 +63,7 @@ noncomputable instance Termios_access_store_Iflag (l : Loc) (v : syscall.Termios
  by
   solve_pointsto_access_struct
 
-noncomputable instance Termios_access_load_Oflag (l : Loc) (v : syscall.Termios) (dq : DFrac) :
+noncomputable instance access_load'Termios'Oflag (l : Loc) (v : syscall.Termios) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Oflag" l) v.Oflag' dq)
       (typedPointsto (structFieldRef syscall.Termios go!"Oflag" l) v.Oflag' dq)
@@ -71,7 +71,7 @@ noncomputable instance Termios_access_load_Oflag (l : Loc) (v : syscall.Termios)
  by
   solve_pointsto_access_struct
 
-noncomputable instance Termios_access_store_Oflag (l : Loc) (v : syscall.Termios) (y : w32) :
+noncomputable instance access_store'Termios'Oflag (l : Loc) (v : syscall.Termios) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Oflag" l) v.Oflag' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Termios go!"Oflag" l) y (DFrac.own 1))
@@ -79,7 +79,7 @@ noncomputable instance Termios_access_store_Oflag (l : Loc) (v : syscall.Termios
  by
   solve_pointsto_access_struct
 
-noncomputable instance Termios_access_load_Cflag (l : Loc) (v : syscall.Termios) (dq : DFrac) :
+noncomputable instance access_load'Termios'Cflag (l : Loc) (v : syscall.Termios) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Cflag" l) v.Cflag' dq)
       (typedPointsto (structFieldRef syscall.Termios go!"Cflag" l) v.Cflag' dq)
@@ -87,7 +87,7 @@ noncomputable instance Termios_access_load_Cflag (l : Loc) (v : syscall.Termios)
  by
   solve_pointsto_access_struct
 
-noncomputable instance Termios_access_store_Cflag (l : Loc) (v : syscall.Termios) (y : w32) :
+noncomputable instance access_store'Termios'Cflag (l : Loc) (v : syscall.Termios) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Cflag" l) v.Cflag' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Termios go!"Cflag" l) y (DFrac.own 1))
@@ -95,7 +95,7 @@ noncomputable instance Termios_access_store_Cflag (l : Loc) (v : syscall.Termios
  by
   solve_pointsto_access_struct
 
-noncomputable instance Termios_access_load_Lflag (l : Loc) (v : syscall.Termios) (dq : DFrac) :
+noncomputable instance access_load'Termios'Lflag (l : Loc) (v : syscall.Termios) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Lflag" l) v.Lflag' dq)
       (typedPointsto (structFieldRef syscall.Termios go!"Lflag" l) v.Lflag' dq)
@@ -103,7 +103,7 @@ noncomputable instance Termios_access_load_Lflag (l : Loc) (v : syscall.Termios)
  by
   solve_pointsto_access_struct
 
-noncomputable instance Termios_access_store_Lflag (l : Loc) (v : syscall.Termios) (y : w32) :
+noncomputable instance access_store'Termios'Lflag (l : Loc) (v : syscall.Termios) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Lflag" l) v.Lflag' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Termios go!"Lflag" l) y (DFrac.own 1))
@@ -111,7 +111,7 @@ noncomputable instance Termios_access_store_Lflag (l : Loc) (v : syscall.Termios
  by
   solve_pointsto_access_struct
 
-noncomputable instance Termios_access_load_Line (l : Loc) (v : syscall.Termios) (dq : DFrac) :
+noncomputable instance access_load'Termios'Line (l : Loc) (v : syscall.Termios) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Line" l) v.Line' dq)
       (typedPointsto (structFieldRef syscall.Termios go!"Line" l) v.Line' dq)
@@ -119,7 +119,7 @@ noncomputable instance Termios_access_load_Line (l : Loc) (v : syscall.Termios) 
  by
   solve_pointsto_access_struct
 
-noncomputable instance Termios_access_store_Line (l : Loc) (v : syscall.Termios) (y : w8) :
+noncomputable instance access_store'Termios'Line (l : Loc) (v : syscall.Termios) (y : w8) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Line" l) v.Line' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Termios go!"Line" l) y (DFrac.own 1))
@@ -127,7 +127,7 @@ noncomputable instance Termios_access_store_Line (l : Loc) (v : syscall.Termios)
  by
   solve_pointsto_access_struct
 
-noncomputable instance Termios_access_load_Cc (l : Loc) (v : syscall.Termios) (dq : DFrac) :
+noncomputable instance access_load'Termios'Cc (l : Loc) (v : syscall.Termios) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Cc" l) v.Cc' dq)
       (typedPointsto (structFieldRef syscall.Termios go!"Cc" l) v.Cc' dq)
@@ -135,7 +135,7 @@ noncomputable instance Termios_access_load_Cc (l : Loc) (v : syscall.Termios) (d
  by
   solve_pointsto_access_struct
 
-noncomputable instance Termios_access_store_Cc (l : Loc) (v : syscall.Termios) (y : (GoArray w8 32)) :
+noncomputable instance access_store'Termios'Cc (l : Loc) (v : syscall.Termios) (y : (GoArray w8 32)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Cc" l) v.Cc' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Termios go!"Cc" l) y (DFrac.own 1))
@@ -143,7 +143,7 @@ noncomputable instance Termios_access_store_Cc (l : Loc) (v : syscall.Termios) (
  by
   solve_pointsto_access_struct
 
-noncomputable instance Termios_access_load_Pad_cgo_0 (l : Loc) (v : syscall.Termios) (dq : DFrac) :
+noncomputable instance access_load'Termios'Pad_cgo_0 (l : Loc) (v : syscall.Termios) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Pad_cgo_0" l) v.Pad_cgo_0' dq)
       (typedPointsto (structFieldRef syscall.Termios go!"Pad_cgo_0" l) v.Pad_cgo_0' dq)
@@ -151,7 +151,7 @@ noncomputable instance Termios_access_load_Pad_cgo_0 (l : Loc) (v : syscall.Term
  by
   solve_pointsto_access_struct
 
-noncomputable instance Termios_access_store_Pad_cgo_0 (l : Loc) (v : syscall.Termios) (y : (GoArray w8 3)) :
+noncomputable instance access_store'Termios'Pad_cgo_0 (l : Loc) (v : syscall.Termios) (y : (GoArray w8 3)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Pad_cgo_0" l) v.Pad_cgo_0' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Termios go!"Pad_cgo_0" l) y (DFrac.own 1))
@@ -159,7 +159,7 @@ noncomputable instance Termios_access_store_Pad_cgo_0 (l : Loc) (v : syscall.Ter
  by
   solve_pointsto_access_struct
 
-noncomputable instance Termios_access_load_Ispeed (l : Loc) (v : syscall.Termios) (dq : DFrac) :
+noncomputable instance access_load'Termios'Ispeed (l : Loc) (v : syscall.Termios) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Ispeed" l) v.Ispeed' dq)
       (typedPointsto (structFieldRef syscall.Termios go!"Ispeed" l) v.Ispeed' dq)
@@ -167,7 +167,7 @@ noncomputable instance Termios_access_load_Ispeed (l : Loc) (v : syscall.Termios
  by
   solve_pointsto_access_struct
 
-noncomputable instance Termios_access_store_Ispeed (l : Loc) (v : syscall.Termios) (y : w32) :
+noncomputable instance access_store'Termios'Ispeed (l : Loc) (v : syscall.Termios) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Ispeed" l) v.Ispeed' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Termios go!"Ispeed" l) y (DFrac.own 1))
@@ -175,7 +175,7 @@ noncomputable instance Termios_access_store_Ispeed (l : Loc) (v : syscall.Termio
  by
   solve_pointsto_access_struct
 
-noncomputable instance Termios_access_load_Ospeed (l : Loc) (v : syscall.Termios) (dq : DFrac) :
+noncomputable instance access_load'Termios'Ospeed (l : Loc) (v : syscall.Termios) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Ospeed" l) v.Ospeed' dq)
       (typedPointsto (structFieldRef syscall.Termios go!"Ospeed" l) v.Ospeed' dq)
@@ -183,7 +183,7 @@ noncomputable instance Termios_access_load_Ospeed (l : Loc) (v : syscall.Termios
  by
   solve_pointsto_access_struct
 
-noncomputable instance Termios_access_store_Ospeed (l : Loc) (v : syscall.Termios) (y : w32) :
+noncomputable instance access_store'Termios'Ospeed (l : Loc) (v : syscall.Termios) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Termios go!"Ospeed" l) v.Ospeed' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Termios go!"Ospeed" l) y (DFrac.own 1))

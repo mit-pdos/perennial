@@ -177,7 +177,7 @@ noncomputable instance T.zero_val [GooseExts] : ZeroVal T :=
 @[irreducible] noncomputable def T.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   T.fieldsUnsealed
 
-noncomputable instance equals_unfold_T [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'T [GooseExts] [GoGlobalContext] :
     EqualsUnfold T.fields T.fieldsUnsealed :=
   ⟨by unfold T.fields; rfl⟩
 
@@ -187,19 +187,19 @@ noncomputable instance equals_unfold_T [GooseExts] [GoGlobalContext] :
 class T.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying T.underlying T
   underlying : go.UnderlyingDirectedEq T.ty T.underlying
-  get_n : ∀ (x : T), go.IsGoStepPureDetTagged under (StructFieldGet T.underlying go!"n") #x (Val #(x.n'))
-  set_n : ∀ (x : T) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet T.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : T)))
+  get'n : ∀ (x : T), go.IsGoStepPureDetTagged under (StructFieldGet T.underlying go!"n") #x (Val #(x.n'))
+  set'n : ∀ (x : T) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet T.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : T)))
   method_set : go.MethodSetIs T.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType T.ty) [(go!"Get", (some (go.signature.Signature [] false [go.uint64])))]
-  ptr_Get_unfold : MethodUnfold (go.GoType.PointerType T.ty) go!"Get" T.Get.impl
+  ptr_unfold'Get : MethodUnfold (go.GoType.PointerType T.ty) go!"Get" T.Get.impl
 
 attribute [instance] T.TypeAssumptions.type_repr
   T.TypeAssumptions.underlying
-  T.TypeAssumptions.get_n
-  T.TypeAssumptions.set_n
+  T.TypeAssumptions.get'n
+  T.TypeAssumptions.set'n
   T.TypeAssumptions.method_set
   T.TypeAssumptions.ptr_method_set
-  T.TypeAssumptions.ptr_Get_unfold
+  T.TypeAssumptions.ptr_unfold'Get
 
 abbrev I [GooseExts] : Type := GoInterface
 
@@ -216,17 +216,17 @@ attribute [instance] I.TypeAssumptions.underlying
   I.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  T_instance : T.TypeAssumptions
-  I_instance : I.TypeAssumptions
-  newX_unfold : FuncUnfold newX [] newX.impl
-  pair_unfold : FuncUnfold pair [] pair.impl
-  Last_unfold : FuncUnfold Last [] Last.impl
+  instance'T : T.TypeAssumptions
+  instance'I : I.TypeAssumptions
+  unfold'newX : FuncUnfold newX [] newX.impl
+  unfold'pair : FuncUnfold pair [] pair.impl
+  unfold'Last : FuncUnfold Last [] Last.impl
 
-attribute [instance] Assumptions.T_instance
-  Assumptions.I_instance
-  Assumptions.newX_unfold
-  Assumptions.pair_unfold
-  Assumptions.Last_unfold
+attribute [instance] Assumptions.instance'T
+  Assumptions.instance'I
+  Assumptions.unfold'newX
+  Assumptions.unfold'pair
+  Assumptions.unfold'Last
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.skipvars
 

@@ -1459,20 +1459,20 @@ noncomputable def RuneStart.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- go: utf8.go:462:6 -/
-noncomputable def word.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def word.impl [GooseExts] [GoGlobalContext] (T₀ : go.GoType) : val :=
   (LamV "s"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uintptr))) (App (Val (GoInstruction (GoZeroVal go.uintptr))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "s" (App (Val (GoInstruction (GoAlloc T))) (Var "s"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc T₀))) (Var "s"))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.uintptr))) (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 0))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 1))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(8 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 2))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(16 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 3))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(24 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 4))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 5))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(40 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 6))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(48 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 7))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(56 : Int))))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.uintptr))) (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T₀))) (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "s")) (Val #(W64 0))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T₀))) (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "s")) (Val #(W64 1))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(8 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T₀))) (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "s")) (Val #(W64 2))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(16 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T₀))) (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "s")) (Val #(W64 3))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(24 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T₀))) (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "s")) (Val #(W64 4))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(32 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T₀))) (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "s")) (Val #(W64 5))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(40 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T₀))) (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "s")) (Val #(W64 6))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(48 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.byte go.uint64))) (App (Val (GoInstruction (Index T₀))) (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "s")) (Val #(W64 7))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(56 : Int))))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uintptr))) (Pair (Var "$res0") (Var "$r0"))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uintptr))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uintptr))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uintptr))) (Pair (App (Val (GoInstruction (Convert go.byte go.uintptr))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 0))))) (App (Val (GoInstruction (GoOp GoShiftl go.uintptr))) (Pair (App (Val (GoInstruction (Convert go.byte go.uintptr))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 1))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(8 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uintptr))) (Pair (App (Val (GoInstruction (Convert go.byte go.uintptr))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 2))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(16 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uintptr))) (Pair (App (Val (GoInstruction (Convert go.byte go.uintptr))) (App (Val (GoInstruction (Index T))) (Pair (App (Val (GoInstruction (GoLoad T))) (Var "s")) (Val #(W64 3))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(24 : Int)))))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uintptr))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uintptr))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uintptr))) (Pair (App (Val (GoInstruction (Convert go.byte go.uintptr))) (App (Val (GoInstruction (Index T₀))) (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "s")) (Val #(W64 0))))) (App (Val (GoInstruction (GoOp GoShiftl go.uintptr))) (Pair (App (Val (GoInstruction (Convert go.byte go.uintptr))) (App (Val (GoInstruction (Index T₀))) (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "s")) (Val #(W64 1))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(8 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uintptr))) (Pair (App (Val (GoInstruction (Convert go.byte go.uintptr))) (App (Val (GoInstruction (Index T₀))) (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "s")) (Val #(W64 2))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(16 : Int))))))) (App (Val (GoInstruction (GoOp GoShiftl go.uintptr))) (Pair (App (Val (GoInstruction (Convert go.byte go.uintptr))) (App (Val (GoInstruction (Index T₀))) (Pair (App (Val (GoInstruction (GoLoad T₀))) (Var "s")) (Val #(W64 3))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(24 : Int)))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -2118,7 +2118,7 @@ noncomputable instance acceptRange.zero_val [GooseExts] : ZeroVal acceptRange :=
 @[irreducible] noncomputable def acceptRange.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   acceptRange.fieldsUnsealed
 
-noncomputable instance equals_unfold_acceptRange [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'acceptRange [GooseExts] [GoGlobalContext] :
     EqualsUnfold acceptRange.fields acceptRange.fieldsUnsealed :=
   ⟨by unfold acceptRange.fields; rfl⟩
 
@@ -2128,66 +2128,66 @@ noncomputable instance equals_unfold_acceptRange [GooseExts] [GoGlobalContext] :
 class acceptRange.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying acceptRange.underlying acceptRange
   underlying : go.UnderlyingDirectedEq acceptRange.ty acceptRange.underlying
-  get_lo : ∀ (x : acceptRange), go.IsGoStepPureDetTagged under (StructFieldGet acceptRange.underlying go!"lo") #x (Val #(x.lo'))
-  set_lo : ∀ (x : acceptRange) (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet acceptRange.underlying go!"lo") (PairV #x #y) (Val #(({ x with lo' := y } : acceptRange)))
-  get_hi : ∀ (x : acceptRange), go.IsGoStepPureDetTagged under (StructFieldGet acceptRange.underlying go!"hi") #x (Val #(x.hi'))
-  set_hi : ∀ (x : acceptRange) (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet acceptRange.underlying go!"hi") (PairV #x #y) (Val #(({ x with hi' := y } : acceptRange)))
+  get'lo : ∀ (x : acceptRange), go.IsGoStepPureDetTagged under (StructFieldGet acceptRange.underlying go!"lo") #x (Val #(x.lo'))
+  set'lo : ∀ (x : acceptRange) (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet acceptRange.underlying go!"lo") (PairV #x #y) (Val #(({ x with lo' := y } : acceptRange)))
+  get'hi : ∀ (x : acceptRange), go.IsGoStepPureDetTagged under (StructFieldGet acceptRange.underlying go!"hi") #x (Val #(x.hi'))
+  set'hi : ∀ (x : acceptRange) (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet acceptRange.underlying go!"hi") (PairV #x #y) (Val #(({ x with hi' := y } : acceptRange)))
   method_set : go.MethodSetIs acceptRange.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType acceptRange.ty) []
 
 attribute [instance] acceptRange.TypeAssumptions.type_repr
   acceptRange.TypeAssumptions.underlying
-  acceptRange.TypeAssumptions.get_lo
-  acceptRange.TypeAssumptions.set_lo
-  acceptRange.TypeAssumptions.get_hi
-  acceptRange.TypeAssumptions.set_hi
+  acceptRange.TypeAssumptions.get'lo
+  acceptRange.TypeAssumptions.set'lo
+  acceptRange.TypeAssumptions.get'hi
+  acceptRange.TypeAssumptions.set'hi
   acceptRange.TypeAssumptions.method_set
   acceptRange.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  acceptRange_instance : acceptRange.TypeAssumptions
-  FullRune_unfold : FuncUnfold FullRune [] FullRune.impl
-  FullRuneInString_unfold : FuncUnfold FullRuneInString [] FullRuneInString.impl
-  DecodeRune_unfold : FuncUnfold DecodeRune [] DecodeRune.impl
-  decodeRuneSlow_unfold : FuncUnfold decodeRuneSlow [] decodeRuneSlow.impl
-  DecodeRuneInString_unfold : FuncUnfold DecodeRuneInString [] DecodeRuneInString.impl
-  decodeRuneInStringSlow_unfold : FuncUnfold decodeRuneInStringSlow [] decodeRuneInStringSlow.impl
-  DecodeLastRune_unfold : FuncUnfold DecodeLastRune [] DecodeLastRune.impl
-  DecodeLastRuneInString_unfold : FuncUnfold DecodeLastRuneInString [] DecodeLastRuneInString.impl
-  RuneLen_unfold : FuncUnfold RuneLen [] RuneLen.impl
-  EncodeRune_unfold : FuncUnfold EncodeRune [] EncodeRune.impl
-  encodeRuneNonASCII_unfold : FuncUnfold encodeRuneNonASCII [] encodeRuneNonASCII.impl
-  AppendRune_unfold : FuncUnfold AppendRune [] AppendRune.impl
-  appendRuneNonASCII_unfold : FuncUnfold appendRuneNonASCII [] appendRuneNonASCII.impl
-  RuneCount_unfold : FuncUnfold RuneCount [] RuneCount.impl
-  RuneCountInString_unfold : FuncUnfold RuneCountInString [] RuneCountInString.impl
-  RuneStart_unfold : FuncUnfold RuneStart [] RuneStart.impl
-  word_unfold : ∀ (T : go.GoType), FuncUnfold word [T] (word.impl T)
-  Valid_unfold : FuncUnfold Valid [] Valid.impl
-  ValidString_unfold : FuncUnfold ValidString [] ValidString.impl
-  ValidRune_unfold : FuncUnfold ValidRune [] ValidRune.impl
+  instance'acceptRange : acceptRange.TypeAssumptions
+  unfold'FullRune : FuncUnfold FullRune [] FullRune.impl
+  unfold'FullRuneInString : FuncUnfold FullRuneInString [] FullRuneInString.impl
+  unfold'DecodeRune : FuncUnfold DecodeRune [] DecodeRune.impl
+  unfold'decodeRuneSlow : FuncUnfold decodeRuneSlow [] decodeRuneSlow.impl
+  unfold'DecodeRuneInString : FuncUnfold DecodeRuneInString [] DecodeRuneInString.impl
+  unfold'decodeRuneInStringSlow : FuncUnfold decodeRuneInStringSlow [] decodeRuneInStringSlow.impl
+  unfold'DecodeLastRune : FuncUnfold DecodeLastRune [] DecodeLastRune.impl
+  unfold'DecodeLastRuneInString : FuncUnfold DecodeLastRuneInString [] DecodeLastRuneInString.impl
+  unfold'RuneLen : FuncUnfold RuneLen [] RuneLen.impl
+  unfold'EncodeRune : FuncUnfold EncodeRune [] EncodeRune.impl
+  unfold'encodeRuneNonASCII : FuncUnfold encodeRuneNonASCII [] encodeRuneNonASCII.impl
+  unfold'AppendRune : FuncUnfold AppendRune [] AppendRune.impl
+  unfold'appendRuneNonASCII : FuncUnfold appendRuneNonASCII [] appendRuneNonASCII.impl
+  unfold'RuneCount : FuncUnfold RuneCount [] RuneCount.impl
+  unfold'RuneCountInString : FuncUnfold RuneCountInString [] RuneCountInString.impl
+  unfold'RuneStart : FuncUnfold RuneStart [] RuneStart.impl
+  unfold'word : ∀ (T₀ : go.GoType), FuncUnfold word [T₀] (word.impl T₀)
+  unfold'Valid : FuncUnfold Valid [] Valid.impl
+  unfold'ValidString : FuncUnfold ValidString [] ValidString.impl
+  unfold'ValidRune : FuncUnfold ValidRune [] ValidRune.impl
 
-attribute [instance] Assumptions.acceptRange_instance
-  Assumptions.FullRune_unfold
-  Assumptions.FullRuneInString_unfold
-  Assumptions.DecodeRune_unfold
-  Assumptions.decodeRuneSlow_unfold
-  Assumptions.DecodeRuneInString_unfold
-  Assumptions.decodeRuneInStringSlow_unfold
-  Assumptions.DecodeLastRune_unfold
-  Assumptions.DecodeLastRuneInString_unfold
-  Assumptions.RuneLen_unfold
-  Assumptions.EncodeRune_unfold
-  Assumptions.encodeRuneNonASCII_unfold
-  Assumptions.AppendRune_unfold
-  Assumptions.appendRuneNonASCII_unfold
-  Assumptions.RuneCount_unfold
-  Assumptions.RuneCountInString_unfold
-  Assumptions.RuneStart_unfold
-  Assumptions.word_unfold
-  Assumptions.Valid_unfold
-  Assumptions.ValidString_unfold
-  Assumptions.ValidRune_unfold
+attribute [instance] Assumptions.instance'acceptRange
+  Assumptions.unfold'FullRune
+  Assumptions.unfold'FullRuneInString
+  Assumptions.unfold'DecodeRune
+  Assumptions.unfold'decodeRuneSlow
+  Assumptions.unfold'DecodeRuneInString
+  Assumptions.unfold'decodeRuneInStringSlow
+  Assumptions.unfold'DecodeLastRune
+  Assumptions.unfold'DecodeLastRuneInString
+  Assumptions.unfold'RuneLen
+  Assumptions.unfold'EncodeRune
+  Assumptions.unfold'encodeRuneNonASCII
+  Assumptions.unfold'AppendRune
+  Assumptions.unfold'appendRuneNonASCII
+  Assumptions.unfold'RuneCount
+  Assumptions.unfold'RuneCountInString
+  Assumptions.unfold'RuneStart
+  Assumptions.unfold'word
+  Assumptions.unfold'Valid
+  Assumptions.unfold'ValidString
+  Assumptions.unfold'ValidRune
 
 end unicode.utf8
 

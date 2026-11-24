@@ -33,7 +33,7 @@ attribute [irreducible] Interface.ty
 @[irreducible] noncomputable def «struct#03d5a6ce».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   «struct#03d5a6ce».fieldsUnsealed
 
-noncomputable instance «equals_unfold_struct#03d5a6ce» [GooseExts] [GoGlobalContext] :
+noncomputable instance «equals_unfold'struct#03d5a6ce» [GooseExts] [GoGlobalContext] :
     EqualsUnfold «struct#03d5a6ce».fields «struct#03d5a6ce».fieldsUnsealed :=
   ⟨by unfold «struct#03d5a6ce».fields; rfl⟩
 
@@ -143,27 +143,27 @@ noncomputable instance «struct#03d5a6ce».zero_val [GooseExts] : ZeroVal «stru
 
 class «struct#03d5a6ce».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying «struct#03d5a6ce».underlying «struct#03d5a6ce»
-  get_mu : ∀ (x : «struct#03d5a6ce»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#03d5a6ce».underlying go!"mu") #x (Val #(x.mu'))
-  set_mu : ∀ (x : «struct#03d5a6ce») (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet «struct#03d5a6ce».underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : «struct#03d5a6ce»)))
-  get_val : ∀ (x : «struct#03d5a6ce»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#03d5a6ce».underlying go!"val") #x (Val #(x.val'))
-  set_val : ∀ (x : «struct#03d5a6ce») (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «struct#03d5a6ce».underlying go!"val") (PairV #x #y) (Val #(({ x with val' := y } : «struct#03d5a6ce»)))
+  get'mu : ∀ (x : «struct#03d5a6ce»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#03d5a6ce».underlying go!"mu") #x (Val #(x.mu'))
+  set'mu : ∀ (x : «struct#03d5a6ce») (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet «struct#03d5a6ce».underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : «struct#03d5a6ce»)))
+  get'val : ∀ (x : «struct#03d5a6ce»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#03d5a6ce».underlying go!"val") #x (Val #(x.val'))
+  set'val : ∀ (x : «struct#03d5a6ce») (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «struct#03d5a6ce».underlying go!"val") (PairV #x #y) (Val #(({ x with val' := y } : «struct#03d5a6ce»)))
 
 attribute [instance] «struct#03d5a6ce».TypeAssumptions.type_repr
-  «struct#03d5a6ce».TypeAssumptions.get_mu
-  «struct#03d5a6ce».TypeAssumptions.set_mu
-  «struct#03d5a6ce».TypeAssumptions.get_val
-  «struct#03d5a6ce».TypeAssumptions.set_val
+  «struct#03d5a6ce».TypeAssumptions.get'mu
+  «struct#03d5a6ce».TypeAssumptions.set'mu
+  «struct#03d5a6ce».TypeAssumptions.get'val
+  «struct#03d5a6ce».TypeAssumptions.set'val
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Interface_instance : Interface.TypeAssumptions
-  «struct#03d5a6ce_instance» : «struct#03d5a6ce».TypeAssumptions
-  PanicOnExit0_unfold : FuncUnfold PanicOnExit0 [] PanicOnExit0.impl
-  import_sync_Assumption : _root_.Perennial.sync.Assumptions
+  instance'Interface : Interface.TypeAssumptions
+  «instance'struct#03d5a6ce» : «struct#03d5a6ce».TypeAssumptions
+  unfold'PanicOnExit0 : FuncUnfold PanicOnExit0 [] PanicOnExit0.impl
+  import'sync : _root_.Perennial.sync.Assumptions
 
-attribute [instance] Assumptions.Interface_instance
-  Assumptions.«struct#03d5a6ce_instance»
-  Assumptions.PanicOnExit0_unfold
-  Assumptions.import_sync_Assumption
+attribute [instance] Assumptions.instance'Interface
+  Assumptions.«instance'struct#03d5a6ce»
+  Assumptions.unfold'PanicOnExit0
+  Assumptions.import'sync
 
 end internal.testlog
 

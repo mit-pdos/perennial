@@ -127,18 +127,18 @@ noncomputable def monitorSession.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))
 
 /-- go: e.go:49:6 -/
-noncomputable def waitSession.impl [GooseExts] [GoGlobalContext] (A : go.GoType) : val :=
+noncomputable def waitSession.impl [GooseExts] [GoGlobalContext] (A₀ : go.GoType) : val :=
   (LamV "cancel"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "cancel" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.recvonly A)))) (Var "cancel"))
+  (Let "cancel" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.recvonly A₀)))) (Var "cancel"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GlobalVarAddr sessionc))) (Val #())))
   (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Var "s"))
-  (Let "$ch1" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.recvonly A)))) (Var "cancel"))
+  (Let "$ch1" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.recvonly A₀)))) (Var "cancel"))
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (RecvCase (go.GoType.StructType []) (Var "$ch0")) (Lam "$recvVal"
   (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -146,7 +146,7 @@ noncomputable def waitSession.impl [GooseExts] [GoGlobalContext] (A : go.GoType)
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0")))))))),
-  (CommClause (RecvCase A (Var "$ch1")) (Lam "$recvVal"
+  (CommClause (RecvCase A₀ (Var "$ch1")) (Lam "$recvVal"
   (Let "$r0" (Let "$a0" (Val #(go!"cancelled"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -207,25 +207,25 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val (go.GlobalAlloc mu _root_.Perennial.sync.Mutex.ty)) (Val #()))))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  newSession_unfold : FuncUnfold newSession [] newSession.impl
-  waitForSessionExpiration_unfold : FuncUnfold waitForSessionExpiration [] waitForSessionExpiration.impl
-  monitorSession_unfold : FuncUnfold monitorSession [] monitorSession.impl
-  waitSession_unfold : ∀ (A : go.GoType), FuncUnfold waitSession [A] (waitSession.impl A)
-  sessionMain_unfold : FuncUnfold sessionMain [] sessionMain.impl
-  import_errors_Assumption : _root_.Perennial.errors.Assumptions
-  import_sync_Assumption : _root_.Perennial.sync.Assumptions
-  import_time_Assumption : _root_.Perennial.time.Assumptions
-  import_primitive_Assumption : _root_.Perennial.github_com.goose_lang.primitive.Assumptions
+  unfold'newSession : FuncUnfold newSession [] newSession.impl
+  unfold'waitForSessionExpiration : FuncUnfold waitForSessionExpiration [] waitForSessionExpiration.impl
+  unfold'monitorSession : FuncUnfold monitorSession [] monitorSession.impl
+  unfold'waitSession : ∀ (A₀ : go.GoType), FuncUnfold waitSession [A₀] (waitSession.impl A₀)
+  unfold'sessionMain : FuncUnfold sessionMain [] sessionMain.impl
+  import'errors : _root_.Perennial.errors.Assumptions
+  import'sync : _root_.Perennial.sync.Assumptions
+  import'time : _root_.Perennial.time.Assumptions
+  import'primitive : _root_.Perennial.github_com.goose_lang.primitive.Assumptions
 
-attribute [instance] Assumptions.newSession_unfold
-  Assumptions.waitForSessionExpiration_unfold
-  Assumptions.monitorSession_unfold
-  Assumptions.waitSession_unfold
-  Assumptions.sessionMain_unfold
-  Assumptions.import_errors_Assumption
-  Assumptions.import_sync_Assumption
-  Assumptions.import_time_Assumption
-  Assumptions.import_primitive_Assumption
+attribute [instance] Assumptions.unfold'newSession
+  Assumptions.unfold'waitForSessionExpiration
+  Assumptions.unfold'monitorSession
+  Assumptions.unfold'waitSession
+  Assumptions.unfold'sessionMain
+  Assumptions.import'errors
+  Assumptions.import'sync
+  Assumptions.import'time
+  Assumptions.import'primitive
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.channel.etcd_session
 

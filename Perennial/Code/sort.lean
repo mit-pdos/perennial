@@ -918,7 +918,7 @@ noncomputable def pdqsort.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
   (Let "data" (App (Val (GoInstruction (GoAlloc Interface.ty))) (Var "data"))
-  (let maxInsertion := #(12 : Int);
+  (let maxInsertion₀ := #(12 : Int);
   (Let "$r0" (Val #true)
   (Let "wasPartitioned" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1085,7 +1085,7 @@ noncomputable def pdqsort.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (App (App (Val (GoInstruction (FuncResolve heapSort []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))
   (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "length")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxInsertion)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "length")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxInsertion₀)))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -1333,8 +1333,8 @@ noncomputable def partialInsertionSort.impl [GooseExts] [GoGlobalContext] : val 
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
   (Let "data" (App (Val (GoInstruction (GoAlloc Interface.ty))) (Var "data"))
-  (let maxSteps := #(5 : Int);
-  (let shortestShifting := #(50 : Int);
+  (let maxSteps₀ := #(5 : Int);
+  (let shortestShifting₀ := #(50 : Int);
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (Val #(W64 1))))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1349,7 +1349,7 @@ noncomputable def partialInsertionSort.impl [GooseExts] [GoGlobalContext] : val 
   (Let "j" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
-  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxSteps)))))) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "j")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxSteps₀)))))) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1407,7 +1407,7 @@ noncomputable def partialInsertionSort.impl [GooseExts] [GoGlobalContext] : val 
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
   (Let "$a1" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1))))
   (App (App (App (Val (GoInstruction (MethodResolve Interface.ty go!"Swap"))) (App (Val (GoInstruction (GoLoad Interface.ty))) (Var "data"))) (Var "$a0")) (Var "$a1"))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val shortestShifting)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a")))) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val shortestShifting₀)))))
   (Let "$r0" (Val #false)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -1519,8 +1519,8 @@ noncomputable def choosePivot.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "b" (App (Val (GoInstruction (GoAlloc go.int))) (Var "b"))
   (Let "a" (App (Val (GoInstruction (GoAlloc go.int))) (Var "a"))
   (Let "data" (App (Val (GoInstruction (GoAlloc Interface.ty))) (Var "data"))
-  (let shortestNinther := #(50 : Int);
-  (let maxSwaps := #(12 : Int);
+  (let shortestNinther₀ := #(50 : Int);
+  (let maxSwaps₀ := #(12 : Int);
   (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "b")) (App (Val (GoInstruction (GoLoad go.int))) (Var "a"))))
   (Let "l" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1547,7 +1547,7 @@ noncomputable def choosePivot.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore sortedHint.ty))) (Pair (Var "$res1") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
-  (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Var "$sw") (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxSwaps))))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Var "$sw") (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val maxSwaps₀))))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))
   (Let "$r1" (Val decreasingHint)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1578,7 +1578,7 @@ noncomputable def choosePivot.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (App (App (App (App (Val (GoInstruction (FuncResolve median []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "j") (Var "$r0")))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "l")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val shortestNinther)))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "l")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val shortestNinther₀)))))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad Interface.ty))) (Var "data"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
   (Let "$a2" (Var "swaps")
@@ -2238,12 +2238,12 @@ class xorshift.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [G
   underlying : go.UnderlyingDirectedEq xorshift.ty xorshift.underlying
   method_set : go.MethodSetIs xorshift.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType xorshift.ty) [(go!"Next", (some (go.signature.Signature [] false [go.uint64])))]
-  ptr_Next_unfold : MethodUnfold (go.GoType.PointerType xorshift.ty) go!"Next" xorshift.Next.impl
+  ptr_unfold'Next : MethodUnfold (go.GoType.PointerType xorshift.ty) go!"Next" xorshift.Next.impl
 
 attribute [instance] xorshift.TypeAssumptions.underlying
   xorshift.TypeAssumptions.method_set
   xorshift.TypeAssumptions.ptr_method_set
-  xorshift.TypeAssumptions.ptr_Next_unfold
+  xorshift.TypeAssumptions.ptr_unfold'Next
 
 structure lessSwap [GooseExts] where
   mk ::
@@ -2260,7 +2260,7 @@ noncomputable instance lessSwap.zero_val [GooseExts] : ZeroVal lessSwap :=
 @[irreducible] noncomputable def lessSwap.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   lessSwap.fieldsUnsealed
 
-noncomputable instance equals_unfold_lessSwap [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'lessSwap [GooseExts] [GoGlobalContext] :
     EqualsUnfold lessSwap.fields lessSwap.fieldsUnsealed :=
   ⟨by unfold lessSwap.fields; rfl⟩
 
@@ -2270,19 +2270,19 @@ noncomputable instance equals_unfold_lessSwap [GooseExts] [GoGlobalContext] :
 class lessSwap.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying lessSwap.underlying lessSwap
   underlying : go.UnderlyingDirectedEq lessSwap.ty lessSwap.underlying
-  get_Less : ∀ (x : lessSwap), go.IsGoStepPureDetTagged under (StructFieldGet lessSwap.underlying go!"Less") #x (Val #(x.Less'))
-  set_Less : ∀ (x : lessSwap) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet lessSwap.underlying go!"Less") (PairV #x #y) (Val #(({ x with Less' := y } : lessSwap)))
-  get_Swap : ∀ (x : lessSwap), go.IsGoStepPureDetTagged under (StructFieldGet lessSwap.underlying go!"Swap") #x (Val #(x.Swap'))
-  set_Swap : ∀ (x : lessSwap) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet lessSwap.underlying go!"Swap") (PairV #x #y) (Val #(({ x with Swap' := y } : lessSwap)))
+  get'Less : ∀ (x : lessSwap), go.IsGoStepPureDetTagged under (StructFieldGet lessSwap.underlying go!"Less") #x (Val #(x.Less'))
+  set'Less : ∀ (x : lessSwap) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet lessSwap.underlying go!"Less") (PairV #x #y) (Val #(({ x with Less' := y } : lessSwap)))
+  get'Swap : ∀ (x : lessSwap), go.IsGoStepPureDetTagged under (StructFieldGet lessSwap.underlying go!"Swap") #x (Val #(x.Swap'))
+  set'Swap : ∀ (x : lessSwap) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet lessSwap.underlying go!"Swap") (PairV #x #y) (Val #(({ x with Swap' := y } : lessSwap)))
   method_set : go.MethodSetIs lessSwap.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType lessSwap.ty) []
 
 attribute [instance] lessSwap.TypeAssumptions.type_repr
   lessSwap.TypeAssumptions.underlying
-  lessSwap.TypeAssumptions.get_Less
-  lessSwap.TypeAssumptions.set_Less
-  lessSwap.TypeAssumptions.get_Swap
-  lessSwap.TypeAssumptions.set_Swap
+  lessSwap.TypeAssumptions.get'Less
+  lessSwap.TypeAssumptions.set'Less
+  lessSwap.TypeAssumptions.get'Swap
+  lessSwap.TypeAssumptions.set'Swap
   lessSwap.TypeAssumptions.method_set
   lessSwap.TypeAssumptions.ptr_method_set
 
@@ -2299,7 +2299,7 @@ noncomputable instance reverse.zero_val [GooseExts] : ZeroVal reverse :=
 @[irreducible] noncomputable def reverse.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   reverse.fieldsUnsealed
 
-noncomputable instance equals_unfold_reverse [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'reverse [GooseExts] [GoGlobalContext] :
     EqualsUnfold reverse.fields reverse.fieldsUnsealed :=
   ⟨by unfold reverse.fields; rfl⟩
 
@@ -2309,34 +2309,34 @@ noncomputable instance equals_unfold_reverse [GooseExts] [GoGlobalContext] :
 class reverse.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying reverse.underlying reverse
   underlying : go.UnderlyingDirectedEq reverse.ty reverse.underlying
-  get_Interface : ∀ (x : reverse), go.IsGoStepPureDetTagged under (StructFieldGet reverse.underlying go!"Interface") #x (Val #(x.Interface'))
-  set_Interface : ∀ (x : reverse) (y : Interface), go.IsGoStepPureDetTagged under (StructFieldSet reverse.underlying go!"Interface") (PairV #x #y) (Val #(({ x with Interface' := y } : reverse)))
+  get'Interface : ∀ (x : reverse), go.IsGoStepPureDetTagged under (StructFieldGet reverse.underlying go!"Interface") #x (Val #(x.Interface'))
+  set'Interface : ∀ (x : reverse) (y : Interface), go.IsGoStepPureDetTagged under (StructFieldSet reverse.underlying go!"Interface") (PairV #x #y) (Val #(({ x with Interface' := y } : reverse)))
   method_set : go.MethodSetIs reverse.ty [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Less", (some (go.signature.Signature [go.int, go.int] false [go.bool]))), (go!"Swap", (some (go.signature.Signature [go.int, go.int] false [])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType reverse.ty) [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Less", (some (go.signature.Signature [go.int, go.int] false [go.bool]))), (go!"Swap", (some (go.signature.Signature [go.int, go.int] false [])))]
-  Len_unfold : MethodUnfold reverse.ty go!"Len" (LamV "$r"
+  unfold'Len : MethodUnfold reverse.ty go!"Len" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Interface.ty go!"Len"))) (App (Val (GoInstruction (StructFieldGet reverse.ty go!"Interface"))) (Var "$r"))))
-  Less_unfold : MethodUnfold reverse.ty go!"Less" reverse.Less.impl
-  Swap_unfold : MethodUnfold reverse.ty go!"Swap" (LamV "$r"
+  unfold'Less : MethodUnfold reverse.ty go!"Less" reverse.Less.impl
+  unfold'Swap : MethodUnfold reverse.ty go!"Swap" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Interface.ty go!"Swap"))) (App (Val (GoInstruction (StructFieldGet reverse.ty go!"Interface"))) (Var "$r"))))
-  ptr_Len_unfold : MethodUnfold (go.GoType.PointerType reverse.ty) go!"Len" (LamV "$r"
+  ptr_unfold'Len : MethodUnfold (go.GoType.PointerType reverse.ty) go!"Len" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Interface.ty go!"Len"))) (App (Val (GoInstruction (GoLoad Interface.ty))) (App (Val (GoInstruction (StructFieldRef reverse.ty go!"Interface"))) (Var "$r")))))
-  ptr_Less_unfold : MethodUnfold (go.GoType.PointerType reverse.ty) go!"Less" (LamV "$r"
+  ptr_unfold'Less : MethodUnfold (go.GoType.PointerType reverse.ty) go!"Less" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve reverse.ty go!"Less"))) (App (Val (GoInstruction (GoLoad reverse.ty))) (Var "$r"))))
-  ptr_Swap_unfold : MethodUnfold (go.GoType.PointerType reverse.ty) go!"Swap" (LamV "$r"
+  ptr_unfold'Swap : MethodUnfold (go.GoType.PointerType reverse.ty) go!"Swap" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Interface.ty go!"Swap"))) (App (Val (GoInstruction (GoLoad Interface.ty))) (App (Val (GoInstruction (StructFieldRef reverse.ty go!"Interface"))) (Var "$r")))))
 
 attribute [instance] reverse.TypeAssumptions.type_repr
   reverse.TypeAssumptions.underlying
-  reverse.TypeAssumptions.get_Interface
-  reverse.TypeAssumptions.set_Interface
+  reverse.TypeAssumptions.get'Interface
+  reverse.TypeAssumptions.set'Interface
   reverse.TypeAssumptions.method_set
   reverse.TypeAssumptions.ptr_method_set
-  reverse.TypeAssumptions.Len_unfold
-  reverse.TypeAssumptions.Less_unfold
-  reverse.TypeAssumptions.Swap_unfold
-  reverse.TypeAssumptions.ptr_Len_unfold
-  reverse.TypeAssumptions.ptr_Less_unfold
-  reverse.TypeAssumptions.ptr_Swap_unfold
+  reverse.TypeAssumptions.unfold'Len
+  reverse.TypeAssumptions.unfold'Less
+  reverse.TypeAssumptions.unfold'Swap
+  reverse.TypeAssumptions.ptr_unfold'Len
+  reverse.TypeAssumptions.ptr_unfold'Less
+  reverse.TypeAssumptions.ptr_unfold'Swap
 
 abbrev IntSlice [GooseExts] : Type := GoSlice
 
@@ -2375,107 +2375,107 @@ class StringSlice.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext]
   underlying : go.UnderlyingDirectedEq StringSlice.ty StringSlice.underlying
   method_set : go.MethodSetIs StringSlice.ty [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Less", (some (go.signature.Signature [go.int, go.int] false [go.bool]))), (go!"Search", (some (go.signature.Signature [go.string] false [go.int]))), (go!"Sort", (some (go.signature.Signature [] false []))), (go!"Swap", (some (go.signature.Signature [go.int, go.int] false [])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType StringSlice.ty) [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Less", (some (go.signature.Signature [go.int, go.int] false [go.bool]))), (go!"Search", (some (go.signature.Signature [go.string] false [go.int]))), (go!"Sort", (some (go.signature.Signature [] false []))), (go!"Swap", (some (go.signature.Signature [go.int, go.int] false [])))]
-  Len_unfold : MethodUnfold StringSlice.ty go!"Len" StringSlice.Len.impl
-  Less_unfold : MethodUnfold StringSlice.ty go!"Less" StringSlice.Less.impl
-  Sort_unfold : MethodUnfold StringSlice.ty go!"Sort" StringSlice.Sort''.impl
-  Swap_unfold : MethodUnfold StringSlice.ty go!"Swap" StringSlice.Swap.impl
-  ptr_Len_unfold : MethodUnfold (go.GoType.PointerType StringSlice.ty) go!"Len" (LamV "$r"
+  unfold'Len : MethodUnfold StringSlice.ty go!"Len" StringSlice.Len.impl
+  unfold'Less : MethodUnfold StringSlice.ty go!"Less" StringSlice.Less.impl
+  unfold'Sort : MethodUnfold StringSlice.ty go!"Sort" StringSlice.Sort''.impl
+  unfold'Swap : MethodUnfold StringSlice.ty go!"Swap" StringSlice.Swap.impl
+  ptr_unfold'Len : MethodUnfold (go.GoType.PointerType StringSlice.ty) go!"Len" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve StringSlice.ty go!"Len"))) (App (Val (GoInstruction (GoLoad StringSlice.ty))) (Var "$r"))))
-  ptr_Less_unfold : MethodUnfold (go.GoType.PointerType StringSlice.ty) go!"Less" (LamV "$r"
+  ptr_unfold'Less : MethodUnfold (go.GoType.PointerType StringSlice.ty) go!"Less" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve StringSlice.ty go!"Less"))) (App (Val (GoInstruction (GoLoad StringSlice.ty))) (Var "$r"))))
-  ptr_Sort_unfold : MethodUnfold (go.GoType.PointerType StringSlice.ty) go!"Sort" (LamV "$r"
+  ptr_unfold'Sort : MethodUnfold (go.GoType.PointerType StringSlice.ty) go!"Sort" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve StringSlice.ty go!"Sort"))) (App (Val (GoInstruction (GoLoad StringSlice.ty))) (Var "$r"))))
-  ptr_Swap_unfold : MethodUnfold (go.GoType.PointerType StringSlice.ty) go!"Swap" (LamV "$r"
+  ptr_unfold'Swap : MethodUnfold (go.GoType.PointerType StringSlice.ty) go!"Swap" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve StringSlice.ty go!"Swap"))) (App (Val (GoInstruction (GoLoad StringSlice.ty))) (Var "$r"))))
 
 attribute [instance] StringSlice.TypeAssumptions.underlying
   StringSlice.TypeAssumptions.method_set
   StringSlice.TypeAssumptions.ptr_method_set
-  StringSlice.TypeAssumptions.Len_unfold
-  StringSlice.TypeAssumptions.Less_unfold
-  StringSlice.TypeAssumptions.Sort_unfold
-  StringSlice.TypeAssumptions.Swap_unfold
-  StringSlice.TypeAssumptions.ptr_Len_unfold
-  StringSlice.TypeAssumptions.ptr_Less_unfold
-  StringSlice.TypeAssumptions.ptr_Sort_unfold
-  StringSlice.TypeAssumptions.ptr_Swap_unfold
+  StringSlice.TypeAssumptions.unfold'Len
+  StringSlice.TypeAssumptions.unfold'Less
+  StringSlice.TypeAssumptions.unfold'Sort
+  StringSlice.TypeAssumptions.unfold'Swap
+  StringSlice.TypeAssumptions.ptr_unfold'Len
+  StringSlice.TypeAssumptions.ptr_unfold'Less
+  StringSlice.TypeAssumptions.ptr_unfold'Sort
+  StringSlice.TypeAssumptions.ptr_unfold'Swap
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Interface_instance : Interface.TypeAssumptions
-  sortedHint_instance : sortedHint.TypeAssumptions
-  xorshift_instance : xorshift.TypeAssumptions
-  lessSwap_instance : lessSwap.TypeAssumptions
-  reverse_instance : reverse.TypeAssumptions
-  IntSlice_instance : IntSlice.TypeAssumptions
-  Float64Slice_instance : Float64Slice.TypeAssumptions
-  StringSlice_instance : StringSlice.TypeAssumptions
-  Search_unfold : FuncUnfold Search [] Search.impl
-  Find_unfold : FuncUnfold Find [] Find.impl
-  SearchInts_unfold : FuncUnfold SearchInts [] SearchInts.impl
-  SearchStrings_unfold : FuncUnfold SearchStrings [] SearchStrings.impl
-  Sort_unfold : FuncUnfold Sort'' [] Sort''.impl
-  nextPowerOfTwo_unfold : FuncUnfold nextPowerOfTwo [] nextPowerOfTwo.impl
-  Reverse_unfold : FuncUnfold Reverse [] Reverse.impl
-  IsSorted_unfold : FuncUnfold IsSorted [] IsSorted.impl
-  Strings_unfold : FuncUnfold Strings [] Strings.impl
-  Stable_unfold : FuncUnfold Stable [] Stable.impl
-  insertionSort_unfold : FuncUnfold insertionSort [] insertionSort.impl
-  siftDown_unfold : FuncUnfold siftDown [] siftDown.impl
-  heapSort_unfold : FuncUnfold heapSort [] heapSort.impl
-  pdqsort_unfold : FuncUnfold pdqsort [] pdqsort.impl
-  partition_unfold : FuncUnfold partition [] partition.impl
-  partitionEqual_unfold : FuncUnfold partitionEqual [] partitionEqual.impl
-  partialInsertionSort_unfold : FuncUnfold partialInsertionSort [] partialInsertionSort.impl
-  breakPatterns_unfold : FuncUnfold breakPatterns [] breakPatterns.impl
-  choosePivot_unfold : FuncUnfold choosePivot [] choosePivot.impl
-  order2_unfold : FuncUnfold order2 [] order2.impl
-  median_unfold : FuncUnfold median [] median.impl
-  medianAdjacent_unfold : FuncUnfold medianAdjacent [] medianAdjacent.impl
-  reverseRange_unfold : FuncUnfold reverseRange [] reverseRange.impl
-  swapRange_unfold : FuncUnfold swapRange [] swapRange.impl
-  stable_unfold : FuncUnfold stable [] stable.impl
-  symMerge_unfold : FuncUnfold symMerge [] symMerge.impl
-  rotate_unfold : FuncUnfold rotate [] rotate.impl
-  import_bits_Assumption : _root_.Perennial.math.bits.Assumptions
-  import_slices_Assumption : _root_.Perennial.slices.Assumptions
+  instance'Interface : Interface.TypeAssumptions
+  instance'sortedHint : sortedHint.TypeAssumptions
+  instance'xorshift : xorshift.TypeAssumptions
+  instance'lessSwap : lessSwap.TypeAssumptions
+  instance'reverse : reverse.TypeAssumptions
+  instance'IntSlice : IntSlice.TypeAssumptions
+  instance'Float64Slice : Float64Slice.TypeAssumptions
+  instance'StringSlice : StringSlice.TypeAssumptions
+  unfold'Search : FuncUnfold Search [] Search.impl
+  unfold'Find : FuncUnfold Find [] Find.impl
+  unfold'SearchInts : FuncUnfold SearchInts [] SearchInts.impl
+  unfold'SearchStrings : FuncUnfold SearchStrings [] SearchStrings.impl
+  unfold'Sort : FuncUnfold Sort'' [] Sort''.impl
+  unfold'nextPowerOfTwo : FuncUnfold nextPowerOfTwo [] nextPowerOfTwo.impl
+  unfold'Reverse : FuncUnfold Reverse [] Reverse.impl
+  unfold'IsSorted : FuncUnfold IsSorted [] IsSorted.impl
+  unfold'Strings : FuncUnfold Strings [] Strings.impl
+  unfold'Stable : FuncUnfold Stable [] Stable.impl
+  unfold'insertionSort : FuncUnfold insertionSort [] insertionSort.impl
+  unfold'siftDown : FuncUnfold siftDown [] siftDown.impl
+  unfold'heapSort : FuncUnfold heapSort [] heapSort.impl
+  unfold'pdqsort : FuncUnfold pdqsort [] pdqsort.impl
+  unfold'partition : FuncUnfold partition [] partition.impl
+  unfold'partitionEqual : FuncUnfold partitionEqual [] partitionEqual.impl
+  unfold'partialInsertionSort : FuncUnfold partialInsertionSort [] partialInsertionSort.impl
+  unfold'breakPatterns : FuncUnfold breakPatterns [] breakPatterns.impl
+  unfold'choosePivot : FuncUnfold choosePivot [] choosePivot.impl
+  unfold'order2 : FuncUnfold order2 [] order2.impl
+  unfold'median : FuncUnfold median [] median.impl
+  unfold'medianAdjacent : FuncUnfold medianAdjacent [] medianAdjacent.impl
+  unfold'reverseRange : FuncUnfold reverseRange [] reverseRange.impl
+  unfold'swapRange : FuncUnfold swapRange [] swapRange.impl
+  unfold'stable : FuncUnfold stable [] stable.impl
+  unfold'symMerge : FuncUnfold symMerge [] symMerge.impl
+  unfold'rotate : FuncUnfold rotate [] rotate.impl
+  import'bits : _root_.Perennial.math.bits.Assumptions
+  import'slices : _root_.Perennial.slices.Assumptions
 
-attribute [instance] Assumptions.Interface_instance
-  Assumptions.sortedHint_instance
-  Assumptions.xorshift_instance
-  Assumptions.lessSwap_instance
-  Assumptions.reverse_instance
-  Assumptions.IntSlice_instance
-  Assumptions.Float64Slice_instance
-  Assumptions.StringSlice_instance
-  Assumptions.Search_unfold
-  Assumptions.Find_unfold
-  Assumptions.SearchInts_unfold
-  Assumptions.SearchStrings_unfold
-  Assumptions.Sort_unfold
-  Assumptions.nextPowerOfTwo_unfold
-  Assumptions.Reverse_unfold
-  Assumptions.IsSorted_unfold
-  Assumptions.Strings_unfold
-  Assumptions.Stable_unfold
-  Assumptions.insertionSort_unfold
-  Assumptions.siftDown_unfold
-  Assumptions.heapSort_unfold
-  Assumptions.pdqsort_unfold
-  Assumptions.partition_unfold
-  Assumptions.partitionEqual_unfold
-  Assumptions.partialInsertionSort_unfold
-  Assumptions.breakPatterns_unfold
-  Assumptions.choosePivot_unfold
-  Assumptions.order2_unfold
-  Assumptions.median_unfold
-  Assumptions.medianAdjacent_unfold
-  Assumptions.reverseRange_unfold
-  Assumptions.swapRange_unfold
-  Assumptions.stable_unfold
-  Assumptions.symMerge_unfold
-  Assumptions.rotate_unfold
-  Assumptions.import_bits_Assumption
-  Assumptions.import_slices_Assumption
+attribute [instance] Assumptions.instance'Interface
+  Assumptions.instance'sortedHint
+  Assumptions.instance'xorshift
+  Assumptions.instance'lessSwap
+  Assumptions.instance'reverse
+  Assumptions.instance'IntSlice
+  Assumptions.instance'Float64Slice
+  Assumptions.instance'StringSlice
+  Assumptions.unfold'Search
+  Assumptions.unfold'Find
+  Assumptions.unfold'SearchInts
+  Assumptions.unfold'SearchStrings
+  Assumptions.unfold'Sort
+  Assumptions.unfold'nextPowerOfTwo
+  Assumptions.unfold'Reverse
+  Assumptions.unfold'IsSorted
+  Assumptions.unfold'Strings
+  Assumptions.unfold'Stable
+  Assumptions.unfold'insertionSort
+  Assumptions.unfold'siftDown
+  Assumptions.unfold'heapSort
+  Assumptions.unfold'pdqsort
+  Assumptions.unfold'partition
+  Assumptions.unfold'partitionEqual
+  Assumptions.unfold'partialInsertionSort
+  Assumptions.unfold'breakPatterns
+  Assumptions.unfold'choosePivot
+  Assumptions.unfold'order2
+  Assumptions.unfold'median
+  Assumptions.unfold'medianAdjacent
+  Assumptions.unfold'reverseRange
+  Assumptions.unfold'swapRange
+  Assumptions.unfold'stable
+  Assumptions.unfold'symMerge
+  Assumptions.unfold'rotate
+  Assumptions.import'bits
+  Assumptions.import'slices
 
 end sort
 

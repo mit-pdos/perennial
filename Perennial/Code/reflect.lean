@@ -1684,7 +1684,7 @@ noncomputable instance Value.zero_val [GooseExts] : ZeroVal Value :=
 @[irreducible] noncomputable def Value.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Value.fieldsUnsealed
 
-noncomputable instance equals_unfold_Value [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Value [GooseExts] [GoGlobalContext] :
     EqualsUnfold Value.fields Value.fieldsUnsealed :=
   ⟨by unfold Value.fields; rfl⟩
 
@@ -1694,23 +1694,23 @@ noncomputable instance equals_unfold_Value [GooseExts] [GoGlobalContext] :
 class Value.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Value.underlying Value
   underlying : go.UnderlyingDirectedEq Value.ty Value.underlying
-  get_typ_ : ∀ (x : Value), go.IsGoStepPureDetTagged under (StructFieldGet Value.underlying go!"typ_") #x (Val #(x.typ_'))
-  set_typ_ : ∀ (x : Value) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Value.underlying go!"typ_") (PairV #x #y) (Val #(({ x with typ_' := y } : Value)))
-  get_ptr : ∀ (x : Value), go.IsGoStepPureDetTagged under (StructFieldGet Value.underlying go!"ptr") #x (Val #(x.ptr'))
-  set_ptr : ∀ (x : Value) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Value.underlying go!"ptr") (PairV #x #y) (Val #(({ x with ptr' := y } : Value)))
-  get_flag : ∀ (x : Value), go.IsGoStepPureDetTagged under (StructFieldGet Value.underlying go!"flag") #x (Val #(x.flag'))
-  set_flag : ∀ (x : Value) (y : flag), go.IsGoStepPureDetTagged under (StructFieldSet Value.underlying go!"flag") (PairV #x #y) (Val #(({ x with flag' := y } : Value)))
+  get'typ_ : ∀ (x : Value), go.IsGoStepPureDetTagged under (StructFieldGet Value.underlying go!"typ_") #x (Val #(x.typ_'))
+  set'typ_ : ∀ (x : Value) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Value.underlying go!"typ_") (PairV #x #y) (Val #(({ x with typ_' := y } : Value)))
+  get'ptr : ∀ (x : Value), go.IsGoStepPureDetTagged under (StructFieldGet Value.underlying go!"ptr") #x (Val #(x.ptr'))
+  set'ptr : ∀ (x : Value) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Value.underlying go!"ptr") (PairV #x #y) (Val #(({ x with ptr' := y } : Value)))
+  get'flag : ∀ (x : Value), go.IsGoStepPureDetTagged under (StructFieldGet Value.underlying go!"flag") #x (Val #(x.flag'))
+  set'flag : ∀ (x : Value) (y : flag), go.IsGoStepPureDetTagged under (StructFieldSet Value.underlying go!"flag") (PairV #x #y) (Val #(({ x with flag' := y } : Value)))
   method_set : go.MethodSetIs Value.ty [(go!"Addr", (some (go.signature.Signature [] false [Value.ty]))), (go!"Bool", (some (go.signature.Signature [] false [go.bool]))), (go!"Bytes", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"Call", (some (go.signature.Signature [(go.GoType.SliceType Value.ty)] false [(go.GoType.SliceType Value.ty)]))), (go!"CallSlice", (some (go.signature.Signature [(go.GoType.SliceType Value.ty)] false [(go.GoType.SliceType Value.ty)]))), (go!"CanAddr", (some (go.signature.Signature [] false [go.bool]))), (go!"CanComplex", (some (go.signature.Signature [] false [go.bool]))), (go!"CanConvert", (some (go.signature.Signature [Type''.ty] false [go.bool]))), (go!"CanFloat", (some (go.signature.Signature [] false [go.bool]))), (go!"CanInt", (some (go.signature.Signature [] false [go.bool]))), (go!"CanInterface", (some (go.signature.Signature [] false [go.bool]))), (go!"CanSet", (some (go.signature.Signature [] false [go.bool]))), (go!"CanUint", (some (go.signature.Signature [] false [go.bool]))), (go!"Cap", (some (go.signature.Signature [] false [go.int]))), (go!"Clear", (some (go.signature.Signature [] false []))), (go!"Close", (some (go.signature.Signature [] false []))), (go!"Comparable", (some (go.signature.Signature [] false [go.bool]))), (go!"Complex", (some (go.signature.Signature [] false [go.complex128]))), (go!"Convert", (some (go.signature.Signature [Type''.ty] false [Value.ty]))), (go!"Elem", (some (go.signature.Signature [] false [Value.ty]))), (go!"Equal", (some (go.signature.Signature [Value.ty] false [go.bool]))), (go!"Field", (some (go.signature.Signature [go.int] false [Value.ty]))), (go!"FieldByIndex", (some (go.signature.Signature [(go.GoType.SliceType go.int)] false [Value.ty]))), (go!"FieldByIndexErr", (some (go.signature.Signature [(go.GoType.SliceType go.int)] false [Value.ty, go.error]))), (go!"FieldByName", (some (go.signature.Signature [go.string] false [Value.ty]))), (go!"FieldByNameFunc", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [go.string] false [go.bool]))] false [Value.ty]))), (go!"Fields", (some (go.signature.Signature [] false [(go.GoType.Named go!"iter.Seq2" [StructField.ty, Value.ty])]))), (go!"Float", (some (go.signature.Signature [] false [go.float64]))), (go!"Grow", (some (go.signature.Signature [go.int] false []))), (go!"Index", (some (go.signature.Signature [go.int] false [Value.ty]))), (go!"Int", (some (go.signature.Signature [] false [go.int64]))), (go!"Interface", (some (go.signature.Signature [] false [go.any]))), (go!"InterfaceData", (some (go.signature.Signature [] false [(go.GoType.ArrayType 2 go.uintptr)]))), (go!"IsNil", (some (go.signature.Signature [] false [go.bool]))), (go!"IsValid", (some (go.signature.Signature [] false [go.bool]))), (go!"IsZero", (some (go.signature.Signature [] false [go.bool]))), (go!"Kind", (some (go.signature.Signature [] false [Kind.ty]))), (go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"MapIndex", (some (go.signature.Signature [Value.ty] false [Value.ty]))), (go!"MapKeys", (some (go.signature.Signature [] false [(go.GoType.SliceType Value.ty)]))), (go!"MapRange", (some (go.signature.Signature [] false [(go.GoType.PointerType MapIter.ty)]))), (go!"Method", (some (go.signature.Signature [go.int] false [Value.ty]))), (go!"MethodByName", (some (go.signature.Signature [go.string] false [Value.ty]))), (go!"Methods", (some (go.signature.Signature [] false [(go.GoType.Named go!"iter.Seq2" [Method.ty, Value.ty])]))), (go!"NumField", (some (go.signature.Signature [] false [go.int]))), (go!"NumMethod", (some (go.signature.Signature [] false [go.int]))), (go!"OverflowComplex", (some (go.signature.Signature [go.complex128] false [go.bool]))), (go!"OverflowFloat", (some (go.signature.Signature [go.float64] false [go.bool]))), (go!"OverflowInt", (some (go.signature.Signature [go.int64] false [go.bool]))), (go!"OverflowUint", (some (go.signature.Signature [go.uint64] false [go.bool]))), (go!"Pointer", (some (go.signature.Signature [] false [go.uintptr]))), (go!"Recv", (some (go.signature.Signature [] false [Value.ty, go.bool]))), (go!"Send", (some (go.signature.Signature [Value.ty] false []))), (go!"Seq", (some (go.signature.Signature [] false [(go.GoType.Named go!"iter.Seq" [Value.ty])]))), (go!"Seq2", (some (go.signature.Signature [] false [(go.GoType.Named go!"iter.Seq2" [Value.ty, Value.ty])]))), (go!"Set", (some (go.signature.Signature [Value.ty] false []))), (go!"SetBool", (some (go.signature.Signature [go.bool] false []))), (go!"SetBytes", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false []))), (go!"SetCap", (some (go.signature.Signature [go.int] false []))), (go!"SetComplex", (some (go.signature.Signature [go.complex128] false []))), (go!"SetFloat", (some (go.signature.Signature [go.float64] false []))), (go!"SetInt", (some (go.signature.Signature [go.int64] false []))), (go!"SetIterKey", (some (go.signature.Signature [(go.GoType.PointerType MapIter.ty)] false []))), (go!"SetIterValue", (some (go.signature.Signature [(go.GoType.PointerType MapIter.ty)] false []))), (go!"SetLen", (some (go.signature.Signature [go.int] false []))), (go!"SetMapIndex", (some (go.signature.Signature [Value.ty, Value.ty] false []))), (go!"SetPointer", (some (go.signature.Signature [«unsafe».Pointer] false []))), (go!"SetString", (some (go.signature.Signature [go.string] false []))), (go!"SetUint", (some (go.signature.Signature [go.uint64] false []))), (go!"SetZero", (some (go.signature.Signature [] false []))), (go!"Slice", (some (go.signature.Signature [go.int, go.int] false [Value.ty]))), (go!"Slice3", (some (go.signature.Signature [go.int, go.int, go.int] false [Value.ty]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"TryRecv", (some (go.signature.Signature [] false [Value.ty, go.bool]))), (go!"TrySend", (some (go.signature.Signature [Value.ty] false [go.bool]))), (go!"Type", (some (go.signature.Signature [] false [Type''.ty]))), (go!"Uint", (some (go.signature.Signature [] false [go.uint64]))), (go!"UnsafeAddr", (some (go.signature.Signature [] false [go.uintptr]))), (go!"UnsafePointer", (some (go.signature.Signature [] false [«unsafe».Pointer]))), (go!"reflect.abiType", (some (go.signature.Signature [] false [(go.GoType.PointerType _root_.Perennial.internal.abi.Type''.ty)]))), (go!"reflect.abiTypeSlow", (some (go.signature.Signature [] false [(go.GoType.PointerType _root_.Perennial.internal.abi.Type''.ty)]))), (go!"reflect.assignTo", (some (go.signature.Signature [go.string, (go.GoType.PointerType _root_.Perennial.internal.abi.Type''.ty), «unsafe».Pointer] false [Value.ty]))), (go!"reflect.bytesSlow", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"reflect.call", (some (go.signature.Signature [go.string, (go.GoType.SliceType Value.ty)] false [(go.GoType.SliceType Value.ty)]))), (go!"reflect.capNonSlice", (some (go.signature.Signature [] false [go.int]))), (go!"reflect.extendSlice", (some (go.signature.Signature [go.int] false [Value.ty]))), (go!"reflect.grow", (some (go.signature.Signature [go.int] false []))), (go!"reflect.kind", (some (go.signature.Signature [] false [Kind.ty]))), (go!"reflect.lenNonSlice", (some (go.signature.Signature [] false [go.int]))), (go!"reflect.mustBe", (some (go.signature.Signature [Kind.ty] false []))), (go!"reflect.mustBeAssignable", (some (go.signature.Signature [] false []))), (go!"reflect.mustBeAssignableSlow", (some (go.signature.Signature [] false []))), (go!"reflect.mustBeExported", (some (go.signature.Signature [] false []))), (go!"reflect.mustBeExportedSlow", (some (go.signature.Signature [] false []))), (go!"reflect.panicNotBool", (some (go.signature.Signature [] false []))), (go!"reflect.panicNotMap", (some (go.signature.Signature [] false []))), (go!"reflect.pointer", (some (go.signature.Signature [] false [«unsafe».Pointer]))), (go!"reflect.recv", (some (go.signature.Signature [go.bool] false [Value.ty, go.bool]))), (go!"reflect.ro", (some (go.signature.Signature [] false [flag.ty]))), (go!"reflect.runes", (some (go.signature.Signature [] false [(go.GoType.SliceType go.rune)]))), (go!"reflect.send", (some (go.signature.Signature [Value.ty, go.bool] false [go.bool]))), (go!"reflect.setRunes", (some (go.signature.Signature [(go.GoType.SliceType go.rune)] false []))), (go!"reflect.stringNonString", (some (go.signature.Signature [] false [go.string]))), (go!"reflect.typ", (some (go.signature.Signature [] false [(go.GoType.PointerType _root_.Perennial.internal.abi.Type''.ty)]))), (go!"reflect.typeSlow", (some (go.signature.Signature [] false [Type''.ty])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Value.ty) [(go!"Addr", (some (go.signature.Signature [] false [Value.ty]))), (go!"Bool", (some (go.signature.Signature [] false [go.bool]))), (go!"Bytes", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"Call", (some (go.signature.Signature [(go.GoType.SliceType Value.ty)] false [(go.GoType.SliceType Value.ty)]))), (go!"CallSlice", (some (go.signature.Signature [(go.GoType.SliceType Value.ty)] false [(go.GoType.SliceType Value.ty)]))), (go!"CanAddr", (some (go.signature.Signature [] false [go.bool]))), (go!"CanComplex", (some (go.signature.Signature [] false [go.bool]))), (go!"CanConvert", (some (go.signature.Signature [Type''.ty] false [go.bool]))), (go!"CanFloat", (some (go.signature.Signature [] false [go.bool]))), (go!"CanInt", (some (go.signature.Signature [] false [go.bool]))), (go!"CanInterface", (some (go.signature.Signature [] false [go.bool]))), (go!"CanSet", (some (go.signature.Signature [] false [go.bool]))), (go!"CanUint", (some (go.signature.Signature [] false [go.bool]))), (go!"Cap", (some (go.signature.Signature [] false [go.int]))), (go!"Clear", (some (go.signature.Signature [] false []))), (go!"Close", (some (go.signature.Signature [] false []))), (go!"Comparable", (some (go.signature.Signature [] false [go.bool]))), (go!"Complex", (some (go.signature.Signature [] false [go.complex128]))), (go!"Convert", (some (go.signature.Signature [Type''.ty] false [Value.ty]))), (go!"Elem", (some (go.signature.Signature [] false [Value.ty]))), (go!"Equal", (some (go.signature.Signature [Value.ty] false [go.bool]))), (go!"Field", (some (go.signature.Signature [go.int] false [Value.ty]))), (go!"FieldByIndex", (some (go.signature.Signature [(go.GoType.SliceType go.int)] false [Value.ty]))), (go!"FieldByIndexErr", (some (go.signature.Signature [(go.GoType.SliceType go.int)] false [Value.ty, go.error]))), (go!"FieldByName", (some (go.signature.Signature [go.string] false [Value.ty]))), (go!"FieldByNameFunc", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [go.string] false [go.bool]))] false [Value.ty]))), (go!"Fields", (some (go.signature.Signature [] false [(go.GoType.Named go!"iter.Seq2" [StructField.ty, Value.ty])]))), (go!"Float", (some (go.signature.Signature [] false [go.float64]))), (go!"Grow", (some (go.signature.Signature [go.int] false []))), (go!"Index", (some (go.signature.Signature [go.int] false [Value.ty]))), (go!"Int", (some (go.signature.Signature [] false [go.int64]))), (go!"Interface", (some (go.signature.Signature [] false [go.any]))), (go!"InterfaceData", (some (go.signature.Signature [] false [(go.GoType.ArrayType 2 go.uintptr)]))), (go!"IsNil", (some (go.signature.Signature [] false [go.bool]))), (go!"IsValid", (some (go.signature.Signature [] false [go.bool]))), (go!"IsZero", (some (go.signature.Signature [] false [go.bool]))), (go!"Kind", (some (go.signature.Signature [] false [Kind.ty]))), (go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"MapIndex", (some (go.signature.Signature [Value.ty] false [Value.ty]))), (go!"MapKeys", (some (go.signature.Signature [] false [(go.GoType.SliceType Value.ty)]))), (go!"MapRange", (some (go.signature.Signature [] false [(go.GoType.PointerType MapIter.ty)]))), (go!"Method", (some (go.signature.Signature [go.int] false [Value.ty]))), (go!"MethodByName", (some (go.signature.Signature [go.string] false [Value.ty]))), (go!"Methods", (some (go.signature.Signature [] false [(go.GoType.Named go!"iter.Seq2" [Method.ty, Value.ty])]))), (go!"NumField", (some (go.signature.Signature [] false [go.int]))), (go!"NumMethod", (some (go.signature.Signature [] false [go.int]))), (go!"OverflowComplex", (some (go.signature.Signature [go.complex128] false [go.bool]))), (go!"OverflowFloat", (some (go.signature.Signature [go.float64] false [go.bool]))), (go!"OverflowInt", (some (go.signature.Signature [go.int64] false [go.bool]))), (go!"OverflowUint", (some (go.signature.Signature [go.uint64] false [go.bool]))), (go!"Pointer", (some (go.signature.Signature [] false [go.uintptr]))), (go!"Recv", (some (go.signature.Signature [] false [Value.ty, go.bool]))), (go!"Send", (some (go.signature.Signature [Value.ty] false []))), (go!"Seq", (some (go.signature.Signature [] false [(go.GoType.Named go!"iter.Seq" [Value.ty])]))), (go!"Seq2", (some (go.signature.Signature [] false [(go.GoType.Named go!"iter.Seq2" [Value.ty, Value.ty])]))), (go!"Set", (some (go.signature.Signature [Value.ty] false []))), (go!"SetBool", (some (go.signature.Signature [go.bool] false []))), (go!"SetBytes", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false []))), (go!"SetCap", (some (go.signature.Signature [go.int] false []))), (go!"SetComplex", (some (go.signature.Signature [go.complex128] false []))), (go!"SetFloat", (some (go.signature.Signature [go.float64] false []))), (go!"SetInt", (some (go.signature.Signature [go.int64] false []))), (go!"SetIterKey", (some (go.signature.Signature [(go.GoType.PointerType MapIter.ty)] false []))), (go!"SetIterValue", (some (go.signature.Signature [(go.GoType.PointerType MapIter.ty)] false []))), (go!"SetLen", (some (go.signature.Signature [go.int] false []))), (go!"SetMapIndex", (some (go.signature.Signature [Value.ty, Value.ty] false []))), (go!"SetPointer", (some (go.signature.Signature [«unsafe».Pointer] false []))), (go!"SetString", (some (go.signature.Signature [go.string] false []))), (go!"SetUint", (some (go.signature.Signature [go.uint64] false []))), (go!"SetZero", (some (go.signature.Signature [] false []))), (go!"Slice", (some (go.signature.Signature [go.int, go.int] false [Value.ty]))), (go!"Slice3", (some (go.signature.Signature [go.int, go.int, go.int] false [Value.ty]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"TryRecv", (some (go.signature.Signature [] false [Value.ty, go.bool]))), (go!"TrySend", (some (go.signature.Signature [Value.ty] false [go.bool]))), (go!"Type", (some (go.signature.Signature [] false [Type''.ty]))), (go!"Uint", (some (go.signature.Signature [] false [go.uint64]))), (go!"UnsafeAddr", (some (go.signature.Signature [] false [go.uintptr]))), (go!"UnsafePointer", (some (go.signature.Signature [] false [«unsafe».Pointer]))), (go!"reflect.abiType", (some (go.signature.Signature [] false [(go.GoType.PointerType _root_.Perennial.internal.abi.Type''.ty)]))), (go!"reflect.abiTypeSlow", (some (go.signature.Signature [] false [(go.GoType.PointerType _root_.Perennial.internal.abi.Type''.ty)]))), (go!"reflect.assignTo", (some (go.signature.Signature [go.string, (go.GoType.PointerType _root_.Perennial.internal.abi.Type''.ty), «unsafe».Pointer] false [Value.ty]))), (go!"reflect.bytesSlow", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"reflect.call", (some (go.signature.Signature [go.string, (go.GoType.SliceType Value.ty)] false [(go.GoType.SliceType Value.ty)]))), (go!"reflect.capNonSlice", (some (go.signature.Signature [] false [go.int]))), (go!"reflect.extendSlice", (some (go.signature.Signature [go.int] false [Value.ty]))), (go!"reflect.grow", (some (go.signature.Signature [go.int] false []))), (go!"reflect.kind", (some (go.signature.Signature [] false [Kind.ty]))), (go!"reflect.lenNonSlice", (some (go.signature.Signature [] false [go.int]))), (go!"reflect.mustBe", (some (go.signature.Signature [Kind.ty] false []))), (go!"reflect.mustBeAssignable", (some (go.signature.Signature [] false []))), (go!"reflect.mustBeAssignableSlow", (some (go.signature.Signature [] false []))), (go!"reflect.mustBeExported", (some (go.signature.Signature [] false []))), (go!"reflect.mustBeExportedSlow", (some (go.signature.Signature [] false []))), (go!"reflect.panicNotBool", (some (go.signature.Signature [] false []))), (go!"reflect.panicNotMap", (some (go.signature.Signature [] false []))), (go!"reflect.pointer", (some (go.signature.Signature [] false [«unsafe».Pointer]))), (go!"reflect.recv", (some (go.signature.Signature [go.bool] false [Value.ty, go.bool]))), (go!"reflect.ro", (some (go.signature.Signature [] false [flag.ty]))), (go!"reflect.runes", (some (go.signature.Signature [] false [(go.GoType.SliceType go.rune)]))), (go!"reflect.send", (some (go.signature.Signature [Value.ty, go.bool] false [go.bool]))), (go!"reflect.setRunes", (some (go.signature.Signature [(go.GoType.SliceType go.rune)] false []))), (go!"reflect.stringNonString", (some (go.signature.Signature [] false [go.string]))), (go!"reflect.typ", (some (go.signature.Signature [] false [(go.GoType.PointerType _root_.Perennial.internal.abi.Type''.ty)]))), (go!"reflect.typeSlow", (some (go.signature.Signature [] false [Type''.ty])))]
 
 attribute [instance] Value.TypeAssumptions.type_repr
   Value.TypeAssumptions.underlying
-  Value.TypeAssumptions.get_typ_
-  Value.TypeAssumptions.set_typ_
-  Value.TypeAssumptions.get_ptr
-  Value.TypeAssumptions.set_ptr
-  Value.TypeAssumptions.get_flag
-  Value.TypeAssumptions.set_flag
+  Value.TypeAssumptions.get'typ_
+  Value.TypeAssumptions.set'typ_
+  Value.TypeAssumptions.get'ptr
+  Value.TypeAssumptions.set'ptr
+  Value.TypeAssumptions.get'flag
+  Value.TypeAssumptions.set'flag
   Value.TypeAssumptions.method_set
   Value.TypeAssumptions.ptr_method_set
 
@@ -1867,83 +1867,83 @@ attribute [instance] visibleFieldsWalker.TypeAssumptions.type_repr
   visibleFieldsWalker.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  abiStep_instance : abiStep.TypeAssumptions
-  abiStepKind_instance : abiStepKind.TypeAssumptions
-  abiSeq_instance : abiSeq.TypeAssumptions
-  abiDesc_instance : abiDesc.TypeAssumptions
-  visit_instance : visit.TypeAssumptions
-  makeFuncImpl_instance : makeFuncImpl.TypeAssumptions
-  methodValue_instance : methodValue.TypeAssumptions
-  makeFuncCtxt_instance : makeFuncCtxt.TypeAssumptions
-  MapIter_instance : MapIter.TypeAssumptions
-  Type_instance : Type''.TypeAssumptions
-  Kind_instance : Kind.TypeAssumptions
-  common_instance : common.TypeAssumptions
-  rtype_instance : rtype.TypeAssumptions
-  ChanDir_instance : ChanDir.TypeAssumptions
-  interfaceType_instance : interfaceType.TypeAssumptions
-  ptrType_instance : ptrType.TypeAssumptions
-  sliceType_instance : sliceType.TypeAssumptions
-  structType_instance : structType.TypeAssumptions
-  Method_instance : Method.TypeAssumptions
-  StructField_instance : StructField.TypeAssumptions
-  StructTag_instance : StructTag.TypeAssumptions
-  fieldScan_instance : fieldScan.TypeAssumptions
-  cacheKey_instance : cacheKey.TypeAssumptions
-  structTypeUncommon_instance : structTypeUncommon.TypeAssumptions
-  layoutKey_instance : layoutKey.TypeAssumptions
-  layoutType_instance : layoutType.TypeAssumptions
-  bitVector_instance : bitVector.TypeAssumptions
-  Value_instance : Value.TypeAssumptions
-  flag_instance : flag.TypeAssumptions
-  ValueError_instance : ValueError.TypeAssumptions
-  nonEmptyInterface_instance : nonEmptyInterface.TypeAssumptions
-  StringHeader_instance : StringHeader.TypeAssumptions
-  SliceHeader_instance : SliceHeader.TypeAssumptions
-  runtimeSelect_instance : runtimeSelect.TypeAssumptions
-  SelectDir_instance : SelectDir.TypeAssumptions
-  SelectCase_instance : SelectCase.TypeAssumptions
-  visibleFieldsWalker_instance : visibleFieldsWalker.TypeAssumptions
-  import_abi_Assumption : _root_.Perennial.internal.abi.Assumptions
+  instance'abiStep : abiStep.TypeAssumptions
+  instance'abiStepKind : abiStepKind.TypeAssumptions
+  instance'abiSeq : abiSeq.TypeAssumptions
+  instance'abiDesc : abiDesc.TypeAssumptions
+  instance'visit : visit.TypeAssumptions
+  instance'makeFuncImpl : makeFuncImpl.TypeAssumptions
+  instance'methodValue : methodValue.TypeAssumptions
+  instance'makeFuncCtxt : makeFuncCtxt.TypeAssumptions
+  instance'MapIter : MapIter.TypeAssumptions
+  instance'Type : Type''.TypeAssumptions
+  instance'Kind : Kind.TypeAssumptions
+  instance'common : common.TypeAssumptions
+  instance'rtype : rtype.TypeAssumptions
+  instance'ChanDir : ChanDir.TypeAssumptions
+  instance'interfaceType : interfaceType.TypeAssumptions
+  instance'ptrType : ptrType.TypeAssumptions
+  instance'sliceType : sliceType.TypeAssumptions
+  instance'structType : structType.TypeAssumptions
+  instance'Method : Method.TypeAssumptions
+  instance'StructField : StructField.TypeAssumptions
+  instance'StructTag : StructTag.TypeAssumptions
+  instance'fieldScan : fieldScan.TypeAssumptions
+  instance'cacheKey : cacheKey.TypeAssumptions
+  instance'structTypeUncommon : structTypeUncommon.TypeAssumptions
+  instance'layoutKey : layoutKey.TypeAssumptions
+  instance'layoutType : layoutType.TypeAssumptions
+  instance'bitVector : bitVector.TypeAssumptions
+  instance'Value : Value.TypeAssumptions
+  instance'flag : flag.TypeAssumptions
+  instance'ValueError : ValueError.TypeAssumptions
+  instance'nonEmptyInterface : nonEmptyInterface.TypeAssumptions
+  instance'StringHeader : StringHeader.TypeAssumptions
+  instance'SliceHeader : SliceHeader.TypeAssumptions
+  instance'runtimeSelect : runtimeSelect.TypeAssumptions
+  instance'SelectDir : SelectDir.TypeAssumptions
+  instance'SelectCase : SelectCase.TypeAssumptions
+  instance'visibleFieldsWalker : visibleFieldsWalker.TypeAssumptions
+  import'abi : _root_.Perennial.internal.abi.Assumptions
 
-attribute [instance] Assumptions.abiStep_instance
-  Assumptions.abiStepKind_instance
-  Assumptions.abiSeq_instance
-  Assumptions.abiDesc_instance
-  Assumptions.visit_instance
-  Assumptions.makeFuncImpl_instance
-  Assumptions.methodValue_instance
-  Assumptions.makeFuncCtxt_instance
-  Assumptions.MapIter_instance
-  Assumptions.Type_instance
-  Assumptions.Kind_instance
-  Assumptions.common_instance
-  Assumptions.rtype_instance
-  Assumptions.ChanDir_instance
-  Assumptions.interfaceType_instance
-  Assumptions.ptrType_instance
-  Assumptions.sliceType_instance
-  Assumptions.structType_instance
-  Assumptions.Method_instance
-  Assumptions.StructField_instance
-  Assumptions.StructTag_instance
-  Assumptions.fieldScan_instance
-  Assumptions.cacheKey_instance
-  Assumptions.structTypeUncommon_instance
-  Assumptions.layoutKey_instance
-  Assumptions.layoutType_instance
-  Assumptions.bitVector_instance
-  Assumptions.Value_instance
-  Assumptions.flag_instance
-  Assumptions.ValueError_instance
-  Assumptions.nonEmptyInterface_instance
-  Assumptions.StringHeader_instance
-  Assumptions.SliceHeader_instance
-  Assumptions.runtimeSelect_instance
-  Assumptions.SelectDir_instance
-  Assumptions.SelectCase_instance
-  Assumptions.visibleFieldsWalker_instance
-  Assumptions.import_abi_Assumption
+attribute [instance] Assumptions.instance'abiStep
+  Assumptions.instance'abiStepKind
+  Assumptions.instance'abiSeq
+  Assumptions.instance'abiDesc
+  Assumptions.instance'visit
+  Assumptions.instance'makeFuncImpl
+  Assumptions.instance'methodValue
+  Assumptions.instance'makeFuncCtxt
+  Assumptions.instance'MapIter
+  Assumptions.instance'Type
+  Assumptions.instance'Kind
+  Assumptions.instance'common
+  Assumptions.instance'rtype
+  Assumptions.instance'ChanDir
+  Assumptions.instance'interfaceType
+  Assumptions.instance'ptrType
+  Assumptions.instance'sliceType
+  Assumptions.instance'structType
+  Assumptions.instance'Method
+  Assumptions.instance'StructField
+  Assumptions.instance'StructTag
+  Assumptions.instance'fieldScan
+  Assumptions.instance'cacheKey
+  Assumptions.instance'structTypeUncommon
+  Assumptions.instance'layoutKey
+  Assumptions.instance'layoutType
+  Assumptions.instance'bitVector
+  Assumptions.instance'Value
+  Assumptions.instance'flag
+  Assumptions.instance'ValueError
+  Assumptions.instance'nonEmptyInterface
+  Assumptions.instance'StringHeader
+  Assumptions.instance'SliceHeader
+  Assumptions.instance'runtimeSelect
+  Assumptions.instance'SelectDir
+  Assumptions.instance'SelectCase
+  Assumptions.instance'visibleFieldsWalker
+  Assumptions.import'abi
 
 end reflect
 

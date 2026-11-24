@@ -115,7 +115,7 @@ noncomputable instance Bubble.zero_val [GooseExts] : ZeroVal Bubble :=
 @[irreducible] noncomputable def Bubble.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Bubble.fieldsUnsealed
 
-noncomputable instance equals_unfold_Bubble [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Bubble [GooseExts] [GoGlobalContext] :
     EqualsUnfold Bubble.fields Bubble.fieldsUnsealed :=
   ⟨by unfold Bubble.fields; rfl⟩
 
@@ -125,28 +125,28 @@ noncomputable instance equals_unfold_Bubble [GooseExts] [GoGlobalContext] :
 class Bubble.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Bubble.underlying Bubble
   underlying : go.UnderlyingDirectedEq Bubble.ty Bubble.underlying
-  get_b : ∀ (x : Bubble), go.IsGoStepPureDetTagged under (StructFieldGet Bubble.underlying go!"b") #x (Val #(x.b'))
-  set_b : ∀ (x : Bubble) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet Bubble.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Bubble)))
+  get'b : ∀ (x : Bubble), go.IsGoStepPureDetTagged under (StructFieldGet Bubble.underlying go!"b") #x (Val #(x.b'))
+  set'b : ∀ (x : Bubble) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet Bubble.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Bubble)))
   method_set : go.MethodSetIs Bubble.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Bubble.ty) [(go!"Release", (some (go.signature.Signature [] false []))), (go!"Run", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [] false []))] false [])))]
 
 attribute [instance] Bubble.TypeAssumptions.type_repr
   Bubble.TypeAssumptions.underlying
-  Bubble.TypeAssumptions.get_b
-  Bubble.TypeAssumptions.set_b
+  Bubble.TypeAssumptions.get'b
+  Bubble.TypeAssumptions.set'b
   Bubble.TypeAssumptions.method_set
   Bubble.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Association_instance : Association.TypeAssumptions
-  Bubble_instance : Bubble.TypeAssumptions
-  Run_unfold : FuncUnfold Run [] Run.impl
-  IsInBubble_unfold : FuncUnfold IsInBubble [] IsInBubble.impl
+  instance'Association : Association.TypeAssumptions
+  instance'Bubble : Bubble.TypeAssumptions
+  unfold'Run : FuncUnfold Run [] Run.impl
+  unfold'IsInBubble : FuncUnfold IsInBubble [] IsInBubble.impl
 
-attribute [instance] Assumptions.Association_instance
-  Assumptions.Bubble_instance
-  Assumptions.Run_unfold
-  Assumptions.IsInBubble_unfold
+attribute [instance] Assumptions.instance'Association
+  Assumptions.instance'Bubble
+  Assumptions.unfold'Run
+  Assumptions.unfold'IsInBubble
 
 end internal.synctest
 

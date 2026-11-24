@@ -227,7 +227,7 @@ func (ctx *Ctx) typeParamList(fs *ast.FieldList) []string {
 	}
 	for _, f := range fs.List {
 		for _, name := range f.Names {
-			typeParams = append(typeParams, name.Name)
+			typeParams = append(typeParams, glang.BinderName(name.Name))
 		}
 
 		if len(f.Names) == 0 { // Unnamed parameter
@@ -1065,8 +1065,13 @@ func (ctx *Ctx) identExpr(e *ast.Ident, multipleBindings bool) glang.Expr {
 	// check if e refers to a variable,
 	obj := ctx.info.ObjectOf(e)
 	if constObj, ok := obj.(*types.Const); ok {
-		// is a constant
-		constE := ctx.termIdent(e.Name)
+		// is a constant: package-level (a definition) or local (a let, see
+		// functionConstSpec)
+		name := e.Name
+		if constObj.Pkg() != nil && constObj.Parent() != constObj.Pkg().Scope() {
+			name = glang.BinderName(name)
+		}
+		constE := ctx.termIdent(name)
 		return ctx.handleImplicitConversion(e, constObj.Type(), ctx.typeOf(e), constE)
 	}
 	if _, ok := obj.(*types.Var); ok {
@@ -2764,7 +2769,7 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 		for i := range namedType.TypeArgs().Len() {
 			arg := namedType.TypeArgs().At(i)
 			if arg, ok := arg.(*types.TypeParam); ok {
-				fd.TypeArgs = append(fd.TypeArgs, glang.TermIdent(arg.Obj().Name()))
+				fd.TypeArgs = append(fd.TypeArgs, glang.TermIdent(glang.BinderName(arg.Obj().Name())))
 			} else {
 				// it doesn't seem possible to have the receiver be a specialized
 				// generic type (all args are interpreted as bound parameters)
@@ -2805,7 +2810,7 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 		if d.Type.TypeParams != nil {
 			for _, p := range d.Type.TypeParams.List {
 				for _, name := range p.Names {
-					fd.TypeArgs = append(fd.TypeArgs, glang.TermIdent(name.Name))
+					fd.TypeArgs = append(fd.TypeArgs, glang.TermIdent(glang.BinderName(name.Name)))
 				}
 			}
 		}
@@ -2992,7 +2997,7 @@ func (ctx *Ctx) functionConstSpec(spec *ast.ValueSpec, cont glang.Expr) glang.Ex
 		}
 		constVal := ctx.constantLiteral(spec.Names[i])
 		e = glang.TermLetExpr{
-			Name:    spec.Names[i].Name,
+			Name:    glang.BinderName(spec.Names[i].Name),
 			ValExpr: constVal,
 			Cont:    e,
 		}
@@ -3157,7 +3162,7 @@ func (ctx *Ctx) finalizeImports() {
 		pkg := impName.Imported()
 		if len(importsByName[pkg.Name()]) == 1 {
 			ref := pkg.Name()
-			ctx.importAssumptions[pkg.Path()] = "import_" + ref + "_Assumption"
+			ctx.importAssumptions[pkg.Path()] = glang.MemberName("import", ref)
 			usedRefs[ref] = true
 		}
 	}
@@ -3176,7 +3181,7 @@ func (ctx *Ctx) finalizeImports() {
 		aliases := uniqueImportAliases(group, usedRefs)
 		for _, groupPkg := range group {
 			ref := aliases[groupPkg.Path()]
-			ctx.importAssumptions[groupPkg.Path()] = "import_" + ref + "_Assumption"
+			ctx.importAssumptions[groupPkg.Path()] = glang.MemberName("import", ref)
 			usedRefs[ref] = true
 		}
 	}
@@ -3200,7 +3205,7 @@ func (ctx *Ctx) importAssumptionName(pkg *types.Package) string {
 	if name, ok := ctx.importAssumptions[pkg.Path()]; ok {
 		return name
 	}
-	return "import_" + pkg.Name() + "_Assumption"
+	return glang.MemberName("import", pkg.Name())
 }
 
 func (ctx *Ctx) decl(d ast.Decl) {

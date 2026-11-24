@@ -28,7 +28,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.poll.Assumptions]
 
-noncomputable instance errNetClosing_typed_pointsto :
+noncomputable instance typed_pointsto'errNetClosing :
     TypedPointsto (GF := GF) internal.poll.errNetClosing where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
@@ -36,7 +36,7 @@ noncomputable instance errNetClosing_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance errNetClosing_into_val_typed :
+noncomputable instance into_val_typed'errNetClosing :
     IntoValTypedUnderlying (GF := GF) internal.poll.errNetClosing internal.poll.errNetClosing.underlying := by
   solve_into_val_typed_struct
 
@@ -51,7 +51,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.poll.Assumptions]
 
-noncomputable instance DeadlineExceededError_typed_pointsto :
+noncomputable instance typed_pointsto'DeadlineExceededError :
     TypedPointsto (GF := GF) internal.poll.DeadlineExceededError where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
@@ -59,7 +59,7 @@ noncomputable instance DeadlineExceededError_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance DeadlineExceededError_into_val_typed :
+noncomputable instance into_val_typed'DeadlineExceededError :
     IntoValTypedUnderlying (GF := GF) internal.poll.DeadlineExceededError internal.poll.DeadlineExceededError.underlying := by
   solve_into_val_typed_struct
 
@@ -74,7 +74,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.poll.Assumptions]
 
-noncomputable instance fdMutex_typed_pointsto :
+noncomputable instance typed_pointsto'fdMutex :
     TypedPointsto (GF := GF) internal.poll.fdMutex where
   typedPointstoDef l v dq := iprop(
     "state" ∷ typedPointsto (structFieldRef internal.poll.fdMutex go!"state" l) v.state' dq ∗
@@ -85,11 +85,11 @@ noncomputable instance fdMutex_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance fdMutex_into_val_typed :
+noncomputable instance into_val_typed'fdMutex :
     IntoValTypedUnderlying (GF := GF) internal.poll.fdMutex internal.poll.fdMutex.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance fdMutex_access_load_state (l : Loc) (v : internal.poll.fdMutex) (dq : DFrac) :
+noncomputable instance access_load'fdMutex'state (l : Loc) (v : internal.poll.fdMutex) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.fdMutex go!"state" l) v.state' dq)
       (typedPointsto (structFieldRef internal.poll.fdMutex go!"state" l) v.state' dq)
@@ -97,7 +97,7 @@ noncomputable instance fdMutex_access_load_state (l : Loc) (v : internal.poll.fd
  by
   solve_pointsto_access_struct
 
-noncomputable instance fdMutex_access_store_state (l : Loc) (v : internal.poll.fdMutex) (y : w64) :
+noncomputable instance access_store'fdMutex'state (l : Loc) (v : internal.poll.fdMutex) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.fdMutex go!"state" l) v.state' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.poll.fdMutex go!"state" l) y (DFrac.own 1))
@@ -105,7 +105,7 @@ noncomputable instance fdMutex_access_store_state (l : Loc) (v : internal.poll.f
  by
   solve_pointsto_access_struct
 
-noncomputable instance fdMutex_access_load_rsema (l : Loc) (v : internal.poll.fdMutex) (dq : DFrac) :
+noncomputable instance access_load'fdMutex'rsema (l : Loc) (v : internal.poll.fdMutex) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.fdMutex go!"rsema" l) v.rsema' dq)
       (typedPointsto (structFieldRef internal.poll.fdMutex go!"rsema" l) v.rsema' dq)
@@ -113,7 +113,7 @@ noncomputable instance fdMutex_access_load_rsema (l : Loc) (v : internal.poll.fd
  by
   solve_pointsto_access_struct
 
-noncomputable instance fdMutex_access_store_rsema (l : Loc) (v : internal.poll.fdMutex) (y : w32) :
+noncomputable instance access_store'fdMutex'rsema (l : Loc) (v : internal.poll.fdMutex) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.fdMutex go!"rsema" l) v.rsema' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.poll.fdMutex go!"rsema" l) y (DFrac.own 1))
@@ -121,7 +121,7 @@ noncomputable instance fdMutex_access_store_rsema (l : Loc) (v : internal.poll.f
  by
   solve_pointsto_access_struct
 
-noncomputable instance fdMutex_access_load_wsema (l : Loc) (v : internal.poll.fdMutex) (dq : DFrac) :
+noncomputable instance access_load'fdMutex'wsema (l : Loc) (v : internal.poll.fdMutex) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.fdMutex go!"wsema" l) v.wsema' dq)
       (typedPointsto (structFieldRef internal.poll.fdMutex go!"wsema" l) v.wsema' dq)
@@ -129,7 +129,7 @@ noncomputable instance fdMutex_access_load_wsema (l : Loc) (v : internal.poll.fd
  by
   solve_pointsto_access_struct
 
-noncomputable instance fdMutex_access_store_wsema (l : Loc) (v : internal.poll.fdMutex) (y : w32) :
+noncomputable instance access_store'fdMutex'wsema (l : Loc) (v : internal.poll.fdMutex) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.fdMutex go!"wsema" l) v.wsema' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.poll.fdMutex go!"wsema" l) y (DFrac.own 1))
@@ -148,7 +148,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.poll.Assumptions]
 
-noncomputable instance pollDesc_typed_pointsto :
+noncomputable instance typed_pointsto'pollDesc :
     TypedPointsto (GF := GF) internal.poll.pollDesc where
   typedPointstoDef l v dq := iprop(
     "runtimeCtx" ∷ typedPointsto (structFieldRef internal.poll.pollDesc go!"runtimeCtx" l) v.runtimeCtx' dq ∗
@@ -157,11 +157,11 @@ noncomputable instance pollDesc_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance pollDesc_into_val_typed :
+noncomputable instance into_val_typed'pollDesc :
     IntoValTypedUnderlying (GF := GF) internal.poll.pollDesc internal.poll.pollDesc.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance pollDesc_access_load_runtimeCtx (l : Loc) (v : internal.poll.pollDesc) (dq : DFrac) :
+noncomputable instance access_load'pollDesc'runtimeCtx (l : Loc) (v : internal.poll.pollDesc) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.pollDesc go!"runtimeCtx" l) v.runtimeCtx' dq)
       (typedPointsto (structFieldRef internal.poll.pollDesc go!"runtimeCtx" l) v.runtimeCtx' dq)
@@ -169,7 +169,7 @@ noncomputable instance pollDesc_access_load_runtimeCtx (l : Loc) (v : internal.p
  by
   solve_pointsto_access_struct
 
-noncomputable instance pollDesc_access_store_runtimeCtx (l : Loc) (v : internal.poll.pollDesc) (y : w64) :
+noncomputable instance access_store'pollDesc'runtimeCtx (l : Loc) (v : internal.poll.pollDesc) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.pollDesc go!"runtimeCtx" l) v.runtimeCtx' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.poll.pollDesc go!"runtimeCtx" l) y (DFrac.own 1))
@@ -188,7 +188,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.poll.Assumptions]
 
-noncomputable instance SysFile_typed_pointsto :
+noncomputable instance typed_pointsto'SysFile :
     TypedPointsto (GF := GF) internal.poll.SysFile where
   typedPointstoDef l v dq := iprop(
     "iovecs" ∷ typedPointsto (structFieldRef internal.poll.SysFile go!"iovecs" l) v.iovecs' dq ∗
@@ -197,11 +197,11 @@ noncomputable instance SysFile_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance SysFile_into_val_typed :
+noncomputable instance into_val_typed'SysFile :
     IntoValTypedUnderlying (GF := GF) internal.poll.SysFile internal.poll.SysFile.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance SysFile_access_load_iovecs (l : Loc) (v : internal.poll.SysFile) (dq : DFrac) :
+noncomputable instance access_load'SysFile'iovecs (l : Loc) (v : internal.poll.SysFile) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.SysFile go!"iovecs" l) v.iovecs' dq)
       (typedPointsto (structFieldRef internal.poll.SysFile go!"iovecs" l) v.iovecs' dq)
@@ -209,7 +209,7 @@ noncomputable instance SysFile_access_load_iovecs (l : Loc) (v : internal.poll.S
  by
   solve_pointsto_access_struct
 
-noncomputable instance SysFile_access_store_iovecs (l : Loc) (v : internal.poll.SysFile) (y : Loc) :
+noncomputable instance access_store'SysFile'iovecs (l : Loc) (v : internal.poll.SysFile) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.SysFile go!"iovecs" l) v.iovecs' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.poll.SysFile go!"iovecs" l) y (DFrac.own 1))
@@ -228,7 +228,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.poll.Assumptions]
 
-noncomputable instance FD_typed_pointsto :
+noncomputable instance typed_pointsto'FD :
     TypedPointsto (GF := GF) internal.poll.FD where
   typedPointstoDef l v dq := iprop(
     "fdmu" ∷ typedPointsto (structFieldRef internal.poll.FD go!"fdmu" l) v.fdmu' dq ∗
@@ -245,11 +245,11 @@ noncomputable instance FD_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance FD_into_val_typed :
+noncomputable instance into_val_typed'FD :
     IntoValTypedUnderlying (GF := GF) internal.poll.FD internal.poll.FD.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance FD_access_load_fdmu (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
+noncomputable instance access_load'FD'fdmu (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.FD go!"fdmu" l) v.fdmu' dq)
       (typedPointsto (structFieldRef internal.poll.FD go!"fdmu" l) v.fdmu' dq)
@@ -257,7 +257,7 @@ noncomputable instance FD_access_load_fdmu (l : Loc) (v : internal.poll.FD) (dq 
  by
   solve_pointsto_access_struct
 
-noncomputable instance FD_access_store_fdmu (l : Loc) (v : internal.poll.FD) (y : internal.poll.fdMutex) :
+noncomputable instance access_store'FD'fdmu (l : Loc) (v : internal.poll.FD) (y : internal.poll.fdMutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.FD go!"fdmu" l) v.fdmu' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.poll.FD go!"fdmu" l) y (DFrac.own 1))
@@ -265,7 +265,7 @@ noncomputable instance FD_access_store_fdmu (l : Loc) (v : internal.poll.FD) (y 
  by
   solve_pointsto_access_struct
 
-noncomputable instance FD_access_load_Sysfd (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
+noncomputable instance access_load'FD'Sysfd (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.FD go!"Sysfd" l) v.Sysfd' dq)
       (typedPointsto (structFieldRef internal.poll.FD go!"Sysfd" l) v.Sysfd' dq)
@@ -273,7 +273,7 @@ noncomputable instance FD_access_load_Sysfd (l : Loc) (v : internal.poll.FD) (dq
  by
   solve_pointsto_access_struct
 
-noncomputable instance FD_access_store_Sysfd (l : Loc) (v : internal.poll.FD) (y : w64) :
+noncomputable instance access_store'FD'Sysfd (l : Loc) (v : internal.poll.FD) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.FD go!"Sysfd" l) v.Sysfd' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.poll.FD go!"Sysfd" l) y (DFrac.own 1))
@@ -281,7 +281,7 @@ noncomputable instance FD_access_store_Sysfd (l : Loc) (v : internal.poll.FD) (y
  by
   solve_pointsto_access_struct
 
-noncomputable instance FD_access_load_SysFile (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
+noncomputable instance access_load'FD'SysFile (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.FD go!"SysFile" l) v.SysFile' dq)
       (typedPointsto (structFieldRef internal.poll.FD go!"SysFile" l) v.SysFile' dq)
@@ -289,7 +289,7 @@ noncomputable instance FD_access_load_SysFile (l : Loc) (v : internal.poll.FD) (
  by
   solve_pointsto_access_struct
 
-noncomputable instance FD_access_store_SysFile (l : Loc) (v : internal.poll.FD) (y : internal.poll.SysFile) :
+noncomputable instance access_store'FD'SysFile (l : Loc) (v : internal.poll.FD) (y : internal.poll.SysFile) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.FD go!"SysFile" l) v.SysFile' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.poll.FD go!"SysFile" l) y (DFrac.own 1))
@@ -297,7 +297,7 @@ noncomputable instance FD_access_store_SysFile (l : Loc) (v : internal.poll.FD) 
  by
   solve_pointsto_access_struct
 
-noncomputable instance FD_access_load_pd (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
+noncomputable instance access_load'FD'pd (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.FD go!"pd" l) v.pd' dq)
       (typedPointsto (structFieldRef internal.poll.FD go!"pd" l) v.pd' dq)
@@ -305,7 +305,7 @@ noncomputable instance FD_access_load_pd (l : Loc) (v : internal.poll.FD) (dq : 
  by
   solve_pointsto_access_struct
 
-noncomputable instance FD_access_store_pd (l : Loc) (v : internal.poll.FD) (y : internal.poll.pollDesc) :
+noncomputable instance access_store'FD'pd (l : Loc) (v : internal.poll.FD) (y : internal.poll.pollDesc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.FD go!"pd" l) v.pd' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.poll.FD go!"pd" l) y (DFrac.own 1))
@@ -313,7 +313,7 @@ noncomputable instance FD_access_store_pd (l : Loc) (v : internal.poll.FD) (y : 
  by
   solve_pointsto_access_struct
 
-noncomputable instance FD_access_load_csema (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
+noncomputable instance access_load'FD'csema (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.FD go!"csema" l) v.csema' dq)
       (typedPointsto (structFieldRef internal.poll.FD go!"csema" l) v.csema' dq)
@@ -321,7 +321,7 @@ noncomputable instance FD_access_load_csema (l : Loc) (v : internal.poll.FD) (dq
  by
   solve_pointsto_access_struct
 
-noncomputable instance FD_access_store_csema (l : Loc) (v : internal.poll.FD) (y : w32) :
+noncomputable instance access_store'FD'csema (l : Loc) (v : internal.poll.FD) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.FD go!"csema" l) v.csema' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.poll.FD go!"csema" l) y (DFrac.own 1))
@@ -329,7 +329,7 @@ noncomputable instance FD_access_store_csema (l : Loc) (v : internal.poll.FD) (y
  by
   solve_pointsto_access_struct
 
-noncomputable instance FD_access_load_isBlocking (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
+noncomputable instance access_load'FD'isBlocking (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.FD go!"isBlocking" l) v.isBlocking' dq)
       (typedPointsto (structFieldRef internal.poll.FD go!"isBlocking" l) v.isBlocking' dq)
@@ -337,7 +337,7 @@ noncomputable instance FD_access_load_isBlocking (l : Loc) (v : internal.poll.FD
  by
   solve_pointsto_access_struct
 
-noncomputable instance FD_access_store_isBlocking (l : Loc) (v : internal.poll.FD) (y : w32) :
+noncomputable instance access_store'FD'isBlocking (l : Loc) (v : internal.poll.FD) (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.FD go!"isBlocking" l) v.isBlocking' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.poll.FD go!"isBlocking" l) y (DFrac.own 1))
@@ -345,7 +345,7 @@ noncomputable instance FD_access_store_isBlocking (l : Loc) (v : internal.poll.F
  by
   solve_pointsto_access_struct
 
-noncomputable instance FD_access_load_IsStream (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
+noncomputable instance access_load'FD'IsStream (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.FD go!"IsStream" l) v.IsStream' dq)
       (typedPointsto (structFieldRef internal.poll.FD go!"IsStream" l) v.IsStream' dq)
@@ -353,7 +353,7 @@ noncomputable instance FD_access_load_IsStream (l : Loc) (v : internal.poll.FD) 
  by
   solve_pointsto_access_struct
 
-noncomputable instance FD_access_store_IsStream (l : Loc) (v : internal.poll.FD) (y : Bool) :
+noncomputable instance access_store'FD'IsStream (l : Loc) (v : internal.poll.FD) (y : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.FD go!"IsStream" l) v.IsStream' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.poll.FD go!"IsStream" l) y (DFrac.own 1))
@@ -361,7 +361,7 @@ noncomputable instance FD_access_store_IsStream (l : Loc) (v : internal.poll.FD)
  by
   solve_pointsto_access_struct
 
-noncomputable instance FD_access_load_ZeroReadIsEOF (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
+noncomputable instance access_load'FD'ZeroReadIsEOF (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.FD go!"ZeroReadIsEOF" l) v.ZeroReadIsEOF' dq)
       (typedPointsto (structFieldRef internal.poll.FD go!"ZeroReadIsEOF" l) v.ZeroReadIsEOF' dq)
@@ -369,7 +369,7 @@ noncomputable instance FD_access_load_ZeroReadIsEOF (l : Loc) (v : internal.poll
  by
   solve_pointsto_access_struct
 
-noncomputable instance FD_access_store_ZeroReadIsEOF (l : Loc) (v : internal.poll.FD) (y : Bool) :
+noncomputable instance access_store'FD'ZeroReadIsEOF (l : Loc) (v : internal.poll.FD) (y : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.FD go!"ZeroReadIsEOF" l) v.ZeroReadIsEOF' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.poll.FD go!"ZeroReadIsEOF" l) y (DFrac.own 1))
@@ -377,7 +377,7 @@ noncomputable instance FD_access_store_ZeroReadIsEOF (l : Loc) (v : internal.pol
  by
   solve_pointsto_access_struct
 
-noncomputable instance FD_access_load_isFile (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
+noncomputable instance access_load'FD'isFile (l : Loc) (v : internal.poll.FD) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.FD go!"isFile" l) v.isFile' dq)
       (typedPointsto (structFieldRef internal.poll.FD go!"isFile" l) v.isFile' dq)
@@ -385,7 +385,7 @@ noncomputable instance FD_access_load_isFile (l : Loc) (v : internal.poll.FD) (d
  by
   solve_pointsto_access_struct
 
-noncomputable instance FD_access_store_isFile (l : Loc) (v : internal.poll.FD) (y : Bool) :
+noncomputable instance access_store'FD'isFile (l : Loc) (v : internal.poll.FD) (y : Bool) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.FD go!"isFile" l) v.isFile' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.poll.FD go!"isFile" l) y (DFrac.own 1))
@@ -404,7 +404,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.poll.Assumptions]
 
-noncomputable instance splicePipeFields_typed_pointsto :
+noncomputable instance typed_pointsto'splicePipeFields :
     TypedPointsto (GF := GF) internal.poll.splicePipeFields where
   typedPointstoDef l v dq := iprop(
     "rfd" ∷ typedPointsto (structFieldRef internal.poll.splicePipeFields go!"rfd" l) v.rfd' dq ∗
@@ -415,11 +415,11 @@ noncomputable instance splicePipeFields_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance splicePipeFields_into_val_typed :
+noncomputable instance into_val_typed'splicePipeFields :
     IntoValTypedUnderlying (GF := GF) internal.poll.splicePipeFields internal.poll.splicePipeFields.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance splicePipeFields_access_load_rfd (l : Loc) (v : internal.poll.splicePipeFields) (dq : DFrac) :
+noncomputable instance access_load'splicePipeFields'rfd (l : Loc) (v : internal.poll.splicePipeFields) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"rfd" l) v.rfd' dq)
       (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"rfd" l) v.rfd' dq)
@@ -427,7 +427,7 @@ noncomputable instance splicePipeFields_access_load_rfd (l : Loc) (v : internal.
  by
   solve_pointsto_access_struct
 
-noncomputable instance splicePipeFields_access_store_rfd (l : Loc) (v : internal.poll.splicePipeFields) (y : w64) :
+noncomputable instance access_store'splicePipeFields'rfd (l : Loc) (v : internal.poll.splicePipeFields) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"rfd" l) v.rfd' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"rfd" l) y (DFrac.own 1))
@@ -435,7 +435,7 @@ noncomputable instance splicePipeFields_access_store_rfd (l : Loc) (v : internal
  by
   solve_pointsto_access_struct
 
-noncomputable instance splicePipeFields_access_load_wfd (l : Loc) (v : internal.poll.splicePipeFields) (dq : DFrac) :
+noncomputable instance access_load'splicePipeFields'wfd (l : Loc) (v : internal.poll.splicePipeFields) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"wfd" l) v.wfd' dq)
       (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"wfd" l) v.wfd' dq)
@@ -443,7 +443,7 @@ noncomputable instance splicePipeFields_access_load_wfd (l : Loc) (v : internal.
  by
   solve_pointsto_access_struct
 
-noncomputable instance splicePipeFields_access_store_wfd (l : Loc) (v : internal.poll.splicePipeFields) (y : w64) :
+noncomputable instance access_store'splicePipeFields'wfd (l : Loc) (v : internal.poll.splicePipeFields) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"wfd" l) v.wfd' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"wfd" l) y (DFrac.own 1))
@@ -451,7 +451,7 @@ noncomputable instance splicePipeFields_access_store_wfd (l : Loc) (v : internal
  by
   solve_pointsto_access_struct
 
-noncomputable instance splicePipeFields_access_load_data (l : Loc) (v : internal.poll.splicePipeFields) (dq : DFrac) :
+noncomputable instance access_load'splicePipeFields'data (l : Loc) (v : internal.poll.splicePipeFields) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"data" l) v.data' dq)
       (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"data" l) v.data' dq)
@@ -459,7 +459,7 @@ noncomputable instance splicePipeFields_access_load_data (l : Loc) (v : internal
  by
   solve_pointsto_access_struct
 
-noncomputable instance splicePipeFields_access_store_data (l : Loc) (v : internal.poll.splicePipeFields) (y : w64) :
+noncomputable instance access_store'splicePipeFields'data (l : Loc) (v : internal.poll.splicePipeFields) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"data" l) v.data' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.poll.splicePipeFields go!"data" l) y (DFrac.own 1))
@@ -478,11 +478,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.poll.Assumptions]
 
-noncomputable instance splicePipe_typed_pointsto :
+noncomputable instance typed_pointsto'splicePipe :
     TypedPointsto (GF := GF) internal.poll.splicePipe :=
   sorry -- axiomatized type
 
-noncomputable instance splicePipe_into_val_typed :
+noncomputable instance into_val_typed'splicePipe :
     IntoValTypedUnderlying (GF := GF) internal.poll.splicePipe internal.poll.splicePipe.underlying :=
   sorry -- axiomatized type
 

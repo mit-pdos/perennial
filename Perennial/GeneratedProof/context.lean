@@ -28,7 +28,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : context.Assumptions]
 
-noncomputable instance deadlineExceededError_typed_pointsto :
+noncomputable instance typed_pointsto'deadlineExceededError :
     TypedPointsto (GF := GF) context.deadlineExceededError where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
@@ -36,7 +36,7 @@ noncomputable instance deadlineExceededError_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance deadlineExceededError_into_val_typed :
+noncomputable instance into_val_typed'deadlineExceededError :
     IntoValTypedUnderlying (GF := GF) context.deadlineExceededError context.deadlineExceededError.underlying := by
   solve_into_val_typed_struct
 
@@ -51,7 +51,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : context.Assumptions]
 
-noncomputable instance emptyCtx_typed_pointsto :
+noncomputable instance typed_pointsto'emptyCtx :
     TypedPointsto (GF := GF) context.emptyCtx where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
@@ -59,7 +59,7 @@ noncomputable instance emptyCtx_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance emptyCtx_into_val_typed :
+noncomputable instance into_val_typed'emptyCtx :
     IntoValTypedUnderlying (GF := GF) context.emptyCtx context.emptyCtx.underlying := by
   solve_into_val_typed_struct
 
@@ -74,7 +74,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : context.Assumptions]
 
-noncomputable instance backgroundCtx_typed_pointsto :
+noncomputable instance typed_pointsto'backgroundCtx :
     TypedPointsto (GF := GF) context.backgroundCtx where
   typedPointstoDef l v dq := iprop(
     "emptyCtx" ∷ typedPointsto (structFieldRef context.backgroundCtx go!"emptyCtx" l) v.emptyCtx' dq ∗
@@ -83,11 +83,11 @@ noncomputable instance backgroundCtx_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance backgroundCtx_into_val_typed :
+noncomputable instance into_val_typed'backgroundCtx :
     IntoValTypedUnderlying (GF := GF) context.backgroundCtx context.backgroundCtx.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance backgroundCtx_access_load_emptyCtx (l : Loc) (v : context.backgroundCtx) (dq : DFrac) :
+noncomputable instance access_load'backgroundCtx'emptyCtx (l : Loc) (v : context.backgroundCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.backgroundCtx go!"emptyCtx" l) v.emptyCtx' dq)
       (typedPointsto (structFieldRef context.backgroundCtx go!"emptyCtx" l) v.emptyCtx' dq)
@@ -95,7 +95,7 @@ noncomputable instance backgroundCtx_access_load_emptyCtx (l : Loc) (v : context
  by
   solve_pointsto_access_struct
 
-noncomputable instance backgroundCtx_access_store_emptyCtx (l : Loc) (v : context.backgroundCtx) (y : context.emptyCtx) :
+noncomputable instance access_store'backgroundCtx'emptyCtx (l : Loc) (v : context.backgroundCtx) (y : context.emptyCtx) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.backgroundCtx go!"emptyCtx" l) v.emptyCtx' (DFrac.own 1))
       (typedPointsto (structFieldRef context.backgroundCtx go!"emptyCtx" l) y (DFrac.own 1))
@@ -114,7 +114,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : context.Assumptions]
 
-noncomputable instance todoCtx_typed_pointsto :
+noncomputable instance typed_pointsto'todoCtx :
     TypedPointsto (GF := GF) context.todoCtx where
   typedPointstoDef l v dq := iprop(
     "emptyCtx" ∷ typedPointsto (structFieldRef context.todoCtx go!"emptyCtx" l) v.emptyCtx' dq ∗
@@ -123,11 +123,11 @@ noncomputable instance todoCtx_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance todoCtx_into_val_typed :
+noncomputable instance into_val_typed'todoCtx :
     IntoValTypedUnderlying (GF := GF) context.todoCtx context.todoCtx.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance todoCtx_access_load_emptyCtx (l : Loc) (v : context.todoCtx) (dq : DFrac) :
+noncomputable instance access_load'todoCtx'emptyCtx (l : Loc) (v : context.todoCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.todoCtx go!"emptyCtx" l) v.emptyCtx' dq)
       (typedPointsto (structFieldRef context.todoCtx go!"emptyCtx" l) v.emptyCtx' dq)
@@ -135,7 +135,7 @@ noncomputable instance todoCtx_access_load_emptyCtx (l : Loc) (v : context.todoC
  by
   solve_pointsto_access_struct
 
-noncomputable instance todoCtx_access_store_emptyCtx (l : Loc) (v : context.todoCtx) (y : context.emptyCtx) :
+noncomputable instance access_store'todoCtx'emptyCtx (l : Loc) (v : context.todoCtx) (y : context.emptyCtx) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.todoCtx go!"emptyCtx" l) v.emptyCtx' (DFrac.own 1))
       (typedPointsto (structFieldRef context.todoCtx go!"emptyCtx" l) y (DFrac.own 1))
@@ -154,7 +154,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : context.Assumptions]
 
-noncomputable instance cancelCtx_typed_pointsto :
+noncomputable instance typed_pointsto'cancelCtx :
     TypedPointsto (GF := GF) context.cancelCtx where
   typedPointstoDef l v dq := iprop(
     "Context" ∷ typedPointsto (structFieldRef context.cancelCtx go!"Context" l) v.Context' dq ∗
@@ -168,11 +168,11 @@ noncomputable instance cancelCtx_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance cancelCtx_into_val_typed :
+noncomputable instance into_val_typed'cancelCtx :
     IntoValTypedUnderlying (GF := GF) context.cancelCtx context.cancelCtx.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance cancelCtx_access_load_Context (l : Loc) (v : context.cancelCtx) (dq : DFrac) :
+noncomputable instance access_load'cancelCtx'Context (l : Loc) (v : context.cancelCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"Context" l) v.Context' dq)
       (typedPointsto (structFieldRef context.cancelCtx go!"Context" l) v.Context' dq)
@@ -180,7 +180,7 @@ noncomputable instance cancelCtx_access_load_Context (l : Loc) (v : context.canc
  by
   solve_pointsto_access_struct
 
-noncomputable instance cancelCtx_access_store_Context (l : Loc) (v : context.cancelCtx) (y : context.Context) :
+noncomputable instance access_store'cancelCtx'Context (l : Loc) (v : context.cancelCtx) (y : context.Context) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"Context" l) v.Context' (DFrac.own 1))
       (typedPointsto (structFieldRef context.cancelCtx go!"Context" l) y (DFrac.own 1))
@@ -188,7 +188,7 @@ noncomputable instance cancelCtx_access_store_Context (l : Loc) (v : context.can
  by
   solve_pointsto_access_struct
 
-noncomputable instance cancelCtx_access_load_mu (l : Loc) (v : context.cancelCtx) (dq : DFrac) :
+noncomputable instance access_load'cancelCtx'mu (l : Loc) (v : context.cancelCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"mu" l) v.mu' dq)
       (typedPointsto (structFieldRef context.cancelCtx go!"mu" l) v.mu' dq)
@@ -196,7 +196,7 @@ noncomputable instance cancelCtx_access_load_mu (l : Loc) (v : context.cancelCtx
  by
   solve_pointsto_access_struct
 
-noncomputable instance cancelCtx_access_store_mu (l : Loc) (v : context.cancelCtx) (y : _root_.Perennial.sync.Mutex) :
+noncomputable instance access_store'cancelCtx'mu (l : Loc) (v : context.cancelCtx) (y : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef context.cancelCtx go!"mu" l) y (DFrac.own 1))
@@ -204,7 +204,7 @@ noncomputable instance cancelCtx_access_store_mu (l : Loc) (v : context.cancelCt
  by
   solve_pointsto_access_struct
 
-noncomputable instance cancelCtx_access_load_done (l : Loc) (v : context.cancelCtx) (dq : DFrac) :
+noncomputable instance access_load'cancelCtx'done (l : Loc) (v : context.cancelCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"done" l) v.done' dq)
       (typedPointsto (structFieldRef context.cancelCtx go!"done" l) v.done' dq)
@@ -212,7 +212,7 @@ noncomputable instance cancelCtx_access_load_done (l : Loc) (v : context.cancelC
  by
   solve_pointsto_access_struct
 
-noncomputable instance cancelCtx_access_store_done (l : Loc) (v : context.cancelCtx) (y : _root_.Perennial.sync.atomic.Value) :
+noncomputable instance access_store'cancelCtx'done (l : Loc) (v : context.cancelCtx) (y : _root_.Perennial.sync.atomic.Value) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"done" l) v.done' (DFrac.own 1))
       (typedPointsto (structFieldRef context.cancelCtx go!"done" l) y (DFrac.own 1))
@@ -220,7 +220,7 @@ noncomputable instance cancelCtx_access_store_done (l : Loc) (v : context.cancel
  by
   solve_pointsto_access_struct
 
-noncomputable instance cancelCtx_access_load_children (l : Loc) (v : context.cancelCtx) (dq : DFrac) :
+noncomputable instance access_load'cancelCtx'children (l : Loc) (v : context.cancelCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"children" l) v.children' dq)
       (typedPointsto (structFieldRef context.cancelCtx go!"children" l) v.children' dq)
@@ -228,7 +228,7 @@ noncomputable instance cancelCtx_access_load_children (l : Loc) (v : context.can
  by
   solve_pointsto_access_struct
 
-noncomputable instance cancelCtx_access_store_children (l : Loc) (v : context.cancelCtx) (y : GoMap) :
+noncomputable instance access_store'cancelCtx'children (l : Loc) (v : context.cancelCtx) (y : GoMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"children" l) v.children' (DFrac.own 1))
       (typedPointsto (structFieldRef context.cancelCtx go!"children" l) y (DFrac.own 1))
@@ -236,7 +236,7 @@ noncomputable instance cancelCtx_access_store_children (l : Loc) (v : context.ca
  by
   solve_pointsto_access_struct
 
-noncomputable instance cancelCtx_access_load_err (l : Loc) (v : context.cancelCtx) (dq : DFrac) :
+noncomputable instance access_load'cancelCtx'err (l : Loc) (v : context.cancelCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"err" l) v.err' dq)
       (typedPointsto (structFieldRef context.cancelCtx go!"err" l) v.err' dq)
@@ -244,7 +244,7 @@ noncomputable instance cancelCtx_access_load_err (l : Loc) (v : context.cancelCt
  by
   solve_pointsto_access_struct
 
-noncomputable instance cancelCtx_access_store_err (l : Loc) (v : context.cancelCtx) (y : _root_.Perennial.sync.atomic.Value) :
+noncomputable instance access_store'cancelCtx'err (l : Loc) (v : context.cancelCtx) (y : _root_.Perennial.sync.atomic.Value) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"err" l) v.err' (DFrac.own 1))
       (typedPointsto (structFieldRef context.cancelCtx go!"err" l) y (DFrac.own 1))
@@ -252,7 +252,7 @@ noncomputable instance cancelCtx_access_store_err (l : Loc) (v : context.cancelC
  by
   solve_pointsto_access_struct
 
-noncomputable instance cancelCtx_access_load_cause (l : Loc) (v : context.cancelCtx) (dq : DFrac) :
+noncomputable instance access_load'cancelCtx'cause (l : Loc) (v : context.cancelCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"cause" l) v.cause' dq)
       (typedPointsto (structFieldRef context.cancelCtx go!"cause" l) v.cause' dq)
@@ -260,7 +260,7 @@ noncomputable instance cancelCtx_access_load_cause (l : Loc) (v : context.cancel
  by
   solve_pointsto_access_struct
 
-noncomputable instance cancelCtx_access_store_cause (l : Loc) (v : context.cancelCtx) (y : GoError) :
+noncomputable instance access_store'cancelCtx'cause (l : Loc) (v : context.cancelCtx) (y : GoError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.cancelCtx go!"cause" l) v.cause' (DFrac.own 1))
       (typedPointsto (structFieldRef context.cancelCtx go!"cause" l) y (DFrac.own 1))
@@ -279,7 +279,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : context.Assumptions]
 
-noncomputable instance afterFuncCtx_typed_pointsto :
+noncomputable instance typed_pointsto'afterFuncCtx :
     TypedPointsto (GF := GF) context.afterFuncCtx where
   typedPointstoDef l v dq := iprop(
     "cancelCtx" ∷ typedPointsto (structFieldRef context.afterFuncCtx go!"cancelCtx" l) v.cancelCtx' dq ∗
@@ -290,11 +290,11 @@ noncomputable instance afterFuncCtx_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance afterFuncCtx_into_val_typed :
+noncomputable instance into_val_typed'afterFuncCtx :
     IntoValTypedUnderlying (GF := GF) context.afterFuncCtx context.afterFuncCtx.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance afterFuncCtx_access_load_cancelCtx (l : Loc) (v : context.afterFuncCtx) (dq : DFrac) :
+noncomputable instance access_load'afterFuncCtx'cancelCtx (l : Loc) (v : context.afterFuncCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.afterFuncCtx go!"cancelCtx" l) v.cancelCtx' dq)
       (typedPointsto (structFieldRef context.afterFuncCtx go!"cancelCtx" l) v.cancelCtx' dq)
@@ -302,7 +302,7 @@ noncomputable instance afterFuncCtx_access_load_cancelCtx (l : Loc) (v : context
  by
   solve_pointsto_access_struct
 
-noncomputable instance afterFuncCtx_access_store_cancelCtx (l : Loc) (v : context.afterFuncCtx) (y : context.cancelCtx) :
+noncomputable instance access_store'afterFuncCtx'cancelCtx (l : Loc) (v : context.afterFuncCtx) (y : context.cancelCtx) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.afterFuncCtx go!"cancelCtx" l) v.cancelCtx' (DFrac.own 1))
       (typedPointsto (structFieldRef context.afterFuncCtx go!"cancelCtx" l) y (DFrac.own 1))
@@ -310,7 +310,7 @@ noncomputable instance afterFuncCtx_access_store_cancelCtx (l : Loc) (v : contex
  by
   solve_pointsto_access_struct
 
-noncomputable instance afterFuncCtx_access_load_once (l : Loc) (v : context.afterFuncCtx) (dq : DFrac) :
+noncomputable instance access_load'afterFuncCtx'once (l : Loc) (v : context.afterFuncCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.afterFuncCtx go!"once" l) v.once' dq)
       (typedPointsto (structFieldRef context.afterFuncCtx go!"once" l) v.once' dq)
@@ -318,7 +318,7 @@ noncomputable instance afterFuncCtx_access_load_once (l : Loc) (v : context.afte
  by
   solve_pointsto_access_struct
 
-noncomputable instance afterFuncCtx_access_store_once (l : Loc) (v : context.afterFuncCtx) (y : _root_.Perennial.sync.Once) :
+noncomputable instance access_store'afterFuncCtx'once (l : Loc) (v : context.afterFuncCtx) (y : _root_.Perennial.sync.Once) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.afterFuncCtx go!"once" l) v.once' (DFrac.own 1))
       (typedPointsto (structFieldRef context.afterFuncCtx go!"once" l) y (DFrac.own 1))
@@ -326,7 +326,7 @@ noncomputable instance afterFuncCtx_access_store_once (l : Loc) (v : context.aft
  by
   solve_pointsto_access_struct
 
-noncomputable instance afterFuncCtx_access_load_f (l : Loc) (v : context.afterFuncCtx) (dq : DFrac) :
+noncomputable instance access_load'afterFuncCtx'f (l : Loc) (v : context.afterFuncCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.afterFuncCtx go!"f" l) v.f' dq)
       (typedPointsto (structFieldRef context.afterFuncCtx go!"f" l) v.f' dq)
@@ -334,7 +334,7 @@ noncomputable instance afterFuncCtx_access_load_f (l : Loc) (v : context.afterFu
  by
   solve_pointsto_access_struct
 
-noncomputable instance afterFuncCtx_access_store_f (l : Loc) (v : context.afterFuncCtx) (y : GoFunc) :
+noncomputable instance access_store'afterFuncCtx'f (l : Loc) (v : context.afterFuncCtx) (y : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.afterFuncCtx go!"f" l) v.f' (DFrac.own 1))
       (typedPointsto (structFieldRef context.afterFuncCtx go!"f" l) y (DFrac.own 1))
@@ -353,7 +353,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : context.Assumptions]
 
-noncomputable instance stopCtx_typed_pointsto :
+noncomputable instance typed_pointsto'stopCtx :
     TypedPointsto (GF := GF) context.stopCtx where
   typedPointstoDef l v dq := iprop(
     "Context" ∷ typedPointsto (structFieldRef context.stopCtx go!"Context" l) v.Context' dq ∗
@@ -363,11 +363,11 @@ noncomputable instance stopCtx_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance stopCtx_into_val_typed :
+noncomputable instance into_val_typed'stopCtx :
     IntoValTypedUnderlying (GF := GF) context.stopCtx context.stopCtx.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance stopCtx_access_load_Context (l : Loc) (v : context.stopCtx) (dq : DFrac) :
+noncomputable instance access_load'stopCtx'Context (l : Loc) (v : context.stopCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.stopCtx go!"Context" l) v.Context' dq)
       (typedPointsto (structFieldRef context.stopCtx go!"Context" l) v.Context' dq)
@@ -375,7 +375,7 @@ noncomputable instance stopCtx_access_load_Context (l : Loc) (v : context.stopCt
  by
   solve_pointsto_access_struct
 
-noncomputable instance stopCtx_access_store_Context (l : Loc) (v : context.stopCtx) (y : context.Context) :
+noncomputable instance access_store'stopCtx'Context (l : Loc) (v : context.stopCtx) (y : context.Context) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.stopCtx go!"Context" l) v.Context' (DFrac.own 1))
       (typedPointsto (structFieldRef context.stopCtx go!"Context" l) y (DFrac.own 1))
@@ -383,7 +383,7 @@ noncomputable instance stopCtx_access_store_Context (l : Loc) (v : context.stopC
  by
   solve_pointsto_access_struct
 
-noncomputable instance stopCtx_access_load_stop (l : Loc) (v : context.stopCtx) (dq : DFrac) :
+noncomputable instance access_load'stopCtx'stop (l : Loc) (v : context.stopCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.stopCtx go!"stop" l) v.stop' dq)
       (typedPointsto (structFieldRef context.stopCtx go!"stop" l) v.stop' dq)
@@ -391,7 +391,7 @@ noncomputable instance stopCtx_access_load_stop (l : Loc) (v : context.stopCtx) 
  by
   solve_pointsto_access_struct
 
-noncomputable instance stopCtx_access_store_stop (l : Loc) (v : context.stopCtx) (y : GoFunc) :
+noncomputable instance access_store'stopCtx'stop (l : Loc) (v : context.stopCtx) (y : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.stopCtx go!"stop" l) v.stop' (DFrac.own 1))
       (typedPointsto (structFieldRef context.stopCtx go!"stop" l) y (DFrac.own 1))
@@ -410,7 +410,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : context.Assumptions]
 
-noncomputable instance withoutCancelCtx_typed_pointsto :
+noncomputable instance typed_pointsto'withoutCancelCtx :
     TypedPointsto (GF := GF) context.withoutCancelCtx where
   typedPointstoDef l v dq := iprop(
     "c" ∷ typedPointsto (structFieldRef context.withoutCancelCtx go!"c" l) v.c' dq ∗
@@ -419,11 +419,11 @@ noncomputable instance withoutCancelCtx_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance withoutCancelCtx_into_val_typed :
+noncomputable instance into_val_typed'withoutCancelCtx :
     IntoValTypedUnderlying (GF := GF) context.withoutCancelCtx context.withoutCancelCtx.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance withoutCancelCtx_access_load_c (l : Loc) (v : context.withoutCancelCtx) (dq : DFrac) :
+noncomputable instance access_load'withoutCancelCtx'c (l : Loc) (v : context.withoutCancelCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.withoutCancelCtx go!"c" l) v.c' dq)
       (typedPointsto (structFieldRef context.withoutCancelCtx go!"c" l) v.c' dq)
@@ -431,7 +431,7 @@ noncomputable instance withoutCancelCtx_access_load_c (l : Loc) (v : context.wit
  by
   solve_pointsto_access_struct
 
-noncomputable instance withoutCancelCtx_access_store_c (l : Loc) (v : context.withoutCancelCtx) (y : context.Context) :
+noncomputable instance access_store'withoutCancelCtx'c (l : Loc) (v : context.withoutCancelCtx) (y : context.Context) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.withoutCancelCtx go!"c" l) v.c' (DFrac.own 1))
       (typedPointsto (structFieldRef context.withoutCancelCtx go!"c" l) y (DFrac.own 1))
@@ -450,7 +450,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : context.Assumptions]
 
-noncomputable instance timerCtx_typed_pointsto :
+noncomputable instance typed_pointsto'timerCtx :
     TypedPointsto (GF := GF) context.timerCtx where
   typedPointstoDef l v dq := iprop(
     "cancelCtx" ∷ typedPointsto (structFieldRef context.timerCtx go!"cancelCtx" l) v.cancelCtx' dq ∗
@@ -461,11 +461,11 @@ noncomputable instance timerCtx_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance timerCtx_into_val_typed :
+noncomputable instance into_val_typed'timerCtx :
     IntoValTypedUnderlying (GF := GF) context.timerCtx context.timerCtx.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance timerCtx_access_load_cancelCtx (l : Loc) (v : context.timerCtx) (dq : DFrac) :
+noncomputable instance access_load'timerCtx'cancelCtx (l : Loc) (v : context.timerCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.timerCtx go!"cancelCtx" l) v.cancelCtx' dq)
       (typedPointsto (structFieldRef context.timerCtx go!"cancelCtx" l) v.cancelCtx' dq)
@@ -473,7 +473,7 @@ noncomputable instance timerCtx_access_load_cancelCtx (l : Loc) (v : context.tim
  by
   solve_pointsto_access_struct
 
-noncomputable instance timerCtx_access_store_cancelCtx (l : Loc) (v : context.timerCtx) (y : context.cancelCtx) :
+noncomputable instance access_store'timerCtx'cancelCtx (l : Loc) (v : context.timerCtx) (y : context.cancelCtx) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.timerCtx go!"cancelCtx" l) v.cancelCtx' (DFrac.own 1))
       (typedPointsto (structFieldRef context.timerCtx go!"cancelCtx" l) y (DFrac.own 1))
@@ -481,7 +481,7 @@ noncomputable instance timerCtx_access_store_cancelCtx (l : Loc) (v : context.ti
  by
   solve_pointsto_access_struct
 
-noncomputable instance timerCtx_access_load_timer (l : Loc) (v : context.timerCtx) (dq : DFrac) :
+noncomputable instance access_load'timerCtx'timer (l : Loc) (v : context.timerCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.timerCtx go!"timer" l) v.timer' dq)
       (typedPointsto (structFieldRef context.timerCtx go!"timer" l) v.timer' dq)
@@ -489,7 +489,7 @@ noncomputable instance timerCtx_access_load_timer (l : Loc) (v : context.timerCt
  by
   solve_pointsto_access_struct
 
-noncomputable instance timerCtx_access_store_timer (l : Loc) (v : context.timerCtx) (y : Loc) :
+noncomputable instance access_store'timerCtx'timer (l : Loc) (v : context.timerCtx) (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.timerCtx go!"timer" l) v.timer' (DFrac.own 1))
       (typedPointsto (structFieldRef context.timerCtx go!"timer" l) y (DFrac.own 1))
@@ -497,7 +497,7 @@ noncomputable instance timerCtx_access_store_timer (l : Loc) (v : context.timerC
  by
   solve_pointsto_access_struct
 
-noncomputable instance timerCtx_access_load_deadline (l : Loc) (v : context.timerCtx) (dq : DFrac) :
+noncomputable instance access_load'timerCtx'deadline (l : Loc) (v : context.timerCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.timerCtx go!"deadline" l) v.deadline' dq)
       (typedPointsto (structFieldRef context.timerCtx go!"deadline" l) v.deadline' dq)
@@ -505,7 +505,7 @@ noncomputable instance timerCtx_access_load_deadline (l : Loc) (v : context.time
  by
   solve_pointsto_access_struct
 
-noncomputable instance timerCtx_access_store_deadline (l : Loc) (v : context.timerCtx) (y : _root_.Perennial.time.Time) :
+noncomputable instance access_store'timerCtx'deadline (l : Loc) (v : context.timerCtx) (y : _root_.Perennial.time.Time) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.timerCtx go!"deadline" l) v.deadline' (DFrac.own 1))
       (typedPointsto (structFieldRef context.timerCtx go!"deadline" l) y (DFrac.own 1))
@@ -524,7 +524,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : context.Assumptions]
 
-noncomputable instance valueCtx_typed_pointsto :
+noncomputable instance typed_pointsto'valueCtx :
     TypedPointsto (GF := GF) context.valueCtx where
   typedPointstoDef l v dq := iprop(
     "Context" ∷ typedPointsto (structFieldRef context.valueCtx go!"Context" l) v.Context' dq ∗
@@ -535,11 +535,11 @@ noncomputable instance valueCtx_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance valueCtx_into_val_typed :
+noncomputable instance into_val_typed'valueCtx :
     IntoValTypedUnderlying (GF := GF) context.valueCtx context.valueCtx.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance valueCtx_access_load_Context (l : Loc) (v : context.valueCtx) (dq : DFrac) :
+noncomputable instance access_load'valueCtx'Context (l : Loc) (v : context.valueCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.valueCtx go!"Context" l) v.Context' dq)
       (typedPointsto (structFieldRef context.valueCtx go!"Context" l) v.Context' dq)
@@ -547,7 +547,7 @@ noncomputable instance valueCtx_access_load_Context (l : Loc) (v : context.value
  by
   solve_pointsto_access_struct
 
-noncomputable instance valueCtx_access_store_Context (l : Loc) (v : context.valueCtx) (y : context.Context) :
+noncomputable instance access_store'valueCtx'Context (l : Loc) (v : context.valueCtx) (y : context.Context) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.valueCtx go!"Context" l) v.Context' (DFrac.own 1))
       (typedPointsto (structFieldRef context.valueCtx go!"Context" l) y (DFrac.own 1))
@@ -555,7 +555,7 @@ noncomputable instance valueCtx_access_store_Context (l : Loc) (v : context.valu
  by
   solve_pointsto_access_struct
 
-noncomputable instance valueCtx_access_load_key (l : Loc) (v : context.valueCtx) (dq : DFrac) :
+noncomputable instance access_load'valueCtx'key (l : Loc) (v : context.valueCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.valueCtx go!"key" l) v.key' dq)
       (typedPointsto (structFieldRef context.valueCtx go!"key" l) v.key' dq)
@@ -563,7 +563,7 @@ noncomputable instance valueCtx_access_load_key (l : Loc) (v : context.valueCtx)
  by
   solve_pointsto_access_struct
 
-noncomputable instance valueCtx_access_store_key (l : Loc) (v : context.valueCtx) (y : GoInterface) :
+noncomputable instance access_store'valueCtx'key (l : Loc) (v : context.valueCtx) (y : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.valueCtx go!"key" l) v.key' (DFrac.own 1))
       (typedPointsto (structFieldRef context.valueCtx go!"key" l) y (DFrac.own 1))
@@ -571,7 +571,7 @@ noncomputable instance valueCtx_access_store_key (l : Loc) (v : context.valueCtx
  by
   solve_pointsto_access_struct
 
-noncomputable instance valueCtx_access_load_val (l : Loc) (v : context.valueCtx) (dq : DFrac) :
+noncomputable instance access_load'valueCtx'val (l : Loc) (v : context.valueCtx) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.valueCtx go!"val" l) v.val' dq)
       (typedPointsto (structFieldRef context.valueCtx go!"val" l) v.val' dq)
@@ -579,7 +579,7 @@ noncomputable instance valueCtx_access_load_val (l : Loc) (v : context.valueCtx)
  by
   solve_pointsto_access_struct
 
-noncomputable instance valueCtx_access_store_val (l : Loc) (v : context.valueCtx) (y : GoInterface) :
+noncomputable instance access_store'valueCtx'val (l : Loc) (v : context.valueCtx) (y : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef context.valueCtx go!"val" l) v.val' (DFrac.own 1))
       (typedPointsto (structFieldRef context.valueCtx go!"val" l) y (DFrac.own 1))

@@ -26,781 +26,781 @@ noncomputable section
 namespace runtime
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  userArena_instance : userArena.TypeAssumptions
-  liveUserArenaChunk_instance : liveUserArenaChunk.TypeAssumptions
-  writeUserArenaHeapBits_instance : writeUserArenaHeapBits.TypeAssumptions
-  cgoCallers_instance : cgoCallers.TypeAssumptions
-  argset_instance : argset.TypeAssumptions
-  cgoErrorMsg_instance : cgoErrorMsg.TypeAssumptions
-  hchan_instance : hchan.TypeAssumptions
-  waitq_instance : waitq.TypeAssumptions
-  coro_instance : coro.TypeAssumptions
-  cpuProfile_instance : cpuProfile.TypeAssumptions
-  debugCallWrapArgs_instance : debugCallWrapArgs.TypeAssumptions
-  dloggerImpl_instance : dloggerImpl.TypeAssumptions
-  dloggerFake_instance : dloggerFake.TypeAssumptions
-  debugLogWriter_instance : debugLogWriter.TypeAssumptions
-  debugLogBuf_instance : debugLogBuf.TypeAssumptions
-  debugLogReader_instance : debugLogReader.TypeAssumptions
-  dlogPerM_instance : dlogPerM.TypeAssumptions
-  timespec_instance : timespec.TypeAssumptions
-  timeval_instance : timeval.TypeAssumptions
-  sigactiont_instance : sigactiont.TypeAssumptions
-  siginfoFields_instance : siginfoFields.TypeAssumptions
-  siginfo_instance : siginfo.TypeAssumptions
-  itimerspec_instance : itimerspec.TypeAssumptions
-  itimerval_instance : itimerval.TypeAssumptions
-  sigeventFields_instance : sigeventFields.TypeAssumptions
-  sigevent_instance : sigevent.TypeAssumptions
-  usigset_instance : usigset.TypeAssumptions
-  fpxreg_instance : fpxreg.TypeAssumptions
-  xmmreg_instance : xmmreg.TypeAssumptions
-  fpstate_instance : fpstate.TypeAssumptions
-  fpxreg1_instance : fpxreg1.TypeAssumptions
-  xmmreg1_instance : xmmreg1.TypeAssumptions
-  fpstate1_instance : fpstate1.TypeAssumptions
-  fpreg1_instance : fpreg1.TypeAssumptions
-  stackt_instance : stackt.TypeAssumptions
-  mcontext_instance : mcontext.TypeAssumptions
-  ucontext_instance : ucontext.TypeAssumptions
-  sigcontext_instance : sigcontext.TypeAssumptions
-  sockaddr_un_instance : sockaddr_un.TypeAssumptions
-  Error_instance : Error.TypeAssumptions
-  TypeAssertionError_instance : TypeAssertionError.TypeAssumptions
-  errorString_instance : errorString.TypeAssumptions
-  errorAddressString_instance : errorAddressString.TypeAssumptions
-  plainError_instance : plainError.TypeAssumptions
-  boundsError_instance : boundsError.TypeAssumptions
-  stringer_instance : stringer.TypeAssumptions
-  typeCacheBucket_instance : typeCacheBucket.TypeAssumptions
-  childInfo_instance : childInfo.TypeAssumptions
-  hexdumper_instance : hexdumper.TypeAssumptions
-  hexdumpMarker_instance : hexdumpMarker.TypeAssumptions
-  timeHistogram_instance : timeHistogram.TypeAssumptions
-  itabTableType_instance : itabTableType.TypeAssumptions
-  uint16InterfacePtr_instance : uint16InterfacePtr.TypeAssumptions
-  uint32InterfacePtr_instance : uint32InterfacePtr.TypeAssumptions
-  uint64InterfacePtr_instance : uint64InterfacePtr.TypeAssumptions
-  stringInterfacePtr_instance : stringInterfacePtr.TypeAssumptions
-  sliceInterfacePtr_instance : sliceInterfacePtr.TypeAssumptions
-  lfstack_instance : lfstack.TypeAssumptions
-  linknameIter_instance : linknameIter.TypeAssumptions
-  listHead_instance : listHead.TypeAssumptions
-  listNode_instance : listNode.TypeAssumptions
-  listHeadManual_instance : listHeadManual.TypeAssumptions
-  listNodeManual_instance : listNodeManual.TypeAssumptions
-  mWaitList_instance : mWaitList.TypeAssumptions
-  lockRank_instance : lockRank.TypeAssumptions
-  lockRankStruct_instance : lockRankStruct.TypeAssumptions
-  persistentAlloc_instance : persistentAlloc.TypeAssumptions
-  linearAlloc_instance : linearAlloc.TypeAssumptions
-  notInHeap_instance : notInHeap.TypeAssumptions
-  typePointers_instance : typePointers.TypeAssumptions
-  markBits_instance : markBits.TypeAssumptions
-  mcache_instance : mcache.TypeAssumptions
-  gclink_instance : gclink.TypeAssumptions
-  gclinkptr_instance : gclinkptr.TypeAssumptions
-  stackfreelist_instance : stackfreelist.TypeAssumptions
-  mcentral_instance : mcentral.TypeAssumptions
-  checkmarksMap_instance : checkmarksMap.TypeAssumptions
-  Cleanup_instance : Cleanup.TypeAssumptions
-  cleanupBlock_instance : cleanupBlock.TypeAssumptions
-  cleanupFn_instance : cleanupFn.TypeAssumptions
-  cleanupBlockHeader_instance : cleanupBlockHeader.TypeAssumptions
-  cleanupQueue_instance : cleanupQueue.TypeAssumptions
-  metricData_instance : metricData.TypeAssumptions
-  metricReader_instance : metricReader.TypeAssumptions
-  statDep_instance : statDep.TypeAssumptions
-  statDepSet_instance : statDepSet.TypeAssumptions
-  heapStatsAggregate_instance : heapStatsAggregate.TypeAssumptions
-  sysStatsAggregate_instance : sysStatsAggregate.TypeAssumptions
-  cpuStatsAggregate_instance : cpuStatsAggregate.TypeAssumptions
-  gcStatsAggregate_instance : gcStatsAggregate.TypeAssumptions
-  finalStatsAggregate_instance : finalStatsAggregate.TypeAssumptions
-  schedStatsAggregate_instance : schedStatsAggregate.TypeAssumptions
-  statAggregate_instance : statAggregate.TypeAssumptions
-  metricKind_instance : metricKind.TypeAssumptions
-  metricSample_instance : metricSample.TypeAssumptions
-  metricValue_instance : metricValue.TypeAssumptions
-  metricFloat64Histogram_instance : metricFloat64Histogram.TypeAssumptions
-  metricName_instance : metricName.TypeAssumptions
-  finBlock_instance : finBlock.TypeAssumptions
-  finalizer_instance : finalizer.TypeAssumptions
-  fixalloc_instance : fixalloc.TypeAssumptions
-  mlink_instance : mlink.TypeAssumptions
-  gcMarkWorkerMode_instance : gcMarkWorkerMode.TypeAssumptions
-  workType_instance : workType.TypeAssumptions
-  gcMode_instance : gcMode.TypeAssumptions
-  gcTrigger_instance : gcTrigger.TypeAssumptions
-  gcTriggerKind_instance : gcTriggerKind.TypeAssumptions
-  gcBgMarkWorkerNode_instance : gcBgMarkWorkerNode.TypeAssumptions
-  gcBgMarkWorkerNodePadded_instance : gcBgMarkWorkerNodePadded.TypeAssumptions
-  gcCPULimiterState_instance : gcCPULimiterState.TypeAssumptions
-  limiterEventType_instance : limiterEventType.TypeAssumptions
-  limiterEventStamp_instance : limiterEventStamp.TypeAssumptions
-  limiterEvent_instance : limiterEvent.TypeAssumptions
-  gcDrainFlags_instance : gcDrainFlags.TypeAssumptions
-  spanInlineMarkBits_instance : spanInlineMarkBits.TypeAssumptions
-  spanScanOwnership_instance : spanScanOwnership.TypeAssumptions
-  spanQueue_instance : spanQueue.TypeAssumptions
-  spanSPMC_instance : spanSPMC.TypeAssumptions
-  objptr_instance : objptr.TypeAssumptions
-  sizeClassScanStats_instance : sizeClassScanStats.TypeAssumptions
-  gcControllerState_instance : gcControllerState.TypeAssumptions
-  scavengerState_instance : scavengerState.TypeAssumptions
-  scavengeIndex_instance : scavengeIndex.TypeAssumptions
-  atomicScavChunkData_instance : atomicScavChunkData.TypeAssumptions
-  scavChunkData_instance : scavChunkData.TypeAssumptions
-  scavChunkFlags_instance : scavChunkFlags.TypeAssumptions
-  piController_instance : piController.TypeAssumptions
-  stackWorkBuf_instance : stackWorkBuf.TypeAssumptions
-  stackWorkBufHdr_instance : stackWorkBufHdr.TypeAssumptions
-  stackObjectBuf_instance : stackObjectBuf.TypeAssumptions
-  stackObjectBufHdr_instance : stackObjectBufHdr.TypeAssumptions
-  stackObject_instance : stackObject.TypeAssumptions
-  stackScanState_instance : stackScanState.TypeAssumptions
-  sweepdata_instance : sweepdata.TypeAssumptions
-  sweepClass_instance : sweepClass.TypeAssumptions
-  activeSweep_instance : activeSweep.TypeAssumptions
-  sweepLocker_instance : sweepLocker.TypeAssumptions
-  sweepLocked_instance : sweepLocked.TypeAssumptions
-  gcWork_instance : gcWork.TypeAssumptions
-  workbufhdr_instance : workbufhdr.TypeAssumptions
-  workbuf_instance : workbuf.TypeAssumptions
-  mheap_instance : mheap.TypeAssumptions
-  heapArena_instance : heapArena.TypeAssumptions
-  arenaHint_instance : arenaHint.TypeAssumptions
-  mSpanState_instance : mSpanState.TypeAssumptions
-  mSpanStateBox_instance : mSpanStateBox.TypeAssumptions
-  mspan_instance : mspan.TypeAssumptions
-  spanClass_instance : spanClass.TypeAssumptions
-  arenaIdx_instance : arenaIdx.TypeAssumptions
-  spanAllocType_instance : spanAllocType.TypeAssumptions
-  mSpanList_instance : mSpanList.TypeAssumptions
-  special_instance : special.TypeAssumptions
-  specialfinalizer_instance : specialfinalizer.TypeAssumptions
-  specialCleanup_instance : specialCleanup.TypeAssumptions
-  specialCheckFinalizer_instance : specialCheckFinalizer.TypeAssumptions
-  specialTinyBlock_instance : specialTinyBlock.TypeAssumptions
-  specialWeakHandle_instance : specialWeakHandle.TypeAssumptions
-  immortalWeakHandleMap_instance : immortalWeakHandleMap.TypeAssumptions
-  immortalWeakHandle_instance : immortalWeakHandle.TypeAssumptions
-  specialprofile_instance : specialprofile.TypeAssumptions
-  specialReachable_instance : specialReachable.TypeAssumptions
-  specialPinCounter_instance : specialPinCounter.TypeAssumptions
-  specialSecret_instance : specialSecret.TypeAssumptions
-  specialsIter_instance : specialsIter.TypeAssumptions
-  gcBits_instance : gcBits.TypeAssumptions
-  gcBitsHeader_instance : gcBitsHeader.TypeAssumptions
-  gcBitsArena_instance : gcBitsArena.TypeAssumptions
-  floaty_instance : floaty.TypeAssumptions
-  chunkIdx_instance : chunkIdx.TypeAssumptions
-  pageAlloc_instance : pageAlloc.TypeAssumptions
-  pallocSum_instance : pallocSum.TypeAssumptions
-  pageCache_instance : pageCache.TypeAssumptions
-  pageBits_instance : pageBits.TypeAssumptions
-  pallocBits_instance : pallocBits.TypeAssumptions
-  pallocData_instance : pallocData.TypeAssumptions
-  bucketType_instance : bucketType.TypeAssumptions
-  bucket_instance : bucket.TypeAssumptions
-  memRecord_instance : memRecord.TypeAssumptions
-  memRecordCycle_instance : memRecordCycle.TypeAssumptions
-  blockRecord_instance : blockRecord.TypeAssumptions
-  buckhashArray_instance : buckhashArray.TypeAssumptions
-  mProfCycleHolder_instance : mProfCycleHolder.TypeAssumptions
-  mLockProfile_instance : mLockProfile.TypeAssumptions
-  StackRecord_instance : StackRecord.TypeAssumptions
-  MemProfileRecord_instance : MemProfileRecord.TypeAssumptions
-  BlockProfileRecord_instance : BlockProfileRecord.TypeAssumptions
-  goroutineProfileState_instance : goroutineProfileState.TypeAssumptions
-  goroutineProfileStateHolder_instance : goroutineProfileStateHolder.TypeAssumptions
-  addrRange_instance : addrRange.TypeAssumptions
-  offAddr_instance : offAddr.TypeAssumptions
-  atomicOffAddr_instance : atomicOffAddr.TypeAssumptions
-  addrRanges_instance : addrRanges.TypeAssumptions
-  spanSet_instance : spanSet.TypeAssumptions
-  spanSetBlockHeader_instance : spanSetBlockHeader.TypeAssumptions
-  spanSetBlockHeader2_instance : spanSetBlockHeader2.TypeAssumptions
-  spanSetBlock_instance : spanSetBlock.TypeAssumptions
-  atomicSpanSetSpinePointer_instance : atomicSpanSetSpinePointer.TypeAssumptions
-  spanSetSpinePointer_instance : spanSetSpinePointer.TypeAssumptions
-  spanSetBlockAlloc_instance : spanSetBlockAlloc.TypeAssumptions
-  headTailIndex_instance : headTailIndex.TypeAssumptions
-  atomicHeadTailIndex_instance : atomicHeadTailIndex.TypeAssumptions
-  atomicMSpanPointer_instance : atomicMSpanPointer.TypeAssumptions
-  mstats_instance : mstats.TypeAssumptions
-  MemStats_instance : MemStats.TypeAssumptions
-  sysMemStat_instance : sysMemStat.TypeAssumptions
-  heapStatsDelta_instance : heapStatsDelta.TypeAssumptions
-  consistentHeapStats_instance : consistentHeapStats.TypeAssumptions
-  cpuStats_instance : cpuStats.TypeAssumptions
-  wbBuf_instance : wbBuf.TypeAssumptions
-  pollDesc_instance : pollDesc.TypeAssumptions
-  pollInfo_instance : pollInfo.TypeAssumptions
-  pollCache_instance : pollCache.TypeAssumptions
-  winlibcall_instance : winlibcall.TypeAssumptions
-  note_instance : note.TypeAssumptions
-  mOS_instance : mOS.TypeAssumptions
-  perThreadSyscallArgs_instance : perThreadSyscallArgs.TypeAssumptions
-  kernelVersion_instance : kernelVersion.TypeAssumptions
-  sigset_instance : sigset.TypeAssumptions
-  throwType_instance : throwType.TypeAssumptions
-  PanicNilError_instance : PanicNilError.TypeAssumptions
-  Pinner_instance : Pinner.TypeAssumptions
-  pinner_instance : pinner.TypeAssumptions
-  pinState_instance : pinState.TypeAssumptions
-  pinnerBits_instance : pinnerBits.TypeAssumptions
-  ptabEntry_instance : ptabEntry.TypeAssumptions
-  suspendGState_instance : suspendGState.TypeAssumptions
-  xRegs_instance : xRegs.TypeAssumptions
-  xRegState_instance : xRegState.TypeAssumptions
-  xRegPerG_instance : xRegPerG.TypeAssumptions
-  xRegPerP_instance : xRegPerP.TypeAssumptions
-  hex_instance : hex.TypeAssumptions
-  quoted_instance : quoted.TypeAssumptions
-  stwReason_instance : stwReason.TypeAssumptions
-  worldStop_instance : worldStop.TypeAssumptions
-  cgothreadstart_instance : cgothreadstart.TypeAssumptions
-  sysmontick_instance : sysmontick.TypeAssumptions
-  syscallingThread_instance : syscallingThread.TypeAssumptions
-  updateMaxProcsGState_instance : updateMaxProcsGState.TypeAssumptions
-  pMask_instance : pMask.TypeAssumptions
-  gQueue_instance : gQueue.TypeAssumptions
-  gList_instance : gList.TypeAssumptions
-  randomOrder_instance : randomOrder.TypeAssumptions
-  randomEnum_instance : randomEnum.TypeAssumptions
-  initTask_instance : initTask.TypeAssumptions
-  tracestat_instance : tracestat.TypeAssumptions
-  profBuf_instance : profBuf.TypeAssumptions
-  profAtomic_instance : profAtomic.TypeAssumptions
-  profIndex_instance : profIndex.TypeAssumptions
-  profBufReadMode_instance : profBufReadMode.TypeAssumptions
-  ticksType_instance : ticksType.TypeAssumptions
-  godebugInc_instance : godebugInc.TypeAssumptions
-  dbgVar_instance : dbgVar.TypeAssumptions
-  mutex_instance : mutex.TypeAssumptions
-  funcval_instance : funcval.TypeAssumptions
-  iface_instance : iface.TypeAssumptions
-  eface_instance : eface.TypeAssumptions
-  guintptr_instance : guintptr.TypeAssumptions
-  puintptr_instance : puintptr.TypeAssumptions
-  muintptr_instance : muintptr.TypeAssumptions
-  gobuf_instance : gobuf.TypeAssumptions
-  maybeTraceablePtr_instance : maybeTraceablePtr.TypeAssumptions
-  maybeTraceableChan_instance : maybeTraceableChan.TypeAssumptions
-  sudog_instance : sudog.TypeAssumptions
-  libcall_instance : libcall.TypeAssumptions
-  stack_instance : stack.TypeAssumptions
-  heldLockInfo_instance : heldLockInfo.TypeAssumptions
-  g_instance : g.TypeAssumptions
-  m_instance : m.TypeAssumptions
-  mPadded_instance : mPadded.TypeAssumptions
-  mWeakPointer_instance : mWeakPointer.TypeAssumptions
-  p_instance : p.TypeAssumptions
-  schedt_instance : schedt.TypeAssumptions
-  _func_instance : _func.TypeAssumptions
-  funcinl_instance : funcinl.TypeAssumptions
-  lfnode_instance : lfnode.TypeAssumptions
-  forcegcstate_instance : forcegcstate.TypeAssumptions
-  _defer_instance : _defer.TypeAssumptions
-  _panic_instance : _panic.TypeAssumptions
-  savedOpenDeferState_instance : savedOpenDeferState.TypeAssumptions
-  ancestorInfo_instance : ancestorInfo.TypeAssumptions
-  waitReason_instance : waitReason.TypeAssumptions
-  rwmutex_instance : rwmutex.TypeAssumptions
-  scase_instance : scase.TypeAssumptions
-  runtimeSelect_instance : runtimeSelect.TypeAssumptions
-  selectDir_instance : selectDir.TypeAssumptions
-  semaRoot_instance : semaRoot.TypeAssumptions
-  semTable_instance : semTable.TypeAssumptions
-  semaProfileFlags_instance : semaProfileFlags.TypeAssumptions
-  notifyList_instance : notifyList.TypeAssumptions
-  sigctxt_instance : sigctxt.TypeAssumptions
-  sigTabT_instance : sigTabT.TypeAssumptions
-  gsignalStack_instance : gsignalStack.TypeAssumptions
-  slice_instance : slice''.TypeAssumptions
-  notInHeapSlice_instance : notInHeapSlice.TypeAssumptions
-  stackpoolItem_instance : stackpoolItem.TypeAssumptions
-  adjustinfo_instance : adjustinfo.TypeAssumptions
-  bitvector_instance : bitvector.TypeAssumptions
-  stackObjectRecord_instance : stackObjectRecord.TypeAssumptions
-  stkframe_instance : stkframe.TypeAssumptions
-  reflectMethodValue_instance : reflectMethodValue.TypeAssumptions
-  tmpBuf_instance : tmpBuf.TypeAssumptions
-  stringStruct_instance : stringStruct.TypeAssumptions
-  stringStructDWARF_instance : stringStructDWARF.TypeAssumptions
-  neverCallThisFunction_instance : neverCallThisFunction.TypeAssumptions
-  Frames_instance : Frames.TypeAssumptions
-  Frame_instance : Frame.TypeAssumptions
-  Func_instance : Func.TypeAssumptions
-  pcHeader_instance : pcHeader.TypeAssumptions
-  moduledata_instance : moduledata.TypeAssumptions
-  modulehash_instance : modulehash.TypeAssumptions
-  functab_instance : functab.TypeAssumptions
-  textsect_instance : textsect.TypeAssumptions
-  findfuncbucket_instance : findfuncbucket.TypeAssumptions
-  funcInfo_instance : funcInfo.TypeAssumptions
-  srcFunc_instance : srcFunc.TypeAssumptions
-  pcvalueCache_instance : pcvalueCache.TypeAssumptions
-  pcvalueCacheEnt_instance : pcvalueCacheEnt.TypeAssumptions
-  stackmap_instance : stackmap.TypeAssumptions
-  inlinedCall_instance : inlinedCall.TypeAssumptions
-  inlineUnwinder_instance : inlineUnwinder.TypeAssumptions
-  inlineFrame_instance : inlineFrame.TypeAssumptions
-  synctestBubble_instance : synctestBubble.TypeAssumptions
-  synctestDeadlockError_instance : synctestDeadlockError.TypeAssumptions
-  specialBubble_instance : specialBubble.TypeAssumptions
-  taggedPointer_instance : taggedPointer.TypeAssumptions
-  timer_instance : timer.TypeAssumptions
-  timers_instance : timers.TypeAssumptions
-  timerWhen_instance : timerWhen.TypeAssumptions
-  timeTimer_instance : timeTimer.TypeAssumptions
-  traceAdvancerState_instance : traceAdvancerState.TypeAssumptions
-  wakeableSleep_instance : wakeableSleep.TypeAssumptions
-  unwindFlags_instance : unwindFlags.TypeAssumptions
-  unwinder_instance : unwinder.TypeAssumptions
-  cgoTracebackArg_instance : cgoTracebackArg.TypeAssumptions
-  cgoContextArg_instance : cgoContextArg.TypeAssumptions
-  cgoSymbolizerArg_instance : cgoSymbolizerArg.TypeAssumptions
-  traceWriter_instance : traceWriter.TypeAssumptions
-  traceBufQueue_instance : traceBufQueue.TypeAssumptions
-  traceBufHeader_instance : traceBufHeader.TypeAssumptions
-  traceBuf_instance : traceBuf.TypeAssumptions
-  traceArg_instance : traceArg.TypeAssumptions
-  traceEventWriter_instance : traceEventWriter.TypeAssumptions
-  traceMap_instance : traceMap.TypeAssumptions
-  traceMapNode_instance : traceMapNode.TypeAssumptions
-  traceRegionAlloc_instance : traceRegionAlloc.TypeAssumptions
-  traceRegionAllocBlock_instance : traceRegionAllocBlock.TypeAssumptions
-  traceRegionAllocBlockHeader_instance : traceRegionAllocBlockHeader.TypeAssumptions
-  gTraceState_instance : gTraceState.TypeAssumptions
-  mTraceState_instance : mTraceState.TypeAssumptions
-  pTraceState_instance : pTraceState.TypeAssumptions
-  traceBlockReason_instance : traceBlockReason.TypeAssumptions
-  traceGoStopReason_instance : traceGoStopReason.TypeAssumptions
-  traceLocker_instance : traceLocker.TypeAssumptions
-  traceStackTable_instance : traceStackTable.TypeAssumptions
-  traceFrame_instance : traceFrame.TypeAssumptions
-  traceSchedResourceState_instance : traceSchedResourceState.TypeAssumptions
-  traceStringTable_instance : traceStringTable.TypeAssumptions
-  traceTime_instance : traceTime.TypeAssumptions
-  traceTypeTable_instance : traceTypeTable.TypeAssumptions
-  rtype_instance : rtype.TypeAssumptions
-  bitCursor_instance : bitCursor.TypeAssumptions
-  _typePair_instance : _typePair.TypeAssumptions
-  elfSym_instance : elfSym.TypeAssumptions
-  elfVerdef_instance : elfVerdef.TypeAssumptions
-  elfEhdr_instance : elfEhdr.TypeAssumptions
-  elfPhdr_instance : elfPhdr.TypeAssumptions
-  elfShdr_instance : elfShdr.TypeAssumptions
-  elfDyn_instance : elfDyn.TypeAssumptions
-  elfVerdaux_instance : elfVerdaux.TypeAssumptions
-  vdsoSymbolKey_instance : vdsoSymbolKey.TypeAssumptions
-  vdsoVersionKey_instance : vdsoVersionKey.TypeAssumptions
-  vdsoInfo_instance : vdsoInfo.TypeAssumptions
-  «struct#51fa335f_instance» : «struct#51fa335f».TypeAssumptions
-  «struct#1e853569_instance» : «struct#1e853569».TypeAssumptions
-  «struct#3a8454c5_instance» : «struct#3a8454c5».TypeAssumptions
-  «struct#28cf6959_instance» : «struct#28cf6959».TypeAssumptions
-  «struct#8786e874_instance» : «struct#8786e874».TypeAssumptions
-  «struct#72a1e364_instance» : «struct#72a1e364».TypeAssumptions
-  «struct#cf01e664_instance» : «struct#cf01e664».TypeAssumptions
-  «struct#1768b3d4_instance» : «struct#1768b3d4».TypeAssumptions
-  Callers_unfold : FuncUnfold Callers [] Callers.impl
-  Version_unfold : FuncUnfold Version [] Version.impl
-  Gosched_unfold : FuncUnfold Gosched [] Gosched.impl
-  CallersFrames_unfold : FuncUnfold CallersFrames [] CallersFrames.impl
-  callers_unfold : FuncUnfold callers [] callers.impl
-  import_sys_Assumption : _root_.Perennial.internal.runtime.sys.Assumptions
-  import_atomic_Assumption : _root_.Perennial.internal.runtime.atomic.Assumptions
+  instance'userArena : userArena.TypeAssumptions
+  instance'liveUserArenaChunk : liveUserArenaChunk.TypeAssumptions
+  instance'writeUserArenaHeapBits : writeUserArenaHeapBits.TypeAssumptions
+  instance'cgoCallers : cgoCallers.TypeAssumptions
+  instance'argset : argset.TypeAssumptions
+  instance'cgoErrorMsg : cgoErrorMsg.TypeAssumptions
+  instance'hchan : hchan.TypeAssumptions
+  instance'waitq : waitq.TypeAssumptions
+  instance'coro : coro.TypeAssumptions
+  instance'cpuProfile : cpuProfile.TypeAssumptions
+  instance'debugCallWrapArgs : debugCallWrapArgs.TypeAssumptions
+  instance'dloggerImpl : dloggerImpl.TypeAssumptions
+  instance'dloggerFake : dloggerFake.TypeAssumptions
+  instance'debugLogWriter : debugLogWriter.TypeAssumptions
+  instance'debugLogBuf : debugLogBuf.TypeAssumptions
+  instance'debugLogReader : debugLogReader.TypeAssumptions
+  instance'dlogPerM : dlogPerM.TypeAssumptions
+  instance'timespec : timespec.TypeAssumptions
+  instance'timeval : timeval.TypeAssumptions
+  instance'sigactiont : sigactiont.TypeAssumptions
+  instance'siginfoFields : siginfoFields.TypeAssumptions
+  instance'siginfo : siginfo.TypeAssumptions
+  instance'itimerspec : itimerspec.TypeAssumptions
+  instance'itimerval : itimerval.TypeAssumptions
+  instance'sigeventFields : sigeventFields.TypeAssumptions
+  instance'sigevent : sigevent.TypeAssumptions
+  instance'usigset : usigset.TypeAssumptions
+  instance'fpxreg : fpxreg.TypeAssumptions
+  instance'xmmreg : xmmreg.TypeAssumptions
+  instance'fpstate : fpstate.TypeAssumptions
+  instance'fpxreg1 : fpxreg1.TypeAssumptions
+  instance'xmmreg1 : xmmreg1.TypeAssumptions
+  instance'fpstate1 : fpstate1.TypeAssumptions
+  instance'fpreg1 : fpreg1.TypeAssumptions
+  instance'stackt : stackt.TypeAssumptions
+  instance'mcontext : mcontext.TypeAssumptions
+  instance'ucontext : ucontext.TypeAssumptions
+  instance'sigcontext : sigcontext.TypeAssumptions
+  instance'sockaddr_un : sockaddr_un.TypeAssumptions
+  instance'Error : Error.TypeAssumptions
+  instance'TypeAssertionError : TypeAssertionError.TypeAssumptions
+  instance'errorString : errorString.TypeAssumptions
+  instance'errorAddressString : errorAddressString.TypeAssumptions
+  instance'plainError : plainError.TypeAssumptions
+  instance'boundsError : boundsError.TypeAssumptions
+  instance'stringer : stringer.TypeAssumptions
+  instance'typeCacheBucket : typeCacheBucket.TypeAssumptions
+  instance'childInfo : childInfo.TypeAssumptions
+  instance'hexdumper : hexdumper.TypeAssumptions
+  instance'hexdumpMarker : hexdumpMarker.TypeAssumptions
+  instance'timeHistogram : timeHistogram.TypeAssumptions
+  instance'itabTableType : itabTableType.TypeAssumptions
+  instance'uint16InterfacePtr : uint16InterfacePtr.TypeAssumptions
+  instance'uint32InterfacePtr : uint32InterfacePtr.TypeAssumptions
+  instance'uint64InterfacePtr : uint64InterfacePtr.TypeAssumptions
+  instance'stringInterfacePtr : stringInterfacePtr.TypeAssumptions
+  instance'sliceInterfacePtr : sliceInterfacePtr.TypeAssumptions
+  instance'lfstack : lfstack.TypeAssumptions
+  instance'linknameIter : linknameIter.TypeAssumptions
+  instance'listHead : listHead.TypeAssumptions
+  instance'listNode : listNode.TypeAssumptions
+  instance'listHeadManual : listHeadManual.TypeAssumptions
+  instance'listNodeManual : listNodeManual.TypeAssumptions
+  instance'mWaitList : mWaitList.TypeAssumptions
+  instance'lockRank : lockRank.TypeAssumptions
+  instance'lockRankStruct : lockRankStruct.TypeAssumptions
+  instance'persistentAlloc : persistentAlloc.TypeAssumptions
+  instance'linearAlloc : linearAlloc.TypeAssumptions
+  instance'notInHeap : notInHeap.TypeAssumptions
+  instance'typePointers : typePointers.TypeAssumptions
+  instance'markBits : markBits.TypeAssumptions
+  instance'mcache : mcache.TypeAssumptions
+  instance'gclink : gclink.TypeAssumptions
+  instance'gclinkptr : gclinkptr.TypeAssumptions
+  instance'stackfreelist : stackfreelist.TypeAssumptions
+  instance'mcentral : mcentral.TypeAssumptions
+  instance'checkmarksMap : checkmarksMap.TypeAssumptions
+  instance'Cleanup : Cleanup.TypeAssumptions
+  instance'cleanupBlock : cleanupBlock.TypeAssumptions
+  instance'cleanupFn : cleanupFn.TypeAssumptions
+  instance'cleanupBlockHeader : cleanupBlockHeader.TypeAssumptions
+  instance'cleanupQueue : cleanupQueue.TypeAssumptions
+  instance'metricData : metricData.TypeAssumptions
+  instance'metricReader : metricReader.TypeAssumptions
+  instance'statDep : statDep.TypeAssumptions
+  instance'statDepSet : statDepSet.TypeAssumptions
+  instance'heapStatsAggregate : heapStatsAggregate.TypeAssumptions
+  instance'sysStatsAggregate : sysStatsAggregate.TypeAssumptions
+  instance'cpuStatsAggregate : cpuStatsAggregate.TypeAssumptions
+  instance'gcStatsAggregate : gcStatsAggregate.TypeAssumptions
+  instance'finalStatsAggregate : finalStatsAggregate.TypeAssumptions
+  instance'schedStatsAggregate : schedStatsAggregate.TypeAssumptions
+  instance'statAggregate : statAggregate.TypeAssumptions
+  instance'metricKind : metricKind.TypeAssumptions
+  instance'metricSample : metricSample.TypeAssumptions
+  instance'metricValue : metricValue.TypeAssumptions
+  instance'metricFloat64Histogram : metricFloat64Histogram.TypeAssumptions
+  instance'metricName : metricName.TypeAssumptions
+  instance'finBlock : finBlock.TypeAssumptions
+  instance'finalizer : finalizer.TypeAssumptions
+  instance'fixalloc : fixalloc.TypeAssumptions
+  instance'mlink : mlink.TypeAssumptions
+  instance'gcMarkWorkerMode : gcMarkWorkerMode.TypeAssumptions
+  instance'workType : workType.TypeAssumptions
+  instance'gcMode : gcMode.TypeAssumptions
+  instance'gcTrigger : gcTrigger.TypeAssumptions
+  instance'gcTriggerKind : gcTriggerKind.TypeAssumptions
+  instance'gcBgMarkWorkerNode : gcBgMarkWorkerNode.TypeAssumptions
+  instance'gcBgMarkWorkerNodePadded : gcBgMarkWorkerNodePadded.TypeAssumptions
+  instance'gcCPULimiterState : gcCPULimiterState.TypeAssumptions
+  instance'limiterEventType : limiterEventType.TypeAssumptions
+  instance'limiterEventStamp : limiterEventStamp.TypeAssumptions
+  instance'limiterEvent : limiterEvent.TypeAssumptions
+  instance'gcDrainFlags : gcDrainFlags.TypeAssumptions
+  instance'spanInlineMarkBits : spanInlineMarkBits.TypeAssumptions
+  instance'spanScanOwnership : spanScanOwnership.TypeAssumptions
+  instance'spanQueue : spanQueue.TypeAssumptions
+  instance'spanSPMC : spanSPMC.TypeAssumptions
+  instance'objptr : objptr.TypeAssumptions
+  instance'sizeClassScanStats : sizeClassScanStats.TypeAssumptions
+  instance'gcControllerState : gcControllerState.TypeAssumptions
+  instance'scavengerState : scavengerState.TypeAssumptions
+  instance'scavengeIndex : scavengeIndex.TypeAssumptions
+  instance'atomicScavChunkData : atomicScavChunkData.TypeAssumptions
+  instance'scavChunkData : scavChunkData.TypeAssumptions
+  instance'scavChunkFlags : scavChunkFlags.TypeAssumptions
+  instance'piController : piController.TypeAssumptions
+  instance'stackWorkBuf : stackWorkBuf.TypeAssumptions
+  instance'stackWorkBufHdr : stackWorkBufHdr.TypeAssumptions
+  instance'stackObjectBuf : stackObjectBuf.TypeAssumptions
+  instance'stackObjectBufHdr : stackObjectBufHdr.TypeAssumptions
+  instance'stackObject : stackObject.TypeAssumptions
+  instance'stackScanState : stackScanState.TypeAssumptions
+  instance'sweepdata : sweepdata.TypeAssumptions
+  instance'sweepClass : sweepClass.TypeAssumptions
+  instance'activeSweep : activeSweep.TypeAssumptions
+  instance'sweepLocker : sweepLocker.TypeAssumptions
+  instance'sweepLocked : sweepLocked.TypeAssumptions
+  instance'gcWork : gcWork.TypeAssumptions
+  instance'workbufhdr : workbufhdr.TypeAssumptions
+  instance'workbuf : workbuf.TypeAssumptions
+  instance'mheap : mheap.TypeAssumptions
+  instance'heapArena : heapArena.TypeAssumptions
+  instance'arenaHint : arenaHint.TypeAssumptions
+  instance'mSpanState : mSpanState.TypeAssumptions
+  instance'mSpanStateBox : mSpanStateBox.TypeAssumptions
+  instance'mspan : mspan.TypeAssumptions
+  instance'spanClass : spanClass.TypeAssumptions
+  instance'arenaIdx : arenaIdx.TypeAssumptions
+  instance'spanAllocType : spanAllocType.TypeAssumptions
+  instance'mSpanList : mSpanList.TypeAssumptions
+  instance'special : special.TypeAssumptions
+  instance'specialfinalizer : specialfinalizer.TypeAssumptions
+  instance'specialCleanup : specialCleanup.TypeAssumptions
+  instance'specialCheckFinalizer : specialCheckFinalizer.TypeAssumptions
+  instance'specialTinyBlock : specialTinyBlock.TypeAssumptions
+  instance'specialWeakHandle : specialWeakHandle.TypeAssumptions
+  instance'immortalWeakHandleMap : immortalWeakHandleMap.TypeAssumptions
+  instance'immortalWeakHandle : immortalWeakHandle.TypeAssumptions
+  instance'specialprofile : specialprofile.TypeAssumptions
+  instance'specialReachable : specialReachable.TypeAssumptions
+  instance'specialPinCounter : specialPinCounter.TypeAssumptions
+  instance'specialSecret : specialSecret.TypeAssumptions
+  instance'specialsIter : specialsIter.TypeAssumptions
+  instance'gcBits : gcBits.TypeAssumptions
+  instance'gcBitsHeader : gcBitsHeader.TypeAssumptions
+  instance'gcBitsArena : gcBitsArena.TypeAssumptions
+  instance'floaty : floaty.TypeAssumptions
+  instance'chunkIdx : chunkIdx.TypeAssumptions
+  instance'pageAlloc : pageAlloc.TypeAssumptions
+  instance'pallocSum : pallocSum.TypeAssumptions
+  instance'pageCache : pageCache.TypeAssumptions
+  instance'pageBits : pageBits.TypeAssumptions
+  instance'pallocBits : pallocBits.TypeAssumptions
+  instance'pallocData : pallocData.TypeAssumptions
+  instance'bucketType : bucketType.TypeAssumptions
+  instance'bucket : bucket.TypeAssumptions
+  instance'memRecord : memRecord.TypeAssumptions
+  instance'memRecordCycle : memRecordCycle.TypeAssumptions
+  instance'blockRecord : blockRecord.TypeAssumptions
+  instance'buckhashArray : buckhashArray.TypeAssumptions
+  instance'mProfCycleHolder : mProfCycleHolder.TypeAssumptions
+  instance'mLockProfile : mLockProfile.TypeAssumptions
+  instance'StackRecord : StackRecord.TypeAssumptions
+  instance'MemProfileRecord : MemProfileRecord.TypeAssumptions
+  instance'BlockProfileRecord : BlockProfileRecord.TypeAssumptions
+  instance'goroutineProfileState : goroutineProfileState.TypeAssumptions
+  instance'goroutineProfileStateHolder : goroutineProfileStateHolder.TypeAssumptions
+  instance'addrRange : addrRange.TypeAssumptions
+  instance'offAddr : offAddr.TypeAssumptions
+  instance'atomicOffAddr : atomicOffAddr.TypeAssumptions
+  instance'addrRanges : addrRanges.TypeAssumptions
+  instance'spanSet : spanSet.TypeAssumptions
+  instance'spanSetBlockHeader : spanSetBlockHeader.TypeAssumptions
+  instance'spanSetBlockHeader2 : spanSetBlockHeader2.TypeAssumptions
+  instance'spanSetBlock : spanSetBlock.TypeAssumptions
+  instance'atomicSpanSetSpinePointer : atomicSpanSetSpinePointer.TypeAssumptions
+  instance'spanSetSpinePointer : spanSetSpinePointer.TypeAssumptions
+  instance'spanSetBlockAlloc : spanSetBlockAlloc.TypeAssumptions
+  instance'headTailIndex : headTailIndex.TypeAssumptions
+  instance'atomicHeadTailIndex : atomicHeadTailIndex.TypeAssumptions
+  instance'atomicMSpanPointer : atomicMSpanPointer.TypeAssumptions
+  instance'mstats : mstats.TypeAssumptions
+  instance'MemStats : MemStats.TypeAssumptions
+  instance'sysMemStat : sysMemStat.TypeAssumptions
+  instance'heapStatsDelta : heapStatsDelta.TypeAssumptions
+  instance'consistentHeapStats : consistentHeapStats.TypeAssumptions
+  instance'cpuStats : cpuStats.TypeAssumptions
+  instance'wbBuf : wbBuf.TypeAssumptions
+  instance'pollDesc : pollDesc.TypeAssumptions
+  instance'pollInfo : pollInfo.TypeAssumptions
+  instance'pollCache : pollCache.TypeAssumptions
+  instance'winlibcall : winlibcall.TypeAssumptions
+  instance'note : note.TypeAssumptions
+  instance'mOS : mOS.TypeAssumptions
+  instance'perThreadSyscallArgs : perThreadSyscallArgs.TypeAssumptions
+  instance'kernelVersion : kernelVersion.TypeAssumptions
+  instance'sigset : sigset.TypeAssumptions
+  instance'throwType : throwType.TypeAssumptions
+  instance'PanicNilError : PanicNilError.TypeAssumptions
+  instance'Pinner : Pinner.TypeAssumptions
+  instance'pinner : pinner.TypeAssumptions
+  instance'pinState : pinState.TypeAssumptions
+  instance'pinnerBits : pinnerBits.TypeAssumptions
+  instance'ptabEntry : ptabEntry.TypeAssumptions
+  instance'suspendGState : suspendGState.TypeAssumptions
+  instance'xRegs : xRegs.TypeAssumptions
+  instance'xRegState : xRegState.TypeAssumptions
+  instance'xRegPerG : xRegPerG.TypeAssumptions
+  instance'xRegPerP : xRegPerP.TypeAssumptions
+  instance'hex : hex.TypeAssumptions
+  instance'quoted : quoted.TypeAssumptions
+  instance'stwReason : stwReason.TypeAssumptions
+  instance'worldStop : worldStop.TypeAssumptions
+  instance'cgothreadstart : cgothreadstart.TypeAssumptions
+  instance'sysmontick : sysmontick.TypeAssumptions
+  instance'syscallingThread : syscallingThread.TypeAssumptions
+  instance'updateMaxProcsGState : updateMaxProcsGState.TypeAssumptions
+  instance'pMask : pMask.TypeAssumptions
+  instance'gQueue : gQueue.TypeAssumptions
+  instance'gList : gList.TypeAssumptions
+  instance'randomOrder : randomOrder.TypeAssumptions
+  instance'randomEnum : randomEnum.TypeAssumptions
+  instance'initTask : initTask.TypeAssumptions
+  instance'tracestat : tracestat.TypeAssumptions
+  instance'profBuf : profBuf.TypeAssumptions
+  instance'profAtomic : profAtomic.TypeAssumptions
+  instance'profIndex : profIndex.TypeAssumptions
+  instance'profBufReadMode : profBufReadMode.TypeAssumptions
+  instance'ticksType : ticksType.TypeAssumptions
+  instance'godebugInc : godebugInc.TypeAssumptions
+  instance'dbgVar : dbgVar.TypeAssumptions
+  instance'mutex : mutex.TypeAssumptions
+  instance'funcval : funcval.TypeAssumptions
+  instance'iface : iface.TypeAssumptions
+  instance'eface : eface.TypeAssumptions
+  instance'guintptr : guintptr.TypeAssumptions
+  instance'puintptr : puintptr.TypeAssumptions
+  instance'muintptr : muintptr.TypeAssumptions
+  instance'gobuf : gobuf.TypeAssumptions
+  instance'maybeTraceablePtr : maybeTraceablePtr.TypeAssumptions
+  instance'maybeTraceableChan : maybeTraceableChan.TypeAssumptions
+  instance'sudog : sudog.TypeAssumptions
+  instance'libcall : libcall.TypeAssumptions
+  instance'stack : stack.TypeAssumptions
+  instance'heldLockInfo : heldLockInfo.TypeAssumptions
+  instance'g : g.TypeAssumptions
+  instance'm : m.TypeAssumptions
+  instance'mPadded : mPadded.TypeAssumptions
+  instance'mWeakPointer : mWeakPointer.TypeAssumptions
+  instance'p : p.TypeAssumptions
+  instance'schedt : schedt.TypeAssumptions
+  instance'_func : _func.TypeAssumptions
+  instance'funcinl : funcinl.TypeAssumptions
+  instance'lfnode : lfnode.TypeAssumptions
+  instance'forcegcstate : forcegcstate.TypeAssumptions
+  instance'_defer : _defer.TypeAssumptions
+  instance'_panic : _panic.TypeAssumptions
+  instance'savedOpenDeferState : savedOpenDeferState.TypeAssumptions
+  instance'ancestorInfo : ancestorInfo.TypeAssumptions
+  instance'waitReason : waitReason.TypeAssumptions
+  instance'rwmutex : rwmutex.TypeAssumptions
+  instance'scase : scase.TypeAssumptions
+  instance'runtimeSelect : runtimeSelect.TypeAssumptions
+  instance'selectDir : selectDir.TypeAssumptions
+  instance'semaRoot : semaRoot.TypeAssumptions
+  instance'semTable : semTable.TypeAssumptions
+  instance'semaProfileFlags : semaProfileFlags.TypeAssumptions
+  instance'notifyList : notifyList.TypeAssumptions
+  instance'sigctxt : sigctxt.TypeAssumptions
+  instance'sigTabT : sigTabT.TypeAssumptions
+  instance'gsignalStack : gsignalStack.TypeAssumptions
+  instance'slice : slice''.TypeAssumptions
+  instance'notInHeapSlice : notInHeapSlice.TypeAssumptions
+  instance'stackpoolItem : stackpoolItem.TypeAssumptions
+  instance'adjustinfo : adjustinfo.TypeAssumptions
+  instance'bitvector : bitvector.TypeAssumptions
+  instance'stackObjectRecord : stackObjectRecord.TypeAssumptions
+  instance'stkframe : stkframe.TypeAssumptions
+  instance'reflectMethodValue : reflectMethodValue.TypeAssumptions
+  instance'tmpBuf : tmpBuf.TypeAssumptions
+  instance'stringStruct : stringStruct.TypeAssumptions
+  instance'stringStructDWARF : stringStructDWARF.TypeAssumptions
+  instance'neverCallThisFunction : neverCallThisFunction.TypeAssumptions
+  instance'Frames : Frames.TypeAssumptions
+  instance'Frame : Frame.TypeAssumptions
+  instance'Func : Func.TypeAssumptions
+  instance'pcHeader : pcHeader.TypeAssumptions
+  instance'moduledata : moduledata.TypeAssumptions
+  instance'modulehash : modulehash.TypeAssumptions
+  instance'functab : functab.TypeAssumptions
+  instance'textsect : textsect.TypeAssumptions
+  instance'findfuncbucket : findfuncbucket.TypeAssumptions
+  instance'funcInfo : funcInfo.TypeAssumptions
+  instance'srcFunc : srcFunc.TypeAssumptions
+  instance'pcvalueCache : pcvalueCache.TypeAssumptions
+  instance'pcvalueCacheEnt : pcvalueCacheEnt.TypeAssumptions
+  instance'stackmap : stackmap.TypeAssumptions
+  instance'inlinedCall : inlinedCall.TypeAssumptions
+  instance'inlineUnwinder : inlineUnwinder.TypeAssumptions
+  instance'inlineFrame : inlineFrame.TypeAssumptions
+  instance'synctestBubble : synctestBubble.TypeAssumptions
+  instance'synctestDeadlockError : synctestDeadlockError.TypeAssumptions
+  instance'specialBubble : specialBubble.TypeAssumptions
+  instance'taggedPointer : taggedPointer.TypeAssumptions
+  instance'timer : timer.TypeAssumptions
+  instance'timers : timers.TypeAssumptions
+  instance'timerWhen : timerWhen.TypeAssumptions
+  instance'timeTimer : timeTimer.TypeAssumptions
+  instance'traceAdvancerState : traceAdvancerState.TypeAssumptions
+  instance'wakeableSleep : wakeableSleep.TypeAssumptions
+  instance'unwindFlags : unwindFlags.TypeAssumptions
+  instance'unwinder : unwinder.TypeAssumptions
+  instance'cgoTracebackArg : cgoTracebackArg.TypeAssumptions
+  instance'cgoContextArg : cgoContextArg.TypeAssumptions
+  instance'cgoSymbolizerArg : cgoSymbolizerArg.TypeAssumptions
+  instance'traceWriter : traceWriter.TypeAssumptions
+  instance'traceBufQueue : traceBufQueue.TypeAssumptions
+  instance'traceBufHeader : traceBufHeader.TypeAssumptions
+  instance'traceBuf : traceBuf.TypeAssumptions
+  instance'traceArg : traceArg.TypeAssumptions
+  instance'traceEventWriter : traceEventWriter.TypeAssumptions
+  instance'traceMap : traceMap.TypeAssumptions
+  instance'traceMapNode : traceMapNode.TypeAssumptions
+  instance'traceRegionAlloc : traceRegionAlloc.TypeAssumptions
+  instance'traceRegionAllocBlock : traceRegionAllocBlock.TypeAssumptions
+  instance'traceRegionAllocBlockHeader : traceRegionAllocBlockHeader.TypeAssumptions
+  instance'gTraceState : gTraceState.TypeAssumptions
+  instance'mTraceState : mTraceState.TypeAssumptions
+  instance'pTraceState : pTraceState.TypeAssumptions
+  instance'traceBlockReason : traceBlockReason.TypeAssumptions
+  instance'traceGoStopReason : traceGoStopReason.TypeAssumptions
+  instance'traceLocker : traceLocker.TypeAssumptions
+  instance'traceStackTable : traceStackTable.TypeAssumptions
+  instance'traceFrame : traceFrame.TypeAssumptions
+  instance'traceSchedResourceState : traceSchedResourceState.TypeAssumptions
+  instance'traceStringTable : traceStringTable.TypeAssumptions
+  instance'traceTime : traceTime.TypeAssumptions
+  instance'traceTypeTable : traceTypeTable.TypeAssumptions
+  instance'rtype : rtype.TypeAssumptions
+  instance'bitCursor : bitCursor.TypeAssumptions
+  instance'_typePair : _typePair.TypeAssumptions
+  instance'elfSym : elfSym.TypeAssumptions
+  instance'elfVerdef : elfVerdef.TypeAssumptions
+  instance'elfEhdr : elfEhdr.TypeAssumptions
+  instance'elfPhdr : elfPhdr.TypeAssumptions
+  instance'elfShdr : elfShdr.TypeAssumptions
+  instance'elfDyn : elfDyn.TypeAssumptions
+  instance'elfVerdaux : elfVerdaux.TypeAssumptions
+  instance'vdsoSymbolKey : vdsoSymbolKey.TypeAssumptions
+  instance'vdsoVersionKey : vdsoVersionKey.TypeAssumptions
+  instance'vdsoInfo : vdsoInfo.TypeAssumptions
+  «instance'struct#51fa335f» : «struct#51fa335f».TypeAssumptions
+  «instance'struct#1e853569» : «struct#1e853569».TypeAssumptions
+  «instance'struct#3a8454c5» : «struct#3a8454c5».TypeAssumptions
+  «instance'struct#28cf6959» : «struct#28cf6959».TypeAssumptions
+  «instance'struct#8786e874» : «struct#8786e874».TypeAssumptions
+  «instance'struct#72a1e364» : «struct#72a1e364».TypeAssumptions
+  «instance'struct#cf01e664» : «struct#cf01e664».TypeAssumptions
+  «instance'struct#1768b3d4» : «struct#1768b3d4».TypeAssumptions
+  unfold'Callers : FuncUnfold Callers [] Callers.impl
+  unfold'Version : FuncUnfold Version [] Version.impl
+  unfold'Gosched : FuncUnfold Gosched [] Gosched.impl
+  unfold'CallersFrames : FuncUnfold CallersFrames [] CallersFrames.impl
+  unfold'callers : FuncUnfold callers [] callers.impl
+  import'sys : _root_.Perennial.internal.runtime.sys.Assumptions
+  import'atomic : _root_.Perennial.internal.runtime.atomic.Assumptions
 
-attribute [instance] Assumptions.userArena_instance
-  Assumptions.liveUserArenaChunk_instance
-  Assumptions.writeUserArenaHeapBits_instance
-  Assumptions.cgoCallers_instance
-  Assumptions.argset_instance
-  Assumptions.cgoErrorMsg_instance
-  Assumptions.hchan_instance
-  Assumptions.waitq_instance
-  Assumptions.coro_instance
-  Assumptions.cpuProfile_instance
-  Assumptions.debugCallWrapArgs_instance
-  Assumptions.dloggerImpl_instance
-  Assumptions.dloggerFake_instance
-  Assumptions.debugLogWriter_instance
-  Assumptions.debugLogBuf_instance
-  Assumptions.debugLogReader_instance
-  Assumptions.dlogPerM_instance
-  Assumptions.timespec_instance
-  Assumptions.timeval_instance
-  Assumptions.sigactiont_instance
-  Assumptions.siginfoFields_instance
-  Assumptions.siginfo_instance
-  Assumptions.itimerspec_instance
-  Assumptions.itimerval_instance
-  Assumptions.sigeventFields_instance
-  Assumptions.sigevent_instance
-  Assumptions.usigset_instance
-  Assumptions.fpxreg_instance
-  Assumptions.xmmreg_instance
-  Assumptions.fpstate_instance
-  Assumptions.fpxreg1_instance
-  Assumptions.xmmreg1_instance
-  Assumptions.fpstate1_instance
-  Assumptions.fpreg1_instance
-  Assumptions.stackt_instance
-  Assumptions.mcontext_instance
-  Assumptions.ucontext_instance
-  Assumptions.sigcontext_instance
-  Assumptions.sockaddr_un_instance
-  Assumptions.Error_instance
-  Assumptions.TypeAssertionError_instance
-  Assumptions.errorString_instance
-  Assumptions.errorAddressString_instance
-  Assumptions.plainError_instance
-  Assumptions.boundsError_instance
-  Assumptions.stringer_instance
-  Assumptions.typeCacheBucket_instance
-  Assumptions.childInfo_instance
-  Assumptions.hexdumper_instance
-  Assumptions.hexdumpMarker_instance
-  Assumptions.timeHistogram_instance
-  Assumptions.itabTableType_instance
-  Assumptions.uint16InterfacePtr_instance
-  Assumptions.uint32InterfacePtr_instance
-  Assumptions.uint64InterfacePtr_instance
-  Assumptions.stringInterfacePtr_instance
-  Assumptions.sliceInterfacePtr_instance
-  Assumptions.lfstack_instance
-  Assumptions.linknameIter_instance
-  Assumptions.listHead_instance
-  Assumptions.listNode_instance
-  Assumptions.listHeadManual_instance
-  Assumptions.listNodeManual_instance
-  Assumptions.mWaitList_instance
-  Assumptions.lockRank_instance
-  Assumptions.lockRankStruct_instance
-  Assumptions.persistentAlloc_instance
-  Assumptions.linearAlloc_instance
-  Assumptions.notInHeap_instance
-  Assumptions.typePointers_instance
-  Assumptions.markBits_instance
-  Assumptions.mcache_instance
-  Assumptions.gclink_instance
-  Assumptions.gclinkptr_instance
-  Assumptions.stackfreelist_instance
-  Assumptions.mcentral_instance
-  Assumptions.checkmarksMap_instance
-  Assumptions.Cleanup_instance
-  Assumptions.cleanupBlock_instance
-  Assumptions.cleanupFn_instance
-  Assumptions.cleanupBlockHeader_instance
-  Assumptions.cleanupQueue_instance
-  Assumptions.metricData_instance
-  Assumptions.metricReader_instance
-  Assumptions.statDep_instance
-  Assumptions.statDepSet_instance
-  Assumptions.heapStatsAggregate_instance
-  Assumptions.sysStatsAggregate_instance
-  Assumptions.cpuStatsAggregate_instance
-  Assumptions.gcStatsAggregate_instance
-  Assumptions.finalStatsAggregate_instance
-  Assumptions.schedStatsAggregate_instance
-  Assumptions.statAggregate_instance
-  Assumptions.metricKind_instance
-  Assumptions.metricSample_instance
-  Assumptions.metricValue_instance
-  Assumptions.metricFloat64Histogram_instance
-  Assumptions.metricName_instance
-  Assumptions.finBlock_instance
-  Assumptions.finalizer_instance
-  Assumptions.fixalloc_instance
-  Assumptions.mlink_instance
-  Assumptions.gcMarkWorkerMode_instance
-  Assumptions.workType_instance
-  Assumptions.gcMode_instance
-  Assumptions.gcTrigger_instance
-  Assumptions.gcTriggerKind_instance
-  Assumptions.gcBgMarkWorkerNode_instance
-  Assumptions.gcBgMarkWorkerNodePadded_instance
-  Assumptions.gcCPULimiterState_instance
-  Assumptions.limiterEventType_instance
-  Assumptions.limiterEventStamp_instance
-  Assumptions.limiterEvent_instance
-  Assumptions.gcDrainFlags_instance
-  Assumptions.spanInlineMarkBits_instance
-  Assumptions.spanScanOwnership_instance
-  Assumptions.spanQueue_instance
-  Assumptions.spanSPMC_instance
-  Assumptions.objptr_instance
-  Assumptions.sizeClassScanStats_instance
-  Assumptions.gcControllerState_instance
-  Assumptions.scavengerState_instance
-  Assumptions.scavengeIndex_instance
-  Assumptions.atomicScavChunkData_instance
-  Assumptions.scavChunkData_instance
-  Assumptions.scavChunkFlags_instance
-  Assumptions.piController_instance
-  Assumptions.stackWorkBuf_instance
-  Assumptions.stackWorkBufHdr_instance
-  Assumptions.stackObjectBuf_instance
-  Assumptions.stackObjectBufHdr_instance
-  Assumptions.stackObject_instance
-  Assumptions.stackScanState_instance
-  Assumptions.sweepdata_instance
-  Assumptions.sweepClass_instance
-  Assumptions.activeSweep_instance
-  Assumptions.sweepLocker_instance
-  Assumptions.sweepLocked_instance
-  Assumptions.gcWork_instance
-  Assumptions.workbufhdr_instance
-  Assumptions.workbuf_instance
-  Assumptions.mheap_instance
-  Assumptions.heapArena_instance
-  Assumptions.arenaHint_instance
-  Assumptions.mSpanState_instance
-  Assumptions.mSpanStateBox_instance
-  Assumptions.mspan_instance
-  Assumptions.spanClass_instance
-  Assumptions.arenaIdx_instance
-  Assumptions.spanAllocType_instance
-  Assumptions.mSpanList_instance
-  Assumptions.special_instance
-  Assumptions.specialfinalizer_instance
-  Assumptions.specialCleanup_instance
-  Assumptions.specialCheckFinalizer_instance
-  Assumptions.specialTinyBlock_instance
-  Assumptions.specialWeakHandle_instance
-  Assumptions.immortalWeakHandleMap_instance
-  Assumptions.immortalWeakHandle_instance
-  Assumptions.specialprofile_instance
-  Assumptions.specialReachable_instance
-  Assumptions.specialPinCounter_instance
-  Assumptions.specialSecret_instance
-  Assumptions.specialsIter_instance
-  Assumptions.gcBits_instance
-  Assumptions.gcBitsHeader_instance
-  Assumptions.gcBitsArena_instance
-  Assumptions.floaty_instance
-  Assumptions.chunkIdx_instance
-  Assumptions.pageAlloc_instance
-  Assumptions.pallocSum_instance
-  Assumptions.pageCache_instance
-  Assumptions.pageBits_instance
-  Assumptions.pallocBits_instance
-  Assumptions.pallocData_instance
-  Assumptions.bucketType_instance
-  Assumptions.bucket_instance
-  Assumptions.memRecord_instance
-  Assumptions.memRecordCycle_instance
-  Assumptions.blockRecord_instance
-  Assumptions.buckhashArray_instance
-  Assumptions.mProfCycleHolder_instance
-  Assumptions.mLockProfile_instance
-  Assumptions.StackRecord_instance
-  Assumptions.MemProfileRecord_instance
-  Assumptions.BlockProfileRecord_instance
-  Assumptions.goroutineProfileState_instance
-  Assumptions.goroutineProfileStateHolder_instance
-  Assumptions.addrRange_instance
-  Assumptions.offAddr_instance
-  Assumptions.atomicOffAddr_instance
-  Assumptions.addrRanges_instance
-  Assumptions.spanSet_instance
-  Assumptions.spanSetBlockHeader_instance
-  Assumptions.spanSetBlockHeader2_instance
-  Assumptions.spanSetBlock_instance
-  Assumptions.atomicSpanSetSpinePointer_instance
-  Assumptions.spanSetSpinePointer_instance
-  Assumptions.spanSetBlockAlloc_instance
-  Assumptions.headTailIndex_instance
-  Assumptions.atomicHeadTailIndex_instance
-  Assumptions.atomicMSpanPointer_instance
-  Assumptions.mstats_instance
-  Assumptions.MemStats_instance
-  Assumptions.sysMemStat_instance
-  Assumptions.heapStatsDelta_instance
-  Assumptions.consistentHeapStats_instance
-  Assumptions.cpuStats_instance
-  Assumptions.wbBuf_instance
-  Assumptions.pollDesc_instance
-  Assumptions.pollInfo_instance
-  Assumptions.pollCache_instance
-  Assumptions.winlibcall_instance
-  Assumptions.note_instance
-  Assumptions.mOS_instance
-  Assumptions.perThreadSyscallArgs_instance
-  Assumptions.kernelVersion_instance
-  Assumptions.sigset_instance
-  Assumptions.throwType_instance
-  Assumptions.PanicNilError_instance
-  Assumptions.Pinner_instance
-  Assumptions.pinner_instance
-  Assumptions.pinState_instance
-  Assumptions.pinnerBits_instance
-  Assumptions.ptabEntry_instance
-  Assumptions.suspendGState_instance
-  Assumptions.xRegs_instance
-  Assumptions.xRegState_instance
-  Assumptions.xRegPerG_instance
-  Assumptions.xRegPerP_instance
-  Assumptions.hex_instance
-  Assumptions.quoted_instance
-  Assumptions.stwReason_instance
-  Assumptions.worldStop_instance
-  Assumptions.cgothreadstart_instance
-  Assumptions.sysmontick_instance
-  Assumptions.syscallingThread_instance
-  Assumptions.updateMaxProcsGState_instance
-  Assumptions.pMask_instance
-  Assumptions.gQueue_instance
-  Assumptions.gList_instance
-  Assumptions.randomOrder_instance
-  Assumptions.randomEnum_instance
-  Assumptions.initTask_instance
-  Assumptions.tracestat_instance
-  Assumptions.profBuf_instance
-  Assumptions.profAtomic_instance
-  Assumptions.profIndex_instance
-  Assumptions.profBufReadMode_instance
-  Assumptions.ticksType_instance
-  Assumptions.godebugInc_instance
-  Assumptions.dbgVar_instance
-  Assumptions.mutex_instance
-  Assumptions.funcval_instance
-  Assumptions.iface_instance
-  Assumptions.eface_instance
-  Assumptions.guintptr_instance
-  Assumptions.puintptr_instance
-  Assumptions.muintptr_instance
-  Assumptions.gobuf_instance
-  Assumptions.maybeTraceablePtr_instance
-  Assumptions.maybeTraceableChan_instance
-  Assumptions.sudog_instance
-  Assumptions.libcall_instance
-  Assumptions.stack_instance
-  Assumptions.heldLockInfo_instance
-  Assumptions.g_instance
-  Assumptions.m_instance
-  Assumptions.mPadded_instance
-  Assumptions.mWeakPointer_instance
-  Assumptions.p_instance
-  Assumptions.schedt_instance
-  Assumptions._func_instance
-  Assumptions.funcinl_instance
-  Assumptions.lfnode_instance
-  Assumptions.forcegcstate_instance
-  Assumptions._defer_instance
-  Assumptions._panic_instance
-  Assumptions.savedOpenDeferState_instance
-  Assumptions.ancestorInfo_instance
-  Assumptions.waitReason_instance
-  Assumptions.rwmutex_instance
-  Assumptions.scase_instance
-  Assumptions.runtimeSelect_instance
-  Assumptions.selectDir_instance
-  Assumptions.semaRoot_instance
-  Assumptions.semTable_instance
-  Assumptions.semaProfileFlags_instance
-  Assumptions.notifyList_instance
-  Assumptions.sigctxt_instance
-  Assumptions.sigTabT_instance
-  Assumptions.gsignalStack_instance
-  Assumptions.slice_instance
-  Assumptions.notInHeapSlice_instance
-  Assumptions.stackpoolItem_instance
-  Assumptions.adjustinfo_instance
-  Assumptions.bitvector_instance
-  Assumptions.stackObjectRecord_instance
-  Assumptions.stkframe_instance
-  Assumptions.reflectMethodValue_instance
-  Assumptions.tmpBuf_instance
-  Assumptions.stringStruct_instance
-  Assumptions.stringStructDWARF_instance
-  Assumptions.neverCallThisFunction_instance
-  Assumptions.Frames_instance
-  Assumptions.Frame_instance
-  Assumptions.Func_instance
-  Assumptions.pcHeader_instance
-  Assumptions.moduledata_instance
-  Assumptions.modulehash_instance
-  Assumptions.functab_instance
-  Assumptions.textsect_instance
-  Assumptions.findfuncbucket_instance
-  Assumptions.funcInfo_instance
-  Assumptions.srcFunc_instance
-  Assumptions.pcvalueCache_instance
-  Assumptions.pcvalueCacheEnt_instance
-  Assumptions.stackmap_instance
-  Assumptions.inlinedCall_instance
-  Assumptions.inlineUnwinder_instance
-  Assumptions.inlineFrame_instance
-  Assumptions.synctestBubble_instance
-  Assumptions.synctestDeadlockError_instance
-  Assumptions.specialBubble_instance
-  Assumptions.taggedPointer_instance
-  Assumptions.timer_instance
-  Assumptions.timers_instance
-  Assumptions.timerWhen_instance
-  Assumptions.timeTimer_instance
-  Assumptions.traceAdvancerState_instance
-  Assumptions.wakeableSleep_instance
-  Assumptions.unwindFlags_instance
-  Assumptions.unwinder_instance
-  Assumptions.cgoTracebackArg_instance
-  Assumptions.cgoContextArg_instance
-  Assumptions.cgoSymbolizerArg_instance
-  Assumptions.traceWriter_instance
-  Assumptions.traceBufQueue_instance
-  Assumptions.traceBufHeader_instance
-  Assumptions.traceBuf_instance
-  Assumptions.traceArg_instance
-  Assumptions.traceEventWriter_instance
-  Assumptions.traceMap_instance
-  Assumptions.traceMapNode_instance
-  Assumptions.traceRegionAlloc_instance
-  Assumptions.traceRegionAllocBlock_instance
-  Assumptions.traceRegionAllocBlockHeader_instance
-  Assumptions.gTraceState_instance
-  Assumptions.mTraceState_instance
-  Assumptions.pTraceState_instance
-  Assumptions.traceBlockReason_instance
-  Assumptions.traceGoStopReason_instance
-  Assumptions.traceLocker_instance
-  Assumptions.traceStackTable_instance
-  Assumptions.traceFrame_instance
-  Assumptions.traceSchedResourceState_instance
-  Assumptions.traceStringTable_instance
-  Assumptions.traceTime_instance
-  Assumptions.traceTypeTable_instance
-  Assumptions.rtype_instance
-  Assumptions.bitCursor_instance
-  Assumptions._typePair_instance
-  Assumptions.elfSym_instance
-  Assumptions.elfVerdef_instance
-  Assumptions.elfEhdr_instance
-  Assumptions.elfPhdr_instance
-  Assumptions.elfShdr_instance
-  Assumptions.elfDyn_instance
-  Assumptions.elfVerdaux_instance
-  Assumptions.vdsoSymbolKey_instance
-  Assumptions.vdsoVersionKey_instance
-  Assumptions.vdsoInfo_instance
-  Assumptions.«struct#51fa335f_instance»
-  Assumptions.«struct#1e853569_instance»
-  Assumptions.«struct#3a8454c5_instance»
-  Assumptions.«struct#28cf6959_instance»
-  Assumptions.«struct#8786e874_instance»
-  Assumptions.«struct#72a1e364_instance»
-  Assumptions.«struct#cf01e664_instance»
-  Assumptions.«struct#1768b3d4_instance»
-  Assumptions.Callers_unfold
-  Assumptions.Version_unfold
-  Assumptions.Gosched_unfold
-  Assumptions.CallersFrames_unfold
-  Assumptions.callers_unfold
-  Assumptions.import_sys_Assumption
-  Assumptions.import_atomic_Assumption
+attribute [instance] Assumptions.instance'userArena
+  Assumptions.instance'liveUserArenaChunk
+  Assumptions.instance'writeUserArenaHeapBits
+  Assumptions.instance'cgoCallers
+  Assumptions.instance'argset
+  Assumptions.instance'cgoErrorMsg
+  Assumptions.instance'hchan
+  Assumptions.instance'waitq
+  Assumptions.instance'coro
+  Assumptions.instance'cpuProfile
+  Assumptions.instance'debugCallWrapArgs
+  Assumptions.instance'dloggerImpl
+  Assumptions.instance'dloggerFake
+  Assumptions.instance'debugLogWriter
+  Assumptions.instance'debugLogBuf
+  Assumptions.instance'debugLogReader
+  Assumptions.instance'dlogPerM
+  Assumptions.instance'timespec
+  Assumptions.instance'timeval
+  Assumptions.instance'sigactiont
+  Assumptions.instance'siginfoFields
+  Assumptions.instance'siginfo
+  Assumptions.instance'itimerspec
+  Assumptions.instance'itimerval
+  Assumptions.instance'sigeventFields
+  Assumptions.instance'sigevent
+  Assumptions.instance'usigset
+  Assumptions.instance'fpxreg
+  Assumptions.instance'xmmreg
+  Assumptions.instance'fpstate
+  Assumptions.instance'fpxreg1
+  Assumptions.instance'xmmreg1
+  Assumptions.instance'fpstate1
+  Assumptions.instance'fpreg1
+  Assumptions.instance'stackt
+  Assumptions.instance'mcontext
+  Assumptions.instance'ucontext
+  Assumptions.instance'sigcontext
+  Assumptions.instance'sockaddr_un
+  Assumptions.instance'Error
+  Assumptions.instance'TypeAssertionError
+  Assumptions.instance'errorString
+  Assumptions.instance'errorAddressString
+  Assumptions.instance'plainError
+  Assumptions.instance'boundsError
+  Assumptions.instance'stringer
+  Assumptions.instance'typeCacheBucket
+  Assumptions.instance'childInfo
+  Assumptions.instance'hexdumper
+  Assumptions.instance'hexdumpMarker
+  Assumptions.instance'timeHistogram
+  Assumptions.instance'itabTableType
+  Assumptions.instance'uint16InterfacePtr
+  Assumptions.instance'uint32InterfacePtr
+  Assumptions.instance'uint64InterfacePtr
+  Assumptions.instance'stringInterfacePtr
+  Assumptions.instance'sliceInterfacePtr
+  Assumptions.instance'lfstack
+  Assumptions.instance'linknameIter
+  Assumptions.instance'listHead
+  Assumptions.instance'listNode
+  Assumptions.instance'listHeadManual
+  Assumptions.instance'listNodeManual
+  Assumptions.instance'mWaitList
+  Assumptions.instance'lockRank
+  Assumptions.instance'lockRankStruct
+  Assumptions.instance'persistentAlloc
+  Assumptions.instance'linearAlloc
+  Assumptions.instance'notInHeap
+  Assumptions.instance'typePointers
+  Assumptions.instance'markBits
+  Assumptions.instance'mcache
+  Assumptions.instance'gclink
+  Assumptions.instance'gclinkptr
+  Assumptions.instance'stackfreelist
+  Assumptions.instance'mcentral
+  Assumptions.instance'checkmarksMap
+  Assumptions.instance'Cleanup
+  Assumptions.instance'cleanupBlock
+  Assumptions.instance'cleanupFn
+  Assumptions.instance'cleanupBlockHeader
+  Assumptions.instance'cleanupQueue
+  Assumptions.instance'metricData
+  Assumptions.instance'metricReader
+  Assumptions.instance'statDep
+  Assumptions.instance'statDepSet
+  Assumptions.instance'heapStatsAggregate
+  Assumptions.instance'sysStatsAggregate
+  Assumptions.instance'cpuStatsAggregate
+  Assumptions.instance'gcStatsAggregate
+  Assumptions.instance'finalStatsAggregate
+  Assumptions.instance'schedStatsAggregate
+  Assumptions.instance'statAggregate
+  Assumptions.instance'metricKind
+  Assumptions.instance'metricSample
+  Assumptions.instance'metricValue
+  Assumptions.instance'metricFloat64Histogram
+  Assumptions.instance'metricName
+  Assumptions.instance'finBlock
+  Assumptions.instance'finalizer
+  Assumptions.instance'fixalloc
+  Assumptions.instance'mlink
+  Assumptions.instance'gcMarkWorkerMode
+  Assumptions.instance'workType
+  Assumptions.instance'gcMode
+  Assumptions.instance'gcTrigger
+  Assumptions.instance'gcTriggerKind
+  Assumptions.instance'gcBgMarkWorkerNode
+  Assumptions.instance'gcBgMarkWorkerNodePadded
+  Assumptions.instance'gcCPULimiterState
+  Assumptions.instance'limiterEventType
+  Assumptions.instance'limiterEventStamp
+  Assumptions.instance'limiterEvent
+  Assumptions.instance'gcDrainFlags
+  Assumptions.instance'spanInlineMarkBits
+  Assumptions.instance'spanScanOwnership
+  Assumptions.instance'spanQueue
+  Assumptions.instance'spanSPMC
+  Assumptions.instance'objptr
+  Assumptions.instance'sizeClassScanStats
+  Assumptions.instance'gcControllerState
+  Assumptions.instance'scavengerState
+  Assumptions.instance'scavengeIndex
+  Assumptions.instance'atomicScavChunkData
+  Assumptions.instance'scavChunkData
+  Assumptions.instance'scavChunkFlags
+  Assumptions.instance'piController
+  Assumptions.instance'stackWorkBuf
+  Assumptions.instance'stackWorkBufHdr
+  Assumptions.instance'stackObjectBuf
+  Assumptions.instance'stackObjectBufHdr
+  Assumptions.instance'stackObject
+  Assumptions.instance'stackScanState
+  Assumptions.instance'sweepdata
+  Assumptions.instance'sweepClass
+  Assumptions.instance'activeSweep
+  Assumptions.instance'sweepLocker
+  Assumptions.instance'sweepLocked
+  Assumptions.instance'gcWork
+  Assumptions.instance'workbufhdr
+  Assumptions.instance'workbuf
+  Assumptions.instance'mheap
+  Assumptions.instance'heapArena
+  Assumptions.instance'arenaHint
+  Assumptions.instance'mSpanState
+  Assumptions.instance'mSpanStateBox
+  Assumptions.instance'mspan
+  Assumptions.instance'spanClass
+  Assumptions.instance'arenaIdx
+  Assumptions.instance'spanAllocType
+  Assumptions.instance'mSpanList
+  Assumptions.instance'special
+  Assumptions.instance'specialfinalizer
+  Assumptions.instance'specialCleanup
+  Assumptions.instance'specialCheckFinalizer
+  Assumptions.instance'specialTinyBlock
+  Assumptions.instance'specialWeakHandle
+  Assumptions.instance'immortalWeakHandleMap
+  Assumptions.instance'immortalWeakHandle
+  Assumptions.instance'specialprofile
+  Assumptions.instance'specialReachable
+  Assumptions.instance'specialPinCounter
+  Assumptions.instance'specialSecret
+  Assumptions.instance'specialsIter
+  Assumptions.instance'gcBits
+  Assumptions.instance'gcBitsHeader
+  Assumptions.instance'gcBitsArena
+  Assumptions.instance'floaty
+  Assumptions.instance'chunkIdx
+  Assumptions.instance'pageAlloc
+  Assumptions.instance'pallocSum
+  Assumptions.instance'pageCache
+  Assumptions.instance'pageBits
+  Assumptions.instance'pallocBits
+  Assumptions.instance'pallocData
+  Assumptions.instance'bucketType
+  Assumptions.instance'bucket
+  Assumptions.instance'memRecord
+  Assumptions.instance'memRecordCycle
+  Assumptions.instance'blockRecord
+  Assumptions.instance'buckhashArray
+  Assumptions.instance'mProfCycleHolder
+  Assumptions.instance'mLockProfile
+  Assumptions.instance'StackRecord
+  Assumptions.instance'MemProfileRecord
+  Assumptions.instance'BlockProfileRecord
+  Assumptions.instance'goroutineProfileState
+  Assumptions.instance'goroutineProfileStateHolder
+  Assumptions.instance'addrRange
+  Assumptions.instance'offAddr
+  Assumptions.instance'atomicOffAddr
+  Assumptions.instance'addrRanges
+  Assumptions.instance'spanSet
+  Assumptions.instance'spanSetBlockHeader
+  Assumptions.instance'spanSetBlockHeader2
+  Assumptions.instance'spanSetBlock
+  Assumptions.instance'atomicSpanSetSpinePointer
+  Assumptions.instance'spanSetSpinePointer
+  Assumptions.instance'spanSetBlockAlloc
+  Assumptions.instance'headTailIndex
+  Assumptions.instance'atomicHeadTailIndex
+  Assumptions.instance'atomicMSpanPointer
+  Assumptions.instance'mstats
+  Assumptions.instance'MemStats
+  Assumptions.instance'sysMemStat
+  Assumptions.instance'heapStatsDelta
+  Assumptions.instance'consistentHeapStats
+  Assumptions.instance'cpuStats
+  Assumptions.instance'wbBuf
+  Assumptions.instance'pollDesc
+  Assumptions.instance'pollInfo
+  Assumptions.instance'pollCache
+  Assumptions.instance'winlibcall
+  Assumptions.instance'note
+  Assumptions.instance'mOS
+  Assumptions.instance'perThreadSyscallArgs
+  Assumptions.instance'kernelVersion
+  Assumptions.instance'sigset
+  Assumptions.instance'throwType
+  Assumptions.instance'PanicNilError
+  Assumptions.instance'Pinner
+  Assumptions.instance'pinner
+  Assumptions.instance'pinState
+  Assumptions.instance'pinnerBits
+  Assumptions.instance'ptabEntry
+  Assumptions.instance'suspendGState
+  Assumptions.instance'xRegs
+  Assumptions.instance'xRegState
+  Assumptions.instance'xRegPerG
+  Assumptions.instance'xRegPerP
+  Assumptions.instance'hex
+  Assumptions.instance'quoted
+  Assumptions.instance'stwReason
+  Assumptions.instance'worldStop
+  Assumptions.instance'cgothreadstart
+  Assumptions.instance'sysmontick
+  Assumptions.instance'syscallingThread
+  Assumptions.instance'updateMaxProcsGState
+  Assumptions.instance'pMask
+  Assumptions.instance'gQueue
+  Assumptions.instance'gList
+  Assumptions.instance'randomOrder
+  Assumptions.instance'randomEnum
+  Assumptions.instance'initTask
+  Assumptions.instance'tracestat
+  Assumptions.instance'profBuf
+  Assumptions.instance'profAtomic
+  Assumptions.instance'profIndex
+  Assumptions.instance'profBufReadMode
+  Assumptions.instance'ticksType
+  Assumptions.instance'godebugInc
+  Assumptions.instance'dbgVar
+  Assumptions.instance'mutex
+  Assumptions.instance'funcval
+  Assumptions.instance'iface
+  Assumptions.instance'eface
+  Assumptions.instance'guintptr
+  Assumptions.instance'puintptr
+  Assumptions.instance'muintptr
+  Assumptions.instance'gobuf
+  Assumptions.instance'maybeTraceablePtr
+  Assumptions.instance'maybeTraceableChan
+  Assumptions.instance'sudog
+  Assumptions.instance'libcall
+  Assumptions.instance'stack
+  Assumptions.instance'heldLockInfo
+  Assumptions.instance'g
+  Assumptions.instance'm
+  Assumptions.instance'mPadded
+  Assumptions.instance'mWeakPointer
+  Assumptions.instance'p
+  Assumptions.instance'schedt
+  Assumptions.instance'_func
+  Assumptions.instance'funcinl
+  Assumptions.instance'lfnode
+  Assumptions.instance'forcegcstate
+  Assumptions.instance'_defer
+  Assumptions.instance'_panic
+  Assumptions.instance'savedOpenDeferState
+  Assumptions.instance'ancestorInfo
+  Assumptions.instance'waitReason
+  Assumptions.instance'rwmutex
+  Assumptions.instance'scase
+  Assumptions.instance'runtimeSelect
+  Assumptions.instance'selectDir
+  Assumptions.instance'semaRoot
+  Assumptions.instance'semTable
+  Assumptions.instance'semaProfileFlags
+  Assumptions.instance'notifyList
+  Assumptions.instance'sigctxt
+  Assumptions.instance'sigTabT
+  Assumptions.instance'gsignalStack
+  Assumptions.instance'slice
+  Assumptions.instance'notInHeapSlice
+  Assumptions.instance'stackpoolItem
+  Assumptions.instance'adjustinfo
+  Assumptions.instance'bitvector
+  Assumptions.instance'stackObjectRecord
+  Assumptions.instance'stkframe
+  Assumptions.instance'reflectMethodValue
+  Assumptions.instance'tmpBuf
+  Assumptions.instance'stringStruct
+  Assumptions.instance'stringStructDWARF
+  Assumptions.instance'neverCallThisFunction
+  Assumptions.instance'Frames
+  Assumptions.instance'Frame
+  Assumptions.instance'Func
+  Assumptions.instance'pcHeader
+  Assumptions.instance'moduledata
+  Assumptions.instance'modulehash
+  Assumptions.instance'functab
+  Assumptions.instance'textsect
+  Assumptions.instance'findfuncbucket
+  Assumptions.instance'funcInfo
+  Assumptions.instance'srcFunc
+  Assumptions.instance'pcvalueCache
+  Assumptions.instance'pcvalueCacheEnt
+  Assumptions.instance'stackmap
+  Assumptions.instance'inlinedCall
+  Assumptions.instance'inlineUnwinder
+  Assumptions.instance'inlineFrame
+  Assumptions.instance'synctestBubble
+  Assumptions.instance'synctestDeadlockError
+  Assumptions.instance'specialBubble
+  Assumptions.instance'taggedPointer
+  Assumptions.instance'timer
+  Assumptions.instance'timers
+  Assumptions.instance'timerWhen
+  Assumptions.instance'timeTimer
+  Assumptions.instance'traceAdvancerState
+  Assumptions.instance'wakeableSleep
+  Assumptions.instance'unwindFlags
+  Assumptions.instance'unwinder
+  Assumptions.instance'cgoTracebackArg
+  Assumptions.instance'cgoContextArg
+  Assumptions.instance'cgoSymbolizerArg
+  Assumptions.instance'traceWriter
+  Assumptions.instance'traceBufQueue
+  Assumptions.instance'traceBufHeader
+  Assumptions.instance'traceBuf
+  Assumptions.instance'traceArg
+  Assumptions.instance'traceEventWriter
+  Assumptions.instance'traceMap
+  Assumptions.instance'traceMapNode
+  Assumptions.instance'traceRegionAlloc
+  Assumptions.instance'traceRegionAllocBlock
+  Assumptions.instance'traceRegionAllocBlockHeader
+  Assumptions.instance'gTraceState
+  Assumptions.instance'mTraceState
+  Assumptions.instance'pTraceState
+  Assumptions.instance'traceBlockReason
+  Assumptions.instance'traceGoStopReason
+  Assumptions.instance'traceLocker
+  Assumptions.instance'traceStackTable
+  Assumptions.instance'traceFrame
+  Assumptions.instance'traceSchedResourceState
+  Assumptions.instance'traceStringTable
+  Assumptions.instance'traceTime
+  Assumptions.instance'traceTypeTable
+  Assumptions.instance'rtype
+  Assumptions.instance'bitCursor
+  Assumptions.instance'_typePair
+  Assumptions.instance'elfSym
+  Assumptions.instance'elfVerdef
+  Assumptions.instance'elfEhdr
+  Assumptions.instance'elfPhdr
+  Assumptions.instance'elfShdr
+  Assumptions.instance'elfDyn
+  Assumptions.instance'elfVerdaux
+  Assumptions.instance'vdsoSymbolKey
+  Assumptions.instance'vdsoVersionKey
+  Assumptions.instance'vdsoInfo
+  Assumptions.«instance'struct#51fa335f»
+  Assumptions.«instance'struct#1e853569»
+  Assumptions.«instance'struct#3a8454c5»
+  Assumptions.«instance'struct#28cf6959»
+  Assumptions.«instance'struct#8786e874»
+  Assumptions.«instance'struct#72a1e364»
+  Assumptions.«instance'struct#cf01e664»
+  Assumptions.«instance'struct#1768b3d4»
+  Assumptions.unfold'Callers
+  Assumptions.unfold'Version
+  Assumptions.unfold'Gosched
+  Assumptions.unfold'CallersFrames
+  Assumptions.unfold'callers
+  Assumptions.import'sys
+  Assumptions.import'atomic
 
 end runtime
 

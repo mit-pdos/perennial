@@ -46,11 +46,11 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Read_unfold : FuncUnfold Read [] Read.impl
-  Write_unfold : FuncUnfold Write [] Write.impl
+  unfold'Read : FuncUnfold Read [] Read.impl
+  unfold'Write : FuncUnfold Write [] Write.impl
 
-attribute [instance] Assumptions.Read_unfold
-  Assumptions.Write_unfold
+attribute [instance] Assumptions.unfold'Read
+  Assumptions.unfold'Write
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext
 

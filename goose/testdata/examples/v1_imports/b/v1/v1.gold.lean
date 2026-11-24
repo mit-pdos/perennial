@@ -48,9 +48,9 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Add_unfold : FuncUnfold Add [] Add.impl
+  unfold'Add : FuncUnfold Add [] Add.impl
 
-attribute [instance] Assumptions.Add_unfold
+attribute [instance] Assumptions.unfold'Add
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.b.v1
 

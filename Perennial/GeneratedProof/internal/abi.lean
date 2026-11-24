@@ -24,11 +24,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance RegArgs_typed_pointsto :
+noncomputable instance typed_pointsto'RegArgs :
     TypedPointsto (GF := GF) internal.abi.RegArgs :=
   sorry -- axiomatized type
 
-noncomputable instance RegArgs_into_val_typed :
+noncomputable instance into_val_typed'RegArgs :
     IntoValTypedUnderlying (GF := GF) internal.abi.RegArgs internal.abi.RegArgs.underlying :=
   sorry -- axiomatized type
 
@@ -43,11 +43,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance IntArgRegBitmap_typed_pointsto :
+noncomputable instance typed_pointsto'IntArgRegBitmap :
     TypedPointsto (GF := GF) internal.abi.IntArgRegBitmap :=
   sorry -- axiomatized type
 
-noncomputable instance IntArgRegBitmap_into_val_typed :
+noncomputable instance into_val_typed'IntArgRegBitmap :
     IntoValTypedUnderlying (GF := GF) internal.abi.IntArgRegBitmap internal.abi.IntArgRegBitmap.underlying :=
   sorry -- axiomatized type
 
@@ -62,11 +62,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance BoundsErrorCode_typed_pointsto :
+noncomputable instance typed_pointsto'BoundsErrorCode :
     TypedPointsto (GF := GF) internal.abi.BoundsErrorCode :=
   sorry -- axiomatized type
 
-noncomputable instance BoundsErrorCode_into_val_typed :
+noncomputable instance into_val_typed'BoundsErrorCode :
     IntoValTypedUnderlying (GF := GF) internal.abi.BoundsErrorCode internal.abi.BoundsErrorCode.underlying :=
   sorry -- axiomatized type
 
@@ -81,11 +81,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance ITab_typed_pointsto :
+noncomputable instance typed_pointsto'ITab :
     TypedPointsto (GF := GF) internal.abi.ITab :=
   sorry -- axiomatized type
 
-noncomputable instance ITab_into_val_typed :
+noncomputable instance into_val_typed'ITab :
     IntoValTypedUnderlying (GF := GF) internal.abi.ITab internal.abi.ITab.underlying :=
   sorry -- axiomatized type
 
@@ -100,11 +100,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance EmptyInterface_typed_pointsto :
+noncomputable instance typed_pointsto'EmptyInterface :
     TypedPointsto (GF := GF) internal.abi.EmptyInterface :=
   sorry -- axiomatized type
 
-noncomputable instance EmptyInterface_into_val_typed :
+noncomputable instance into_val_typed'EmptyInterface :
     IntoValTypedUnderlying (GF := GF) internal.abi.EmptyInterface internal.abi.EmptyInterface.underlying :=
   sorry -- axiomatized type
 
@@ -119,11 +119,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance NonEmptyInterface_typed_pointsto :
+noncomputable instance typed_pointsto'NonEmptyInterface :
     TypedPointsto (GF := GF) internal.abi.NonEmptyInterface :=
   sorry -- axiomatized type
 
-noncomputable instance NonEmptyInterface_into_val_typed :
+noncomputable instance into_val_typed'NonEmptyInterface :
     IntoValTypedUnderlying (GF := GF) internal.abi.NonEmptyInterface internal.abi.NonEmptyInterface.underlying :=
   sorry -- axiomatized type
 
@@ -138,11 +138,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance CommonInterface_typed_pointsto :
+noncomputable instance typed_pointsto'CommonInterface :
     TypedPointsto (GF := GF) internal.abi.CommonInterface :=
   sorry -- axiomatized type
 
-noncomputable instance CommonInterface_into_val_typed :
+noncomputable instance into_val_typed'CommonInterface :
     IntoValTypedUnderlying (GF := GF) internal.abi.CommonInterface internal.abi.CommonInterface.underlying :=
   sorry -- axiomatized type
 
@@ -157,11 +157,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance MapType_typed_pointsto :
+noncomputable instance typed_pointsto'MapType :
     TypedPointsto (GF := GF) internal.abi.MapType :=
   sorry -- axiomatized type
 
-noncomputable instance MapType_into_val_typed :
+noncomputable instance into_val_typed'MapType :
     IntoValTypedUnderlying (GF := GF) internal.abi.MapType internal.abi.MapType.underlying :=
   sorry -- axiomatized type
 
@@ -176,11 +176,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance RF_State_typed_pointsto :
+noncomputable instance typed_pointsto'RF_State :
     TypedPointsto (GF := GF) internal.abi.RF_State :=
   sorry -- axiomatized type
 
-noncomputable instance RF_State_into_val_typed :
+noncomputable instance into_val_typed'RF_State :
     IntoValTypedUnderlying (GF := GF) internal.abi.RF_State internal.abi.RF_State.underlying :=
   sorry -- axiomatized type
 
@@ -195,11 +195,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance InterfaceSwitch_typed_pointsto :
+noncomputable instance typed_pointsto'InterfaceSwitch :
     TypedPointsto (GF := GF) internal.abi.InterfaceSwitch :=
   sorry -- axiomatized type
 
-noncomputable instance InterfaceSwitch_into_val_typed :
+noncomputable instance into_val_typed'InterfaceSwitch :
     IntoValTypedUnderlying (GF := GF) internal.abi.InterfaceSwitch internal.abi.InterfaceSwitch.underlying :=
   sorry -- axiomatized type
 
@@ -214,11 +214,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance InterfaceSwitchCache_typed_pointsto :
+noncomputable instance typed_pointsto'InterfaceSwitchCache :
     TypedPointsto (GF := GF) internal.abi.InterfaceSwitchCache :=
   sorry -- axiomatized type
 
-noncomputable instance InterfaceSwitchCache_into_val_typed :
+noncomputable instance into_val_typed'InterfaceSwitchCache :
     IntoValTypedUnderlying (GF := GF) internal.abi.InterfaceSwitchCache internal.abi.InterfaceSwitchCache.underlying :=
   sorry -- axiomatized type
 
@@ -233,11 +233,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance InterfaceSwitchCacheEntry_typed_pointsto :
+noncomputable instance typed_pointsto'InterfaceSwitchCacheEntry :
     TypedPointsto (GF := GF) internal.abi.InterfaceSwitchCacheEntry :=
   sorry -- axiomatized type
 
-noncomputable instance InterfaceSwitchCacheEntry_into_val_typed :
+noncomputable instance into_val_typed'InterfaceSwitchCacheEntry :
     IntoValTypedUnderlying (GF := GF) internal.abi.InterfaceSwitchCacheEntry internal.abi.InterfaceSwitchCacheEntry.underlying :=
   sorry -- axiomatized type
 
@@ -252,11 +252,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance TypeAssert_typed_pointsto :
+noncomputable instance typed_pointsto'TypeAssert :
     TypedPointsto (GF := GF) internal.abi.TypeAssert'' :=
   sorry -- axiomatized type
 
-noncomputable instance TypeAssert_into_val_typed :
+noncomputable instance into_val_typed'TypeAssert :
     IntoValTypedUnderlying (GF := GF) internal.abi.TypeAssert'' internal.abi.TypeAssert''.underlying :=
   sorry -- axiomatized type
 
@@ -271,11 +271,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance TypeAssertCache_typed_pointsto :
+noncomputable instance typed_pointsto'TypeAssertCache :
     TypedPointsto (GF := GF) internal.abi.TypeAssertCache :=
   sorry -- axiomatized type
 
-noncomputable instance TypeAssertCache_into_val_typed :
+noncomputable instance into_val_typed'TypeAssertCache :
     IntoValTypedUnderlying (GF := GF) internal.abi.TypeAssertCache internal.abi.TypeAssertCache.underlying :=
   sorry -- axiomatized type
 
@@ -290,11 +290,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance TypeAssertCacheEntry_typed_pointsto :
+noncomputable instance typed_pointsto'TypeAssertCacheEntry :
     TypedPointsto (GF := GF) internal.abi.TypeAssertCacheEntry :=
   sorry -- axiomatized type
 
-noncomputable instance TypeAssertCacheEntry_into_val_typed :
+noncomputable instance into_val_typed'TypeAssertCacheEntry :
     IntoValTypedUnderlying (GF := GF) internal.abi.TypeAssertCacheEntry internal.abi.TypeAssertCacheEntry.underlying :=
   sorry -- axiomatized type
 
@@ -309,11 +309,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance PCLnTabMagic_typed_pointsto :
+noncomputable instance typed_pointsto'PCLnTabMagic :
     TypedPointsto (GF := GF) internal.abi.PCLnTabMagic :=
   sorry -- axiomatized type
 
-noncomputable instance PCLnTabMagic_into_val_typed :
+noncomputable instance into_val_typed'PCLnTabMagic :
     IntoValTypedUnderlying (GF := GF) internal.abi.PCLnTabMagic internal.abi.PCLnTabMagic.underlying :=
   sorry -- axiomatized type
 
@@ -328,11 +328,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance FuncFlag_typed_pointsto :
+noncomputable instance typed_pointsto'FuncFlag :
     TypedPointsto (GF := GF) internal.abi.FuncFlag :=
   sorry -- axiomatized type
 
-noncomputable instance FuncFlag_into_val_typed :
+noncomputable instance into_val_typed'FuncFlag :
     IntoValTypedUnderlying (GF := GF) internal.abi.FuncFlag internal.abi.FuncFlag.underlying :=
   sorry -- axiomatized type
 
@@ -347,11 +347,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance FuncID_typed_pointsto :
+noncomputable instance typed_pointsto'FuncID :
     TypedPointsto (GF := GF) internal.abi.FuncID :=
   sorry -- axiomatized type
 
-noncomputable instance FuncID_into_val_typed :
+noncomputable instance into_val_typed'FuncID :
     IntoValTypedUnderlying (GF := GF) internal.abi.FuncID internal.abi.FuncID.underlying :=
   sorry -- axiomatized type
 
@@ -366,7 +366,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance Type_typed_pointsto :
+noncomputable instance typed_pointsto'Type :
     TypedPointsto (GF := GF) internal.abi.Type'' where
   typedPointstoDef l v dq := iprop(
     "Size_" ∷ typedPointsto (structFieldRef internal.abi.Type'' go!"Size_" l) v.Size_' dq ∗
@@ -385,11 +385,11 @@ noncomputable instance Type_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance Type_into_val_typed :
+noncomputable instance into_val_typed'Type :
     IntoValTypedUnderlying (GF := GF) internal.abi.Type'' internal.abi.Type''.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance Type_access_load_Size_ (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
+noncomputable instance access_load'Type'Size_ (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Size_" l) v.Size_' dq)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Size_" l) v.Size_' dq)
@@ -397,7 +397,7 @@ noncomputable instance Type_access_load_Size_ (l : Loc) (v : internal.abi.Type''
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type_access_store_Size_ (l : Loc) (v : internal.abi.Type'') (y : w64) :
+noncomputable instance access_store'Type'Size_ (l : Loc) (v : internal.abi.Type'') (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Size_" l) v.Size_' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Size_" l) y (DFrac.own 1))
@@ -405,7 +405,7 @@ noncomputable instance Type_access_store_Size_ (l : Loc) (v : internal.abi.Type'
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type_access_load_PtrBytes (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
+noncomputable instance access_load'Type'PtrBytes (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"PtrBytes" l) v.PtrBytes' dq)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"PtrBytes" l) v.PtrBytes' dq)
@@ -413,7 +413,7 @@ noncomputable instance Type_access_load_PtrBytes (l : Loc) (v : internal.abi.Typ
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type_access_store_PtrBytes (l : Loc) (v : internal.abi.Type'') (y : w64) :
+noncomputable instance access_store'Type'PtrBytes (l : Loc) (v : internal.abi.Type'') (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"PtrBytes" l) v.PtrBytes' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.abi.Type'' go!"PtrBytes" l) y (DFrac.own 1))
@@ -421,7 +421,7 @@ noncomputable instance Type_access_store_PtrBytes (l : Loc) (v : internal.abi.Ty
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type_access_load_Hash (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
+noncomputable instance access_load'Type'Hash (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Hash" l) v.Hash' dq)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Hash" l) v.Hash' dq)
@@ -429,7 +429,7 @@ noncomputable instance Type_access_load_Hash (l : Loc) (v : internal.abi.Type'')
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type_access_store_Hash (l : Loc) (v : internal.abi.Type'') (y : w32) :
+noncomputable instance access_store'Type'Hash (l : Loc) (v : internal.abi.Type'') (y : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Hash" l) v.Hash' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Hash" l) y (DFrac.own 1))
@@ -437,7 +437,7 @@ noncomputable instance Type_access_store_Hash (l : Loc) (v : internal.abi.Type''
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type_access_load_TFlag (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
+noncomputable instance access_load'Type'TFlag (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"TFlag" l) v.TFlag' dq)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"TFlag" l) v.TFlag' dq)
@@ -445,7 +445,7 @@ noncomputable instance Type_access_load_TFlag (l : Loc) (v : internal.abi.Type''
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type_access_store_TFlag (l : Loc) (v : internal.abi.Type'') (y : internal.abi.TFlag) :
+noncomputable instance access_store'Type'TFlag (l : Loc) (v : internal.abi.Type'') (y : internal.abi.TFlag) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"TFlag" l) v.TFlag' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.abi.Type'' go!"TFlag" l) y (DFrac.own 1))
@@ -453,7 +453,7 @@ noncomputable instance Type_access_store_TFlag (l : Loc) (v : internal.abi.Type'
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type_access_load_Align_ (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
+noncomputable instance access_load'Type'Align_ (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Align_" l) v.Align_' dq)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Align_" l) v.Align_' dq)
@@ -461,7 +461,7 @@ noncomputable instance Type_access_load_Align_ (l : Loc) (v : internal.abi.Type'
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type_access_store_Align_ (l : Loc) (v : internal.abi.Type'') (y : w8) :
+noncomputable instance access_store'Type'Align_ (l : Loc) (v : internal.abi.Type'') (y : w8) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Align_" l) v.Align_' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Align_" l) y (DFrac.own 1))
@@ -469,7 +469,7 @@ noncomputable instance Type_access_store_Align_ (l : Loc) (v : internal.abi.Type
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type_access_load_FieldAlign_ (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
+noncomputable instance access_load'Type'FieldAlign_ (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"FieldAlign_" l) v.FieldAlign_' dq)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"FieldAlign_" l) v.FieldAlign_' dq)
@@ -477,7 +477,7 @@ noncomputable instance Type_access_load_FieldAlign_ (l : Loc) (v : internal.abi.
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type_access_store_FieldAlign_ (l : Loc) (v : internal.abi.Type'') (y : w8) :
+noncomputable instance access_store'Type'FieldAlign_ (l : Loc) (v : internal.abi.Type'') (y : w8) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"FieldAlign_" l) v.FieldAlign_' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.abi.Type'' go!"FieldAlign_" l) y (DFrac.own 1))
@@ -485,7 +485,7 @@ noncomputable instance Type_access_store_FieldAlign_ (l : Loc) (v : internal.abi
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type_access_load_Kind_ (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
+noncomputable instance access_load'Type'Kind_ (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Kind_" l) v.Kind_' dq)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Kind_" l) v.Kind_' dq)
@@ -493,7 +493,7 @@ noncomputable instance Type_access_load_Kind_ (l : Loc) (v : internal.abi.Type''
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type_access_store_Kind_ (l : Loc) (v : internal.abi.Type'') (y : internal.abi.Kind) :
+noncomputable instance access_store'Type'Kind_ (l : Loc) (v : internal.abi.Type'') (y : internal.abi.Kind) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Kind_" l) v.Kind_' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Kind_" l) y (DFrac.own 1))
@@ -501,7 +501,7 @@ noncomputable instance Type_access_store_Kind_ (l : Loc) (v : internal.abi.Type'
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type_access_load_Equal (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
+noncomputable instance access_load'Type'Equal (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Equal" l) v.Equal' dq)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Equal" l) v.Equal' dq)
@@ -509,7 +509,7 @@ noncomputable instance Type_access_load_Equal (l : Loc) (v : internal.abi.Type''
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type_access_store_Equal (l : Loc) (v : internal.abi.Type'') (y : GoFunc) :
+noncomputable instance access_store'Type'Equal (l : Loc) (v : internal.abi.Type'') (y : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Equal" l) v.Equal' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Equal" l) y (DFrac.own 1))
@@ -517,7 +517,7 @@ noncomputable instance Type_access_store_Equal (l : Loc) (v : internal.abi.Type'
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type_access_load_GCData (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
+noncomputable instance access_load'Type'GCData (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"GCData" l) v.GCData' dq)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"GCData" l) v.GCData' dq)
@@ -525,7 +525,7 @@ noncomputable instance Type_access_load_GCData (l : Loc) (v : internal.abi.Type'
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type_access_store_GCData (l : Loc) (v : internal.abi.Type'') (y : Loc) :
+noncomputable instance access_store'Type'GCData (l : Loc) (v : internal.abi.Type'') (y : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"GCData" l) v.GCData' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.abi.Type'' go!"GCData" l) y (DFrac.own 1))
@@ -533,7 +533,7 @@ noncomputable instance Type_access_store_GCData (l : Loc) (v : internal.abi.Type
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type_access_load_Str (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
+noncomputable instance access_load'Type'Str (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Str" l) v.Str' dq)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Str" l) v.Str' dq)
@@ -541,7 +541,7 @@ noncomputable instance Type_access_load_Str (l : Loc) (v : internal.abi.Type'') 
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type_access_store_Str (l : Loc) (v : internal.abi.Type'') (y : internal.abi.NameOff) :
+noncomputable instance access_store'Type'Str (l : Loc) (v : internal.abi.Type'') (y : internal.abi.NameOff) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Str" l) v.Str' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.abi.Type'' go!"Str" l) y (DFrac.own 1))
@@ -549,7 +549,7 @@ noncomputable instance Type_access_store_Str (l : Loc) (v : internal.abi.Type'')
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type_access_load_PtrToThis (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
+noncomputable instance access_load'Type'PtrToThis (l : Loc) (v : internal.abi.Type'') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"PtrToThis" l) v.PtrToThis' dq)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"PtrToThis" l) v.PtrToThis' dq)
@@ -557,7 +557,7 @@ noncomputable instance Type_access_load_PtrToThis (l : Loc) (v : internal.abi.Ty
  by
   solve_pointsto_access_struct
 
-noncomputable instance Type_access_store_PtrToThis (l : Loc) (v : internal.abi.Type'') (y : internal.abi.TypeOff) :
+noncomputable instance access_store'Type'PtrToThis (l : Loc) (v : internal.abi.Type'') (y : internal.abi.TypeOff) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.abi.Type'' go!"PtrToThis" l) v.PtrToThis' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.abi.Type'' go!"PtrToThis" l) y (DFrac.own 1))
@@ -576,11 +576,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance TextOff_typed_pointsto :
+noncomputable instance typed_pointsto'TextOff :
     TypedPointsto (GF := GF) internal.abi.TextOff :=
   sorry -- axiomatized type
 
-noncomputable instance TextOff_into_val_typed :
+noncomputable instance into_val_typed'TextOff :
     IntoValTypedUnderlying (GF := GF) internal.abi.TextOff internal.abi.TextOff.underlying :=
   sorry -- axiomatized type
 
@@ -595,11 +595,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance Method_typed_pointsto :
+noncomputable instance typed_pointsto'Method :
     TypedPointsto (GF := GF) internal.abi.Method :=
   sorry -- axiomatized type
 
-noncomputable instance Method_into_val_typed :
+noncomputable instance into_val_typed'Method :
     IntoValTypedUnderlying (GF := GF) internal.abi.Method internal.abi.Method.underlying :=
   sorry -- axiomatized type
 
@@ -614,11 +614,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance UncommonType_typed_pointsto :
+noncomputable instance typed_pointsto'UncommonType :
     TypedPointsto (GF := GF) internal.abi.UncommonType :=
   sorry -- axiomatized type
 
-noncomputable instance UncommonType_into_val_typed :
+noncomputable instance into_val_typed'UncommonType :
     IntoValTypedUnderlying (GF := GF) internal.abi.UncommonType internal.abi.UncommonType.underlying :=
   sorry -- axiomatized type
 
@@ -633,11 +633,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance Imethod_typed_pointsto :
+noncomputable instance typed_pointsto'Imethod :
     TypedPointsto (GF := GF) internal.abi.Imethod :=
   sorry -- axiomatized type
 
-noncomputable instance Imethod_into_val_typed :
+noncomputable instance into_val_typed'Imethod :
     IntoValTypedUnderlying (GF := GF) internal.abi.Imethod internal.abi.Imethod.underlying :=
   sorry -- axiomatized type
 
@@ -652,11 +652,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance ArrayType_typed_pointsto :
+noncomputable instance typed_pointsto'ArrayType :
     TypedPointsto (GF := GF) internal.abi.ArrayType :=
   sorry -- axiomatized type
 
-noncomputable instance ArrayType_into_val_typed :
+noncomputable instance into_val_typed'ArrayType :
     IntoValTypedUnderlying (GF := GF) internal.abi.ArrayType internal.abi.ArrayType.underlying :=
   sorry -- axiomatized type
 
@@ -671,11 +671,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance ChanDir_typed_pointsto :
+noncomputable instance typed_pointsto'ChanDir :
     TypedPointsto (GF := GF) internal.abi.ChanDir :=
   sorry -- axiomatized type
 
-noncomputable instance ChanDir_into_val_typed :
+noncomputable instance into_val_typed'ChanDir :
     IntoValTypedUnderlying (GF := GF) internal.abi.ChanDir internal.abi.ChanDir.underlying :=
   sorry -- axiomatized type
 
@@ -690,11 +690,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance ChanType_typed_pointsto :
+noncomputable instance typed_pointsto'ChanType :
     TypedPointsto (GF := GF) internal.abi.ChanType :=
   sorry -- axiomatized type
 
-noncomputable instance ChanType_into_val_typed :
+noncomputable instance into_val_typed'ChanType :
     IntoValTypedUnderlying (GF := GF) internal.abi.ChanType internal.abi.ChanType.underlying :=
   sorry -- axiomatized type
 
@@ -709,11 +709,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance structTypeUncommon_typed_pointsto :
+noncomputable instance typed_pointsto'structTypeUncommon :
     TypedPointsto (GF := GF) internal.abi.structTypeUncommon :=
   sorry -- axiomatized type
 
-noncomputable instance structTypeUncommon_into_val_typed :
+noncomputable instance into_val_typed'structTypeUncommon :
     IntoValTypedUnderlying (GF := GF) internal.abi.structTypeUncommon internal.abi.structTypeUncommon.underlying :=
   sorry -- axiomatized type
 
@@ -728,11 +728,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance InterfaceType_typed_pointsto :
+noncomputable instance typed_pointsto'InterfaceType :
     TypedPointsto (GF := GF) internal.abi.InterfaceType :=
   sorry -- axiomatized type
 
-noncomputable instance InterfaceType_into_val_typed :
+noncomputable instance into_val_typed'InterfaceType :
     IntoValTypedUnderlying (GF := GF) internal.abi.InterfaceType internal.abi.InterfaceType.underlying :=
   sorry -- axiomatized type
 
@@ -747,11 +747,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance SliceType_typed_pointsto :
+noncomputable instance typed_pointsto'SliceType :
     TypedPointsto (GF := GF) internal.abi.SliceType :=
   sorry -- axiomatized type
 
-noncomputable instance SliceType_into_val_typed :
+noncomputable instance into_val_typed'SliceType :
     IntoValTypedUnderlying (GF := GF) internal.abi.SliceType internal.abi.SliceType.underlying :=
   sorry -- axiomatized type
 
@@ -766,11 +766,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance FuncType_typed_pointsto :
+noncomputable instance typed_pointsto'FuncType :
     TypedPointsto (GF := GF) internal.abi.FuncType :=
   sorry -- axiomatized type
 
-noncomputable instance FuncType_into_val_typed :
+noncomputable instance into_val_typed'FuncType :
     IntoValTypedUnderlying (GF := GF) internal.abi.FuncType internal.abi.FuncType.underlying :=
   sorry -- axiomatized type
 
@@ -785,11 +785,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance PtrType_typed_pointsto :
+noncomputable instance typed_pointsto'PtrType :
     TypedPointsto (GF := GF) internal.abi.PtrType :=
   sorry -- axiomatized type
 
-noncomputable instance PtrType_into_val_typed :
+noncomputable instance into_val_typed'PtrType :
     IntoValTypedUnderlying (GF := GF) internal.abi.PtrType internal.abi.PtrType.underlying :=
   sorry -- axiomatized type
 
@@ -804,11 +804,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance StructField_typed_pointsto :
+noncomputable instance typed_pointsto'StructField :
     TypedPointsto (GF := GF) internal.abi.StructField :=
   sorry -- axiomatized type
 
-noncomputable instance StructField_into_val_typed :
+noncomputable instance into_val_typed'StructField :
     IntoValTypedUnderlying (GF := GF) internal.abi.StructField internal.abi.StructField.underlying :=
   sorry -- axiomatized type
 
@@ -823,11 +823,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance StructType_typed_pointsto :
+noncomputable instance typed_pointsto'StructType :
     TypedPointsto (GF := GF) internal.abi.StructType :=
   sorry -- axiomatized type
 
-noncomputable instance StructType_into_val_typed :
+noncomputable instance into_val_typed'StructType :
     IntoValTypedUnderlying (GF := GF) internal.abi.StructType internal.abi.StructType.underlying :=
   sorry -- axiomatized type
 
@@ -842,11 +842,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.abi.Assumptions]
 
-noncomputable instance Name_typed_pointsto :
+noncomputable instance typed_pointsto'Name :
     TypedPointsto (GF := GF) internal.abi.Name :=
   sorry -- axiomatized type
 
-noncomputable instance Name_into_val_typed :
+noncomputable instance into_val_typed'Name :
     IntoValTypedUnderlying (GF := GF) internal.abi.Name internal.abi.Name.underlying :=
   sorry -- axiomatized type
 

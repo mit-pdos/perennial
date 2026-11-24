@@ -31,7 +31,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : crypto.sha1.Assumptions]
 
-noncomputable instance digest_typed_pointsto :
+noncomputable instance typed_pointsto'digest :
     TypedPointsto (GF := GF) crypto.sha1.digest where
   typedPointstoDef l v dq := iprop(
     "h" ∷ typedPointsto (structFieldRef crypto.sha1.digest go!"h" l) v.h' dq ∗
@@ -43,11 +43,11 @@ noncomputable instance digest_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance digest_into_val_typed :
+noncomputable instance into_val_typed'digest :
     IntoValTypedUnderlying (GF := GF) crypto.sha1.digest crypto.sha1.digest.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance digest_access_load_h (l : Loc) (v : crypto.sha1.digest) (dq : DFrac) :
+noncomputable instance access_load'digest'h (l : Loc) (v : crypto.sha1.digest) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef crypto.sha1.digest go!"h" l) v.h' dq)
       (typedPointsto (structFieldRef crypto.sha1.digest go!"h" l) v.h' dq)
@@ -55,7 +55,7 @@ noncomputable instance digest_access_load_h (l : Loc) (v : crypto.sha1.digest) (
  by
   solve_pointsto_access_struct
 
-noncomputable instance digest_access_store_h (l : Loc) (v : crypto.sha1.digest) (y : (GoArray w32 5)) :
+noncomputable instance access_store'digest'h (l : Loc) (v : crypto.sha1.digest) (y : (GoArray w32 5)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef crypto.sha1.digest go!"h" l) v.h' (DFrac.own 1))
       (typedPointsto (structFieldRef crypto.sha1.digest go!"h" l) y (DFrac.own 1))
@@ -63,7 +63,7 @@ noncomputable instance digest_access_store_h (l : Loc) (v : crypto.sha1.digest) 
  by
   solve_pointsto_access_struct
 
-noncomputable instance digest_access_load_x (l : Loc) (v : crypto.sha1.digest) (dq : DFrac) :
+noncomputable instance access_load'digest'x (l : Loc) (v : crypto.sha1.digest) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef crypto.sha1.digest go!"x" l) v.x' dq)
       (typedPointsto (structFieldRef crypto.sha1.digest go!"x" l) v.x' dq)
@@ -71,7 +71,7 @@ noncomputable instance digest_access_load_x (l : Loc) (v : crypto.sha1.digest) (
  by
   solve_pointsto_access_struct
 
-noncomputable instance digest_access_store_x (l : Loc) (v : crypto.sha1.digest) (y : (GoArray w8 64)) :
+noncomputable instance access_store'digest'x (l : Loc) (v : crypto.sha1.digest) (y : (GoArray w8 64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef crypto.sha1.digest go!"x" l) v.x' (DFrac.own 1))
       (typedPointsto (structFieldRef crypto.sha1.digest go!"x" l) y (DFrac.own 1))
@@ -79,7 +79,7 @@ noncomputable instance digest_access_store_x (l : Loc) (v : crypto.sha1.digest) 
  by
   solve_pointsto_access_struct
 
-noncomputable instance digest_access_load_nx (l : Loc) (v : crypto.sha1.digest) (dq : DFrac) :
+noncomputable instance access_load'digest'nx (l : Loc) (v : crypto.sha1.digest) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef crypto.sha1.digest go!"nx" l) v.nx' dq)
       (typedPointsto (structFieldRef crypto.sha1.digest go!"nx" l) v.nx' dq)
@@ -87,7 +87,7 @@ noncomputable instance digest_access_load_nx (l : Loc) (v : crypto.sha1.digest) 
  by
   solve_pointsto_access_struct
 
-noncomputable instance digest_access_store_nx (l : Loc) (v : crypto.sha1.digest) (y : w64) :
+noncomputable instance access_store'digest'nx (l : Loc) (v : crypto.sha1.digest) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef crypto.sha1.digest go!"nx" l) v.nx' (DFrac.own 1))
       (typedPointsto (structFieldRef crypto.sha1.digest go!"nx" l) y (DFrac.own 1))
@@ -95,7 +95,7 @@ noncomputable instance digest_access_store_nx (l : Loc) (v : crypto.sha1.digest)
  by
   solve_pointsto_access_struct
 
-noncomputable instance digest_access_load_len (l : Loc) (v : crypto.sha1.digest) (dq : DFrac) :
+noncomputable instance access_load'digest'len (l : Loc) (v : crypto.sha1.digest) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef crypto.sha1.digest go!"len" l) v.len' dq)
       (typedPointsto (structFieldRef crypto.sha1.digest go!"len" l) v.len' dq)
@@ -103,7 +103,7 @@ noncomputable instance digest_access_load_len (l : Loc) (v : crypto.sha1.digest)
  by
   solve_pointsto_access_struct
 
-noncomputable instance digest_access_store_len (l : Loc) (v : crypto.sha1.digest) (y : w64) :
+noncomputable instance access_store'digest'len (l : Loc) (v : crypto.sha1.digest) (y : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef crypto.sha1.digest go!"len" l) v.len' (DFrac.own 1))
       (typedPointsto (structFieldRef crypto.sha1.digest go!"len" l) y (DFrac.own 1))

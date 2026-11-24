@@ -462,7 +462,7 @@ noncomputable instance PathError.zero_val [GooseExts] : ZeroVal PathError :=
 @[irreducible] noncomputable def PathError.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   PathError.fieldsUnsealed
 
-noncomputable instance equals_unfold_PathError [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'PathError [GooseExts] [GoGlobalContext] :
     EqualsUnfold PathError.fields PathError.fieldsUnsealed :=
   ⟨by unfold PathError.fields; rfl⟩
 
@@ -472,23 +472,23 @@ noncomputable instance equals_unfold_PathError [GooseExts] [GoGlobalContext] :
 class PathError.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying PathError.underlying PathError
   underlying : go.UnderlyingDirectedEq PathError.ty PathError.underlying
-  get_Op : ∀ (x : PathError), go.IsGoStepPureDetTagged under (StructFieldGet PathError.underlying go!"Op") #x (Val #(x.Op'))
-  set_Op : ∀ (x : PathError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet PathError.underlying go!"Op") (PairV #x #y) (Val #(({ x with Op' := y } : PathError)))
-  get_Path : ∀ (x : PathError), go.IsGoStepPureDetTagged under (StructFieldGet PathError.underlying go!"Path") #x (Val #(x.Path'))
-  set_Path : ∀ (x : PathError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet PathError.underlying go!"Path") (PairV #x #y) (Val #(({ x with Path' := y } : PathError)))
-  get_Err : ∀ (x : PathError), go.IsGoStepPureDetTagged under (StructFieldGet PathError.underlying go!"Err") #x (Val #(x.Err'))
-  set_Err : ∀ (x : PathError) (y : GoError), go.IsGoStepPureDetTagged under (StructFieldSet PathError.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : PathError)))
+  get'Op : ∀ (x : PathError), go.IsGoStepPureDetTagged under (StructFieldGet PathError.underlying go!"Op") #x (Val #(x.Op'))
+  set'Op : ∀ (x : PathError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet PathError.underlying go!"Op") (PairV #x #y) (Val #(({ x with Op' := y } : PathError)))
+  get'Path : ∀ (x : PathError), go.IsGoStepPureDetTagged under (StructFieldGet PathError.underlying go!"Path") #x (Val #(x.Path'))
+  set'Path : ∀ (x : PathError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet PathError.underlying go!"Path") (PairV #x #y) (Val #(({ x with Path' := y } : PathError)))
+  get'Err : ∀ (x : PathError), go.IsGoStepPureDetTagged under (StructFieldGet PathError.underlying go!"Err") #x (Val #(x.Err'))
+  set'Err : ∀ (x : PathError) (y : GoError), go.IsGoStepPureDetTagged under (StructFieldSet PathError.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : PathError)))
   method_set : go.MethodSetIs PathError.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType PathError.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"Timeout", (some (go.signature.Signature [] false [go.bool]))), (go!"Unwrap", (some (go.signature.Signature [] false [go.error])))]
 
 attribute [instance] PathError.TypeAssumptions.type_repr
   PathError.TypeAssumptions.underlying
-  PathError.TypeAssumptions.get_Op
-  PathError.TypeAssumptions.set_Op
-  PathError.TypeAssumptions.get_Path
-  PathError.TypeAssumptions.set_Path
-  PathError.TypeAssumptions.get_Err
-  PathError.TypeAssumptions.set_Err
+  PathError.TypeAssumptions.get'Op
+  PathError.TypeAssumptions.set'Op
+  PathError.TypeAssumptions.get'Path
+  PathError.TypeAssumptions.set'Path
+  PathError.TypeAssumptions.get'Err
+  PathError.TypeAssumptions.set'Err
   PathError.TypeAssumptions.method_set
   PathError.TypeAssumptions.ptr_method_set
 
@@ -533,7 +533,7 @@ noncomputable instance dirInfo.zero_val [GooseExts] : ZeroVal dirInfo :=
 @[irreducible] noncomputable def dirInfo.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   dirInfo.fieldsUnsealed
 
-noncomputable instance equals_unfold_dirInfo [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'dirInfo [GooseExts] [GoGlobalContext] :
     EqualsUnfold dirInfo.fields dirInfo.fieldsUnsealed :=
   ⟨by unfold dirInfo.fields; rfl⟩
 
@@ -543,15 +543,15 @@ noncomputable instance equals_unfold_dirInfo [GooseExts] [GoGlobalContext] :
 class dirInfo.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying dirInfo.underlying dirInfo
   underlying : go.UnderlyingDirectedEq dirInfo.ty dirInfo.underlying
-  get_fileInfo : ∀ (x : dirInfo), go.IsGoStepPureDetTagged under (StructFieldGet dirInfo.underlying go!"fileInfo") #x (Val #(x.fileInfo'))
-  set_fileInfo : ∀ (x : dirInfo) (y : FileInfo), go.IsGoStepPureDetTagged under (StructFieldSet dirInfo.underlying go!"fileInfo") (PairV #x #y) (Val #(({ x with fileInfo' := y } : dirInfo)))
+  get'fileInfo : ∀ (x : dirInfo), go.IsGoStepPureDetTagged under (StructFieldGet dirInfo.underlying go!"fileInfo") #x (Val #(x.fileInfo'))
+  set'fileInfo : ∀ (x : dirInfo) (y : FileInfo), go.IsGoStepPureDetTagged under (StructFieldSet dirInfo.underlying go!"fileInfo") (PairV #x #y) (Val #(({ x with fileInfo' := y } : dirInfo)))
   method_set : go.MethodSetIs dirInfo.ty [(go!"Info", (some (go.signature.Signature [] false [FileInfo.ty, go.error]))), (go!"IsDir", (some (go.signature.Signature [] false [go.bool]))), (go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Type", (some (go.signature.Signature [] false [FileMode.ty])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType dirInfo.ty) [(go!"Info", (some (go.signature.Signature [] false [FileInfo.ty, go.error]))), (go!"IsDir", (some (go.signature.Signature [] false [go.bool]))), (go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Type", (some (go.signature.Signature [] false [FileMode.ty])))]
 
 attribute [instance] dirInfo.TypeAssumptions.type_repr
   dirInfo.TypeAssumptions.underlying
-  dirInfo.TypeAssumptions.get_fileInfo
-  dirInfo.TypeAssumptions.set_fileInfo
+  dirInfo.TypeAssumptions.get'fileInfo
+  dirInfo.TypeAssumptions.set'fileInfo
   dirInfo.TypeAssumptions.method_set
   dirInfo.TypeAssumptions.ptr_method_set
 
@@ -626,7 +626,7 @@ noncomputable instance subFS.zero_val [GooseExts] : ZeroVal subFS :=
 @[irreducible] noncomputable def subFS.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   subFS.fieldsUnsealed
 
-noncomputable instance equals_unfold_subFS [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'subFS [GooseExts] [GoGlobalContext] :
     EqualsUnfold subFS.fields subFS.fieldsUnsealed :=
   ⟨by unfold subFS.fields; rfl⟩
 
@@ -636,19 +636,19 @@ noncomputable instance equals_unfold_subFS [GooseExts] [GoGlobalContext] :
 class subFS.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying subFS.underlying subFS
   underlying : go.UnderlyingDirectedEq subFS.ty subFS.underlying
-  get_fsys : ∀ (x : subFS), go.IsGoStepPureDetTagged under (StructFieldGet subFS.underlying go!"fsys") #x (Val #(x.fsys'))
-  set_fsys : ∀ (x : subFS) (y : FS), go.IsGoStepPureDetTagged under (StructFieldSet subFS.underlying go!"fsys") (PairV #x #y) (Val #(({ x with fsys' := y } : subFS)))
-  get_dir : ∀ (x : subFS), go.IsGoStepPureDetTagged under (StructFieldGet subFS.underlying go!"dir") #x (Val #(x.dir'))
-  set_dir : ∀ (x : subFS) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet subFS.underlying go!"dir") (PairV #x #y) (Val #(({ x with dir' := y } : subFS)))
+  get'fsys : ∀ (x : subFS), go.IsGoStepPureDetTagged under (StructFieldGet subFS.underlying go!"fsys") #x (Val #(x.fsys'))
+  set'fsys : ∀ (x : subFS) (y : FS), go.IsGoStepPureDetTagged under (StructFieldSet subFS.underlying go!"fsys") (PairV #x #y) (Val #(({ x with fsys' := y } : subFS)))
+  get'dir : ∀ (x : subFS), go.IsGoStepPureDetTagged under (StructFieldGet subFS.underlying go!"dir") #x (Val #(x.dir'))
+  set'dir : ∀ (x : subFS) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet subFS.underlying go!"dir") (PairV #x #y) (Val #(({ x with dir' := y } : subFS)))
   method_set : go.MethodSetIs subFS.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType subFS.ty) [(go!"Glob", (some (go.signature.Signature [go.string] false [(go.GoType.SliceType go.string), go.error]))), (go!"Lstat", (some (go.signature.Signature [go.string] false [FileInfo.ty, go.error]))), (go!"Open", (some (go.signature.Signature [go.string] false [File.ty, go.error]))), (go!"ReadDir", (some (go.signature.Signature [go.string] false [(go.GoType.SliceType DirEntry.ty), go.error]))), (go!"ReadFile", (some (go.signature.Signature [go.string] false [(go.GoType.SliceType go.byte), go.error]))), (go!"ReadLink", (some (go.signature.Signature [go.string] false [go.string, go.error]))), (go!"Sub", (some (go.signature.Signature [go.string] false [FS.ty, go.error]))), (go!"io/fs.fixErr", (some (go.signature.Signature [go.error] false [go.error]))), (go!"io/fs.fullName", (some (go.signature.Signature [go.string, go.string] false [go.string, go.error]))), (go!"io/fs.shorten", (some (go.signature.Signature [go.string] false [go.string, go.bool])))]
 
 attribute [instance] subFS.TypeAssumptions.type_repr
   subFS.TypeAssumptions.underlying
-  subFS.TypeAssumptions.get_fsys
-  subFS.TypeAssumptions.set_fsys
-  subFS.TypeAssumptions.get_dir
-  subFS.TypeAssumptions.set_dir
+  subFS.TypeAssumptions.get'fsys
+  subFS.TypeAssumptions.set'fsys
+  subFS.TypeAssumptions.get'dir
+  subFS.TypeAssumptions.set'dir
   subFS.TypeAssumptions.method_set
   subFS.TypeAssumptions.ptr_method_set
 
@@ -667,57 +667,57 @@ attribute [instance] WalkDirFunc.TypeAssumptions.underlying
   WalkDirFunc.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  FS_instance : FS.TypeAssumptions
-  File_instance : File.TypeAssumptions
-  DirEntry_instance : DirEntry.TypeAssumptions
-  ReadDirFile_instance : ReadDirFile.TypeAssumptions
-  FileInfo_instance : FileInfo.TypeAssumptions
-  FileMode_instance : FileMode.TypeAssumptions
-  PathError_instance : PathError.TypeAssumptions
-  GlobFS_instance : GlobFS.TypeAssumptions
-  ReadDirFS_instance : ReadDirFS.TypeAssumptions
-  dirInfo_instance : dirInfo.TypeAssumptions
-  ReadFileFS_instance : ReadFileFS.TypeAssumptions
-  ReadLinkFS_instance : ReadLinkFS.TypeAssumptions
-  StatFS_instance : StatFS.TypeAssumptions
-  SubFS_instance : SubFS.TypeAssumptions
-  subFS_instance : subFS.TypeAssumptions
-  WalkDirFunc_instance : WalkDirFunc.TypeAssumptions
-  errInvalid_unfold : FuncUnfold errInvalid [] errInvalid.impl
-  errPermission_unfold : FuncUnfold errPermission [] errPermission.impl
-  errExist_unfold : FuncUnfold errExist [] errExist.impl
-  errNotExist_unfold : FuncUnfold errNotExist [] errNotExist.impl
-  errClosed_unfold : FuncUnfold errClosed [] errClosed.impl
-  import_time_Assumption : _root_.Perennial.time.Assumptions
-  import_oserror_Assumption : _root_.Perennial.internal.oserror.Assumptions
-  import_errors_Assumption : _root_.Perennial.errors.Assumptions
-  import_io_Assumption : _root_.Perennial.io.Assumptions
+  instance'FS : FS.TypeAssumptions
+  instance'File : File.TypeAssumptions
+  instance'DirEntry : DirEntry.TypeAssumptions
+  instance'ReadDirFile : ReadDirFile.TypeAssumptions
+  instance'FileInfo : FileInfo.TypeAssumptions
+  instance'FileMode : FileMode.TypeAssumptions
+  instance'PathError : PathError.TypeAssumptions
+  instance'GlobFS : GlobFS.TypeAssumptions
+  instance'ReadDirFS : ReadDirFS.TypeAssumptions
+  instance'dirInfo : dirInfo.TypeAssumptions
+  instance'ReadFileFS : ReadFileFS.TypeAssumptions
+  instance'ReadLinkFS : ReadLinkFS.TypeAssumptions
+  instance'StatFS : StatFS.TypeAssumptions
+  instance'SubFS : SubFS.TypeAssumptions
+  instance'subFS : subFS.TypeAssumptions
+  instance'WalkDirFunc : WalkDirFunc.TypeAssumptions
+  unfold'errInvalid : FuncUnfold errInvalid [] errInvalid.impl
+  unfold'errPermission : FuncUnfold errPermission [] errPermission.impl
+  unfold'errExist : FuncUnfold errExist [] errExist.impl
+  unfold'errNotExist : FuncUnfold errNotExist [] errNotExist.impl
+  unfold'errClosed : FuncUnfold errClosed [] errClosed.impl
+  import'time : _root_.Perennial.time.Assumptions
+  import'oserror : _root_.Perennial.internal.oserror.Assumptions
+  import'errors : _root_.Perennial.errors.Assumptions
+  import'io : _root_.Perennial.io.Assumptions
 
-attribute [instance] Assumptions.FS_instance
-  Assumptions.File_instance
-  Assumptions.DirEntry_instance
-  Assumptions.ReadDirFile_instance
-  Assumptions.FileInfo_instance
-  Assumptions.FileMode_instance
-  Assumptions.PathError_instance
-  Assumptions.GlobFS_instance
-  Assumptions.ReadDirFS_instance
-  Assumptions.dirInfo_instance
-  Assumptions.ReadFileFS_instance
-  Assumptions.ReadLinkFS_instance
-  Assumptions.StatFS_instance
-  Assumptions.SubFS_instance
-  Assumptions.subFS_instance
-  Assumptions.WalkDirFunc_instance
-  Assumptions.errInvalid_unfold
-  Assumptions.errPermission_unfold
-  Assumptions.errExist_unfold
-  Assumptions.errNotExist_unfold
-  Assumptions.errClosed_unfold
-  Assumptions.import_time_Assumption
-  Assumptions.import_oserror_Assumption
-  Assumptions.import_errors_Assumption
-  Assumptions.import_io_Assumption
+attribute [instance] Assumptions.instance'FS
+  Assumptions.instance'File
+  Assumptions.instance'DirEntry
+  Assumptions.instance'ReadDirFile
+  Assumptions.instance'FileInfo
+  Assumptions.instance'FileMode
+  Assumptions.instance'PathError
+  Assumptions.instance'GlobFS
+  Assumptions.instance'ReadDirFS
+  Assumptions.instance'dirInfo
+  Assumptions.instance'ReadFileFS
+  Assumptions.instance'ReadLinkFS
+  Assumptions.instance'StatFS
+  Assumptions.instance'SubFS
+  Assumptions.instance'subFS
+  Assumptions.instance'WalkDirFunc
+  Assumptions.unfold'errInvalid
+  Assumptions.unfold'errPermission
+  Assumptions.unfold'errExist
+  Assumptions.unfold'errNotExist
+  Assumptions.unfold'errClosed
+  Assumptions.import'time
+  Assumptions.import'oserror
+  Assumptions.import'errors
+  Assumptions.import'io
 
 end io.fs
 

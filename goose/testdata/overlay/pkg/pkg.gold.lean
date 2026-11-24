@@ -93,7 +93,7 @@ noncomputable instance Counter.zero_val [GooseExts] : ZeroVal Counter :=
 @[irreducible] noncomputable def Counter.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Counter.fieldsUnsealed
 
-noncomputable instance equals_unfold_Counter [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Counter [GooseExts] [GoGlobalContext] :
     EqualsUnfold Counter.fields Counter.fieldsUnsealed :=
   ⟨by unfold Counter.fields; rfl⟩
 
@@ -103,28 +103,28 @@ noncomputable instance equals_unfold_Counter [GooseExts] [GoGlobalContext] :
 class Counter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Counter.underlying Counter
   underlying : go.UnderlyingDirectedEq Counter.ty Counter.underlying
-  get_n : ∀ (x : Counter), go.IsGoStepPureDetTagged under (StructFieldGet Counter.underlying go!"n") #x (Val #(x.n'))
-  set_n : ∀ (x : Counter) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Counter.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : Counter)))
+  get'n : ∀ (x : Counter), go.IsGoStepPureDetTagged under (StructFieldGet Counter.underlying go!"n") #x (Val #(x.n'))
+  set'n : ∀ (x : Counter) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Counter.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : Counter)))
   method_set : go.MethodSetIs Counter.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Counter.ty) [(go!"Get", (some (go.signature.Signature [] false [go.uint64]))), (go!"Inc", (some (go.signature.Signature [] false [])))]
-  ptr_Get_unfold : MethodUnfold (go.GoType.PointerType Counter.ty) go!"Get" Counter.Get.impl
-  ptr_Inc_unfold : MethodUnfold (go.GoType.PointerType Counter.ty) go!"Inc" Counter.Inc.impl
+  ptr_unfold'Get : MethodUnfold (go.GoType.PointerType Counter.ty) go!"Get" Counter.Get.impl
+  ptr_unfold'Inc : MethodUnfold (go.GoType.PointerType Counter.ty) go!"Inc" Counter.Inc.impl
 
 attribute [instance] Counter.TypeAssumptions.type_repr
   Counter.TypeAssumptions.underlying
-  Counter.TypeAssumptions.get_n
-  Counter.TypeAssumptions.set_n
+  Counter.TypeAssumptions.get'n
+  Counter.TypeAssumptions.set'n
   Counter.TypeAssumptions.method_set
   Counter.TypeAssumptions.ptr_method_set
-  Counter.TypeAssumptions.ptr_Get_unfold
-  Counter.TypeAssumptions.ptr_Inc_unfold
+  Counter.TypeAssumptions.ptr_unfold'Get
+  Counter.TypeAssumptions.ptr_unfold'Inc
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Counter_instance : Counter.TypeAssumptions
-  Version_unfold : FuncUnfold Version [] Version.impl
+  instance'Counter : Counter.TypeAssumptions
+  unfold'Version : FuncUnfold Version [] Version.impl
 
-attribute [instance] Assumptions.Counter_instance
-  Assumptions.Version_unfold
+attribute [instance] Assumptions.instance'Counter
+  Assumptions.unfold'Version
 
 end github_com.mit_pdos.perennial.goose.testdata.overlay.pkg
 

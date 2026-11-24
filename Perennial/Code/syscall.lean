@@ -20,183 +20,183 @@ noncomputable section
 namespace syscall
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  SysProcIDMap_instance : SysProcIDMap.TypeAssumptions
-  SysProcAttr_instance : SysProcAttr.TypeAssumptions
-  capHeader_instance : capHeader.TypeAssumptions
-  capData_instance : capData.TypeAssumptions
-  caps_instance : caps.TypeAssumptions
-  cloneArgs_instance : cloneArgs.TypeAssumptions
-  Credential_instance : Credential.TypeAssumptions
-  ProcAttr_instance : ProcAttr.TypeAssumptions
-  iflags_instance : iflags.TypeAssumptions
-  RawConn_instance : RawConn.TypeAssumptions
-  Conn_instance : Conn.TypeAssumptions
-  NetlinkRouteRequest_instance : NetlinkRouteRequest.TypeAssumptions
-  NetlinkMessage_instance : NetlinkMessage.TypeAssumptions
-  NetlinkRouteAttr_instance : NetlinkRouteAttr.TypeAssumptions
-  SocketControlMessage_instance : SocketControlMessage.TypeAssumptions
-  WaitStatus_instance : WaitStatus.TypeAssumptions
-  SockaddrLinklayer_instance : SockaddrLinklayer.TypeAssumptions
-  SockaddrNetlink_instance : SockaddrNetlink.TypeAssumptions
-  mmapper_instance : mmapper.TypeAssumptions
-  Errno_instance : Errno.TypeAssumptions
-  Signal_instance : Signal.TypeAssumptions
-  Sockaddr_instance : Sockaddr.TypeAssumptions
-  SockaddrInet4_instance : SockaddrInet4.TypeAssumptions
-  SockaddrInet6_instance : SockaddrInet6.TypeAssumptions
-  SockaddrUnix_instance : SockaddrUnix.TypeAssumptions
-  _C_short_instance : _C_short.TypeAssumptions
-  _C_int_instance : _C_int.TypeAssumptions
-  _C_long_instance : _C_long.TypeAssumptions
-  _C_long_long_instance : _C_long_long.TypeAssumptions
-  Timespec_instance : Timespec.TypeAssumptions
-  Timeval_instance : Timeval.TypeAssumptions
-  Timex_instance : Timex.TypeAssumptions
-  Time_t_instance : Time_t.TypeAssumptions
-  Tms_instance : Tms.TypeAssumptions
-  Utimbuf_instance : Utimbuf.TypeAssumptions
-  Rusage_instance : Rusage.TypeAssumptions
-  Rlimit_instance : Rlimit.TypeAssumptions
-  _Gid_t_instance : _Gid_t.TypeAssumptions
-  Stat_t_instance : Stat_t.TypeAssumptions
-  Statfs_t_instance : Statfs_t.TypeAssumptions
-  Dirent_instance : Dirent.TypeAssumptions
-  Fsid_instance : Fsid.TypeAssumptions
-  Flock_t_instance : Flock_t.TypeAssumptions
-  RawSockaddrInet4_instance : RawSockaddrInet4.TypeAssumptions
-  RawSockaddrInet6_instance : RawSockaddrInet6.TypeAssumptions
-  RawSockaddrUnix_instance : RawSockaddrUnix.TypeAssumptions
-  RawSockaddrLinklayer_instance : RawSockaddrLinklayer.TypeAssumptions
-  RawSockaddrNetlink_instance : RawSockaddrNetlink.TypeAssumptions
-  RawSockaddr_instance : RawSockaddr.TypeAssumptions
-  RawSockaddrAny_instance : RawSockaddrAny.TypeAssumptions
-  _Socklen_instance : _Socklen.TypeAssumptions
-  Linger_instance : Linger.TypeAssumptions
-  Iovec_instance : Iovec.TypeAssumptions
-  IPMreq_instance : IPMreq.TypeAssumptions
-  IPMreqn_instance : IPMreqn.TypeAssumptions
-  IPv6Mreq_instance : IPv6Mreq.TypeAssumptions
-  Msghdr_instance : Msghdr.TypeAssumptions
-  Cmsghdr_instance : Cmsghdr.TypeAssumptions
-  Inet4Pktinfo_instance : Inet4Pktinfo.TypeAssumptions
-  Inet6Pktinfo_instance : Inet6Pktinfo.TypeAssumptions
-  IPv6MTUInfo_instance : IPv6MTUInfo.TypeAssumptions
-  ICMPv6Filter_instance : ICMPv6Filter.TypeAssumptions
-  Ucred_instance : Ucred.TypeAssumptions
-  TCPInfo_instance : TCPInfo.TypeAssumptions
-  NlMsghdr_instance : NlMsghdr.TypeAssumptions
-  NlMsgerr_instance : NlMsgerr.TypeAssumptions
-  RtGenmsg_instance : RtGenmsg.TypeAssumptions
-  NlAttr_instance : NlAttr.TypeAssumptions
-  RtAttr_instance : RtAttr.TypeAssumptions
-  IfInfomsg_instance : IfInfomsg.TypeAssumptions
-  IfAddrmsg_instance : IfAddrmsg.TypeAssumptions
-  RtMsg_instance : RtMsg.TypeAssumptions
-  RtNexthop_instance : RtNexthop.TypeAssumptions
-  SockFilter_instance : SockFilter.TypeAssumptions
-  SockFprog_instance : SockFprog.TypeAssumptions
-  InotifyEvent_instance : InotifyEvent.TypeAssumptions
-  PtraceRegs_instance : PtraceRegs.TypeAssumptions
-  FdSet_instance : FdSet.TypeAssumptions
-  Sysinfo_t_instance : Sysinfo_t.TypeAssumptions
-  Utsname_instance : Utsname.TypeAssumptions
-  Ustat_t_instance : Ustat_t.TypeAssumptions
-  EpollEvent_instance : EpollEvent.TypeAssumptions
-  pollFd_instance : pollFd.TypeAssumptions
-  Termios_instance : Termios.TypeAssumptions
-  runtime_envs_unfold : FuncUnfold runtime_envs [] runtime_envs.impl
-  «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
-  Exit_unfold : FuncUnfold Exit [] Exit.impl
-  import_sync_Assumption : _root_.Perennial.sync.Assumptions
+  instance'SysProcIDMap : SysProcIDMap.TypeAssumptions
+  instance'SysProcAttr : SysProcAttr.TypeAssumptions
+  instance'capHeader : capHeader.TypeAssumptions
+  instance'capData : capData.TypeAssumptions
+  instance'caps : caps.TypeAssumptions
+  instance'cloneArgs : cloneArgs.TypeAssumptions
+  instance'Credential : Credential.TypeAssumptions
+  instance'ProcAttr : ProcAttr.TypeAssumptions
+  instance'iflags : iflags.TypeAssumptions
+  instance'RawConn : RawConn.TypeAssumptions
+  instance'Conn : Conn.TypeAssumptions
+  instance'NetlinkRouteRequest : NetlinkRouteRequest.TypeAssumptions
+  instance'NetlinkMessage : NetlinkMessage.TypeAssumptions
+  instance'NetlinkRouteAttr : NetlinkRouteAttr.TypeAssumptions
+  instance'SocketControlMessage : SocketControlMessage.TypeAssumptions
+  instance'WaitStatus : WaitStatus.TypeAssumptions
+  instance'SockaddrLinklayer : SockaddrLinklayer.TypeAssumptions
+  instance'SockaddrNetlink : SockaddrNetlink.TypeAssumptions
+  instance'mmapper : mmapper.TypeAssumptions
+  instance'Errno : Errno.TypeAssumptions
+  instance'Signal : Signal.TypeAssumptions
+  instance'Sockaddr : Sockaddr.TypeAssumptions
+  instance'SockaddrInet4 : SockaddrInet4.TypeAssumptions
+  instance'SockaddrInet6 : SockaddrInet6.TypeAssumptions
+  instance'SockaddrUnix : SockaddrUnix.TypeAssumptions
+  instance'_C_short : _C_short.TypeAssumptions
+  instance'_C_int : _C_int.TypeAssumptions
+  instance'_C_long : _C_long.TypeAssumptions
+  instance'_C_long_long : _C_long_long.TypeAssumptions
+  instance'Timespec : Timespec.TypeAssumptions
+  instance'Timeval : Timeval.TypeAssumptions
+  instance'Timex : Timex.TypeAssumptions
+  instance'Time_t : Time_t.TypeAssumptions
+  instance'Tms : Tms.TypeAssumptions
+  instance'Utimbuf : Utimbuf.TypeAssumptions
+  instance'Rusage : Rusage.TypeAssumptions
+  instance'Rlimit : Rlimit.TypeAssumptions
+  instance'_Gid_t : _Gid_t.TypeAssumptions
+  instance'Stat_t : Stat_t.TypeAssumptions
+  instance'Statfs_t : Statfs_t.TypeAssumptions
+  instance'Dirent : Dirent.TypeAssumptions
+  instance'Fsid : Fsid.TypeAssumptions
+  instance'Flock_t : Flock_t.TypeAssumptions
+  instance'RawSockaddrInet4 : RawSockaddrInet4.TypeAssumptions
+  instance'RawSockaddrInet6 : RawSockaddrInet6.TypeAssumptions
+  instance'RawSockaddrUnix : RawSockaddrUnix.TypeAssumptions
+  instance'RawSockaddrLinklayer : RawSockaddrLinklayer.TypeAssumptions
+  instance'RawSockaddrNetlink : RawSockaddrNetlink.TypeAssumptions
+  instance'RawSockaddr : RawSockaddr.TypeAssumptions
+  instance'RawSockaddrAny : RawSockaddrAny.TypeAssumptions
+  instance'_Socklen : _Socklen.TypeAssumptions
+  instance'Linger : Linger.TypeAssumptions
+  instance'Iovec : Iovec.TypeAssumptions
+  instance'IPMreq : IPMreq.TypeAssumptions
+  instance'IPMreqn : IPMreqn.TypeAssumptions
+  instance'IPv6Mreq : IPv6Mreq.TypeAssumptions
+  instance'Msghdr : Msghdr.TypeAssumptions
+  instance'Cmsghdr : Cmsghdr.TypeAssumptions
+  instance'Inet4Pktinfo : Inet4Pktinfo.TypeAssumptions
+  instance'Inet6Pktinfo : Inet6Pktinfo.TypeAssumptions
+  instance'IPv6MTUInfo : IPv6MTUInfo.TypeAssumptions
+  instance'ICMPv6Filter : ICMPv6Filter.TypeAssumptions
+  instance'Ucred : Ucred.TypeAssumptions
+  instance'TCPInfo : TCPInfo.TypeAssumptions
+  instance'NlMsghdr : NlMsghdr.TypeAssumptions
+  instance'NlMsgerr : NlMsgerr.TypeAssumptions
+  instance'RtGenmsg : RtGenmsg.TypeAssumptions
+  instance'NlAttr : NlAttr.TypeAssumptions
+  instance'RtAttr : RtAttr.TypeAssumptions
+  instance'IfInfomsg : IfInfomsg.TypeAssumptions
+  instance'IfAddrmsg : IfAddrmsg.TypeAssumptions
+  instance'RtMsg : RtMsg.TypeAssumptions
+  instance'RtNexthop : RtNexthop.TypeAssumptions
+  instance'SockFilter : SockFilter.TypeAssumptions
+  instance'SockFprog : SockFprog.TypeAssumptions
+  instance'InotifyEvent : InotifyEvent.TypeAssumptions
+  instance'PtraceRegs : PtraceRegs.TypeAssumptions
+  instance'FdSet : FdSet.TypeAssumptions
+  instance'Sysinfo_t : Sysinfo_t.TypeAssumptions
+  instance'Utsname : Utsname.TypeAssumptions
+  instance'Ustat_t : Ustat_t.TypeAssumptions
+  instance'EpollEvent : EpollEvent.TypeAssumptions
+  instance'pollFd : pollFd.TypeAssumptions
+  instance'Termios : Termios.TypeAssumptions
+  unfold'runtime_envs : FuncUnfold runtime_envs [] runtime_envs.impl
+  «unfold'init.0» : FuncUnfold init.«0» [] init.«0».impl
+  unfold'Exit : FuncUnfold Exit [] Exit.impl
+  import'sync : _root_.Perennial.sync.Assumptions
 
-attribute [instance] Assumptions.SysProcIDMap_instance
-  Assumptions.SysProcAttr_instance
-  Assumptions.capHeader_instance
-  Assumptions.capData_instance
-  Assumptions.caps_instance
-  Assumptions.cloneArgs_instance
-  Assumptions.Credential_instance
-  Assumptions.ProcAttr_instance
-  Assumptions.iflags_instance
-  Assumptions.RawConn_instance
-  Assumptions.Conn_instance
-  Assumptions.NetlinkRouteRequest_instance
-  Assumptions.NetlinkMessage_instance
-  Assumptions.NetlinkRouteAttr_instance
-  Assumptions.SocketControlMessage_instance
-  Assumptions.WaitStatus_instance
-  Assumptions.SockaddrLinklayer_instance
-  Assumptions.SockaddrNetlink_instance
-  Assumptions.mmapper_instance
-  Assumptions.Errno_instance
-  Assumptions.Signal_instance
-  Assumptions.Sockaddr_instance
-  Assumptions.SockaddrInet4_instance
-  Assumptions.SockaddrInet6_instance
-  Assumptions.SockaddrUnix_instance
-  Assumptions._C_short_instance
-  Assumptions._C_int_instance
-  Assumptions._C_long_instance
-  Assumptions._C_long_long_instance
-  Assumptions.Timespec_instance
-  Assumptions.Timeval_instance
-  Assumptions.Timex_instance
-  Assumptions.Time_t_instance
-  Assumptions.Tms_instance
-  Assumptions.Utimbuf_instance
-  Assumptions.Rusage_instance
-  Assumptions.Rlimit_instance
-  Assumptions._Gid_t_instance
-  Assumptions.Stat_t_instance
-  Assumptions.Statfs_t_instance
-  Assumptions.Dirent_instance
-  Assumptions.Fsid_instance
-  Assumptions.Flock_t_instance
-  Assumptions.RawSockaddrInet4_instance
-  Assumptions.RawSockaddrInet6_instance
-  Assumptions.RawSockaddrUnix_instance
-  Assumptions.RawSockaddrLinklayer_instance
-  Assumptions.RawSockaddrNetlink_instance
-  Assumptions.RawSockaddr_instance
-  Assumptions.RawSockaddrAny_instance
-  Assumptions._Socklen_instance
-  Assumptions.Linger_instance
-  Assumptions.Iovec_instance
-  Assumptions.IPMreq_instance
-  Assumptions.IPMreqn_instance
-  Assumptions.IPv6Mreq_instance
-  Assumptions.Msghdr_instance
-  Assumptions.Cmsghdr_instance
-  Assumptions.Inet4Pktinfo_instance
-  Assumptions.Inet6Pktinfo_instance
-  Assumptions.IPv6MTUInfo_instance
-  Assumptions.ICMPv6Filter_instance
-  Assumptions.Ucred_instance
-  Assumptions.TCPInfo_instance
-  Assumptions.NlMsghdr_instance
-  Assumptions.NlMsgerr_instance
-  Assumptions.RtGenmsg_instance
-  Assumptions.NlAttr_instance
-  Assumptions.RtAttr_instance
-  Assumptions.IfInfomsg_instance
-  Assumptions.IfAddrmsg_instance
-  Assumptions.RtMsg_instance
-  Assumptions.RtNexthop_instance
-  Assumptions.SockFilter_instance
-  Assumptions.SockFprog_instance
-  Assumptions.InotifyEvent_instance
-  Assumptions.PtraceRegs_instance
-  Assumptions.FdSet_instance
-  Assumptions.Sysinfo_t_instance
-  Assumptions.Utsname_instance
-  Assumptions.Ustat_t_instance
-  Assumptions.EpollEvent_instance
-  Assumptions.pollFd_instance
-  Assumptions.Termios_instance
-  Assumptions.runtime_envs_unfold
-  Assumptions.«init.0_unfold»
-  Assumptions.Exit_unfold
-  Assumptions.import_sync_Assumption
+attribute [instance] Assumptions.instance'SysProcIDMap
+  Assumptions.instance'SysProcAttr
+  Assumptions.instance'capHeader
+  Assumptions.instance'capData
+  Assumptions.instance'caps
+  Assumptions.instance'cloneArgs
+  Assumptions.instance'Credential
+  Assumptions.instance'ProcAttr
+  Assumptions.instance'iflags
+  Assumptions.instance'RawConn
+  Assumptions.instance'Conn
+  Assumptions.instance'NetlinkRouteRequest
+  Assumptions.instance'NetlinkMessage
+  Assumptions.instance'NetlinkRouteAttr
+  Assumptions.instance'SocketControlMessage
+  Assumptions.instance'WaitStatus
+  Assumptions.instance'SockaddrLinklayer
+  Assumptions.instance'SockaddrNetlink
+  Assumptions.instance'mmapper
+  Assumptions.instance'Errno
+  Assumptions.instance'Signal
+  Assumptions.instance'Sockaddr
+  Assumptions.instance'SockaddrInet4
+  Assumptions.instance'SockaddrInet6
+  Assumptions.instance'SockaddrUnix
+  Assumptions.instance'_C_short
+  Assumptions.instance'_C_int
+  Assumptions.instance'_C_long
+  Assumptions.instance'_C_long_long
+  Assumptions.instance'Timespec
+  Assumptions.instance'Timeval
+  Assumptions.instance'Timex
+  Assumptions.instance'Time_t
+  Assumptions.instance'Tms
+  Assumptions.instance'Utimbuf
+  Assumptions.instance'Rusage
+  Assumptions.instance'Rlimit
+  Assumptions.instance'_Gid_t
+  Assumptions.instance'Stat_t
+  Assumptions.instance'Statfs_t
+  Assumptions.instance'Dirent
+  Assumptions.instance'Fsid
+  Assumptions.instance'Flock_t
+  Assumptions.instance'RawSockaddrInet4
+  Assumptions.instance'RawSockaddrInet6
+  Assumptions.instance'RawSockaddrUnix
+  Assumptions.instance'RawSockaddrLinklayer
+  Assumptions.instance'RawSockaddrNetlink
+  Assumptions.instance'RawSockaddr
+  Assumptions.instance'RawSockaddrAny
+  Assumptions.instance'_Socklen
+  Assumptions.instance'Linger
+  Assumptions.instance'Iovec
+  Assumptions.instance'IPMreq
+  Assumptions.instance'IPMreqn
+  Assumptions.instance'IPv6Mreq
+  Assumptions.instance'Msghdr
+  Assumptions.instance'Cmsghdr
+  Assumptions.instance'Inet4Pktinfo
+  Assumptions.instance'Inet6Pktinfo
+  Assumptions.instance'IPv6MTUInfo
+  Assumptions.instance'ICMPv6Filter
+  Assumptions.instance'Ucred
+  Assumptions.instance'TCPInfo
+  Assumptions.instance'NlMsghdr
+  Assumptions.instance'NlMsgerr
+  Assumptions.instance'RtGenmsg
+  Assumptions.instance'NlAttr
+  Assumptions.instance'RtAttr
+  Assumptions.instance'IfInfomsg
+  Assumptions.instance'IfAddrmsg
+  Assumptions.instance'RtMsg
+  Assumptions.instance'RtNexthop
+  Assumptions.instance'SockFilter
+  Assumptions.instance'SockFprog
+  Assumptions.instance'InotifyEvent
+  Assumptions.instance'PtraceRegs
+  Assumptions.instance'FdSet
+  Assumptions.instance'Sysinfo_t
+  Assumptions.instance'Utsname
+  Assumptions.instance'Ustat_t
+  Assumptions.instance'EpollEvent
+  Assumptions.instance'pollFd
+  Assumptions.instance'Termios
+  Assumptions.unfold'runtime_envs
+  Assumptions.«unfold'init.0»
+  Assumptions.unfold'Exit
+  Assumptions.import'sync
 
 end syscall
 

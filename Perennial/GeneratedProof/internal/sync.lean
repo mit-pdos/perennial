@@ -25,12 +25,12 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.sync.Assumptions]
 
-noncomputable instance HashTrieMap_typed_pointsto {K' : Type} [TypedPointsto (GF := GF) K'] {V' : Type} [TypedPointsto (GF := GF) V'] :
-    TypedPointsto (GF := GF) (internal.sync.HashTrieMap K' V') :=
+noncomputable instance typed_pointsto'HashTrieMap {K₀' : Type} [TypedPointsto (GF := GF) K₀'] {V₀' : Type} [TypedPointsto (GF := GF) V₀'] :
+    TypedPointsto (GF := GF) (internal.sync.HashTrieMap K₀' V₀') :=
   sorry -- axiomatized type
 
-noncomputable instance HashTrieMap_into_val_typed (K : go.GoType) {K' : Type} [ZeroVal K'] [TypedPointsto (GF := GF) K'] [IntoValTyped (GF := GF) K' K] (V : go.GoType) {V' : Type} [ZeroVal V'] [TypedPointsto (GF := GF) V'] [IntoValTyped (GF := GF) V' V] :
-    IntoValTypedUnderlying (GF := GF) (internal.sync.HashTrieMap K' V') (internal.sync.HashTrieMap.underlying K V) :=
+noncomputable instance into_val_typed'HashTrieMap (K₀ : go.GoType) {K₀' : Type} [ZeroVal K₀'] [TypedPointsto (GF := GF) K₀'] [IntoValTyped (GF := GF) K₀' K₀] (V₀ : go.GoType) {V₀' : Type} [ZeroVal V₀'] [TypedPointsto (GF := GF) V₀'] [IntoValTyped (GF := GF) V₀' V₀] :
+    IntoValTypedUnderlying (GF := GF) (internal.sync.HashTrieMap K₀' V₀') (internal.sync.HashTrieMap.underlying K₀ V₀) :=
   sorry -- axiomatized type
 
 end def_
@@ -44,11 +44,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.sync.Assumptions]
 
-noncomputable instance hashFunc_typed_pointsto :
+noncomputable instance typed_pointsto'hashFunc :
     TypedPointsto (GF := GF) internal.sync.hashFunc :=
   sorry -- axiomatized type
 
-noncomputable instance hashFunc_into_val_typed :
+noncomputable instance into_val_typed'hashFunc :
     IntoValTypedUnderlying (GF := GF) internal.sync.hashFunc internal.sync.hashFunc.underlying :=
   sorry -- axiomatized type
 
@@ -63,11 +63,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.sync.Assumptions]
 
-noncomputable instance equalFunc_typed_pointsto :
+noncomputable instance typed_pointsto'equalFunc :
     TypedPointsto (GF := GF) internal.sync.equalFunc :=
   sorry -- axiomatized type
 
-noncomputable instance equalFunc_into_val_typed :
+noncomputable instance into_val_typed'equalFunc :
     IntoValTypedUnderlying (GF := GF) internal.sync.equalFunc internal.sync.equalFunc.underlying :=
   sorry -- axiomatized type
 
@@ -82,12 +82,12 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.sync.Assumptions]
 
-noncomputable instance indirect_typed_pointsto {K' : Type} [TypedPointsto (GF := GF) K'] {V' : Type} [TypedPointsto (GF := GF) V'] :
-    TypedPointsto (GF := GF) (internal.sync.indirect K' V') :=
+noncomputable instance typed_pointsto'indirect {K₀' : Type} [TypedPointsto (GF := GF) K₀'] {V₀' : Type} [TypedPointsto (GF := GF) V₀'] :
+    TypedPointsto (GF := GF) (internal.sync.indirect K₀' V₀') :=
   sorry -- axiomatized type
 
-noncomputable instance indirect_into_val_typed (K : go.GoType) {K' : Type} [ZeroVal K'] [TypedPointsto (GF := GF) K'] [IntoValTyped (GF := GF) K' K] (V : go.GoType) {V' : Type} [ZeroVal V'] [TypedPointsto (GF := GF) V'] [IntoValTyped (GF := GF) V' V] :
-    IntoValTypedUnderlying (GF := GF) (internal.sync.indirect K' V') (internal.sync.indirect.underlying K V) :=
+noncomputable instance into_val_typed'indirect (K₀ : go.GoType) {K₀' : Type} [ZeroVal K₀'] [TypedPointsto (GF := GF) K₀'] [IntoValTyped (GF := GF) K₀' K₀] (V₀ : go.GoType) {V₀' : Type} [ZeroVal V₀'] [TypedPointsto (GF := GF) V₀'] [IntoValTyped (GF := GF) V₀' V₀] :
+    IntoValTypedUnderlying (GF := GF) (internal.sync.indirect K₀' V₀') (internal.sync.indirect.underlying K₀ V₀) :=
   sorry -- axiomatized type
 
 end def_
@@ -101,12 +101,12 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.sync.Assumptions]
 
-noncomputable instance entry_typed_pointsto {K' : Type} [TypedPointsto (GF := GF) K'] {V' : Type} [TypedPointsto (GF := GF) V'] :
-    TypedPointsto (GF := GF) (internal.sync.entry K' V') :=
+noncomputable instance typed_pointsto'entry {K₀' : Type} [TypedPointsto (GF := GF) K₀'] {V₀' : Type} [TypedPointsto (GF := GF) V₀'] :
+    TypedPointsto (GF := GF) (internal.sync.entry K₀' V₀') :=
   sorry -- axiomatized type
 
-noncomputable instance entry_into_val_typed (K : go.GoType) {K' : Type} [ZeroVal K'] [TypedPointsto (GF := GF) K'] [IntoValTyped (GF := GF) K' K] (V : go.GoType) {V' : Type} [ZeroVal V'] [TypedPointsto (GF := GF) V'] [IntoValTyped (GF := GF) V' V] :
-    IntoValTypedUnderlying (GF := GF) (internal.sync.entry K' V') (internal.sync.entry.underlying K V) :=
+noncomputable instance into_val_typed'entry (K₀ : go.GoType) {K₀' : Type} [ZeroVal K₀'] [TypedPointsto (GF := GF) K₀'] [IntoValTyped (GF := GF) K₀' K₀] (V₀ : go.GoType) {V₀' : Type} [ZeroVal V₀'] [TypedPointsto (GF := GF) V₀'] [IntoValTyped (GF := GF) V₀' V₀] :
+    IntoValTypedUnderlying (GF := GF) (internal.sync.entry K₀' V₀') (internal.sync.entry.underlying K₀ V₀) :=
   sorry -- axiomatized type
 
 end def_
@@ -120,12 +120,12 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.sync.Assumptions]
 
-noncomputable instance node_typed_pointsto {K' : Type} [TypedPointsto (GF := GF) K'] {V' : Type} [TypedPointsto (GF := GF) V'] :
-    TypedPointsto (GF := GF) (internal.sync.node K' V') :=
+noncomputable instance typed_pointsto'node {K₀' : Type} [TypedPointsto (GF := GF) K₀'] {V₀' : Type} [TypedPointsto (GF := GF) V₀'] :
+    TypedPointsto (GF := GF) (internal.sync.node K₀' V₀') :=
   sorry -- axiomatized type
 
-noncomputable instance node_into_val_typed (K : go.GoType) {K' : Type} [ZeroVal K'] [TypedPointsto (GF := GF) K'] [IntoValTyped (GF := GF) K' K] (V : go.GoType) {V' : Type} [ZeroVal V'] [TypedPointsto (GF := GF) V'] [IntoValTyped (GF := GF) V' V] :
-    IntoValTypedUnderlying (GF := GF) (internal.sync.node K' V') (internal.sync.node.underlying K V) :=
+noncomputable instance into_val_typed'node (K₀ : go.GoType) {K₀' : Type} [ZeroVal K₀'] [TypedPointsto (GF := GF) K₀'] [IntoValTyped (GF := GF) K₀' K₀] (V₀ : go.GoType) {V₀' : Type} [ZeroVal V₀'] [TypedPointsto (GF := GF) V₀'] [IntoValTyped (GF := GF) V₀' V₀] :
+    IntoValTypedUnderlying (GF := GF) (internal.sync.node K₀' V₀') (internal.sync.node.underlying K₀ V₀) :=
   sorry -- axiomatized type
 
 end def_

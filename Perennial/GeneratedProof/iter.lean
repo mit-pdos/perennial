@@ -24,7 +24,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : iter.Assumptions]
 
-noncomputable instance coro_typed_pointsto :
+noncomputable instance typed_pointsto'coro :
     TypedPointsto (GF := GF) iter.coro where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
@@ -32,7 +32,7 @@ noncomputable instance coro_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance coro_into_val_typed :
+noncomputable instance into_val_typed'coro :
     IntoValTypedUnderlying (GF := GF) iter.coro iter.coro.underlying := by
   solve_into_val_typed_struct
 

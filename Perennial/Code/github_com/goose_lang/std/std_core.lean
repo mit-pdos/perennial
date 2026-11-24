@@ -233,21 +233,21 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.github_com.goose_lang.primitive.initialize') (Val #())))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  SumNoOverflow_unfold : FuncUnfold SumNoOverflow [] SumNoOverflow.impl
-  SumAssumeNoOverflow_unfold : FuncUnfold SumAssumeNoOverflow [] SumAssumeNoOverflow.impl
-  MulNoOverflow_unfold : FuncUnfold MulNoOverflow [] MulNoOverflow.impl
-  MulAssumeNoOverflow_unfold : FuncUnfold MulAssumeNoOverflow [] MulAssumeNoOverflow.impl
-  Shuffle_unfold : FuncUnfold Shuffle [] Shuffle.impl
-  Permutation_unfold : FuncUnfold Permutation [] Permutation.impl
-  import_primitive_Assumption : _root_.Perennial.github_com.goose_lang.primitive.Assumptions
+  unfold'SumNoOverflow : FuncUnfold SumNoOverflow [] SumNoOverflow.impl
+  unfold'SumAssumeNoOverflow : FuncUnfold SumAssumeNoOverflow [] SumAssumeNoOverflow.impl
+  unfold'MulNoOverflow : FuncUnfold MulNoOverflow [] MulNoOverflow.impl
+  unfold'MulAssumeNoOverflow : FuncUnfold MulAssumeNoOverflow [] MulAssumeNoOverflow.impl
+  unfold'Shuffle : FuncUnfold Shuffle [] Shuffle.impl
+  unfold'Permutation : FuncUnfold Permutation [] Permutation.impl
+  import'primitive : _root_.Perennial.github_com.goose_lang.primitive.Assumptions
 
-attribute [instance] Assumptions.SumNoOverflow_unfold
-  Assumptions.SumAssumeNoOverflow_unfold
-  Assumptions.MulNoOverflow_unfold
-  Assumptions.MulAssumeNoOverflow_unfold
-  Assumptions.Shuffle_unfold
-  Assumptions.Permutation_unfold
-  Assumptions.import_primitive_Assumption
+attribute [instance] Assumptions.unfold'SumNoOverflow
+  Assumptions.unfold'SumAssumeNoOverflow
+  Assumptions.unfold'MulNoOverflow
+  Assumptions.unfold'MulAssumeNoOverflow
+  Assumptions.unfold'Shuffle
+  Assumptions.unfold'Permutation
+  Assumptions.import'primitive
 
 end github_com.goose_lang.std.std_core
 

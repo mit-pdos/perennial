@@ -60,98 +60,98 @@ noncomputable def DeleteFunc [GooseExts] [GoGlobalContext] : GoString :=
     to be the same from one call to the next.
 
     go: iter.go:12:6 -/
-noncomputable def All.impl [GooseExts] [GoGlobalContext] (Map K V : go.GoType) : val :=
+noncomputable def All.impl [GooseExts] [GoGlobalContext] (Map₀ K₀ V₀ : go.GoType) : val :=
   (LamV "m"
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq2.ty K V)))) (App (Val (GoInstruction (GoZeroVal (_root_.Perennial.iter.Seq2.ty K V)))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq2.ty K₀ V₀)))) (App (Val (GoInstruction (GoZeroVal (_root_.Perennial.iter.Seq2.ty K₀ V₀)))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "m" (App (Val (GoInstruction (GoAlloc Map))) (Var "m"))
+  (Let "m" (App (Val (GoInstruction (GoAlloc Map₀))) (Var "m"))
   (Let "$r0" (Lam "yield"
   (Seq (App (Val exceptionDo)
-  (Let "yield" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [K, V] false [go.bool]))))) (Var "yield"))
-  (Let "$range" (App (Val (GoInstruction (GoLoad Map))) (Var "m"))
-  (Let "v" (App (Val (GoInstruction (GoAlloc V))) (App (Val (GoInstruction (GoZeroVal V))) (Val #())))
-  (Let "k" (App (Val (GoInstruction (GoAlloc K))) (App (Val (GoInstruction (GoZeroVal K))) (Val #())))
-  (App (App (Val (map.forRange K V)) (Var "$range"))
+  (Let "yield" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [K₀, V₀] false [go.bool]))))) (Var "yield"))
+  (Let "$range" (App (Val (GoInstruction (GoLoad Map₀))) (Var "m"))
+  (Let "v" (App (Val (GoInstruction (GoAlloc V₀))) (App (Val (GoInstruction (GoZeroVal V₀))) (Val #())))
+  (Let "k" (App (Val (GoInstruction (GoAlloc K₀))) (App (Val (GoInstruction (GoZeroVal K₀))) (Val #())))
+  (App (App (Val (map.forRange K₀ V₀)) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad K))) (Var "k"))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad V))) (Var "v"))
-  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [K, V] false [go.bool]))))) (Var "yield")) (Var "$a0")) (Var "$a1")))))
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad K₀))) (Var "k"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad V₀))) (Var "v"))
+  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [K₀, V₀] false [go.bool]))))) (Var "yield")) (Var "$a0")) (Var "$a1")))))
   (App (Val doReturn)
   (Val #()))
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore K))) (Pair (Var "k") (Var "$key")))))))
+  (App (Val (GoInstruction (GoStore K₀))) (Pair (Var "k") (Var "$key")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore V))) (Pair (Var "v") (Var "$value")))))))))))))
+  (App (Val (GoInstruction (GoStore V₀))) (Pair (Var "v") (Var "$value")))))))))))))
   (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (_root_.Perennial.iter.Seq2.ty K V)))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq2.ty K V)))) (Var "$res0")))))
+  (App (Val (GoInstruction (GoStore (_root_.Perennial.iter.Seq2.ty K₀ V₀)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq2.ty K₀ V₀)))) (Var "$res0")))))
 
 /-- Keys returns an iterator over keys in m.
     The iteration order is not specified and is not guaranteed
     to be the same from one call to the next.
 
     go: iter.go:25:6 -/
-noncomputable def Keys.impl [GooseExts] [GoGlobalContext] (Map K V : go.GoType) : val :=
+noncomputable def Keys.impl [GooseExts] [GoGlobalContext] (Map₀ K₀ V₀ : go.GoType) : val :=
   (LamV "m"
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq''.ty K)))) (App (Val (GoInstruction (GoZeroVal (_root_.Perennial.iter.Seq''.ty K)))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq''.ty K₀)))) (App (Val (GoInstruction (GoZeroVal (_root_.Perennial.iter.Seq''.ty K₀)))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "m" (App (Val (GoInstruction (GoAlloc Map))) (Var "m"))
+  (Let "m" (App (Val (GoInstruction (GoAlloc Map₀))) (Var "m"))
   (Let "$r0" (Lam "yield"
   (Seq (App (Val exceptionDo)
-  (Let "yield" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [K] false [go.bool]))))) (Var "yield"))
-  (Let "$range" (App (Val (GoInstruction (GoLoad Map))) (Var "m"))
-  (Let "k" (App (Val (GoInstruction (GoAlloc K))) (App (Val (GoInstruction (GoZeroVal K))) (Val #())))
-  (App (App (Val (map.forRange K V)) (Var "$range"))
+  (Let "yield" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [K₀] false [go.bool]))))) (Var "yield"))
+  (Let "$range" (App (Val (GoInstruction (GoLoad Map₀))) (Var "m"))
+  (Let "k" (App (Val (GoInstruction (GoAlloc K₀))) (App (Val (GoInstruction (GoZeroVal K₀))) (Val #())))
+  (App (App (Val (map.forRange K₀ V₀)) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad K))) (Var "k"))
-  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [K] false [go.bool]))))) (Var "yield")) (Var "$a0"))))
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad K₀))) (Var "k"))
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [K₀] false [go.bool]))))) (Var "yield")) (Var "$a0"))))
   (App (Val doReturn)
   (Val #()))
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore K))) (Pair (Var "k") (Var "$key"))))))))))))
+  (App (Val (GoInstruction (GoStore K₀))) (Pair (Var "k") (Var "$key"))))))))))))
   (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (_root_.Perennial.iter.Seq''.ty K)))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq''.ty K)))) (Var "$res0")))))
+  (App (Val (GoInstruction (GoStore (_root_.Perennial.iter.Seq''.ty K₀)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq''.ty K₀)))) (Var "$res0")))))
 
 /-- Values returns an iterator over values in m.
     The iteration order is not specified and is not guaranteed
     to be the same from one call to the next.
 
     go: iter.go:38:6 -/
-noncomputable def Values.impl [GooseExts] [GoGlobalContext] (Map K V : go.GoType) : val :=
+noncomputable def Values.impl [GooseExts] [GoGlobalContext] (Map₀ K₀ V₀ : go.GoType) : val :=
   (LamV "m"
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq''.ty V)))) (App (Val (GoInstruction (GoZeroVal (_root_.Perennial.iter.Seq''.ty V)))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq''.ty V₀)))) (App (Val (GoInstruction (GoZeroVal (_root_.Perennial.iter.Seq''.ty V₀)))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "m" (App (Val (GoInstruction (GoAlloc Map))) (Var "m"))
+  (Let "m" (App (Val (GoInstruction (GoAlloc Map₀))) (Var "m"))
   (Let "$r0" (Lam "yield"
   (Seq (App (Val exceptionDo)
-  (Let "yield" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [V] false [go.bool]))))) (Var "yield"))
-  (Let "$range" (App (Val (GoInstruction (GoLoad Map))) (Var "m"))
-  (Let "v" (App (Val (GoInstruction (GoAlloc V))) (App (Val (GoInstruction (GoZeroVal V))) (Val #())))
-  (App (App (Val (map.forRange K V)) (Var "$range"))
+  (Let "yield" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [V₀] false [go.bool]))))) (Var "yield"))
+  (Let "$range" (App (Val (GoInstruction (GoLoad Map₀))) (Var "m"))
+  (Let "v" (App (Val (GoInstruction (GoAlloc V₀))) (App (Val (GoInstruction (GoZeroVal V₀))) (Val #())))
+  (App (App (Val (map.forRange K₀ V₀)) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad V))) (Var "v"))
-  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [V] false [go.bool]))))) (Var "yield")) (Var "$a0"))))
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad V₀))) (Var "v"))
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [V₀] false [go.bool]))))) (Var "yield")) (Var "$a0"))))
   (App (Val doReturn)
   (Val #()))
   (App (Val doExecute)
@@ -159,80 +159,80 @@ noncomputable def Values.impl [GooseExts] [GoGlobalContext] (Map K V : go.GoType
   (App (Val doExecute)
   (Var "$key")))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore V))) (Pair (Var "v") (Var "$value"))))))))))))
+  (App (Val (GoInstruction (GoStore V₀))) (Pair (Var "v") (Var "$value"))))))))))))
   (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (_root_.Perennial.iter.Seq''.ty V)))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq''.ty V)))) (Var "$res0")))))
+  (App (Val (GoInstruction (GoStore (_root_.Perennial.iter.Seq''.ty V₀)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq''.ty V₀)))) (Var "$res0")))))
 
 /-- Insert adds the key-value pairs from seq to m.
     If a key in seq already exists in m, its value will be overwritten.
 
     go: iter.go:50:6 -/
-noncomputable def Insert.impl [GooseExts] [GoGlobalContext] (Map K V : go.GoType) : val :=
+noncomputable def Insert.impl [GooseExts] [GoGlobalContext] (Map₀ K₀ V₀ : go.GoType) : val :=
   (LamV "m"
   (Lam "seq"
   (Seq (App (Val exceptionDo)
-  (Let "seq" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq2.ty K V)))) (Var "seq"))
-  (Let "m" (App (Val (GoInstruction (GoAlloc Map))) (Var "m"))
-  (Let "$range" (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq2.ty K V)))) (Var "seq"))
-  (Let "v" (App (Val (GoInstruction (GoAlloc V))) (App (Val (GoInstruction (GoZeroVal V))) (Val #())))
-  (Let "k" (App (Val (GoInstruction (GoAlloc K))) (App (Val (GoInstruction (GoZeroVal K))) (Val #())))
+  (Let "seq" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq2.ty K₀ V₀)))) (Var "seq"))
+  (Let "m" (App (Val (GoInstruction (GoAlloc Map₀))) (Var "m"))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq2.ty K₀ V₀)))) (Var "seq"))
+  (Let "v" (App (Val (GoInstruction (GoAlloc V₀))) (App (Val (GoInstruction (GoZeroVal V₀))) (Val #())))
+  (Let "k" (App (Val (GoInstruction (GoAlloc K₀))) (App (Val (GoInstruction (GoZeroVal K₀))) (Val #())))
   (App (App (Val (func.forRange 2)) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad V))) (Var "v"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad V₀))) (Var "v"))
   (App (Val doExecute)
-  (App (App (App (Val (map.insert K)) (App (Val (GoInstruction (GoLoad Map))) (Var "m"))) (App (Val (GoInstruction (GoLoad K))) (Var "k"))) (Var "$r0"))))))
+  (App (App (App (Val (map.insert K₀)) (App (Val (GoInstruction (GoLoad Map₀))) (Var "m"))) (App (Val (GoInstruction (GoLoad K₀))) (Var "k"))) (Var "$r0"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore K))) (Pair (Var "k") (Var "$key")))))))
+  (App (Val (GoInstruction (GoStore K₀))) (Pair (Var "k") (Var "$key")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore V))) (Pair (Var "v") (Var "$value"))))))))))))))
+  (App (Val (GoInstruction (GoStore V₀))) (Pair (Var "v") (Var "$value"))))))))))))))
   (Val #()))))
 
 /-- Collect collects key-value pairs from seq into a new map
     and returns it.
 
     go: iter.go:58:6 -/
-noncomputable def Collect.impl [GooseExts] [GoGlobalContext] (K V : go.GoType) : val :=
+noncomputable def Collect.impl [GooseExts] [GoGlobalContext] (K₀ V₀ : go.GoType) : val :=
   (LamV "seq"
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType K V)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType K V)))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType K₀ V₀)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType K₀ V₀)))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "seq" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq2.ty K V)))) (Var "seq"))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType K V)]))) (Val #())) (Val #()))
-  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType K V)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType K V)))) (Val #())))
+  (Let "seq" (App (Val (GoInstruction (GoAlloc (_root_.Perennial.iter.Seq2.ty K₀ V₀)))) (Var "seq"))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType K₀ V₀)]))) (Val #())) (Val #()))
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType K₀ V₀)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType K₀ V₀)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType K V)))) (Var "m"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType K₀ V₀)))) (Var "m"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.MapType K V)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType K₀ V₀)))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType K V)))) (Var "m"))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq2.ty K V)))) (Var "seq"))
-  (App (App (App (Val (GoInstruction (FuncResolve Insert [(go.GoType.MapType K V), K, V]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType K₀ V₀)))) (Var "m"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (_root_.Perennial.iter.Seq2.ty K₀ V₀)))) (Var "seq"))
+  (App (App (App (Val (GoInstruction (FuncResolve Insert [(go.GoType.MapType K₀ V₀), K₀, V₀]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.MapType K V)))) (Pair (Var "m") (Var "$r0")))))))))
-  (App (Val (GoInstruction (GoLoad (go.GoType.MapType K V)))) (Var "$res0")))))
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType K₀ V₀)))) (Pair (Var "m") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.MapType K₀ V₀)))) (Var "$res0")))))
 
 /-- Equal reports whether two maps contain the same key/value pairs.
     Values are compared using ==.
 
     go: maps.go:17:6 -/
-noncomputable def Equal.impl [GooseExts] [GoGlobalContext] (M1 M2 K V : go.GoType) : val :=
+noncomputable def Equal.impl [GooseExts] [GoGlobalContext] (M1₀ M2₀ K₀ V₀ : go.GoType) : val :=
   (LamV "m1"
   (Lam "m2"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "m2" (App (Val (GoInstruction (GoAlloc M2))) (Var "m2"))
-  (Let "m1" (App (Val (GoInstruction (GoAlloc M1))) (Var "m1"))
+  (Let "m2" (App (Val (GoInstruction (GoAlloc M2₀))) (Var "m2"))
+  (Let "m1" (App (Val (GoInstruction (GoAlloc M1₀))) (Var "m1"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #true)
@@ -241,24 +241,24 @@ noncomputable def Equal.impl [GooseExts] [GoGlobalContext] (M1 M2 K V : go.GoTyp
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (Let "$range" (App (Val (GoInstruction (GoLoad M1))) (Var "m1"))
-  (Let "v1" (App (Val (GoInstruction (GoAlloc V))) (App (Val (GoInstruction (GoZeroVal V))) (Val #())))
-  (Let "k" (App (Val (GoInstruction (GoAlloc K))) (App (Val (GoInstruction (GoZeroVal K))) (Val #())))
-  (App (App (Val (map.forRange K V)) (Var "$range"))
+  (Let "$range" (App (Val (GoInstruction (GoLoad M1₀))) (Var "m1"))
+  (Let "v1" (App (Val (GoInstruction (GoAlloc V₀))) (App (Val (GoInstruction (GoZeroVal V₀))) (Val #())))
+  (Let "k" (App (Val (GoInstruction (GoAlloc K₀))) (App (Val (GoInstruction (GoZeroVal K₀))) (Val #())))
+  (App (App (Val (map.forRange K₀ V₀)) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "__p" (App (App (Val (map.lookup2 K V)) (App (Val (GoInstruction (GoLoad M2))) (Var "m2"))) (App (Val (GoInstruction (GoLoad K))) (Var "k")))
+  (Let "__p" (App (App (Val (map.lookup2 K₀ V₀)) (App (Val (GoInstruction (GoLoad M2₀))) (Var "m2"))) (App (Val (GoInstruction (GoLoad K₀))) (Var "k")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "v2" (App (Val (GoInstruction (GoAlloc V))) (App (Val (GoInstruction (GoZeroVal V))) (Val #())))
+  (Let "v2" (App (Val (GoInstruction (GoAlloc V₀))) (App (Val (GoInstruction (GoZeroVal V₀))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))) (Val #true) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals V))) (Pair (App (Val (GoInstruction (GoLoad V))) (Var "v1")) (App (Val (GoInstruction (GoLoad V))) (Var "v2"))))))
+  (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))) (Val #true) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals V₀))) (Pair (App (Val (GoInstruction (GoLoad V₀))) (Var "v1")) (App (Val (GoInstruction (GoLoad V₀))) (Var "v2"))))))
   (Let "$r0" (Val #false)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -270,14 +270,14 @@ noncomputable def Equal.impl [GooseExts] [GoGlobalContext] (M1 M2 K V : go.GoTyp
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore V))) (Pair (Var "v2") (Var "$r0"))))))))))))))
+  (App (Val (GoInstruction (GoStore V₀))) (Pair (Var "v2") (Var "$r0"))))))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore K))) (Pair (Var "k") (Var "$key")))))))
+  (App (Val (GoInstruction (GoStore K₀))) (Pair (Var "k") (Var "$key")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore V))) (Pair (Var "v1") (Var "$value"))))))))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad M1))) (Var "m1"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [M1]))) (Val #())) (Var "$a0"))) (Let "$a0" (App (Val (GoInstruction (GoLoad M2))) (Var "m2"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [M2]))) (Val #())) (Var "$a0")))))))
+  (App (Val (GoInstruction (GoStore V₀))) (Pair (Var "v1") (Var "$value"))))))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad M1₀))) (Var "m1"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [M1₀]))) (Val #())) (Var "$a0"))) (Let "$a0" (App (Val (GoInstruction (GoLoad M2₀))) (Var "m2"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [M2₀]))) (Val #())) (Var "$a0")))))))
   (Let "$r0" (Val #false)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -292,15 +292,15 @@ noncomputable def Equal.impl [GooseExts] [GoGlobalContext] (M1 M2 K V : go.GoTyp
     Keys are still compared with ==.
 
     go: maps.go:31:6 -/
-noncomputable def EqualFunc.impl [GooseExts] [GoGlobalContext] (M1 M2 K V1 V2 : go.GoType) : val :=
+noncomputable def EqualFunc.impl [GooseExts] [GoGlobalContext] (M1₀ M2₀ K₀ V1₀ V2₀ : go.GoType) : val :=
   (LamV "m1"
   (Lam "m2"
   (Lam "eq"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "eq" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [V1, V2] false [go.bool]))))) (Var "eq"))
-  (Let "m2" (App (Val (GoInstruction (GoAlloc M2))) (Var "m2"))
-  (Let "m1" (App (Val (GoInstruction (GoAlloc M1))) (Var "m1"))
+  (Let "eq" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [V1₀, V2₀] false [go.bool]))))) (Var "eq"))
+  (Let "m2" (App (Val (GoInstruction (GoAlloc M2₀))) (Var "m2"))
+  (Let "m1" (App (Val (GoInstruction (GoAlloc M1₀))) (Var "m1"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #true)
@@ -309,26 +309,26 @@ noncomputable def EqualFunc.impl [GooseExts] [GoGlobalContext] (M1 M2 K V1 V2 : 
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (Let "$range" (App (Val (GoInstruction (GoLoad M1))) (Var "m1"))
-  (Let "v1" (App (Val (GoInstruction (GoAlloc V1))) (App (Val (GoInstruction (GoZeroVal V1))) (Val #())))
-  (Let "k" (App (Val (GoInstruction (GoAlloc K))) (App (Val (GoInstruction (GoZeroVal K))) (Val #())))
-  (App (App (Val (map.forRange K V1)) (Var "$range"))
+  (Let "$range" (App (Val (GoInstruction (GoLoad M1₀))) (Var "m1"))
+  (Let "v1" (App (Val (GoInstruction (GoAlloc V1₀))) (App (Val (GoInstruction (GoZeroVal V1₀))) (Val #())))
+  (Let "k" (App (Val (GoInstruction (GoAlloc K₀))) (App (Val (GoInstruction (GoZeroVal K₀))) (Val #())))
+  (App (App (Val (map.forRange K₀ V1₀)) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "__p" (App (App (Val (map.lookup2 K V2)) (App (Val (GoInstruction (GoLoad M2))) (Var "m2"))) (App (Val (GoInstruction (GoLoad K))) (Var "k")))
+  (Let "__p" (App (App (Val (map.lookup2 K₀ V2₀)) (App (Val (GoInstruction (GoLoad M2₀))) (Var "m2"))) (App (Val (GoInstruction (GoLoad K₀))) (Var "k")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
   (Let "$r1" (Var "$ret1")
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "v2" (App (Val (GoInstruction (GoAlloc V2))) (App (Val (GoInstruction (GoZeroVal V2))) (Val #())))
+  (Let "v2" (App (Val (GoInstruction (GoAlloc V2₀))) (App (Val (GoInstruction (GoZeroVal V2₀))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))) (Val #true) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad V1))) (Var "v1"))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad V2))) (Var "v2"))
-  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [V1, V2] false [go.bool]))))) (Var "eq")) (Var "$a0")) (Var "$a1"))))))
+  (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))) (Val #true) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad V1₀))) (Var "v1"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad V2₀))) (Var "v2"))
+  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [V1₀, V2₀] false [go.bool]))))) (Var "eq")) (Var "$a0")) (Var "$a1"))))))
   (Let "$r0" (Val #false)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -340,14 +340,14 @@ noncomputable def EqualFunc.impl [GooseExts] [GoGlobalContext] (M1 M2 K V1 V2 : 
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore V2))) (Pair (Var "v2") (Var "$r0"))))))))))))))
+  (App (Val (GoInstruction (GoStore V2₀))) (Pair (Var "v2") (Var "$r0"))))))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore K))) (Pair (Var "k") (Var "$key")))))))
+  (App (Val (GoInstruction (GoStore K₀))) (Pair (Var "k") (Var "$key")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore V1))) (Pair (Var "v1") (Var "$value"))))))))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad M1))) (Var "m1"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [M1]))) (Val #())) (Var "$a0"))) (Let "$a0" (App (Val (GoInstruction (GoLoad M2))) (Var "m2"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [M2]))) (Val #())) (Var "$a0")))))))
+  (App (Val (GoInstruction (GoStore V1₀))) (Pair (Var "v1") (Var "$value"))))))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad M1₀))) (Var "m1"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [M1₀]))) (Val #())) (Var "$a0"))) (Let "$a0" (App (Val (GoInstruction (GoLoad M2₀))) (Var "m2"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [M2₀]))) (Val #())) (Var "$a0")))))))
   (Let "$r0" (Val #false)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -362,29 +362,29 @@ noncomputable def EqualFunc.impl [GooseExts] [GoGlobalContext] (M1 M2 K V1 V2 : 
     the new keys and values are set using ordinary assignment.
 
     go: maps.go:50:6 -/
-noncomputable def Clone.impl [GooseExts] [GoGlobalContext] (M K V : go.GoType) : val :=
+noncomputable def Clone.impl [GooseExts] [GoGlobalContext] (M₀ K₀ V₀ : go.GoType) : val :=
   (LamV "m"
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc M))) (App (Val (GoInstruction (GoZeroVal M))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc M₀))) (App (Val (GoInstruction (GoZeroVal M₀))) (Val #())))
   (Seq (App (Val exceptionDo)
-  (Let "m" (App (Val (GoInstruction (GoAlloc M))) (Var "m"))
+  (Let "m" (App (Val (GoInstruction (GoAlloc M₀))) (Var "m"))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (TypeAssert M))) (Let "$a0" (App (Val (GoInstruction (Convert M go.any))) (App (Val (GoInstruction (GoLoad M))) (Var "m")))
+  (Let "$r0" (App (Val (GoInstruction (TypeAssert M₀))) (Let "$a0" (App (Val (GoInstruction (Convert M₀ go.any))) (App (Val (GoInstruction (GoLoad M₀))) (Var "m")))
   (App (App (Val (GoInstruction (FuncResolve clone []))) (Val #())) (Var "$a0"))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore M))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals M))) (Pair (App (Val (GoInstruction (GoLoad M))) (Var "m")) (App (Val (GoInstruction (Convert go.untypedNil M))) (Val UntypedNil)))))
-  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil M))) (Val UntypedNil))
+  (App (Val (GoInstruction (GoStore M₀))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals M₀))) (Pair (App (Val (GoInstruction (GoLoad M₀))) (Var "m")) (App (Val (GoInstruction (Convert go.untypedNil M₀))) (Val UntypedNil)))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil M₀))) (Val UntypedNil))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore M))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val (GoInstruction (GoStore M₀))) (Pair (Var "$res0") (Var "$r0"))))))
   (App (Val doExecute)
   (Val #()))))))
-  (App (Val (GoInstruction (GoLoad M))) (Var "$res0")))))
+  (App (Val (GoInstruction (GoLoad M₀))) (Var "$res0")))))
 
 /-- Copy copies all key/value pairs in src adding them to dst.
     When a key in src is already present in dst,
@@ -392,59 +392,59 @@ noncomputable def Clone.impl [GooseExts] [GoGlobalContext] (M K V : go.GoType) :
     with the key in src.
 
     go: maps.go:62:6 -/
-noncomputable def Copy.impl [GooseExts] [GoGlobalContext] (M1 M2 K V : go.GoType) : val :=
+noncomputable def Copy.impl [GooseExts] [GoGlobalContext] (M1₀ M2₀ K₀ V₀ : go.GoType) : val :=
   (LamV "dst"
   (Lam "src"
   (Seq (App (Val exceptionDo)
-  (Let "src" (App (Val (GoInstruction (GoAlloc M2))) (Var "src"))
-  (Let "dst" (App (Val (GoInstruction (GoAlloc M1))) (Var "dst"))
-  (Let "$range" (App (Val (GoInstruction (GoLoad M2))) (Var "src"))
-  (Let "v" (App (Val (GoInstruction (GoAlloc V))) (App (Val (GoInstruction (GoZeroVal V))) (Val #())))
-  (Let "k" (App (Val (GoInstruction (GoAlloc K))) (App (Val (GoInstruction (GoZeroVal K))) (Val #())))
-  (App (App (Val (map.forRange K V)) (Var "$range"))
+  (Let "src" (App (Val (GoInstruction (GoAlloc M2₀))) (Var "src"))
+  (Let "dst" (App (Val (GoInstruction (GoAlloc M1₀))) (Var "dst"))
+  (Let "$range" (App (Val (GoInstruction (GoLoad M2₀))) (Var "src"))
+  (Let "v" (App (Val (GoInstruction (GoAlloc V₀))) (App (Val (GoInstruction (GoZeroVal V₀))) (Val #())))
+  (Let "k" (App (Val (GoInstruction (GoAlloc K₀))) (App (Val (GoInstruction (GoZeroVal K₀))) (Val #())))
+  (App (App (Val (map.forRange K₀ V₀)) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad V))) (Var "v"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad V₀))) (Var "v"))
   (App (Val doExecute)
-  (App (App (App (Val (map.insert K)) (App (Val (GoInstruction (GoLoad M1))) (Var "dst"))) (App (Val (GoInstruction (GoLoad K))) (Var "k"))) (Var "$r0"))))))
+  (App (App (App (Val (map.insert K₀)) (App (Val (GoInstruction (GoLoad M1₀))) (Var "dst"))) (App (Val (GoInstruction (GoLoad K₀))) (Var "k"))) (Var "$r0"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore K))) (Pair (Var "k") (Var "$key")))))))
+  (App (Val (GoInstruction (GoStore K₀))) (Pair (Var "k") (Var "$key")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore V))) (Pair (Var "v") (Var "$value"))))))))))))))
+  (App (Val (GoInstruction (GoStore V₀))) (Pair (Var "v") (Var "$value"))))))))))))))
   (Val #()))))
 
 /-- DeleteFunc deletes any key/value pairs from m for which del returns true.
 
     go: maps.go:69:6 -/
-noncomputable def DeleteFunc.impl [GooseExts] [GoGlobalContext] (M K V : go.GoType) : val :=
+noncomputable def DeleteFunc.impl [GooseExts] [GoGlobalContext] (M₀ K₀ V₀ : go.GoType) : val :=
   (LamV "m"
   (Lam "del"
   (Seq (App (Val exceptionDo)
-  (Let "del" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [K, V] false [go.bool]))))) (Var "del"))
-  (Let "m" (App (Val (GoInstruction (GoAlloc M))) (Var "m"))
-  (Let "$range" (App (Val (GoInstruction (GoLoad M))) (Var "m"))
-  (Let "v" (App (Val (GoInstruction (GoAlloc V))) (App (Val (GoInstruction (GoZeroVal V))) (Val #())))
-  (Let "k" (App (Val (GoInstruction (GoAlloc K))) (App (Val (GoInstruction (GoZeroVal K))) (Val #())))
-  (App (App (Val (map.forRange K V)) (Var "$range"))
+  (Let "del" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [K₀, V₀] false [go.bool]))))) (Var "del"))
+  (Let "m" (App (Val (GoInstruction (GoAlloc M₀))) (Var "m"))
+  (Let "$range" (App (Val (GoInstruction (GoLoad M₀))) (Var "m"))
+  (Let "v" (App (Val (GoInstruction (GoAlloc V₀))) (App (Val (GoInstruction (GoZeroVal V₀))) (Val #())))
+  (Let "k" (App (Val (GoInstruction (GoAlloc K₀))) (App (Val (GoInstruction (GoZeroVal K₀))) (Val #())))
+  (App (App (Val (map.forRange K₀ V₀)) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (Let "$a0" (App (Val (GoInstruction (GoLoad K))) (Var "k"))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad V))) (Var "v"))
-  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [K, V] false [go.bool]))))) (Var "del")) (Var "$a0")) (Var "$a1"))))
+  (If (Let "$a0" (App (Val (GoInstruction (GoLoad K₀))) (Var "k"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad V₀))) (Var "v"))
+  (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [K₀, V₀] false [go.bool]))))) (Var "del")) (Var "$a0")) (Var "$a1"))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad M))) (Var "m"))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad K))) (Var "k"))
-  (App (App (App (Val (GoInstruction (FuncResolve go.delete [M]))) (Val #())) (Var "$a0")) (Var "$a1")))))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad M₀))) (Var "m"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad K₀))) (Var "k"))
+  (App (App (App (Val (GoInstruction (FuncResolve go.delete [M₀]))) (Val #())) (Var "$a0")) (Var "$a1")))))
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore K))) (Pair (Var "k") (Var "$key")))))))
+  (App (Val (GoInstruction (GoStore K₀))) (Pair (Var "k") (Var "$key")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore V))) (Pair (Var "v") (Var "$value"))))))))))))))
+  (App (Val (GoInstruction (GoStore V₀))) (Pair (Var "v") (Var "$value"))))))))))))))
   (Val #()))))
 
 noncomputable instance info' : PkgInfo pkg_id.maps where
@@ -458,31 +458,31 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.iter.initialize') (Val #())))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  All_unfold : ∀ (Map K V : go.GoType), FuncUnfold All [Map, K, V] (All.impl Map K V)
-  Keys_unfold : ∀ (Map K V : go.GoType), FuncUnfold Keys [Map, K, V] (Keys.impl Map K V)
-  Values_unfold : ∀ (Map K V : go.GoType), FuncUnfold Values [Map, K, V] (Values.impl Map K V)
-  Insert_unfold : ∀ (Map K V : go.GoType), FuncUnfold Insert [Map, K, V] (Insert.impl Map K V)
-  Collect_unfold : ∀ (K V : go.GoType), FuncUnfold Collect [K, V] (Collect.impl K V)
-  Equal_unfold : ∀ (M1 M2 K V : go.GoType), FuncUnfold Equal [M1, M2, K, V] (Equal.impl M1 M2 K V)
-  EqualFunc_unfold : ∀ (M1 M2 K V1 V2 : go.GoType), FuncUnfold EqualFunc [M1, M2, K, V1, V2] (EqualFunc.impl M1 M2 K V1 V2)
-  clone_unfold : FuncUnfold clone [] clone.impl
-  Clone_unfold : ∀ (M K V : go.GoType), FuncUnfold Clone [M, K, V] (Clone.impl M K V)
-  Copy_unfold : ∀ (M1 M2 K V : go.GoType), FuncUnfold Copy [M1, M2, K, V] (Copy.impl M1 M2 K V)
-  DeleteFunc_unfold : ∀ (M K V : go.GoType), FuncUnfold DeleteFunc [M, K, V] (DeleteFunc.impl M K V)
-  import_iter_Assumption : _root_.Perennial.iter.Assumptions
+  unfold'All : ∀ (Map₀ K₀ V₀ : go.GoType), FuncUnfold All [Map₀, K₀, V₀] (All.impl Map₀ K₀ V₀)
+  unfold'Keys : ∀ (Map₀ K₀ V₀ : go.GoType), FuncUnfold Keys [Map₀, K₀, V₀] (Keys.impl Map₀ K₀ V₀)
+  unfold'Values : ∀ (Map₀ K₀ V₀ : go.GoType), FuncUnfold Values [Map₀, K₀, V₀] (Values.impl Map₀ K₀ V₀)
+  unfold'Insert : ∀ (Map₀ K₀ V₀ : go.GoType), FuncUnfold Insert [Map₀, K₀, V₀] (Insert.impl Map₀ K₀ V₀)
+  unfold'Collect : ∀ (K₀ V₀ : go.GoType), FuncUnfold Collect [K₀, V₀] (Collect.impl K₀ V₀)
+  unfold'Equal : ∀ (M1₀ M2₀ K₀ V₀ : go.GoType), FuncUnfold Equal [M1₀, M2₀, K₀, V₀] (Equal.impl M1₀ M2₀ K₀ V₀)
+  unfold'EqualFunc : ∀ (M1₀ M2₀ K₀ V1₀ V2₀ : go.GoType), FuncUnfold EqualFunc [M1₀, M2₀, K₀, V1₀, V2₀] (EqualFunc.impl M1₀ M2₀ K₀ V1₀ V2₀)
+  unfold'clone : FuncUnfold clone [] clone.impl
+  unfold'Clone : ∀ (M₀ K₀ V₀ : go.GoType), FuncUnfold Clone [M₀, K₀, V₀] (Clone.impl M₀ K₀ V₀)
+  unfold'Copy : ∀ (M1₀ M2₀ K₀ V₀ : go.GoType), FuncUnfold Copy [M1₀, M2₀, K₀, V₀] (Copy.impl M1₀ M2₀ K₀ V₀)
+  unfold'DeleteFunc : ∀ (M₀ K₀ V₀ : go.GoType), FuncUnfold DeleteFunc [M₀, K₀, V₀] (DeleteFunc.impl M₀ K₀ V₀)
+  import'iter : _root_.Perennial.iter.Assumptions
 
-attribute [instance] Assumptions.All_unfold
-  Assumptions.Keys_unfold
-  Assumptions.Values_unfold
-  Assumptions.Insert_unfold
-  Assumptions.Collect_unfold
-  Assumptions.Equal_unfold
-  Assumptions.EqualFunc_unfold
-  Assumptions.clone_unfold
-  Assumptions.Clone_unfold
-  Assumptions.Copy_unfold
-  Assumptions.DeleteFunc_unfold
-  Assumptions.import_iter_Assumption
+attribute [instance] Assumptions.unfold'All
+  Assumptions.unfold'Keys
+  Assumptions.unfold'Values
+  Assumptions.unfold'Insert
+  Assumptions.unfold'Collect
+  Assumptions.unfold'Equal
+  Assumptions.unfold'EqualFunc
+  Assumptions.unfold'clone
+  Assumptions.unfold'Clone
+  Assumptions.unfold'Copy
+  Assumptions.unfold'DeleteFunc
+  Assumptions.import'iter
 
 end maps
 

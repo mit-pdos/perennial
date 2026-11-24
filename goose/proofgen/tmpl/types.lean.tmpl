@@ -29,7 +29,7 @@ variable [sem : go.Semantics]
 variable [package_sem' : {{$t.PkgName}}.Assumptions]
 
 {{ if $t.Axiomatize -}}
-noncomputable instance {{leanq (print $t.RawName "_typed_pointsto")}} {{ template "TypedPointstoParams" $t.TypeParams }}:
+noncomputable instance {{leanq (print "typed_pointsto'" $t.RawName)}} {{ template "TypedPointstoParams" $t.TypeParams }}:
     TypedPointsto (GF := GF) {{template "ValueType" $t}} :=
   sorry -- axiomatized type
 {{- else -}}
@@ -38,7 +38,7 @@ noncomputable instance {{leanq (print $t.RawName "_typed_pointsto")}} {{ templat
 set_option synthInstance.maxSize 1024 in
 set_option synthInstance.maxHeartbeats 200000 in
 {{ end -}}
-noncomputable instance {{leanq (print $t.RawName "_typed_pointsto")}} {{ template "TypedPointstoParams" $t.TypeParams }}:
+noncomputable instance {{leanq (print "typed_pointsto'" $t.RawName)}} {{ template "TypedPointstoParams" $t.TypeParams }}:
     TypedPointsto (GF := GF) {{template "ValueType" $t}} where
   typedPointstoDef l v dq := iprop(
 {{- range $f := $t.LeanFields }}
@@ -50,7 +50,7 @@ noncomputable instance {{leanq (print $t.RawName "_typed_pointsto")}} {{ templat
   typedPointsto_agree := by solve_typed_pointsto_agree
 {{- end }}
 
-noncomputable instance {{leanq (print $t.RawName "_into_val_typed")}} {{ template "IntoValParams" $t.TypeParams }}:
+noncomputable instance {{leanq (print "into_val_typed'" $t.RawName)}} {{ template "IntoValParams" $t.TypeParams }}:
     IntoValTypedUnderlying (GF := GF) {{template "ValueType" $t}} {{ template "GoTypeImpl" $t}} :=
 {{- if $t.Axiomatize }}
   sorry -- axiomatized type
@@ -58,7 +58,7 @@ noncomputable instance {{leanq (print $t.RawName "_into_val_typed")}} {{ templat
   solve_into_val_typed_struct
 {{- end }}
 {{ range $f := $t.LeanFields }}
-noncomputable instance {{leanq (print $t.RawName "_access_load_" $f.Name)}} {{ template "TypedPointstoParams" $t.TypeParams }}(l : Loc) (v : {{ template "ValueType" $t}}) (dq : DFrac) :
+noncomputable instance {{leanq (print "access_load'" $t.RawName "'" $f.Name)}} {{ template "TypedPointstoParams" $t.TypeParams }}(l : Loc) (v : {{ template "ValueType" $t}}) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef {{template "ValueType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} dq)
       (typedPointsto (structFieldRef {{template "ValueType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} dq)
@@ -66,7 +66,7 @@ noncomputable instance {{leanq (print $t.RawName "_access_load_" $f.Name)}} {{ t
  by
   solve_pointsto_access_struct
 
-noncomputable instance {{leanq (print $t.RawName "_access_store_" $f.Name)}} {{ template "TypedPointstoParams" $t.TypeParams }}(l : Loc) (v : {{ template "ValueType" $t}}) (y : {{$f.Type}}) :
+noncomputable instance {{leanq (print "access_store'" $t.RawName "'" $f.Name)}} {{ template "TypedPointstoParams" $t.TypeParams }}(l : Loc) (v : {{ template "ValueType" $t}}) (y : {{$f.Type}}) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef {{template "ValueType" $t}} {{$f.GoString}} l) v.{{$f.Proj}} (DFrac.own 1))
       (typedPointsto (structFieldRef {{template "ValueType" $t}} {{$f.GoString}} l) y (DFrac.own 1))

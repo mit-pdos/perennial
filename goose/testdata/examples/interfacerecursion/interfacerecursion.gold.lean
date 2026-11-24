@@ -115,7 +115,7 @@ noncomputable instance c.zero_val [GooseExts] : ZeroVal c :=
 @[irreducible] noncomputable def c.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   c.fieldsUnsealed
 
-noncomputable instance equals_unfold_c [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'c [GooseExts] [GoGlobalContext] :
     EqualsUnfold c.fields c.fieldsUnsealed :=
   ⟨by unfold c.fields; rfl⟩
 
@@ -127,24 +127,24 @@ class c.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemant
   underlying : go.UnderlyingDirectedEq c.ty c.underlying
   method_set : go.MethodSetIs c.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType c.ty) [(go!"Bar", (some (go.signature.Signature [] false []))), (go!"Foo", (some (go.signature.Signature [] false [])))]
-  ptr_Bar_unfold : MethodUnfold (go.GoType.PointerType c.ty) go!"Bar" c.Bar.impl
-  ptr_Foo_unfold : MethodUnfold (go.GoType.PointerType c.ty) go!"Foo" c.Foo.impl
+  ptr_unfold'Bar : MethodUnfold (go.GoType.PointerType c.ty) go!"Bar" c.Bar.impl
+  ptr_unfold'Foo : MethodUnfold (go.GoType.PointerType c.ty) go!"Foo" c.Foo.impl
 
 attribute [instance] c.TypeAssumptions.type_repr
   c.TypeAssumptions.underlying
   c.TypeAssumptions.method_set
   c.TypeAssumptions.ptr_method_set
-  c.TypeAssumptions.ptr_Bar_unfold
-  c.TypeAssumptions.ptr_Foo_unfold
+  c.TypeAssumptions.ptr_unfold'Bar
+  c.TypeAssumptions.ptr_unfold'Foo
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  A_instance : A.TypeAssumptions
-  B_instance : B.TypeAssumptions
-  c_instance : c.TypeAssumptions
+  instance'A : A.TypeAssumptions
+  instance'B : B.TypeAssumptions
+  instance'c : c.TypeAssumptions
 
-attribute [instance] Assumptions.A_instance
-  Assumptions.B_instance
-  Assumptions.c_instance
+attribute [instance] Assumptions.instance'A
+  Assumptions.instance'B
+  Assumptions.instance'c
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.interfacerecursion
 

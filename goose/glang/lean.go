@@ -137,7 +137,7 @@ func init() {
 	tactic_alt tactic_extension tactic_name tactic_tag termination_by
 	test_extern then theorem theorem_wanted throwError throwErrorAt
 	throwIPMError throwIPMErrorAt throwNamedError throwNamedErrorAt
-	trailing_parser try unif_hint universe unless unlock_limits unsafe unseal
+	trailing_parser try rec unif_hint universe unless unlock_limits unsafe unseal
 	until using variable where while with with_annotate_term with_weak_namespace
 	without_expected_type Π Σ λ`) {
 		LeanKeywords[w] = true
@@ -145,9 +145,10 @@ func init() {
 }
 
 // leanIdentRest reports whether r can appear in a Lean identifier without
-// quoting (conservatively: ASCII only).
+// quoting (conservatively: ASCII only, and the subscript digits of
+// BinderName).
 func leanIdentRest(r rune) bool {
-	return r == '_' || r == '\'' || r == '!' || r == '?' ||
+	return r == '_' || r == '\'' || r == '!' || r == '?' || ('₀' <= r && r <= '₉') ||
 		('a' <= r && r <= 'z') || ('A' <= r && r <= 'Z') || ('0' <= r && r <= '9')
 }
 

@@ -150,8 +150,8 @@ noncomputable def wordCount.impl [GooseExts] [GoGlobalContext] : val :=
   (Seq (App (Val exceptionDo)
   (Let "docs" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (Var "docs"))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (let numWorkers := #(2 : Int);
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType (go.GoType.PointerType Worker.ty))]))) (Val #())) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val numWorkers)))
+  (let numWorkers₀ := #(2 : Int);
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType (go.GoType.PointerType Worker.ty))]))) (Val #())) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val numWorkers₀)))
   (Let "workers" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType (go.GoType.PointerType Worker.ty))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType (go.GoType.PointerType Worker.ty))))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -181,7 +181,7 @@ noncomputable def wordCount.impl [GooseExts] [GoGlobalContext] : val :=
   (Lam "$value"
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Worker.ty)))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType (go.GoType.PointerType Worker.ty))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType (go.GoType.PointerType Worker.ty))))) (Var "workers")) (App (Val (GoInstruction (GoOp GoRemainder go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val numWorkers)))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Worker.ty)))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType (go.GoType.PointerType Worker.ty))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType (go.GoType.PointerType Worker.ty))))) (Var "workers")) (App (Val (GoInstruction (GoOp GoRemainder go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val numWorkers₀)))))))
   (Let "neighbor" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Worker.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType Worker.ty)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Worker.ty)))) (Var "neighbor"))
@@ -273,7 +273,7 @@ noncomputable instance Worker.zero_val [GooseExts] : ZeroVal Worker :=
 @[irreducible] noncomputable def Worker.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Worker.fieldsUnsealed
 
-noncomputable instance equals_unfold_Worker [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Worker [GooseExts] [GoGlobalContext] :
     EqualsUnfold Worker.fields Worker.fieldsUnsealed :=
   ⟨by unfold Worker.fields; rfl⟩
 
@@ -283,25 +283,25 @@ noncomputable instance equals_unfold_Worker [GooseExts] [GoGlobalContext] :
 class Worker.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Worker.underlying Worker
   underlying : go.UnderlyingDirectedEq Worker.ty Worker.underlying
-  get_queue : ∀ (x : Worker), go.IsGoStepPureDetTagged under (StructFieldGet Worker.underlying go!"queue") #x (Val #(x.queue'))
-  set_queue : ∀ (x : Worker) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Worker.underlying go!"queue") (PairV #x #y) (Val #(({ x with queue' := y } : Worker)))
-  get_steal : ∀ (x : Worker), go.IsGoStepPureDetTagged under (StructFieldGet Worker.underlying go!"steal") #x (Val #(x.steal'))
-  set_steal : ∀ (x : Worker) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Worker.underlying go!"steal") (PairV #x #y) (Val #(({ x with steal' := y } : Worker)))
+  get'queue : ∀ (x : Worker), go.IsGoStepPureDetTagged under (StructFieldGet Worker.underlying go!"queue") #x (Val #(x.queue'))
+  set'queue : ∀ (x : Worker) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Worker.underlying go!"queue") (PairV #x #y) (Val #(({ x with queue' := y } : Worker)))
+  get'steal : ∀ (x : Worker), go.IsGoStepPureDetTagged under (StructFieldGet Worker.underlying go!"steal") #x (Val #(x.steal'))
+  set'steal : ∀ (x : Worker) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Worker.underlying go!"steal") (PairV #x #y) (Val #(({ x with steal' := y } : Worker)))
   method_set : go.MethodSetIs Worker.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Worker.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/workq.process", (some (go.signature.Signature [go.string, shared.ty] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/workq.run", (some (go.signature.Signature [(go.GoType.PointerType Worker.ty), shared.ty] false [])))]
-  ptr_process_unfold : MethodUnfold (go.GoType.PointerType Worker.ty) go!"process" Worker.process.impl
-  ptr_run_unfold : MethodUnfold (go.GoType.PointerType Worker.ty) go!"run" Worker.run.impl
+  ptr_unfold'process : MethodUnfold (go.GoType.PointerType Worker.ty) go!"process" Worker.process.impl
+  ptr_unfold'run : MethodUnfold (go.GoType.PointerType Worker.ty) go!"run" Worker.run.impl
 
 attribute [instance] Worker.TypeAssumptions.type_repr
   Worker.TypeAssumptions.underlying
-  Worker.TypeAssumptions.get_queue
-  Worker.TypeAssumptions.set_queue
-  Worker.TypeAssumptions.get_steal
-  Worker.TypeAssumptions.set_steal
+  Worker.TypeAssumptions.get'queue
+  Worker.TypeAssumptions.set'queue
+  Worker.TypeAssumptions.get'steal
+  Worker.TypeAssumptions.set'steal
   Worker.TypeAssumptions.method_set
   Worker.TypeAssumptions.ptr_method_set
-  Worker.TypeAssumptions.ptr_process_unfold
-  Worker.TypeAssumptions.ptr_run_unfold
+  Worker.TypeAssumptions.ptr_unfold'process
+  Worker.TypeAssumptions.ptr_unfold'run
 
 structure shared [GooseExts] where
   mk ::
@@ -320,7 +320,7 @@ noncomputable instance shared.zero_val [GooseExts] : ZeroVal shared :=
 @[irreducible] noncomputable def shared.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   shared.fieldsUnsealed
 
-noncomputable instance equals_unfold_shared [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'shared [GooseExts] [GoGlobalContext] :
     EqualsUnfold shared.fields shared.fieldsUnsealed :=
   ⟨by unfold shared.fields; rfl⟩
 
@@ -330,38 +330,38 @@ noncomputable instance equals_unfold_shared [GooseExts] [GoGlobalContext] :
 class shared.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying shared.underlying shared
   underlying : go.UnderlyingDirectedEq shared.ty shared.underlying
-  get_remaining : ∀ (x : shared), go.IsGoStepPureDetTagged under (StructFieldGet shared.underlying go!"remaining") #x (Val #(x.remaining'))
-  set_remaining : ∀ (x : shared) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet shared.underlying go!"remaining") (PairV #x #y) (Val #(({ x with remaining' := y } : shared)))
-  get_total : ∀ (x : shared), go.IsGoStepPureDetTagged under (StructFieldGet shared.underlying go!"total") #x (Val #(x.total'))
-  set_total : ∀ (x : shared) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet shared.underlying go!"total") (PairV #x #y) (Val #(({ x with total' := y } : shared)))
-  get_done : ∀ (x : shared), go.IsGoStepPureDetTagged under (StructFieldGet shared.underlying go!"done") #x (Val #(x.done'))
-  set_done : ∀ (x : shared) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet shared.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : shared)))
+  get'remaining : ∀ (x : shared), go.IsGoStepPureDetTagged under (StructFieldGet shared.underlying go!"remaining") #x (Val #(x.remaining'))
+  set'remaining : ∀ (x : shared) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet shared.underlying go!"remaining") (PairV #x #y) (Val #(({ x with remaining' := y } : shared)))
+  get'total : ∀ (x : shared), go.IsGoStepPureDetTagged under (StructFieldGet shared.underlying go!"total") #x (Val #(x.total'))
+  set'total : ∀ (x : shared) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet shared.underlying go!"total") (PairV #x #y) (Val #(({ x with total' := y } : shared)))
+  get'done : ∀ (x : shared), go.IsGoStepPureDetTagged under (StructFieldGet shared.underlying go!"done") #x (Val #(x.done'))
+  set'done : ∀ (x : shared) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet shared.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : shared)))
   method_set : go.MethodSetIs shared.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType shared.ty) []
 
 attribute [instance] shared.TypeAssumptions.type_repr
   shared.TypeAssumptions.underlying
-  shared.TypeAssumptions.get_remaining
-  shared.TypeAssumptions.set_remaining
-  shared.TypeAssumptions.get_total
-  shared.TypeAssumptions.set_total
-  shared.TypeAssumptions.get_done
-  shared.TypeAssumptions.set_done
+  shared.TypeAssumptions.get'remaining
+  shared.TypeAssumptions.set'remaining
+  shared.TypeAssumptions.get'total
+  shared.TypeAssumptions.set'total
+  shared.TypeAssumptions.get'done
+  shared.TypeAssumptions.set'done
   shared.TypeAssumptions.method_set
   shared.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Worker_instance : Worker.TypeAssumptions
-  shared_instance : shared.TypeAssumptions
-  wordCount_unfold : FuncUnfold wordCount [] wordCount.impl
-  import_strings_Assumption : _root_.Perennial.strings.Assumptions
-  import_atomic_Assumption : _root_.Perennial.sync.atomic.Assumptions
+  instance'Worker : Worker.TypeAssumptions
+  instance'shared : shared.TypeAssumptions
+  unfold'wordCount : FuncUnfold wordCount [] wordCount.impl
+  import'strings : _root_.Perennial.strings.Assumptions
+  import'atomic : _root_.Perennial.sync.atomic.Assumptions
 
-attribute [instance] Assumptions.Worker_instance
-  Assumptions.shared_instance
-  Assumptions.wordCount_unfold
-  Assumptions.import_strings_Assumption
-  Assumptions.import_atomic_Assumption
+attribute [instance] Assumptions.instance'Worker
+  Assumptions.instance'shared
+  Assumptions.unfold'wordCount
+  Assumptions.import'strings
+  Assumptions.import'atomic
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq
 

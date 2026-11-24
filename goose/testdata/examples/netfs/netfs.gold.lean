@@ -163,19 +163,19 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.netfs.netext.initialize') (Val #()))))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  recvFrom_unfold : FuncUnfold recvFrom [] recvFrom.impl
-  NodeA_unfold : FuncUnfold NodeA [] NodeA.impl
-  NodeB_unfold : FuncUnfold NodeB [] NodeB.impl
-  NodeC_unfold : FuncUnfold NodeC [] NodeC.impl
-  import_fsext_Assumption : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.Assumptions
-  import_netext_Assumption : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.netfs.netext.Assumptions
+  unfold'recvFrom : FuncUnfold recvFrom [] recvFrom.impl
+  unfold'NodeA : FuncUnfold NodeA [] NodeA.impl
+  unfold'NodeB : FuncUnfold NodeB [] NodeB.impl
+  unfold'NodeC : FuncUnfold NodeC [] NodeC.impl
+  import'fsext : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.Assumptions
+  import'netext : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.netfs.netext.Assumptions
 
-attribute [instance] Assumptions.recvFrom_unfold
-  Assumptions.NodeA_unfold
-  Assumptions.NodeB_unfold
-  Assumptions.NodeC_unfold
-  Assumptions.import_fsext_Assumption
-  Assumptions.import_netext_Assumption
+attribute [instance] Assumptions.unfold'recvFrom
+  Assumptions.unfold'NodeA
+  Assumptions.unfold'NodeB
+  Assumptions.unfold'NodeC
+  Assumptions.import'fsext
+  Assumptions.import'netext
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.netfs
 

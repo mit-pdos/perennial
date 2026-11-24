@@ -1419,7 +1419,7 @@ noncomputable instance digest.zero_val [GooseExts] : ZeroVal digest :=
 @[irreducible] noncomputable def digest.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   digest.fieldsUnsealed
 
-noncomputable instance equals_unfold_digest [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'digest [GooseExts] [GoGlobalContext] :
     EqualsUnfold digest.fields digest.fieldsUnsealed :=
   ⟨by unfold digest.fields; rfl⟩
 
@@ -1429,84 +1429,84 @@ noncomputable instance equals_unfold_digest [GooseExts] [GoGlobalContext] :
 class digest.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying digest.underlying digest
   underlying : go.UnderlyingDirectedEq digest.ty digest.underlying
-  get_h : ∀ (x : digest), go.IsGoStepPureDetTagged under (StructFieldGet digest.underlying go!"h") #x (Val #(x.h'))
-  set_h : ∀ (x : digest) (y : (GoArray w32 5)), go.IsGoStepPureDetTagged under (StructFieldSet digest.underlying go!"h") (PairV #x #y) (Val #(({ x with h' := y } : digest)))
-  get_x : ∀ (x : digest), go.IsGoStepPureDetTagged under (StructFieldGet digest.underlying go!"x") #x (Val #(x.x'))
-  set_x : ∀ (x : digest) (y : (GoArray w8 64)), go.IsGoStepPureDetTagged under (StructFieldSet digest.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : digest)))
-  get_nx : ∀ (x : digest), go.IsGoStepPureDetTagged under (StructFieldGet digest.underlying go!"nx") #x (Val #(x.nx'))
-  set_nx : ∀ (x : digest) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet digest.underlying go!"nx") (PairV #x #y) (Val #(({ x with nx' := y } : digest)))
-  get_len : ∀ (x : digest), go.IsGoStepPureDetTagged under (StructFieldGet digest.underlying go!"len") #x (Val #(x.len'))
-  set_len : ∀ (x : digest) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet digest.underlying go!"len") (PairV #x #y) (Val #(({ x with len' := y } : digest)))
+  get'h : ∀ (x : digest), go.IsGoStepPureDetTagged under (StructFieldGet digest.underlying go!"h") #x (Val #(x.h'))
+  set'h : ∀ (x : digest) (y : (GoArray w32 5)), go.IsGoStepPureDetTagged under (StructFieldSet digest.underlying go!"h") (PairV #x #y) (Val #(({ x with h' := y } : digest)))
+  get'x : ∀ (x : digest), go.IsGoStepPureDetTagged under (StructFieldGet digest.underlying go!"x") #x (Val #(x.x'))
+  set'x : ∀ (x : digest) (y : (GoArray w8 64)), go.IsGoStepPureDetTagged under (StructFieldSet digest.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : digest)))
+  get'nx : ∀ (x : digest), go.IsGoStepPureDetTagged under (StructFieldGet digest.underlying go!"nx") #x (Val #(x.nx'))
+  set'nx : ∀ (x : digest) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet digest.underlying go!"nx") (PairV #x #y) (Val #(({ x with nx' := y } : digest)))
+  get'len : ∀ (x : digest), go.IsGoStepPureDetTagged under (StructFieldGet digest.underlying go!"len") #x (Val #(x.len'))
+  set'len : ∀ (x : digest) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet digest.underlying go!"len") (PairV #x #y) (Val #(({ x with len' := y } : digest)))
   method_set : go.MethodSetIs digest.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType digest.ty) [(go!"AppendBinary", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.SliceType go.byte), go.error]))), (go!"BlockSize", (some (go.signature.Signature [] false [go.int]))), (go!"Clone", (some (go.signature.Signature [] false [_root_.Perennial.hash.Cloner.ty, go.error]))), (go!"ConstantTimeSum", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.SliceType go.byte)]))), (go!"MarshalBinary", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Reset", (some (go.signature.Signature [] false []))), (go!"Size", (some (go.signature.Signature [] false [go.int]))), (go!"Sum", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.SliceType go.byte)]))), (go!"UnmarshalBinary", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.error]))), (go!"Write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"crypto/sha1.checkSum", (some (go.signature.Signature [] false [(go.GoType.ArrayType 20 go.byte)]))), (go!"crypto/sha1.constSum", (some (go.signature.Signature [] false [(go.GoType.ArrayType 20 go.byte)])))]
-  ptr_AppendBinary_unfold : MethodUnfold (go.GoType.PointerType digest.ty) go!"AppendBinary" digest.AppendBinary.impl
-  ptr_BlockSize_unfold : MethodUnfold (go.GoType.PointerType digest.ty) go!"BlockSize" digest.BlockSize.impl
-  ptr_Clone_unfold : MethodUnfold (go.GoType.PointerType digest.ty) go!"Clone" digest.Clone.impl
-  ptr_ConstantTimeSum_unfold : MethodUnfold (go.GoType.PointerType digest.ty) go!"ConstantTimeSum" digest.ConstantTimeSum.impl
-  ptr_MarshalBinary_unfold : MethodUnfold (go.GoType.PointerType digest.ty) go!"MarshalBinary" digest.MarshalBinary.impl
-  ptr_Reset_unfold : MethodUnfold (go.GoType.PointerType digest.ty) go!"Reset" digest.Reset.impl
-  ptr_Size_unfold : MethodUnfold (go.GoType.PointerType digest.ty) go!"Size" digest.Size.impl
-  ptr_Sum_unfold : MethodUnfold (go.GoType.PointerType digest.ty) go!"Sum" digest.Sum.impl
-  ptr_UnmarshalBinary_unfold : MethodUnfold (go.GoType.PointerType digest.ty) go!"UnmarshalBinary" digest.UnmarshalBinary.impl
-  ptr_Write_unfold : MethodUnfold (go.GoType.PointerType digest.ty) go!"Write" digest.Write.impl
-  ptr_checkSum_unfold : MethodUnfold (go.GoType.PointerType digest.ty) go!"checkSum" digest.checkSum.impl
-  ptr_constSum_unfold : MethodUnfold (go.GoType.PointerType digest.ty) go!"constSum" digest.constSum.impl
+  ptr_unfold'AppendBinary : MethodUnfold (go.GoType.PointerType digest.ty) go!"AppendBinary" digest.AppendBinary.impl
+  ptr_unfold'BlockSize : MethodUnfold (go.GoType.PointerType digest.ty) go!"BlockSize" digest.BlockSize.impl
+  ptr_unfold'Clone : MethodUnfold (go.GoType.PointerType digest.ty) go!"Clone" digest.Clone.impl
+  ptr_unfold'ConstantTimeSum : MethodUnfold (go.GoType.PointerType digest.ty) go!"ConstantTimeSum" digest.ConstantTimeSum.impl
+  ptr_unfold'MarshalBinary : MethodUnfold (go.GoType.PointerType digest.ty) go!"MarshalBinary" digest.MarshalBinary.impl
+  ptr_unfold'Reset : MethodUnfold (go.GoType.PointerType digest.ty) go!"Reset" digest.Reset.impl
+  ptr_unfold'Size : MethodUnfold (go.GoType.PointerType digest.ty) go!"Size" digest.Size.impl
+  ptr_unfold'Sum : MethodUnfold (go.GoType.PointerType digest.ty) go!"Sum" digest.Sum.impl
+  ptr_unfold'UnmarshalBinary : MethodUnfold (go.GoType.PointerType digest.ty) go!"UnmarshalBinary" digest.UnmarshalBinary.impl
+  ptr_unfold'Write : MethodUnfold (go.GoType.PointerType digest.ty) go!"Write" digest.Write.impl
+  ptr_unfold'checkSum : MethodUnfold (go.GoType.PointerType digest.ty) go!"checkSum" digest.checkSum.impl
+  ptr_unfold'constSum : MethodUnfold (go.GoType.PointerType digest.ty) go!"constSum" digest.constSum.impl
 
 attribute [instance] digest.TypeAssumptions.type_repr
   digest.TypeAssumptions.underlying
-  digest.TypeAssumptions.get_h
-  digest.TypeAssumptions.set_h
-  digest.TypeAssumptions.get_x
-  digest.TypeAssumptions.set_x
-  digest.TypeAssumptions.get_nx
-  digest.TypeAssumptions.set_nx
-  digest.TypeAssumptions.get_len
-  digest.TypeAssumptions.set_len
+  digest.TypeAssumptions.get'h
+  digest.TypeAssumptions.set'h
+  digest.TypeAssumptions.get'x
+  digest.TypeAssumptions.set'x
+  digest.TypeAssumptions.get'nx
+  digest.TypeAssumptions.set'nx
+  digest.TypeAssumptions.get'len
+  digest.TypeAssumptions.set'len
   digest.TypeAssumptions.method_set
   digest.TypeAssumptions.ptr_method_set
-  digest.TypeAssumptions.ptr_AppendBinary_unfold
-  digest.TypeAssumptions.ptr_BlockSize_unfold
-  digest.TypeAssumptions.ptr_Clone_unfold
-  digest.TypeAssumptions.ptr_ConstantTimeSum_unfold
-  digest.TypeAssumptions.ptr_MarshalBinary_unfold
-  digest.TypeAssumptions.ptr_Reset_unfold
-  digest.TypeAssumptions.ptr_Size_unfold
-  digest.TypeAssumptions.ptr_Sum_unfold
-  digest.TypeAssumptions.ptr_UnmarshalBinary_unfold
-  digest.TypeAssumptions.ptr_Write_unfold
-  digest.TypeAssumptions.ptr_checkSum_unfold
-  digest.TypeAssumptions.ptr_constSum_unfold
+  digest.TypeAssumptions.ptr_unfold'AppendBinary
+  digest.TypeAssumptions.ptr_unfold'BlockSize
+  digest.TypeAssumptions.ptr_unfold'Clone
+  digest.TypeAssumptions.ptr_unfold'ConstantTimeSum
+  digest.TypeAssumptions.ptr_unfold'MarshalBinary
+  digest.TypeAssumptions.ptr_unfold'Reset
+  digest.TypeAssumptions.ptr_unfold'Size
+  digest.TypeAssumptions.ptr_unfold'Sum
+  digest.TypeAssumptions.ptr_unfold'UnmarshalBinary
+  digest.TypeAssumptions.ptr_unfold'Write
+  digest.TypeAssumptions.ptr_unfold'checkSum
+  digest.TypeAssumptions.ptr_unfold'constSum
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  digest_instance : digest.TypeAssumptions
-  «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
-  consumeUint64_unfold : FuncUnfold consumeUint64 [] consumeUint64.impl
-  consumeUint32_unfold : FuncUnfold consumeUint32 [] consumeUint32.impl
-  New_unfold : FuncUnfold New [] New.impl
-  Sum_unfold : FuncUnfold Sum [] Sum.impl
-  blockGeneric_unfold : FuncUnfold blockGeneric [] blockGeneric.impl
-  block_unfold : FuncUnfold block [] block.impl
-  import_boring_Assumption : _root_.Perennial.crypto.internal.boring.Assumptions
-  import_fips140only_Assumption : _root_.Perennial.crypto.internal.fips140only.Assumptions
-  import_errors_Assumption : _root_.Perennial.errors.Assumptions
-  import_hash_Assumption : _root_.Perennial.hash.Assumptions
-  import_byteorder_Assumption : _root_.Perennial.internal.byteorder.Assumptions
-  import_bits_Assumption : _root_.Perennial.math.bits.Assumptions
+  instance'digest : digest.TypeAssumptions
+  «unfold'init.0» : FuncUnfold init.«0» [] init.«0».impl
+  unfold'consumeUint64 : FuncUnfold consumeUint64 [] consumeUint64.impl
+  unfold'consumeUint32 : FuncUnfold consumeUint32 [] consumeUint32.impl
+  unfold'New : FuncUnfold New [] New.impl
+  unfold'Sum : FuncUnfold Sum [] Sum.impl
+  unfold'blockGeneric : FuncUnfold blockGeneric [] blockGeneric.impl
+  unfold'block : FuncUnfold block [] block.impl
+  import'boring : _root_.Perennial.crypto.internal.boring.Assumptions
+  import'fips140only : _root_.Perennial.crypto.internal.fips140only.Assumptions
+  import'errors : _root_.Perennial.errors.Assumptions
+  import'hash : _root_.Perennial.hash.Assumptions
+  import'byteorder : _root_.Perennial.internal.byteorder.Assumptions
+  import'bits : _root_.Perennial.math.bits.Assumptions
 
-attribute [instance] Assumptions.digest_instance
-  Assumptions.«init.0_unfold»
-  Assumptions.consumeUint64_unfold
-  Assumptions.consumeUint32_unfold
-  Assumptions.New_unfold
-  Assumptions.Sum_unfold
-  Assumptions.blockGeneric_unfold
-  Assumptions.block_unfold
-  Assumptions.import_boring_Assumption
-  Assumptions.import_fips140only_Assumption
-  Assumptions.import_errors_Assumption
-  Assumptions.import_hash_Assumption
-  Assumptions.import_byteorder_Assumption
-  Assumptions.import_bits_Assumption
+attribute [instance] Assumptions.instance'digest
+  Assumptions.«unfold'init.0»
+  Assumptions.unfold'consumeUint64
+  Assumptions.unfold'consumeUint32
+  Assumptions.unfold'New
+  Assumptions.unfold'Sum
+  Assumptions.unfold'blockGeneric
+  Assumptions.unfold'block
+  Assumptions.import'boring
+  Assumptions.import'fips140only
+  Assumptions.import'errors
+  Assumptions.import'hash
+  Assumptions.import'byteorder
+  Assumptions.import'bits
 
 end crypto.sha1
 

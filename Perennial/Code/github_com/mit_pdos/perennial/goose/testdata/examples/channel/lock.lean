@@ -148,7 +148,7 @@ noncomputable instance Lock.zero_val [GooseExts] : ZeroVal Lock :=
 @[irreducible] noncomputable def Lock.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Lock.fieldsUnsealed
 
-noncomputable instance equals_unfold_Lock [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Lock [GooseExts] [GoGlobalContext] :
     EqualsUnfold Lock.fields Lock.fieldsUnsealed :=
   ⟨by unfold Lock.fields; rfl⟩
 
@@ -158,46 +158,46 @@ noncomputable instance equals_unfold_Lock [GooseExts] [GoGlobalContext] :
 class Lock.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Lock.underlying Lock
   underlying : go.UnderlyingDirectedEq Lock.ty Lock.underlying
-  get_ch : ∀ (x : Lock), go.IsGoStepPureDetTagged under (StructFieldGet Lock.underlying go!"ch") #x (Val #(x.ch'))
-  set_ch : ∀ (x : Lock) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Lock.underlying go!"ch") (PairV #x #y) (Val #(({ x with ch' := y } : Lock)))
+  get'ch : ∀ (x : Lock), go.IsGoStepPureDetTagged under (StructFieldGet Lock.underlying go!"ch") #x (Val #(x.ch'))
+  set'ch : ∀ (x : Lock) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Lock.underlying go!"ch") (PairV #x #y) (Val #(({ x with ch' := y } : Lock)))
   method_set : go.MethodSetIs Lock.ty [(go!"Lock", (some (go.signature.Signature [] false []))), (go!"LockWithTimeout", (some (go.signature.Signature [_root_.Perennial.time.Duration.ty] false [go.bool]))), (go!"TryLock", (some (go.signature.Signature [] false [go.bool]))), (go!"Unlock", (some (go.signature.Signature [] false [])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Lock.ty) [(go!"Lock", (some (go.signature.Signature [] false []))), (go!"LockWithTimeout", (some (go.signature.Signature [_root_.Perennial.time.Duration.ty] false [go.bool]))), (go!"TryLock", (some (go.signature.Signature [] false [go.bool]))), (go!"Unlock", (some (go.signature.Signature [] false [])))]
-  Lock_unfold : MethodUnfold Lock.ty go!"Lock" Lock.Lock.impl
-  LockWithTimeout_unfold : MethodUnfold Lock.ty go!"LockWithTimeout" Lock.LockWithTimeout.impl
-  TryLock_unfold : MethodUnfold Lock.ty go!"TryLock" Lock.TryLock.impl
-  Unlock_unfold : MethodUnfold Lock.ty go!"Unlock" Lock.Unlock.impl
-  ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType Lock.ty) go!"Lock" (LamV "$r"
+  unfold'Lock : MethodUnfold Lock.ty go!"Lock" Lock.Lock.impl
+  unfold'LockWithTimeout : MethodUnfold Lock.ty go!"LockWithTimeout" Lock.LockWithTimeout.impl
+  unfold'TryLock : MethodUnfold Lock.ty go!"TryLock" Lock.TryLock.impl
+  unfold'Unlock : MethodUnfold Lock.ty go!"Unlock" Lock.Unlock.impl
+  ptr_unfold'Lock : MethodUnfold (go.GoType.PointerType Lock.ty) go!"Lock" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Lock.ty go!"Lock"))) (App (Val (GoInstruction (GoLoad Lock.ty))) (Var "$r"))))
-  ptr_LockWithTimeout_unfold : MethodUnfold (go.GoType.PointerType Lock.ty) go!"LockWithTimeout" (LamV "$r"
+  ptr_unfold'LockWithTimeout : MethodUnfold (go.GoType.PointerType Lock.ty) go!"LockWithTimeout" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Lock.ty go!"LockWithTimeout"))) (App (Val (GoInstruction (GoLoad Lock.ty))) (Var "$r"))))
-  ptr_TryLock_unfold : MethodUnfold (go.GoType.PointerType Lock.ty) go!"TryLock" (LamV "$r"
+  ptr_unfold'TryLock : MethodUnfold (go.GoType.PointerType Lock.ty) go!"TryLock" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Lock.ty go!"TryLock"))) (App (Val (GoInstruction (GoLoad Lock.ty))) (Var "$r"))))
-  ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType Lock.ty) go!"Unlock" (LamV "$r"
+  ptr_unfold'Unlock : MethodUnfold (go.GoType.PointerType Lock.ty) go!"Unlock" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Lock.ty go!"Unlock"))) (App (Val (GoInstruction (GoLoad Lock.ty))) (Var "$r"))))
 
 attribute [instance] Lock.TypeAssumptions.type_repr
   Lock.TypeAssumptions.underlying
-  Lock.TypeAssumptions.get_ch
-  Lock.TypeAssumptions.set_ch
+  Lock.TypeAssumptions.get'ch
+  Lock.TypeAssumptions.set'ch
   Lock.TypeAssumptions.method_set
   Lock.TypeAssumptions.ptr_method_set
-  Lock.TypeAssumptions.Lock_unfold
-  Lock.TypeAssumptions.LockWithTimeout_unfold
-  Lock.TypeAssumptions.TryLock_unfold
-  Lock.TypeAssumptions.Unlock_unfold
-  Lock.TypeAssumptions.ptr_Lock_unfold
-  Lock.TypeAssumptions.ptr_LockWithTimeout_unfold
-  Lock.TypeAssumptions.ptr_TryLock_unfold
-  Lock.TypeAssumptions.ptr_Unlock_unfold
+  Lock.TypeAssumptions.unfold'Lock
+  Lock.TypeAssumptions.unfold'LockWithTimeout
+  Lock.TypeAssumptions.unfold'TryLock
+  Lock.TypeAssumptions.unfold'Unlock
+  Lock.TypeAssumptions.ptr_unfold'Lock
+  Lock.TypeAssumptions.ptr_unfold'LockWithTimeout
+  Lock.TypeAssumptions.ptr_unfold'TryLock
+  Lock.TypeAssumptions.ptr_unfold'Unlock
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Lock_instance : Lock.TypeAssumptions
-  NewLock_unfold : FuncUnfold NewLock [] NewLock.impl
-  import_time_Assumption : _root_.Perennial.time.Assumptions
+  instance'Lock : Lock.TypeAssumptions
+  unfold'NewLock : FuncUnfold NewLock [] NewLock.impl
+  import'time : _root_.Perennial.time.Assumptions
 
-attribute [instance] Assumptions.Lock_instance
-  Assumptions.NewLock_unfold
-  Assumptions.import_time_Assumption
+attribute [instance] Assumptions.instance'Lock
+  Assumptions.unfold'NewLock
+  Assumptions.import'time
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock
 

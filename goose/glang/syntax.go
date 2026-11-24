@@ -32,32 +32,40 @@ type Expr interface {
 	Lean(m LeanMode) string
 }
 
-// The Lean names of Go identifiers. Each kind of Go name has one rule:
+// The Lean names of Go identifiers. Each kind of name has one rule:
 //
-//   - a struct field F is the projection F' (see recordProjection), and the
-//     value type of a type parameter P is the binder P' (lean_types.go);
-//   - every other Go name X (a type, function, global, method, or the
-//     go.GoType binder of a type parameter) is GoName(X): X itself, or X''
-//     when X is reserved (see reservedName). Lean keywords are reserved like
-//     every other conflicting name: Go `type Type int64` is `Type''`, `def` is
-//     `def''`, `Int` is `Int''`; the field `Type` is `Type'`.
+//   - a struct field F is the projection F' (see recordProjection);
+//   - a name goose binds inside a declaration, a type parameter or a
+//     function-local constant P, is P₀ (and a type parameter's value type is
+//     P₀'; see BinderName);
+//   - every other Go name X (a type, function, global or method) is
+//     GoName(X): X, or X'' when X is reserved (see reservedName). Lean
+//     keywords are reserved like every other conflicting name: Go `type Type
+//     int64` is `Type''`, `def` is `def''`, `Int` is `Int''`; the field `Type`
+//     is `Type'`;
+//   - a generated name derived from a Go name x (a class member or an
+//     instance) is tag'x (see MemberName): get'F, unfold'M, instance'T,
+//     typed_pointsto'T, access_load'T'F, ...
 //
 // Guillemets are only a lexing fallback, not a conflict rule: a Go identifier
 // may contain Unicode letters and digits that Lean's identifier lexer rejects
-// (`é`, `名`; Lean accepts ASCII letters, `_` and its letter-like ranges, such
-// as most Greek letters), and such a name is written in guillemets
+// (`é`, `名`, `λ`; Lean accepts ASCII letters, `_` and its letter-like ranges,
+// such as most Greek letters), and such a name is written in guillemets
 // (LeanQuoteComponent, conservatively for every non-ASCII name), which does
 // not change the name.
 //
-// Why this is collision-free: a field projection or value-type binder ends in
-// exactly one "'" after a Go identifier, and no other Go-derived name does
-// (Go identifiers have no "'", and reserved ones get two), so a projection
-// S.F' in namespace S can never capture a type, function, global or method,
-// and the binders P' are distinct from the fields of a structure (whose
-// earlier fields are in scope in its later fields' types) only because a
-// model structure names its parameters P (lean_types.go). Every other name
-// that Lean or goose puts next to Go names, or that the output references
-// unqualified, is reserved, so no Go name takes it.
+// Why this is collision-free. Go identifiers contain no "'" and no subscript
+// digit, so the four forms are disjoint: a name ending in exactly one "'"
+// after a Go identifier is a field projection (or P₀', a value binder); one
+// ending in "''" is a reserved Go name; one containing ₀ is a binder; one with
+// a "'" before its end is a generated name, whose fixed tag (no "'") and Go
+// name it determines. So a field projection S.F' or a class member in scope
+// can never capture a type, function, global or method, a binder never
+// captures a package-level name, and no two generated names coincide. Every
+// other name the output refers to unqualified (framework, Iris and Lean names,
+// the generated code's own binders) is reserved, so no Go name takes it;
+// TestOutputNamesReserved checks that against the outputs of goose's test
+// packages.
 
 // reservedNames are the Lean names a Go name (other than a field) must not
 // take; GoName renames such a Go name X to X”. A Lean declaration named
@@ -104,22 +112,39 @@ func init() {
 	// Lean.isReservedName), which name resolution finds like declarations
 	for _, w := range strings.Fields(`mk rec recOn casesOn noConfusion
 	noConfusionType ctorIdx _sizeOf_1 _sizeOf_inst eq_def eq_unfold fun_cases
+	fun_cases_unfolding
 	congr_simp`) {
 		reservedNames[w] = true
 	}
+	// framework, Iris and Lean names the generated code and proofs refer to
+	// unqualified (TestOutputNamesReserved checks this list against the
+	// outputs of the test packages): the value types of Go values (a Go type
+	// `GoSlice` used as a field type would otherwise be captured), the
+	// semantics' classes and contexts, the proof classes and tactics, Lean's
+	// literals, and the options and attributes of the generated files
+	for _, w := range strings.Fields(`GoSlice GoChan GoFunc GoMap GoError GoInterface
+	GoArray GooseExts GoGlobalContext GoLocalContext GoSemanticsFunctions
+	GooseSemantics GooseInterp doBreakTo doContinueTo catchLabel Classical
+	Nonempty NonemptyType mkRat true false PROP TypedPointsto typedPointsto
+	typedPointstoDef typedPointstoDef_dfractional typedPointstoDef_timeless
+	typedPointsto_agree AccessStrict DFrac IProp IntoValTyped
+	IntoValTypedUnderlying HasLC HeapGS BundledGFunctors Iris iprop
+	solve_into_val_typed_struct solve_pointsto_access_struct
+	solve_typed_pointsto_agree solve_typed_pointsto_dfractional
+	solve_typed_pointsto_timeless rfl unfold _root_ expose irreducible reducible
+	linter autoImplicit maxHeartbeats maxRecDepth pkgImportedPkgs string`) {
+		reservedNames[w] = true
+	}
 	// the binders and section variables of the generated code and proofs,
-	// which a type parameter's binder would shadow
+	// which would capture a same-named Go name in their scope
 	for _, w := range strings.Fields(`x y l v dq hlc GF hG go_gctx sem sem_fn pre_sem`) {
 		reservedNames[w] = true
 	}
 }
 
 // reservedName reports whether a Go name must be renamed by GoName: it is a
-// Lean keyword, is in reservedNames, or has the shape of a generated name: the members
-// get_F/set_F/M_unfold/ptr_M_unfold of a TypeAssumptions class and
-// T_instance/f_unfold/import_p_Assumption of an Assumptions class (in scope
-// as locals in the later members' types), the instances equals_unfold_T of
-// the package, and Lean's equation lemmas X.eq_<n>.
+// Lean keyword, is in reservedNames, or is one of Lean's equation lemma names
+// X.eq_<n>.
 func reservedName(x string) bool {
 	if strings.Contains(x, "'") {
 		// not a Go identifier: a generated name, or one GoName renamed
@@ -129,20 +154,33 @@ func reservedName(x string) bool {
 		// LeanKeywords: Lean's tokens, which an identifier must not be
 		return true
 	}
-	for _, p := range []string{"get_", "set_", "import_", "equals_unfold_"} {
-		if strings.HasPrefix(x, p) {
-			return true
-		}
-	}
-	for _, sfx := range []string{"_unfold", "_instance", "_Assumption"} {
-		if strings.HasSuffix(x, sfx) {
-			return true
-		}
-	}
 	if n, ok := strings.CutPrefix(x, "eq_"); ok && n != "" && strings.Trim(n, "0123456789") == "" {
 		return true
 	}
 	return false
+}
+
+// BinderName is the Lean name of a Go name that goose binds inside a
+// declaration rather than declares: a type parameter p (its go.GoType binder
+// and, in a model structure, its Type parameter; its value type is the binder
+// p₀') and a function-local constant (a `let`). It is p₀: Go identifiers
+// cannot contain a subscript digit (Unicode category No), so no other
+// Go-derived name is p₀ or p₀', and such a binder cannot capture a
+// package-level or framework name referenced in its scope (Go `type U = T;
+// type Box[T any] struct{ u U }`; a local `const Val = 1`), nor can the
+// fields F' of a structure capture its parameters.
+func BinderName(p string) string {
+	return p + "₀"
+}
+
+// MemberName is the name of a generated declaration or class member derived
+// from a Go name x: tag'x (get'F, set'F, unfold'M, ptr_unfold'M, instance'T,
+// unfold'f, import'p, equals_unfold'T). The tags contain no "'" and Go names
+// none, so the name determines its tag and Go name (no two members collide),
+// and it is never a Go-derived name (which has "'" only at its end), so a
+// member in scope cannot capture a Go name or be captured by one.
+func MemberName(tag, x string) string {
+	return tag + "'" + x
 }
 
 // GoName is the Lean name of a Go identifier that is not a struct field: x,
@@ -579,3 +617,6 @@ type SelectStmtClauses struct {
 	Default Expr // nil for None
 	Clauses []CommClause
 }
+
+// IsReservedName reports whether GoName renames x (for tests).
+func IsReservedName(x string) bool { return reservedName(x) }

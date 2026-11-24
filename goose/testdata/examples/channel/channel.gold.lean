@@ -2050,7 +2050,7 @@ noncomputable instance Cond.zero_val [GooseExts] : ZeroVal Cond :=
 @[irreducible] noncomputable def Cond.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Cond.fieldsUnsealed
 
-noncomputable instance equals_unfold_Cond [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Cond [GooseExts] [GoGlobalContext] :
     EqualsUnfold Cond.fields Cond.fieldsUnsealed :=
   ⟨by unfold Cond.fields; rfl⟩
 
@@ -2060,31 +2060,31 @@ noncomputable instance equals_unfold_Cond [GooseExts] [GoGlobalContext] :
 class Cond.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Cond.underlying Cond
   underlying : go.UnderlyingDirectedEq Cond.ty Cond.underlying
-  get_L : ∀ (x : Cond), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"L") #x (Val #(x.L'))
-  set_L : ∀ (x : Cond) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"L") (PairV #x #y) (Val #(({ x with L' := y } : Cond)))
-  get_waiters : ∀ (x : Cond), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"waiters") #x (Val #(x.waiters'))
-  set_waiters : ∀ (x : Cond) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"waiters") (PairV #x #y) (Val #(({ x with waiters' := y } : Cond)))
+  get'L : ∀ (x : Cond), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"L") #x (Val #(x.L'))
+  set'L : ∀ (x : Cond) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"L") (PairV #x #y) (Val #(({ x with L' := y } : Cond)))
+  get'waiters : ∀ (x : Cond), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"waiters") #x (Val #(x.waiters'))
+  set'waiters : ∀ (x : Cond) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"waiters") (PairV #x #y) (Val #(({ x with waiters' := y } : Cond)))
   method_set : go.MethodSetIs Cond.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Cond.ty) [(go!"Broadcast", (some (go.signature.Signature [] false []))), (go!"Signal", (some (go.signature.Signature [] false []))), (go!"Wait", (some (go.signature.Signature [] false []))), (go!"WaitFor", (some (go.signature.Signature [_root_.Perennial.time.Duration.ty] false [go.bool]))), (go!"WaitUntil", (some (go.signature.Signature [_root_.Perennial.time.Time.ty] false [go.bool])))]
-  ptr_Broadcast_unfold : MethodUnfold (go.GoType.PointerType Cond.ty) go!"Broadcast" Cond.Broadcast.impl
-  ptr_Signal_unfold : MethodUnfold (go.GoType.PointerType Cond.ty) go!"Signal" Cond.Signal.impl
-  ptr_Wait_unfold : MethodUnfold (go.GoType.PointerType Cond.ty) go!"Wait" Cond.Wait.impl
-  ptr_WaitFor_unfold : MethodUnfold (go.GoType.PointerType Cond.ty) go!"WaitFor" Cond.WaitFor.impl
-  ptr_WaitUntil_unfold : MethodUnfold (go.GoType.PointerType Cond.ty) go!"WaitUntil" Cond.WaitUntil.impl
+  ptr_unfold'Broadcast : MethodUnfold (go.GoType.PointerType Cond.ty) go!"Broadcast" Cond.Broadcast.impl
+  ptr_unfold'Signal : MethodUnfold (go.GoType.PointerType Cond.ty) go!"Signal" Cond.Signal.impl
+  ptr_unfold'Wait : MethodUnfold (go.GoType.PointerType Cond.ty) go!"Wait" Cond.Wait.impl
+  ptr_unfold'WaitFor : MethodUnfold (go.GoType.PointerType Cond.ty) go!"WaitFor" Cond.WaitFor.impl
+  ptr_unfold'WaitUntil : MethodUnfold (go.GoType.PointerType Cond.ty) go!"WaitUntil" Cond.WaitUntil.impl
 
 attribute [instance] Cond.TypeAssumptions.type_repr
   Cond.TypeAssumptions.underlying
-  Cond.TypeAssumptions.get_L
-  Cond.TypeAssumptions.set_L
-  Cond.TypeAssumptions.get_waiters
-  Cond.TypeAssumptions.set_waiters
+  Cond.TypeAssumptions.get'L
+  Cond.TypeAssumptions.set'L
+  Cond.TypeAssumptions.get'waiters
+  Cond.TypeAssumptions.set'waiters
   Cond.TypeAssumptions.method_set
   Cond.TypeAssumptions.ptr_method_set
-  Cond.TypeAssumptions.ptr_Broadcast_unfold
-  Cond.TypeAssumptions.ptr_Signal_unfold
-  Cond.TypeAssumptions.ptr_Wait_unfold
-  Cond.TypeAssumptions.ptr_WaitFor_unfold
-  Cond.TypeAssumptions.ptr_WaitUntil_unfold
+  Cond.TypeAssumptions.ptr_unfold'Broadcast
+  Cond.TypeAssumptions.ptr_unfold'Signal
+  Cond.TypeAssumptions.ptr_unfold'Wait
+  Cond.TypeAssumptions.ptr_unfold'WaitFor
+  Cond.TypeAssumptions.ptr_unfold'WaitUntil
 
 structure Result [GooseExts] where
   mk ::
@@ -2101,7 +2101,7 @@ noncomputable instance Result.zero_val [GooseExts] : ZeroVal Result :=
 @[irreducible] noncomputable def Result.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Result.fieldsUnsealed
 
-noncomputable instance equals_unfold_Result [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Result [GooseExts] [GoGlobalContext] :
     EqualsUnfold Result.fields Result.fieldsUnsealed :=
   ⟨by unfold Result.fields; rfl⟩
 
@@ -2111,19 +2111,19 @@ noncomputable instance equals_unfold_Result [GooseExts] [GoGlobalContext] :
 class Result.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Result.underlying Result
   underlying : go.UnderlyingDirectedEq Result.ty Result.underlying
-  get_value : ∀ (x : Result), go.IsGoStepPureDetTagged under (StructFieldGet Result.underlying go!"value") #x (Val #(x.value'))
-  set_value : ∀ (x : Result) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Result.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Result)))
-  get_primary_won : ∀ (x : Result), go.IsGoStepPureDetTagged under (StructFieldGet Result.underlying go!"primary_won") #x (Val #(x.primary_won'))
-  set_primary_won : ∀ (x : Result) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Result.underlying go!"primary_won") (PairV #x #y) (Val #(({ x with primary_won' := y } : Result)))
+  get'value : ∀ (x : Result), go.IsGoStepPureDetTagged under (StructFieldGet Result.underlying go!"value") #x (Val #(x.value'))
+  set'value : ∀ (x : Result) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Result.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Result)))
+  get'primary_won : ∀ (x : Result), go.IsGoStepPureDetTagged under (StructFieldGet Result.underlying go!"primary_won") #x (Val #(x.primary_won'))
+  set'primary_won : ∀ (x : Result) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Result.underlying go!"primary_won") (PairV #x #y) (Val #(({ x with primary_won' := y } : Result)))
   method_set : go.MethodSetIs Result.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Result.ty) []
 
 attribute [instance] Result.TypeAssumptions.type_repr
   Result.TypeAssumptions.underlying
-  Result.TypeAssumptions.get_value
-  Result.TypeAssumptions.set_value
-  Result.TypeAssumptions.get_primary_won
-  Result.TypeAssumptions.set_primary_won
+  Result.TypeAssumptions.get'value
+  Result.TypeAssumptions.set'value
+  Result.TypeAssumptions.get'primary_won
+  Result.TypeAssumptions.set'primary_won
   Result.TypeAssumptions.method_set
   Result.TypeAssumptions.ptr_method_set
 
@@ -2142,7 +2142,7 @@ noncomputable instance request.zero_val [GooseExts] : ZeroVal request :=
 @[irreducible] noncomputable def request.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   request.fieldsUnsealed
 
-noncomputable instance equals_unfold_request [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'request [GooseExts] [GoGlobalContext] :
     EqualsUnfold request.fields request.fieldsUnsealed :=
   ⟨by unfold request.fields; rfl⟩
 
@@ -2152,19 +2152,19 @@ noncomputable instance equals_unfold_request [GooseExts] [GoGlobalContext] :
 class request.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying request.underlying request
   underlying : go.UnderlyingDirectedEq request.ty request.underlying
-  get_f : ∀ (x : request), go.IsGoStepPureDetTagged under (StructFieldGet request.underlying go!"f") #x (Val #(x.f'))
-  set_f : ∀ (x : request) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet request.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : request)))
-  get_result : ∀ (x : request), go.IsGoStepPureDetTagged under (StructFieldGet request.underlying go!"result") #x (Val #(x.result'))
-  set_result : ∀ (x : request) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet request.underlying go!"result") (PairV #x #y) (Val #(({ x with result' := y } : request)))
+  get'f : ∀ (x : request), go.IsGoStepPureDetTagged under (StructFieldGet request.underlying go!"f") #x (Val #(x.f'))
+  set'f : ∀ (x : request) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet request.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : request)))
+  get'result : ∀ (x : request), go.IsGoStepPureDetTagged under (StructFieldGet request.underlying go!"result") #x (Val #(x.result'))
+  set'result : ∀ (x : request) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet request.underlying go!"result") (PairV #x #y) (Val #(({ x with result' := y } : request)))
   method_set : go.MethodSetIs request.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType request.ty) []
 
 attribute [instance] request.TypeAssumptions.type_repr
   request.TypeAssumptions.underlying
-  request.TypeAssumptions.get_f
-  request.TypeAssumptions.set_f
-  request.TypeAssumptions.get_result
-  request.TypeAssumptions.set_result
+  request.TypeAssumptions.get'f
+  request.TypeAssumptions.set'f
+  request.TypeAssumptions.get'result
+  request.TypeAssumptions.set'result
   request.TypeAssumptions.method_set
   request.TypeAssumptions.ptr_method_set
 
@@ -2183,7 +2183,7 @@ noncomputable instance stream.zero_val [GooseExts] : ZeroVal stream :=
 @[irreducible] noncomputable def stream.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   stream.fieldsUnsealed
 
-noncomputable instance equals_unfold_stream [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'stream [GooseExts] [GoGlobalContext] :
     EqualsUnfold stream.fields stream.fieldsUnsealed :=
   ⟨by unfold stream.fields; rfl⟩
 
@@ -2193,19 +2193,19 @@ noncomputable instance equals_unfold_stream [GooseExts] [GoGlobalContext] :
 class stream.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying stream.underlying stream
   underlying : go.UnderlyingDirectedEq stream.ty stream.underlying
-  get_req : ∀ (x : stream), go.IsGoStepPureDetTagged under (StructFieldGet stream.underlying go!"req") #x (Val #(x.req'))
-  set_req : ∀ (x : stream) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet stream.underlying go!"req") (PairV #x #y) (Val #(({ x with req' := y } : stream)))
-  get_res : ∀ (x : stream), go.IsGoStepPureDetTagged under (StructFieldGet stream.underlying go!"res") #x (Val #(x.res'))
-  set_res : ∀ (x : stream) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet stream.underlying go!"res") (PairV #x #y) (Val #(({ x with res' := y } : stream)))
+  get'req : ∀ (x : stream), go.IsGoStepPureDetTagged under (StructFieldGet stream.underlying go!"req") #x (Val #(x.req'))
+  set'req : ∀ (x : stream) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet stream.underlying go!"req") (PairV #x #y) (Val #(({ x with req' := y } : stream)))
+  get'res : ∀ (x : stream), go.IsGoStepPureDetTagged under (StructFieldGet stream.underlying go!"res") #x (Val #(x.res'))
+  set'res : ∀ (x : stream) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet stream.underlying go!"res") (PairV #x #y) (Val #(({ x with res' := y } : stream)))
   method_set : go.MethodSetIs stream.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType stream.ty) []
 
 attribute [instance] stream.TypeAssumptions.type_repr
   stream.TypeAssumptions.underlying
-  stream.TypeAssumptions.get_req
-  stream.TypeAssumptions.set_req
-  stream.TypeAssumptions.get_res
-  stream.TypeAssumptions.set_res
+  stream.TypeAssumptions.get'req
+  stream.TypeAssumptions.set'req
+  stream.TypeAssumptions.get'res
+  stream.TypeAssumptions.set'res
   stream.TypeAssumptions.method_set
   stream.TypeAssumptions.ptr_method_set
 
@@ -2226,7 +2226,7 @@ noncomputable instance streamold.zero_val [GooseExts] : ZeroVal streamold :=
 @[irreducible] noncomputable def streamold.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   streamold.fieldsUnsealed
 
-noncomputable instance equals_unfold_streamold [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'streamold [GooseExts] [GoGlobalContext] :
     EqualsUnfold streamold.fields streamold.fieldsUnsealed :=
   ⟨by unfold streamold.fields; rfl⟩
 
@@ -2236,128 +2236,128 @@ noncomputable instance equals_unfold_streamold [GooseExts] [GoGlobalContext] :
 class streamold.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying streamold.underlying streamold
   underlying : go.UnderlyingDirectedEq streamold.ty streamold.underlying
-  get_req : ∀ (x : streamold), go.IsGoStepPureDetTagged under (StructFieldGet streamold.underlying go!"req") #x (Val #(x.req'))
-  set_req : ∀ (x : streamold) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet streamold.underlying go!"req") (PairV #x #y) (Val #(({ x with req' := y } : streamold)))
-  get_res : ∀ (x : streamold), go.IsGoStepPureDetTagged under (StructFieldGet streamold.underlying go!"res") #x (Val #(x.res'))
-  set_res : ∀ (x : streamold) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet streamold.underlying go!"res") (PairV #x #y) (Val #(({ x with res' := y } : streamold)))
-  get_f : ∀ (x : streamold), go.IsGoStepPureDetTagged under (StructFieldGet streamold.underlying go!"f") #x (Val #(x.f'))
-  set_f : ∀ (x : streamold) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet streamold.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : streamold)))
+  get'req : ∀ (x : streamold), go.IsGoStepPureDetTagged under (StructFieldGet streamold.underlying go!"req") #x (Val #(x.req'))
+  set'req : ∀ (x : streamold) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet streamold.underlying go!"req") (PairV #x #y) (Val #(({ x with req' := y } : streamold)))
+  get'res : ∀ (x : streamold), go.IsGoStepPureDetTagged under (StructFieldGet streamold.underlying go!"res") #x (Val #(x.res'))
+  set'res : ∀ (x : streamold) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet streamold.underlying go!"res") (PairV #x #y) (Val #(({ x with res' := y } : streamold)))
+  get'f : ∀ (x : streamold), go.IsGoStepPureDetTagged under (StructFieldGet streamold.underlying go!"f") #x (Val #(x.f'))
+  set'f : ∀ (x : streamold) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet streamold.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : streamold)))
   method_set : go.MethodSetIs streamold.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType streamold.ty) []
 
 attribute [instance] streamold.TypeAssumptions.type_repr
   streamold.TypeAssumptions.underlying
-  streamold.TypeAssumptions.get_req
-  streamold.TypeAssumptions.set_req
-  streamold.TypeAssumptions.get_res
-  streamold.TypeAssumptions.set_res
-  streamold.TypeAssumptions.get_f
-  streamold.TypeAssumptions.set_f
+  streamold.TypeAssumptions.get'req
+  streamold.TypeAssumptions.set'req
+  streamold.TypeAssumptions.get'res
+  streamold.TypeAssumptions.set'res
+  streamold.TypeAssumptions.get'f
+  streamold.TypeAssumptions.set'f
   streamold.TypeAssumptions.method_set
   streamold.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Cond_instance : Cond.TypeAssumptions
-  Result_instance : Result.TypeAssumptions
-  request_instance : request.TypeAssumptions
-  stream_instance : stream.TypeAssumptions
-  streamold_instance : streamold.TypeAssumptions
-  DSPExample_unfold : FuncUnfold DSPExample [] DSPExample.impl
-  NewCond_unfold : FuncUnfold NewCond [] NewCond.impl
-  sys_hello_world_unfold : FuncUnfold sys_hello_world [] sys_hello_world.impl
-  HelloWorldAsync_unfold : FuncUnfold HelloWorldAsync [] HelloWorldAsync.impl
-  HelloWorldSync_unfold : FuncUnfold HelloWorldSync [] HelloWorldSync.impl
-  HelloWorldCancellable_unfold : FuncUnfold HelloWorldCancellable [] HelloWorldCancellable.impl
-  HelloWorldWithTimeout_unfold : FuncUnfold HelloWorldWithTimeout [] HelloWorldWithTimeout.impl
-  simple_join_unfold : FuncUnfold simple_join [] simple_join.impl
-  simple_multi_join_unfold : FuncUnfold simple_multi_join [] simple_multi_join.impl
-  exchangePointer_unfold : FuncUnfold exchangePointer [] exchangePointer.impl
-  BroadcastExample_unfold : FuncUnfold BroadcastExample [] BroadcastExample.impl
-  fibonacci_unfold : FuncUnfold fibonacci [] fibonacci.impl
-  fib_consumer_unfold : FuncUnfold fib_consumer [] fib_consumer.impl
-  Web_unfold : FuncUnfold Web [] Web.impl
-  Image_unfold : FuncUnfold Image [] Image.impl
-  Video_unfold : FuncUnfold Video [] Video.impl
-  Google_unfold : FuncUnfold Google [] Google.impl
-  GetPrimary_unfold : FuncUnfold GetPrimary [] GetPrimary.impl
-  GetSecondary_unfold : FuncUnfold GetSecondary [] GetSecondary.impl
-  CancellableHedgedRequest_unfold : FuncUnfold CancellableHedgedRequest [] CancellableHedgedRequest.impl
-  mkRequest_unfold : FuncUnfold mkRequest [] mkRequest.impl
-  ho_worker_unfold : FuncUnfold ho_worker [] ho_worker.impl
-  HigherOrderExample_unfold : FuncUnfold HigherOrderExample [] HigherOrderExample.impl
-  load_unfold : FuncUnfold load [] load.impl
-  process_unfold : FuncUnfold process [] process.impl
-  client_unfold : FuncUnfold client [] client.impl
-  server_unfold : FuncUnfold server [] server.impl
-  LeakyBufferPipeline_unfold : FuncUnfold LeakyBufferPipeline [] LeakyBufferPipeline.impl
-  mkStream_unfold : FuncUnfold mkStream [] mkStream.impl
-  Async_unfold : FuncUnfold Async [] Async.impl
-  Serve_unfold : FuncUnfold Serve [] Serve.impl
-  appWrld_unfold : FuncUnfold appWrld [] appWrld.impl
-  Client_unfold : FuncUnfold Client [] Client.impl
-  MapServer_unfold : FuncUnfold MapServer [] MapServer.impl
-  ClientOld_unfold : FuncUnfold ClientOld [] ClientOld.impl
-  Muxer_unfold : FuncUnfold Muxer [] Muxer.impl
-  makeGreeting_unfold : FuncUnfold makeGreeting [] makeGreeting.impl
-  CancellableMapServer_unfold : FuncUnfold CancellableMapServer [] CancellableMapServer.impl
-  CancellableMuxer_unfold : FuncUnfold CancellableMuxer [] CancellableMuxer.impl
-  select_nb_not_ready_unfold : FuncUnfold select_nb_not_ready [] select_nb_not_ready.impl
-  select_nb_guaranteed_ready_unfold : FuncUnfold select_nb_guaranteed_ready [] select_nb_guaranteed_ready.impl
-  select_nb_full_buffer_not_ready_unfold : FuncUnfold select_nb_full_buffer_not_ready [] select_nb_full_buffer_not_ready.impl
-  import_time_Assumption : _root_.Perennial.time.Assumptions
-  import_lock_Assumption : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Assumptions
-  import_strings_Assumption : _root_.Perennial.strings.Assumptions
+  instance'Cond : Cond.TypeAssumptions
+  instance'Result : Result.TypeAssumptions
+  instance'request : request.TypeAssumptions
+  instance'stream : stream.TypeAssumptions
+  instance'streamold : streamold.TypeAssumptions
+  unfold'DSPExample : FuncUnfold DSPExample [] DSPExample.impl
+  unfold'NewCond : FuncUnfold NewCond [] NewCond.impl
+  unfold'sys_hello_world : FuncUnfold sys_hello_world [] sys_hello_world.impl
+  unfold'HelloWorldAsync : FuncUnfold HelloWorldAsync [] HelloWorldAsync.impl
+  unfold'HelloWorldSync : FuncUnfold HelloWorldSync [] HelloWorldSync.impl
+  unfold'HelloWorldCancellable : FuncUnfold HelloWorldCancellable [] HelloWorldCancellable.impl
+  unfold'HelloWorldWithTimeout : FuncUnfold HelloWorldWithTimeout [] HelloWorldWithTimeout.impl
+  unfold'simple_join : FuncUnfold simple_join [] simple_join.impl
+  unfold'simple_multi_join : FuncUnfold simple_multi_join [] simple_multi_join.impl
+  unfold'exchangePointer : FuncUnfold exchangePointer [] exchangePointer.impl
+  unfold'BroadcastExample : FuncUnfold BroadcastExample [] BroadcastExample.impl
+  unfold'fibonacci : FuncUnfold fibonacci [] fibonacci.impl
+  unfold'fib_consumer : FuncUnfold fib_consumer [] fib_consumer.impl
+  unfold'Web : FuncUnfold Web [] Web.impl
+  unfold'Image : FuncUnfold Image [] Image.impl
+  unfold'Video : FuncUnfold Video [] Video.impl
+  unfold'Google : FuncUnfold Google [] Google.impl
+  unfold'GetPrimary : FuncUnfold GetPrimary [] GetPrimary.impl
+  unfold'GetSecondary : FuncUnfold GetSecondary [] GetSecondary.impl
+  unfold'CancellableHedgedRequest : FuncUnfold CancellableHedgedRequest [] CancellableHedgedRequest.impl
+  unfold'mkRequest : FuncUnfold mkRequest [] mkRequest.impl
+  unfold'ho_worker : FuncUnfold ho_worker [] ho_worker.impl
+  unfold'HigherOrderExample : FuncUnfold HigherOrderExample [] HigherOrderExample.impl
+  unfold'load : FuncUnfold load [] load.impl
+  unfold'process : FuncUnfold process [] process.impl
+  unfold'client : FuncUnfold client [] client.impl
+  unfold'server : FuncUnfold server [] server.impl
+  unfold'LeakyBufferPipeline : FuncUnfold LeakyBufferPipeline [] LeakyBufferPipeline.impl
+  unfold'mkStream : FuncUnfold mkStream [] mkStream.impl
+  unfold'Async : FuncUnfold Async [] Async.impl
+  unfold'Serve : FuncUnfold Serve [] Serve.impl
+  unfold'appWrld : FuncUnfold appWrld [] appWrld.impl
+  unfold'Client : FuncUnfold Client [] Client.impl
+  unfold'MapServer : FuncUnfold MapServer [] MapServer.impl
+  unfold'ClientOld : FuncUnfold ClientOld [] ClientOld.impl
+  unfold'Muxer : FuncUnfold Muxer [] Muxer.impl
+  unfold'makeGreeting : FuncUnfold makeGreeting [] makeGreeting.impl
+  unfold'CancellableMapServer : FuncUnfold CancellableMapServer [] CancellableMapServer.impl
+  unfold'CancellableMuxer : FuncUnfold CancellableMuxer [] CancellableMuxer.impl
+  unfold'select_nb_not_ready : FuncUnfold select_nb_not_ready [] select_nb_not_ready.impl
+  unfold'select_nb_guaranteed_ready : FuncUnfold select_nb_guaranteed_ready [] select_nb_guaranteed_ready.impl
+  unfold'select_nb_full_buffer_not_ready : FuncUnfold select_nb_full_buffer_not_ready [] select_nb_full_buffer_not_ready.impl
+  import'time : _root_.Perennial.time.Assumptions
+  import'lock : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Assumptions
+  import'strings : _root_.Perennial.strings.Assumptions
 
-attribute [instance] Assumptions.Cond_instance
-  Assumptions.Result_instance
-  Assumptions.request_instance
-  Assumptions.stream_instance
-  Assumptions.streamold_instance
-  Assumptions.DSPExample_unfold
-  Assumptions.NewCond_unfold
-  Assumptions.sys_hello_world_unfold
-  Assumptions.HelloWorldAsync_unfold
-  Assumptions.HelloWorldSync_unfold
-  Assumptions.HelloWorldCancellable_unfold
-  Assumptions.HelloWorldWithTimeout_unfold
-  Assumptions.simple_join_unfold
-  Assumptions.simple_multi_join_unfold
-  Assumptions.exchangePointer_unfold
-  Assumptions.BroadcastExample_unfold
-  Assumptions.fibonacci_unfold
-  Assumptions.fib_consumer_unfold
-  Assumptions.Web_unfold
-  Assumptions.Image_unfold
-  Assumptions.Video_unfold
-  Assumptions.Google_unfold
-  Assumptions.GetPrimary_unfold
-  Assumptions.GetSecondary_unfold
-  Assumptions.CancellableHedgedRequest_unfold
-  Assumptions.mkRequest_unfold
-  Assumptions.ho_worker_unfold
-  Assumptions.HigherOrderExample_unfold
-  Assumptions.load_unfold
-  Assumptions.process_unfold
-  Assumptions.client_unfold
-  Assumptions.server_unfold
-  Assumptions.LeakyBufferPipeline_unfold
-  Assumptions.mkStream_unfold
-  Assumptions.Async_unfold
-  Assumptions.Serve_unfold
-  Assumptions.appWrld_unfold
-  Assumptions.Client_unfold
-  Assumptions.MapServer_unfold
-  Assumptions.ClientOld_unfold
-  Assumptions.Muxer_unfold
-  Assumptions.makeGreeting_unfold
-  Assumptions.CancellableMapServer_unfold
-  Assumptions.CancellableMuxer_unfold
-  Assumptions.select_nb_not_ready_unfold
-  Assumptions.select_nb_guaranteed_ready_unfold
-  Assumptions.select_nb_full_buffer_not_ready_unfold
-  Assumptions.import_time_Assumption
-  Assumptions.import_lock_Assumption
-  Assumptions.import_strings_Assumption
+attribute [instance] Assumptions.instance'Cond
+  Assumptions.instance'Result
+  Assumptions.instance'request
+  Assumptions.instance'stream
+  Assumptions.instance'streamold
+  Assumptions.unfold'DSPExample
+  Assumptions.unfold'NewCond
+  Assumptions.unfold'sys_hello_world
+  Assumptions.unfold'HelloWorldAsync
+  Assumptions.unfold'HelloWorldSync
+  Assumptions.unfold'HelloWorldCancellable
+  Assumptions.unfold'HelloWorldWithTimeout
+  Assumptions.unfold'simple_join
+  Assumptions.unfold'simple_multi_join
+  Assumptions.unfold'exchangePointer
+  Assumptions.unfold'BroadcastExample
+  Assumptions.unfold'fibonacci
+  Assumptions.unfold'fib_consumer
+  Assumptions.unfold'Web
+  Assumptions.unfold'Image
+  Assumptions.unfold'Video
+  Assumptions.unfold'Google
+  Assumptions.unfold'GetPrimary
+  Assumptions.unfold'GetSecondary
+  Assumptions.unfold'CancellableHedgedRequest
+  Assumptions.unfold'mkRequest
+  Assumptions.unfold'ho_worker
+  Assumptions.unfold'HigherOrderExample
+  Assumptions.unfold'load
+  Assumptions.unfold'process
+  Assumptions.unfold'client
+  Assumptions.unfold'server
+  Assumptions.unfold'LeakyBufferPipeline
+  Assumptions.unfold'mkStream
+  Assumptions.unfold'Async
+  Assumptions.unfold'Serve
+  Assumptions.unfold'appWrld
+  Assumptions.unfold'Client
+  Assumptions.unfold'MapServer
+  Assumptions.unfold'ClientOld
+  Assumptions.unfold'Muxer
+  Assumptions.unfold'makeGreeting
+  Assumptions.unfold'CancellableMapServer
+  Assumptions.unfold'CancellableMuxer
+  Assumptions.unfold'select_nb_not_ready
+  Assumptions.unfold'select_nb_guaranteed_ready
+  Assumptions.unfold'select_nb_full_buffer_not_ready
+  Assumptions.import'time
+  Assumptions.import'lock
+  Assumptions.import'strings
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.channel
 

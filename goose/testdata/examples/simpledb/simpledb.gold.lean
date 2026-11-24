@@ -1770,7 +1770,7 @@ noncomputable instance Table.zero_val [GooseExts] : ZeroVal Table :=
 @[irreducible] noncomputable def Table.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Table.fieldsUnsealed
 
-noncomputable instance equals_unfold_Table [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Table [GooseExts] [GoGlobalContext] :
     EqualsUnfold Table.fields Table.fieldsUnsealed :=
   ⟨by unfold Table.fields; rfl⟩
 
@@ -1780,19 +1780,19 @@ noncomputable instance equals_unfold_Table [GooseExts] [GoGlobalContext] :
 class Table.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Table.underlying Table
   underlying : go.UnderlyingDirectedEq Table.ty Table.underlying
-  get_Index : ∀ (x : Table), go.IsGoStepPureDetTagged under (StructFieldGet Table.underlying go!"Index") #x (Val #(x.Index'))
-  set_Index : ∀ (x : Table) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet Table.underlying go!"Index") (PairV #x #y) (Val #(({ x with Index' := y } : Table)))
-  get_File : ∀ (x : Table), go.IsGoStepPureDetTagged under (StructFieldGet Table.underlying go!"File") #x (Val #(x.File'))
-  set_File : ∀ (x : Table) (y : _root_.Perennial.github_com.goose_lang.primitive.filesys.File), go.IsGoStepPureDetTagged under (StructFieldSet Table.underlying go!"File") (PairV #x #y) (Val #(({ x with File' := y } : Table)))
+  get'Index : ∀ (x : Table), go.IsGoStepPureDetTagged under (StructFieldGet Table.underlying go!"Index") #x (Val #(x.Index'))
+  set'Index : ∀ (x : Table) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet Table.underlying go!"Index") (PairV #x #y) (Val #(({ x with Index' := y } : Table)))
+  get'File : ∀ (x : Table), go.IsGoStepPureDetTagged under (StructFieldGet Table.underlying go!"File") #x (Val #(x.File'))
+  set'File : ∀ (x : Table) (y : _root_.Perennial.github_com.goose_lang.primitive.filesys.File), go.IsGoStepPureDetTagged under (StructFieldSet Table.underlying go!"File") (PairV #x #y) (Val #(({ x with File' := y } : Table)))
   method_set : go.MethodSetIs Table.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Table.ty) []
 
 attribute [instance] Table.TypeAssumptions.type_repr
   Table.TypeAssumptions.underlying
-  Table.TypeAssumptions.get_Index
-  Table.TypeAssumptions.set_Index
-  Table.TypeAssumptions.get_File
-  Table.TypeAssumptions.set_File
+  Table.TypeAssumptions.get'Index
+  Table.TypeAssumptions.set'Index
+  Table.TypeAssumptions.get'File
+  Table.TypeAssumptions.set'File
   Table.TypeAssumptions.method_set
   Table.TypeAssumptions.ptr_method_set
 
@@ -1811,7 +1811,7 @@ noncomputable instance Entry.zero_val [GooseExts] : ZeroVal Entry :=
 @[irreducible] noncomputable def Entry.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Entry.fieldsUnsealed
 
-noncomputable instance equals_unfold_Entry [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Entry [GooseExts] [GoGlobalContext] :
     EqualsUnfold Entry.fields Entry.fieldsUnsealed :=
   ⟨by unfold Entry.fields; rfl⟩
 
@@ -1821,19 +1821,19 @@ noncomputable instance equals_unfold_Entry [GooseExts] [GoGlobalContext] :
 class Entry.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Entry.underlying Entry
   underlying : go.UnderlyingDirectedEq Entry.ty Entry.underlying
-  get_Key : ∀ (x : Entry), go.IsGoStepPureDetTagged under (StructFieldGet Entry.underlying go!"Key") #x (Val #(x.Key'))
-  set_Key : ∀ (x : Entry) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Entry.underlying go!"Key") (PairV #x #y) (Val #(({ x with Key' := y } : Entry)))
-  get_Value : ∀ (x : Entry), go.IsGoStepPureDetTagged under (StructFieldGet Entry.underlying go!"Value") #x (Val #(x.Value'))
-  set_Value : ∀ (x : Entry) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Entry.underlying go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : Entry)))
+  get'Key : ∀ (x : Entry), go.IsGoStepPureDetTagged under (StructFieldGet Entry.underlying go!"Key") #x (Val #(x.Key'))
+  set'Key : ∀ (x : Entry) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Entry.underlying go!"Key") (PairV #x #y) (Val #(({ x with Key' := y } : Entry)))
+  get'Value : ∀ (x : Entry), go.IsGoStepPureDetTagged under (StructFieldGet Entry.underlying go!"Value") #x (Val #(x.Value'))
+  set'Value : ∀ (x : Entry) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Entry.underlying go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : Entry)))
   method_set : go.MethodSetIs Entry.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Entry.ty) []
 
 attribute [instance] Entry.TypeAssumptions.type_repr
   Entry.TypeAssumptions.underlying
-  Entry.TypeAssumptions.get_Key
-  Entry.TypeAssumptions.set_Key
-  Entry.TypeAssumptions.get_Value
-  Entry.TypeAssumptions.set_Value
+  Entry.TypeAssumptions.get'Key
+  Entry.TypeAssumptions.set'Key
+  Entry.TypeAssumptions.get'Value
+  Entry.TypeAssumptions.set'Value
   Entry.TypeAssumptions.method_set
   Entry.TypeAssumptions.ptr_method_set
 
@@ -1852,7 +1852,7 @@ noncomputable instance lazyFileBuf.zero_val [GooseExts] : ZeroVal lazyFileBuf :=
 @[irreducible] noncomputable def lazyFileBuf.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   lazyFileBuf.fieldsUnsealed
 
-noncomputable instance equals_unfold_lazyFileBuf [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'lazyFileBuf [GooseExts] [GoGlobalContext] :
     EqualsUnfold lazyFileBuf.fields lazyFileBuf.fieldsUnsealed :=
   ⟨by unfold lazyFileBuf.fields; rfl⟩
 
@@ -1862,19 +1862,19 @@ noncomputable instance equals_unfold_lazyFileBuf [GooseExts] [GoGlobalContext] :
 class lazyFileBuf.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying lazyFileBuf.underlying lazyFileBuf
   underlying : go.UnderlyingDirectedEq lazyFileBuf.ty lazyFileBuf.underlying
-  get_offset : ∀ (x : lazyFileBuf), go.IsGoStepPureDetTagged under (StructFieldGet lazyFileBuf.underlying go!"offset") #x (Val #(x.offset'))
-  set_offset : ∀ (x : lazyFileBuf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet lazyFileBuf.underlying go!"offset") (PairV #x #y) (Val #(({ x with offset' := y } : lazyFileBuf)))
-  get_next : ∀ (x : lazyFileBuf), go.IsGoStepPureDetTagged under (StructFieldGet lazyFileBuf.underlying go!"next") #x (Val #(x.next'))
-  set_next : ∀ (x : lazyFileBuf) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet lazyFileBuf.underlying go!"next") (PairV #x #y) (Val #(({ x with next' := y } : lazyFileBuf)))
+  get'offset : ∀ (x : lazyFileBuf), go.IsGoStepPureDetTagged under (StructFieldGet lazyFileBuf.underlying go!"offset") #x (Val #(x.offset'))
+  set'offset : ∀ (x : lazyFileBuf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet lazyFileBuf.underlying go!"offset") (PairV #x #y) (Val #(({ x with offset' := y } : lazyFileBuf)))
+  get'next : ∀ (x : lazyFileBuf), go.IsGoStepPureDetTagged under (StructFieldGet lazyFileBuf.underlying go!"next") #x (Val #(x.next'))
+  set'next : ∀ (x : lazyFileBuf) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet lazyFileBuf.underlying go!"next") (PairV #x #y) (Val #(({ x with next' := y } : lazyFileBuf)))
   method_set : go.MethodSetIs lazyFileBuf.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType lazyFileBuf.ty) []
 
 attribute [instance] lazyFileBuf.TypeAssumptions.type_repr
   lazyFileBuf.TypeAssumptions.underlying
-  lazyFileBuf.TypeAssumptions.get_offset
-  lazyFileBuf.TypeAssumptions.set_offset
-  lazyFileBuf.TypeAssumptions.get_next
-  lazyFileBuf.TypeAssumptions.set_next
+  lazyFileBuf.TypeAssumptions.get'offset
+  lazyFileBuf.TypeAssumptions.set'offset
+  lazyFileBuf.TypeAssumptions.get'next
+  lazyFileBuf.TypeAssumptions.set'next
   lazyFileBuf.TypeAssumptions.method_set
   lazyFileBuf.TypeAssumptions.ptr_method_set
 
@@ -1893,7 +1893,7 @@ noncomputable instance bufFile.zero_val [GooseExts] : ZeroVal bufFile :=
 @[irreducible] noncomputable def bufFile.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   bufFile.fieldsUnsealed
 
-noncomputable instance equals_unfold_bufFile [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'bufFile [GooseExts] [GoGlobalContext] :
     EqualsUnfold bufFile.fields bufFile.fieldsUnsealed :=
   ⟨by unfold bufFile.fields; rfl⟩
 
@@ -1903,19 +1903,19 @@ noncomputable instance equals_unfold_bufFile [GooseExts] [GoGlobalContext] :
 class bufFile.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying bufFile.underlying bufFile
   underlying : go.UnderlyingDirectedEq bufFile.ty bufFile.underlying
-  get_file : ∀ (x : bufFile), go.IsGoStepPureDetTagged under (StructFieldGet bufFile.underlying go!"file") #x (Val #(x.file'))
-  set_file : ∀ (x : bufFile) (y : _root_.Perennial.github_com.goose_lang.primitive.filesys.File), go.IsGoStepPureDetTagged under (StructFieldSet bufFile.underlying go!"file") (PairV #x #y) (Val #(({ x with file' := y } : bufFile)))
-  get_buf : ∀ (x : bufFile), go.IsGoStepPureDetTagged under (StructFieldGet bufFile.underlying go!"buf") #x (Val #(x.buf'))
-  set_buf : ∀ (x : bufFile) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet bufFile.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : bufFile)))
+  get'file : ∀ (x : bufFile), go.IsGoStepPureDetTagged under (StructFieldGet bufFile.underlying go!"file") #x (Val #(x.file'))
+  set'file : ∀ (x : bufFile) (y : _root_.Perennial.github_com.goose_lang.primitive.filesys.File), go.IsGoStepPureDetTagged under (StructFieldSet bufFile.underlying go!"file") (PairV #x #y) (Val #(({ x with file' := y } : bufFile)))
+  get'buf : ∀ (x : bufFile), go.IsGoStepPureDetTagged under (StructFieldGet bufFile.underlying go!"buf") #x (Val #(x.buf'))
+  set'buf : ∀ (x : bufFile) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet bufFile.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : bufFile)))
   method_set : go.MethodSetIs bufFile.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType bufFile.ty) []
 
 attribute [instance] bufFile.TypeAssumptions.type_repr
   bufFile.TypeAssumptions.underlying
-  bufFile.TypeAssumptions.get_file
-  bufFile.TypeAssumptions.set_file
-  bufFile.TypeAssumptions.get_buf
-  bufFile.TypeAssumptions.set_buf
+  bufFile.TypeAssumptions.get'file
+  bufFile.TypeAssumptions.set'file
+  bufFile.TypeAssumptions.get'buf
+  bufFile.TypeAssumptions.set'buf
   bufFile.TypeAssumptions.method_set
   bufFile.TypeAssumptions.ptr_method_set
 
@@ -1938,7 +1938,7 @@ noncomputable instance tableWriter.zero_val [GooseExts] : ZeroVal tableWriter :=
 @[irreducible] noncomputable def tableWriter.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   tableWriter.fieldsUnsealed
 
-noncomputable instance equals_unfold_tableWriter [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'tableWriter [GooseExts] [GoGlobalContext] :
     EqualsUnfold tableWriter.fields tableWriter.fieldsUnsealed :=
   ⟨by unfold tableWriter.fields; rfl⟩
 
@@ -1948,27 +1948,27 @@ noncomputable instance equals_unfold_tableWriter [GooseExts] [GoGlobalContext] :
 class tableWriter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying tableWriter.underlying tableWriter
   underlying : go.UnderlyingDirectedEq tableWriter.ty tableWriter.underlying
-  get_index : ∀ (x : tableWriter), go.IsGoStepPureDetTagged under (StructFieldGet tableWriter.underlying go!"index") #x (Val #(x.index'))
-  set_index : ∀ (x : tableWriter) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet tableWriter.underlying go!"index") (PairV #x #y) (Val #(({ x with index' := y } : tableWriter)))
-  get_name : ∀ (x : tableWriter), go.IsGoStepPureDetTagged under (StructFieldGet tableWriter.underlying go!"name") #x (Val #(x.name'))
-  set_name : ∀ (x : tableWriter) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet tableWriter.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : tableWriter)))
-  get_file : ∀ (x : tableWriter), go.IsGoStepPureDetTagged under (StructFieldGet tableWriter.underlying go!"file") #x (Val #(x.file'))
-  set_file : ∀ (x : tableWriter) (y : bufFile), go.IsGoStepPureDetTagged under (StructFieldSet tableWriter.underlying go!"file") (PairV #x #y) (Val #(({ x with file' := y } : tableWriter)))
-  get_offset : ∀ (x : tableWriter), go.IsGoStepPureDetTagged under (StructFieldGet tableWriter.underlying go!"offset") #x (Val #(x.offset'))
-  set_offset : ∀ (x : tableWriter) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet tableWriter.underlying go!"offset") (PairV #x #y) (Val #(({ x with offset' := y } : tableWriter)))
+  get'index : ∀ (x : tableWriter), go.IsGoStepPureDetTagged under (StructFieldGet tableWriter.underlying go!"index") #x (Val #(x.index'))
+  set'index : ∀ (x : tableWriter) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet tableWriter.underlying go!"index") (PairV #x #y) (Val #(({ x with index' := y } : tableWriter)))
+  get'name : ∀ (x : tableWriter), go.IsGoStepPureDetTagged under (StructFieldGet tableWriter.underlying go!"name") #x (Val #(x.name'))
+  set'name : ∀ (x : tableWriter) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet tableWriter.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : tableWriter)))
+  get'file : ∀ (x : tableWriter), go.IsGoStepPureDetTagged under (StructFieldGet tableWriter.underlying go!"file") #x (Val #(x.file'))
+  set'file : ∀ (x : tableWriter) (y : bufFile), go.IsGoStepPureDetTagged under (StructFieldSet tableWriter.underlying go!"file") (PairV #x #y) (Val #(({ x with file' := y } : tableWriter)))
+  get'offset : ∀ (x : tableWriter), go.IsGoStepPureDetTagged under (StructFieldGet tableWriter.underlying go!"offset") #x (Val #(x.offset'))
+  set'offset : ∀ (x : tableWriter) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet tableWriter.underlying go!"offset") (PairV #x #y) (Val #(({ x with offset' := y } : tableWriter)))
   method_set : go.MethodSetIs tableWriter.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType tableWriter.ty) []
 
 attribute [instance] tableWriter.TypeAssumptions.type_repr
   tableWriter.TypeAssumptions.underlying
-  tableWriter.TypeAssumptions.get_index
-  tableWriter.TypeAssumptions.set_index
-  tableWriter.TypeAssumptions.get_name
-  tableWriter.TypeAssumptions.set_name
-  tableWriter.TypeAssumptions.get_file
-  tableWriter.TypeAssumptions.set_file
-  tableWriter.TypeAssumptions.get_offset
-  tableWriter.TypeAssumptions.set_offset
+  tableWriter.TypeAssumptions.get'index
+  tableWriter.TypeAssumptions.set'index
+  tableWriter.TypeAssumptions.get'name
+  tableWriter.TypeAssumptions.set'name
+  tableWriter.TypeAssumptions.get'file
+  tableWriter.TypeAssumptions.set'file
+  tableWriter.TypeAssumptions.get'offset
+  tableWriter.TypeAssumptions.set'offset
   tableWriter.TypeAssumptions.method_set
   tableWriter.TypeAssumptions.ptr_method_set
 
@@ -1997,7 +1997,7 @@ noncomputable instance Database.zero_val [GooseExts] : ZeroVal Database :=
 @[irreducible] noncomputable def Database.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Database.fieldsUnsealed
 
-noncomputable instance equals_unfold_Database [GooseExts] [GoGlobalContext] :
+noncomputable instance equals_unfold'Database [GooseExts] [GoGlobalContext] :
     EqualsUnfold Database.fields Database.fieldsUnsealed :=
   ⟨by unfold Database.fields; rfl⟩
 
@@ -2007,132 +2007,132 @@ noncomputable instance equals_unfold_Database [GooseExts] [GoGlobalContext] :
 class Database.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Database.underlying Database
   underlying : go.UnderlyingDirectedEq Database.ty Database.underlying
-  get_wbuffer : ∀ (x : Database), go.IsGoStepPureDetTagged under (StructFieldGet Database.underlying go!"wbuffer") #x (Val #(x.wbuffer'))
-  set_wbuffer : ∀ (x : Database) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Database.underlying go!"wbuffer") (PairV #x #y) (Val #(({ x with wbuffer' := y } : Database)))
-  get_rbuffer : ∀ (x : Database), go.IsGoStepPureDetTagged under (StructFieldGet Database.underlying go!"rbuffer") #x (Val #(x.rbuffer'))
-  set_rbuffer : ∀ (x : Database) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Database.underlying go!"rbuffer") (PairV #x #y) (Val #(({ x with rbuffer' := y } : Database)))
-  get_bufferL : ∀ (x : Database), go.IsGoStepPureDetTagged under (StructFieldGet Database.underlying go!"bufferL") #x (Val #(x.bufferL'))
-  set_bufferL : ∀ (x : Database) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Database.underlying go!"bufferL") (PairV #x #y) (Val #(({ x with bufferL' := y } : Database)))
-  get_table : ∀ (x : Database), go.IsGoStepPureDetTagged under (StructFieldGet Database.underlying go!"table") #x (Val #(x.table'))
-  set_table : ∀ (x : Database) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Database.underlying go!"table") (PairV #x #y) (Val #(({ x with table' := y } : Database)))
-  get_tableName : ∀ (x : Database), go.IsGoStepPureDetTagged under (StructFieldGet Database.underlying go!"tableName") #x (Val #(x.tableName'))
-  set_tableName : ∀ (x : Database) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Database.underlying go!"tableName") (PairV #x #y) (Val #(({ x with tableName' := y } : Database)))
-  get_tableL : ∀ (x : Database), go.IsGoStepPureDetTagged under (StructFieldGet Database.underlying go!"tableL") #x (Val #(x.tableL'))
-  set_tableL : ∀ (x : Database) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Database.underlying go!"tableL") (PairV #x #y) (Val #(({ x with tableL' := y } : Database)))
-  get_compactionL : ∀ (x : Database), go.IsGoStepPureDetTagged under (StructFieldGet Database.underlying go!"compactionL") #x (Val #(x.compactionL'))
-  set_compactionL : ∀ (x : Database) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Database.underlying go!"compactionL") (PairV #x #y) (Val #(({ x with compactionL' := y } : Database)))
+  get'wbuffer : ∀ (x : Database), go.IsGoStepPureDetTagged under (StructFieldGet Database.underlying go!"wbuffer") #x (Val #(x.wbuffer'))
+  set'wbuffer : ∀ (x : Database) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Database.underlying go!"wbuffer") (PairV #x #y) (Val #(({ x with wbuffer' := y } : Database)))
+  get'rbuffer : ∀ (x : Database), go.IsGoStepPureDetTagged under (StructFieldGet Database.underlying go!"rbuffer") #x (Val #(x.rbuffer'))
+  set'rbuffer : ∀ (x : Database) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Database.underlying go!"rbuffer") (PairV #x #y) (Val #(({ x with rbuffer' := y } : Database)))
+  get'bufferL : ∀ (x : Database), go.IsGoStepPureDetTagged under (StructFieldGet Database.underlying go!"bufferL") #x (Val #(x.bufferL'))
+  set'bufferL : ∀ (x : Database) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Database.underlying go!"bufferL") (PairV #x #y) (Val #(({ x with bufferL' := y } : Database)))
+  get'table : ∀ (x : Database), go.IsGoStepPureDetTagged under (StructFieldGet Database.underlying go!"table") #x (Val #(x.table'))
+  set'table : ∀ (x : Database) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Database.underlying go!"table") (PairV #x #y) (Val #(({ x with table' := y } : Database)))
+  get'tableName : ∀ (x : Database), go.IsGoStepPureDetTagged under (StructFieldGet Database.underlying go!"tableName") #x (Val #(x.tableName'))
+  set'tableName : ∀ (x : Database) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Database.underlying go!"tableName") (PairV #x #y) (Val #(({ x with tableName' := y } : Database)))
+  get'tableL : ∀ (x : Database), go.IsGoStepPureDetTagged under (StructFieldGet Database.underlying go!"tableL") #x (Val #(x.tableL'))
+  set'tableL : ∀ (x : Database) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Database.underlying go!"tableL") (PairV #x #y) (Val #(({ x with tableL' := y } : Database)))
+  get'compactionL : ∀ (x : Database), go.IsGoStepPureDetTagged under (StructFieldGet Database.underlying go!"compactionL") #x (Val #(x.compactionL'))
+  set'compactionL : ∀ (x : Database) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Database.underlying go!"compactionL") (PairV #x #y) (Val #(({ x with compactionL' := y } : Database)))
   method_set : go.MethodSetIs Database.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Database.ty) []
 
 attribute [instance] Database.TypeAssumptions.type_repr
   Database.TypeAssumptions.underlying
-  Database.TypeAssumptions.get_wbuffer
-  Database.TypeAssumptions.set_wbuffer
-  Database.TypeAssumptions.get_rbuffer
-  Database.TypeAssumptions.set_rbuffer
-  Database.TypeAssumptions.get_bufferL
-  Database.TypeAssumptions.set_bufferL
-  Database.TypeAssumptions.get_table
-  Database.TypeAssumptions.set_table
-  Database.TypeAssumptions.get_tableName
-  Database.TypeAssumptions.set_tableName
-  Database.TypeAssumptions.get_tableL
-  Database.TypeAssumptions.set_tableL
-  Database.TypeAssumptions.get_compactionL
-  Database.TypeAssumptions.set_compactionL
+  Database.TypeAssumptions.get'wbuffer
+  Database.TypeAssumptions.set'wbuffer
+  Database.TypeAssumptions.get'rbuffer
+  Database.TypeAssumptions.set'rbuffer
+  Database.TypeAssumptions.get'bufferL
+  Database.TypeAssumptions.set'bufferL
+  Database.TypeAssumptions.get'table
+  Database.TypeAssumptions.set'table
+  Database.TypeAssumptions.get'tableName
+  Database.TypeAssumptions.set'tableName
+  Database.TypeAssumptions.get'tableL
+  Database.TypeAssumptions.set'tableL
+  Database.TypeAssumptions.get'compactionL
+  Database.TypeAssumptions.set'compactionL
   Database.TypeAssumptions.method_set
   Database.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  Table_instance : Table.TypeAssumptions
-  Entry_instance : Entry.TypeAssumptions
-  lazyFileBuf_instance : lazyFileBuf.TypeAssumptions
-  bufFile_instance : bufFile.TypeAssumptions
-  tableWriter_instance : tableWriter.TypeAssumptions
-  Database_instance : Database.TypeAssumptions
-  UseMarshal_unfold : FuncUnfold UseMarshal [] UseMarshal.impl
-  CreateTable_unfold : FuncUnfold CreateTable [] CreateTable.impl
-  DecodeUInt64_unfold : FuncUnfold DecodeUInt64 [] DecodeUInt64.impl
-  DecodeEntry_unfold : FuncUnfold DecodeEntry [] DecodeEntry.impl
-  readTableIndex_unfold : FuncUnfold readTableIndex [] readTableIndex.impl
-  RecoverTable_unfold : FuncUnfold RecoverTable [] RecoverTable.impl
-  CloseTable_unfold : FuncUnfold CloseTable [] CloseTable.impl
-  readValue_unfold : FuncUnfold readValue [] readValue.impl
-  tableRead_unfold : FuncUnfold tableRead [] tableRead.impl
-  newBuf_unfold : FuncUnfold newBuf [] newBuf.impl
-  bufFlush_unfold : FuncUnfold bufFlush [] bufFlush.impl
-  bufAppend_unfold : FuncUnfold bufAppend [] bufAppend.impl
-  bufClose_unfold : FuncUnfold bufClose [] bufClose.impl
-  newTableWriter_unfold : FuncUnfold newTableWriter [] newTableWriter.impl
-  tableWriterAppend_unfold : FuncUnfold tableWriterAppend [] tableWriterAppend.impl
-  tableWriterClose_unfold : FuncUnfold tableWriterClose [] tableWriterClose.impl
-  EncodeUInt64_unfold : FuncUnfold EncodeUInt64 [] EncodeUInt64.impl
-  EncodeSlice_unfold : FuncUnfold EncodeSlice [] EncodeSlice.impl
-  tablePut_unfold : FuncUnfold tablePut [] tablePut.impl
-  makeValueBuffer_unfold : FuncUnfold makeValueBuffer [] makeValueBuffer.impl
-  NewDb_unfold : FuncUnfold NewDb [] NewDb.impl
-  Read_unfold : FuncUnfold Read [] Read.impl
-  Write_unfold : FuncUnfold Write [] Write.impl
-  freshTable_unfold : FuncUnfold freshTable [] freshTable.impl
-  tablePutBuffer_unfold : FuncUnfold tablePutBuffer [] tablePutBuffer.impl
-  tablePutOldTable_unfold : FuncUnfold tablePutOldTable [] tablePutOldTable.impl
-  constructNewTable_unfold : FuncUnfold constructNewTable [] constructNewTable.impl
-  Compact_unfold : FuncUnfold Compact [] Compact.impl
-  recoverManifest_unfold : FuncUnfold recoverManifest [] recoverManifest.impl
-  deleteOtherFile_unfold : FuncUnfold deleteOtherFile [] deleteOtherFile.impl
-  deleteOtherFiles_unfold : FuncUnfold deleteOtherFiles [] deleteOtherFiles.impl
-  Recover_unfold : FuncUnfold Recover [] Recover.impl
-  Shutdown_unfold : FuncUnfold Shutdown [] Shutdown.impl
-  Close_unfold : FuncUnfold Close [] Close.impl
-  import_binary_Assumption : _root_.Perennial.encoding.binary.Assumptions
-  import_sync_Assumption : _root_.Perennial.sync.Assumptions
-  import_filesys_Assumption : _root_.Perennial.github_com.goose_lang.primitive.filesys.Assumptions
-  import_marshal_Assumption : _root_.Perennial.github_com.tchajed.marshal.Assumptions
+  instance'Table : Table.TypeAssumptions
+  instance'Entry : Entry.TypeAssumptions
+  instance'lazyFileBuf : lazyFileBuf.TypeAssumptions
+  instance'bufFile : bufFile.TypeAssumptions
+  instance'tableWriter : tableWriter.TypeAssumptions
+  instance'Database : Database.TypeAssumptions
+  unfold'UseMarshal : FuncUnfold UseMarshal [] UseMarshal.impl
+  unfold'CreateTable : FuncUnfold CreateTable [] CreateTable.impl
+  unfold'DecodeUInt64 : FuncUnfold DecodeUInt64 [] DecodeUInt64.impl
+  unfold'DecodeEntry : FuncUnfold DecodeEntry [] DecodeEntry.impl
+  unfold'readTableIndex : FuncUnfold readTableIndex [] readTableIndex.impl
+  unfold'RecoverTable : FuncUnfold RecoverTable [] RecoverTable.impl
+  unfold'CloseTable : FuncUnfold CloseTable [] CloseTable.impl
+  unfold'readValue : FuncUnfold readValue [] readValue.impl
+  unfold'tableRead : FuncUnfold tableRead [] tableRead.impl
+  unfold'newBuf : FuncUnfold newBuf [] newBuf.impl
+  unfold'bufFlush : FuncUnfold bufFlush [] bufFlush.impl
+  unfold'bufAppend : FuncUnfold bufAppend [] bufAppend.impl
+  unfold'bufClose : FuncUnfold bufClose [] bufClose.impl
+  unfold'newTableWriter : FuncUnfold newTableWriter [] newTableWriter.impl
+  unfold'tableWriterAppend : FuncUnfold tableWriterAppend [] tableWriterAppend.impl
+  unfold'tableWriterClose : FuncUnfold tableWriterClose [] tableWriterClose.impl
+  unfold'EncodeUInt64 : FuncUnfold EncodeUInt64 [] EncodeUInt64.impl
+  unfold'EncodeSlice : FuncUnfold EncodeSlice [] EncodeSlice.impl
+  unfold'tablePut : FuncUnfold tablePut [] tablePut.impl
+  unfold'makeValueBuffer : FuncUnfold makeValueBuffer [] makeValueBuffer.impl
+  unfold'NewDb : FuncUnfold NewDb [] NewDb.impl
+  unfold'Read : FuncUnfold Read [] Read.impl
+  unfold'Write : FuncUnfold Write [] Write.impl
+  unfold'freshTable : FuncUnfold freshTable [] freshTable.impl
+  unfold'tablePutBuffer : FuncUnfold tablePutBuffer [] tablePutBuffer.impl
+  unfold'tablePutOldTable : FuncUnfold tablePutOldTable [] tablePutOldTable.impl
+  unfold'constructNewTable : FuncUnfold constructNewTable [] constructNewTable.impl
+  unfold'Compact : FuncUnfold Compact [] Compact.impl
+  unfold'recoverManifest : FuncUnfold recoverManifest [] recoverManifest.impl
+  unfold'deleteOtherFile : FuncUnfold deleteOtherFile [] deleteOtherFile.impl
+  unfold'deleteOtherFiles : FuncUnfold deleteOtherFiles [] deleteOtherFiles.impl
+  unfold'Recover : FuncUnfold Recover [] Recover.impl
+  unfold'Shutdown : FuncUnfold Shutdown [] Shutdown.impl
+  unfold'Close : FuncUnfold Close [] Close.impl
+  import'binary : _root_.Perennial.encoding.binary.Assumptions
+  import'sync : _root_.Perennial.sync.Assumptions
+  import'filesys : _root_.Perennial.github_com.goose_lang.primitive.filesys.Assumptions
+  import'marshal : _root_.Perennial.github_com.tchajed.marshal.Assumptions
 
-attribute [instance] Assumptions.Table_instance
-  Assumptions.Entry_instance
-  Assumptions.lazyFileBuf_instance
-  Assumptions.bufFile_instance
-  Assumptions.tableWriter_instance
-  Assumptions.Database_instance
-  Assumptions.UseMarshal_unfold
-  Assumptions.CreateTable_unfold
-  Assumptions.DecodeUInt64_unfold
-  Assumptions.DecodeEntry_unfold
-  Assumptions.readTableIndex_unfold
-  Assumptions.RecoverTable_unfold
-  Assumptions.CloseTable_unfold
-  Assumptions.readValue_unfold
-  Assumptions.tableRead_unfold
-  Assumptions.newBuf_unfold
-  Assumptions.bufFlush_unfold
-  Assumptions.bufAppend_unfold
-  Assumptions.bufClose_unfold
-  Assumptions.newTableWriter_unfold
-  Assumptions.tableWriterAppend_unfold
-  Assumptions.tableWriterClose_unfold
-  Assumptions.EncodeUInt64_unfold
-  Assumptions.EncodeSlice_unfold
-  Assumptions.tablePut_unfold
-  Assumptions.makeValueBuffer_unfold
-  Assumptions.NewDb_unfold
-  Assumptions.Read_unfold
-  Assumptions.Write_unfold
-  Assumptions.freshTable_unfold
-  Assumptions.tablePutBuffer_unfold
-  Assumptions.tablePutOldTable_unfold
-  Assumptions.constructNewTable_unfold
-  Assumptions.Compact_unfold
-  Assumptions.recoverManifest_unfold
-  Assumptions.deleteOtherFile_unfold
-  Assumptions.deleteOtherFiles_unfold
-  Assumptions.Recover_unfold
-  Assumptions.Shutdown_unfold
-  Assumptions.Close_unfold
-  Assumptions.import_binary_Assumption
-  Assumptions.import_sync_Assumption
-  Assumptions.import_filesys_Assumption
-  Assumptions.import_marshal_Assumption
+attribute [instance] Assumptions.instance'Table
+  Assumptions.instance'Entry
+  Assumptions.instance'lazyFileBuf
+  Assumptions.instance'bufFile
+  Assumptions.instance'tableWriter
+  Assumptions.instance'Database
+  Assumptions.unfold'UseMarshal
+  Assumptions.unfold'CreateTable
+  Assumptions.unfold'DecodeUInt64
+  Assumptions.unfold'DecodeEntry
+  Assumptions.unfold'readTableIndex
+  Assumptions.unfold'RecoverTable
+  Assumptions.unfold'CloseTable
+  Assumptions.unfold'readValue
+  Assumptions.unfold'tableRead
+  Assumptions.unfold'newBuf
+  Assumptions.unfold'bufFlush
+  Assumptions.unfold'bufAppend
+  Assumptions.unfold'bufClose
+  Assumptions.unfold'newTableWriter
+  Assumptions.unfold'tableWriterAppend
+  Assumptions.unfold'tableWriterClose
+  Assumptions.unfold'EncodeUInt64
+  Assumptions.unfold'EncodeSlice
+  Assumptions.unfold'tablePut
+  Assumptions.unfold'makeValueBuffer
+  Assumptions.unfold'NewDb
+  Assumptions.unfold'Read
+  Assumptions.unfold'Write
+  Assumptions.unfold'freshTable
+  Assumptions.unfold'tablePutBuffer
+  Assumptions.unfold'tablePutOldTable
+  Assumptions.unfold'constructNewTable
+  Assumptions.unfold'Compact
+  Assumptions.unfold'recoverManifest
+  Assumptions.unfold'deleteOtherFile
+  Assumptions.unfold'deleteOtherFiles
+  Assumptions.unfold'Recover
+  Assumptions.unfold'Shutdown
+  Assumptions.unfold'Close
+  Assumptions.import'binary
+  Assumptions.import'sync
+  Assumptions.import'filesys
+  Assumptions.import'marshal
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.simpledb
 
