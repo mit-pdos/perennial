@@ -30,8 +30,8 @@ theorem internal.gomodel.ChooseStrings.wp_proof
   wp_auto
   -- `a` starts `nil` or a non-nil empty slice (`[]string{}`)
   wp_apply wp_Choose as %c0 -
-  rcases c0 with _ | _ <;> simp only [intoVal_eq_iff, decide_false, decide_true,
-    Bool.false_eq_true, ↓reduceIte]
+  rcases c0 with _ | _ <;> (try simp only [intoVal_eq_iff, _root_.decide_false, _root_.decide_true,
+    Bool.false_eq_true, ↓reduceIte])
   · wp_auto
     ihave HI : iprop(∃ (sl : GoSlice) (xs : List GoString),
       "a" ∷ a_ptr ↦ sl ∗ "Hsl" ∷ sl ↦* xs ∗

@@ -54,7 +54,17 @@
 #            TestCallDepth, ExampleLogger, ExampleLogger_Output
 #                                     the file and line of Lshortfile come from
 #                                     Frames.Next's model (empty)
-#   os, sort, runtime/debug           in full
+#            TestFlagAndPrefixSetting, TestUTCFlag
+#                                     a Logger's Print formats through
+#                                     fmt.Append, whose model (pp.doPrint;
+#                                     the overlay includes log's dependencies'
+#                                     models) prints an empty string in gc
+#   os       TestReadAtNegativeOffset, TestWriteAtNegativeOffset (fmt.Sprint of the error),
+#            TestExecutable, TestGetppid (the child prints with fmt.Print), Example*
+#            (their output is fmt.Print*'s; testing reports them with fmt too): fmt's
+#            models, included as os's dependency's, print an empty string in gc
+#   sort     Example* (fmt.Print* output; one hangs where fmt's model is stuck)
+#   runtime/debug TestSetCrashOutput (the child's output is fmt's)
 # runtime's own tests are not run. (os.runtime_args, syscall.runtime_envs, runtime.callers and
 # internal/synctest are not models: trusted, with the runtime's real bodies under gc.)
 #   fmt      only TestModelAlias (goose/model/fmt/testdata/alias): its models
@@ -92,8 +102,11 @@ run bytes internal/stringslite internal/bytealg internal/sync
 run time -skip '^(TestAfterStop|TestTimerStopStress|TestChan|TestTicker|TestReset|TestTimerModifiedEarlier|TestAdjustTimers|TestTimerGC)$'
 runc() { go test -vet=off -timeout 600s -overlay "$OUT/ovc/overlay.json" -tags purego,goose "$@"; }
 runc syscall -skip '^TestPrlimitFileLimit$'
-runc log -skip '^(TestAll|TestCallDepth|ExampleLogger|ExampleLogger_Output)$'
-runc os sort runtime/debug
+runc log -skip '^(TestAll|TestCallDepth|ExampleLogger|ExampleLogger_Output|TestFlagAndPrefixSetting|TestUTCFlag)$'
+runc os -skip '^(TestReadAtNegativeOffset|TestWriteAtNegativeOffset|TestExecutable|TestGetppid|Example.*)$'
+runc sort -skip '^Example.*$'
+runcdebug() { runc runtime/debug -skip '^TestSetCrashOutput$'; }
+runcdebug
 go build -overlay "$OUT/ovc/overlay.json" -tags purego,goose runtime internal/synctest
 # fmt: TestModelAlias, on the real fmt, then on its models with the driven gomodel
 "$OUT/goose" model-overlay -configdir "$ROOT/Perennial/Code" -dir . -tags purego -o "$OUT/ovfmt" fmt
