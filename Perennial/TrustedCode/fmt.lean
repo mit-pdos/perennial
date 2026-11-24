@@ -2,9 +2,10 @@
 Trusted code for the Go `fmt` package, in namespace `fmt` (as the generated
 package).
 
-Go's `fmt` cannot be translated (reflection on every argument, `sync.Pool`, float formatting), so
-`Printf`, `Fprintf`, `Fprint` and `Errorf` are models, each goose's translation of the Go its
-docstring quotes, with the edits it names. They share `doPrintf`, which formats the common directives of
+`Sprintf` and the printer it runs are goose's translation of the real `fmt` (`Perennial/Code/fmt.toml`,
+perennial#671 stage 1). Until stage 2 retires them, `Printf`, `Fprintf`, `Fprint` and `Errorf` are
+still the models here, each goose's translation of the Go its docstring quotes, with the edits it
+names; they do not use the real printer (nor its pool `ppFree`). They share `doPrintf`, which formats the common directives of
 arguments that Go formats without calling any of their methods (`inert`) exactly (`formatArg`), and
 the common directives of a `[]byte` or a `[]string` (`formatSlice`, reading its bytes or elements, as Go does),
 and from the first other directive on gives an arbitrary string while calling what Go calls of the
