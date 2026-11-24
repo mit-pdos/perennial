@@ -285,6 +285,7 @@ def main():
             "./channel/...",
             "./crashfs/...",
             "./netfs/...",
+            "./grovefile/...",
             "./unsafememory/...",
             "./xpkgalias/...",
         )
