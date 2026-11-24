@@ -6,5 +6,6 @@ module
 
 public import Perennial.Proof.strings.Base
 public import Perennial.Proof.strings.Link
+public import Perennial.Proof.strings.Results
 
 @[expose] public section
