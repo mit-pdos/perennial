@@ -6,7 +6,8 @@ Consists only of a network, per-node file storage, and clocks.
 * Crashes (`ExtSemantics.crash`): a node's state may be anything afterwards
   (`grove_ffi` does not make its writes durable).
 * Initial states (`ExtSemantics.initLocal`/`initGlobal`): any (the default): the
-  network may hold any messages and a node any files, clocks and so on.
+  network may hold any messages, any endpoints may be free or listened on, and a node
+  may hold any files, clocks and so on.
 * The step (`GroveStep`, the `ExtSemantics` of `groveExt`) is a relation:
   either one of Grove's operations (`groveOps`) stutters (state unchanged,
   `e' = ExternalOp groveExt.name op v`) or it
@@ -56,14 +57,16 @@ deriving DecidableEq
 
 export message (Message)
 
-/-- The global network state: a map from endpoint names to the set of messages
-sent to those endpoints. -/
+/-- The global state: a map from endpoint names to the set of messages sent to
+those endpoints, whether each endpoint is being listened on (`Listen` is stuck on an
+endpoint not in `groveListen`), and the global time. -/
 structure GroveGlobalState where
   groveNet : GMap Endpoint (GSet message)
+  groveListen : GMap Endpoint Bool
   groveGlobalTime : w64
 
 instance groveGlobalState_inhabited : Inhabited GroveGlobalState :=
-  ⟨{ groveNet := ∅, groveGlobalTime := 0 }⟩
+  ⟨{ groveNet := ∅, groveListen := ∅, groveGlobalTime := 0 }⟩
 
 /-- The per-node state -/
 structure GroveNodeState where
@@ -86,10 +89,39 @@ variable [GooseExts] [GoGlobalContext]
 /-- A Grove value (a socket). -/
 abbrev groveV (v : GroveVal) : val := ExtV (extVal groveExt v)
 
+/-- An endpoint `Listen` and `Connect` accept: the bits above the port are 0
+(`grove_ffi.AddressToStr` ignores them), the IP is not `0.0.0.0` (the wildcard address)
+and the port is not 0 (with which `net.Listen` picks a port). -/
+def ValidEndpoint (a : Endpoint) : Prop :=
+  a >>> 48 = 0 ∧ a &&& 0xffffffff ≠ 0 ∧ (a >>> 32) &&& 0xffff ≠ 0
+
+instance (a : Endpoint) : Decidable (ValidEndpoint a) := by
+  unfold ValidEndpoint; infer_instance
+
+/-- An endpoint `Listen` accepts: a valid endpoint whose port is at least 1024 (binding a lower
+port needs privilege). -/
+def ListenEndpoint (a : Endpoint) : Prop :=
+  ValidEndpoint a ∧ 1024 ≤ (a >>> 32) &&& 0xffff
+
+instance (a : Endpoint) : Decidable (ListenEndpoint a) := by
+  unfold ListenEndpoint; infer_instance
+
+/-- A file name `FileRead`, `FileWrite` and `FileAppend` accept: non-empty, with no `/` (47)
+and no NUL byte, not `.` (46) or `..`, and at most 244 bytes (`FileWrite`'s temporary file is
+named by the name, `_` and up to 10 digits, at most 255 bytes, Linux's `NAME_MAX`). -/
+def ValidFileName (name : GoString) : Prop :=
+  name ≠ [] ∧ (47 : w8) ∉ name ∧ (0 : w8) ∉ name ∧ name ≠ [(46 : w8)] ∧
+    name ≠ [(46 : w8), 46] ∧ name.length ≤ 244
+
+instance (name : GoString) : Decidable (ValidFileName name) := by
+  unfold ValidFileName; infer_instance
+
+/-- A local endpoint `Connect` may pick: none (it fails), or one that is neither a channel nor
+an endpoint `Listen` may be called on. -/
 def IsFreshChan (fg : GroveGlobalState) (c : Option Endpoint) : Prop :=
   match c with
   | none => True -- failure (to allocate a channel) is always an option
-  | some c => fg.groveNet !! c = none
+  | some c => fg.groveNet !! c = none ∧ fg.groveListen !! c = none
 
 theorem gen_isFreshChan (σg : GroveGlobalState) : IsFreshChan σg none := trivial
 
@@ -97,15 +129,22 @@ def IsGroveStep (op : String) (v : val) (e' : Expr)
     (σ σ' : GroveNodeState) (g g' : GroveGlobalState) : Prop :=
   match op with
   | "Listen" =>
-      σ = σ' ∧ g = g' ∧ (∀ c : Endpoint, v = #c → e' = Val (groveV (ListenSocketV c)))
+      σ = σ' ∧
+      (∀ c : Endpoint, v = #c →
+        if ListenEndpoint c ∧ g.groveListen !! c = some false then
+          g' = { g with groveListen := <[c := true]> g.groveListen } ∧
+            e' = Val (groveV (ListenSocketV c))
+        else e' = Panic "invalid")
   | "Connect" =>
       ∀ c_r : Endpoint, v = #c_r →
-        σ = σ' ∧
-        ∃ c_l, IsFreshChan g c_l ∧
-          match c_l with
-          | none => g = g' ∧ e' = Val (PairV (#true) (groveV BadSocketV))
-          | some c_l => g' = { g with groveNet := <[c_l := ∅]> g.groveNet } ∧
-              e' = Val (PairV (#false) (groveV (ConnectionSocketV c_l c_r)))
+        if ValidEndpoint c_r then
+          σ = σ' ∧
+          ∃ c_l, IsFreshChan g c_l ∧
+            match c_l with
+            | none => g = g' ∧ e' = Val (PairV (#true) (groveV BadSocketV))
+            | some c_l => g' = { g with groveNet := <[c_l := ∅]> g.groveNet } ∧
+                e' = Val (PairV (#false) (groveV (ConnectionSocketV c_l c_r)))
+        else e' = Panic "invalid"
   | "Accept" =>
       σ = σ' ∧ g = g' ∧ (∀ c_l, v = groveV (ListenSocketV c_l) →
         ∃ c_r, g = g' ∧ e' = Val (groveV (ConnectionSocketV c_l c_r)))
@@ -130,21 +169,27 @@ def IsGroveStep (op : String) (v : val) (e' : Expr)
   | "FileRead" =>
       σ = σ' ∧ g = g' ∧
       (∀ name : GoString, v = #name →
-        match σ.groveNodeFiles !! name with
-        | some data => e' = Val (#data)
-        | none => e' = Panic "invalid")
+        if ValidFileName name then
+          match σ.groveNodeFiles !! name with
+          | some data => e' = Val (#data)
+          | none => e' = Val (#([] : List w8))
+        else e' = Panic "invalid")
   | "FileWrite" =>
       g = g' ∧
       (∀ (name : GoString) (data : List w8), v = PairV (#name) (#data) →
-        e' = Val (#()) ∧ σ' = { σ with groveNodeFiles := <[name := data]> σ.groveNodeFiles })
+        if ValidFileName name then
+          e' = Val (#()) ∧ σ' = { σ with groveNodeFiles := <[name := data]> σ.groveNodeFiles }
+        else e' = Panic "invalid")
   | "FileAppend" =>
       g = g' ∧
       (∀ (name : GoString) (data : List w8), v = PairV (#name) (#data) →
-        match σ.groveNodeFiles !! name with
-        | some old =>
-            σ' = { σ with groveNodeFiles := <[name := old ++ data]> σ.groveNodeFiles } ∧
-            e' = Val (#())
-        | none => e' = Panic "invalid")
+        if ValidFileName name then
+          match σ.groveNodeFiles !! name with
+          | some old =>
+              σ' = { σ with groveNodeFiles := <[name := old ++ data]> σ.groveNodeFiles } ∧
+              e' = Val (#())
+          | none => e' = Panic "invalid"
+        else e' = Panic "invalid")
   | "GetTSC" =>
       g = g' ∧
       ∃ new_time : w64,
