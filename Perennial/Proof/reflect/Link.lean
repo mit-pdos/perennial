@@ -8,7 +8,27 @@ module
 public import Perennial.Proof.internal.gomodel.Link
 public import Perennial.Proof.internal.reflectcore.Link
 public import Perennial.Proof.iter.Link
+public import Perennial.Proof.reflect.TypeOf
+public import Perennial.Proof.reflect.ValueOf
+public import Perennial.Proof.reflect.Value__CanAddr
+public import Perennial.Proof.reflect.Value__CanInterface
+public import Perennial.Proof.reflect.Value__CanSet
+public import Perennial.Proof.reflect.Value__Elem
+public import Perennial.Proof.reflect.Value__Interface
+public import Perennial.Proof.reflect.Value__IsNil
+public import Perennial.Proof.reflect.Value__IsValid
+public import Perennial.Proof.reflect.Value__Kind
+public import Perennial.Proof.reflect.Value__Type
+public import Perennial.Proof.reflect.elem
+public import Perennial.Proof.reflect.flag__kind
 public import Perennial.Proof.reflect.initialize
+public import Perennial.Proof.reflect.isDirectIface
+public import Perennial.Proof.reflect.isModelRType
+public import Perennial.Proof.reflect.rtype__Elem
+public import Perennial.Proof.reflect.rtype__Kind
+public import Perennial.Proof.reflect.toRType
+public import Perennial.Proof.reflect.toType
+public import Perennial.Proof.reflect.unpackEface
 public import Perennial.Proof.strconv.Link
 public import Perennial.Proof.unsafe.Link
 
@@ -25,8 +45,68 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : reflect.Assumptions]
 
+theorem reflect.wp_isModelRType : reflect.isModelRType.spec (GF := GF) (hG := hG) :=
+  reflect.isModelRType.wp_proof internal.reflectcore.wp_TokOf
+
+theorem reflect.wp_toRType : reflect.toRType.spec (GF := GF) (hG := hG) :=
+  reflect.toRType.wp_proof
+
+theorem reflect.wp_TypeOf : reflect.TypeOf.spec (GF := GF) (hG := hG) :=
+  reflect.TypeOf.wp_proof internal.reflectcore.wp_TokOf reflect.wp_isModelRType reflect.wp_toRType
+
+theorem reflect.Value.wp_CanAddr : reflect.Value.CanAddr.spec (GF := GF) (hG := hG) :=
+  reflect.Value.CanAddr.wp_proof
+
+theorem reflect.Value.wp_CanInterface : reflect.Value.CanInterface.spec (GF := GF) (hG := hG) :=
+  reflect.Value.CanInterface.wp_proof
+
+theorem reflect.Value.wp_CanSet : reflect.Value.CanSet.spec (GF := GF) (hG := hG) :=
+  reflect.Value.CanSet.wp_proof
+
+theorem reflect.flag.wp_kind : reflect.flag.kind.spec (GF := GF) (hG := hG) :=
+  reflect.flag.kind.wp_proof
+
+theorem reflect.Value.wp_Elem : reflect.Value.Elem.spec (GF := GF) (hG := hG) :=
+  reflect.Value.Elem.wp_proof reflect.flag.wp_kind internal.reflectcore.wp_EqNilAt internal.reflectcore.wp_TypeElem internal.reflectcore.wp_TypeKind internal.reflectcore.wp_PtrTok internal.reflectcore.wp_ConvertAt
+
+theorem reflect.wp_isDirectIface : reflect.isDirectIface.spec (GF := GF) (hG := hG) :=
+  reflect.isDirectIface.wp_proof internal.reflectcore.wp_TypeKind
+
+theorem reflect.Value.wp_Interface : reflect.Value.Interface.spec (GF := GF) (hG := hG) :=
+  reflect.Value.Interface.wp_proof reflect.flag.wp_kind reflect.wp_isDirectIface
+
+theorem reflect.Value.wp_IsNil : reflect.Value.IsNil.spec (GF := GF) (hG := hG) :=
+  reflect.Value.IsNil.wp_proof reflect.flag.wp_kind internal.reflectcore.wp_EqNilAt internal.reflectcore.wp_Load
+
+theorem reflect.Value.wp_IsValid : reflect.Value.IsValid.spec (GF := GF) (hG := hG) :=
+  reflect.Value.IsValid.wp_proof
+
+theorem reflect.Value.wp_Kind : reflect.Value.Kind.spec (GF := GF) (hG := hG) :=
+  reflect.Value.Kind.wp_proof reflect.flag.wp_kind
+
+theorem reflect.Value.wp_Type : reflect.Value.Type.spec (GF := GF) (hG := hG) :=
+  reflect.Value.Type.wp_proof reflect.wp_toRType
+
+theorem reflect.wp_unpackEface : reflect.unpackEface.spec (GF := GF) (hG := hG) :=
+  reflect.unpackEface.wp_proof internal.reflectcore.wp_TokOf reflect.wp_isModelRType internal.reflectcore.wp_TypeKind reflect.wp_isDirectIface internal.reflectcore.wp_Box
+
+theorem reflect.wp_ValueOf : reflect.ValueOf.spec (GF := GF) (hG := hG) :=
+  reflect.ValueOf.wp_proof reflect.wp_unpackEface
+
+theorem reflect.wp_elem : reflect.elem.spec (GF := GF) (hG := hG) :=
+  reflect.elem.wp_proof internal.reflectcore.wp_TypeKind internal.reflectcore.wp_TypeElem
+
 theorem reflect.wp_initialize' : reflect.initialize'.spec (GF := GF) (hG := hG) :=
   reflect.initialize'.wp_proof internal.gomodel.wp_initialize' internal.reflectcore.wp_initialize' iter.wp_initialize' strconv.wp_initialize' «unsafe».wp_initialize'
+
+theorem reflect.wp_toType : reflect.toType.spec (GF := GF) (hG := hG) :=
+  reflect.toType.wp_proof reflect.wp_toRType
+
+theorem reflect.rtype.wp_Elem : reflect.rtype.Elem.spec (GF := GF) (hG := hG) :=
+  reflect.rtype.Elem.wp_proof reflect.wp_elem reflect.wp_toType
+
+theorem reflect.rtype.wp_Kind : reflect.rtype.Kind.spec (GF := GF) (hG := hG) :=
+  reflect.rtype.Kind.wp_proof internal.reflectcore.wp_TypeKind
 
 end link
 
