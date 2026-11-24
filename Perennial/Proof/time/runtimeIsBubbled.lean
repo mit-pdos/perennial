@@ -4,6 +4,7 @@ The proof of `time.runtimeIsBubbled`.
 module
 
 public import Perennial.Spec.time.runtimeIsBubbled
+public import Perennial.Spec.internal.gomodel.Choose
 
 @[expose] public section
 
@@ -20,10 +21,12 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-theorem time.runtimeIsBubbled.wp_proof :
+theorem time.runtimeIsBubbled.wp_proof
+    (wp_Choose : internal.gomodel.Choose.spec (GF := GF) (hG := hG)) :
     time.runtimeIsBubbled.spec (GF := GF) (hG := hG) := by
   wp_start
-  wp_apply wp_ArbitraryInt as %x -
+  wp_auto
+  wp_apply wp_Choose as %b -
   wp_end
 
 end proof

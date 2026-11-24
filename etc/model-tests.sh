@@ -24,6 +24,18 @@
 #   errors   TestIs                   its uncomparable target (#13): Is's model
 #                                     compares it, which panics in gc (and is
 #                                     stuck in GooseLang)
+#   time     TestAfterStop, TestTimerStopStress, TestChan, TestTicker,
+#            TestReset, TestTimerModifiedEarlier, TestAdjustTimers
+#                                     Stop and Reset: their models do not
+#                                     cancel the firings already armed (each
+#                                     is a schedule of Go's in which Stop or
+#                                     Reset came later), so stopped timers
+#                                     fire, reset tickers keep their old
+#                                     period, and a reset timer's old firing
+#                                     blocks on its unbuffered channel (the
+#                                     last three hang)
+#            TestTimerGC              allocation counts: a model timer's
+#                                     goroutine keeps it alive until it fires
 # internal/stringslite has no tests; bytes and internal/bytealg run in full.
 #
 # usage: etc/model-tests.sh
@@ -34,10 +46,11 @@ trap 'rm -rf "$OUT"' EXIT
 cd "$ROOT/goose"
 go build -o "$OUT/goose" ./cmd/goose
 "$OUT/goose" model-overlay -configdir "$ROOT/Perennial/Code" -dir . -tags purego -o "$OUT/ov" \
-  strings bytes errors internal/stringslite internal/bytealg
+  strings bytes errors internal/stringslite internal/bytealg time
 # go vet does not find the overlay-added internal/gomodel (it changes into the package's directory)
 run() { go test -vet=off -timeout 300s -overlay "$OUT/ov/overlay.json" -tags purego,goose "$@"; }
 run strings -skip '^(TestSplit|ExampleSplit|TestBuilderGrow|TestBuilderAllocs|TestBuilderGrowSizeclasses|TestReplace|TestBuilderCopyPanic)$'
 run errors -skip '^TestIs$'
 run bytes internal/stringslite internal/bytealg
+run time -skip '^(TestAfterStop|TestTimerStopStress|TestChan|TestTicker|TestReset|TestTimerModifiedEarlier|TestAdjustTimers|TestTimerGC)$'
 echo "model-tests: ok"

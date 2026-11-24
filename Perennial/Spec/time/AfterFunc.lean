@@ -20,9 +20,10 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-/-- `AfterFunc(d, f)`: `f()` runs in a new goroutine (the model ignores the delay, and an
-execution in which `f` never runs is a prefix of one in which it does), so it must be safe to
-run then and must not panic. -/
+/-- `AfterFunc(d, f)`: `f()` runs in a new goroutine, at most once (the model's timer goroutine
+runs it once the clock, whose readings are arbitrary, has reached the deadline; `Stop` does not
+prevent it, and an execution in which `f` never runs is a prefix of one in which it does), so it
+must be safe to run then and must not panic. -/
 abbrev time.AfterFunc.spec : Prop :=
   ∀ (d : time.Duration) (f : GoFunc),
     {{ (WP (App (Val #f) (Val #())) {{ (fun v : val => iprop(⌜v.isPanic = false⌝)) }} : IProp GF) }}
