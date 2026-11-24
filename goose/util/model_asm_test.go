@@ -66,6 +66,22 @@ func TestModelBlankAsm(t *testing.T) {
 	}
 }
 
+// TestModelBlankAsmAmd64Header: a file that includes the toolchain's
+// asm_amd64.h (only GOAMD64 feature flags, as internal/bytealg's
+// count_amd64.s does) is blanked like one that includes textflag.h only.
+func TestModelBlankAsmAmd64Header(t *testing.T) {
+	root := modelModule(t, asmReal, asmModel,
+		"[model]\ndir = \"model\"\nreplaces = [\"F\"]\nblank_asm = [\"f_amd64.s\"]\n",
+		map[string]string{"p/f_amd64.s": "#include \"asm_amd64.h\"\n" + asmFile})
+	models, err := buildModels(root, "./p")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s := string(models.Overlay[filepath.Join(root, "p", "f_amd64.s")]); !strings.Contains(s, "blanked") {
+		t.Fatalf("f_amd64.s is not blanked: %q", s)
+	}
+}
+
 // TestModelBlankAsmRefused: the checks that guard the blanking.
 func TestModelBlankAsmRefused(t *testing.T) {
 	for _, c := range []struct {
