@@ -37,7 +37,7 @@ abbrev errors.asWalk.spec : Prop :=
     {{ (b : Bool) (v' : T'), RET #b; l ↦ v' }}) ∧
   (∀ (ii : GoInterfaceOk) (l : Loc) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T']
     {T : go.GoType} [IntoValTyped (GF := GF) T' T] (v : T'),
-    AsTarget T → asAssignable T ii = true → AsTypeTyped T' T ii →
+    AsTarget T → AsDecided T ii → asAssignable T ii = true → AsTypeTyped T' T ii →
     {{ (l ↦ v : IProp GF) }}
       (App (App (Val #(functions asWalk [])) (Val #(interface.ok ii)))
         (Val #(interface.mkOk (go.PointerType T) #l)))

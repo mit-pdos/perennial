@@ -18,6 +18,16 @@ variable [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
 def isInterfaceType (t : go.GoType) : Bool :=
   match t with | go.InterfaceType _ => true | _ => false
 
+/-- A defined type without type arguments, or a pointer to one: a type whose identity in Go is its
+(package-qualified) name, so that the equality of its translation is Go's type identity. (Not so for
+a type literal: Lean's struct field names are unqualified where Go's unexported ones are not, so
+two struct types of different packages can be equal here and different in Go.) -/
+def identByName (t : go.GoType) : Bool :=
+  match t with
+  | go.Named _ [] => true
+  | go.PointerType (go.Named _ []) => true
+  | _ => false
+
 def isUntypedNil (t : go.GoType) : Bool :=
   match t with | go.Named n [] => decide (n = go!"untyped nil") | _ => false
 
@@ -131,16 +141,22 @@ class InterfaceSemantics : Prop where
   interface type or implements `error` (`As` panics on any other target, before `as` runs; the
   operation has no semantics there). Whether `ii`'s dynamic type is assignable to `T`: for an
   interface `T`, whether it implements `T` (its type set contains it), the interface value then
-  stored into `*l`; for another `T`, whether it is `T`, its value then stored. Go also assigns a
-  type of the same underlying type as a non-interface `T` when one of them is unnamed (and a
-  bidirectional channel type to a channel type of the same element type, one of them unnamed, which
-  two types implementing `error` never are: an unnamed channel type has no methods); the operation
-  has no semantics when `ii`'s type is not `T` but has `T`'s underlying type, so it is never more
-  defined than Go, and it is `false` when the underlying types differ. Only `errors.As`'s model
+  stored into `*l`; for another `T`, whether it is `T`, its value then stored. For a non-interface
+  `T` the operation has semantics only when `ii`'s type is `T` and `T` is a defined type without
+  type arguments or a pointer to one (`identByName`: the equality of its translation is Go's type
+  identity, where for a type literal it is not: Lean's struct field names are unqualified, so two
+  struct types with an unexported field, of different packages, are equal here and different in
+  Go), or when `ii`'s type has another underlying type than `T` (in Go too, then: types of
+  different translations are different). Go also assigns a type of the same underlying type as
+  `T` when one of them is unnamed (and a bidirectional channel type to a channel type of the same
+  element type, one of them unnamed, which two types implementing `error` never are: an unnamed
+  channel type has no methods), where the operation has no semantics, so it is never more defined
+  than Go. Only `errors.As`'s model
   (`TrustedCode/errors.lean`) uses it, with an `err` of Go type `error`. -/
   as_assign_step (ii : GoInterfaceOk) (T : go.GoType) (l : Loc) (hl : l ≠ Loc.null)
     (hT : isInterfaceType (underlying T) = true ∨ typeSetContains T go.error = true)
-    (hdec : isInterfaceType (underlying T) = false → ii.ty ≠ T → underlying ii.ty ≠ underlying T) :
+    (hdec : isInterfaceType (underlying T) = false →
+      (ii.ty = T → identByName T = true) ∧ (ii.ty ≠ T → underlying ii.ty ≠ underlying T)) :
     ⟦AsAssign, (#(interface.ok ii), #(interface.mkOk (go.PointerType T) #l))⟧ ⤳
     (if isInterfaceType (underlying T) then
        (if typeSetContains ii.ty T then gl(GoStore T (#l, #(interface.ok ii)) ;; #true) else #false)

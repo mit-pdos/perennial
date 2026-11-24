@@ -30,12 +30,6 @@ theorem asTypeTyped_of_not_assignable [GooseExts] [GoGlobalContext] [GoSemantics
     simp only [hI, Bool.false_eq_true, ↓reduceIte, decide_eq_false_iff_not] at h
     intro h'; exact absurd h' h
 
-/-- An error assignable to `T` is decided by the model. -/
-theorem asDecided_of_assignable [GooseExts] [GoGlobalContext] [GoSemanticsFunctions]
-    {T : go.GoType} {ii : GoInterfaceOk} (h : asAssignable T ii = true) : AsDecided T ii := by
-  intro hI hne
-  simp [asAssignable, hI, hne] at h
-
 end errors
 
 section proof
@@ -202,7 +196,7 @@ theorem errors.asWalk.wp_proof
     wp_for_post
     iapply HΦ
     iframe
-  · intro ii l T' _ _ T _ v hT hA htyped
+  · intro ii l T' _ _ T _ v hT hdec hA htyped
     wp_start as Hl
     wp_auto
     ihave HI : iprop(err_ptr ↦ interface.ok ii ∗ l ↦ v) $$ [err Hl]
@@ -210,7 +204,7 @@ theorem errors.asWalk.wp_proof
     wp_for HI
     icases HI with ⟨err, Hl⟩
     wp_auto
-    wp_apply wp_asAssign ii l v hT (errors.asDecided_of_assignable hA) htyped $$ [$Hl]
+    wp_apply wp_asAssign ii l v hT hdec htyped $$ [$Hl]
       as %v' ⟨Hl, %Hv'⟩
     rw [hA]
     wp_auto

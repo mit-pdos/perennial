@@ -41,13 +41,16 @@ def asStored [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType
     (ii : GoInterfaceOk) : val :=
   if go.isInterfaceType (underlying T) then #(interface.ok ii) else ii.v
 
-/-- The model of `As` decides whether `ii` is assignable to `T` (`AsAssign` has semantics):
-unless `T` is an interface type or `ii`'s dynamic type is `T`, their underlying types differ.
-(Go also assigns a type to a non-interface type of the same underlying type when one of the two
-is unnamed, which the model does not follow.) -/
+/-- The model of `As` decides whether `ii` is assignable to `T` (`AsAssign` has semantics): `T`
+is an interface type, or `ii`'s dynamic type is `T` and `T` a defined type without type arguments
+or a pointer to one (`go.identByName`), or `ii`'s dynamic type has another underlying type than
+`T`. (Go also assigns a type to a non-interface type of the same underlying type when one of the
+two is unnamed, which the model does not follow; and `go.identByName` keeps the model from
+equating struct types Go tells apart by their unexported fields' packages.) -/
 def AsDecided [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType)
     (ii : GoInterfaceOk) : Prop :=
-  go.isInterfaceType (underlying T) = false → ii.ty ≠ T → underlying ii.ty ≠ underlying T
+  go.isInterfaceType (underlying T) = false →
+    (ii.ty = T → go.identByName T = true) ∧ (ii.ty ≠ T → underlying ii.ty ≠ underlying T)
 
 /-- A non-nil target that Go's `err == target` compares, without panicking, with the errors of the
 tree `S`: its dynamic type's `==` is defined (`CheckComparable` steps) and is the equality of the

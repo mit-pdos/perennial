@@ -32,10 +32,11 @@ is neither an interface type nor implements `error`. The target here is the poin
 Three cases:
 * over an error tree `S` of `err` (`isErrorTree`, as `AsType`'s: the `As` methods called with
   `target` itself), each of whose errors the model decides (`AsDecided`: it does not follow Go's
-  assignability of a type to another of the same underlying type, one of them unnamed): some
+  assignability of a type to another of the same underlying type, one of them unnamed, and finds
+  an error of a non-interface type `T` only for a `T` named or a pointer to a named type): some
   result, `*l` written;
 * **first match**: `err`'s dynamic type is assignable to `T` (`asAssignable`: implements an
-  interface `T`, or is `T`): `true`, `err` stored into `*l` (`asStored`; of the target's Lean type,
+  interface `T`, or is `T`; decided by the model, `AsDecided`): `true`, `err` stored into `*l` (`asStored`; of the target's Lean type,
   `AsTypeTyped`), no method of `err` called;
 * **no match**: `err` is `nil`, or its walk ends without a match after at most `n` calls of
   `Unwrap` (`asNoMatch`: leaves and `Unwrap() error` wrappers not assignable to `T`, without an
@@ -50,7 +51,7 @@ abbrev errors.As.spec : Prop :=
     {{ (b : Bool) (v' : T'), RET #b; l ↦ v' }}) ∧
   (∀ (ii : GoInterfaceOk) (l : Loc) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T']
     {T : go.GoType} [IntoValTyped (GF := GF) T' T] (v : T'),
-    AsTarget T → asAssignable T ii = true → AsTypeTyped T' T ii →
+    AsTarget T → AsDecided T ii → asAssignable T ii = true → AsTypeTyped T' T ii →
     {{ isPkgInit (PROP := IProp GF) pkg_id.errors ∗ l ↦ v }}
       (App (App (Val (@! As)) (Val #(interface.ok ii)))
         (Val #(interface.mkOk (go.PointerType T) #l)))

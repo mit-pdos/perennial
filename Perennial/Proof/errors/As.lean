@@ -40,10 +40,10 @@ theorem errors.As.wp_proof
       · iframe; iframe #; ipureintro; exact HS
       iapply HΦ
       iframe
-  · intro ii l T' _ _ T _ v hT hA htyped
+  · intro ii l T' _ _ T _ v hT hdec hA htyped
     wp_start as Hl
     wp_auto
-    wp_apply wp_asWalk.2.1 ii l v hT hA htyped $$ [$Hl] as %x ⟨Hl, %Hx⟩
+    wp_apply wp_asWalk.2.1 ii l v hT hdec hA htyped $$ [$Hl] as %x ⟨Hl, %Hx⟩
     iapply HΦ
     iframe
     ipureintro; exact Hx
