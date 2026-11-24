@@ -1,0 +1,13 @@
+# internal/reflectcore: added to the standard library by its Go model overlay
+# (a whole-package model of a path that does not exist): the reflection
+# primitives of the Go models of reflect. The exported functions are primitive
+# stubs, modelled in Perennial/TrustedCode/internal/reflectcore.lean; the
+# generic helpers they instantiate (helpers.go) are translated.
+translate = ["!*"]
+trusted = ["TokOf", "Box", "Load", "Alloc", "PtrTok", "ConvertAt", "FieldRefAt", "ArraySliceAt",
+  "EqNilAt", "PointerOfAt", "TypeKind", "TypeElem", "TypeLen", "TypeNumField", "TypeFieldType"]
+imports = ["unsafe"]
+
+[model]
+dir = "goose/model/overlay/internal/reflectcore"
+replaces = ["*"]
