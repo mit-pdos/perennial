@@ -34,10 +34,29 @@ this skill, whose mechanical half is `etc/land.sh`.
    `.lake/packages` says how to get one).
 
 3. **Review.** Run `/review-trusted --fix` (no target: it reviews the branch
-   against the merge base with `origin/lean`). Fix what it finds and commit
-   the fixes. When its verdict is OK, or there is no trusted change, it
-   records that with `etc/land.sh mark-reviewed`. A BLOCK you cannot fix
-   means the work does not land: report it and stop.
+   against the merge base with `origin/lean`). It checks every criterion of
+   `.agents/skills/review-trusted/CRITERIA.md` and writes its verdict to the
+   file `etc/land.sh verdict-path` names. Fix what it finds and commit the
+   fixes. When its verdict is OK, or there is no trusted change, it records
+   that with `etc/land.sh mark-reviewed`, which refuses a verdict file without
+   a passing line for every criterion. A BLOCK you cannot fix means the work
+   does not land: report it and stop.
+
+   **Semantics additions need a witness.** If the branch adds to the model of
+   Go (`etc/land.sh witness-check` says which lines), one of its commits must
+   carry, in its message's last paragraph,
+
+   ```
+   Semantics-Witness: <goose/testdata/examples/**.go | Perennial/ProgramLogic/*Test.lean | Perennial/Proof/**.lean>
+   Real-use: <repo>:<package>.<function>
+   ```
+
+   (the minimal Go program that needs the addition, which land.sh exercises,
+   and a real translated function with the same complication), or
+   `Semantics-Witness: none (narrowing: <reason>)` for a change that only
+   removes trust or makes the model stuck in more places. `push` refuses
+   without it. Add the trailers with `git commit --amend` on an unpushed
+   commit, or an empty commit (`git commit --allow-empty`) on top.
 
 4. **Push.**
 
@@ -46,8 +65,9 @@ this skill, whose mechanical half is `etc/land.sh`.
    ```
 
    It prepares again (origin/lean may have moved), checks that the recorded
-   review still matches the branch's changes (if not, back to step 3),
-   rebuilds, and fast-forwards `origin/lean` to HEAD. A rejected push means
+   review and its verdict file still match the branch's changes (if not, back
+   to step 3), runs the witness gate, rebuilds (the witnesses included), and
+   fast-forwards `origin/lean` to HEAD. A rejected push means
    origin/lean moved during the build: rerun the command.
 
 5. **Delete the branch.** Once it has landed, the branch is merged into
