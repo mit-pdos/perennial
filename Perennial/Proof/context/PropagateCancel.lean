@@ -104,7 +104,7 @@ theorem wp_propagateCancel_cancelCtx_of
     (wp_propagateCancel : context.cancelCtx.propagateCancel.spec (GF := GF) (hG := hG))
     (c : Loc) (γ : ContextNames) (P : IProp GF)
     (parent : GoInterfaceOk) (s : ContextDesc (IProp GF)) :
-    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOf c γ P ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOfA c γ P (fun _ => True) ∗
         ctxField c ↦ (interface.nil : GoInterface) ∗
         (isContext parent s ∗ isCancelCtxCtx parent s ∗ □ (s.PDone -∗ P)) }}
       (App (App (Val (c @!! go.GoType.PointerType context.cancelCtx.ty @!! go!"propagateCancel"))

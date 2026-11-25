@@ -3862,7 +3862,8 @@ elab "wp_apply_post" : tactic => do
     let mut solved := false
     if let [mv'] ← getGoals then
       if let some g := parseIrisGoal? (← instantiateMVars (← mv'.getType)) then
-        let goal ← whnfR (← instantiateMVars g.goal)
+        -- (in the goal's context: the goal may mention variables it introduced)
+        let goal ← mv'.withContext <| whnfR (← instantiateMVars g.goal)
         let isTriv := goal.isAppOfArity ``BIBase.emp 2 ||
           (goal.isAppOfArity ``BIBase.pure 3 && (goal.getArg! 2).isConstOf ``True)
         if isTriv then
@@ -3872,7 +3873,7 @@ elab "wp_apply_post" : tactic => do
             solved := true
         -- `True -∗ P`: drop the premise
         if goal.isAppOfArity ``BIBase.wand 4 then
-          let lhs ← whnfR (goal.getArg! 2)
+          let lhs ← mv'.withContext <| whnfR (goal.getArg! 2)
           if lhs.isAppOfArity ``BIBase.pure 3 && (lhs.getArg! 2).isConstOf ``True then
             evalTactic (← `(tactic| iintro -))
     -- keep the `wp_apply_cont` tag of the continuation
