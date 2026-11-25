@@ -1,6 +1,7 @@
 /-
 A `*cancelCtx` is a context: `isContext_cancelCtx_of` (from the specs of its methods), its
-`childCancelSpec` (`childCancelSpec_cancelCtx_of`), and `parentCancelCtx(c)` for a `*cancelCtx`
+`childCancelSpec` (`childCancelSpec_cancelCtx_of`), its `Err()` and `cancel` for unknown or any
+allowed errors (`wp_cancelCtx_Err_any_of`, `wp_cancelCtx_cancel_any_of`), and `parentCancelCtx(c)` for a `*cancelCtx`
 `c` (`wp_parentCancelCtx_self_of`: a second triple of `parentCancelCtx`, with the exact result,
 proved from its code, for `isContext`'s `"#HParentCC"`). The specs they use are hypotheses;
 `Results.lean` has them under their old names, without them.
@@ -65,13 +66,64 @@ theorem wp_parentCancelCtx_self_of
   wp_apply wp_done_Load_known p _ _ ch $$ [$Hp $Hd]
   iapply HΦ; itrivial
 
+/-- `c.Err()` for a `*cancelCtx` whose allowed errors are not known (`isCancelCtxOf`):
+`context.cancelCtx.Err.spec` without what it says of them. -/
+theorem wp_cancelCtx_Err_any_of
+    (wp_cancelCtx_Err : context.cancelCtx.Err.spec (GF := GF) (hG := hG))
+    (c : Loc) (γ : ContextNames) (P : IProp GF) (cl : Bool) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOf c γ P ∗
+        (if cl then ContextClosed γ else iprop(True)) }}
+      (App (Val #(methods (go.GoType.PointerType context.cancelCtx.ty) go!"Err" #c)) (Val #()))
+    {{ (e : GoInterface), RET #e; ⌜cl = true → e ≠ interface.nil⌝ ∗
+        (if e = interface.nil then iprop(True)
+         else iprop(⌜isTypedErr e⌝ ∗ isCtxErr e ∗ □ P ∗ ContextClosed γ)) }} := by
+  iintro %Φ ⟨#Hpkg, #Hc, Hcl⟩ HΦ
+  icases isCancelCtxOf_A _ _ _ $$ Hc with ⟨%A, #HcA⟩
+  iapply wp_cancelCtx_Err c γ P A cl $$ [$Hpkg $HcA $Hcl]
+  inext
+  iintro %e ⟨%hcl, He⟩
+  iapply HΦ
+  isplitl []
+  · ipureintro; exact hcl
+  by_cases he : e = interface.nil
+  · subst he
+    iclear He
+    rw [ite_eq_left rfl]
+    itrivial
+  · simp only [he, ↓reduceIte]
+    icases He with ⟨%ht, #Hce, #Hp, #Hcl', -⟩
+    isplitl []; · ipureintro; exact ht
+    isplitl []; · iexact Hce
+    isplitl []; · imodintro; iexact Hp
+    iexact Hcl'
+
+/-- `c.cancel(rm, err, cause)` for a `*cancelCtx` that any context error may cancel
+(`isCancelCtxOfA c γ P (fun _ => True)`): `context.cancelCtx.cancel.spec` with nothing to show of
+`err` but that it is a typed context error. -/
+theorem wp_cancelCtx_cancel_any_of
+    (wp_cancelCtx_cancel : context.cancelCtx.cancel.spec (GF := GF) (hG := hG))
+    (c : Loc) (γ : ContextNames) (P : IProp GF) (rm : Bool) (err cause : GoInterface)
+    (herr : isTypedErr err) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOfA c γ P (fun _ => True) ∗
+        isCtxErr err ∗ □ P ∗
+        (if rm then iprop(∃ parent : GoInterfaceOk,
+            structFieldRef context.cancelCtx go!"Context" c ↦□ (interface.ok parent : GoInterface) ∗
+            isParentCtx parent)
+         else iprop(True)) }}
+      (App (App (App (Val #(methods (go.GoType.PointerType context.cancelCtx.ty) go!"cancel" #c))
+        (Val #rm)) (Val #err)) (Val #cause))
+    {{ RET #(); ContextClosed γ }} :=
+  wp_cancelCtx_cancel c γ P (fun _ => True) rm err cause herr trivial
+
 /-- The `childCancelSpec` of a `*cancelCtx` child whose Done proposition follows from the
 parent's. -/
 theorem childCancelSpec_cancelCtx_of
     (wp_cancelCtx_cancel : context.cancelCtx.cancel.spec (GF := GF) (hG := hG))
     (c : Loc) (γ : ContextNames) (P Q : IProp GF) :
-    isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOf c γ P ∗ □ (Q -∗ P) ⊢
+    isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOfA c γ P (fun _ => True) ∗
+        □ (Q -∗ P) ⊢
       childCancelSpec Q (interface.mkOk (go.GoType.PointerType context.cancelCtx.ty) #c) := by
+  have wp_cancelCtx_cancel := wp_cancelCtx_cancel_any_of wp_cancelCtx_cancel
   iintro ⟨#Hpkg, #Hc, #HQ⟩
   simp only [childCancelSpec]
   imodintro
@@ -96,6 +148,7 @@ theorem isContext_cancelCtx_of
       isContext (interface.mk (go.GoType.PointerType context.cancelCtx.ty) #c) s := by
   have wp_parentCancelCtx_self := wp_parentCancelCtx_self_of wp_cancelCtx_Done wp_cancelCtx_Value
       wp_VLoad
+  have wp_cancelCtx_Err := wp_cancelCtx_Err_any_of wp_cancelCtx_Err
   iintro ⟨#Hpkg, #Hc, #Hf, #Hdl⟩
   unfold isContext isContextDef
   isplitl []

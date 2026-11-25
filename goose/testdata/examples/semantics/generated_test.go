@@ -763,6 +763,10 @@ func (suite *GoTestSuite) TestPlusTimes() {
 	suite.Equal(true, testPlusTimes())
 }
 
+func (suite *GoTestSuite) TestRecoverPanicNil() {
+	suite.Equal(true, testRecoverPanicNil())
+}
+
 func (suite *GoTestSuite) TestOrCompareSimple() {
 	suite.Equal(true, testOrCompareSimple())
 }

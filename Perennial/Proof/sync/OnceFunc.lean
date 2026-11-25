@@ -48,13 +48,8 @@ theorem sync.OnceFunc.wp_proof
   · iintro !>
     wp_start as ⟨HP, Hfp, Hvalid, Hp⟩
     wp_apply wp_with_defer_recover as %defer %pnc Hdefer Hpnc
-    -- (`wp_apply_raw`, not `wp_apply`: the post-processing of `wp_apply` runs `whnfR` on the
-    -- continuation's premise outside the goal's context, which fails on `Q`, a variable
-    -- introduced by `iintro`)
-    wp_apply_raw Hf $$ HP
-    iintro !> HQ
+    wp_apply Hf $$ HP as HQ
     ihave #HQ2 := HQp $$ HQ
-    wp_auto
     ipersist Hvalid
     -- the deferred function: `recover()` returns `nil`, and `d.valid` is true
     wp_apply wp_recoverPanic $$ [$Hpnc] as Hpnc

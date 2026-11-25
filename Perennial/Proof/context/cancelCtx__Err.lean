@@ -28,11 +28,12 @@ variable [package_sem : context.Assumptions]
 theorem context.cancelCtx.Err.wp_proof
     (wp_VLoad : sync.atomic.Value.Load.spec (GF := GF) (hG := hG))
     (wp_cancelCtx_Done : context.cancelCtx.Done.spec (GF := GF) (hG := hG)) :
-    context.cancelCtx.Err.spec (GF := GF) (hG := hG) := fun c γ P cl => by
-  have wp_err_Load := wp_err_Load_of wp_VLoad
+    context.cancelCtx.Err.spec (GF := GF) (hG := hG) := fun c γ P A cl => by
+  have wp_err_LoadA := wp_err_LoadA_of wp_VLoad
   wp_start as ⟨#Hc, Hcl⟩
+  ihave #Hcw := isCancelCtxOfA_of _ _ _ _ $$ Hc
   wp_auto
-  wp_apply wp_err_Load c γ P cl $$ [$Hc $Hcl] as %e ⟨%hcl, He⟩
+  wp_apply wp_err_LoadA c γ P A cl $$ [$Hc $Hcl] as %e ⟨%hcl, He⟩
   by_cases he : e = interface.nil
   · subst he
     wp_auto
@@ -41,12 +42,12 @@ theorem context.cancelCtx.Err.wp_proof
     · ipureintro; exact hcl
     · itrivial
   · simp only [he, ↓reduceIte]
-    icases He with ⟨%ht, #Hp, #Hclosed⟩
+    icases He with ⟨%ht, #Hce, #Hp, #Hclosed, %hA⟩
     cases e with
     | nil => exact absurd rfl he
     | ok ii =>
     wp_auto
-    wp_apply wp_cancelCtx_Done $$ [$Hc] as %ch %γch ⟨#Hd, -⟩
+    wp_apply wp_cancelCtx_Done $$ [$Hcw] as %ch %γch ⟨#Hd, -⟩
     ihave #Hch := isContextDone_is_chan _ _ _ $$ Hd
     wp_bind (App (Val (chan.receive _)) _)
     iapply chan.wp_receive (V := Unit) ch γch $$ Hch
@@ -60,7 +61,11 @@ theorem context.cancelCtx.Err.wp_proof
     isplitl []
     · ipureintro; intro _; exact he
     · simp only [he, ↓reduceIte, isTypedErr]
-      iframe #; ipureintro; exact ht
+      isplitl []; · ipureintro; exact ht
+      isplitl []; · iexact Hce
+      isplitl []; · imodintro; iexact Hp
+      isplitl []; · iexact Hclosed
+      ipureintro; exact hA
 
 end proof
 
