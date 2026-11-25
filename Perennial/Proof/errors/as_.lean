@@ -113,7 +113,7 @@ theorem errors.«as».wp_proof
     iintro #IH
     wp_start as ⟨#Htree, %HS, Hl⟩
     icases typedPointsto_not_null_dup _ _ _ $$ Hl with ⟨Hl, %hl⟩
-    wp_auto
+    try wp_auto
     ihave HI : iprop(∃ (ii' : GoInterfaceOk) (v' : T'),
         "err" ∷ err_ptr ↦ interface.ok ii' ∗ "%HS" ∷ ⌜S (interface.ok ii')⌝ ∗ "Hl" ∷ l ↦ v')
         $$ [err Hl]
@@ -132,7 +132,7 @@ theorem errors.«as».wp_proof
     wp_apply errors.wp_asCheck wp_TypeOf wp_rtype_AssignableTo ty iv T hdecI hrepI
     cases hA : asAssignable T ⟨ty, iv⟩
     case true =>
-      wp_auto
+      try wp_auto
       obtain ⟨⟨hIi, hNi, ⟨ki, hki⟩, hLi, ⟨ni, bi, hdi⟩⟩, ⟨kT, hkT⟩, hNT, hdty⟩ := hdecI
       haveI : ty ↓u underlying ty := ⟨rfl⟩
       haveI : T ↓u underlying T := ⟨rfl⟩
@@ -141,15 +141,17 @@ theorem errors.«as».wp_proof
         subst hty
         obtain ⟨x, hx⟩ : ∃ x : T', (#x : val) = iv := by
           have h := htyped; simp only [AsTypeTyped, hI, Bool.false_eq_true, ↓reduceIte] at h
-          obtain ⟨x, hx⟩ := h rfl; exact ⟨x, hx⟩
+          obtain ⟨x, hx⟩ := h (by first | rfl | trivial); exact ⟨x, hx⟩
         subst hx
         wp_apply wp_ValueOf.1 (V := T') (t := ty) ki ni bi x hki hIi hLi hdi as %xv Hxv
-        wp_meth1
-        wp_apply wp_Value_Elem (errors.asTargetVal ty l) ty ki l hki rfl rfl (by decide) (by decide)
+        rw [MethodUnfold.method_unfold (t := go.PointerType internal.reflectlite.Value.ty) (m := go!"Elem")]
+        wp_call
+        try wp_auto
+        wp_apply wp_Value_Elem (errors.asTargetVal ty l) ty ki l hki rfl rfl (by show W64 22 &&& W64 31 = W64 22; decide) (by show W64 22 &&& W64 128 = W64 0; decide)
         rw [if_neg hl, internal.reflectlite.elem_flag ki (internal.reflectlite.kindOf_lt hki)]
         wp_apply wp_Value_Set.1 (V := T') ki l _ x xv hki hIi hNi ((hdty hI).1 rfl) $$ [$Hl $Hxv] as Hl
         have hst : asStored ty ⟨ty, #x⟩ = #x := by simp [asStored, hI]
-        wp_auto
+        try wp_auto
         wp_for_post
         iapply HΦ
         iexists _
@@ -165,20 +167,23 @@ theorem errors.«as».wp_proof
         simp only at hx
         subst hx
         wp_apply wp_ValueOf.1 (V := W) (t := ty) ki ni bi x hki hIi hLi hdi as %xv Hxv
-        wp_meth1
+        rw [MethodUnfold.method_unfold (t := go.PointerType internal.reflectlite.Value.ty) (m := go!"Elem")]
+        wp_call
+        try wp_auto
         wp_apply wp_Value_Elem (errors.asTargetVal T l) T 20 l
-          (by rw [hUT]; exact internal.reflectlite.kindOf_interface) rfl rfl (by decide) (by decide)
+          (by rw [hUT]; exact internal.reflectlite.kindOf_interface) rfl rfl (by show W64 22 &&& W64 31 = W64 22; decide) (by show W64 22 &&& W64 128 = W64 0; decide)
         rw [if_neg hl, internal.reflectlite.elem_flag 20 (by omega)]
         wp_apply wp_Value_Set.2 (V := T') (T := T) (W := W) (t := ty) ki l _ y x xv hki hIi hNi hts hy
           $$ [$Hl $Hxv] as Hl
         have hst : asStored T ⟨ty, #x⟩ = #y := by simp [asStored, hI, hy]
-        wp_auto
+        try wp_auto
         wp_for_post
         iapply HΦ
         iexists _
         iexact Hl
-    wp_auto
+    try wp_auto
     -- the `As` statement, joined before the `Unwrap` switch: it either returns or falls through
+    try rw [errors.typeSetContains_method]
     wp_join (Q := fun r => iprop(
         (⌜r = executeVal⌝ ∗ ∃ v3 : T', "Hl" ∷ l ↦ v3 ∗
           "«$res0»" ∷ «$res0_ptr» ↦ zero_val Bool ∗
@@ -189,45 +194,43 @@ theorem errors.«as».wp_proof
       case true =>
         rw [errors.typeSetContains_method] at hAs
         simp only [decide_eq_true_eq] at hAs
-        simp only [hAs, ↓reduceIte]
-        wp_auto
-        wp_apply HAs $$ [$Hl] as %b %v3 Hl
-        cases b
-        case true =>
-          wp_auto
-          iright; iframe; ipureintro; rfl
-        wp_auto
-        ileft; iframe; ipureintro; rfl
-      simp only [Bool.false_eq_true, ↓reduceIte]
-      wp_auto
+        try simp only [hAs, ↓reduceIte]
+        try wp_auto
+        first
+          | (ileft; iframe; ipureintro; rfl)
+          | (wp_apply HAs $$ [$Hl] as %b %v3 Hl
+             cases b <;> try wp_auto
+             all_goals first | (iright; iframe; ipureintro; rfl) | (ileft; iframe; ipureintro; rfl))
+      try simp only [Bool.false_eq_true, ↓reduceIte]
+      try wp_auto
       ileft; iframe; ipureintro; rfl
     iintro HQ
     icases HQ with (⟨%Hv, %v3, Hl, «$res0», target⟩ | ⟨%Hv, %v3, Hl, «$res0»⟩)
     rotate_left
     · subst Hv
-      wp_auto
+      try wp_auto
       wp_for_post
       iapply HΦ
       iexists _
       iexact Hl
     subst Hv
-    wp_auto
+    try wp_auto
     cases hU : go.typeSetContains ty (go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.error])])
     case true =>
       rw [errors.typeSetContains_method] at hU
       simp only [decide_eq_true_eq] at hU
-      simp only [hU, ↓reduceIte]
-      wp_auto
+      try simp only [hU, ↓reduceIte]
+      try wp_auto
       wp_apply HUnwrap as %e' %HSe'
       cases e' with
       | nil =>
-        wp_auto
+        try wp_auto
         wp_for_post
         iapply HΦ
         iexists _
         iexact Hl
       | ok ii2 =>
-        wp_auto
+        try wp_auto
         wp_for_post
         iframe
         iexists ii2, v3
@@ -236,15 +239,15 @@ theorem errors.«as».wp_proof
         exact HSe'
     rw [errors.typeSetContains_method] at hU
     simp only [decide_eq_false_iff_not] at hU
-    simp only [Bool.false_eq_true, ↓reduceIte]
-    wp_auto
+    try simp only [Bool.false_eq_true, ↓reduceIte]
+    try wp_auto
     cases hU2 : go.typeSetContains ty (go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.GoType.SliceType go.error])])
     case true =>
       rw [errors.typeSetContains_method] at hU2
       simp only [decide_eq_true_eq] at hU2
-      simp only [hU, ↓reduceIte]
+      try simp only [hU, ↓reduceIte]
       simp only [hU2, ↓reduceIte]
-      wp_auto
+      try wp_auto
       wp_apply HUnwrap as %s %dq %es ⟨Hs, %Hes⟩
       ihave %Hlen := ownSlice_len _ _ _ $$ Hs
       ihave HI2 : (∃ (j : w64) (v4 : T') (e2 : GoError),
@@ -262,7 +265,7 @@ theorem errors.«as».wp_proof
         have HSe2' : S e2' := Hes e2' (List.mem_of_getElem? He2'_lookup)
         cases e2' with
         | nil =>
-          wp_auto
+          try wp_auto
           wp_for_post
           iframe
           iexists j + W64 1, _, _
@@ -272,19 +275,19 @@ theorem errors.«as».wp_proof
           irevert IH
           iapply asTypeHide_elim
           iintro #IH
-          wp_auto
+          try wp_auto
           wp_apply IH $$ %ii2 %v4 [Hl] as %b ⟨%v5, Hl⟩
           · iframe; iframe #; ipureintro; exact HSe2'
           cases b
           case true =>
-            wp_auto
+            try wp_auto
             wp_for_post
             wp_for_post
             iapply HΦ
             iexists _
             iexact Hl
           case false =>
-            wp_auto
+            try wp_auto
             wp_for_post
             iframe
             iexists j + W64 1, _, _
@@ -294,8 +297,8 @@ theorem errors.«as».wp_proof
         iapply HΦ
         iexists _
         iexact Hl
-    simp only [Bool.false_eq_true, ↓reduceIte]
-    wp_auto
+    try simp only [Bool.false_eq_true, ↓reduceIte]
+    try wp_auto
     wp_for_post
     iapply HΦ
     iexists _
@@ -304,17 +307,17 @@ theorem errors.«as».wp_proof
     wp_start as Hl
     icases typedPointsto_not_null_dup _ _ _ $$ Hl with ⟨Hl, %hl⟩
     obtain ⟨ty, iv⟩ := ii
-    wp_auto
+    try wp_auto
     ihave HI : iprop(err_ptr ↦ interface.ok ⟨ty, iv⟩ ∗ l ↦ v) $$ [err Hl]
     · iframe
     wp_for HI
     try rw [if_pos (by simp)]
     icases HI with ⟨err, Hl⟩
-    wp_auto
+    try wp_auto
     wp_apply errors.wp_TypeOf_err wp_TypeOf ty iv T hdecI
     wp_apply errors.wp_asCheck wp_TypeOf wp_rtype_AssignableTo ty iv T hdecI hrepI
     rw [hA]
-    wp_auto
+    try wp_auto
     obtain ⟨⟨hIi, hNi, ⟨ki, hki⟩, hLi, ⟨ni, bi, hdi⟩⟩, ⟨kT, hkT⟩, hNT, hdty⟩ := hdecI
     haveI : ty ↓u underlying ty := ⟨rfl⟩
     haveI : T ↓u underlying T := ⟨rfl⟩
@@ -323,15 +326,17 @@ theorem errors.«as».wp_proof
       subst hty
       obtain ⟨x, hx⟩ : ∃ x : T', (#x : val) = iv := by
         have h := htyped; simp only [AsTypeTyped, hI, Bool.false_eq_true, ↓reduceIte] at h
-        obtain ⟨x, hx⟩ := h rfl; exact ⟨x, hx⟩
+        obtain ⟨x, hx⟩ := h (by first | rfl | trivial); exact ⟨x, hx⟩
       subst hx
       wp_apply wp_ValueOf.1 (V := T') (t := ty) ki ni bi x hki hIi hLi hdi as %xv Hxv
-      wp_meth1
-      wp_apply wp_Value_Elem (errors.asTargetVal ty l) ty ki l hki rfl rfl (by decide) (by decide)
+      rw [MethodUnfold.method_unfold (t := go.PointerType internal.reflectlite.Value.ty) (m := go!"Elem")]
+      wp_call
+      try wp_auto
+      wp_apply wp_Value_Elem (errors.asTargetVal ty l) ty ki l hki rfl rfl (by show W64 22 &&& W64 31 = W64 22; decide) (by show W64 22 &&& W64 128 = W64 0; decide)
       rw [if_neg hl, internal.reflectlite.elem_flag ki (internal.reflectlite.kindOf_lt hki)]
       wp_apply wp_Value_Set.1 (V := T') ki l _ x xv hki hIi hNi ((hdty hI).1 rfl) $$ [$Hl $Hxv] as Hl
       have hst : asStored ty ⟨ty, #x⟩ = #x := by simp [asStored, hI]
-      wp_auto
+      try wp_auto
       wp_for_post
       iapply HΦ
       iframe
@@ -348,14 +353,16 @@ theorem errors.«as».wp_proof
       simp only at hx
       subst hx
       wp_apply wp_ValueOf.1 (V := W) (t := ty) ki ni bi x hki hIi hLi hdi as %xv Hxv
-      wp_meth1
+      rw [MethodUnfold.method_unfold (t := go.PointerType internal.reflectlite.Value.ty) (m := go!"Elem")]
+      wp_call
+      try wp_auto
       wp_apply wp_Value_Elem (errors.asTargetVal T l) T 20 l
-        (by rw [hUT]; exact internal.reflectlite.kindOf_interface) rfl rfl (by decide) (by decide)
+        (by rw [hUT]; exact internal.reflectlite.kindOf_interface) rfl rfl (by show W64 22 &&& W64 31 = W64 22; decide) (by show W64 22 &&& W64 128 = W64 0; decide)
       rw [if_neg hl, internal.reflectlite.elem_flag 20 (by omega)]
       wp_apply wp_Value_Set.2 (V := T') (T := T) (W := W) (t := ty) ki l _ y x xv hki hIi hNi hts hy
         $$ [$Hl $Hxv] as Hl
       have hst : asStored T ⟨ty, #x⟩ = #y := by simp [asStored, hI, hy]
-      wp_auto
+      try wp_auto
       wp_for_post
       iapply HΦ
       iframe
@@ -363,7 +370,7 @@ theorem errors.«as».wp_proof
       exact ⟨rfl, hst⟩
   · intro n ii l T' _ _ T _ v hT
     wp_start as ⟨Hl, Hm⟩
-    wp_auto
+    try wp_auto
     ihave HI : iprop(∃ (ii' : GoInterfaceOk) (k : Nat),
         err_ptr ↦ interface.ok ii' ∗ l ↦ v ∗ asNoMatch (GF := GF) T k (interface.ok ii'))
         $$ [err Hl Hm]
@@ -394,11 +401,11 @@ theorem errors.«as».wp_proof
       cases h
       have hrepI := Hrep ii' rfl
       obtain ⟨ty, iv⟩ := ii'
-      wp_auto
+      try wp_auto
       wp_apply errors.wp_TypeOf_err wp_TypeOf ty iv T hdecI
       wp_apply errors.wp_asCheck wp_TypeOf wp_rtype_AssignableTo ty iv T hdecI hrepI
       rw [hA]
-      wp_auto
+      try wp_auto
       obtain ⟨hAs, hU1, hU2⟩ := hleaf
       have hAsF : go.typeSetContains ty (go.InterfaceType [go.MethodElem go!"As" (go.Signature [go.any] false [go.bool])]) = false := by
         rw [errors.typeSetContains_method]; simpa using hAs
@@ -407,12 +414,12 @@ theorem errors.«as».wp_proof
       have hU2F : go.typeSetContains ty
           (go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.GoType.SliceType go.error])]) = false := by
         rw [errors.typeSetContains_method]; simpa using hU2
-      simp only [hAsF, Bool.false_eq_true, ↓reduceIte]
-      wp_auto
-      simp only [hU1F, Bool.false_eq_true, ↓reduceIte]
-      wp_auto
-      simp only [hU2F, Bool.false_eq_true, ↓reduceIte]
-      wp_auto
+      try simp only [hAsF, Bool.false_eq_true, ↓reduceIte]
+      try wp_auto
+      try simp only [hU1F, Bool.false_eq_true, ↓reduceIte]
+      try wp_auto
+      try simp only [hU2F, Bool.false_eq_true, ↓reduceIte]
+      try wp_auto
       wp_for_post
       iapply HΦ
       iframe
@@ -421,32 +428,32 @@ theorem errors.«as».wp_proof
       injection h with h
       subst h
       obtain ⟨ty, iv⟩ := ii'
-      wp_auto
+      try wp_auto
       wp_apply errors.wp_TypeOf_err wp_TypeOf ty iv T hdecI
       wp_apply errors.wp_asCheck wp_TypeOf wp_rtype_AssignableTo ty iv T hdecI hrepI
       rw [hA]
-      wp_auto
+      try wp_auto
       have hAsF : go.typeSetContains ty (go.InterfaceType [go.MethodElem go!"As" (go.Signature [go.any] false [go.bool])]) = false := by
         rw [errors.typeSetContains_method]; simpa using hAs
       have hU1T : go.typeSetContains ty (go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.error])]) = true := by
         rw [errors.typeSetContains_method]; simpa using hU
-      simp only [hAsF, Bool.false_eq_true, ↓reduceIte]
-      wp_auto
-      simp only [hU1T, ↓reduceIte]
-      wp_auto
+      try simp only [hAsF, Bool.false_eq_true, ↓reduceIte]
+      try wp_auto
+      try simp only [hU1T, ↓reduceIte]
+      try wp_auto
       wp_bind (App (Val #(methods ty go!"Unwrap" iv)) (Val #()))
       iapply HW
       iintro %e' He'
-      wp_auto
+      try wp_auto
       cases e' with
       | nil =>
-        wp_auto
+        try wp_auto
         wp_for_post
         iapply HΦ
         iframe
         ipureintro; rfl
       | ok ii2 =>
-        wp_auto
+        try wp_auto
         wp_for_post
         iframe
         iexists ii2, k'

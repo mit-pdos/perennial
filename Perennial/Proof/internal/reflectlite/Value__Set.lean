@@ -44,11 +44,11 @@ theorem internal.reflectlite.Value.Set.wp_proof
     have hxf : xv.flag' ≠ W64 0 ∧ xv.flag' &&& W64 96 = W64 0 := ⟨hF.2.1, hF.2.2.2.1⟩
     try wp_auto
     iterate 3 (try wp_meth1)
-    iterate 2 (try simp only [hxf.1, hxf.2, hb.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.2.1, hku, hk20, decide_true, decide_false, Bool.not_true, Bool.not_false]; try wp_auto)
+    iterate 4 ((try dsimp only); (try simp only [hxf.1, hxf.2, hb.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.2.1, hku, hk20, decide_true, decide_false, Bool.not_true, Bool.not_false]); (try wp_auto); (try wp_apply wp_flag_kind))
     iterate 3 (try wp_meth1)
-    iterate 2 (try simp only [hxf.1, hxf.2, hb.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.2.1, hku, hk20, decide_true, decide_false, Bool.not_true, Bool.not_false]; try wp_auto)
+    iterate 4 ((try dsimp only); (try simp only [hxf.1, hxf.2, hb.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.2.1, hku, hk20, decide_true, decide_false, Bool.not_true, Bool.not_false]); (try wp_auto); (try wp_apply wp_flag_kind))
     iterate 3 (try wp_meth1)
-    iterate 2 (try simp only [hxf.1, hxf.2, hb.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.2.1, hku, hk20, decide_true, decide_false, Bool.not_true, Bool.not_false]; try wp_auto)
+    iterate 4 ((try dsimp only); (try simp only [hxf.1, hxf.2, hb.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.2.1, hku, hk20, decide_true, decide_false, Bool.not_true, Bool.not_false]); (try wp_auto); (try wp_apply wp_flag_kind))
     iterate 2 (try wp_meth1)
     wp_apply wp_assignTo.1 kT xv _ _ hkT h20 hid hf.1 hf.2 as %fl %hfl
     icases Hx with (⟨%hd, %hxv⟩ | ⟨%q, ⟨%hd, %hxv⟩, Hq⟩)
@@ -77,11 +77,11 @@ theorem internal.reflectlite.Value.Set.wp_proof
     have hxf : xv.flag' ≠ W64 0 ∧ xv.flag' &&& W64 96 = W64 0 := ⟨hF.2.1, hF.2.2.2.1⟩
     try wp_auto
     iterate 3 (try wp_meth1)
-    iterate 2 (try simp only [hxf.1, hxf.2, hb.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.2.1, internal.reflectlite.u8_lit20, decide_true, decide_false, Bool.not_true, Bool.not_false]; try wp_auto)
+    iterate 4 ((try dsimp only); (try simp only [hxf.1, hxf.2, hb.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.2.1, internal.reflectlite.u8_lit20, decide_true, decide_false, Bool.not_true, Bool.not_false]); (try wp_auto); (try wp_apply wp_flag_kind))
     iterate 3 (try wp_meth1)
-    iterate 2 (try simp only [hxf.1, hxf.2, hb.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.2.1, internal.reflectlite.u8_lit20, decide_true, decide_false, Bool.not_true, Bool.not_false]; try wp_auto)
+    iterate 4 ((try dsimp only); (try simp only [hxf.1, hxf.2, hb.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.2.1, internal.reflectlite.u8_lit20, decide_true, decide_false, Bool.not_true, Bool.not_false]); (try wp_auto); (try wp_apply wp_flag_kind))
     iterate 3 (try wp_meth1)
-    iterate 2 (try simp only [hxf.1, hxf.2, hb.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.2.1, internal.reflectlite.u8_lit20, decide_true, decide_false, Bool.not_true, Bool.not_false]; try wp_auto)
+    iterate 4 ((try dsimp only); (try simp only [hxf.1, hxf.2, hb.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.1, hb.2.2.2.2.2.2.2.2.2.2.2.1, internal.reflectlite.u8_lit20, decide_true, decide_false, Bool.not_true, Bool.not_false]); (try wp_auto); (try wp_apply wp_flag_kind))
     iterate 2 (try wp_meth1)
     wp_apply wp_assignTo.2 kt xv _ l w y x hkt hi hn hts hy $$ [$Hl $Hx] as %fl ⟨%hfl, Hl, Hx⟩
     try simp only [hfl]

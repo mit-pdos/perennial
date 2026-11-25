@@ -70,7 +70,7 @@ theorem internal.reflectlite.directlyAssignable.wp_proof
           · exact h
         try simp only [decide_true, Bool.not_true]
         try wp_auto
-        iterate 4 (try simp only [decide_eq_false (internal.reflectlite.kne_25 kT hlt h25), decide_eq_false (internal.reflectlite.kne_20 kT hlt h20), decide_eq_false (internal.reflectlite.kne_19 kT hlt h19), decide_eq_false (internal.reflectlite.kne_18 kT hlt h18), Bool.false_eq_true, ↓reduceIte]; try wp_auto)
+        iterate 4 ((try simp only [decide_eq_false (internal.reflectlite.kne_25 kT hlt h25), decide_eq_false (internal.reflectlite.kne_20 kT hlt h20), decide_eq_false (internal.reflectlite.kne_19 kT hlt h19), decide_eq_false (internal.reflectlite.kne_18 kT hlt h18), Bool.false_eq_true, ↓reduceIte]); (try wp_auto))
         wp_apply wp_TypeUnderlying T null
         wp_apply wp_TypeUnderlying V null
         rw [hUT, hUV]
@@ -103,7 +103,7 @@ theorem internal.reflectlite.directlyAssignable.wp_proof
             · exact h
           try simp only [decide_true, Bool.not_true]
           try wp_auto
-          iterate 4 (try simp only [decide_eq_false (internal.reflectlite.kne_25 kT hlt h25), decide_eq_false (internal.reflectlite.kne_20 kT hlt h20), decide_eq_false (internal.reflectlite.kne_19 kT hlt h19), decide_eq_false (internal.reflectlite.kne_18 kT hlt h18), Bool.false_eq_true, ↓reduceIte]; try wp_auto)
+          iterate 4 ((try simp only [decide_eq_false (internal.reflectlite.kne_25 kT hlt h25), decide_eq_false (internal.reflectlite.kne_20 kT hlt h20), decide_eq_false (internal.reflectlite.kne_19 kT hlt h19), decide_eq_false (internal.reflectlite.kne_18 kT hlt h18), Bool.false_eq_true, ↓reduceIte]); (try wp_auto))
           wp_apply wp_TypeUnderlying T null
           wp_apply wp_TypeUnderlying V null
           rw [hUT, hUV]

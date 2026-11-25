@@ -53,13 +53,14 @@ theorem errors.wp_As_ok
   haveI : T ↓u underlying T := ⟨rfl⟩
   iintro %Φ ⟨#Hinit, HR⟩ HΦ
   wp_func_call; wp_call
-  wp_auto
-  have hpk : go.kindOf (underlying (go.PointerType T)) = some 22 := by simp [go.kindOf, go.is_underlying]
-  haveI : go.PointerType T ↓u underlying (go.PointerType T) := ⟨rfl⟩
-  wp_apply wp_ValueOf.1 (V := Loc) (t := go.PointerType T) 22 1 true l hpk
-    (by simp [go.isInterfaceType, go.is_underlying])
-    (by simp [internal.reflectlite.rtypeLayoutU, go.is_underlying])
-    (reflect.directIfaceN_of_kind 0 hpk (by omega) (by omega)) as %xv Hxv
+  try wp_auto
+  have hpk : go.kindOf (go.PointerType T) = some 22 := by simp [go.kindOf]
+  have hd1 : reflect.directIfaceN 1 (go.PointerType T) = some true := by
+    simpa [reflect.directKind] using
+      reflect.directIfaceN_of_kind (t := go.PointerType T) (u := go.PointerType T) 0 hpk
+        (by omega) (by omega)
+  wp_apply wp_ValueOf.1 (V := Loc) (t := go.PointerType T) (u := go.PointerType T) 22 1 true l hpk
+    (by simp [go.isInterfaceType]) (by simp [internal.reflectlite.rtypeLayoutU]) hd1 as %xv Hxv
   unfold internal.reflectlite.valueOfRepr
   icases Hxv with (⟨%hd, %hxv⟩ | ⟨%q, ⟨%hd, %hxv⟩, -⟩)
   rotate_left
@@ -67,16 +68,23 @@ theorem errors.wp_As_ok
     obtain ⟨n, hd⟩ := hd
     cases n with
     | zero => simp [reflect.directIfaceN] at hd
-    | succ n => rw [reflect.directIfaceN_of_kind n hpk (by omega) (by omega)] at hd; cases hd
+    | succ n =>
+      rw [reflect.directIfaceN_of_kind (t := go.PointerType T) (u := go.PointerType T) n hpk
+        (by omega) (by omega)] at hd
+      simp [reflect.directKind] at hd
   subst hxv
-  wp_apply wp_Value_Type (errors.asTargetVal T l) (by decide)
+  rw [MethodUnfold.method_unfold (t := go.PointerType internal.reflectlite.Value.ty) (m := go!"Type")]
+  wp_call
+  try wp_auto
+  wp_apply wp_Value_Type (errors.asTargetVal T l) (by show W64 22 ≠ W64 0; decide)
   unfold go.tok
   wp_apply wp_rtype_Kind (T := go.PointerType T) 22 null hpk
-  wp_auto
+  try wp_auto
+  try (rw [MethodUnfold.method_unfold (t := go.PointerType internal.reflectlite.Value.ty) (m := go!"IsNil")]; wp_call; try wp_auto)
   wp_apply wp_Value_IsNil (errors.asTargetVal T l) (t := go.PointerType T) (e := T) l
-    (by decide) (by decide) rfl
-  simp only [hl, decide_false]
-  wp_auto
+    (by show W64 22 &&& W64 31 = W64 22; decide) (by show W64 22 &&& W64 128 = W64 0; decide) rfl
+  try simp only [hl, decide_false]
+  try wp_auto
   wp_apply wp_rtype_Elem (T := go.PointerType T) T null (by simp [go.typeQuery, go.is_underlying])
   unfold go.tok
   wp_apply wp_rtype_Kind (T := T) kT null hkT
@@ -85,16 +93,16 @@ theorem errors.wp_As_ok
   · have h20 := internal.reflectlite.kindOf_ne_20 hkT hI
     have hk20 := internal.reflectlite.kind_ne kT 20 (internal.reflectlite.kindOf_lt hkT) (by omega) h20
     simp only [hk20, decide_false]
-    wp_auto
+    try wp_auto
     have hts : go.typeSetContains T go.error = true := by
       rcases hT with ⟨elems, he⟩ | h
       · rw [he] at hI; simp [go.isInterfaceType] at hI
       · exact h
     wp_apply wp_rtype_Implements (U := go.error) (W := T') (t := T) kT hkT hI hNT
     rw [hts]
-    wp_auto
+    try wp_auto
     wp_apply has $$ [$HR] as %b HQ
-    wp_auto
+    try wp_auto
     iapply HΦ
     iexact HQ
   · obtain ⟨elems, hUT⟩ : ∃ elems, underlying T = go.InterfaceType elems := by
@@ -102,9 +110,9 @@ theorem errors.wp_As_ok
     rw [hUT] at hkT
     simp only [internal.reflectlite.kindOf_interface, Option.some.injEq] at hkT
     subst hkT
-    wp_auto
+    try wp_auto
     wp_apply has $$ [$HR] as %b HQ
-    wp_auto
+    try wp_auto
     iapply HΦ
     iexact HQ
 
@@ -156,7 +164,7 @@ theorem errors.As.wp_proof
     cases err with
     | nil =>
       wp_func_call; wp_call
-      wp_auto
+      try wp_auto
       iapply HΦ
       iframe
     | ok ii =>
@@ -182,7 +190,7 @@ theorem errors.As.wp_proof
     cases err with
     | nil =>
       wp_func_call; wp_call
-      wp_auto
+      try wp_auto
       iapply HΦ
       iframe
     | ok ii =>
