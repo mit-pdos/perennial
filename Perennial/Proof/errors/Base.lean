@@ -361,9 +361,23 @@ def asRepr (T : go.GoType) (ii : GoInterfaceOk) : Prop :=
     ∃ (W : Type) (_ : ZeroVal W) (_ : TypedPointsto (GF := GF) W)
       (_ : IntoValTyped (GF := GF) W ii.ty) (x : W), ii.v = #x
 
-/-- `asRepr` of a non-nil error `e`. -/
+/-- For an interface target `T`, a Lean representation `W` of `ii`'s dynamic type (no value):
+what `As`'s no-match path needs (`reflectlite`'s `implements` allocates a zero value of it; `ValueOf`
+of the error is reached only on a match). Weaker than `asRepr` (`asRepr_tyRepr`). -/
+def asTyRepr (T : go.GoType) (ii : GoInterfaceOk) : Prop :=
+  go.isInterfaceType (underlying T) = true →
+    ∃ (W : Type) (_ : ZeroVal W) (_ : TypedPointsto (GF := GF) W),
+      Nonempty (IntoValTyped (GF := GF) W ii.ty)
+
+theorem asRepr_tyRepr {T : go.GoType} {ii : GoInterfaceOk} (h : asRepr (GF := GF) T ii) :
+    asTyRepr (GF := GF) T ii := by
+  intro hI
+  obtain ⟨W, z, tp, iv, -, -⟩ := h hI
+  exact ⟨W, z, tp, ⟨iv⟩⟩
+
+/-- `asTyRepr` of a non-nil error `e`. -/
 def errRepr (T : go.GoType) (e : GoError) : Prop :=
-  ∀ ii, e = interface.ok ii → asRepr (GF := GF) T ii
+  ∀ ii, e = interface.ok ii → asTyRepr (GF := GF) T ii
 
 /-- **An error at which `As` stops without a match against `T`**: `nil`, or a leaf error
 (`isLeafError`) not assignable to `T` (`asAssignable`, decided: `AsDecided`). -/
@@ -378,7 +392,7 @@ consumed) returns such an error for `n`. -/
 def asNoMatch (T : go.GoType) : Nat → GoError → IProp GF
   | 0, e => iprop(⌜asNoMatchLeaf T e ∧ errRepr (GF := GF) T e⌝)
   | n + 1, e => iprop(⌜asNoMatchLeaf T e ∧ errRepr (GF := GF) T e⌝ ∨ ∃ ii : GoInterfaceOk,
-      ⌜e = interface.ok ii ∧ asAssignable T ii = false ∧ AsDecided T ii ∧ asRepr (GF := GF) T ii ∧
+      ⌜e = interface.ok ii ∧ asAssignable T ii = false ∧ AsDecided T ii ∧ asTyRepr (GF := GF) T ii ∧
         methodSet ii.ty !! go!"As" ≠ some (go.Signature [go.any] false [go.bool]) ∧
         methodSet ii.ty !! go!"Unwrap" = some (go.Signature [] false [go.error])⌝ ∗
       ∀ Φ : val → IProp GF, (∀ e' : GoError, asNoMatch T n e' -∗ Φ #e') -∗
@@ -446,6 +460,16 @@ theorem asRepr_pointer (T : go.GoType) (ii : GoInterfaceOk) (h : IsPointerError 
   simp only at hty hv
   subst hty hv
   exact ⟨Loc, inferInstance, inferInstance, inferInstance, l, rfl⟩
+
+/-- A pointer type is represented by `Loc`. -/
+theorem asTyRepr_pointer (T X : go.GoType) (v : val) :
+    asTyRepr (GF := GF) T ⟨go.PointerType X, v⟩ :=
+  fun _ => ⟨Loc, inferInstance, inferInstance, ⟨inferInstance⟩⟩
+
+/-- A type with a Lean representation `W`. -/
+theorem asTyRepr_of {W : Type} [ZeroVal W] [TypedPointsto (GF := GF) W] (T : go.GoType)
+    (ii : GoInterfaceOk) [IntoValTyped (GF := GF) W ii.ty] : asTyRepr (GF := GF) T ii :=
+  fun _ => ⟨W, inferInstance, inferInstance, ⟨inferInstance⟩⟩
 
 /-- The specs `Is(err, target)` needs of one error `ii` of the tree `S`, as relations: `I ii b`,
 that `ii.Is(target)` may return `b`; `U ii cs`, that `ii`'s `Unwrap` may return `cs` (`[e]` for

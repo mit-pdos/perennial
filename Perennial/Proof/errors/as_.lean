@@ -58,7 +58,7 @@ theorem errors.wp_asCheck
     (wp_TypeOf : internal.reflectlite.TypeOf.spec (GF := GF) (hG := hG))
     (wp_rtype_AssignableTo : internal.reflectlite.rtype.AssignableTo.spec (GF := GF) (hG := hG))
     (ty : go.GoType) (iv : val) (T : go.GoType) (hdec : AsDecided T ⟨ty, iv⟩)
-    (hrep : asRepr (GF := GF) T ⟨ty, iv⟩) :
+    (hrep : asTyRepr (GF := GF) T ⟨ty, iv⟩) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.errors }}
       (App (Val (((internal.reflectlite.rtype.mk (go.tok ty))) @!! internal.reflectlite.rtype.ty @!! go!"AssignableTo"))
         (Val #(errors.asTargetType T)))
@@ -77,7 +77,7 @@ theorem errors.wp_asCheck
   · obtain ⟨elems, hUT⟩ : ∃ elems, underlying T = go.InterfaceType elems := by
       revert hI; cases underlying T <;> simp [go.isInterfaceType]
     haveI : T ↓u go.InterfaceType elems := ⟨hUT⟩
-    obtain ⟨W, _, _, _, x, -⟩ := hrep hI
+    obtain ⟨W, _, _, ⟨_⟩⟩ := hrep hI
     wp_apply wp_rtype_AssignableTo.2 (T := T) (W := W) (V := ty) ki hki hIi hNi
     rw [show go.typeSetContains ty T = asAssignable T ⟨ty, iv⟩ by simp [asAssignable, hI]]
     iapply HΦ
@@ -129,7 +129,7 @@ theorem errors.«as».wp_proof
     obtain ⟨ty, iv⟩ := ii'
     try wp_auto
     wp_apply errors.wp_TypeOf_err wp_TypeOf ty iv T hdecI
-    wp_apply errors.wp_asCheck wp_TypeOf wp_rtype_AssignableTo ty iv T hdecI hrepI
+    wp_apply errors.wp_asCheck wp_TypeOf wp_rtype_AssignableTo ty iv T hdecI (asRepr_tyRepr hrepI)
     cases hA : asAssignable T ⟨ty, iv⟩
     case true =>
       try wp_auto
@@ -312,7 +312,7 @@ theorem errors.«as».wp_proof
     icases HI with ⟨err, Hl⟩
     try wp_auto
     wp_apply errors.wp_TypeOf_err wp_TypeOf ty iv T hdecI
-    wp_apply errors.wp_asCheck wp_TypeOf wp_rtype_AssignableTo ty iv T hdecI hrepI
+    wp_apply errors.wp_asCheck wp_TypeOf wp_rtype_AssignableTo ty iv T hdecI (asRepr_tyRepr hrepI)
     rw [hA]
     try wp_auto
     obtain ⟨⟨hIi, hNi, ⟨ki, hki⟩, hLi, ⟨ni, bi, hdi⟩⟩, ⟨kT, hkT⟩, hNT, hdty⟩ := hdecI
@@ -379,7 +379,7 @@ theorem errors.«as».wp_proof
     ihave Hm' : iprop(⌜asNoMatchLeaf T (interface.ok ii') ∧ errRepr (GF := GF) T (interface.ok ii')⌝ ∨
         ∃ (k' : Nat) (ii2 : GoInterfaceOk),
         ⌜interface.ok ii' = interface.ok ii2 ∧ asAssignable T ii2 = false ∧ AsDecided T ii2 ∧
-          asRepr (GF := GF) T ii2 ∧
+          asTyRepr (GF := GF) T ii2 ∧
           methodSet ii2.ty !! go!"As" ≠ some (go.Signature [go.any] false [go.bool]) ∧
           methodSet ii2.ty !! go!"Unwrap" = some (go.Signature [] false [go.error])⌝ ∗
         ∀ Φ : val → IProp GF, (∀ e' : GoError, asNoMatch (GF := GF) T k' e' -∗ Φ #e') -∗
