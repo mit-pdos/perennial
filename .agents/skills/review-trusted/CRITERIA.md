@@ -80,3 +80,15 @@ to judge it, the item names the rule and does not repeat it.
     the semantics adds or updates its example in the same commit.
     *Why:* an extension models an outside system the Go spec does not
     describe; the example is the only check that the model matches it.
+14. **A model keeps every observable dynamic type.** Wherever a value's
+    dynamic type is observable (stored in an interface, returned as `error` or
+    `any`), a Go model or trusted model must produce the same dynamic type as
+    the real code. Each `MODEL:` deviation that changes a dynamic type needs
+    either a reason it is unobservable, or a type that is opaque to
+    reflection: one goose lists in `go.layoutModelled`
+    (`Perennial/Golang/Defn/LayoutModelled.lean`, `etc/gen-layout-modelled.sh`:
+    the types whose layout a model changes, and the trusted type declarations).
+    *Why:* reflection, `%v`/`%T` printing and type assertions observe a type's
+    representation; a model that answers for its own representation is more
+    defined than Go (etcd-grove#40: the models' `rtype` values where Go has
+    `*rtype`).
