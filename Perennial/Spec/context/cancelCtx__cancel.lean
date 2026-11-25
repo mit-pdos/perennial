@@ -21,14 +21,17 @@ variable [sem : go.Semantics]
 variable [package_sem : context.Assumptions]
 
 /-- `c.cancel(rm, err, cause)` for a typed error `err` that is `Canceled`'s or
-`DeadlineExceeded`'s value (`isCtxErr`), given `□ P`: closes `c` (and its Done
+`DeadlineExceeded`'s value (`isCtxErr`) and one of `c`'s allowed errors (`A`, which
+`isCancelCtxOfA` carries: the right to cancel `c`, given when `c` is made), given `□ P`: closes `c`
+(and its Done
 channel), cancels `c`'s children (with their stored `childCancelSpec`), and, if `rm`, removes `c`
 from its parent's `children` (`removeChild(c.Context, c)`, for a parent of the kinds of
 `isParentCtx`). -/
 abbrev context.cancelCtx.cancel.spec : Prop :=
-  ∀ (c : Loc) (γ : ContextNames) (P : IProp GF) (rm : Bool) (err cause : GoInterface),
-    isTypedErr err →
-    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOf c γ P ∗ isCtxErr err ∗ □ P ∗
+  ∀ (c : Loc) (γ : ContextNames) (P : IProp GF) (A : GoInterface → Prop) (rm : Bool)
+    (err cause : GoInterface),
+    isTypedErr err → A err →
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOfA c γ P A ∗ isCtxErr err ∗ □ P ∗
         (if rm then iprop(∃ parent : GoInterfaceOk,
             structFieldRef context.cancelCtx go!"Context" c ↦□ (interface.ok parent : GoInterface) ∗
             isParentCtx parent)

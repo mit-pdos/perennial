@@ -28,7 +28,8 @@ names in `Results.lean`):
   `wp_propagateCancel_todo_any`; with `child` `c`, `wp_propagateCancel_background`,
   `wp_propagateCancel_todo`): the parent is never canceled (`Done()` is `nil`), and the child is
   not looked at.
-* `child` is `c`, and `parent` a `*cancelCtx` (`wp_propagateCancel_cancelCtx`):
+* `child` is `c` (which any context error may cancel: `isCancelCtxOfA c γ P (fun _ => True)`), and
+  `parent` a `*cancelCtx` (`wp_propagateCancel_cancelCtx`):
   `c.propagateCancel(parent, c)` for a parent that is a `*cancelCtx` described by `s` whose
   Done proposition implies `c`'s: either the parent is already done (then `c` is canceled at once),
   or `c` is added to the parent's `children` (with its `childCancelSpec`).
@@ -48,7 +49,7 @@ abbrev context.cancelCtx.propagateCancel.spec : Prop :=
         (⌜parent = backgroundCtxVal ∨ parent = todoCtxVal⌝ ∨
          (∃ (γ : ContextNames) (P : IProp GF) (s : ContextDesc (IProp GF)),
             ⌜k = interface.mkOk (go.GoType.PointerType context.cancelCtx.ty) #c⌝ ∗
-            isCancelCtxOf c γ P ∗ isContext parent s ∗ isCancelCtxCtx parent s ∗
+            isCancelCtxOfA c γ P (fun _ => True) ∗ isContext parent s ∗ isCancelCtxCtx parent s ∗
             □ (s.PDone -∗ P)) ∨
          (∃ s : ContextDesc (IProp GF), isContext parent s ∗ childCancelSpec s.PDone k)) }}
       (App (App (Val (c @!! go.GoType.PointerType context.cancelCtx.ty @!! go!"propagateCancel"))

@@ -10,6 +10,7 @@ has them under their old names, without them.
 module
 
 public import Perennial.Proof.context.CancelCtxCells
+public import Perennial.Proof.context.CancelCtxContext
 public import Perennial.Spec.context.cancelCtx__Done
 public import Perennial.Spec.context.cancelCtx__Err
 public import Perennial.Spec.context.cancelCtx__Value
@@ -60,6 +61,7 @@ theorem wp_timerCtx_Err_of
     {{ (e : GoInterface), RET #e; ⌜cl = true → e ≠ interface.nil⌝ ∗
         (if e = interface.nil then iprop(True)
          else iprop(⌜isTypedErr e⌝ ∗ isCtxErr e ∗ □ P ∗ ContextClosed γ)) }} := by
+  have wp_cancelCtx_Err := wp_cancelCtx_Err_any_of wp_cancelCtx_Err
   wp_start as ⟨#Hc, Hcl⟩
   wp_apply wp_cancelCtx_Err (tcc c) γ P cl $$ [$Hc $Hcl] as %e He
   iapply HΦ $$ He

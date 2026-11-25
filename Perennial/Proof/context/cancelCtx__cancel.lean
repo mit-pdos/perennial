@@ -34,12 +34,13 @@ theorem context.cancelCtx.cancel.wp_proof
     (wp_VLoad : sync.atomic.Value.Load.spec (GF := GF) (hG := hG))
     (wp_VStore : sync.atomic.Value.Store.spec (GF := GF) (hG := hG))
     (wp_removeChild : context.removeChild.spec (GF := GF) (hG := hG)) :
-    context.cancelCtx.cancel.spec (GF := GF) (hG := hG) := fun c γ P rm err cause herr => by
+    context.cancelCtx.cancel.spec (GF := GF) (hG := hG) := fun c γ P A rm err cause herr hA => by
   have wp_done_Load_frag := wp_done_Load_frag_of wp_VLoad
   have wp_err_Load_frag := wp_err_Load_frag_of wp_VLoad
-  wp_start as ⟨#Hc, #Hce, #Hp, Hrm⟩
-  ihave #Hc' := Hc
-  iunfold isCancelCtxOf at Hc'
+  wp_start as ⟨#HcA, #Hce, #Hp, Hrm⟩
+  ihave #Hc := isCancelCtxOfA_of _ _ _ _ $$ HcA
+  ihave #Hc' := HcA
+  iunfold isCancelCtxOfA at Hc'
   iNamed Hc'
   ihave #Hi := Hcci
   iunfold isClosedchanInit at Hi
@@ -89,8 +90,11 @@ theorem context.cancelCtx.cancel.wp_proof
           simp only [named]
           rw [ite_eq_right (by simp)]
           unfold ContextClosed
-          iframe #
-          ipureintro; exact herr
+          isplitl []; · ipureintro; exact herr
+          isplitl []; · iexact Hce
+          isplitl []; · imodintro; iexact Hp
+          isplitl []; · iexact Hclosed
+          ipureintro; exact hA
         imodintro
         wp_auto
         iclear Hcg'
@@ -199,7 +203,7 @@ theorem context.cancelCtx.cancel.wp_proof
               wp_apply wp_removeChild parent (interface.mkOk (go.GoType.PointerType context.cancelCtx.ty) #c) $$ [$Hpar]
               iapply HΦ; unfold ContextClosed; iexact Hclosed
       · rw [ite_eq_right he]
-        icases Hcg' with ⟨-, -, -, Hc2⟩
+        icases Hcg' with ⟨-, -, -, Hc2, -⟩
         unfold ContextClosed
         ihave %h := dghostVar_agree _ _ _ _ _ $$ Hcg Hc2
         cases h
