@@ -27,8 +27,9 @@ theorem time.when.wp_proof
   intro d
   wp_start
   wp_auto
-  repeat' (first | wp_if_destruct | wp_apply wp_runtimeNano as %x -)
+  repeat' (first | wp_if_destruct | wp_apply wp_runtimeNano as %x %Hx)
   all_goals wp_end
+  all_goals (ipureintro; word)
 
 end proof
 

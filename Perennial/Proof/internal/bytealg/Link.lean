@@ -59,10 +59,10 @@ theorem internal.bytealg.wp_LastIndexByteString : internal.bytealg.LastIndexByte
   internal.bytealg.LastIndexByteString.wp_proof
 
 theorem internal.bytealg.wp_MakeNoZero : internal.bytealg.MakeNoZero.spec (GF := GF) (hG := hG) :=
-  internal.bytealg.MakeNoZero.wp_proof
+  internal.bytealg.MakeNoZero.wp_proof internal.gomodel.wp_ChooseUint64
 
 theorem internal.bytealg.wp_initialize' : internal.bytealg.initialize'.spec (GF := GF) (hG := hG) :=
-  internal.bytealg.initialize'.wp_proof internal.gomodel.wp_initialize'
+  internal.bytealg.initialize'.wp_proof internal.gomodel.wp_initialize' internal.gomodel.wp_Choose
 
 end link
 

@@ -1,13 +1,13 @@
 /-
 Shared definitions of the proofs of `sync.Pool`: `isPool p f R P`, a pool at `p` whose `New` is
-`f`, which may assume `R`, and whose values satisfy `P`, its initialization `init_Pool`, and the spec of the model
-helper `Pool.state` (`TrustedCode/sync.lean`), which finds or installs the pool's state, a
-model pool of `goose/model/pool` (`Proof/github_com/mit_pdos/perennial/goose/model/pool`).
+`f`, which may assume `R`, and whose values satisfy `P`, and its initialization `init_Pool`; and
+the pool's state in the Go model of `Get` and `Put` (`goose/model/overlay/sync/pool.go`), a
+`*poolModel` in the field `local`: `isPoolModel s P`, a `poolModel` at `s` whose elements all
+satisfy `P`, and its initialization `init_poolModel`.
 -/
 module
 
 public import Perennial.Proof.sync.Base
-public import Perennial.Proof.github_com.mit_pdos.perennial.goose.model.pool.Base
 
 @[expose] public section
 
@@ -21,6 +21,31 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE Iris.ProofMode
 
 namespace sync
 
+/-- `Get`'s removal of `xs[k]`: `xs[k]` overwritten with the last element, and the last
+slot dropped, is a permutation of `xs` without `xs[k]`. -/
+theorem swapRemove_perm {α : Type _} (xs : List α) (k : Nat) (hk : k < xs.length) :
+    ((xs.set k (xs[xs.length - 1]'(by omega))).take (xs.length - 1) ++ [xs[k]]).Perm xs := by
+  obtain ⟨ys, y, rfl⟩ : ∃ ys y, xs = ys ++ [y] := by
+    rcases List.eq_nil_or_concat xs with h | h
+    · subst h; simp at hk
+    · obtain ⟨ys, y, h⟩ := h; exact ⟨ys, y, by simpa using h⟩
+  simp only [List.length_append, List.length_singleton, Nat.add_sub_cancel] at hk ⊢
+  rw [List.getElem_append_right (by omega)]
+  simp only [Nat.sub_self, List.getElem_singleton]
+  rcases Nat.lt_or_ge k ys.length with h | h
+  · rw [List.set_append_left _ _ h, List.take_append_of_le_length (by simp),
+      List.take_of_length_le (by simp), List.getElem_append_left h,
+      List.set_eq_take_append_cons_drop, ite_eq_left h]
+    conv => rhs; lhs; rw [← List.take_append_drop k ys, List.drop_eq_getElem_cons h]
+    simp only [List.append_assoc, List.cons_append]
+    refine List.Perm.append_left _ ?_
+    refine (List.Perm.cons _ (List.perm_append_singleton _ _)).trans ?_
+    refine List.Perm.trans (List.Perm.swap _ _ _) ?_
+    exact List.Perm.cons _ (List.perm_append_singleton _ _).symm
+  · have : k = ys.length := by omega
+    subst this
+    simp
+
 section wps
 variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
@@ -28,18 +53,50 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
-/-- The receiver's type in the models of `Pool`'s methods (`TrustedCode/sync.lean`), which are
-below `Pool.ty`'s definition. -/
-theorem Pool_ty_eq : (go.GoType.Named go!"sync.Pool" [] : go.GoType) = Pool.ty := by
-  unfold Pool.ty; rfl
+/-- The lock invariant of the pool state at `s`: its elements `xs`, each satisfying `P`. -/
+def poolInv (s : Loc) (P : GoAny → IProp GF) : IProp GF :=
+  iprop(∃ (sl : GoSlice) (xs : List GoAny),
+    "items" ∷ s.[poolModel, go!"items"] ↦ sl ∗
+    "Hsl" ∷ sl ↦* xs ∗
+    "Hcap" ∷ ownSliceCap GoAny sl (DFrac.own 1) ∗
+    "HP" ∷ [∗list] x ∈ xs, P x)
 
-open github_com.mit_pdos.perennial.goose.model in
-/-- The invariant of the field `local` of the pool at `p`: `nil`, or a model pool whose
+def isPoolModelDef (s : Loc) (P : GoAny → IProp GF) : IProp GF :=
+  isMutex (s.[poolModel, go!"mu"]) (poolInv s P)
+/-- `s` is a pool state (a `poolModel`) whose elements all satisfy `P` (sealed). -/
+@[irreducible] def isPoolModel (s : Loc) (P : GoAny → IProp GF) : IProp GF :=
+  isPoolModelDef s P
+theorem isPoolModel_unseal : @isPoolModel = @isPoolModelDef := by
+  funext; with_unfolding_all rfl
+
+instance isPoolModel_persistent (s : Loc) (P : GoAny → IProp GF) :
+    Persistent (isPoolModel s P) := by
+  rw [isPoolModel_unseal]; unfold isPoolModelDef; infer_instance
+
+/-- A zero `poolModel` (`new(poolModel)`) is an empty pool state. -/
+theorem init_poolModel (s : Loc) (P : GoAny → IProp GF) (E : CoPset) :
+    typedPointsto (GF := GF) s (zero_val poolModel) (DFrac.own 1) ⊢ |={E}=> isPoolModel s P := by
+  iintro Hs
+  rw [isPoolModel_unseal]; unfold isPoolModelDef
+  iStructNamed Hs
+  iapply init_Mutex (poolInv s P) E _ $$ mu
+  inext
+  unfold poolInv
+  iexists slice.nil, []
+  iframe items
+  isplitl []
+  · iapply ownSlice_nil
+  isplitl []
+  · iapply ownSliceCap_nil
+  iapply BigSepL.bigSepL_nil.2
+  itrivial
+
+/-- The invariant of the field `local` of the pool at `p`: `nil`, or a pool state whose
 elements satisfy `P`. -/
 def poolLocalInv (p : Loc) (P : GoAny → IProp GF) : IProp GF :=
   iprop(∃ (s : Loc),
     "Hlocal" ∷ p.[Pool, go!"local"] ↦ s ∗
-    "Hs" ∷ (⌜s = null⌝ ∨ pool.isPool s P))
+    "Hs" ∷ (⌜s = null⌝ ∨ isPoolModel s P))
 
 /-- `New` is `nil` or, given `R` (which it gives back), returns values satisfying `P`. `R` is
 what a caller of `Get` holds and lends to `New` for the call: `True` when `New` needs nothing; a
@@ -108,40 +165,6 @@ theorem init_Pool (p : Loc) (v : Pool) (R : IProp GF) (P : GoAny → IProp GF) (
     ileft; ipureintro; exact hlocal
   imodintro
   iframe #
-
-open github_com.mit_pdos.perennial.goose.model in
-theorem wp_Pool_state (p : Loc) (f : GoFunc) (R : IProp GF) (P : GoAny → IProp GF) :
-    {{ isPool p f R P }} (App (Val Pool.state) (Val #p)) {{ (s : Loc), RET #s; pool.isPool s P }} := by
-  simp only [isPool_unseal, isPoolDef]
-  wp_start as #His
-  iNamed His
-  rw [Pool_ty_eq]
-  wp_auto
-  imod pool.init_Pool new_ptr P ⊤ $$ new with #Hnew
-  wp_bind (CmpXchg _ _ _)
-  iinv Hinv with Hi
-  unfold poolLocalInv
-  icases Hi with ⟨%s, >Hlocal, Hs⟩
-  by_cases Hnull : s = null
-  · subst Hnull
-    wp_apply_core wp_cmpxchg_suc _ (null : Loc) null new_ptr _ _ rfl $$ Hlocal
-    iintro Hlocal
-    imodintro
-    isplitl [Hlocal]
-    · inext; iexists new_ptr; iframe; iright; iexact Hnew
-    wp_auto
-    iapply HΦ
-    iexact Hnew
-  · wp_apply_core wp_cmpxchg_fail _ s null new_ptr (DFrac.own 1) _ _ Hnull $$ Hlocal
-    icases Hs with (%h | #Hs)
-    · exact absurd h Hnull
-    iintro Hlocal
-    imodintro
-    isplitl [Hlocal]
-    · inext; iexists s; iframe; iright; iexact Hs
-    wp_auto
-    iapply HΦ
-    iexact Hs
 
 end wps
 

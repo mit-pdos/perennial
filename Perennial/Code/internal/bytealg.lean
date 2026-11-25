@@ -3,7 +3,6 @@ module
 
 public import Perennial.Code.internal.gomodel
 public import Perennial.Golang.Defn
-public import Perennial.TrustedCode.internal.bytealg
 
 @[expose] public section
 
@@ -358,6 +357,77 @@ noncomputable def IndexRabinKarp.impl [GooseExts] [GoGlobalContext] (T : go.GoTy
   (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "hashss") (Var "$r0")))))))))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
+/-- MODEL: MakeNoZero(n) is a slice of length n and capacity at least n whose
+    bytes, up to the capacity, are not zeroed. Go's has no Go body (goose:
+    "external function"): the runtime defines it (runtime/slice.go,
+    `//go:linkname bytealg_MakeNoZero internal/bytealg.MakeNoZero`, which the
+    overlay blanks so that gc links this body instead) as
+
+    	if uintptr(len) > maxAlloc {
+    		panicmakeslicelen()
+    	}
+    	cap := roundupsize(uintptr(len), true)
+    	return unsafe.Slice((*byte)(mallocgc(cap, nil, false)), cap)[:len]
+
+    The model chooses the capacity (gomodel.ChooseUint64: any c >= n, which
+    includes the size class roundupsize rounds n up to) and each byte up to the
+    capacity (gomodel.ChooseUint64: mallocgc with needzero false returns memory
+    with whatever it held, which a Go program cannot predict). A negative n
+    panics in make with Go's message ("makeslice: len out of range"). An n
+    above maxAlloc (2^48), where gc panics, is not checked: the model
+    allocates, as the semantics' make and append do (docs/KNOWN_LIMITATIONS.md,
+    "No limit on allocation size", which names MakeNoZero).
+
+    go: bytealg.go:28:6 -/
+noncomputable def MakeNoZero.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "n"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (Var "n"))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.ChooseUint64 []))) (Val #())) (Val #())) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))))
+  (Let "c" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (App (Val (GoInstruction (FuncResolve go.make3 [(go.GoType.SliceType go.byte)]))) (Val #())) (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "c")))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (App (Val (GoInstruction (FuncResolve go.cap [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))))))
+  (Let "full" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "full"))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val (slice.forRange go.byte)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.ChooseUint64 []))) (Val #())) (Val #())))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "full")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$key")))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "full") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "c")) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "c") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "c") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "$res0")))))
+
 /-- MODEL: CompareString(a, b) is -1, 0 or +1 as a is lexicographically less
     than, equal to or greater than b. Go's is runtime.cmpstring (through
     abigen_runtime_cmpstring), which is assembly; the model compares with Go's <
@@ -483,6 +553,34 @@ noncomputable def CountString.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0"))))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
+
+/-- MODEL: the package's init sets MaxLen to 63 or to 31. Go's
+
+    	if cpu.X86.HasAVX2 {
+    		MaxLen = 63
+    	} else {
+    		MaxLen = 31
+    	}
+
+    reads internal/cpu.X86, which no Go package initializer sets: the runtime
+    fills it (cpu.Initialize, from schedinit) from the processor's cpuid
+    (assembly) before any package is initialized. Goose translates the real
+    init, but X86 would then stay zero and MaxLen always 31, more defined than
+    gc. The model chooses (gomodel.Choose: the processor's AVX2 bit, which the
+    semantics does not model) either value.
+
+    go: init.go:25:6 -/
+noncomputable def init.«0».impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Seq (App (Val exceptionDo)
+  (If (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.gomodel.Choose []))) (Val #())) (Val #()))
+  (Let "$r0" (Val #(W64 63))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (GlobalVarAddr MaxLen))) (Val #())) (Var "$r0")))))
+  (Let "$r0" (Val #(W64 31))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (GlobalVarAddr MaxLen))) (Val #())) (Var "$r0")))))))
+  (Val #())))
 
 /-- Cutover reports the number of failures of IndexByte we should tolerate
     before switching over to Index.

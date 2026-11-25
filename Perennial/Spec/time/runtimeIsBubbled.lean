@@ -20,8 +20,8 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-/-- `runtimeIsBubbled()` (true only inside a `testing/synctest` bubble; modeled in
-`TrustedCode/time.lean` as an arbitrary boolean): some `bool`. -/
+/-- `runtimeIsBubbled()` (true only inside a `testing/synctest` bubble; its Go model is
+`gomodel.Choose()`): some `bool`. -/
 abbrev time.runtimeIsBubbled.spec : Prop :=
     {{ (True : IProp GF) }}
       (App (Val (@! time.runtimeIsBubbled)) (Val #()))
