@@ -188,22 +188,19 @@ theorem errors.«as».wp_proof
         (⌜r = executeVal⌝ ∗ ∃ v3 : T', "Hl" ∷ l ↦ v3 ∗
           "«$res0»" ∷ «$res0_ptr» ↦ zero_val Bool ∗
           "target" ∷ target_ptr ↦ interface.mkOk (go.PointerType T) #l) ∨
-        (⌜r = returnVal #()⌝ ∗ ∃ v3 : T', l ↦ v3 ∗ «$res0_ptr» ↦ true))) at next
+        (⌜r = returnVal #()⌝ ∗ ∃ v3 : T', l ↦ v3 ∗ «$res0_ptr» ↦ true))) at next 2
       with [Hl «$res0» ok x target]
-    · cases hAs : go.typeSetContains ty (go.InterfaceType [go.MethodElem go!"As" (go.Signature [go.any] false [go.bool])])
-      case true =>
-        rw [errors.typeSetContains_method] at hAs
-        simp only [decide_eq_true_eq] at hAs
-        try simp only [hAs, ↓reduceIte]
+    · by_cases hAs : methodSet ty !! go!"As" = some (go.Signature [go.any] false [go.bool])
+      · simp only [hAs, decide_true, ↓reduceIte]
         try wp_auto
         first
           | (ileft; iframe; ipureintro; rfl)
           | (wp_apply HAs $$ [$Hl] as %b %v3 Hl
              cases b <;> try wp_auto
              all_goals first | (iright; iframe; ipureintro; rfl) | (ileft; iframe; ipureintro; rfl))
-      try simp only [Bool.false_eq_true, ↓reduceIte]
-      try wp_auto
-      ileft; iframe; ipureintro; rfl
+      · simp only [hAs, decide_false, Bool.false_eq_true, ↓reduceIte]
+        try wp_auto
+        ileft; iframe; ipureintro; rfl
     iintro HQ
     icases HQ with (⟨%Hv, %v3, Hl, «$res0», target⟩ | ⟨%Hv, %v3, Hl, «$res0»⟩)
     rotate_left

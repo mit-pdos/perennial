@@ -81,8 +81,10 @@ theorem errors.wp_As_ok
   wp_apply wp_rtype_Kind (T := go.PointerType T) 22 null hpk
   try wp_auto
   try (rw [MethodUnfold.method_unfold (t := go.PointerType internal.reflectlite.Value.ty) (m := go!"IsNil")]; wp_call; try wp_auto)
-  wp_apply wp_Value_IsNil (errors.asTargetVal T l) (t := go.PointerType T) (e := T) l
-    (by show W64 22 &&& W64 31 = W64 22; decide) (by show W64 22 &&& W64 128 = W64 0; decide) rfl
+  wp_apply wp_Value_IsNil (internal.reflectlite.Value.mk (interface.mkOk (go.PointerType (go.PointerType T)) #null)
+      (interface.mkOk (go.PointerType T) #l) (W64 ((22 : Nat) : Int))) (t := go.PointerType T) (e := T) l
+    (by show W64 ((22 : Nat) : Int) &&& W64 31 = W64 22; decide)
+    (by show W64 ((22 : Nat) : Int) &&& W64 128 = W64 0; decide) rfl
   try simp only [hl, decide_false]
   try wp_auto
   wp_apply wp_rtype_Elem (T := go.PointerType T) T null (by simp [go.typeQuery, go.is_underlying])
@@ -91,16 +93,20 @@ theorem errors.wp_As_ok
   ihave #HET := errors.errorType_of_init $$ Hinit
   cases hI : go.isInterfaceType (underlying T)
   · have h20 := internal.reflectlite.kindOf_ne_20 hkT hI
-    have hk20 := internal.reflectlite.kind_ne kT 20 (internal.reflectlite.kindOf_lt hkT) (by omega) h20
-    simp only [hk20, decide_false]
+    have hk20 := internal.reflectlite.kne_20 kT (internal.reflectlite.kindOf_lt hkT) h20
+    simp only [hk20, decide_false, Bool.not_false]
     try wp_auto
     have hts : go.typeSetContains T go.error = true := by
       rcases hT with ⟨elems, he⟩ | h
       · rw [he] at hI; simp [go.isInterfaceType] at hI
       · exact h
+    rw [show interface.mkOk (go.PointerType T) #null = go.tok T from rfl]
     wp_apply wp_rtype_Implements (U := go.error) (W := T') (t := T) kT hkT hI hNT
     rw [hts]
     try wp_auto
+    simp only [errors.asTargetVal, errors.asTargetType, go.tok] at has
+    rw [show (W64 ((22 : Nat) : Int) : w64) = W64 22 from rfl]
+    try unfold go.tok
     wp_apply has $$ [$HR] as %b HQ
     try wp_auto
     iapply HΦ
@@ -111,6 +117,9 @@ theorem errors.wp_As_ok
     simp only [internal.reflectlite.kindOf_interface, Option.some.injEq] at hkT
     subst hkT
     try wp_auto
+    simp only [errors.asTargetVal, errors.asTargetType, go.tok] at has
+    rw [show (W64 ((22 : Nat) : Int) : w64) = W64 22 from rfl]
+    try unfold go.tok
     wp_apply has $$ [$HR] as %b HQ
     try wp_auto
     iapply HΦ
