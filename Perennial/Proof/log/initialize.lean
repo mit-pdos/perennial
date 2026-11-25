@@ -5,8 +5,6 @@ module
 
 public import Perennial.Spec.log.initialize
 public import Perennial.Spec.sync.initialize
-public import Perennial.Spec.fmt.initialize
-public import Perennial.Spec.internal.gomodel.initialize
 
 @[expose] public section
 
@@ -24,9 +22,7 @@ variable [sem : go.Semantics]
 variable [package_sem : log.Assumptions]
 
 theorem log.initialize'.wp_proof
-    (wp_sync_initialize : sync.initialize'.spec (GF := GF) (hG := hG))
-    (wp_fmt_initialize : fmt.initialize'.spec (GF := GF) (hG := hG))
-    (wp_gomodel_initialize : internal.gomodel.initialize'.spec (GF := GF) (hG := hG)) :
+    (wp_sync_initialize : sync.initialize'.spec (GF := GF) (hG := hG)) :
     log.initialize'.spec (GF := GF) (hG := hG) := by
   intro get_is_pkg_init Hinit
   wp_start as Hown
@@ -35,17 +31,15 @@ theorem log.initialize'.wp_proof
   iintro Hown
   wp_auto
   wp_apply wp_GlobalAlloc (V := sync.Pool) bufferPool sync.Pool.ty as _
-  wp_apply wp_sync_initialize _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #Hsync⟩
-  wp_apply wp_fmt_initialize _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hfmt⟩
-  wp_apply wp_gomodel_initialize _ Hinit.2.1 $$ Hown as ⟨Hown, #Hgm⟩
+  wp_apply wp_sync_initialize _ Hinit.2.1 $$ Hown as ⟨Hown, #Hsync⟩
   -- std: its trusted initializer does nothing
   wp_call
   -- bufferPool
   rw [recv_eq_func_mk BAnon BAnon]
   wp_auto
-  -- init.0: its Go model does nothing
+  -- init.0: its trusted model does nothing
   wp_func_call
-  wp_auto
+  wp_call
   iframe Hown
   is_pkg_init_finish
 

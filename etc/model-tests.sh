@@ -45,12 +45,17 @@
 #                                     value Go's GC would have dropped
 # internal/stringslite has no tests; bytes, internal/bytealg and internal/sync
 # run in full.
-# runtime, syscall, log: models that are choices (gomodel.Choose/ChooseUint64/ChooseString),
+# runtime, syscall: models that are choices (gomodel.Choose/ChooseUint64/ChooseString),
 # whose Go bodies take one value (false, 0, ""): Frames.Next's frames are empty (no function,
-# file or line), log.Printf/Println print nothing, and prlimit1 neither
-# reads nor sets a limit. Run with their overlay (every package above runs with runtime's too):
+# file or line), and prlimit1 neither reads nor sets a limit. log has no model (Printf and
+# Println are trusted, as on lean) but runs with its dependencies' models (fmt's, runtime's).
+# Run with their overlay (every package above runs with runtime's too):
 #   syscall  TestPrlimitFileLimit     prlimit1's model leaves the limit unchanged
-#   log      TestAll                  Printf/Println's model prints nothing
+#            TestDeathSignalSetuid    the child reports "start" with fmt.Println,
+#                                     whose model (pp.doPrintln, included as a
+#                                     dependency's) prints an empty string in gc
+#   log      TestAll                  Println/Printf format through fmt's models,
+#                                     which print an empty string in gc
 #            TestCallDepth, ExampleLogger, ExampleLogger_Output
 #                                     the file and line of Lshortfile come from
 #                                     Frames.Next's model (empty)
@@ -105,7 +110,7 @@ run ./model/overlaytests/
 run bytes internal/stringslite internal/bytealg internal/sync
 run time -skip '^(TestAfterStop|TestTimerStopStress|TestChan|TestTicker|TestReset|TestTimerModifiedEarlier|TestAdjustTimers|TestTimerGC)$'
 runc() { go test -vet=off -timeout 600s -overlay "$OUT/ovc/overlay.json" -tags purego,goose "$@"; }
-runc syscall -skip '^TestPrlimitFileLimit$'
+runc syscall -skip '^(TestPrlimitFileLimit|TestDeathSignalSetuid)$'
 runc log -skip '^(TestAll|TestCallDepth|ExampleLogger|ExampleLogger_Output|TestFlagAndPrefixSetting|TestUTCFlag|TestOutput)$'
 runc os -skip '^(TestReadAtNegativeOffset|TestWriteAtNegativeOffset|TestExecutable|TestGetppid|TestStatStdin|TestChown|TestFileChown|TestLchown|Example.*)$'
 runc sort -skip '^Example.*$'

@@ -3,8 +3,6 @@ module
 
 public import Perennial.Proof.ProofPrelude
 public import Perennial.ManualProof.log
-public import Perennial.GeneratedProof.fmt
-public import Perennial.GeneratedProof.internal.gomodel
 public import Perennial.GeneratedProof.sync
 public import Perennial.Golang.Theory
 public import Perennial.Code.log
@@ -38,29 +36,6 @@ noncomputable instance Logger_into_val_typed :
 
 end def_
 end Logger
-
-namespace modelDiscard
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : log.Assumptions]
-
-noncomputable instance modelDiscard_typed_pointsto :
-    TypedPointsto (GF := GF) log.modelDiscard where
-  typedPointstoDef l v dq := iprop(
-    "_" ∷ True)
-  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
-  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
-  typedPointsto_agree := by solve_typed_pointsto_agree
-
-noncomputable instance modelDiscard_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) log.modelDiscard log.modelDiscard.underlying := by
-  solve_into_val_typed_struct
-
-end def_
-end modelDiscard
 
 end log
 end

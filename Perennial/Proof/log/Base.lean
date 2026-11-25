@@ -5,8 +5,6 @@ module
 
 public import Perennial.Proof.ProofPrelude
 public import Perennial.Proof.sync.Base
-public import Perennial.Proof.fmt.Base
-public import Perennial.Proof.internal.gomodel.Base
 public import Perennial.Code.log
 public import Perennial.GeneratedProof.log
 
