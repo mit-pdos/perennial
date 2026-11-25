@@ -1,6 +1,6 @@
 /-
 The proofs of the Go `log` package: the shared definitions (`Base`, its `isPkgInit`) and the
-linked results (`Link`), `log.wp_initialize'` and `log.wp_Printf`.
+linked results (`Link`), `log.wp_initialize'`, `log.wp_Printf` and `log.wp_Println`.
 -/
 module
 

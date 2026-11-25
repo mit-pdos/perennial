@@ -4,7 +4,7 @@
 #   `pp.fmtComplex`, which needs the `real`/`imag` built-ins goose does not support;
 # - scan.go (only its package variables are translated, for the initializer);
 # - `Print` and `Println`, which write to `os.Stdout` (the model of os has none).
-# Go models (goose/model/overlay/fmt, [model] below): `errorf`, `Fprintf` and `pp.doPrint` print
+# Go models (goose/model/overlay/fmt, [model] below): `errorf`, `Fprintf`, `pp.doPrint` and `pp.doPrintln` print
 # with the model printer (printmodel.go) where the real print path is stuck. `Printf` is trusted
 # (TrustedCode/fmt.lean, as on lean): it formats with the model's `printfFormat` and returns an
 # arbitrary count and error for the write to `os.Stdout` (translating the write needs a semantics
@@ -31,4 +31,4 @@ translate_types = true
 
 [model]
 dir = "goose/model/overlay/fmt"
-replaces = ["errorf", "Fprintf", "pp.doPrint"]
+replaces = ["errorf", "Fprintf", "pp.doPrint", "pp.doPrintln"]

@@ -1,8 +1,8 @@
-// The Go models of fmt (Perennial/Code/fmt.toml, [model]): errorf, Fprintf and pp.doPrint,
-// spliced into errors.go and print.go in place of the real declarations, printfFormat (the
-// formatting of Printf, which is trusted: Perennial/TrustedCode/fmt.lean), and the additions they
-// need besides the model printer (printmodel.go). Sprintf, Errorf, Fprint and the real printer stay
-// Go's own, translated.
+// The Go models of fmt (Perennial/Code/fmt.toml, [model]): errorf, Fprintf, pp.doPrint and
+// pp.doPrintln, spliced into errors.go and print.go in place of the real declarations, printfFormat
+// (the formatting of Printf, which is trusted: Perennial/TrustedCode/fmt.lean), and the additions
+// they need besides the model printer (printmodel.go). Sprintf, Errorf, Fprint, Fprintln and the
+// real printer stay Go's own, translated.
 //
 // Why models at all: the real print path (pp.doPrintf, pp.printArg) is translated and proved only
 // on stage 1's subset (fmt.Fits, perennial#671). Elsewhere it is stuck: on floats and complex
@@ -25,8 +25,8 @@
 // Go's, the arbitrary strings standing for any suffix, and it calls the methods Go calls in Go's
 // order: model ⊇ Go, checked by goose/model/fmt/model_diff_test.go (TestModelSprintf,
 // TestModelBytesExact, TestModelStringsExact, TestModelErrorf, TestModelFprintf, TestModelFprint,
-// TestModelPrintf) and sprintf_test.go, and, for the buffer, by TestModelAlias (testdata/alias,
-// run by etc/model-tests.sh under the overlay).
+// TestModelFprintln, TestModelPrintf) and sprintf_test.go, and, for the buffer, by TestModelAlias
+// (testdata/alias, run by etc/model-tests.sh under the overlay).
 
 package fmt
 
@@ -97,6 +97,20 @@ func printfFormat(format string, a []any) {
 // rest of Go's output (TestModelFprint checks the calls, TestModelAlias the buffer). Fprint and
 // Sprint, Go's own, print with it.
 func (p *pp) doPrint(a []any) {
+	for _, x := range a {
+		writeArbitrary(&p.buf)
+		visitArg(x, 'v', false, false)
+	}
+	writeArbitrary(&p.buf)
+}
+
+// MODEL: pp.doPrintln is doPrint's model (see there): Go's doPrintln, for each operand, appends a
+// space if it is not the first and prints it with p.printArg(arg, 'v'), then appends '\n'; the
+// model calls of each operand what printArg calls under %v (visitArg), after arbitrary strings
+// (writeArbitrary), which cover Go's space and what printArg appended before, and ends with
+// arbitrary strings, which cover the rest and the newline (TestModelFprintln checks the calls).
+// Fprintln and Sprintln, Go's own, print with it.
+func (p *pp) doPrintln(a []any) {
 	for _, x := range a {
 		writeArbitrary(&p.buf)
 		visitArg(x, 'v', false, false)

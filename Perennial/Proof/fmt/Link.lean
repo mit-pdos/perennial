@@ -9,6 +9,7 @@ public import Perennial.Proof.errors.Link
 public import Perennial.Proof.fmt.Errorf
 public import Perennial.Proof.fmt.Fprint
 public import Perennial.Proof.fmt.Fprintf
+public import Perennial.Proof.fmt.Fprintln
 public import Perennial.Proof.fmt.Printf
 public import Perennial.Proof.fmt.Sprintf
 public import Perennial.Proof.fmt.buffer__write
@@ -87,6 +88,9 @@ theorem fmt.wp_Fprint : fmt.Fprint.spec (GF := GF) (hG := hG) :=
 
 theorem fmt.wp_Fprintf : fmt.Fprintf.spec (GF := GF) (hG := hG) :=
   fmt.Fprintf.wp_proof fmt.wp_newPrinter fmt.buffer.wp_writeString fmt.pp.wp_free internal.gomodel.wp_Choose internal.gomodel.wp_ChooseUint64
+
+theorem fmt.wp_Fprintln : fmt.Fprintln.spec (GF := GF) (hG := hG) :=
+  fmt.Fprintln.wp_proof fmt.wp_newPrinter fmt.buffer.wp_writeString fmt.pp.wp_free internal.gomodel.wp_Choose internal.gomodel.wp_ChooseUint64
 
 theorem fmt.wp_Printf : fmt.Printf.spec (GF := GF) (hG := hG) :=
   fmt.Printf.wp_proof fmt.wp_newPrinter fmt.buffer.wp_writeString fmt.pp.wp_free internal.gomodel.wp_Choose internal.gomodel.wp_ChooseUint64

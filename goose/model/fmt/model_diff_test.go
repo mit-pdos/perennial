@@ -559,6 +559,62 @@ func TestModelFprint(t *testing.T) {
 	t.Logf("%d operand lists admitted", admitted)
 }
 
+// Fprintln, as Fprint (over pp.doPrintln): the calls Go's printArg makes of each operand under %v,
+// in order, then one Write, returning what Write returns; the output is arbitrary. Admitted (the
+// spec's fmt.printArgOk): each operand as argOkAt admits it under %v.
+func TestModelFprintln(t *testing.T) {
+	werr := errors.New("w")
+	admitted := 0
+	for _, a := range argTuples() {
+		ok := true
+		for _, x := range a {
+			if !argOkAt("vsxXq", directive{'v', false}, x) {
+				ok = false
+			}
+		}
+		if ok {
+			admitted++
+		}
+		for _, res := range []struct {
+			n   int
+			err error
+		}{{3, nil}, {0, werr}} {
+			calls = nil
+			gw := &recWriter{n: res.n, err: res.err}
+			gn, gerr := fmt.Fprintln(gw, a...)
+			goCalls := calls
+			calls = nil
+			mw := &recWriter{n: res.n, err: res.err}
+			var mn int
+			var merr error
+			stuck := runModel(func() { mn, merr = modelFprintln(mw, a...) })
+			if stuck {
+				if ok {
+					t.Errorf("Fprintln(%s): admitted, but the model is stuck", describe("", a))
+				}
+				continue
+			}
+			if !reflect.DeepEqual(goCalls, calls) {
+				t.Errorf("Fprintln(%s): Go calls %v, the model %v", describe("", a), goCalls, calls)
+			}
+			if len(gw.writes) != 1 || len(mw.writes) != 1 {
+				t.Errorf("Fprintln(%s): Go writes %d times, the model %d", describe("", a),
+					len(gw.writes), len(mw.writes))
+				continue
+			}
+			if !matches(string(mw.writes[0]), string(gw.writes[0])) {
+				t.Errorf("Fprintln(%s) writes %q, the model %q", describe("", a), gw.writes[0],
+					mw.writes[0])
+			}
+			if gn != mn || gerr != merr {
+				t.Errorf("Fprintln(%s) = %d, %v; the model's %d, %v", describe("", a), gn, gerr, mn,
+					merr)
+			}
+		}
+	}
+	t.Logf("%d operand lists admitted", admitted)
+}
+
 // errKind: 0 for an *errors.errorString, 1 for a *fmt.wrapError, 2 for a *fmt.wrapErrors, and
 // what it wraps.
 func errKind(err error) (int, []error) {

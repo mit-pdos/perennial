@@ -4940,10 +4940,14 @@ noncomputable def pp.doPrint.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "x") (Var "$value"))))))))))))))
   (Val #()))))
 
-/-- doPrintln is like doPrint but always adds a space between arguments
-    and a newline after the last argument.
+/-- MODEL: pp.doPrintln is doPrint's model (see there): Go's doPrintln, for each operand, appends a
+    space if it is not the first and prints it with p.printArg(arg, 'v'), then appends '\n'; the
+    model calls of each operand what printArg calls under %v (visitArg), after arbitrary strings
+    (writeArbitrary), which cover Go's space and what printArg appended before, and ends with
+    arbitrary strings, which cover the rest and the newline (TestModelFprintln checks the calls).
+    Fprintln and Sprintln, Go's own, print with it.
 
-    go: print.go:1213:14 -/
+    go: print.go:113:14 -/
 noncomputable def pp.doPrintln.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam "a"
@@ -4952,11 +4956,10 @@ noncomputable def pp.doPrintln.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.any)))) (Var "a"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (Val #(W8 10))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType buffer.ty) go!"writeByte"))) (App (Val (GoInstruction (StructFieldRef pp.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType pp.ty)))) (Var "p")))) (Var "$a0"))))))
+  (Let "$a0" (App (Val (GoInstruction (StructFieldRef pp.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType pp.ty)))) (Var "p")))
+  (App (App (Val (GoInstruction (FuncResolve writeArbitrary []))) (Val #())) (Var "$a0"))))))
   (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.any)))) (Var "a"))
-  (Let "arg" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
-  (Let "argNum" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
   (App (App (Val (slice.forRange go.any)) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
@@ -4964,19 +4967,18 @@ noncomputable def pp.doPrintln.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "arg"))
-  (Let "$a1" (Val #(W32 118))
-  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType pp.ty) go!"printArg"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType pp.ty)))) (Var "p"))) (Var "$a0")) (Var "$a1")))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "argNum")) (Val #(W64 0)))))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))
+  (Let "$a1" (Val #(W8 118))
+  (Let "$a2" (Val #false)
+  (Let "$a3" (Val #false)
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve visitArg []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")))))))))
   (App (Val doExecute)
-  (Let "$a0" (Val #(W8 32))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType buffer.ty) go!"writeByte"))) (App (Val (GoInstruction (StructFieldRef pp.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType pp.ty)))) (Var "p")))) (Var "$a0"))))
+  (Let "$a0" (App (Val (GoInstruction (StructFieldRef pp.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType pp.ty)))) (Var "p")))
+  (App (App (Val (GoInstruction (FuncResolve writeArbitrary []))) (Val #())) (Var "$a0")))))))
   (App (Val doExecute)
-  (Val #()))))))
+  (Var "$key")))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "argNum") (Var "$key")))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "arg") (Var "$value")))))))))))))))
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "x") (Var "$value"))))))))))))))
   (Val #()))))
 
 /-- printfFormat is Printf's formatting, a helper of its trusted model (Perennial/TrustedCode/fmt.lean,
@@ -5012,7 +5014,7 @@ noncomputable def printfFormat.impl [GooseExts] [GoGlobalContext] : val :=
 /-- chooseString is an arbitrary string, the model printer's output from where it stops following
     Go: it can return every string (and may also not terminate, which partial correctness allows).
 
-    go: print.go:109:6 -/
+    go: print.go:123:6 -/
 noncomputable def chooseString.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
@@ -5036,7 +5038,7 @@ noncomputable def chooseString.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- notModelled is the model printer's stuck point, where it does not follow Go: gomodel.Stuck.
 
-    go: print.go:118:6 -/
+    go: print.go:132:6 -/
 noncomputable def notModelled.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Seq (App (Val exceptionDo)

@@ -89,6 +89,23 @@ theorem printArgOk_of_argOk (R : IProp GF) (x : GoInterface) :
       · iapply stringMethodSpecR_of_stringMethodSpec $$ H
       · ipureintro; exact h
 
+/-- Operands that are all `nil` or `ArgWf` (`ArgsWf`) are `printArgOk R` for any `R`: Go calls no
+method of them. -/
+theorem printArgsOk_of_argsWf (R : IProp GF) {xs : List GoInterface} (h : ArgsWf xs) :
+    ⊢ [∗list] x ∈ xs, printArgOk (GF := GF) R x := by
+  induction xs with
+  | nil => iapply BigSepL.bigSepL_nil.2; iempintro
+  | cons x xs ih =>
+    iapply BigSepL.bigSepL_cons.2
+    isplitl []
+    · cases x with
+      | nil => unfold printArgOk; itrivial
+      | ok ii =>
+        unfold printArgOk
+        ileft; ipureintro
+        exact h ii (by simp)
+    · iapply (ih (fun ii hii => h ii (by simp [hii])))
+
 /-- **A `*T` whose `String()` needs `R`** (`R` lent and given back), where `T`'s pointer method set
 `ms` (goose's `MethodSetIs`, an instance of the package's `TypeAssumptions`) has `String() string`
 and no `Format`, `Error` or `CanInterface`: a `printArgOk R`. The method-set facts are decided by

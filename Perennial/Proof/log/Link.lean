@@ -8,6 +8,7 @@ module
 public import Perennial.Proof.fmt.Link
 public import Perennial.Proof.internal.gomodel.Link
 public import Perennial.Proof.log.Printf
+public import Perennial.Proof.log.Println
 public import Perennial.Proof.log.initialize
 public import Perennial.Proof.log.modelDiscard__Write
 public import Perennial.Proof.sync.Link
@@ -30,6 +31,9 @@ theorem log.modelDiscard.wp_Write : log.modelDiscard.Write.spec (GF := GF) (hG :
 
 theorem log.wp_Printf : log.Printf.spec (GF := GF) (hG := hG) :=
   log.Printf.wp_proof internal.gomodel.wp_Choose fmt.wp_Fprintf log.modelDiscard.wp_Write
+
+theorem log.wp_Println : log.Println.spec (GF := GF) (hG := hG) :=
+  log.Println.wp_proof internal.gomodel.wp_Choose fmt.wp_Fprintln log.modelDiscard.wp_Write
 
 theorem log.wp_initialize' : log.initialize'.spec (GF := GF) (hG := hG) :=
   log.initialize'.wp_proof sync.wp_initialize' fmt.wp_initialize' internal.gomodel.wp_initialize'

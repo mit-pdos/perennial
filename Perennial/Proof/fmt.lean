@@ -1,7 +1,7 @@
 /-
-The proofs of the Go `fmt` package. `Sprintf`, `Errorf` and `Fprint` are the real `fmt`'s, translated
+The proofs of the Go `fmt` package. `Sprintf`, `Errorf`, `Fprint` and `Fprintln` are the real `fmt`'s, translated
 (`PrintDefs`: the vocabulary of the specs of the real printer; `OutLemmas`: `Sprintf`'s output
-without methods); `errorf`, `Printf`, `Fprintf` and `pp.doPrint` are the Go model of
+without methods); `errorf`, `Printf`, `Fprintf`, `pp.doPrint` and `pp.doPrintln` are the Go model of
 `goose/model/overlay/fmt`, which formats with the model printer (also translated), with
 the shared definitions (`Base`: `isPkgInit`, `SprintfOut`,
 the decimals of the integer directives, `ArgsWf`; `Directives`: a format's directives; `Args`:

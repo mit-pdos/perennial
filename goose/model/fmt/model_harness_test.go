@@ -116,6 +116,17 @@ func modelFprint(w io.Writer, a ...any) (int, error) {
 	return w.Write([]byte(squash(string(b))))
 }
 
+// modelFprintln is Go's Fprintln over the model's pp.doPrintln.
+func modelFprintln(w io.Writer, a ...any) (int, error) {
+	var b buffer
+	for _, x := range a {
+		writeArbitrary(&b)
+		visitArg(x, 'v', false, false)
+	}
+	writeArbitrary(&b)
+	return w.Write([]byte(squash(string(b))))
+}
+
 // modelPrintfFormat is printfFormat, the formatting of the trusted Printf (the tests compare the
 // calls; the write to os.Stdout is not modelled).
 func modelPrintfFormat(format string, a ...any) {
