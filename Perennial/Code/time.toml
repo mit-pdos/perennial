@@ -44,6 +44,8 @@ translate = [
   "Time.Add",
   "Time.addSec",
   "Time.stripMono",
+  "Time.UTC",
+  "Time.setLoc",
   "Time.Sub",
   "Time.Before",
   "Time.After",

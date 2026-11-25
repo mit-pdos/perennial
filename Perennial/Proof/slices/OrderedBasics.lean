@@ -62,7 +62,20 @@ theorem lessImplements_string_of (wp_Less : cmp.Less.spec (GF := GF) (hG := hG))
   iintro %x %y
   imodintro
   iintro %Φ _ HΦ
-  wp_apply wp_Less.2 x y with %b %Hb
+  wp_apply wp_Less.2.1 x y with %b %Hb
+  iapply HΦ
+  ipureintro
+  exact Hb
+
+open Iris.ProofMode in
+/-- At `int`, `cmp.Less` implements `<` on the signed values (from `cmp.Less`'s spec). -/
+theorem lessImplements_int_of (wp_Less : cmp.Less.spec (GF := GF) (hG := hG)) :
+    ⊢ lessImplements (GF := GF) (Et := go.int) (fun (x y : w64) => sint.Z x < sint.Z y) := by
+  unfold lessImplements
+  iintro %x %y
+  imodintro
+  iintro %Φ _ HΦ
+  wp_apply wp_Less.2.2 x y with %b %Hb
   iapply HΦ
   ipureintro
   exact Hb

@@ -1,6 +1,6 @@
 /-
 Results of `cmp` derived from the linked ones: the specs of `isNaN` and `Less` at
-`uint64` under their old names.
+`uint64`, `string` and `int`, one theorem each.
 -/
 module
 
@@ -33,7 +33,14 @@ theorem cmp.wp_isNaN_string (x : GoString) :
     {{ (True : IProp GF) }}
       (App (Val #(functions isNaN [go.string])) (Val #x))
     {{ RET #false; True }} :=
-  cmp.wp_isNaN.2 x
+  cmp.wp_isNaN.2.1 x
+
+/-- `isNaN` on `int` is `false` (`cmp.wp_isNaN`'s third part). -/
+theorem cmp.wp_isNaN_int (x : w64) :
+    {{ (True : IProp GF) }}
+      (App (Val #(functions isNaN [go.int])) (Val #x))
+    {{ RET #false; True }} :=
+  cmp.wp_isNaN.2.2 x
 
 /-- `Less` on `uint64` is `<` on the unsigned values (`cmp.wp_Less`'s first half). -/
 theorem cmp.wp_Less_uint64 (x y : w64) :
@@ -47,7 +54,14 @@ theorem cmp.wp_Less_string (x y : GoString) :
     {{ (True : IProp GF) }}
       (App (App (Val #(functions Less [go.string])) (Val #x)) (Val #y))
     {{ (b : Bool), RET #b; ⌜b = true ↔ go.GoStringLt x y⌝ }} :=
-  cmp.wp_Less.2 x y
+  cmp.wp_Less.2.1 x y
+
+/-- `Less` on `int` is `<` on the signed values (`cmp.wp_Less`'s third part). -/
+theorem cmp.wp_Less_int (x y : w64) :
+    {{ (True : IProp GF) }}
+      (App (App (Val #(functions Less [go.int])) (Val #x)) (Val #y))
+    {{ (b : Bool), RET #b; ⌜b = true ↔ sint.Z x < sint.Z y⌝ }} :=
+  cmp.wp_Less.2.2 x y
 
 end results
 

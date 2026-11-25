@@ -704,6 +704,20 @@ noncomputable def StringSlice.«Sort».impl [GooseExts] [GoGlobalContext] : val 
   (App (App (Val (GoInstruction (FuncResolve «Sort» []))) (Val #())) (Var "$a0"))))))
   (Val #()))))
 
+/-- Ints sorts a slice of ints in increasing order.
+
+    Note: as of Go 1.22, this function simply calls [slices.Sort].
+
+    go: sort.go:170:6 -/
+noncomputable def Ints.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "x"
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.int)))) (Var "x"))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "x"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.slices.«Sort» [(go.GoType.SliceType go.int), go.int]))) (Val #())) (Var "$a0"))))))
+  (Val #())))
+
 /-- Strings sorts a slice of strings in increasing order.
 
     Note: as of Go 1.22, this function simply calls [slices.Sort].
@@ -2417,6 +2431,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   nextPowerOfTwo_unfold : FuncUnfold nextPowerOfTwo [] nextPowerOfTwo.impl
   Reverse_unfold : FuncUnfold Reverse [] Reverse.impl
   IsSorted_unfold : FuncUnfold IsSorted [] IsSorted.impl
+  Ints_unfold : FuncUnfold Ints [] Ints.impl
   Strings_unfold : FuncUnfold Strings [] Strings.impl
   Stable_unfold : FuncUnfold Stable [] Stable.impl
   insertionSort_unfold : FuncUnfold insertionSort [] insertionSort.impl
@@ -2455,6 +2470,7 @@ attribute [instance] Assumptions.Interface_instance
   Assumptions.nextPowerOfTwo_unfold
   Assumptions.Reverse_unfold
   Assumptions.IsSorted_unfold
+  Assumptions.Ints_unfold
   Assumptions.Strings_unfold
   Assumptions.Stable_unfold
   Assumptions.insertionSort_unfold

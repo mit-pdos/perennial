@@ -9,6 +9,7 @@ public import Perennial.Proof.cmp.Link
 public import Perennial.Proof.math.bits.Link
 public import Perennial.Proof.slices.Link
 public import Perennial.Proof.sort.Find
+public import Perennial.Proof.sort.Ints
 public import Perennial.Proof.sort.Reverse
 public import Perennial.Proof.sort.Search
 public import Perennial.Proof.sort.SearchInts
@@ -53,6 +54,9 @@ variable [package_sem : sort.Assumptions]
 
 theorem sort.wp_Find : sort.Find.spec (GF := GF) (hG := hG) :=
   sort.Find.wp_proof
+
+theorem sort.wp_Ints : sort.Ints.spec (GF := GF) (hG := hG) :=
+  sort.Ints.wp_proof slices.wp_Sort cmp.wp_Less
 
 theorem sort.wp_Reverse : sort.Reverse.spec (GF := GF) (hG := hG) :=
   sort.Reverse.wp_proof

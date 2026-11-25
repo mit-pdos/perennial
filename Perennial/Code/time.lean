@@ -1064,6 +1064,30 @@ noncomputable def Time.addSec.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))))))
   (Val #()))))
 
+/-- setLoc sets the location associated with the time.
+
+    go: time.go:217:16 -/
+noncomputable def Time.setLoc.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "t"
+  (Lam "loc"
+  (Seq (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Time.ty)))) (Var "t"))
+  (Let "loc" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Location.ty)))) (Var "loc"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Location.ty)))) (Var "loc"))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType Location.ty)))) (Pair (App (Val (GoInstruction (StructFieldRef Time.ty go!"loc"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t"))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"stripMono"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t"))) (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType Location.ty)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Location.ty)))) (Var "loc")) (App (Val (GoInstruction (GlobalVarAddr utcLoc))) (Val #())))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType Location.ty)))) (Val UntypedNil))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType Location.ty)))) (Pair (Var "loc") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (Val #()))))
+
 /-- stripMono strips the monotonic clock reading in t.
 
     go: time.go:226:16 -/
@@ -1983,6 +2007,27 @@ noncomputable def unixTime.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore Time.ty))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$res0"))))))
 
+/-- UTC returns t with the location set to UTC.
+
+    go: time.go:1368:15 -/
+noncomputable def Time.UTC.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "t"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Time.ty))) (App (Val (GoInstruction (GoZeroVal Time.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc Time.ty))) (Var "t"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad Time.ty))) (Var "t"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Time.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GlobalVarAddr utcLoc))) (Val #()))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"setLoc"))) (Var "t")) (Var "$a0")))))))
+  (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$res0"))))))
+
 /-- Location returns the time zone information associated with t.
 
     go: time.go:1393:15 -/
@@ -2535,6 +2580,7 @@ class Time.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
   IsZero_unfold : MethodUnfold Time.ty go!"IsZero" Time.IsZero.impl
   Location_unfold : MethodUnfold Time.ty go!"Location" Time.Location.impl
   Sub_unfold : MethodUnfold Time.ty go!"Sub" Time.Sub.impl
+  UTC_unfold : MethodUnfold Time.ty go!"UTC" Time.UTC.impl
   Unix_unfold : MethodUnfold Time.ty go!"Unix" Time.Unix.impl
   UnixNano_unfold : MethodUnfold Time.ty go!"UnixNano" Time.UnixNano.impl
   ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"Add" (LamV "$r"
@@ -2551,6 +2597,8 @@ class Time.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
 (App (Val (GoInstruction (MethodResolve Time.ty go!"Location"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$r"))))
   ptr_Sub_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"Sub" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Time.ty go!"Sub"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$r"))))
+  ptr_UTC_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"UTC" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve Time.ty go!"UTC"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$r"))))
   ptr_Unix_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"Unix" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Time.ty go!"Unix"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$r"))))
   ptr_UnixNano_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"UnixNano" (LamV "$r"
@@ -2558,6 +2606,7 @@ class Time.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
   ptr_addSec_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"addSec" Time.addSec.impl
   ptr_nsec_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"nsec" Time.nsec.impl
   ptr_sec_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"sec" Time.sec.impl
+  ptr_setLoc_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"setLoc" Time.setLoc.impl
   ptr_stripMono_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"stripMono" Time.stripMono.impl
   ptr_unixSec_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"unixSec" Time.unixSec.impl
 
@@ -2578,6 +2627,7 @@ attribute [instance] Time.TypeAssumptions.type_repr
   Time.TypeAssumptions.IsZero_unfold
   Time.TypeAssumptions.Location_unfold
   Time.TypeAssumptions.Sub_unfold
+  Time.TypeAssumptions.UTC_unfold
   Time.TypeAssumptions.Unix_unfold
   Time.TypeAssumptions.UnixNano_unfold
   Time.TypeAssumptions.ptr_Add_unfold
@@ -2587,11 +2637,13 @@ attribute [instance] Time.TypeAssumptions.type_repr
   Time.TypeAssumptions.ptr_IsZero_unfold
   Time.TypeAssumptions.ptr_Location_unfold
   Time.TypeAssumptions.ptr_Sub_unfold
+  Time.TypeAssumptions.ptr_UTC_unfold
   Time.TypeAssumptions.ptr_Unix_unfold
   Time.TypeAssumptions.ptr_UnixNano_unfold
   Time.TypeAssumptions.ptr_addSec_unfold
   Time.TypeAssumptions.ptr_nsec_unfold
   Time.TypeAssumptions.ptr_sec_unfold
+  Time.TypeAssumptions.ptr_setLoc_unfold
   Time.TypeAssumptions.ptr_stripMono_unfold
   Time.TypeAssumptions.ptr_unixSec_unfold
 

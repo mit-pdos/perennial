@@ -29,11 +29,13 @@ public import Perennial.Proof.time.Time__Equal
 public import Perennial.Proof.time.Time__IsZero
 public import Perennial.Proof.time.Time__Location
 public import Perennial.Proof.time.Time__Sub
+public import Perennial.Proof.time.Time__UTC
 public import Perennial.Proof.time.Time__Unix
 public import Perennial.Proof.time.Time__UnixNano
 public import Perennial.Proof.time.Time__addSec
 public import Perennial.Proof.time.Time__nsec
 public import Perennial.Proof.time.Time__sec
+public import Perennial.Proof.time.Time__setLoc
 public import Perennial.Proof.time.Time__stripMono
 public import Perennial.Proof.time.Time__unixSec
 public import Perennial.Proof.time.Timer__Reset
@@ -227,6 +229,12 @@ theorem time.Time.wp_IsZero : time.Time.IsZero.spec (GF := GF) (hG := hG) :=
 
 theorem time.Time.wp_Location : time.Time.Location.spec (GF := GF) (hG := hG) :=
   time.Time.Location.wp_proof
+
+theorem time.Time.wp_setLoc : time.Time.setLoc.spec (GF := GF) (hG := hG) :=
+  time.Time.setLoc.wp_proof time.Time.wp_stripMono
+
+theorem time.Time.wp_UTC : time.Time.UTC.spec (GF := GF) (hG := hG) :=
+  time.Time.UTC.wp_proof time.Time.wp_setLoc
 
 theorem time.Time.wp_unixSec : time.Time.unixSec.spec (GF := GF) (hG := hG) :=
   time.Time.unixSec.wp_proof time.Time.wp_sec
