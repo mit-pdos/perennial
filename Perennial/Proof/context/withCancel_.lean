@@ -23,12 +23,12 @@ variable [sem : go.Semantics]
 variable [package_sem : context.Assumptions]
 
 theorem context.withCancel.wp_proof :
-    context.withCancel.spec (GF := GF) (hG := hG) := fun parent P Pre Hprop => by
+    context.withCancel.spec (GF := GF) (hG := hG) := fun parent P Pre A Hprop => by
   wp_start as ⟨#Hcci, Hpre⟩
   wp_auto
-  imod cancelCtx_alloc «$r0_ptr» P iprop(True) $$ Hcci «$r0» [] with ⟨%γ, #Hc, FContext⟩
+  imod cancelCtx_allocA «$r0_ptr» P iprop(True) A $$ Hcci «$r0» [] with ⟨%γ, #Hc, FContext⟩
   · itrivial
-  ihave #Hc' := isCancelCtxOfR_of _ _ _ _ $$ Hc
+  ihave #Hc' := isCancelCtxOfRA_A _ _ _ _ _ $$ Hc
   iapply wp_fupd
   wp_apply Hprop «$r0_ptr» γ $$ [$Hc' FContext Hpre] as HC
   · iframe
