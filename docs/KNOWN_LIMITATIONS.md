@@ -213,6 +213,21 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   type, `TypeOfEq`). Refusing such
   types would reject common code (`struct{ mu sync.Mutex; … }`); modelling it means
   qualifying field names everywhere.
+  Conversions inherit it: the model converts between `struct{ x int }` of two packages, and
+  between pointers to them (`is_convert_underlying_same`, `convert_pointer_same_underlying`,
+  and `go.Convertible`'s `underlying` and `pointer` rows for `reflect`'s `ConvertAt`), where Go
+  rejects the conversion:
+  ```go
+  // package p: type T struct{ x int }; func Mk() any { return struct{ x int }{} }
+  // package q: type U struct{ x int }
+  _ = q.U(p.T{})           // compile error in Go (p.T's and q.U's fields are different names)
+  reflect.ValueOf(p.Mk()).Convert(reflect.TypeOf(q.U{})) // Go: panics; the model converts
+  ```
+  No proof reaches it (static conversions type-check, so goose never emits one between such
+  types; the reflection proofs do not convert such values). Goose would qualify unexported field
+  names (with their package) when a proof needs it. The same root cause as F3 of the reflection
+  review (etcd-grove#40: such anonymous struct types are one type in Lean); found with the
+  `Convert` narrowing of etcd-grove#59.
 - **`error` and `interface{ Error() string }` are one type (unsound).** In Go they are
   different types (`error` is a predeclared defined type); the model has one
   (`go.error` is `InterfaceType [Error() string]`), so a type assertion between types that

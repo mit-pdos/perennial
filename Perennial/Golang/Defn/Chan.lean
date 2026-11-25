@@ -91,8 +91,17 @@ open github_com.mit_pdos.perennial.goose.model
 class ChanSemantics [GoSemanticsFunctions] : Prop where
   [package_sem : channel.Assumptions]
 
-  convert_channel (dir1 dir2 : go.ChanDir) (elem : go.GoType) (c : GoChan) :
-    ⟦Convert (go.ChannelType dir1 elem) (go.ChannelType dir2 elem), #c⟧ ⤳[under] #c
+  /-- A bidirectional channel converts to an unnamed channel type of the identical element type
+  (the Go spec's assignability rule "V and T are channel types with identical element types, V is
+  a bidirectional channel, and at least one of V or T is not a named type"). -/
+  convert_channel_to_unnamed {t : go.GoType} {dir : go.ChanDir} {elem : go.GoType}
+    [t ↓u go.ChannelType .sendrecv elem] (c : GoChan) :
+    ⟦Convert t (go.ChannelType dir elem), #c⟧ ⤳ #c
+  /-- An unnamed bidirectional channel converts to a channel type of the identical element type
+  (the same rule, `V` not named). -/
+  convert_channel_from_unnamed {u : go.GoType} {dir : go.ChanDir} {elem : go.GoType}
+    [u ↓u go.ChannelType dir elem] (c : GoChan) :
+    ⟦Convert (go.ChannelType .sendrecv elem) u, #c⟧ ⤳ #c
 
   make2_chan {t : go.GoType} {dir : go.ChanDir} {elem_type : go.GoType}
     [t ↓u go.ChannelType dir elem_type] :
@@ -134,11 +143,11 @@ class ChanSemantics [GoSemanticsFunctions] : Prop where
           if: "succeeded" then "v"
           else (λ: <>, SelectStmt (SelectStmtClauses none clauses) : val) #()))
 
-attribute [instance] ChanSemantics.package_sem ChanSemantics.convert_channel
-  ChanSemantics.make2_chan ChanSemantics.make1_chan ChanSemantics.close_chan
-  ChanSemantics.len_chan ChanSemantics.cap_chan
-export ChanSemantics (convert_channel make2_chan make1_chan close_chan len_chan cap_chan
-  chan_select_nonblocking chan_select_blocking)
+attribute [instance] ChanSemantics.package_sem ChanSemantics.convert_channel_to_unnamed
+  ChanSemantics.convert_channel_from_unnamed ChanSemantics.make2_chan ChanSemantics.make1_chan
+  ChanSemantics.close_chan ChanSemantics.len_chan ChanSemantics.cap_chan
+export ChanSemantics (convert_channel_to_unnamed convert_channel_from_unnamed make2_chan
+  make1_chan close_chan len_chan cap_chan chan_select_nonblocking chan_select_blocking)
 
 end defs
 end go

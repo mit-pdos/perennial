@@ -177,9 +177,8 @@ func explicitCases() []cvCase {
 		{"*int->*int64", p, tok[*int64](), false, nil, false},
 		{"[]myInt->string", []myInt{1}, tok[string](), false, nil, false},
 		{"[]byte->[4]int", []byte{1}, tok[[4]int](), false, nil, false},
-		// not legal Go, a Lean Convert rule steps: ConvertAt is stuck (go.Convertible); the
-		// Convert rules themselves are the separate item (convert_channel's direction, named
-		// pointers)
+		// not legal Go, and no Lean Convert rule steps (etcd-grove#59: the channel rules take a
+		// bidirectional channel and an unnamed side, the pointer rule unnamed pointer types)
 		{"<-chan int->chan<- int", (<-chan int)(bothCh), tok[chan<- int](), false, nil, false},
 		{"chan<- int-><-chan int", sendCh, tok[<-chan int](), false, nil, false},
 		{"chan<- int->chan int", sendCh, tok[chan int](), false, nil, false},
@@ -307,6 +306,41 @@ func TestConvertAtIdentity(t *testing.T) {
 	mustStuck(t, "ConvertAt(x, nil)", func() { ConvertAt(1, nil) })
 	mustStuck(t, "ConvertAt(x, named pointer token)", func() { ConvertAt(1, myPtr(nil)) })
 	mustStuck(t, "ConvertAt(x, non-pointer)", func() { ConvertAt(1, 2) })
+}
+
+// The Lean Convert rules themselves (convertLean), without ConvertAt's go.Convertible premise, are
+// no more defined than Go: on every case and on every pair of corpus types (at the zero value),
+// where a rule steps, the conversion is legal Go (TestGoConvertible checks GoConvertible against
+// Go). The witnesses of etcd-grove#59 are cases above: each is stuck.
+func TestConvertLeanRules(t *testing.T) {
+	for _, c := range append(append(intCases(), byteStringCases()...), explicitCases()...) {
+		u := reflect.TypeOf(c.to).Elem()
+		if u.Kind() == reflect.Interface {
+			continue // convert_to_interface: ConvertAt's own row
+		}
+		_, ok := convertLean(reflect.ValueOf(c.x), u)
+		if ok && !c.goOK {
+			t.Errorf("%s: a Lean Convert rule steps, but not legal Go", c.name)
+		}
+	}
+	es := corpus()
+	n := 0
+	for _, e := range es {
+		for _, f := range es {
+			tt, u := e.typ, f.typ
+			if u.Kind() == reflect.Interface {
+				continue
+			}
+			if _, ok := convertLean(reflect.Zero(tt), u); !ok {
+				continue
+			}
+			n++
+			if !GoConvertible(tt, u) {
+				t.Errorf("convertLean(%v, %v) steps, but not GoConvertible", tt, u)
+			}
+		}
+	}
+	t.Logf("%d corpus pairs a Lean Convert rule steps on, all GoConvertible", n)
 }
 
 // GoConvertible is Go's conversion rules: on every case, it holds exactly where the case says

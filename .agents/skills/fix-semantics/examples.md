@@ -1645,3 +1645,43 @@ The sibling `array_length_step` keeps `2^63`: array lengths are bounded by Go's 
 
 **Why.** Upamanyu, 2026-11-24: "I'm ok with constraining executions to only those that have
 strings on the heap that are less than `maxAddr` size."
+
+## Case 52 — ACCEPTED (plan, by coordinator-E; for Upamanyu's look with the reflection packet): the channel and pointer `Convert` rules take Go's premises (branch `convert-narrow`, etcd-grove#59)
+
+**Symptom.** Unsound (more defined than Go). `convert_channel` was an `[under]` rule stepping
+`Convert (chan d1 E) (chan d2 E)` for any directions, and `convert_pointer_same_underlying` an
+`[under]` rule on `Convert (*A) (*B)` for `A`, `B` of the same underlying type; through
+`convert_underlying` the latter also stepped between named pointer types `type P *A`, `type Q *B`
+(and `P` to `*B`), whose underlying types `*A` and `*B` are not identical.
+
+**Witness.** From the reflection differential harness (`goose/model/reflect/harness`), all
+compile errors in Go (and `reflect`'s `Convert` panics), all stepping in the model:
+`(chan<- int)(r)` for `r : <-chan int`; `(<-chan int)(s)` and `(chan int)(s)` for
+`s : chan<- int`; `myRecvChan(c)` for `c : myChan` (`type myChan chan int`,
+`type myRecvChan <-chan int`: both named); `(*S1b)(p)` and `(*struct{A int})(p)` for
+`p : PS1x` (`type PS1x *S1`, `type S1b S1`).
+
+**Taken.** The rules are stated on the types themselves (plain `⤳`, not `⤳[under]`), with Go's
+premises, so `convert_underlying` no longer reaches them and the `[under]` route converts
+channels and pointers only between identical underlying types (`is_convert_underlying_same`):
+`convert_channel_to_unnamed` (`[t ↓u chan E]`, to `chan d E`) and
+`convert_channel_from_unnamed` (`chan E` to `[u ↓u chan d E]`), the two halves of Go's
+assignability rule "V a bidirectional channel, identical element types, V or T not named"
+(instance search cannot take a disjunction premise); `convert_pointer_same_underlying` keeps its
+statement, as a plain step on the unnamed pointer types. Cost: one rule split in two, one rule's
+tag dropped; no goose change. Witnesses: harness `TestConvertLeanRules` (the rules, without
+`ConvertAt`'s `go.Convertible`, step on no case Go rejects, and only on `GoConvertible` corpus
+pairs; under the old rules it reports the six cases and 14 corpus pairs);
+`Perennial/Tests/ConvertRules.lean` (the legal conversions still step by instance search). The
+related unexported-field-name gap went to `KNOWN_LIMITATIONS` (no proof reaches it).
+
+**Not taken.** Keeping the rules and relying on goose emitting only type-checked conversions
+(true for static code, but the rules are the semantics: `ConvertAt` takes run-time types);
+a `[NotNamed t ∨ NotNamed u]` premise (not instance-findable).
+
+**Why.** coordinator-E on etcd-grove#40 (7171395499): "Narrowing two semantics rules that are
+more defined than Go only shrinks trust, so it's inside what I decide. … Restate
+`convert_channel` on the literal types with Go's premise: `d1 = sendrecv`, with one side
+unnamed. Make the pointer rule apply only to unnamed pointer types; keep the `[under]` route
+only for identical underlying types." The diff goes to Upamanyu with the reflection packet's
+item 1.

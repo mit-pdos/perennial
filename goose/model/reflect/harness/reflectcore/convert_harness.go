@@ -13,9 +13,11 @@ import "reflect"
 //   - a pointer to unsafe.Pointer (convert_pointer_to_unsafe); unsafe.Pointer to *E for a plain
 //     E, or nil to any *E (convert_unsafe_to_pointer, convert_unsafe_nil_to_pointer);
 //     unsafe.Pointer to uintptr (convert_unsafe_to_uintptr, arbitrary in Lean: here gc's address);
-//   - a channel to a channel of the same element type, any directions (convert_channel);
-//   - a pointer to a pointer whose base types have identical underlying types
-//     (convert_pointer_same_underlying).
+//   - a bidirectional channel to a channel of the same element type, one of the two types unnamed
+//     (convert_channel_to_unnamed, convert_channel_from_unnamed: plain steps on the types
+//     themselves, not [under] rules);
+//   - an unnamed pointer to an unnamed pointer whose base types have identical underlying types
+//     (convert_pointer_same_underlying, a plain step on the unnamed pointer types).
 //
 // Floats, complex numbers, runes to and from strings, other integers to string and slices to
 // arrays have no rule.
@@ -41,9 +43,11 @@ func convertLean(v reflect.Value, u reflect.Type) (reflect.Value, bool) {
 		}
 	case fk == reflect.UnsafePointer && tk == reflect.Uintptr:
 		return reflect.ValueOf(uintptr(v.UnsafePointer())).Convert(u), true
-	case fk == reflect.Chan && tk == reflect.Chan && t.Elem() == u.Elem():
+	case fk == reflect.Chan && tk == reflect.Chan && t.ChanDir() == reflect.BothDir &&
+		t.Elem() == u.Elem() && (t.Name() == "" || u.Name() == ""):
 		return reinterpret(v, u), true
-	case fk == reflect.Pointer && tk == reflect.Pointer && IdenticalUnderlying(t.Elem(), u.Elem()):
+	case fk == reflect.Pointer && tk == reflect.Pointer && t.Name() == "" && u.Name() == "" &&
+		IdenticalUnderlying(t.Elem(), u.Elem()):
 		return reinterpret(v, u), true
 	}
 	return reflect.Value{}, false
