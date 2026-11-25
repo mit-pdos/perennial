@@ -4,6 +4,7 @@ import (
 	"go/ast"
 	"go/types"
 
+	"github.com/mit-pdos/perennial/goose/declfilter"
 	"github.com/mit-pdos/perennial/goose/util"
 )
 
@@ -52,6 +53,68 @@ func (ctx *Ctx) checkModelLayouts(files []*ast.File, models *util.Models) []erro
 			}
 			return true
 		})
+	}
+	return e.errs
+}
+
+// checkModelDecls refuses every type declaration `type M N` in the files
+// (not an alias; local ones included) whose type N is a named type whose
+// layout a Go model changes (util.Models.LayoutModelled), or is declared so
+// itself in these files, transitively. Go gives M the underlying type of the
+// real N, the translation that of N's model; and go.layoutModelled, which
+// makes such a type opaque to reflection, lists only the names of the
+// models' own types (generated once, for Perennial's packages), not M. (A
+// declaration of another package over such a type is refused when that
+// package is translated.) A declaration the config skips is not translated,
+// and one listed itself (a trusted type) is opaque already.
+func (ctx *Ctx) checkModelDecls(files []*ast.File, models *util.Models) []error {
+	var specs []*ast.TypeSpec
+	rhs := make(map[*types.TypeName]*types.TypeName)
+	for _, f := range files {
+		ast.Inspect(f, func(n ast.Node) bool {
+			spec, ok := n.(*ast.TypeSpec)
+			if !ok || spec.Assign.IsValid() {
+				return true
+			}
+			obj, ok := ctx.info.Defs[spec.Name].(*types.TypeName)
+			if !ok {
+				return true
+			}
+			if named, ok := types.Unalias(ctx.info.TypeOf(spec.Type)).(*types.Named); ok {
+				rhs[obj] = named.Origin().Obj()
+				specs = append(specs, spec)
+			}
+			return true
+		})
+	}
+	// over returns the type whose layout a model changes that o is declared
+	// over, directly or through declarations of these files.
+	over := func(o *types.TypeName) (string, bool) {
+		seen := make(map[*types.TypeName]bool)
+		for o != nil && !seen[o] {
+			seen[o] = true
+			if name, ok := models.LayoutModelled(o); ok {
+				return name, true
+			}
+			o = rhs[o]
+		}
+		return "", false
+	}
+	var e errorCatcher
+	for _, spec := range specs {
+		obj := ctx.info.Defs[spec.Name].(*types.TypeName)
+		if _, listed := models.LayoutModelled(obj); listed {
+			continue
+		}
+		if obj.Parent() == obj.Pkg().Scope() && ctx.filter.GetAction(obj.Name()) == declfilter.Skip {
+			continue
+		}
+		if name, ok := over(rhs[obj]); ok {
+			e.do(func() {
+				ctx.unsupported(spec, "type %s declared over %s, whose layout its Go model changes "+
+					"(Go's underlying type is the real type's)", obj.Name(), name)
+			})
+		}
 	}
 	return e.errs
 }

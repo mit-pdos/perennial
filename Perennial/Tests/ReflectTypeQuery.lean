@@ -80,21 +80,6 @@ example : go.typeQuery .numTypeArgs go.int 0 = some #(W64 0) := by
 example (e : go.GoType) : go.typeQuery .name (go.SliceType e) 0 = none := by
   simp [go.typeQuery]
 
-/-- `int` reaches no type a model changes. -/
-theorem not_reaches_int : ¬ go.ReachesLayoutModelled go.int := by
-  have hu : underlying go.int = go.int := go.is_underlying
-  intro h
-  cases h with
-  | self h => exact absurd h (by decide)
-  | field hs _ _ => rw [hu] at hs; simp [go.int] at hs
-  | elem hs _ => rw [hu] at hs; simp [go.int] at hs
-
-example : go.typeQuery .arrayOf go.int 4 = some #(go.tok (go.ArrayType 4 go.int)) := by
-  simp only [go.typeQuery]
-  rw [if_neg (by simp)]
-  rw [ite_eq_left_of_eq_true _ _ (eq_true ⟨not_reaches_int, by decide,
-    .inr ⟨8, ⟨⟨8, .scalar _ _ .isPlainScalar_int⟩⟩, by decide⟩⟩)]
-
 /-! ## Types a model changes (`go.layoutModelled`) are opaque
 
 The minimal program of Upamanyu's rule (etcd-grove#40): `type S struct{ mu sync.Mutex; n int }`
@@ -134,22 +119,23 @@ example (q : go.TypeQ) (hq : q ≠ .identByName) (i : Int) : go.typeQuery q isyn
 example : go.typeQuery .identByName isyncMutex 0 = some #true := by
   simp [go.typeQuery, go.identByName]
 
-/-- `arrayOf(S)` depends on `S`'s size, so on `Mutex`'s: stuck, at any length. -/
-example (S : go.GoType) [S ↓u go.StructType sFields] (i : Int) :
-    go.typeQuery .arrayOf S i = none := by
-  have hr : go.ReachesLayoutModelled S :=
-    .field (fd := go.FieldDecl go!"mu" isyncMutex) go.is_underlying (by simp)
-      (.self (by decide))
-  unfold go.typeQuery
-  split
-  · rfl
-  · simp [hr]
-
 /-- `TypeOf(reflect.TypeOf(0)).Kind()`: `TypeOf` of a `Type` gives the token of the model's
 `rtype`, whose kind is stuck. -/
 example : go.typeQuery .kind (go.Named go!"reflect.rtype" []) 0 = none := by
   unfold go.typeQuery
   rw [if_pos ⟨by decide, by decide⟩]
+
+/-- A type declared over one a model changes (etcd-grove#40, condition 5). For
+`type M primitive.Mutex`, Go's `reflect.TypeOf(M{}).Kind()` is `Struct` (25): `M`'s underlying type
+is the real `primitive.Mutex`'s, a struct. goose translated `M` (before it refused such a
+declaration) with `underlying M = underlying primitive.Mutex.ty`, the trusted model's `bool`, and
+`go.layoutModelled` did not name `M`: `typeQuery .kind` answered `Bool` (1). goose now refuses the
+declaration (`checkModelDecls`, test `goose/testdata/negative-tests/modeldecl_over`). -/
+example (M : go.GoType) (hM : go.layoutModelled M = false)
+    (hu : underlying M = underlying (go.Named go!"github.com/goose-lang/primitive.Mutex" []))
+    (hmu : underlying (go.Named go!"github.com/goose-lang/primitive.Mutex" []) = go.bool) :
+    go.typeQuery .kind M 0 = some #(W64 1) := by
+  simp [go.typeQuery, hM, hu, hmu]
 
 end tests
 

@@ -98,6 +98,7 @@ func translatePackage(pkg *packages.Package, config declfilter.FilterConfig, con
 	}
 	preDecls, decls, errs := ctx.files(pkg.Syntax)
 	errs = append(errs, ctx.checkModelLayouts(pkg.Syntax, models)...)
+	errs = append(errs, ctx.checkModelDecls(pkg.Syntax, models)...)
 
 	f.PreHeaderDecls = preDecls
 	f.Decls = decls

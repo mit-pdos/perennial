@@ -6,7 +6,6 @@ module
 public import Perennial.Proof.ProofPrelude
 public import Perennial.Code.internal.reflectcore
 public import Perennial.GeneratedProof.internal.reflectcore
-public import Perennial.Proof.«unsafe».Base
 
 @[expose] public section
 

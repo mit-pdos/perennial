@@ -7,7 +7,10 @@ linux/amd64) or underlying type differ from the real declaration's, or that the 
 does not declare; and
 the types whose declaration a goose config trusts (their Lean definition is in
 Perennial/TrustedCode). goose refuses `unsafe.Sizeof`/`Alignof`/`Offsetof` of a type containing one, and
-reflection treats each as opaque (`go.typeQuery`, Perennial/Golang/Defn/Reflect.lean).
+a type declared over one (`type M N`, directly or through other defined types: its underlying
+type would be the model's, and this list does not name it), so every translated type whose
+underlying type a model changes is in the list; reflection treats each as opaque
+(`go.typeQuery`, Perennial/Golang/Defn/Reflect.lean).
 -/
 module
 

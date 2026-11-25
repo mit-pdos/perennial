@@ -95,7 +95,9 @@ func (m *Models) TrustedType(o *types.TypeName) bool {
 // declare), or a type whose declaration a config trusts (TrustedType).
 // unsafe.Sizeof refuses such a type (LayoutChanged), and goose emits the
 // list as the Lean predicate go.layoutModelled (LayoutModelledLean), which
-// makes it opaque to reflection.
+// makes it opaque to reflection. goose refuses a type declared over one
+// (checkModelDecls): Go gives it the real type's underlying type, the
+// translation the model's, and the list does not name it.
 func (m *Models) LayoutModelled(o *types.TypeName) (string, bool) {
 	if m == nil || o.Pkg() == nil {
 		return "", false

@@ -17,8 +17,6 @@
 // at the dynamic type of its argument.
 package reflectcore
 
-import "unsafe"
-
 // TokOf is the token of x's dynamic type (x is not nil): tokOf at that type.
 func TokOf(x any) any {
 	panic("reflectcore: primitive stub")
@@ -81,12 +79,6 @@ func ArraySliceAt(p any) any {
 // EqNilAt is x == nil at x's dynamic type, a pointer, slice, map, channel,
 // function or unsafe.Pointer type.
 func EqNilAt(x any) bool {
-	panic("reflectcore: primitive stub")
-}
-
-// PointerOfAt is the address that x's dynamic value, a pointer, map,
-// channel, slice or unsafe.Pointer, refers to.
-func PointerOfAt(x any) unsafe.Pointer {
 	panic("reflectcore: primitive stub")
 }
 

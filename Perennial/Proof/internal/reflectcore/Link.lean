@@ -29,7 +29,6 @@ public import Perennial.Proof.internal.reflectcore.load_
 public import Perennial.Proof.internal.reflectcore.ptrTok_
 public import Perennial.Proof.internal.reflectcore.store_
 public import Perennial.Proof.internal.reflectcore.tokOf_
-public import Perennial.Proof.unsafe.Link
 
 @[expose] public section
 
@@ -114,7 +113,7 @@ theorem internal.reflectcore.wp_TypeUnderlying : internal.reflectcore.TypeUnderl
   internal.reflectcore.TypeUnderlying.wp_proof
 
 theorem internal.reflectcore.wp_initialize' : internal.reflectcore.initialize'.spec (GF := GF) (hG := hG) :=
-  internal.reflectcore.initialize'.wp_proof «unsafe».wp_initialize'
+  internal.reflectcore.initialize'.wp_proof
 
 end link
 

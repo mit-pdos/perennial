@@ -114,15 +114,6 @@ func TestTypeQueryRows(t *testing.T) {
 		{QNumTypeArgs, tok[G[int]](), 0, 1}, {QNumTypeArgs, tok[Pair[string, map[int]string]](), 0, 2},
 		{QNumTypeArgs, tok[Pair[G[int], G[Pair[int, int]]]](), 0, 2}, {QNumTypeArgs, tok[S](), 0, 0},
 		{QNumTypeArgs, tok[int](), 0, 0}, {QNumTypeArgs, tok[[]int](), 0, 0},
-		{QArrayOf, tok[int](), 3, tok[[3]int]()}, {QArrayOf, tok[S](), 0, tok[[0]S]()},
-		{QArrayOf, tok[[]int](), 1, tok[[1][]int]()}, {QArrayOf, tok[int](), -1, nil},
-		{QArrayOf, tok[Plain](), 2, tok[[2]Plain]()}, {QArrayOf, tok[myArr](), 5, tok[[5]myArr]()},
-		{QArrayOf, tok[string](), 0, tok[[0]string]()}, {QArrayOf, tok[S](), 1, tok[[1]S]()},
-		// not plain, length ≥ 2: none in Lean (Go: reflect.ArrayOf(2, string) is [2]string)
-		{QArrayOf, tok[string](), 2, nil}, {QArrayOf, tok[Padded](), 2, nil},
-		{QArrayOf, tok[*int](), 2, nil}, {QArrayOf, tok[struct{}](), 2, nil},
-		// i·size ≥ 2^64: none in Lean, reflect.ArrayOf panics
-		{QArrayOf, tok[int64](), 1 << 61, nil}, {QArrayOf, tok[uint8](), 1 << 40, tok[[1 << 40]uint8]()},
 	}
 	for _, r := range rows {
 		T := reflect.TypeOf(r.tok).Elem()
@@ -161,11 +152,6 @@ func TestTypeQueryRows(t *testing.T) {
 		if TypeKind(e.tok) != int(T.Kind()) || TypeKind(e.addr()) != int(T.Kind()) {
 			t.Errorf("TypeKind(%v)", T)
 		}
-	}
-	if p, ok := catch(func() { reflect.ArrayOf(1<<61, reflect.TypeFor[int64]()) }); !ok {
-		t.Errorf("reflect.ArrayOf(2^61, int64) did not panic")
-	} else {
-		t.Logf("reflect.ArrayOf(2^61, int64): %v", p)
 	}
 	for q := range NoneInS0 {
 		mustStuck(t, q.String()+" (none in S0)", func() { TypeQuery(q, tok[S](), 0) })

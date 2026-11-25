@@ -162,7 +162,7 @@ deriving DecidableEq
 inductive TypeQ where
   | kind | name | numTypeArgs | pkgName | elem | key | len | chanDir | numField
   | fieldName | fieldType | fieldTag | fieldEmbedded | fieldPkg | numIn | inType | numOut
-  | outType | variadic | numMethod | methodId | methodType | arrayOf | underlying | identByName
+  | outType | variadic | numMethod | methodId | methodType | underlying | identByName
 deriving DecidableEq
 
 end go
@@ -225,8 +225,9 @@ inductive GoInstruction where
   /-- `FuncResolve f ts` with `ts` read from the dispatch interfaces' dynamic types by `shs`. Not
   a Go expression: goose never emits it; `internal/reflectcore`'s primitive stubs use it. -/
   | FuncResolveAt (shs : List go.Shape) (f : GoString)
-  /-- `U(x)` boxed in `any`, for an interface `x` and a token of `U`. Not a Go expression: goose
-  never emits it; `internal/reflectcore`'s primitive stubs use it. -/
+  /-- `U(x)` boxed in `any`, for an interface `x` and a token of `U`, where Go converts `x`'s
+  dynamic type to `U`. Not a Go expression: goose never emits it; `internal/reflectcore`'s
+  primitive stubs use it. -/
   | ConvertAt
   /-- `&(*p).f` for the `i`th field `f` of `*p`'s struct type, boxed in `any`. Not a Go expression:
   goose never emits it; `internal/reflectcore`'s primitive stubs use it.
@@ -241,10 +242,6 @@ inductive GoInstruction where
   /-- `x == nil` at the dynamic type of the interface `x`. Not a Go expression: goose never emits
   it; `internal/reflectcore`'s primitive stubs use it. -/
   | EqNilAt
-  /-- The address behind the pointer-like value in the interface `x`, as an `unsafe.Pointer`. Not
-  a Go expression: goose never emits it; `internal/reflectcore`'s primitive stubs use it.
-  Not yet used by the reflect Go model (`goose/model/overlay`); planned for S5: `DeepEqual`. -/
-  | PointerOfAt
   /-- The fact `q` about the type `T` of a token `any((*T)(nil))`. Not a Go expression: goose never
   emits it; `internal/reflectcore`'s primitive stubs use it. -/
   | TypeQuery (q : go.TypeQ)
@@ -383,7 +380,7 @@ export GoInstruction (AngelicExit Convert GoOp GoUnOp CheckComparable GoLoad GoS
   Slice FullSlice ArraySet ArrayLength InternalMapCheckKey InternalMapLookup InternalMapInsert
   InternalMapDelete InternalMapLength InternalMapForRange InternalMapMake InternalMapLookupId
   InternalMapClone InternalBytesTo InternalUnsafeSlice FuncResolveAt ConvertAt FieldRefAt
-  ArraySliceAt EqNilAt PointerOfAt TypeQuery
+  ArraySliceAt EqNilAt TypeQuery
   CompositeLiteral SelectStmt InternalStringLen)
 
 section derived

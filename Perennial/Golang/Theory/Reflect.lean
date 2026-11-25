@@ -28,6 +28,9 @@ theorem go.notLayoutModelled_of_typeQuery {q : go.TypeQ} {t : go.GoType} {i : In
 
 instance go.NotLayoutModelled.error : go.NotLayoutModelled go.error := ⟨rfl⟩
 
+/-- Go converts a type to itself (identical underlying types). -/
+theorem go.Convertible.refl (t : go.GoType) : go.Convertible t t := .underlying rfl
+
 /-- A pointer to a type that is not `go.layoutModelled` is not exposed to a conversion
 (`go.convertExposed`). -/
 theorem go.convertExposed_pointer (T : go.GoType) [hm : go.NotLayoutModelled T]
@@ -236,31 +239,6 @@ theorem wp_EqNilAt_func {t : go.GoType} {sig : go.signature} [t ↓u go.Function
   wp_pures
   iapply HΦ
   itrivial
-
-/-! ## `PointerOfAt` -/
-
-theorem wp_PointerOfAt_pointer {t e : go.GoType} [t ↓u go.PointerType e]
-    [go.NotLayoutModelled t] (l : Loc) :
-    {{ (True : IProp GF) }}
-      (App (Val (GoInstruction PointerOfAt)) (Val #(interface.mkOk t #l))) @ s; E
-    {{ RET #l; True }} :=
-  wp_go_step_val _ _ _ (by simp)
-
-theorem wp_PointerOfAt_slice_nil {t e : go.GoType} [t ↓u go.SliceType e]
-    [go.NotLayoutModelled t] :
-    {{ (True : IProp GF) }}
-      (App (Val (GoInstruction PointerOfAt)) (Val #(interface.mkOk t #slice.nil))) @ s; E
-    {{ RET #null; True }} :=
-  wp_go_step_val _ _ _ (by simp)
-
-theorem wp_PointerOfAt_slice {t e : go.GoType} [t ↓u go.SliceType e]
-    [go.NotLayoutModelled t] (sl : GoSlice)
-    (h : 0 < uint.Z sl.cap) :
-    {{ (True : IProp GF) }}
-      (App (Val (GoInstruction PointerOfAt)) (Val #(interface.mkOk t #sl))) @ s; E
-    {{ RET #sl.ptr; True }} :=
-  haveI := go.pointer_of_at_slice (t := t) sl h
-  wp_go_step_val _ _ _ (by simp)
 
 /-! ## `TypeQuery` -/
 

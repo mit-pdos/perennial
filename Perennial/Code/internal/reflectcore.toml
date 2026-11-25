@@ -5,9 +5,8 @@
 # generic helpers they instantiate (helpers.go) are translated.
 translate = ["!*"]
 trusted = ["TokOf", "Box", "Load", "Alloc", "PtrTok", "Store", "AssertOk", "ConvertAt",
-  "FieldRefAt", "ArraySliceAt", "EqNilAt", "PointerOfAt", "TypeKind", "TypeElem", "TypeLen",
+  "FieldRefAt", "ArraySliceAt", "EqNilAt", "TypeKind", "TypeElem", "TypeLen",
   "TypeNumField", "TypeFieldType", "TypeUnderlying", "TypeIdentByName"]
-imports = ["unsafe"]
 
 [model]
 dir = "goose/model/overlay/internal/reflectcore"

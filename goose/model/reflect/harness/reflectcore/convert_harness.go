@@ -148,3 +148,35 @@ func IsPlain(t reflect.Type) bool {
 	}
 	return false
 }
+
+// GoConvertible is go.Convertible (Perennial/Golang/Defn/Reflect.lean), ConvertAt's premise: Go's
+// conversion rules for a non-constant value, one case per constructor, over the types as Lean has
+// them (IdenticalUnderlying for identical underlying types).
+func GoConvertible(t, u reflect.Type) bool {
+	tk, uk := t.Kind(), u.Kind()
+	numeric := func(k reflect.Kind) bool { return isInteger(k) || k == reflect.Float32 || k == reflect.Float64 }
+	isComplex := func(k reflect.Kind) bool { return k == reflect.Complex64 || k == reflect.Complex128 }
+	byteOrRuneSlice := func(s reflect.Type) bool {
+		return s.Kind() == reflect.Slice && (s.Elem().Kind() == reflect.Uint8 || s.Elem().Kind() == reflect.Int32)
+	}
+	switch {
+	case uk == reflect.Interface && t.Implements(u): // implements
+	case tk == reflect.Chan && uk == reflect.Chan && t.ChanDir() == reflect.BothDir &&
+		t.Elem() == u.Elem() && (t.Name() == "" || u.Name() == ""): // chan
+	case IdenticalUnderlying(t, u): // underlying
+	case tk == reflect.Pointer && uk == reflect.Pointer && t.Name() == "" && u.Name() == "" &&
+		IdenticalUnderlying(t.Elem(), u.Elem()): // pointer
+	case numeric(tk) && numeric(uk): // numeric
+	case isComplex(tk) && isComplex(uk): // complex
+	case (isInteger(tk) || byteOrRuneSlice(t)) && uk == reflect.String: // toString
+	case tk == reflect.String && byteOrRuneSlice(u): // fromString
+	case tk == reflect.Slice && uk == reflect.Array && t.Elem() == u.Elem(): // sliceArray
+	case tk == reflect.Slice && uk == reflect.Pointer && u.Elem().Kind() == reflect.Array &&
+		t.Elem() == u.Elem().Elem(): // slicePtrArray
+	case (tk == reflect.Pointer || tk == reflect.Uintptr) && uk == reflect.UnsafePointer: // toUnsafe
+	case tk == reflect.UnsafePointer && (uk == reflect.Pointer || uk == reflect.Uintptr): // fromUnsafe
+	default:
+		return false
+	}
+	return true
+}

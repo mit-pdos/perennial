@@ -62,25 +62,6 @@ func LayoutModelled(T reflect.Type) bool {
 	return layoutModelledNames[pkg+"."+name]
 }
 
-// ReachesLayoutModelled is go.ReachesLayoutModelled: T, or a type reachable from it through
-// struct fields and array elements, is LayoutModelled.
-func ReachesLayoutModelled(T reflect.Type) bool {
-	if LayoutModelled(T) {
-		return true
-	}
-	switch T.Kind() {
-	case reflect.Struct:
-		for i := 0; i < T.NumField(); i++ {
-			if ReachesLayoutModelled(T.Field(i).Type) {
-				return true
-			}
-		}
-	case reflect.Array:
-		return ReachesLayoutModelled(T.Elem())
-	}
-	return false
-}
-
 // ConvertExposed is go.convertExposed: T is LayoutModelled, or a pointer type whose base type is.
 func ConvertExposed(T reflect.Type) bool {
 	return LayoutModelled(T) || T.Kind() == reflect.Pointer && LayoutModelled(T.Elem())

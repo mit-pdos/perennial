@@ -5,7 +5,7 @@ package): the reflection primitives of the Go models of `reflect`
 (`Perennial/Code/internal/reflectcore.toml`: a whole-package model of a path the standard library
 does not have). Each exported function is a primitive stub, one reflection instruction of
 `GooseLang/Lang.lean` (`FuncResolveAt`, `ConvertAt`, `FieldRefAt`, `ArraySliceAt`, `EqNilAt`,
-`PointerOfAt`, `TypeQuery`); its Go body is a placeholder. A `FuncResolveAt` stub instantiates
+`TypeQuery`); its Go body is a placeholder. A `FuncResolveAt` stub instantiates
 one of the generic helpers of `helpers.go`, which goose translates, at its argument's dynamic type.
 -/
 module
@@ -65,10 +65,6 @@ def ArraySliceAt.impl : val :=
 /-- `EqNilAt(x)`: the instruction `EqNilAt`. -/
 def EqNilAt.impl : val :=
   λ: "x", EqNilAt "x"
-
-/-- `PointerOfAt(x)`: the instruction `PointerOfAt`. -/
-def PointerOfAt.impl : val :=
-  λ: "x", PointerOfAt "x"
 
 /-- `TypeKind(t)`: the instruction `TypeQuery .kind`. -/
 def TypeKind.impl : val :=

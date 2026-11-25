@@ -21,12 +21,12 @@ variable [sem : go.Semantics]
 variable [package_sem : internal.reflectcore.Assumptions]
 
 /-- `ConvertAt(x, tok)` of `x : t` and a token (or any `any(p)`) of `*u`: `any(u(x))`, for a
-non-interface `u` that `t` converts to in one pure step; and `x` itself for an interface `u`
-that `t` implements. -/
+non-interface `u` that Go converts `t` to (`go.Convertible`) and Lean in one pure step; and `x`
+itself for an interface `u` that `t` implements. -/
 abbrev internal.reflectcore.ConvertAt.spec : Prop :=
   (∀ {t u uu : go.GoType} [u ↓u uu] {X Y : Type} (x : X) (y : Y) [go.IsGoStepPureDet (Convert t u) #x (Val #y)]
     (l : Loc),
-  go.isInterfaceType uu = false → go.isUntypedNil uu = false →
+  go.isInterfaceType uu = false → go.isUntypedNil uu = false → go.Convertible t u →
   go.convertExposed t = false → go.convertExposed u = false →
     {{ isPkgInit (PROP := IProp GF) pkg_id.internal.reflectcore }}
       (App (App (Val (@! ConvertAt)) (Val #(interface.mkOk t #x)))

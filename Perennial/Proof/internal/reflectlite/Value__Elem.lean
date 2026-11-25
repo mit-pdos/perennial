@@ -61,7 +61,7 @@ theorem internal.reflectlite.Value.Elem.wp_proof
     wp_apply wp_PtrTok
     unfold go.tok
     wp_apply wp_ConvertAt.1 (t := go.PointerType T) (u := go.PointerType T) l l null rfl rfl
-      (go.convertExposed_pointer T) (go.convertExposed_pointer T)
+      (go.Convertible.refl _) (go.convertExposed_pointer T) (go.convertExposed_pointer T)
     rw [ite_eq_right Hif]
     iapply HΦ
     itrivial

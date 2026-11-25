@@ -114,10 +114,6 @@ func TestLayoutModelledOpaque(t *testing.T) {
 		"ValueOf(Mutex{})":          func() { rm.ValueOf(Mutex{}) },
 		"ValueOf(&ms.mu.mu).Elem()": func() { rm.ValueOf(&ms.mu).Elem(); rm.ValueOf(reflectcore.FieldRefAt(&ms.mu, 1)).Elem() },
 		"FieldRefAt(&m, 0)":         func() { reflectcore.FieldRefAt(m, 0) },
-		"arrayOf(MS, 2)":             func() { tq(reflectcore.QArrayOf, tk[MS](), 2) },
-		"arrayOf(MS, 1)":             func() { tq(reflectcore.QArrayOf, tk[MS](), 1) },
-		"arrayOf([1]MS, 0)":          func() { tq(reflectcore.QArrayOf, tk[[1]MS](), 0) },
-		"arrayOf(SM, 2)":            func() { tq(reflectcore.QArrayOf, tk[SM](), 2) },
 		"isZeroSize(MS) (struct{MS; *int})": func() {
 			rm.ValueOf(struct {
 				s MS
@@ -131,15 +127,11 @@ func TestLayoutModelledOpaque(t *testing.T) {
 			}{})
 		},
 		"isDirectIface([1]Mutex)": func() { rm.ValueOf([1]Mutex{}) },
-		"ConvertAt(*Mutex, *MS)":   func() { reflectcore.ConvertAt(m, tk[*MS]()) },
+		"ConvertAt(*Mutex, *MS)":  func() { reflectcore.ConvertAt(m, tk[*MS]()) },
 	} {
 		if !stuck(f) {
 			t.Errorf("%s: not stuck", name)
 		}
-	}
-	// arrayOf of a type that does not reach a layoutModelled one still answers
-	if got := tq(reflectcore.QArrayOf, tk[struct{ p *Mutex }](), 1); got == nil {
-		t.Errorf("arrayOf(struct{ *Mutex }, 1) = nil")
 	}
 }
 
