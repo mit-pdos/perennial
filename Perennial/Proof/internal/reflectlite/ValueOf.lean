@@ -25,10 +25,10 @@ theorem internal.reflectlite.ValueOf.wp_proof
     (wp_unpackEface : internal.reflectlite.unpackEface.spec (GF := GF) (hG := hG)) :
     internal.reflectlite.ValueOf.spec (GF := GF) (hG := hG) := by
   constructor
-  · intro V _ _ t u hu _ k n b x hk hi hr hd
+  · intro V _ _ t u hu _ k n b x hk hi hd
     wp_start as #Hinit
     wp_auto
-    wp_apply wp_unpackEface k n b x hk hi hr hd as %xv Hxv
+    wp_apply wp_unpackEface k n b x hk hi hd as %xv Hxv
     iapply HΦ
     iexact Hxv
   · wp_start as #Hinit

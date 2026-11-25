@@ -37,7 +37,9 @@ theorem reflect.isZeroSize.wp_proof
   | zero => intro T l b h; simp [reflect.zeroSizeN] at h
   | succ n IH =>
     intro T l b h
-    simp only [reflect.zeroSizeN] at h
+    have hm : go.layoutModelled T = false := reflect.notLayoutModelled_of_zeroSizeN h
+    haveI : go.NotLayoutModelled T := ⟨hm⟩
+    simp only [reflect.zeroSizeN, hm, Bool.false_eq_true, ↓reduceIte] at h
     split at h
     · rename_i len e hu
       haveI : T ↓u go.ArrayType len e := ⟨hu⟩
@@ -48,7 +50,7 @@ theorem reflect.isZeroSize.wp_proof
         split at h
         · exact ⟨by assumption, h⟩
         · cases h
-      wp_apply wp_TypeLen T l #(W64 len) (by simp [go.typeQuery, hu])
+      wp_apply wp_TypeLen T l #(W64 len) (by simp [go.typeQuery, hm, hu])
       by_cases h0 : len = 0
       · subst h0
         simp only [ite_true, Option.some.injEq] at h
@@ -61,7 +63,7 @@ theorem reflect.isZeroSize.wp_proof
         have hne : W64 len ≠ W64 0 := by word
         rw [decide_eq_false hne]
         wp_auto
-        wp_apply wp_TypeElem T l #(go.tok e) (by simp [go.typeQuery, hu])
+        wp_apply wp_TypeElem T l #(go.tok e) (by simp [go.typeQuery, hm, hu])
         unfold go.tok
         wp_apply IH e null b h
         iapply HΦ
@@ -89,7 +91,7 @@ theorem reflect.isZeroSize.wp_proof
         rw [show sint.nat (W64 0) = 0 from rfl, List.drop_zero]
         exact h
       wp_for HI
-      wp_apply wp_TypeNumField T l #(W64 fs.length) (by simp [go.typeQuery, hu])
+      wp_apply wp_TypeNumField T l #(W64 fs.length) (by simp [go.typeQuery, hm, hu])
       have hlenZ : sint.Z (W64 (fs.length : Int)) = fs.length := by word
       wp_if_destruct
       · have hlt : sint.Z i < fs.length := by
@@ -97,7 +99,7 @@ theorem reflect.isZeroSize.wp_proof
           omega
         list_elem fs (sint.nat i) as f
         wp_apply wp_TypeFieldType T l i #(go.tok (go.fieldDeclType f))
-          (by simp [go.typeQuery, hu, go.listAt, Hi.1, Hf_lookup])
+          (by simp [go.typeQuery, hm, hu, go.listAt, Hi.1, Hf_lookup])
         unfold go.tok
         have hdrop : (fs.map fun f => zeroSizeN n (go.fieldDeclType f)).drop (sint.nat i) =
             zeroSizeN n (go.fieldDeclType f) ::

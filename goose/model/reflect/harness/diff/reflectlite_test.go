@@ -216,7 +216,8 @@ func (asE) As(target any) bool {
 	return false
 }
 
-// anyErr has the layout of the model's rtype (a struct of one field of type any).
+// anyErr has the layout of the model's rtype (a struct of one field of type any): reflected on
+// as in Go (only the go.layoutModelled rtype types themselves are opaque).
 type anyErr struct{ v any }
 
 func (anyErr) Error() string { return "anyErr" }

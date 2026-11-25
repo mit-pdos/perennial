@@ -14,6 +14,30 @@ namespace Perennial
 
 open Iris Iris.BI Iris.ProgramLogic
 
+section layout
+variable [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
+
+/-- A type of which `typeQuery` answers a question other than `identByName` is not
+`go.layoutModelled`. -/
+theorem go.notLayoutModelled_of_typeQuery {q : go.TypeQ} {t : go.GoType} {i : Int} {v : val}
+    (h : go.typeQuery q t i = some v) (hq : q ≠ .identByName) : go.layoutModelled t = false := by
+  cases hm : go.layoutModelled t
+  · rfl
+  · unfold go.typeQuery at h
+    simp [hm, hq] at h
+
+instance go.NotLayoutModelled.error : go.NotLayoutModelled go.error := ⟨rfl⟩
+
+/-- A pointer to a type that is not `go.layoutModelled` is not exposed to a conversion
+(`go.convertExposed`). -/
+theorem go.convertExposed_pointer (T : go.GoType) [hm : go.NotLayoutModelled T]
+    [go.PointerType T ↓u go.PointerType T] : go.convertExposed (go.PointerType T) = false := by
+  have h : underlying (go.PointerType T) = go.PointerType T := go.is_underlying
+  simp only [go.convertExposed, h, hm.not_layout_modelled]
+  rfl
+
+end layout
+
 section wps
 variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
@@ -65,11 +89,13 @@ theorem wp_FuncResolveAt_pair (sh1 sh2 : go.Shape) (f : GoString) (t1 t2 : go.Go
 /-- `ConvertAt` to a non-interface type `u` that `t` converts to in one pure step. -/
 theorem wp_ConvertAt {t u uu : go.GoType} [u ↓u uu] (hu : go.isInterfaceType uu = false)
     (hn : go.isUntypedNil uu = false) {X Y : Type} (x : X) (y : Y)
-    [go.IsGoStepPureDet (Convert t u) #x (Val #y)] (l : Loc) :
+    [go.IsGoStepPureDet (Convert t u) #x (Val #y)] (l : Loc) (het : go.convertExposed t = false)
+    (heu : go.convertExposed u = false) :
     {{ (True : IProp GF) }}
       (App (Val (GoInstruction ConvertAt))
         (Val (PairV #(interface.mkOk t #x) #(interface.mkOk (go.PointerType u) #l)))) @ s; E
     {{ RET #(interface.mkOk u #y); True }} := by
+  haveI := go.convert_at_step (t := t) (u := u) #x l het heu
   iintro %Φ _ HΦ
   wp_pures
   rw [go.is_underlying, hu]
@@ -82,20 +108,23 @@ theorem wp_ConvertAt {t u uu : go.GoType} [u ↓u uu] (hu : go.isInterfaceType u
 
 /-- `ConvertAt` of `x : t` to `t` itself, a non-interface type. -/
 theorem wp_ConvertAt_same {t tu : go.GoType} [t ↓u tu] (hu : go.isInterfaceType tu = false)
-    (hn : go.isUntypedNil tu = false) {X : Type} (x : X) (l : Loc) :
+    (hn : go.isUntypedNil tu = false) {X : Type} (x : X) (l : Loc)
+    (he : go.convertExposed t = false) :
     {{ (True : IProp GF) }}
       (App (Val (GoInstruction ConvertAt))
         (Val (PairV #(interface.mkOk t #x) #(interface.mkOk (go.PointerType t) #l)))) @ s; E
     {{ RET #(interface.mkOk t #x); True }} :=
-  wp_ConvertAt hu hn x x l
+  wp_ConvertAt hu hn x x l he he
 
 /-- `ConvertAt` to an interface type `u` that `t` implements: `x` itself. -/
 theorem wp_ConvertAt_interface {t u uu : go.GoType} [u ↓u uu] (hu : go.isInterfaceType uu = true)
-    (himpl : go.typeSetContains t u = true) (v : val) (l : Loc) :
+    (himpl : go.typeSetContains t u = true) (v : val) (l : Loc)
+    (het : go.convertExposed t = false) (heu : go.convertExposed u = false) :
     {{ (True : IProp GF) }}
       (App (Val (GoInstruction ConvertAt))
         (Val (PairV #(interface.mkOk t v) #(interface.mkOk (go.PointerType u) #l)))) @ s; E
     {{ RET #(interface.mkOk t v); True }} := by
+  haveI := go.convert_at_step (t := t) (u := u) v l het heu
   iintro %Φ _ HΦ
   wp_pures
   rw [go.is_underlying, hu, himpl]
@@ -108,6 +137,7 @@ theorem wp_ConvertAt_interface {t u uu : go.GoType} [u ↓u uu] (hu : go.isInter
 
 /-- `FieldRefAt` of a non-null pointer to a struct and the index of a non-blank field. -/
 theorem wp_FieldRefAt {st : go.GoType} {fs : List go.field_decl} [st ↓u go.StructType fs]
+    [go.NotLayoutModelled st]
     {V : Type} [ZeroVal V] [TypeRepr (go.StructType fs) V] (l : Loc) (i : w64)
     (fd : go.field_decl) (hl : l ≠ null) (hi : 0 ≤ sint.Z i) (hfd : fs[sint.nat i]? = some fd)
     (hblank : go.isBlankField (go.fieldDeclName fd) = false) :
@@ -126,7 +156,8 @@ theorem wp_FieldRefAt {st : go.GoType} {fs : List go.field_decl} [st ↓u go.Str
   itrivial
 
 /-- `ArraySliceAt` of a non-null pointer to an array: the slice of all its elements. -/
-theorem wp_ArraySliceAt {a e : go.GoType} {n : Int} [a ↓u go.ArrayType n e] {V : Type}
+theorem wp_ArraySliceAt {a e : go.GoType} {n : Int} [a ↓u go.ArrayType n e]
+    [go.NotLayoutModelled a] {V : Type}
     [ZeroVal V] [TypeRepr e V] (l : Loc) (hl : l ≠ null) (hn : 0 ≤ n ∧ n < 2 ^ 63) :
     {{ (True : IProp GF) }}
       (App (Val (GoInstruction ArraySliceAt)) (Val #(interface.mkOk (go.PointerType a) #l)))
@@ -148,7 +179,8 @@ theorem wp_ArraySliceAt {a e : go.GoType} {n : Int} [a ↓u go.ArrayType n e] {V
 
 /-! ## `EqNilAt` -/
 
-theorem wp_EqNilAt_pointer {t e : go.GoType} [t ↓u go.PointerType e] (l : Loc) :
+theorem wp_EqNilAt_pointer {t e : go.GoType} [t ↓u go.PointerType e]
+    [go.NotLayoutModelled t] (l : Loc) :
     {{ (True : IProp GF) }}
       (App (Val (GoInstruction EqNilAt)) (Val #(interface.mkOk t #l))) @ s; E
     {{ RET #(decide (l = null)); True }} := by
@@ -157,7 +189,8 @@ theorem wp_EqNilAt_pointer {t e : go.GoType} [t ↓u go.PointerType e] (l : Loc)
   iapply HΦ
   itrivial
 
-theorem wp_EqNilAt_slice {t e : go.GoType} [t ↓u go.SliceType e] (sl : GoSlice) :
+theorem wp_EqNilAt_slice {t e : go.GoType} [t ↓u go.SliceType e]
+    [go.NotLayoutModelled t] (sl : GoSlice) :
     {{ (True : IProp GF) }}
       (App (Val (GoInstruction EqNilAt)) (Val #(interface.mkOk t #sl))) @ s; E
     {{ RET #(decide (sl = slice.nil)); True }} := by
@@ -168,7 +201,8 @@ theorem wp_EqNilAt_slice {t e : go.GoType} [t ↓u go.SliceType e] (sl : GoSlice
   iapply HΦ
   itrivial
 
-theorem wp_EqNilAt_map {t k v : go.GoType} [t ↓u go.MapType k v] (m : GoMap) :
+theorem wp_EqNilAt_map {t k v : go.GoType} [t ↓u go.MapType k v]
+    [go.NotLayoutModelled t] (m : GoMap) :
     {{ (True : IProp GF) }}
       (App (Val (GoInstruction EqNilAt)) (Val #(interface.mkOk t #m))) @ s; E
     {{ RET #(decide (m = map.nil)); True }} := by
@@ -180,6 +214,7 @@ theorem wp_EqNilAt_map {t k v : go.GoType} [t ↓u go.MapType k v] (m : GoMap) :
   itrivial
 
 theorem wp_EqNilAt_chan {t e : go.GoType} {d : go.ChanDir} [t ↓u go.ChannelType d e]
+    [go.NotLayoutModelled t]
     (c : GoChan) :
     {{ (True : IProp GF) }}
       (App (Val (GoInstruction EqNilAt)) (Val #(interface.mkOk t #c))) @ s; E
@@ -190,6 +225,7 @@ theorem wp_EqNilAt_chan {t e : go.GoType} {d : go.ChanDir} [t ↓u go.ChannelTyp
   itrivial
 
 theorem wp_EqNilAt_func {t : go.GoType} {sig : go.signature} [t ↓u go.FunctionType sig]
+    [go.NotLayoutModelled t]
     (f : GoFunc) :
     {{ (True : IProp GF) }}
       (App (Val (GoInstruction EqNilAt)) (Val #(interface.mkOk t #f))) @ s; E
@@ -203,19 +239,22 @@ theorem wp_EqNilAt_func {t : go.GoType} {sig : go.signature} [t ↓u go.Function
 
 /-! ## `PointerOfAt` -/
 
-theorem wp_PointerOfAt_pointer {t e : go.GoType} [t ↓u go.PointerType e] (l : Loc) :
+theorem wp_PointerOfAt_pointer {t e : go.GoType} [t ↓u go.PointerType e]
+    [go.NotLayoutModelled t] (l : Loc) :
     {{ (True : IProp GF) }}
       (App (Val (GoInstruction PointerOfAt)) (Val #(interface.mkOk t #l))) @ s; E
     {{ RET #l; True }} :=
   wp_go_step_val _ _ _ (by simp)
 
-theorem wp_PointerOfAt_slice_nil {t e : go.GoType} [t ↓u go.SliceType e] :
+theorem wp_PointerOfAt_slice_nil {t e : go.GoType} [t ↓u go.SliceType e]
+    [go.NotLayoutModelled t] :
     {{ (True : IProp GF) }}
       (App (Val (GoInstruction PointerOfAt)) (Val #(interface.mkOk t #slice.nil))) @ s; E
     {{ RET #null; True }} :=
   wp_go_step_val _ _ _ (by simp)
 
-theorem wp_PointerOfAt_slice {t e : go.GoType} [t ↓u go.SliceType e] (sl : GoSlice)
+theorem wp_PointerOfAt_slice {t e : go.GoType} [t ↓u go.SliceType e]
+    [go.NotLayoutModelled t] (sl : GoSlice)
     (h : 0 < uint.Z sl.cap) :
     {{ (True : IProp GF) }}
       (App (Val (GoInstruction PointerOfAt)) (Val #(interface.mkOk t #sl))) @ s; E
@@ -234,27 +273,29 @@ theorem wp_TypeQuery (q : go.TypeQ) (t : go.GoType) (l : Loc) (i : w64) (v : val
   haveI := go.type_query_step q t l i v h
   exact wp_go_step_val _ _ _ rfl
 
-theorem wp_TypeQuery_kind {t u : go.GoType} [t ↓u u] (k : Nat) (hk : go.kindOf u = some k)
-    (l : Loc) (i : w64) :
+theorem wp_TypeQuery_kind {t u : go.GoType} [t ↓u u] [hm : go.NotLayoutModelled t] (k : Nat)
+    (hk : go.kindOf u = some k) (l : Loc) (i : w64) :
     {{ (True : IProp GF) }}
       (App (Val (GoInstruction (TypeQuery .kind)))
         (Val (PairV #(interface.mkOk (go.PointerType t) #l) #i))) @ s; E
     {{ RET #(W64 k); True }} :=
-  wp_TypeQuery _ _ _ _ _ (by simp [go.typeQuery, go.is_underlying, hk])
+  wp_TypeQuery _ _ _ _ _ (by simp [go.typeQuery, go.is_underlying, hk, hm.not_layout_modelled])
 
-theorem wp_TypeQuery_elem_pointer {t e : go.GoType} [t ↓u go.PointerType e] (l : Loc) (i : w64) :
+theorem wp_TypeQuery_elem_pointer {t e : go.GoType} [t ↓u go.PointerType e]
+    [hm : go.NotLayoutModelled t] (l : Loc) (i : w64) :
     {{ (True : IProp GF) }}
       (App (Val (GoInstruction (TypeQuery .elem)))
         (Val (PairV #(interface.mkOk (go.PointerType t) #l) #i))) @ s; E
     {{ RET #(go.tok e); True }} :=
-  wp_TypeQuery _ _ _ _ _ (by simp [go.typeQuery, go.is_underlying])
+  wp_TypeQuery _ _ _ _ _ (by simp [go.typeQuery, go.is_underlying, hm.not_layout_modelled])
 
-theorem wp_TypeQuery_elem_slice {t e : go.GoType} [t ↓u go.SliceType e] (l : Loc) (i : w64) :
+theorem wp_TypeQuery_elem_slice {t e : go.GoType} [t ↓u go.SliceType e]
+    [hm : go.NotLayoutModelled t] (l : Loc) (i : w64) :
     {{ (True : IProp GF) }}
       (App (Val (GoInstruction (TypeQuery .elem)))
         (Val (PairV #(interface.mkOk (go.PointerType t) #l) #i))) @ s; E
     {{ RET #(go.tok e); True }} :=
-  wp_TypeQuery _ _ _ _ _ (by simp [go.typeQuery, go.is_underlying])
+  wp_TypeQuery _ _ _ _ _ (by simp [go.typeQuery, go.is_underlying, hm.not_layout_modelled])
 
 end wps
 

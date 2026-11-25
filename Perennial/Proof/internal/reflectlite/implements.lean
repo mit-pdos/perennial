@@ -31,7 +31,7 @@ theorem internal.reflectlite.implements.wp_proof
     (wp_AssertOk : internal.reflectcore.AssertOk.spec (GF := GF) (hG := hG)) :
     internal.reflectlite.implements.spec (GF := GF) (hG := hG) := by
   constructor
-  · intro T uT _ kT v hkT h20
+  · intro T uT _ _ kT v hkT h20
     wp_start as #Hinit
     wp_auto
     unfold go.tok
@@ -41,7 +41,7 @@ theorem internal.reflectlite.implements.wp_proof
     try wp_auto
     iapply HΦ
     itrivial
-  · intro T elems _ W _ _ V uV _ _ kV hkV hi hn
+  · intro T elems _ _ W _ _ V uV _ _ _ kV hkV hi hn
     wp_start as #Hinit
     wp_auto
     unfold go.tok

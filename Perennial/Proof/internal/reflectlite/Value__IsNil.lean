@@ -27,7 +27,7 @@ theorem internal.reflectlite.Value.IsNil.wp_proof
     (wp_EqNilAt : internal.reflectcore.EqNilAt.spec (GF := GF) (hG := hG)) :
     internal.reflectlite.Value.IsNil.spec (GF := GF) (hG := hG) := by
   haveI : go.NotInterface go.uintptr := ⟨by simp [go.uintptr]⟩
-  intro v t e _ l hk hi hptr
+  intro v t e _ _ l hk hi hptr
   wp_start as #Hinit
   wp_auto
   wp_method_call; wp_call

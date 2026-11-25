@@ -209,12 +209,6 @@ macro "wp_meths" : tactic => `(tactic| repeat (wp_method_call; wp_call; try wp_a
 section layout
 variable [GooseExts] [go_gctx : GoGlobalContext] [GoSemanticsFunctions]
 
-/-- An underlying type of the layout of the model's `rtype` (`isModelRType`): a struct of one field
-of type `any`. The model is stuck on reflection on a value of such a type. -/
-def rtypeLayoutU : go.GoType → Bool
-  | go.StructType [f] => decide (go.fieldDeclType f = go.any)
-  | _ => false
-
 omit go_gctx in
 /-- A struct type whose `directIfaceN` is defined has fewer than `2^63` fields. -/
 theorem directIfaceN_struct_len {n : Nat} {t : go.GoType} {b : Bool} {fs : List go.field_decl}
@@ -223,7 +217,8 @@ theorem directIfaceN_struct_len {n : Nat} {t : go.GoType} {b : Bool} {fs : List 
   cases n with
   | zero => simp [reflect.directIfaceN] at h
   | succ n =>
-    simp only [reflect.directIfaceN, hu] at h
+    have hm := reflect.notLayoutModelled_of_directIfaceN h
+    simp only [reflect.directIfaceN, hu, hm, Bool.false_eq_true, ↓reduceIte] at h
     split at h
     · assumption
     · cases h

@@ -31,13 +31,13 @@ variable [package_sem : reflect.Assumptions]
   `any(q)` for a new variable `q` holding `x`, with flag `k | flagIndir`. -/
 abbrev reflect.ValueOf.spec : Prop :=
   (∀ {t u : go.GoType} [t ↓u u] (k n : Nat) (v : val),
-  go.kindOf u = some k → t ≠ rtype.ty → reflect.directIfaceN n t = some true →
+  go.kindOf u = some k → reflect.directIfaceN n t = some true →
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (@! ValueOf)) (Val #(interface.mkOk t v)))
     {{ RET #(Value.mk (go.tok t) (interface.mkOk t v) (W64 k)); True }}) ∧
   (∀ {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V] {t u : go.GoType} [t ↓u u]
     [IntoValTyped (GF := GF) V t] (k n : Nat) (x : V),
-  go.kindOf u = some k → t ≠ rtype.ty → reflect.directIfaceN n t = some false →
+  go.kindOf u = some k → reflect.directIfaceN n t = some false →
   go.isInterfaceType u = false →
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (@! ValueOf)) (Val #(interface.mkOk t #x)))

@@ -24,7 +24,7 @@ variable [package_sem : reflect.Assumptions]
 `Value` if `l` is nil, else the addressable `Value` of the `T` at `l` (`v`'s read-only bits,
 `flagIndir`, `flagAddr` and `T`'s kind), which holds `any(l)`. -/
 abbrev reflect.Value.Elem.spec : Prop :=
-  ∀ (v : Value) (T : go.GoType) (k : Nat) (l : Loc),
+  ∀ (v : Value) (T : go.GoType) [go.NotLayoutModelled T] (k : Nat) (l : Loc),
   go.kindOf (GoSemanticsFunctions.underlying T) = some k →
   v.typ_' = go.tok (go.PointerType T) → v.ptr' = interface.mkOk (go.PointerType T) #l →
   v.flag' &&& W64 31 = W64 22 → v.flag' &&& W64 128 = W64 0 →

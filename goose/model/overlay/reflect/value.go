@@ -138,9 +138,6 @@ func unpackEface(i any) Value {
 		return Value{}
 	}
 	t := reflectcore.TokOf(i)
-	if isModelRType(t) {
-		gomodel.Stuck()
-	}
 	f := flag(reflectcore.TypeKind(t))
 	if !isDirectIface(t) {
 		f |= flagIndir

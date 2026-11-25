@@ -25,7 +25,8 @@ decides it: whether `V` is `T`. Decided: equal types without type arguments, or 
 (`go.identByName`); and different types, both defined, of different kinds, or of different
 underlying types of a kind other than channel, function, interface and struct. -/
 abbrev internal.reflectlite.directlyAssignable.spec : Prop :=
-  ∀ {T V uT uV : go.GoType} [T ↓u uT] [V ↓u uV] (kT kV : Nat),
+  ∀ {T V uT uV : go.GoType} [T ↓u uT] [V ↓u uV] [go.NotLayoutModelled T] [go.NotLayoutModelled V]
+    (kT kV : Nat),
   go.kindOf uT = some kT → go.kindOf uV = some kV →
   (T = V → go.identByName T = true) →
   (T ≠ V → (internal.reflectlite.isDefinedT T && internal.reflectlite.isDefinedT V) = true ∨

@@ -28,7 +28,8 @@ in two cases:
   kind) in `T`'s type set: `*l` set to `y`, the interface holding `x`. -/
 abbrev internal.reflectlite.Value.Set.spec : Prop :=
   (∀ {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V] {T uT : go.GoType} [T ↓u uT]
-    [IntoValTyped (GF := GF) V T] (kT : Nat) (l : Loc) (w y : V) (xv : Value),
+    [go.NotLayoutModelled T] [IntoValTyped (GF := GF) V T] (kT : Nat) (l : Loc) (w y : V)
+    (xv : Value),
   go.kindOf uT = some kT → go.isInterfaceType uT = false → go.isUntypedNil uT = false →
   go.identByName T = true →
     {{ isPkgInit (PROP := IProp GF) pkg_id.internal.reflectlite ∗ l ↦ w ∗
@@ -37,8 +38,10 @@ abbrev internal.reflectlite.Value.Set.spec : Prop :=
         (W64 kT ||| W64 128 ||| W64 256)) @!! Value.ty @!! go!"Set")) (Val #xv))
     {{ RET #(); l ↦ y }}) ∧
   (∀ {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V] {T : go.GoType}
-    {elems : List go.InterfaceElem} [T ↓u go.InterfaceType elems] [IntoValTyped (GF := GF) V T]
+    {elems : List go.InterfaceElem} [T ↓u go.InterfaceType elems] [go.NotLayoutModelled T]
+    [IntoValTyped (GF := GF) V T]
     {W : Type} [ZeroVal W] [TypedPointsto (GF := GF) W] {t ut : go.GoType} [t ↓u ut]
+    [go.NotLayoutModelled t]
     [IntoValTyped (GF := GF) W t] (kt : Nat) (l : Loc) (w y : V) (x : W) (xv : Value),
   go.kindOf ut = some kt → go.isInterfaceType ut = false → go.isUntypedNil ut = false →
   go.typeSetContains t T = true → (#y : val) = #(interface.mkOk t #x) →

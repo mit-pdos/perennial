@@ -30,7 +30,7 @@ theorem internal.reflectlite.directlyAssignable.wp_proof
     (wp_TypeUnderlying : internal.reflectcore.TypeUnderlying.spec (GF := GF) (hG := hG))
     (wp_isDefined : internal.reflectlite.isDefined.spec (GF := GF) (hG := hG)) :
     internal.reflectlite.directlyAssignable.spec (GF := GF) (hG := hG) :=
-    @fun T V uT uV _ _ kT kV hkT hkV hid hne => by
+    @fun T V uT uV _ _ _ _ kT kV hkT hkV hid hne => by
   have hUT : GoSemanticsFunctions.underlying T = uT := go.is_underlying
   have hUV : GoSemanticsFunctions.underlying V = uV := go.is_underlying
   have hlt := internal.reflectlite.kindOf_lt hkT

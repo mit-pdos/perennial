@@ -54,14 +54,16 @@ def allTrue : List (Option Bool) → Option Bool
   | none :: _ => none
 
 /-- `isZeroSize(t)` (the model's, `type.go`) for the type `t`, computed with at most `n` nested
-calls: none when `n` is too small, or a type it reaches has no kind, or an array's length or a
-struct's field count is not below `2^63` (the model's loop counters are Go `int`s).
+calls: none when `n` is too small, or a type it reaches is `go.layoutModelled` (its kind is
+stuck) or has no kind, or an array's length or a struct's field count is not below `2^63` (the
+model's loop counters are Go `int`s).
 * an array: whether its length is 0 or its element type is zero-size;
 * a struct: whether all its fields' types are zero-size;
 * another type: false. -/
 def zeroSizeN : Nat → go.GoType → Option Bool
   | 0, _ => none
   | n + 1, t =>
+    if go.layoutModelled t then none else
     match underlying t with
     | go.ArrayType len e =>
       if 0 ≤ len ∧ len < 2 ^ 63 then (if len = 0 then some true else zeroSizeN n e) else none
@@ -79,6 +81,7 @@ computed with at most `n` nested calls, none in the cases of `zeroSizeN`:
 def directIfaceN : Nat → go.GoType → Option Bool
   | 0, _ => none
   | n + 1, t =>
+    if go.layoutModelled t then none else
     match underlying t with
     | go.ArrayType len e =>
       if 0 ≤ len ∧ len < 2 ^ 63 then (if len = 1 then directIfaceN n e else some false)
@@ -108,13 +111,39 @@ theorem kindOf_ne_17_25 {u : go.GoType} {k : Nat} (hk : go.kindOf u = some k)
   all_goals simp_all
 
 omit go_gctx in
+/-- `directIfaceN` and `zeroSizeN` are none at a `go.layoutModelled` type (its kind is stuck). -/
+theorem directIfaceN_layoutModelled {t : go.GoType} (n : Nat) (h : go.layoutModelled t = true) :
+    directIfaceN n t = none := by
+  cases n <;> simp [directIfaceN, h]
+
+omit go_gctx in
+theorem zeroSizeN_layoutModelled {t : go.GoType} (n : Nat) (h : go.layoutModelled t = true) :
+    zeroSizeN n t = none := by
+  cases n <;> simp [zeroSizeN, h]
+
+omit go_gctx in
+/-- A type with a `directIfaceN` (or `zeroSizeN`) is not `go.layoutModelled`. -/
+theorem notLayoutModelled_of_directIfaceN {t : go.GoType} {n : Nat} {b : Bool}
+    (h : directIfaceN n t = some b) : go.layoutModelled t = false := by
+  cases hm : go.layoutModelled t
+  · rfl
+  · rw [directIfaceN_layoutModelled n hm] at h; cases h
+
+omit go_gctx in
+theorem notLayoutModelled_of_zeroSizeN {t : go.GoType} {n : Nat} {b : Bool}
+    (h : zeroSizeN n t = some b) : go.layoutModelled t = false := by
+  cases hm : go.layoutModelled t
+  · rfl
+  · rw [zeroSizeN_layoutModelled n hm] at h; cases h
+
+omit go_gctx in
 /-- The type of a kind other than `Array` and `Struct`: `directIfaceN` is its kind's
 `directKind`, at any fuel. -/
-theorem directIfaceN_of_kind {t u : go.GoType} [t ↓u u] {k : Nat} (n : Nat)
-    (hk : go.kindOf u = some k) (h17 : k ≠ 17) (h25 : k ≠ 25) :
+theorem directIfaceN_of_kind {t u : go.GoType} [t ↓u u] [hm : go.NotLayoutModelled t] {k : Nat}
+    (n : Nat) (hk : go.kindOf u = some k) (h17 : k ≠ 17) (h25 : k ≠ 25) :
     directIfaceN (n + 1) t = some (directKind k) := by
   have hu : underlying t = u := go.is_underlying
-  simp only [directIfaceN, hu]
+  simp only [directIfaceN, hu, hm.not_layout_modelled, Bool.false_eq_true, ↓reduceIte]
   split
   · simp [go.kindOf] at hk; omega
   · simp [go.kindOf] at hk; omega
@@ -124,17 +153,20 @@ omit go_gctx in
 /-- A struct whose last field's type has a kind outside `directKind`, `Array` and `Struct` (as
 `int64`) is not direct. -/
 theorem directIfaceN_struct_last {t : go.GoType} {fs : List go.field_decl}
-    [t ↓u go.StructType fs] {f : go.field_decl} {u : go.GoType} {k : Nat} (n : Nat)
-    (hlen : fs.length < 2 ^ 63) (hlast : fs.getLast? = some f)
-    (hfu : underlying (go.fieldDeclType f) = u) (hk : go.kindOf u = some k) (h17 : k ≠ 17)
-    (h25 : k ≠ 25) (hd : directKind k = false) :
+    [t ↓u go.StructType fs] [hm : go.NotLayoutModelled t] {f : go.field_decl} {u : go.GoType}
+    {k : Nat} (n : Nat) (hlen : fs.length < 2 ^ 63) (hlast : fs.getLast? = some f)
+    (hfu : underlying (go.fieldDeclType f) = u)
+    (hfm : go.layoutModelled (go.fieldDeclType f) = false) (hk : go.kindOf u = some k)
+    (h17 : k ≠ 17) (h25 : k ≠ 25) (hd : directKind k = false) :
     directIfaceN (n + 2) t = some false := by
   have hu : underlying t = go.StructType fs := go.is_underlying
   haveI : go.fieldDeclType f ↓u u := ⟨hfu⟩
+  haveI : go.NotLayoutModelled (go.fieldDeclType f) := ⟨hfm⟩
   have hf := directIfaceN_of_kind (t := go.fieldDeclType f) n hk h17 h25
   rw [hd] at hf
   conv => lhs; unfold directIfaceN
-  simp only [hu, hlen, ite_true, hlast, hf]
+  simp only [hu, hlen, ite_true, hlast, hf, hm.not_layout_modelled, Bool.false_eq_true,
+    ↓reduceIte]
 
 end shapes
 

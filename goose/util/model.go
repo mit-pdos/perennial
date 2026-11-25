@@ -60,17 +60,58 @@ type Models struct {
 	// modelFiles are the absolute paths of all model files.
 	modelFiles map[string]bool
 	// layoutChanged are the types ("path.Name") of the models' packages
-	// whose layout under gc on linux/amd64 differs from the real
-	// declaration's (LayoutChanged).
+	// whose layout (under gc on linux/amd64, and their underlying type)
+	// differs from the real declaration's (LayoutChanged).
 	layoutChanged map[string]bool
+	// configDir is the directory of the goose configs; trusted caches, by
+	// package path, the declaration filter of its config (TrustedType).
+	configDir string
+	trusted   map[string]declfilter.DeclFilter
+}
+
+// TrustedType reports whether the config of o's package trusts the type
+// declaration o: its Lean definition, underlying type included, is a
+// trusted model (Perennial/TrustedCode), which may differ from the real
+// declaration (internal/sync.Mutex's is bool, sync.copyChecker's
+// unsafe.Pointer).
+func (m *Models) TrustedType(o *types.TypeName) bool {
+	if m == nil || m.configDir == "" || o.Pkg() == nil {
+		return false
+	}
+	path := o.Pkg().Path()
+	df, ok := m.trusted[path]
+	if !ok {
+		if config, err := ReadConfig(m.configDir, path); err == nil {
+			df = declfilter.New(config)
+		}
+		m.trusted[path] = df
+	}
+	return df != nil && df.GetAction(o.Name()) == declfilter.Trust
+}
+
+// LayoutModelled reports whether a model changes the named type o, and
+// returns its name "path.Name": a type of a model's package whose layout
+// (layout) differs from the real declaration's (or that the real package does not
+// declare), or a type whose declaration a config trusts (TrustedType).
+// unsafe.Sizeof refuses such a type (LayoutChanged), and goose emits the
+// list as the Lean predicate go.layoutModelled (LayoutModelledLean), which
+// makes it opaque to reflection.
+func (m *Models) LayoutModelled(o *types.TypeName) (string, bool) {
+	if m == nil || o.Pkg() == nil {
+		return "", false
+	}
+	name := o.Pkg().Path() + "." + o.Name()
+	return name, m.layoutChanged[name] || m.TrustedType(o)
 }
 
 // gcSizes are the sizes of gc on linux/amd64, the platform of the model.
 var gcSizes = types.SizesFor("gc", "amd64")
 
 // layout describes a type's layout under gc on linux/amd64: its size, its
-// alignment and its fields' offsets. A generic type has no layout of its
-// own: it is described by its definition.
+// alignment and its fields' offsets, and the underlying type it lays out
+// (its fields' names, types and tags, which reflection observes), except
+// for an interface type (its method set). A generic
+// type has no layout of its own: it is described by its definition.
 func layout(t *types.TypeName) string {
 	if n, ok := t.Type().(*types.Named); ok && n.TypeParams().Len() > 0 {
 		return "generic " + typeString(n.Underlying())
@@ -84,17 +125,23 @@ func layout(t *types.TypeName) string {
 		}
 		s += fmt.Sprintf(" offsets %v", gcSizes.Offsetsof(fs))
 	}
-	return s
+	if _, ok := ty.Underlying().(*types.Interface); ok {
+		// reflection does not observe an interface type's methods (TypeQuery has no
+		// numMethod row), and CheckAPI keeps its exported ones
+		return s + " interface"
+	}
+	return s + " " + typeString(ty.Underlying())
 }
 
 // LayoutChanged returns a type that t contains (t itself, a field's type
-// or an array's element type, transitively) whose layout a model changes:
-// a named type of a model's package whose size, alignment or field offsets
-// under gc on linux/amd64 differ from the real declaration's (or that the
-// real package does not declare). unsafe.Sizeof, Alignof and Offsetof of
-// such a type are not the model's layout, so goose refuses them.
+// or an array's element type, transitively) whose layout a model changes
+// (LayoutModelled): a named type of a model's package whose size,
+// alignment, field offsets under gc on linux/amd64 or underlying type
+// differ from the real declaration's (or that the real package does not
+// declare), or a type whose declaration a config trusts. unsafe.Sizeof, Alignof and Offsetof
+// of such a type are not the model's layout, so goose refuses them.
 func (m *Models) LayoutChanged(t types.Type) (string, bool) {
-	if m == nil || len(m.layoutChanged) == 0 {
+	if m == nil {
 		return "", false
 	}
 	seen := make(map[types.Type]bool)
@@ -107,8 +154,8 @@ func (m *Models) LayoutChanged(t types.Type) (string, bool) {
 		seen[t] = true
 		switch t := t.(type) {
 		case *types.Named:
-			if o := t.Obj(); o.Pkg() != nil && m.layoutChanged[o.Pkg().Path()+"."+o.Name()] {
-				return o.Pkg().Path() + "." + o.Name(), true
+			if n, ok := m.LayoutModelled(t.Obj()); ok {
+				return n, true
 			}
 			for i := range t.TypeArgs().Len() {
 				if n, ok := find(t.TypeArgs().At(i)); ok {
@@ -347,7 +394,8 @@ func (m *Models) WriteGoOverlay(opts LoadOptions, dir string) (string, error) {
 // that the model keeps the real package's API (CheckAPI).
 func BuildModels(modDir, configDir string, opts LoadOptions, patterns ...string) (*Models, error) {
 	m := &Models{Overlay: make(map[string][]byte), Packages: make(map[string]*PackageModel),
-		modelFiles: make(map[string]bool), layoutChanged: make(map[string]bool)}
+		modelFiles: make(map[string]bool), layoutChanged: make(map[string]bool),
+		configDir: configDir, trusted: make(map[string]declfilter.DeclFilter)}
 	b := &builder{modDir: modDir, configDir: configDir, opts: opts, models: m,
 		real: make(map[string]*packages.Package)}
 	for iter := 0; ; iter++ {

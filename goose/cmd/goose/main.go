@@ -107,15 +107,58 @@ func modelOverlay(args []string) {
 		strings.Join(append([]string{"goose"}, opts.Tags...), ","), out)
 }
 
+// layoutModelled is `goose layout-modelled`: it writes the Lean file of the
+// types whose layout a model changes (util.LayoutModelledNames), the
+// predicate go.layoutModelled.
+func layoutModelled(args []string) {
+	fs := flag.NewFlagSet("goose layout-modelled", flag.ExitOnError)
+	fs.Usage = func() {
+		fmt.Fprintln(fs.Output(), "Usage: goose layout-modelled [options] -o <file.lean> <go package patterns>")
+		fmt.Fprintln(fs.Output(), "Writes go.layoutModelled: the types of the models of the packages' goose "+
+			"configs whose layout the model changes, and the type declarations the configs trust.")
+		fs.PrintDefaults()
+	}
+	modDir := fs.String("dir", ".", "directory containing necessary go.mod")
+	configDir := fs.String("configdir", ".", "directory containing Goose config files")
+	out := fs.String("o", "", "the Lean file to write (required)")
+	uncovered := fs.String("uncovered", "", "comma-separated configs (relative to -configdir) "+
+		"with a model or a trusted declaration that no package of the patterns needs to have")
+	var load util.LoadFlags
+	load.Register(fs, "")
+	_ = fs.Parse(args)
+	if *out == "" || fs.NArg() == 0 {
+		fs.Usage()
+		os.Exit(2)
+	}
+	var unc []string
+	if *uncovered != "" {
+		unc = strings.Split(*uncovered, ",")
+	}
+	names, err := util.LayoutModelledNames(*modDir, *configDir, load.Options(), unc, fs.Args()...)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	if err := util.WriteFileIfChanged(*out, util.LayoutModelledLean(names), 0666); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
 // noinspection GoUnhandledErrorResult
 func main() {
 	if len(os.Args) > 1 && os.Args[1] == "model-overlay" {
 		modelOverlay(os.Args[2:])
 		return
 	}
+	if len(os.Args) > 1 && os.Args[1] == "layout-modelled" {
+		layoutModelled(os.Args[2:])
+		return
+	}
 	flag.Usage = func() {
 		fmt.Fprintln(flag.CommandLine.Output(), "Usage: goose [options] <path to go package>")
 		fmt.Fprintln(flag.CommandLine.Output(), "       goose model-overlay [options] -o <dir> <go package patterns>")
+		fmt.Fprintln(flag.CommandLine.Output(), "       goose layout-modelled [options] -o <file.lean> <go package patterns>")
 
 		flag.PrintDefaults()
 	}

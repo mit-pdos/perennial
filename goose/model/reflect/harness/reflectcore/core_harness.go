@@ -205,6 +205,9 @@ func ConvertAt(x, t any) any {
 	}
 	u := target(t, "ConvertAt")
 	from := reflect.TypeOf(x)
+	if ConvertExposed(from) || ConvertExposed(u) {
+		stuck("ConvertAt: from %v to %v: a layout a model changes", from, u)
+	}
 	if u.Kind() == reflect.Interface {
 		if from.Implements(u) {
 			return x
@@ -224,6 +227,9 @@ func FieldRefAt(p any, i int) any {
 	s := target(p, "FieldRefAt")
 	if s.Kind() != reflect.Struct {
 		stuck("FieldRefAt: %v is not a struct type", s)
+	}
+	if LayoutModelled(s) {
+		stuck("FieldRefAt: %v is layoutModelled", s)
 	}
 	pv := reflect.ValueOf(p)
 	if pv.IsNil() {
@@ -245,6 +251,9 @@ func ArraySliceAt(p any) any {
 	a := target(p, "ArraySliceAt")
 	if a.Kind() != reflect.Array {
 		stuck("ArraySliceAt: %v is not an array type", a)
+	}
+	if LayoutModelled(a) {
+		stuck("ArraySliceAt: %v is layoutModelled", a)
 	}
 	pv := reflect.ValueOf(p)
 	if pv.IsNil() {
@@ -270,6 +279,9 @@ func EqNilAt(x any) bool {
 	if !nilable(reflect.TypeOf(x).Kind()) {
 		stuck("EqNilAt: no nil of %v", reflect.TypeOf(x))
 	}
+	if LayoutModelled(reflect.TypeOf(x)) {
+		stuck("EqNilAt: %v is layoutModelled", reflect.TypeOf(x))
+	}
 	return reflect.ValueOf(x).IsNil()
 }
 
@@ -278,6 +290,9 @@ func EqNilAt(x any) bool {
 func PointerOfAt(x any) unsafe.Pointer {
 	if x == nil {
 		stuck("PointerOfAt: x is the nil interface")
+	}
+	if LayoutModelled(reflect.TypeOf(x)) {
+		stuck("PointerOfAt: %v is layoutModelled", reflect.TypeOf(x))
 	}
 	switch reflect.TypeOf(x).Kind() {
 	case reflect.Pointer, reflect.UnsafePointer, reflect.Map, reflect.Chan, reflect.Slice:
@@ -359,12 +374,16 @@ func NumTypeArgs(t reflect.Type) int {
 }
 
 // TypeQuery is TypeQuery q on (t, i): the fact q about the type T of a token or pointer-any t.
-// Stuck where typeQuery is none: a row of NoneInS0, a row that does not apply to T's kind, an
-// index out of range.
+// Stuck where typeQuery is none: a row of NoneInS0, a row other than identByName on a
+// LayoutModelled type, a row that does not apply to T's kind, an index out of range, arrayOf of a
+// type that ReachesLayoutModelled.
 func TypeQuery(q TypeQ, t any, i int) any {
 	T := target(t, "TypeQuery "+q.String())
 	if NoneInS0[q] {
 		stuck("TypeQuery %v: none in S0", q)
+	}
+	if q != QIdentByName && LayoutModelled(T) {
+		stuck("TypeQuery %v: %v is layoutModelled", q, T)
 	}
 	k := T.Kind()
 	no := func() {
@@ -430,7 +449,8 @@ func TypeQuery(q TypeQ, t any, i int) any {
 		}
 	case QArrayOf:
 		// i ≤ 1, or T plain and i·size(T) < 2^64
-		if 0 <= i && (i <= 1 || IsPlain(T) && uint64(i) <= (1<<64-1)/uint64(T.Size())) {
+		if !ReachesLayoutModelled(T) && 0 <= i &&
+			(i <= 1 || IsPlain(T) && uint64(i) <= (1<<64-1)/uint64(T.Size())) {
 			return Token(reflect.ArrayOf(i, T))
 		}
 	case QUnderlying:

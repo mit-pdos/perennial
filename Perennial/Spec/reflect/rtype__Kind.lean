@@ -22,7 +22,7 @@ variable [package_sem : reflect.Assumptions]
 
 /-- `t.Kind()` of the `rtype` of a token of `*T`: `T`'s kind. -/
 abbrev reflect.rtype.Kind.spec : Prop :=
-  ∀ {T u : go.GoType} [T ↓u u] (k : Nat) (l : Loc),
+  ∀ {T u : go.GoType} [T ↓u u] [go.NotLayoutModelled T] (k : Nat) (l : Loc),
   go.kindOf u = some k →
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val ((rtype.mk (interface.mkOk (go.PointerType T) #l)) @!! rtype.ty @!! go!"Kind"))

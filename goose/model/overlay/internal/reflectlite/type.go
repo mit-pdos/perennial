@@ -137,20 +137,10 @@ func TypeOf(i any) Type {
 	if i == nil {
 		return nil
 	}
-	t := reflectcore.TokOf(i)
-	if isModelRType(t) {
-		gomodel.Stuck()
-	}
-	return toRType(t)
-}
-
-// MODEL: whether t's type has the layout of the model's rtype, this
-// package's or reflect's: a struct of one field of type any. Real's Types
-// are pointers (*rtype), the model's struct values: reflection on them is
-// not modelled.
-func isModelRType(t any) bool {
-	return Kind(reflectcore.TypeKind(t)) == abi.Struct && reflectcore.TypeNumField(t) == 1 &&
-		reflectcore.TypeFieldType(t, 0) == any((*any)(nil))
+	// MODEL: real's Type values are *rtype, the model's rtype values; the
+	// model's rtype (and reflect's) is go.layoutModelled, so reflection on it
+	// is stuck.
+	return toRType(reflectcore.TokOf(i))
 }
 
 func (t rtype) Implements(u Type) bool {

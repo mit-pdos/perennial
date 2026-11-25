@@ -32,7 +32,7 @@ theorem internal.reflectlite.Value.Set.wp_proof
     internal.reflectlite.Value.Set.spec (GF := GF) (hG := hG) := by
   haveI : go.NotInterface go.uintptr := ⟨by simp [go.uintptr]⟩
   constructor
-  · intro V _ _ T uT _ _ kT l w y xv hkT hi hn hid
+  · intro V _ _ T uT _ _ _ kT l w y xv hkT hi hn hid
     have hlt := internal.reflectlite.kindOf_lt hkT
     have h20 := internal.reflectlite.kindOf_ne_20 hkT hi
     have hk20 := internal.reflectlite.kne_20 kT hlt h20
@@ -69,7 +69,7 @@ theorem internal.reflectlite.Value.Set.wp_proof
       wp_apply wp_Store.1 l w y hi $$ [$Hl] as Hl
       iapply HΦ
       iexact Hl
-  · intro V _ _ T elems _ _ W _ _ t ut _ _ kt l w y x xv hkt hi hn hts hy
+  · intro V _ _ T elems _ _ _ W _ _ t ut _ _ _ kt l w y x xv hkt hi hn hts hy
     have hlt := internal.reflectlite.kindOf_lt hkt
     have h20 := internal.reflectlite.kindOf_ne_20 hkt hi
     have hb := internal.reflectlite.flag_bits 20 (by omega) (by omega)

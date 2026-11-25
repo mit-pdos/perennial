@@ -4,7 +4,6 @@ The proof of `reflect.TypeOf`.
 module
 
 public import Perennial.Spec.reflect.TypeOf
-public import Perennial.Spec.reflect.isModelRType
 public import Perennial.Spec.reflect.toRType
 public import Perennial.Spec.internal.reflectcore.TokOf
 
@@ -25,16 +24,14 @@ variable [package_sem : reflect.Assumptions]
 
 theorem reflect.TypeOf.wp_proof
     (wp_TokOf : internal.reflectcore.TokOf.spec (GF := GF) (hG := hG))
-    (wp_isModelRType : reflect.isModelRType.spec (GF := GF) (hG := hG))
     (wp_toRType : reflect.toRType.spec (GF := GF) (hG := hG)) :
     reflect.TypeOf.spec (GF := GF) (hG := hG) := by
   constructor
-  · intro t v ht
+  · intro t v
     wp_start as #Hinit
     wp_auto
     wp_apply wp_TokOf
     unfold go.tok
-    wp_apply wp_isModelRType t null ht
     wp_apply wp_toRType
     iapply HΦ
     itrivial

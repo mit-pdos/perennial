@@ -40,7 +40,7 @@ theorem errors.wp_As_ok
     (ii : GoInterfaceOk) (l : Loc) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T']
     {T : go.GoType} [IntoValTyped (GF := GF) T' T] (kT : Nat)
     (hkT : go.kindOf (underlying T) = some kT) (hNT : go.isUntypedNil (underlying T) = false)
-    (hT : AsTarget T) (hl : l ≠ null) (R : IProp GF) (Q : Bool → IProp GF)
+    (hLT : go.layoutModelled T = false) (hT : AsTarget T) (hl : l ≠ null) (R : IProp GF) (Q : Bool → IProp GF)
     (has : {{ isPkgInit (PROP := IProp GF) pkg_id.errors ∗ R }}
       (App (App (App (App (Val (@! errors.as')) (Val #(interface.ok ii)))
         (Val #(interface.mkOk (go.PointerType T) #l))) (Val #(errors.asTargetVal T l)))
@@ -60,7 +60,7 @@ theorem errors.wp_As_ok
       reflect.directIfaceN_of_kind (t := go.PointerType T) (u := go.PointerType T) 0 hpk
         (by omega) (by omega)
   wp_apply wp_ValueOf.1 (V := Loc) (t := go.PointerType T) (u := go.PointerType T) 22 1 true l hpk
-    (by simp [go.isInterfaceType]) (by simp [internal.reflectlite.rtypeLayoutU]) hd1 as %xv Hxv
+    (by simp [go.isInterfaceType]) hd1 as %xv Hxv
   unfold internal.reflectlite.valueOfRepr
   icases Hxv with (⟨%hd, %hxv⟩ | ⟨%q, ⟨%hd, %hxv⟩, -⟩)
   rotate_left
@@ -87,8 +87,9 @@ theorem errors.wp_As_ok
     (by show W64 ((22 : Nat) : Int) &&& W64 128 = W64 0; decide) rfl
   try simp only [hl, decide_false]
   try wp_auto
-  wp_apply wp_rtype_Elem (T := go.PointerType T) T null (by simp [go.typeQuery, go.is_underlying])
+  wp_apply wp_rtype_Elem (T := go.PointerType T) T null (by simp [go.typeQuery, go.is_underlying, go.NotLayoutModelled.not_layout_modelled])
   unfold go.tok
+  haveI : go.NotLayoutModelled T := ⟨hLT⟩
   wp_apply wp_rtype_Kind (T := T) kT null hkT
   ihave #HET := errors.errorType_of_init $$ Hinit
   cases hI : go.isInterfaceType (underlying T)
@@ -128,7 +129,8 @@ theorem errors.wp_As_ok
 /-- The kind of `T`, from the head of an `asNoMatch` of a non-`nil` error. -/
 theorem errors.asNoMatch_kind (T : go.GoType) (n : Nat) (ii : GoInterfaceOk) :
     errors.asNoMatch (GF := GF) T n (interface.ok ii) ⊢
-      ⌜(∃ k, go.kindOf (underlying T) = some k) ∧ go.isUntypedNil (underlying T) = false⌝ ∗
+      ⌜(∃ k, go.kindOf (underlying T) = some k) ∧ go.isUntypedNil (underlying T) = false ∧
+        go.layoutModelled T = false⌝ ∗
       errors.asNoMatch (GF := GF) T n (interface.ok ii) := by
   iintro H
   cases n with
@@ -138,7 +140,7 @@ theorem errors.asNoMatch_kind (T : go.GoType) (n : Nat) (ii : GoInterfaceOk) :
     rcases H.1 with h | ⟨ii3, h, -, -, hd⟩
     · cases h
     isplitr
-    · ipureintro; exact ⟨hd.2.1, hd.2.2.1⟩
+    · ipureintro; exact ⟨hd.2.1, hd.2.2.1, hd.2.2.2.1⟩
     iunfold errors.asNoMatch
     ipureintro; exact H
   | succ n =>
@@ -147,11 +149,11 @@ theorem errors.asNoMatch_kind (T : go.GoType) (n : Nat) (ii : GoInterfaceOk) :
     · rcases H.1 with h | ⟨ii3, h, -, -, hd⟩
       · cases h
       isplitr
-      · ipureintro; exact ⟨hd.2.1, hd.2.2.1⟩
+      · ipureintro; exact ⟨hd.2.1, hd.2.2.1, hd.2.2.2.1⟩
       iunfold errors.asNoMatch
       ileft; ipureintro; exact H
     · isplitr
-      · ipureintro; exact ⟨H.2.2.1.2.1, H.2.2.1.2.2.1⟩
+      · ipureintro; exact ⟨H.2.2.1.2.1, H.2.2.1.2.2.1, H.2.2.1.2.2.2.1⟩
       iunfold errors.asNoMatch
       iright; iexists ii2; iframe; ipureintro; exact H
 
@@ -178,16 +180,16 @@ theorem errors.As.wp_proof
       iframe
     | ok ii =>
       obtain ⟨hd, -⟩ := hdec ii HS
-      obtain ⟨-, ⟨kT, hkT⟩, hNT, -⟩ := hd
-      wp_apply ok ii l kT hkT hNT hT hl _ _ (wp_as.1 S ii l v hT hdec) $$ [Hl] as %b ⟨%v', Hl⟩
+      obtain ⟨-, ⟨kT, hkT⟩, hNT, hLT, -⟩ := hd
+      wp_apply ok ii l kT hkT hNT hLT hT hl _ _ (wp_as.1 S ii l v hT hdec) $$ [Hl] as %b ⟨%v', Hl⟩
       · iframe; iframe #; ipureintro; exact HS
       iapply HΦ
       iframe
   · intro ii l T' _ _ T _ v hT hdec hrep hA htyped
     iintro %Φ ⟨#Hinit, Hl⟩ HΦ
     icases typedPointsto_not_null_dup _ _ _ $$ Hl with ⟨Hl, %hl⟩
-    obtain ⟨-, ⟨kT, hkT⟩, hNT, -⟩ := id hdec
-    wp_apply ok ii l kT hkT hNT hT hl _ _ (wp_as.2.1 ii l v hT hdec hrep hA htyped) $$ [$Hl]
+    obtain ⟨-, ⟨kT, hkT⟩, hNT, hLT, -⟩ := id hdec
+    wp_apply ok ii l kT hkT hNT hLT hT hl _ _ (wp_as.2.1 ii l v hT hdec hrep hA htyped) $$ [$Hl]
       as %b ⟨%hb, %x, Hl, %hx⟩
     subst hb
     iapply HΦ
@@ -204,8 +206,8 @@ theorem errors.As.wp_proof
       iframe
     | ok ii =>
       ihave ⟨%hk, Hm⟩ := errors.asNoMatch_kind T n ii $$ Hm
-      obtain ⟨⟨kT, hkT⟩, hNT⟩ := hk
-      wp_apply ok ii l kT hkT hNT hT hl _ _ (wp_as.2.2 n ii l v hT) $$ [$Hl $Hm] as %b ⟨%hb, Hl⟩
+      obtain ⟨⟨kT, hkT⟩, hNT, hLT⟩ := hk
+      wp_apply ok ii l kT hkT hNT hLT hT hl _ _ (wp_as.2.2 n ii l v hT) $$ [$Hl $Hm] as %b ⟨%hb, Hl⟩
       subst hb
       iapply HΦ
       iframe

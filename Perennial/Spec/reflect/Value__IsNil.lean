@@ -29,13 +29,14 @@ variable [package_sem : reflect.Assumptions]
   `UnsafePointer` (the zero `Value`, of kind 0, included): Go's panic
   `&ValueError{"reflect.Value.IsNil", k}` for the kind `k`. -/
 abbrev reflect.Value.IsNil.spec : Prop :=
-  (∀ (v : Value) {t e : go.GoType} [t ↓u go.PointerType e] (l : Loc),
+  (∀ (v : Value) {t e : go.GoType} [t ↓u go.PointerType e] [go.NotLayoutModelled t] (l : Loc),
   v.flag' &&& W64 31 = W64 22 → v.flag' &&& W64 640 = W64 0 →
   v.ptr' = interface.mkOk t #l →
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (v @!! Value.ty @!! go!"IsNil")) (Val #()))
     {{ RET #(decide (l = null)); True }}) ∧
-  (∀ (v : Value) {t e : go.GoType} [t ↓u go.SliceType e] (q : Loc) (dq : DFrac) (s : GoSlice),
+  (∀ (v : Value) {t e : go.GoType} [t ↓u go.SliceType e] [go.NotLayoutModelled t] (q : Loc)
+    (dq : DFrac) (s : GoSlice),
   v.flag' &&& W64 31 = W64 23 → v.ptr' = interface.mkOk (go.PointerType t) #q →
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect ∗ q ↦{dq} s }}
       (App (Val (v @!! Value.ty @!! go!"IsNil")) (Val #()))

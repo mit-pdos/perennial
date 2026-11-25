@@ -35,6 +35,7 @@ public import Perennial.Golang.Defn.Defer
 public import Perennial.Golang.Defn.Exception
 public import Perennial.Golang.Defn.Float
 public import Perennial.Golang.Defn.Interface
+public import Perennial.Golang.Defn.LayoutModelled
 public import Perennial.Golang.Defn.Lock
 public import Perennial.Golang.Defn.Loop
 public import Perennial.Golang.Defn.Map

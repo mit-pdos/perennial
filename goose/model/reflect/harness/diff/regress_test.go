@@ -18,11 +18,11 @@ func stuck(f func()) (s bool) {
 }
 
 // TestReflectOnTypeStuck: reflect's own Type values are *rtype in Go and rtype in the model,
-// so reflection on them is stuck in the model.
+// so reflection on them is stuck in the model (rtype is go.layoutModelled).
 func TestReflectOnTypeStuck(t *testing.T) {
 	ty := rm.TypeOf(0)
 	for name, f := range map[string]func(){
-		"TypeOf(TypeOf(0))":            func() { rm.TypeOf(ty) },
+		"TypeOf(TypeOf(0)).Kind()":     func() { rm.TypeOf(ty).Kind() },
 		"ValueOf(TypeOf(0))":           func() { rm.ValueOf(ty) },
 		"ValueOf(&ty).Elem().Elem()":   func() { rm.ValueOf(&ty).Elem().Elem() },
 		"ValueOf(any(TypeOf(0))).Kind": func() { rm.ValueOf(any(ty)).Kind() },

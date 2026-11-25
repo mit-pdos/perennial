@@ -28,7 +28,8 @@ variable [package_sem : internal.reflectlite.Assumptions]
   a value `x : W` of a type `t` in `T`'s type set (`valueOfRepr`): `*l` set to the interface holding
   it (`y`), and the indirect `Value` of kind `Interface` holding `any(l)`. -/
 abbrev internal.reflectlite.Value.assignTo.spec : Prop :=
-  (∀ {T uT : go.GoType} [T ↓u uT] (kT : Nat) (xv : Value) (ctx : GoString) (target : GoInterface),
+  (∀ {T uT : go.GoType} [T ↓u uT] [go.NotLayoutModelled T] (kT : Nat) (xv : Value) (ctx : GoString)
+    (target : GoInterface),
   go.kindOf uT = some kT → kT ≠ 20 → go.identByName T = true → xv.typ_' = go.tok T →
   (xv.flag' = W64 kT ∨ xv.flag' = W64 kT ||| W64 128) →
     {{ isPkgInit (PROP := IProp GF) pkg_id.internal.reflectlite }}
@@ -36,8 +37,10 @@ abbrev internal.reflectlite.Value.assignTo.spec : Prop :=
         (Val #target))
     {{ (fl : w64), RET #(Value.mk (go.tok T) xv.ptr' fl); ⌜fl &&& W64 128 = xv.flag' &&& W64 128⌝ }}) ∧
   (∀ {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V] {T : go.GoType}
-    {elems : List go.InterfaceElem} [T ↓u go.InterfaceType elems] [IntoValTyped (GF := GF) V T]
+    {elems : List go.InterfaceElem} [T ↓u go.InterfaceType elems] [go.NotLayoutModelled T]
+    [IntoValTyped (GF := GF) V T]
     {W : Type} [ZeroVal W] [TypedPointsto (GF := GF) W] {t ut : go.GoType} [t ↓u ut]
+    [go.NotLayoutModelled t]
     [IntoValTyped (GF := GF) W t] (kt : Nat) (xv : Value) (ctx : GoString) (l : Loc) (w y : V)
     (x : W),
   go.kindOf ut = some kt → go.isInterfaceType ut = false → go.isUntypedNil ut = false →

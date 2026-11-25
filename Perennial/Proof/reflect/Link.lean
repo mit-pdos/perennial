@@ -24,7 +24,6 @@ public import Perennial.Proof.reflect.elem
 public import Perennial.Proof.reflect.flag__kind
 public import Perennial.Proof.reflect.initialize
 public import Perennial.Proof.reflect.isDirectIface
-public import Perennial.Proof.reflect.isModelRType
 public import Perennial.Proof.reflect.isZeroSize
 public import Perennial.Proof.reflect.rtype__Elem
 public import Perennial.Proof.reflect.rtype__Kind
@@ -50,14 +49,11 @@ variable [package_sem : reflect.Assumptions]
 theorem reflect.Kind.wp_String : reflect.Kind.String.spec (GF := GF) (hG := hG) :=
   reflect.Kind.String.wp_proof
 
-theorem reflect.wp_isModelRType : reflect.isModelRType.spec (GF := GF) (hG := hG) :=
-  reflect.isModelRType.wp_proof internal.reflectcore.wp_TokOf
-
 theorem reflect.wp_toRType : reflect.toRType.spec (GF := GF) (hG := hG) :=
   reflect.toRType.wp_proof
 
 theorem reflect.wp_TypeOf : reflect.TypeOf.spec (GF := GF) (hG := hG) :=
-  reflect.TypeOf.wp_proof internal.reflectcore.wp_TokOf reflect.wp_isModelRType reflect.wp_toRType
+  reflect.TypeOf.wp_proof internal.reflectcore.wp_TokOf reflect.wp_toRType
 
 theorem reflect.Value.wp_CanAddr : reflect.Value.CanAddr.spec (GF := GF) (hG := hG) :=
   reflect.Value.CanAddr.wp_proof
@@ -96,7 +92,7 @@ theorem reflect.Value.wp_Type : reflect.Value.Type.spec (GF := GF) (hG := hG) :=
   reflect.Value.Type.wp_proof reflect.wp_toRType
 
 theorem reflect.wp_unpackEface : reflect.unpackEface.spec (GF := GF) (hG := hG) :=
-  reflect.unpackEface.wp_proof internal.reflectcore.wp_TokOf reflect.wp_isModelRType internal.reflectcore.wp_TypeKind reflect.wp_isDirectIface internal.reflectcore.wp_Box
+  reflect.unpackEface.wp_proof internal.reflectcore.wp_TokOf internal.reflectcore.wp_TypeKind reflect.wp_isDirectIface internal.reflectcore.wp_Box
 
 theorem reflect.wp_ValueOf : reflect.ValueOf.spec (GF := GF) (hG := hG) :=
   reflect.ValueOf.wp_proof reflect.wp_unpackEface

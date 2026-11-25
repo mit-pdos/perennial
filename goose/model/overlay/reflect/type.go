@@ -16,7 +16,6 @@
 package reflect
 
 import (
-	"internal/gomodel"
 	"internal/reflectcore"
 	"iter"
 	"strconv"
@@ -423,18 +422,9 @@ func TypeOf(i any) Type {
 	if i == nil {
 		return nil
 	}
-	t := reflectcore.TokOf(i)
-	if isModelRType(t) {
-		gomodel.Stuck()
-	}
-	return toRType(t)
-}
-
-// MODEL: whether t is the token of the model's rtype. Real's Type values
-// are *rtype, the model's are rtype values: reflection on them is not
-// modelled.
-func isModelRType(t any) bool {
-	return t == reflectcore.TokOf(rtype{})
+	// MODEL: real's Type values are *rtype, the model's rtype values; the
+	// model's rtype is go.layoutModelled, so reflection on it is stuck.
+	return toRType(reflectcore.TokOf(i))
 }
 
 func stringFor(t any) string {

@@ -23,7 +23,7 @@ variable [package_sem : internal.reflectlite.Assumptions]
 /-- `v.IsNil()` of a direct `Value` of kind `Pointer` (22) holding a pointer `l`: whether `l` is
 nil. -/
 abbrev internal.reflectlite.Value.IsNil.spec : Prop :=
-  ∀ (v : Value) {t e : go.GoType} [t ↓u go.PointerType e] (l : Loc),
+  ∀ (v : Value) {t e : go.GoType} [t ↓u go.PointerType e] [go.NotLayoutModelled t] (l : Loc),
   v.flag' &&& W64 31 = W64 22 → v.flag' &&& W64 128 = W64 0 →
   v.ptr' = interface.mkOk t #l →
     {{ isPkgInit (PROP := IProp GF) pkg_id.internal.reflectlite }}

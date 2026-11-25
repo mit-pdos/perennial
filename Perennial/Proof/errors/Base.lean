@@ -71,23 +71,23 @@ def AsDecidedTy [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoT
 
 /-- The model's reflection on an error of dynamic type `t` (`reflectlite.TypeOf`/`ValueOf`,
 `goose/model/overlay/internal/reflectlite`) is defined: `t` is not an interface type (Go's
-typing: no value has an interface type as its dynamic type) nor untyped nil, has a kind, does not
-have the layout of the model's `rtype` (a struct of one field of type `any`, on which the model is
-stuck), and its `isDirectIface` is defined (`directIfaceN`; for a kind other than array and
-struct, at any fuel `n > 0`). -/
+typing: no value has an interface type as its dynamic type) nor untyped nil, has a kind, is not
+a type whose layout a model changes (`go.layoutModelled`: reflection on it is stuck), and its
+`isDirectIface` is defined (`directIfaceN`; for a kind other than array and struct, at any fuel
+`n > 0`). -/
 def asModelled [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (t : go.GoType) : Prop :=
   go.isInterfaceType (underlying t) = false ∧ go.isUntypedNil (underlying t) = false ∧
   (∃ k, go.kindOf (underlying t) = some k) ∧
-  internal.reflectlite.rtypeLayoutU (underlying t) = false ∧
+  go.layoutModelled t = false ∧
   ∃ n b, reflect.directIfaceN n t = some b
 
 /-- The model of `As` decides whether `ii` is assignable to `T` (`AsDecidedTy`), and its
-reflection on `ii` and on `T` is defined: `asModelled ii.ty`, and `T` has a kind and is not
-untyped nil. -/
+reflection on `ii` and on `T` is defined: `asModelled ii.ty`, and `T` has a kind, is not
+untyped nil and is not a type whose layout a model changes (`go.layoutModelled`). -/
 def AsDecided [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType)
     (ii : GoInterfaceOk) : Prop :=
   asModelled ii.ty ∧ (∃ k, go.kindOf (underlying T) = some k) ∧
-    go.isUntypedNil (underlying T) = false ∧ AsDecidedTy T ii
+    go.isUntypedNil (underlying T) = false ∧ go.layoutModelled T = false ∧ AsDecidedTy T ii
 
 /-- A kind outside struct, channel and function (`undecidedKind`) of a non-interface type is
 another one than `Chan` (18), `Func` (19), `Interface` (20) and `Struct` (25). -/
@@ -118,13 +118,15 @@ theorem asDecided_da [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] {T : g
     · right; right; exact ⟨Ne.symm hu, kindOf_decided hkT hk hI⟩
     · right; left; intro he; subst he; exact hk (by rw [hki, hkT])
 
-/-- An interface target type has a kind (`Interface`) and is not untyped nil (`AsDecided`'s
-facts of `T`). -/
+/-- An interface target type that no model changes has a kind (`Interface`), is not untyped nil
+and is not `go.layoutModelled` (`AsDecided`'s facts of `T`). -/
 theorem asTargetKind_interface [GooseExts] [GoGlobalContext] [GoSemanticsFunctions]
-    {T : go.GoType} (h : go.isInterfaceType (underlying T) = true) :
-    (∃ k, go.kindOf (underlying T) = some k) ∧ go.isUntypedNil (underlying T) = false := by
-  revert h
-  cases underlying T <;> simp [go.isInterfaceType, go.kindOf, go.isUntypedNil]
+    {T : go.GoType} (h : go.isInterfaceType (underlying T) = true)
+    (hm : go.layoutModelled T = false) :
+    (∃ k, go.kindOf (underlying T) = some k) ∧ go.isUntypedNil (underlying T) = false ∧
+      go.layoutModelled T = false := by
+  refine ⟨?_, ?_, hm⟩ <;> revert h <;>
+    cases underlying T <;> simp [go.isInterfaceType, go.kindOf, go.isUntypedNil]
 
 /-- A non-nil target that Go's `err == target` compares, without panicking, with the errors of the
 tree `S`: its dynamic type's `==` is defined (`CheckComparable` steps) and is the equality of the
@@ -439,17 +441,19 @@ theorem asModelled_pointer (X : go.GoType) :
   have hu : underlying (go.PointerType X) = go.PointerType X := go.is_underlying
   have hk : go.kindOf (underlying (go.PointerType X)) = some 22 := by simp [hu, go.kindOf]
   refine ⟨by simp [hu, go.isInterfaceType], by simp [hu, go.isUntypedNil], ⟨22, hk⟩,
-    by simp [hu, internal.reflectlite.rtypeLayoutU], 1, true, ?_⟩
+    rfl, 1, true, ?_⟩
   exact reflect.directIfaceN_of_kind (u := go.PointerType X) (k := 22) 0 (by simp [go.kindOf]) (by omega)
     (by omega)
 
-/-- A pointer target type has a kind (`Pointer`) and is not untyped nil. -/
+/-- A pointer target type has a kind (`Pointer`), is not untyped nil and is not
+`go.layoutModelled`. -/
 theorem asTargetKind_pointer (X : go.GoType) :
     (∃ k, go.kindOf (underlying (go.PointerType X)) = some k) ∧
-      go.isUntypedNil (underlying (go.PointerType X)) = false := by
+      go.isUntypedNil (underlying (go.PointerType X)) = false ∧
+      go.layoutModelled (go.PointerType X) = false := by
   have hu : underlying (go.PointerType X) = go.PointerType X := go.is_underlying
   rw [hu]
-  exact ⟨⟨22, by simp [go.kindOf]⟩, by simp [go.isUntypedNil]⟩
+  exact ⟨⟨22, by simp [go.kindOf]⟩, by simp [go.isUntypedNil], rfl⟩
 
 /-- A pointer error is represented by `Loc`. -/
 theorem asRepr_pointer (T : go.GoType) (ii : GoInterfaceOk) (h : IsPointerError ii) :

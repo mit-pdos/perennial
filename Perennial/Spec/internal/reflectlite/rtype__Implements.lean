@@ -24,8 +24,9 @@ variable [package_sem : internal.reflectlite.Assumptions]
 type `W`) and the `Type` of an interface type `U`: whether `t` is in `U`'s type set. -/
 abbrev internal.reflectlite.rtype.Implements.spec : Prop :=
   ∀ {U : go.GoType} {elems : List go.InterfaceElem} [U ↓u go.InterfaceType elems]
+    [go.NotLayoutModelled U]
     {W : Type} [ZeroVal W] [TypedPointsto (GF := GF) W] {t ut : go.GoType} [t ↓u ut]
-    [IntoValTyped (GF := GF) W t] (kt : Nat),
+    [go.NotLayoutModelled t] [IntoValTyped (GF := GF) W t] (kt : Nat),
   go.kindOf ut = some kt → go.isInterfaceType ut = false → go.isUntypedNil ut = false →
     {{ isPkgInit (PROP := IProp GF) pkg_id.internal.reflectlite }}
       (App (Val ((rtype.mk (go.tok t)) @!! rtype.ty @!! go!"Implements"))

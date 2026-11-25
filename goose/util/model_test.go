@@ -415,12 +415,15 @@ func TestModelRefusals(t *testing.T) {
 	}
 }
 
-// TestModelLayoutChanged: the types whose gc layout a model changes, and
-// the types that contain one (not through a pointer).
+// TestModelLayoutChanged: the types whose layout a model changes (size,
+// offsets, or the fields' names and types, which reflection observes), the
+// types whose declaration the config trusts, and the types that contain
+// one (not through a pointer).
 func TestModelLayoutChanged(t *testing.T) {
-	root := modelModule(t, "package p\n\ntype T struct{ A, b int64 }\n\ntype U struct{ A int64; b int32 }\n",
-		"package p\n\ntype T struct{ A int64 }\n\ntype U struct{ A int64; c int32 }\n",
-		"[model]\ndir = \"model\"\nreplaces = [\"T\", \"U\"]\n", nil)
+	root := modelModule(t, "package p\n\ntype T struct{ A, b int64 }\n\ntype U struct{ A int64; b int32 }\n\n"+
+		"type V struct{ A int64 }\n\ntype W uintptr\n",
+		"package p\n\ntype T struct{ A int64 }\n\ntype U struct{ A int64; c int32 }\n\ntype V struct{ A int64 }\n",
+		"translate = [\"T\", \"U\", \"V\"]\ntrusted = [\"W\"]\n\n[model]\ndir = \"model\"\nreplaces = [\"T\", \"U\", \"V\"]\n", nil)
 	models, err := buildModels(root, "./p")
 	if err != nil {
 		t.Fatal(err)
@@ -429,7 +432,7 @@ func TestModelLayoutChanged(t *testing.T) {
 	named := func(n string) types.Type {
 		return types.NewNamed(types.NewTypeName(0, pkg, n, nil), types.NewStruct(nil, nil), nil)
 	}
-	tt, ut := named("T"), named("U")
+	tt, ut, vt, wt := named("T"), named("U"), named("V"), named("W")
 	field := func(ty types.Type) types.Type {
 		return types.NewStruct([]*types.Var{types.NewField(0, nil, "x", ty, false)}, nil)
 	}
@@ -437,11 +440,34 @@ func TestModelLayoutChanged(t *testing.T) {
 		ty   types.Type
 		want bool
 	}{
-		{tt, true}, {ut, false}, {types.NewArray(tt, 2), true}, {field(types.NewArray(tt, 1)), true},
-		{field(types.NewPointer(tt)), false}, {field(ut), false},
+		{tt, true}, {ut, true}, {vt, false}, {wt, true}, {types.NewArray(tt, 2), true},
+		{field(types.NewArray(tt, 1)), true}, {field(types.NewPointer(tt)), false}, {field(vt), false},
+		{field(wt), true},
 	} {
 		if _, got := models.LayoutChanged(c.ty); got != c.want {
 			t.Errorf("LayoutChanged(%v) = %v, want %v", c.ty, got, c.want)
 		}
+	}
+	cfg := filepath.Join(root, "cfg")
+	opts := LoadOptions{ModelRoot: root}
+	names, err := LayoutModelledNames(root, cfg, opts, nil, "./p")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := strings.Join(names, " "), "m/p.T m/p.U m/p.W"; got != want {
+		t.Errorf("LayoutModelledNames = %q, want %q", got, want)
+	}
+	if lean := string(LayoutModelledLean(names)); !strings.Contains(lean,
+		"go!\"m/p.T\",\n  go!\"m/p.U\",\n  go!\"m/p.W\"\n]") {
+		t.Errorf("LayoutModelledLean:\n%s", lean)
+	}
+	// a config with a trusted declaration that no package of the patterns has
+	writeTree(t, root, map[string]string{"cfg/m/q.toml": "trusted = [\"F\"]\n"})
+	if _, err := LayoutModelledNames(root, cfg, opts, nil, "./p"); err == nil ||
+		!strings.Contains(err.Error(), "q.toml") {
+		t.Errorf("LayoutModelledNames with an uncovered config: error %v", err)
+	}
+	if _, err := LayoutModelledNames(root, cfg, opts, []string{"m/q.toml"}, "./p"); err != nil {
+		t.Errorf("LayoutModelledNames with m/q.toml uncovered: %v", err)
 	}
 }

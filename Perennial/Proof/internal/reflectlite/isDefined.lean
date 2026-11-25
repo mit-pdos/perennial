@@ -29,7 +29,7 @@ theorem internal.reflectlite.isDefined.wp_proof
     (wp_TypeKind : internal.reflectcore.TypeKind.spec (GF := GF) (hG := hG))
     (wp_TypeElem : internal.reflectcore.TypeElem.spec (GF := GF) (hG := hG))
     (wp_PtrTok : internal.reflectcore.PtrTok.spec (GF := GF) (hG := hG)) :
-    internal.reflectlite.isDefined.spec (GF := GF) (hG := hG) := @fun T u _ k hk => by
+    internal.reflectlite.isDefined.spec (GF := GF) (hG := hG) := @fun T u _ _ k hk => by
   have hU : GoSemanticsFunctions.underlying T = u := go.is_underlying
   have hptr : ∀ X, T = go.PointerType X → u = go.PointerType X := by
     intro X hTX
@@ -58,7 +58,7 @@ theorem internal.reflectlite.isDefined.wp_proof
     · subst h22
       obtain ⟨e, rfl⟩ := internal.reflectlite.kindOf_22 hk rfl
       wp_auto
-      wp_apply wp_TypeElem T null #(go.tok e) (by simp [go.typeQuery, hU])
+      wp_apply wp_TypeElem T null #(go.tok e) (by simp [go.typeQuery, hU, go.NotLayoutModelled.not_layout_modelled])
       unfold go.tok
       wp_apply wp_PtrTok e #null
       try unfold go.tok

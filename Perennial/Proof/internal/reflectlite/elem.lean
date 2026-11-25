@@ -26,6 +26,8 @@ theorem internal.reflectlite.elem.wp_proof
     (wp_TypeKind : internal.reflectcore.TypeKind.spec (GF := GF) (hG := hG))
     (wp_TypeElem : internal.reflectcore.TypeElem.spec (GF := GF) (hG := hG)) :
     internal.reflectlite.elem.spec (GF := GF) (hG := hG) := @fun T u hu e l h => by
+  have hm := go.notLayoutModelled_of_typeQuery h (by decide)
+  haveI : go.NotLayoutModelled T := ⟨hm⟩
   obtain ⟨k, hk, hk'⟩ : ∃ k, go.kindOf u = some k ∧
       (k = 17 ∨ k = 18 ∨ k = 21 ∨ k = 22 ∨ k = 23) := by
     have hu' := hu.is_underlying

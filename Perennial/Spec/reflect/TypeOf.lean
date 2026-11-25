@@ -20,11 +20,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : reflect.Assumptions]
 
-/-- `TypeOf(i)`: for `i` holding a value of type `t` (not the model's `rtype`, whose reflection
-is not modelled), the `Type` holding `t`'s token; for nil, the nil `Type`. -/
+/-- `TypeOf(i)`: for `i` holding a value of type `t`, the `Type` holding `t`'s token (for the
+model's own `rtype`, whose reflection is not modelled, too: it is `go.layoutModelled`, so the
+`Type`'s methods are stuck); for nil, the nil `Type`. -/
 abbrev reflect.TypeOf.spec : Prop :=
   (∀ (t : go.GoType) (v : val),
-  t ≠ rtype.ty →
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (@! TypeOf)) (Val #(interface.mkOk t v)))
     {{ RET #(interface.mkOk rtype.ty #(rtype.mk (go.tok t))); True }}) ∧

@@ -23,23 +23,25 @@ variable [package_sem : internal.reflectcore.Assumptions]
 /-- `EqNilAt(x)`: `x == nil` at `x`'s dynamic type, a pointer, slice, map, channel or function
 type. -/
 abbrev internal.reflectcore.EqNilAt.spec : Prop :=
-  (∀ {t e : go.GoType} [t ↓u go.PointerType e] (l : Loc),
+  (∀ {t e : go.GoType} [t ↓u go.PointerType e] [go.NotLayoutModelled t] (l : Loc),
     {{ isPkgInit (PROP := IProp GF) pkg_id.internal.reflectcore }}
       (App (Val (@! EqNilAt)) (Val #(interface.mkOk t #l)))
     {{ RET #(decide (l = null)); True }}) ∧
-  (∀ {t e : go.GoType} [t ↓u go.SliceType e] (s : GoSlice),
+  (∀ {t e : go.GoType} [t ↓u go.SliceType e] [go.NotLayoutModelled t] (s : GoSlice),
     {{ isPkgInit (PROP := IProp GF) pkg_id.internal.reflectcore }}
       (App (Val (@! EqNilAt)) (Val #(interface.mkOk t #s)))
     {{ RET #(decide (s = slice.nil)); True }}) ∧
-  (∀ {t k v : go.GoType} [t ↓u go.MapType k v] (m : GoMap),
+  (∀ {t k v : go.GoType} [t ↓u go.MapType k v] [go.NotLayoutModelled t] (m : GoMap),
     {{ isPkgInit (PROP := IProp GF) pkg_id.internal.reflectcore }}
       (App (Val (@! EqNilAt)) (Val #(interface.mkOk t #m)))
     {{ RET #(decide (m = map.nil)); True }}) ∧
-  (∀ {t e : go.GoType} {d : go.ChanDir} [t ↓u go.ChannelType d e] (c : GoChan),
+  (∀ {t e : go.GoType} {d : go.ChanDir} [t ↓u go.ChannelType d e] [go.NotLayoutModelled t]
+    (c : GoChan),
     {{ isPkgInit (PROP := IProp GF) pkg_id.internal.reflectcore }}
       (App (Val (@! EqNilAt)) (Val #(interface.mkOk t #c)))
     {{ RET #(decide (c = null)); True }}) ∧
-  (∀ {t : go.GoType} {sig : go.signature} [t ↓u go.FunctionType sig] (f : GoFunc),
+  (∀ {t : go.GoType} {sig : go.signature} [t ↓u go.FunctionType sig] [go.NotLayoutModelled t]
+    (f : GoFunc),
     {{ isPkgInit (PROP := IProp GF) pkg_id.internal.reflectcore }}
       (App (Val (@! EqNilAt)) (Val #(interface.mkOk t #f)))
     {{ RET #(decide (f = func.nil)); True }})

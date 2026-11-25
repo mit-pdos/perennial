@@ -23,12 +23,14 @@ variable [package_sem : internal.reflectcore.Assumptions]
 theorem internal.reflectcore.ConvertAt.wp_proof :
     internal.reflectcore.ConvertAt.spec (GF := GF) (hG := hG) := by
   constructor
-  · intro t u uu _ X Y x y _ l hu hn
+  · intro t u uu _ X Y x y _ l hu hn het heu
+    haveI := go.convert_at_step (t := t) (u := u) #x l het heu
     wp_start
     repeat (first | wp_auto | simp only [go.is_underlying, hu, hn, Bool.false_eq_true, ↓reduceIte])
     iapply HΦ
     itrivial
-  · intro t u uu _ v l hu himpl
+  · intro t u uu _ v l hu himpl het heu
+    haveI := go.convert_at_step (t := t) (u := u) v l het heu
     wp_start
     repeat (first | wp_auto | simp only [go.is_underlying, hu, himpl, ↓reduceIte])
     iapply HΦ

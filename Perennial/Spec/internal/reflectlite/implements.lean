@@ -25,14 +25,15 @@ variable [package_sem : internal.reflectlite.Assumptions]
 * for an interface type `T` and the token of a non-interface type `V` (of a kind; represented by a
   Lean type `W`), whether `V` is in `T`'s type set. -/
 abbrev internal.reflectlite.implements.spec : Prop :=
-  (∀ {T uT : go.GoType} [T ↓u uT] (kT : Nat) (v : GoInterface),
+  (∀ {T uT : go.GoType} [T ↓u uT] [go.NotLayoutModelled T] (kT : Nat) (v : GoInterface),
   go.kindOf uT = some kT → kT ≠ 20 →
     {{ isPkgInit (PROP := IProp GF) pkg_id.internal.reflectlite }}
       (App (App (Val (@! implements)) (Val #(go.tok T))) (Val #v))
     {{ RET #false; True }}) ∧
   (∀ {T : go.GoType} {elems : List go.InterfaceElem} [T ↓u go.InterfaceType elems]
+    [go.NotLayoutModelled T]
     {W : Type} [ZeroVal W] [TypedPointsto (GF := GF) W] {V uV : go.GoType} [V ↓u uV]
-    [IntoValTyped (GF := GF) W V] (kV : Nat),
+    [go.NotLayoutModelled V] [IntoValTyped (GF := GF) W V] (kV : Nat),
   go.kindOf uV = some kV → go.isInterfaceType uV = false → go.isUntypedNil uV = false →
     {{ isPkgInit (PROP := IProp GF) pkg_id.internal.reflectlite }}
       (App (App (Val (@! implements)) (Val #(go.tok T))) (Val #(go.tok V)))

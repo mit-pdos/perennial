@@ -39,7 +39,9 @@ theorem reflect.isDirectIface.wp_proof
   | zero => intro T l b h; simp [reflect.directIfaceN] at h
   | succ n IH =>
     intro T l b h
-    simp only [reflect.directIfaceN] at h
+    have hm : go.layoutModelled T = false := reflect.notLayoutModelled_of_directIfaceN h
+    haveI : go.NotLayoutModelled T := ⟨hm⟩
+    simp only [reflect.directIfaceN, hm, Bool.false_eq_true, ↓reduceIte] at h
     split at h
     · rename_i len e hu
       haveI : T ↓u go.ArrayType len e := ⟨hu⟩
@@ -51,13 +53,13 @@ theorem reflect.isDirectIface.wp_proof
       wp_start as #Hinit
       wp_auto
       wp_apply wp_TypeKind 17 l (by simp [go.kindOf])
-      wp_apply wp_TypeLen T l #(W64 len) (by simp [go.typeQuery, hu])
+      wp_apply wp_TypeLen T l #(W64 len) (by simp [go.typeQuery, hm, hu])
       by_cases h1 : len = 1
       · subst h1
         simp only [ite_true] at h
         rw [decide_eq_true rfl]
         wp_auto
-        wp_apply wp_TypeElem T l #(go.tok e) (by simp [go.typeQuery, hu])
+        wp_apply wp_TypeElem T l #(go.tok e) (by simp [go.typeQuery, hm, hu])
         unfold go.tok
         wp_apply IH e null b h
         iapply HΦ
@@ -85,7 +87,7 @@ theorem reflect.isDirectIface.wp_proof
       wp_start as #Hinit
       wp_auto
       wp_apply wp_TypeKind 25 l (by simp [go.kindOf])
-      wp_apply wp_TypeNumField T l #(W64 fs.length) (by simp [go.typeQuery, hu])
+      wp_apply wp_TypeNumField T l #(W64 fs.length) (by simp [go.typeQuery, hm, hu])
       cases hlast : fs.getLast? with
       | none =>
         simp only [hlast, Option.some.injEq] at h
@@ -109,7 +111,7 @@ theorem reflect.isDirectIface.wp_proof
         have hq : go.typeQuery .fieldType T (sint.Z (W64 (fs.length : Int) - W64 1)) =
             some #(go.tok (go.fieldDeclType f)) := by
           rw [List.getLast?_eq_getElem?] at hlast
-          simp only [go.typeQuery, hu, hm1, go.listAt]
+          simp only [go.typeQuery, hm, hu, hm1, go.listAt, Bool.false_eq_true, false_and, ↓reduceIte]
           rw [ite_eq_left_of_eq_true _ _ (eq_true (by omega)), show ((fs.length : Int) - 1).toNat = fs.length - 1 by omega, hlast]
           rfl
         wp_apply wp_TypeFieldType T l (W64 (fs.length : Int) - W64 1) #(go.tok (go.fieldDeclType f)) hq
@@ -147,7 +149,7 @@ theorem reflect.isDirectIface.wp_proof
                 · exact Hg_lookup
                 · cases Hg_lookup
               wp_apply wp_TypeFieldType T l i #(go.tok (go.fieldDeclType g))
-                (by simp [go.typeQuery, hu, go.listAt, Hi.1, hg])
+                (by simp [go.typeQuery, hm, hu, go.listAt, Hi.1, hg])
               unfold go.tok
               have hdrop : (fs.dropLast.map fun f => zeroSizeN n (go.fieldDeclType f)).drop
                     (sint.nat i) =

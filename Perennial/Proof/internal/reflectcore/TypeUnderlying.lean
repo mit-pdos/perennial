@@ -21,10 +21,10 @@ variable [sem : go.Semantics]
 variable [package_sem : internal.reflectcore.Assumptions]
 
 theorem internal.reflectcore.TypeUnderlying.wp_proof :
-    internal.reflectcore.TypeUnderlying.spec (GF := GF) (hG := hG) := fun T l => by
+    internal.reflectcore.TypeUnderlying.spec (GF := GF) (hG := hG) := fun T hm l => by
   wp_start
   wp_apply wp_TypeQuery .underlying T l (W64 0) #(go.tok (underlying T))
-    (by unfold go.typeQuery; split <;> simp_all)
+    (by unfold go.typeQuery; rw [hm.not_layout_modelled]; split <;> simp_all)
   iapply HΦ
   itrivial
 

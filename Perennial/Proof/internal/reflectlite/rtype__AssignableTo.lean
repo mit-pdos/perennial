@@ -27,7 +27,7 @@ theorem internal.reflectlite.rtype.AssignableTo.wp_proof
     (wp_implements : internal.reflectlite.implements.spec (GF := GF) (hG := hG)) :
     internal.reflectlite.rtype.AssignableTo.spec (GF := GF) (hG := hG) := by
   constructor
-  · intro T V uT uV _ _ kT kV hkT hkV h20 hid hne
+  · intro T V uT uV _ _ _ _ kT kV hkT hkV h20 hid hne
     wp_start as #Hinit
     try wp_auto
     wp_meths
@@ -42,7 +42,7 @@ theorem internal.reflectlite.rtype.AssignableTo.wp_proof
       wp_apply wp_implements.1 (T := T) kT (go.tok V) hkT h20
       iapply HΦ
       itrivial
-  · intro T elems _ W _ _ V uV _ _ kV hkV hi hn
+  · intro T elems _ _ W _ _ V uV _ _ _ kV hkV hi hn
     have hUT : GoSemanticsFunctions.underlying T = go.InterfaceType elems := go.is_underlying
     have hUV : GoSemanticsFunctions.underlying V = uV := go.is_underlying
     have hkT : go.kindOf (go.InterfaceType elems) = some 20 := internal.reflectlite.kindOf_interface

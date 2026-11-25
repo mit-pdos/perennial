@@ -26,7 +26,7 @@ theorem internal.reflectlite.rtype.Implements.wp_proof
     (wp_rtype_Kind : internal.reflectlite.rtype.Kind.spec (GF := GF) (hG := hG))
     (wp_implements : internal.reflectlite.implements.spec (GF := GF) (hG := hG)) :
     internal.reflectlite.rtype.Implements.spec (GF := GF) (hG := hG) :=
-    @fun U elems _ W _ _ t ut _ _ kt hkt hi hn => by
+    @fun U elems _ _ W _ _ t ut _ _ _ kt hkt hi hn => by
   wp_start as #Hinit
   try wp_auto
   unfold go.tok

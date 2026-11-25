@@ -37,7 +37,7 @@ theorem internal.reflectlite.Value.assignTo.wp_proof
     internal.reflectlite.Value.assignTo.spec (GF := GF) (hG := hG) := by
   haveI : go.NotInterface go.uintptr := ⟨by simp [go.uintptr]⟩
   constructor
-  · intro T uT _ kT xv ctx target hkT h20 hid htyp hf
+  · intro T uT _ _ kT xv ctx target hkT h20 hid htyp hf
     wp_start as #Hinit
     try wp_auto
     wp_meths
@@ -62,7 +62,7 @@ theorem internal.reflectlite.Value.assignTo.wp_proof
     rcases hf with hf | hf
     · rw [hf]; exact (internal.reflectlite.assign_flag_bits kT hlt).1
     · rw [hf]; exact (internal.reflectlite.assign_flag_bits kT hlt).2
-  · intro V _ _ T elems _ _ W _ _ t ut _ _ kt xv ctx l w y x hkt hi hn hts hy
+  · intro V _ _ T elems _ _ _ W _ _ t ut _ _ _ kt xv ctx l w y x hkt hi hn hts hy
     have hUT : GoSemanticsFunctions.underlying T = go.InterfaceType elems := go.is_underlying
     have hUt : GoSemanticsFunctions.underlying t = ut := go.is_underlying
     have hTt : T ≠ t := by

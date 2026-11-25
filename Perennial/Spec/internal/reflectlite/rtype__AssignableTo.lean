@@ -26,7 +26,8 @@ decides it:
 * for an interface type `T` and a non-interface `V` (of a kind; represented by a Lean type `W`):
   whether `V` is in `T`'s type set. -/
 abbrev internal.reflectlite.rtype.AssignableTo.spec : Prop :=
-  (∀ {T V uT uV : go.GoType} [T ↓u uT] [V ↓u uV] (kT kV : Nat),
+  (∀ {T V uT uV : go.GoType} [T ↓u uT] [V ↓u uV] [go.NotLayoutModelled T] [go.NotLayoutModelled V]
+    (kT kV : Nat),
   go.kindOf uT = some kT → go.kindOf uV = some kV → kT ≠ 20 →
   (T = V → go.identByName T = true) →
   (T ≠ V → (internal.reflectlite.isDefinedT T && internal.reflectlite.isDefinedT V) = true ∨
@@ -36,8 +37,9 @@ abbrev internal.reflectlite.rtype.AssignableTo.spec : Prop :=
         (Val #(interface.mkOk rtype.ty #(rtype.mk (go.tok T)))))
     {{ RET #(decide (T = V)); True }}) ∧
   (∀ {T : go.GoType} {elems : List go.InterfaceElem} [T ↓u go.InterfaceType elems]
+    [go.NotLayoutModelled T]
     {W : Type} [ZeroVal W] [TypedPointsto (GF := GF) W] {V uV : go.GoType} [V ↓u uV]
-    [IntoValTyped (GF := GF) W V] (kV : Nat),
+    [go.NotLayoutModelled V] [IntoValTyped (GF := GF) W V] (kV : Nat),
   go.kindOf uV = some kV → go.isInterfaceType uV = false → go.isUntypedNil uV = false →
     {{ isPkgInit (PROP := IProp GF) pkg_id.internal.reflectlite }}
       (App (Val ((rtype.mk (go.tok V)) @!! rtype.ty @!! go!"AssignableTo"))

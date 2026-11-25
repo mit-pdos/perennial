@@ -23,7 +23,6 @@ public import Perennial.Proof.internal.reflectlite.implements
 public import Perennial.Proof.internal.reflectlite.initialize
 public import Perennial.Proof.internal.reflectlite.isDefined
 public import Perennial.Proof.internal.reflectlite.isDirectIface
-public import Perennial.Proof.internal.reflectlite.isModelRType
 public import Perennial.Proof.internal.reflectlite.isZeroSize
 public import Perennial.Proof.internal.reflectlite.packEface
 public import Perennial.Proof.internal.reflectlite.rtype__AssignableTo
@@ -49,14 +48,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : internal.reflectlite.Assumptions]
 
-theorem internal.reflectlite.wp_isModelRType : internal.reflectlite.isModelRType.spec (GF := GF) (hG := hG) :=
-  internal.reflectlite.isModelRType.wp_proof internal.reflectcore.wp_TypeKind internal.reflectcore.wp_TypeNumField internal.reflectcore.wp_TypeFieldType
-
 theorem internal.reflectlite.wp_toRType : internal.reflectlite.toRType.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.toRType.wp_proof
 
 theorem internal.reflectlite.wp_TypeOf : internal.reflectlite.TypeOf.spec (GF := GF) (hG := hG) :=
-  internal.reflectlite.TypeOf.wp_proof internal.reflectcore.wp_TokOf internal.reflectlite.wp_isModelRType internal.reflectlite.wp_toRType
+  internal.reflectlite.TypeOf.wp_proof internal.reflectcore.wp_TokOf internal.reflectlite.wp_toRType
 
 theorem internal.reflectlite.flag.wp_kind : internal.reflectlite.flag.kind.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.flag.kind.wp_proof
@@ -101,7 +97,7 @@ theorem internal.reflectlite.Value.wp_Type : internal.reflectlite.Value.Type.spe
   internal.reflectlite.Value.Type.wp_proof internal.reflectlite.wp_toRType
 
 theorem internal.reflectlite.wp_unpackEface : internal.reflectlite.unpackEface.spec (GF := GF) (hG := hG) :=
-  internal.reflectlite.unpackEface.wp_proof internal.reflectcore.wp_TokOf internal.reflectlite.wp_isModelRType internal.reflectcore.wp_TypeKind internal.reflectlite.wp_isDirectIface internal.reflectcore.wp_Box
+  internal.reflectlite.unpackEface.wp_proof internal.reflectcore.wp_TokOf internal.reflectcore.wp_TypeKind internal.reflectlite.wp_isDirectIface internal.reflectcore.wp_Box
 
 theorem internal.reflectlite.wp_ValueOf : internal.reflectlite.ValueOf.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.ValueOf.wp_proof internal.reflectlite.wp_unpackEface

@@ -23,7 +23,7 @@ variable [package_sem : internal.reflectlite.Assumptions]
 /-- `isDefined(tok)` of the token of a type `T` of kind `k`: whether `T` is a defined type without
 type arguments (`isDefinedT`). -/
 abbrev internal.reflectlite.isDefined.spec : Prop :=
-  ∀ {T u : go.GoType} [T ↓u u] (k : Nat),
+  ∀ {T u : go.GoType} [T ↓u u] [go.NotLayoutModelled T] (k : Nat),
   go.kindOf u = some k →
     {{ isPkgInit (PROP := IProp GF) pkg_id.internal.reflectlite }}
       (App (Val (@! isDefined)) (Val #(go.tok T)))

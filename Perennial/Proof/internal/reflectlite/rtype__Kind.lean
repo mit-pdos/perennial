@@ -23,7 +23,7 @@ variable [package_sem : internal.reflectlite.Assumptions]
 
 theorem internal.reflectlite.rtype.Kind.wp_proof
     (wp_TypeKind : internal.reflectcore.TypeKind.spec (GF := GF) (hG := hG)) :
-    internal.reflectlite.rtype.Kind.spec (GF := GF) (hG := hG) := @fun T u _ k l h => by
+    internal.reflectlite.rtype.Kind.spec (GF := GF) (hG := hG) := @fun T u _ _ k l h => by
   wp_start as #Hinit
   wp_auto
   wp_apply wp_TypeKind k l h

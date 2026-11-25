@@ -63,9 +63,11 @@ theorem errors.wp_asCheck
       (App (Val (((internal.reflectlite.rtype.mk (go.tok ty))) @!! internal.reflectlite.rtype.ty @!! go!"AssignableTo"))
         (Val #(errors.asTargetType T)))
     {{ RET #(asAssignable T ⟨ty, iv⟩); True }} := by
-  obtain ⟨⟨hIi, hNi, ⟨ki, hki⟩, hLi, -⟩, ⟨kT, hkT⟩, hNT, hdty⟩ := hdec
+  obtain ⟨⟨hIi, hNi, ⟨ki, hki⟩, hLi, -⟩, ⟨kT, hkT⟩, hNT, hLT, hdty⟩ := hdec
   haveI : ty ↓u underlying ty := ⟨rfl⟩
   haveI : T ↓u underlying T := ⟨rfl⟩
+  haveI : go.NotLayoutModelled ty := ⟨hLi⟩
+  haveI : go.NotLayoutModelled T := ⟨hLT⟩
   iintro %Φ #Hinit HΦ
   cases hI : go.isInterfaceType (underlying T)
   · have hda := errors.asDecided_da (ii := ⟨ty, iv⟩) hkT hki hI hdty
@@ -90,11 +92,8 @@ theorem errors.wp_TypeOf_err
     {{ isPkgInit (PROP := IProp GF) pkg_id.errors }}
       (App (Val (@! internal.reflectlite.TypeOf)) (Val #(interface.ok ⟨ty, iv⟩ : GoInterface)))
     {{ RET #(interface.mkOk internal.reflectlite.rtype.ty #(internal.reflectlite.rtype.mk (go.tok ty))); True }} := by
-  obtain ⟨⟨hIi, hNi, ⟨ki, hki⟩, hLi, ⟨ni, bi, hdi⟩⟩, -⟩ := hdec
-  haveI : ty ↓u underlying ty := ⟨rfl⟩
   iintro %Φ #Hinit HΦ
-  wp_apply wp_TypeOf.1 (t := ty) ki iv hki
-    (fun fs he => internal.reflectlite.directIfaceN_struct_len hdi he) hLi
+  wp_apply wp_TypeOf.1 ty iv
   iapply HΦ
   itrivial
 
@@ -133,9 +132,11 @@ theorem errors.«as».wp_proof
     cases hA : asAssignable T ⟨ty, iv⟩
     case true =>
       try wp_auto
-      obtain ⟨⟨hIi, hNi, ⟨ki, hki⟩, hLi, ⟨ni, bi, hdi⟩⟩, ⟨kT, hkT⟩, hNT, hdty⟩ := hdecI
+      obtain ⟨⟨hIi, hNi, ⟨ki, hki⟩, hLi, ⟨ni, bi, hdi⟩⟩, ⟨kT, hkT⟩, hNT, hLT, hdty⟩ := hdecI
       haveI : ty ↓u underlying ty := ⟨rfl⟩
       haveI : T ↓u underlying T := ⟨rfl⟩
+      haveI : go.NotLayoutModelled ty := ⟨hLi⟩
+      haveI : go.NotLayoutModelled T := ⟨hLT⟩
       cases hI : go.isInterfaceType (underlying T)
       · have hty : ty = T := by simpa [asAssignable, hI] using hA
         subst hty
@@ -143,7 +144,7 @@ theorem errors.«as».wp_proof
           have h := htyped; simp only [AsTypeTyped, hI, Bool.false_eq_true, ↓reduceIte] at h
           obtain ⟨x, hx⟩ := h (by first | rfl | trivial); exact ⟨x, hx⟩
         subst hx
-        wp_apply wp_ValueOf.1 (V := T') (t := ty) ki ni bi x hki hIi hLi hdi as %xv Hxv
+        wp_apply wp_ValueOf.1 (V := T') (t := ty) ki ni bi x hki hIi hdi as %xv Hxv
         rw [MethodUnfold.method_unfold (t := go.PointerType internal.reflectlite.Value.ty) (m := go!"Elem")]
         wp_call
         try wp_auto
@@ -166,7 +167,7 @@ theorem errors.«as».wp_proof
         obtain ⟨W, _, _, _, x, hx⟩ := hrepI hI
         simp only at hx
         subst hx
-        wp_apply wp_ValueOf.1 (V := W) (t := ty) ki ni bi x hki hIi hLi hdi as %xv Hxv
+        wp_apply wp_ValueOf.1 (V := W) (t := ty) ki ni bi x hki hIi hdi as %xv Hxv
         rw [MethodUnfold.method_unfold (t := go.PointerType internal.reflectlite.Value.ty) (m := go!"Elem")]
         wp_call
         try wp_auto
@@ -315,9 +316,11 @@ theorem errors.«as».wp_proof
     wp_apply errors.wp_asCheck wp_TypeOf wp_rtype_AssignableTo ty iv T hdecI (asRepr_tyRepr hrepI)
     rw [hA]
     try wp_auto
-    obtain ⟨⟨hIi, hNi, ⟨ki, hki⟩, hLi, ⟨ni, bi, hdi⟩⟩, ⟨kT, hkT⟩, hNT, hdty⟩ := hdecI
+    obtain ⟨⟨hIi, hNi, ⟨ki, hki⟩, hLi, ⟨ni, bi, hdi⟩⟩, ⟨kT, hkT⟩, hNT, hLT, hdty⟩ := hdecI
     haveI : ty ↓u underlying ty := ⟨rfl⟩
     haveI : T ↓u underlying T := ⟨rfl⟩
+    haveI : go.NotLayoutModelled ty := ⟨hLi⟩
+    haveI : go.NotLayoutModelled T := ⟨hLT⟩
     cases hI : go.isInterfaceType (underlying T)
     · have hty : ty = T := by simpa [asAssignable, hI] using hA
       subst hty
@@ -325,7 +328,7 @@ theorem errors.«as».wp_proof
         have h := htyped; simp only [AsTypeTyped, hI, Bool.false_eq_true, ↓reduceIte] at h
         obtain ⟨x, hx⟩ := h (by first | rfl | trivial); exact ⟨x, hx⟩
       subst hx
-      wp_apply wp_ValueOf.1 (V := T') (t := ty) ki ni bi x hki hIi hLi hdi as %xv Hxv
+      wp_apply wp_ValueOf.1 (V := T') (t := ty) ki ni bi x hki hIi hdi as %xv Hxv
       rw [MethodUnfold.method_unfold (t := go.PointerType internal.reflectlite.Value.ty) (m := go!"Elem")]
       wp_call
       try wp_auto
@@ -349,7 +352,7 @@ theorem errors.«as».wp_proof
       obtain ⟨W, _, _, _, x, hx⟩ := hrepI hI
       simp only at hx
       subst hx
-      wp_apply wp_ValueOf.1 (V := W) (t := ty) ki ni bi x hki hIi hLi hdi as %xv Hxv
+      wp_apply wp_ValueOf.1 (V := W) (t := ty) ki ni bi x hki hIi hdi as %xv Hxv
       rw [MethodUnfold.method_unfold (t := go.PointerType internal.reflectlite.Value.ty) (m := go!"Elem")]
       wp_call
       try wp_auto

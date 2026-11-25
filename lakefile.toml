@@ -60,6 +60,7 @@ globs = [
   "Perennial.Golang.Defn.Exception",
   "Perennial.Golang.Defn.Float",
   "Perennial.Golang.Defn.Interface",
+  "Perennial.Golang.Defn.LayoutModelled",
   "Perennial.Golang.Defn.Lock",
   "Perennial.Golang.Defn.Loop",
   "Perennial.Golang.Defn.Map",

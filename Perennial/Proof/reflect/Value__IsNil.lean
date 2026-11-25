@@ -30,7 +30,7 @@ theorem reflect.Value.IsNil.wp_proof
     reflect.Value.IsNil.spec (GF := GF) (hG := hG) := by
   haveI : go.NotInterface go.uintptr := ⟨by simp [go.uintptr]⟩
   refine ⟨?_, ?_, ?_⟩
-  · intro v t e _ l hk hf hptr
+  · intro v t e _ _ l hk hf hptr
     have hm : v.flag' &&& W64 512 = W64 0 := by
       rw [show W64 512 = W64 640 &&& W64 512 by decide, ← BitVec.and_assoc, hf]; simp
     have hi : v.flag' &&& W64 128 = W64 0 := by
@@ -51,7 +51,7 @@ theorem reflect.Value.IsNil.wp_proof
     wp_apply wp_EqNilAt.1 l
     iapply HΦ
     itrivial
-  · intro v t e _ q dq s hk hptr
+  · intro v t e _ _ q dq s hk hptr
     wp_start as Hq
     wp_auto
     wp_method_call; wp_call
