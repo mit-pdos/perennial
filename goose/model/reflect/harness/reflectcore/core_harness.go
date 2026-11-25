@@ -198,7 +198,8 @@ func target(t any, what string) reflect.Type {
 
 // ConvertAt is ConvertAt: any(U(x)) for x's dynamic type T and a token of U. For an interface U,
 // x itself if T implements U; otherwise the conversion of the Lean Convert rules (convertLean).
-// Stuck: x nil, an interface U that T does not implement, no Convert rule.
+// Stuck: x nil, a layout a model changes, an interface U that T does not implement, no Convert
+// rule.
 func ConvertAt(x, t any) any {
 	if x == nil {
 		stuck("ConvertAt: x is the nil interface")
@@ -207,9 +208,6 @@ func ConvertAt(x, t any) any {
 	from := reflect.TypeOf(x)
 	if ConvertExposed(from) || ConvertExposed(u) {
 		stuck("ConvertAt: from %v to %v: a layout a model changes", from, u)
-	}
-	if !GoConvertible(from, u) {
-		stuck("ConvertAt: Go does not convert %v to %v (go.Convertible)", from, u)
 	}
 	if u.Kind() == reflect.Interface {
 		if from.Implements(u) {

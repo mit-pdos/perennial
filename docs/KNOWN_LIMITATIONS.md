@@ -215,8 +215,7 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   qualifying field names everywhere.
   Conversions inherit it: the model converts between `struct{ x int }` of two packages, and
   between pointers to them (`is_convert_underlying_same`, `convert_pointer_same_underlying`,
-  and `go.Convertible`'s `underlying` and `pointer` rows for `reflect`'s `ConvertAt`), where Go
-  rejects the conversion:
+  which `reflect`'s `ConvertAt` reaches at run-time types), where Go rejects the conversion:
   ```go
   // package p: type T struct{ x int }; func Mk() any { return struct{ x int }{} }
   // package q: type U struct{ x int }
@@ -238,6 +237,16 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   _, ok := e.(*interface{ Error() string }) // Go: false; the model: true
   _ = reflect.TypeOf((*error)(nil)) == reflect.TypeOf((*interface{ Error() string })(nil)) // Go: false; the model: true
   ```
+  Conversions inherit it: a composite type that names `error` is the same Lean type as the one
+  that names `interface{ Error() string }` there, so `convert_same`, `is_convert_underlying_same`,
+  `convert_pointer_same_underlying` and the channel rules convert between them, which
+  `reflect`'s `ConvertAt` reaches at run-time types:
+  ```go
+  type E = interface{ Error() string }
+  _ = []E([]error{})       // compile error in Go; also **error, map[int]error, func() error
+  _ = (<-chan E)(make(chan error))                          // compile error in Go
+  reflect.ValueOf([]error{}).Convert(reflect.TypeOf([]E{})) // Go: panics
+  ```
   Pre-existing (not introduced by `reflect`'s model). Fix: `error` as a named predeclared type.
 - **Conversions that involve struct tags are stuck (incomplete, sound).** Every field
   declaration carries its tag (`go.field_decl.Field name type tag`, empty when absent;
@@ -256,6 +265,22 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   ```
   Conversions between defined types (`T(u)` for `u` of type `U`) and from untagged struct
   values are unaffected. A rule converting modulo tags would be added when a proof needs one.
+- **A conversion to an interface type does not check that the value implements it (unsound,
+  unreached).** `convert_to_interface` (`Golang/Defn/Interface.lean`) steps from any type to any
+  interface type: a non-interface value becomes `interface.mkOk t v`, an interface value is kept
+  as it is. Go requires that the type implement the interface, and rejects a constraint
+  interface:
+  ```go
+  type I interface{ M() }
+  type C interface{ ~int }
+  _ = error(1)         // Go: int does not implement error; the model converts
+  var a any; _ = I(a)  // Go: any does not implement I; the model converts
+  _ = C(1)             // Go: cannot use interface C in conversion; the model converts
+  ```
+  goose emits only conversions that type-check, and `reflect`'s `ConvertAt` checks the
+  implementation itself (`typeSetContains`) for an interface target, so no proof reaches it.
+  A fix needs an `implements` premise on the rule, which instance search does not find (an
+  interface-to-interface conversion needs method-set inclusion).
 - **A struct type literal with embedded fields has no known method set.** In Go,
   `struct{ T }` has the methods promoted from `T`:
   ```go

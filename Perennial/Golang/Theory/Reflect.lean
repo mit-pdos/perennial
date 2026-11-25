@@ -28,9 +28,6 @@ theorem go.notLayoutModelled_of_typeQuery {q : go.TypeQ} {t : go.GoType} {i : In
 
 instance go.NotLayoutModelled.error : go.NotLayoutModelled go.error := ⟨rfl⟩
 
-/-- Go converts a type to itself (identical underlying types). -/
-theorem go.Convertible.refl (t : go.GoType) : go.Convertible t t := .underlying rfl
-
 /-- A pointer to a type that is not `go.layoutModelled` is not exposed to a conversion
 (`go.convertExposed`). -/
 theorem go.convertExposed_pointer (T : go.GoType) [hm : go.NotLayoutModelled T]
@@ -89,17 +86,18 @@ theorem wp_FuncResolveAt_pair (sh1 sh2 : go.Shape) (f : GoString) (t1 t2 : go.Go
 
 /-! ## `ConvertAt` -/
 
-/-- `ConvertAt` to a non-interface type `u` that Go converts `t` to (`go.Convertible`) and Lean
-in one pure step. -/
+/-- `ConvertAt` to a non-interface type `u` that a `Convert` rule converts `t` to in one pure
+step. -/
 theorem wp_ConvertAt {t u uu : go.GoType} [u ↓u uu] (hu : go.isInterfaceType uu = false)
     (hn : go.isUntypedNil uu = false) {X Y : Type} (x : X) (y : Y)
-    [go.IsGoStepPureDet (Convert t u) #x (Val #y)] (l : Loc) (hc : go.Convertible t u)
+    [go.IsGoStepPureDet (Convert t u) #x (Val #y)] (l : Loc)
     (het : go.convertExposed t = false) (heu : go.convertExposed u = false) :
     {{ (True : IProp GF) }}
       (App (Val (GoInstruction ConvertAt))
         (Val (PairV #(interface.mkOk t #x) #(interface.mkOk (go.PointerType u) #l)))) @ s; E
     {{ RET #(interface.mkOk u #y); True }} := by
-  haveI := go.convert_at_step (t := t) (u := u) #x l hc het heu
+  haveI := go.convert_at_step (t := t) (u := u) #x l
+    (by rw [go.is_underlying (t := u), hu]; exact fun h => nomatch h) het heu
   iintro %Φ _ HΦ
   wp_pures
   rw [go.is_underlying, hu]
@@ -118,7 +116,7 @@ theorem wp_ConvertAt_same {t tu : go.GoType} [t ↓u tu] (hu : go.isInterfaceTyp
       (App (Val (GoInstruction ConvertAt))
         (Val (PairV #(interface.mkOk t #x) #(interface.mkOk (go.PointerType t) #l)))) @ s; E
     {{ RET #(interface.mkOk t #x); True }} :=
-  wp_ConvertAt hu hn x x l (go.Convertible.refl t) he he
+  wp_ConvertAt hu hn x x l he he
 
 /-- `ConvertAt` to an interface type `u` that `t` implements: `x` itself. -/
 theorem wp_ConvertAt_interface {t u uu : go.GoType} [u ↓u uu] (hu : go.isInterfaceType uu = true)
@@ -128,12 +126,10 @@ theorem wp_ConvertAt_interface {t u uu : go.GoType} [u ↓u uu] (hu : go.isInter
       (App (Val (GoInstruction ConvertAt))
         (Val (PairV #(interface.mkOk t v) #(interface.mkOk (go.PointerType u) #l)))) @ s; E
     {{ RET #(interface.mkOk t v); True }} := by
-  have hc : go.Convertible t u :=
-    .implements (by rw [go.is_underlying (t := u)]; exact hu) himpl
-  haveI := go.convert_at_step (t := t) (u := u) v l hc het heu
+  haveI := go.convert_at_step (t := t) (u := u) v l (fun _ => himpl) het heu
   iintro %Φ _ HΦ
   wp_pures
-  rw [go.is_underlying, hu, himpl]
+  rw [go.is_underlying, hu]
   simp only [↓reduceIte]
   wp_pures
   iapply HΦ

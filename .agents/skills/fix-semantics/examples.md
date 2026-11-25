@@ -1669,9 +1669,9 @@ channels and pointers only between identical underlying types (`is_convert_under
 assignability rule "V a bidirectional channel, identical element types, V or T not named"
 (instance search cannot take a disjunction premise); `convert_pointer_same_underlying` keeps its
 statement, as a plain step on the unnamed pointer types. Cost: one rule split in two, one rule's
-tag dropped; no goose change. Witnesses: harness `TestConvertLeanRules` (the rules, without
-`ConvertAt`'s `go.Convertible`, step on no case Go rejects, and only on `GoConvertible` corpus
-pairs; under the old rules it reports the six cases and 14 corpus pairs);
+tag dropped; no goose change. Witnesses: harness `TestConvertLeanRules` (the rules step on no
+case Go rejects, and on no corpus pair Go rejects; under the old rules it reports the six cases
+and the corpus pairs they reach);
 `Perennial/Tests/ConvertRules.lean` (the legal conversions still step by instance search). The
 related unexported-field-name gap went to `KNOWN_LIMITATIONS` (no proof reaches it).
 

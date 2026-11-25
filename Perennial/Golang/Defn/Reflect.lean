@@ -174,70 +174,11 @@ instance NotLayoutModelled.interface (elems : List go.InterfaceElem) :
     NotLayoutModelled (go.InterfaceType elems) := ⟨rfl⟩
 
 /-- `ConvertAt`'s form of the guard (module docstring): a conversion from or to `t` reads `t`'s
-underlying type, and for a pointer its base type's (`Convertible.pointer`). -/
+underlying type, and for a pointer its base type's (`convert_pointer_same_underlying`). -/
 def convertExposed (t : go.GoType) : Bool :=
   layoutModelled t || match underlying t with
     | go.PointerType e => layoutModelled e
     | _ => false
-
-/-- `t` is a named type: a predeclared or a defined type. -/
-def isNamed : go.GoType → Bool
-  | go.Named _ _ => true
-  | _ => false
-
-/-- The kind (`kindOf`) of `t`'s underlying type is one of `ks`. -/
-def kindIn (t : go.GoType) (ks : List Nat) : Prop :=
-  ∃ k, kindOf (underlying t) = some k ∧ k ∈ ks
-
-/-- `t`'s underlying type is a slice of bytes or of runes (`[]E` for `E` of underlying type
-`uint8` or `int32`). -/
-def byteOrRuneSlice (t : go.GoType) : Prop :=
-  ∃ e, underlying t = go.SliceType e ∧ kindIn e [5, 8]
-
-/-- Go's conversion rules for a non-constant value (https://go.dev/ref/spec#Conversions, and
-package `unsafe`'s): a value of type `t` converts to type `u`, `u(x)`. One constructor per rule
-of the spec, over the Lean types. Integer kinds are 2–12, floating-point 13–14, complex 15–16
-(`kindOf`). `ConvertAt`'s premise. -/
-inductive Convertible : go.GoType → go.GoType → Prop
-  /-- `x` is assignable to `u`, an interface type that `t` implements. -/
-  | implements {t u : go.GoType} : isInterfaceType (underlying u) = true →
-      typeSetContains t u = true → Convertible t u
-  /-- `x` is assignable to `u`: `t` is a bidirectional channel type, `u` a channel type of the
-  identical element type, and `t` or `u` is not a named type. -/
-  | chan {t u e : go.GoType} {d : go.ChanDir} : underlying t = go.ChannelType .sendrecv e →
-      underlying u = go.ChannelType d e → isNamed t = false ∨ isNamed u = false → Convertible t u
-  /-- `t` and `u` have identical underlying types (Go ignores struct tags here; in Lean a defined
-  struct type's underlying type has none and an unnamed one keeps them, so Lean's equality is no
-  coarser than Go's on tags). Known gap: Lean's struct types do not record the package of an
-  unexported field name, which Go's identity does (the `Convert` item, etcd-grove#40). -/
-  | underlying {t u : go.GoType} : underlying t = underlying u → Convertible t u
-  /-- `t` and `u` are unnamed pointer types whose base types have identical underlying types. -/
-  | pointer {a b : go.GoType} : underlying a = underlying b →
-      Convertible (go.PointerType a) (go.PointerType b)
-  /-- `t` and `u` are both integer or floating-point types. -/
-  | numeric {t u : go.GoType} : kindIn t [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14] →
-      kindIn u [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14] → Convertible t u
-  /-- `t` and `u` are both complex types. -/
-  | complex {t u : go.GoType} : kindIn t [15, 16] → kindIn u [15, 16] → Convertible t u
-  /-- `t` is an integer type or a slice of bytes or runes, and `u` a string type. -/
-  | toString {t u : go.GoType} : kindIn t [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] ∨ byteOrRuneSlice t →
-      kindIn u [24] → Convertible t u
-  /-- `t` is a string type and `u` a slice of bytes or runes. -/
-  | fromString {t u : go.GoType} : kindIn t [24] → byteOrRuneSlice u → Convertible t u
-  /-- `t` is a slice type and `u` an array type of the identical element type. -/
-  | sliceArray {t u e : go.GoType} {n : Int} : underlying t = go.SliceType e →
-      underlying u = go.ArrayType n e → Convertible t u
-  /-- `t` is a slice type and `u` a pointer to an array type of the identical element type. -/
-  | slicePtrArray {t u a e : go.GoType} {n : Int} : underlying t = go.SliceType e →
-      underlying u = go.PointerType a → underlying a = go.ArrayType n e → Convertible t u
-  /-- (package `unsafe`) a pointer type or a type of underlying type `uintptr`, to a type of
-  underlying type `unsafe.Pointer`. -/
-  | toUnsafe {t u : go.GoType} : (∃ e, underlying t = go.PointerType e) ∨ kindIn t [12] →
-      kindIn u [26] → Convertible t u
-  /-- (package `unsafe`) a type of underlying type `unsafe.Pointer`, to a pointer type or a type
-  of underlying type `uintptr`. -/
-  | fromUnsafe {t u : go.GoType} : kindIn t [26] →
-      (∃ e, underlying u = go.PointerType e) ∨ kindIn u [12] → Convertible t u
 
 class ReflectSemantics : Prop where
   /-- `FuncResolve f ts` for the type arguments `ts` that the shapes `shs` give for the dispatch
@@ -249,13 +190,17 @@ class ReflectSemantics : Prop where
       (ts : List go.GoType) (h : shapesArgs shs (is.map (·.ty)) = some ts) :
     ⟦FuncResolveAt shs f, dispatchArgs is⟧ ⤳ #(functions f ts)
   /-- Go template: `any(U(x))` for `x : T`, at `x`'s dynamic type `T = t` and the token's
-  `U = u`, where Go converts `t` to `u` (`Convertible`); for an interface `u`, that is `any(x)`.
-  Not an instance: its premises are not found by instance search. -/
-  convert_at_step {t u : go.GoType} (v : val) (l : Loc) (hc : Convertible t u)
+  `U = u`. For a non-interface `u`, it is `Convert t u` at those types, stuck where no `Convert`
+  rule steps (each `Convert` rule steps only on a conversion Go allows: `CRITERIA.md`; the
+  known exceptions, type identities Lean does not keep: `docs/KNOWN_LIMITATIONS.md`); for an
+  interface `u`, it is `any(x)`, where `t` implements `u` (`hi`: Go's rule, which
+  `convert_to_interface` does not check). Not an instance: its premises are not found by
+  instance search. -/
+  convert_at_step {t u : go.GoType} (v : val) (l : Loc)
+      (hi : isInterfaceType (underlying u) = true → typeSetContains t u = true)
       (ht : convertExposed t = false) (hu : convertExposed u = false) :
     ⟦ConvertAt, (#(interface.mkOk t v), #(interface.mkOk (go.PointerType u) #l))⟧ ⤳
-      (if isInterfaceType (underlying u) then
-        (if typeSetContains t u then #(interface.mkOk t v) else Panic "not modelled")
+      (if isInterfaceType (underlying u) then #(interface.mkOk t v)
       else Convert u go.any (Convert t u (Val v)))
   /-- Go template: `any(&(*p).f)` for `p : *S`, at `S = s`, `f` the `i`th field of the struct
   type `s`. Not an instance: its premises are not found by instance search.

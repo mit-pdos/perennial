@@ -7,6 +7,9 @@ import "reflect"
 //   - identical underlying types (is_convert_underlying_same), where a defined struct type's
 //     underlying type has no tags (goose writes it without them);
 //   - integer to integer, uintptr included (convert_<int>_to_<int>);
+//   - integer to float, float to integer, float to float (convert_<int>_to_float64/32,
+//     convert_float64/32_to_integer: some value of the type, here gc's; convert_float32_to_float64,
+//     convert_float64_to_float32);
 //   - a byte to string (convert_byte_to_string): string(rune(c));
 //   - a slice of bytes to string and back (convert_bytes_to_string, convert_string_to_bytes),
 //     the element any type whose underlying type is byte;
@@ -19,15 +22,15 @@ import "reflect"
 //   - an unnamed pointer to an unnamed pointer whose base types have identical underlying types
 //     (convert_pointer_same_underlying, a plain step on the unnamed pointer types).
 //
-// Floats, complex numbers, runes to and from strings, other integers to string and slices to
-// arrays have no rule.
+// Complex numbers, runes to and from strings, other integers to string and slices to arrays have
+// no rule.
 func convertLean(v reflect.Value, u reflect.Type) (reflect.Value, bool) {
 	t := v.Type()
 	fk, tk := t.Kind(), u.Kind()
 	switch {
 	case IdenticalUnderlying(t, u):
 		return reinterpret(v, u), true
-	case isInteger(fk) && isInteger(tk):
+	case (isInteger(fk) || isFloat(fk)) && (isInteger(tk) || isFloat(tk)):
 		return v.Convert(u), true
 	case fk == reflect.Uint8 && tk == reflect.String:
 		return reflect.ValueOf(string(rune(v.Uint()))).Convert(u), true
@@ -58,6 +61,10 @@ func reinterpret(v reflect.Value, u reflect.Type) reflect.Value {
 	p := reflect.New(v.Type())
 	p.Elem().Set(v)
 	return reflect.NewAt(u, p.UnsafePointer()).Elem()
+}
+
+func isFloat(k reflect.Kind) bool {
+	return k == reflect.Float32 || k == reflect.Float64
 }
 
 func isInteger(k reflect.Kind) bool {
@@ -151,36 +158,4 @@ func IsPlain(t reflect.Type) bool {
 		return off == t.Size()
 	}
 	return false
-}
-
-// GoConvertible is go.Convertible (Perennial/Golang/Defn/Reflect.lean), ConvertAt's premise: Go's
-// conversion rules for a non-constant value, one case per constructor, over the types as Lean has
-// them (IdenticalUnderlying for identical underlying types).
-func GoConvertible(t, u reflect.Type) bool {
-	tk, uk := t.Kind(), u.Kind()
-	numeric := func(k reflect.Kind) bool { return isInteger(k) || k == reflect.Float32 || k == reflect.Float64 }
-	isComplex := func(k reflect.Kind) bool { return k == reflect.Complex64 || k == reflect.Complex128 }
-	byteOrRuneSlice := func(s reflect.Type) bool {
-		return s.Kind() == reflect.Slice && (s.Elem().Kind() == reflect.Uint8 || s.Elem().Kind() == reflect.Int32)
-	}
-	switch {
-	case uk == reflect.Interface && t.Implements(u): // implements
-	case tk == reflect.Chan && uk == reflect.Chan && t.ChanDir() == reflect.BothDir &&
-		t.Elem() == u.Elem() && (t.Name() == "" || u.Name() == ""): // chan
-	case IdenticalUnderlying(t, u): // underlying
-	case tk == reflect.Pointer && uk == reflect.Pointer && t.Name() == "" && u.Name() == "" &&
-		IdenticalUnderlying(t.Elem(), u.Elem()): // pointer
-	case numeric(tk) && numeric(uk): // numeric
-	case isComplex(tk) && isComplex(uk): // complex
-	case (isInteger(tk) || byteOrRuneSlice(t)) && uk == reflect.String: // toString
-	case tk == reflect.String && byteOrRuneSlice(u): // fromString
-	case tk == reflect.Slice && uk == reflect.Array && t.Elem() == u.Elem(): // sliceArray
-	case tk == reflect.Slice && uk == reflect.Pointer && u.Elem().Kind() == reflect.Array &&
-		t.Elem() == u.Elem().Elem(): // slicePtrArray
-	case (tk == reflect.Pointer || tk == reflect.Uintptr) && uk == reflect.UnsafePointer: // toUnsafe
-	case tk == reflect.UnsafePointer && (uk == reflect.Pointer || uk == reflect.Uintptr): // fromUnsafe
-	default:
-		return false
-	}
-	return true
 }

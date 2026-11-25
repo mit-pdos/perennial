@@ -149,17 +149,18 @@ func explicitCases() []cvCase {
 		{"*ptrImpl->myIface", &ptrImpl{}, tok[myIface](), true, nil, true},
 		{"*int->any", p, tok[any](), true, ip, true},
 		{"myInt->myAny", myInt(1), tok[myAny](), true, any(myAny(myInt(1))), true},
+		// integers and floats (convert_<int>_to_float64/32, convert_float64/32_to_integer, ...)
+		{"float64->int", f64, tok[int](), true, int(f64), true},
+		{"int->float64", 3, tok[float64](), true, float64(3), true},
+		{"float64->float32", f64, tok[float32](), true, float32(f64), true},
+		{"float32->float64", f32, tok[float64](), true, float64(f32), true},
+		{"float64->uint8", f64, tok[uint8](), true, uint8(f64), true},
 		// legal Go, no Lean Convert rule (less defined: fine)
 		{"rune->string", r65, tok[string](), true, string(r65), false},
 		{"rune max->string", r0x10ffff, tok[string](), true, string(r0x10ffff), false},
 		{"int64->string", i64, tok[string](), true, "B", false},
 		{"string->[]rune", "hé", tok[[]rune](), true, []rune("hé"), false},
 		{"[]rune->string", []rune("hé"), tok[string](), true, string([]rune("hé")), false},
-		{"float64->int", f64, tok[int](), true, int(f64), false},
-		{"int->float64", 3, tok[float64](), true, float64(3), false},
-		{"float64->float32", f64, tok[float32](), true, float32(f64), false},
-		{"float32->float64", f32, tok[float64](), true, float64(f32), false},
-		{"float64->uint8", f64, tok[uint8](), true, uint8(f64), false},
 		{"complex128->complex64", c128, tok[complex64](), true, complex64(c128), false},
 		{"[]int->[3]int", arr3, tok[[3]int](), true, [3]int(arr3), false},
 		{"[]int->*[3]int", arr3, tok[*[3]int](), true, nil, false},
@@ -188,8 +189,8 @@ func explicitCases() []cvCase {
 	}
 }
 
-// leanOnly are the conversions ConvertAt performs that Go does not allow: none, since ConvertAt
-// takes Go's conversion rules as a premise (go.Convertible).
+// leanOnly are the conversions ConvertAt performs that Go does not allow: none, since no Convert
+// rule steps on one (TestConvertLeanRules).
 var leanOnly []string
 
 // ConvertAt is, wherever a Lean Convert rule steps and Go allows the conversion, any(U(x)) of the
@@ -308,15 +309,28 @@ func TestConvertAtIdentity(t *testing.T) {
 	mustStuck(t, "ConvertAt(x, non-pointer)", func() { ConvertAt(1, 2) })
 }
 
-// The Lean Convert rules themselves (convertLean), without ConvertAt's go.Convertible premise, are
-// no more defined than Go: on every case and on every pair of corpus types (at the zero value),
-// where a rule steps, the conversion is legal Go (TestGoConvertible checks GoConvertible against
-// Go). The witnesses of etcd-grove#59 are cases above: each is stuck.
+// goLegal is Go's conversion rules for a non-constant value of type t to type u, as the run time
+// has them: reflect's ConvertibleTo, and the unsafe.Pointer rules of package unsafe, which
+// reflect's convertOp lacks (a pointer or uintptr to and from unsafe.Pointer). Where it differs
+// from the spec it is narrower (convertOp: a []E to string only for an unnamed E), never wider.
+func goLegal(t, u reflect.Type) bool {
+	tk, uk := t.Kind(), u.Kind()
+	ptrOrUintptr := func(k reflect.Kind) bool { return k == reflect.Pointer || k == reflect.Uintptr }
+	return t.ConvertibleTo(u) ||
+		ptrOrUintptr(tk) && uk == reflect.UnsafePointer ||
+		tk == reflect.UnsafePointer && ptrOrUintptr(uk)
+}
+
+// The Lean Convert rules themselves (convertLean) are no more defined than Go (CRITERIA.md,
+// "Every Convert rule steps only on a conversion Go allows"; ConvertAt relies on it): on every
+// case, where a rule steps, the case says the static conversion is legal Go; and on every pair of
+// corpus types (at the zero value), where a rule steps, or ConvertAt steps (interface targets
+// too), goLegal holds. The witnesses of etcd-grove#59 are cases above: each is stuck.
 func TestConvertLeanRules(t *testing.T) {
 	for _, c := range append(append(intCases(), byteStringCases()...), explicitCases()...) {
 		u := reflect.TypeOf(c.to).Elem()
 		if u.Kind() == reflect.Interface {
-			continue // convert_to_interface: ConvertAt's own row
+			continue // ConvertAt's interface row: TestConvertAt
 		}
 		_, ok := convertLean(reflect.ValueOf(c.x), u)
 		if ok && !c.goOK {
@@ -324,62 +338,35 @@ func TestConvertLeanRules(t *testing.T) {
 		}
 	}
 	es := corpus()
-	n := 0
+	nLean, nAt, nGo := 0, 0, 0
 	for _, e := range es {
 		for _, f := range es {
 			tt, u := e.typ, f.typ
-			if u.Kind() == reflect.Interface {
-				continue
+			if goLegal(tt, u) {
+				nGo++
 			}
-			if _, ok := convertLean(reflect.Zero(tt), u); !ok {
-				continue
+			if _, ok := convertLean(reflect.Zero(tt), u); ok {
+				nLean++
+				if !goLegal(tt, u) {
+					t.Errorf("convertLean(%v, %v) steps, but Go does not convert", tt, u)
+				}
 			}
-			n++
-			if !GoConvertible(tt, u) {
-				t.Errorf("convertLean(%v, %v) steps, but not GoConvertible", tt, u)
+			if tt.Kind() == reflect.Interface {
+				continue // never a dynamic type
 			}
-		}
-	}
-	t.Logf("%d corpus pairs a Lean Convert rule steps on, all GoConvertible", n)
-}
-
-// GoConvertible is Go's conversion rules: on every case, it holds exactly where the case says
-// the static conversion is legal Go, except for the tagged unnamed struct types (Lean keeps an
-// unnamed struct type's tags, so its underlying types differ: less defined, fine); and on every
-// pair of corpus types, where it holds, reflect's ConvertibleTo does too (reflect's convertOp
-// lacks only the unsafe.Pointer rules).
-func TestGoConvertible(t *testing.T) {
-	var lessDefined []string
-	for _, c := range append(append(intCases(), byteStringCases()...), explicitCases()...) {
-		from, u := reflect.TypeOf(c.x), reflect.TypeOf(c.to).Elem()
-		g := GoConvertible(from, u)
-		if g && !c.goOK {
-			t.Errorf("%s: GoConvertible, but not legal Go", c.name)
-		}
-		if !g && c.goOK {
-			lessDefined = append(lessDefined, c.name)
-		}
-	}
-	want := []string{"Tagged->struct{A int `json:\"a\"`}", "struct{A int `json:\"a\"`}->struct{A int}"}
-	sort.Strings(lessDefined)
-	sort.Strings(want)
-	if !reflect.DeepEqual(lessDefined, want) {
-		t.Errorf("legal Go, not GoConvertible: %q, want %q", lessDefined, want)
-	}
-	es := corpus()
-	n := 0
-	for _, e := range es {
-		for _, f := range es {
-			tt, u := e.typ, f.typ
-			if !GoConvertible(tt, u) {
-				continue
+			x := reflect.Zero(tt).Interface()
+			p, panicked := catch(func() { ConvertAt(x, reflect.Zero(reflect.PointerTo(u)).Interface()) })
+			if panicked && !IsStuck(p) {
+				t.Errorf("ConvertAt(%v, %v) panicked %v", tt, u, p)
 			}
-			n++
-			unsafeRow := tt.Kind() == reflect.UnsafePointer || u.Kind() == reflect.UnsafePointer
-			if !tt.ConvertibleTo(u) && !unsafeRow {
-				t.Errorf("GoConvertible(%v, %v), but reflect's ConvertibleTo is false", tt, u)
+			if !panicked {
+				nAt++
+				if !goLegal(tt, u) {
+					t.Errorf("ConvertAt(%v, %v) steps, but Go does not convert", tt, u)
+				}
 			}
 		}
 	}
-	t.Logf("%d convertible pairs of %d corpus types checked against ConvertibleTo", n, len(es))
+	t.Logf("%d corpus types: %d pairs Go converts; a Lean Convert rule steps on %d, ConvertAt on %d, all of them Go's",
+		len(es), nGo, nLean, nAt)
 }
