@@ -29,7 +29,7 @@ abbrev errors.is.spec : Prop :=
   ∀ (S : GoError → Prop) (I : GoInterfaceOk → Bool → Prop)
     (U : GoInterfaceOk → List GoError → Prop) (err target : GoError) (c : Bool),
     S err →
-    (c = true → ∃ tii, target = interface.ok tii ∧ ComparableErr S tii) →
+    (c = true → ∃ tii, target = interface.ok tii ∧ ComparableErr (GF := GF) S tii) →
     {{ errorWalkTree (GF := GF) S I U target }}
       (App (App (App (Val (@! is')) (Val #err)) (Val #target)) (Val #c))
     {{ (b : Bool), RET #b; ⌜IsWalk c I U target err b⌝ }}
