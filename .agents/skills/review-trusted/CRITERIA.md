@@ -92,3 +92,15 @@ to judge it, the item names the rule and does not repeat it.
     representation; a model that answers for its own representation is more
     defined than Go (etcd-grove#40: the models' `rtype` values where Go has
     `*rtype`).
+15. **Every `Convert` rule steps only on a conversion Go allows** for a
+    non-constant value of those types (https://go.dev/ref/spec#Conversions,
+    and package `unsafe`'s): a rule whose premises hold at a pair of types Go
+    rejects is more defined than Go. A rule may be stuck where Go converts.
+    An exception is a `docs/KNOWN_LIMITATIONS.md` entry with its Go witness.
+    `reflect`'s `ConvertAt` (`Perennial/Golang/Defn/Reflect.lean`) relies on
+    it: to a non-interface type it converts at run-time types with the
+    `Convert` rules, and states none of Go's conversion rules of its own.
+    *Why:* goose emits only conversions that type-check, so for static code an
+    over-defined rule is never reached; `ConvertAt` takes its types from
+    values, and reaches every rule (etcd-grove#59: the channel and pointer
+    rules converted pairs Go rejects).
