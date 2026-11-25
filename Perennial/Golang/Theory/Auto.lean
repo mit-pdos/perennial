@@ -26,7 +26,8 @@ Details:
   non-variable term (`x = W64 0`); equations between two variables are kept. It
   splits on the condition of the `if:` at the head of the expression.
 * All WP tactics fail (instead of leaving a `sorry`) when a term does not
-  elaborate (`withNoSorry`).
+  elaborate (`withNoSorry`); `wp_apply` also fails when a step on one of the
+  goals it produces fails.
 * With `goose.wp.extras` (on by default; `set_option goose.wp.extras false`
   for proofs that do these steps by hand): `wp_auto` rewrites
   stored function literals to `#(func.mk ..)` and unfolds package constants
@@ -797,7 +798,7 @@ elab "wp_apply_side" : tactic => do
     let isArith (t : Lean.Expr) : Bool :=
       (t.isAppOfArity ``LE.le 4).or ((t.isAppOfArity ``LT.lt 4).or
         ((t.isAppOfArity ``Eq 3).and (((t.getArg! 0).isConstOf ``Int).or ((t.getArg! 0).isConstOf ``Nat))))
-    let t ← whnfR ty
+    let t ← g.withContext <| whnfR ty
     let parts := if t.isAppOfArity ``And 2 then #[t.getArg! 0, t.getArg! 1] else #[t]
     unless parts.all isArith do
       out := out ++ [g]; continue
@@ -837,7 +838,17 @@ elab_rules : tactic
       -- credits were asked for: failing to produce them is an error
       else `(tactic| wp_focus_cont (wp_auto_lc $n))
     let core ← `(tactic| focus ((first | wp_apply_raw $pmt | (wp_pures; wp_apply_raw $pmt) | (wp_func_lits; wp_apply_raw $pmt) | (wp_pures; wp_apply_raw $pmt)) <;> wp_apply_post))
-    evalTactic (← `(tactic| focus (($core:tactic) <;> (try iPkgInit); wp_apply_side; $intro:tactic; $auto:tactic; wp_untag_cont)))
+    let tac ← `(tactic| focus (($core:tactic) <;> (try iPkgInit); wp_apply_side; $intro:tactic; $auto:tactic; wp_untag_cont))
+    -- without error recovery (`withNoSorry`), a failure in a step on one of the goals
+    -- (the `<;>`s) is raised as an error instead of admitting that goal and aborting, which
+    -- could leave the goal admitted with no error shown
+    withNoSorry `wp_apply do
+      try evalTactic tac
+      catch ex =>
+        if let .internal id _ := ex then
+          if id == abortTacticExceptionId then
+            throwError "wp_apply: a step on one of the goals failed (aborted)"
+        throw ex
 
 section if_angelic_tac
 open Lean Elab Tactic Meta Qq Iris.ProofMode
@@ -1003,7 +1014,8 @@ elab "wp_if_destruct" : tactic => withMainContext do
   | some (.inr b) =>
     let bStx ← Term.exprToSyntax b
     evalTactic (← `(tactic| cases $bStx:term))
-    evalTactic (← `(tactic| all_goals (
+    -- (without error recovery, so that a failure in one case is an error, not an admitted goal)
+    withoutRecover <| evalTactic (← `(tactic| all_goals (
       wp_pures;
       cleanup_bool_decide;
       (try wp_auto);
