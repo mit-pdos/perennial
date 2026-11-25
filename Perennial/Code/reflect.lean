@@ -393,7 +393,7 @@ noncomputable def flag.panicNotMap.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType flag.ty) go!"mustBe"))) (Var "f")) (Var "$a0"))))))
   (Val #()))))
 
-/-- go: type.go:336:16 -/
+/-- go: type.go:341:16 -/
 noncomputable def rtype.tok.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
@@ -410,7 +410,7 @@ noncomputable def rtype.tok.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- String returns the name of k.
 
-    go: type.go:350:15 -/
+    go: type.go:355:15 -/
 noncomputable def Kind.String.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "k"
   (Lam BAnon
@@ -437,7 +437,7 @@ noncomputable def Kind.String.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
   (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
 
-/-- go: type.go:387:16 -/
+/-- go: type.go:392:16 -/
 noncomputable def rtype.Kind.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
@@ -453,7 +453,7 @@ noncomputable def rtype.Kind.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore Kind.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad Kind.ty))) (Var "$res0"))))))
 
-/-- go: type.go:389:6 -/
+/-- go: type.go:394:6 -/
 noncomputable def toRType.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc rtype.ty))) (App (Val (GoInstruction (GoZeroVal rtype.ty))) (Val #())))
@@ -471,7 +471,7 @@ noncomputable def toRType.impl [GooseExts] [GoGlobalContext] : val :=
 /-- MODEL: the element type of an array, channel, map, pointer or slice type
     (abi.Type.Elem), else real's panic.
 
-    go: type.go:395:6 -/
+    go: type.go:400:6 -/
 noncomputable def elem.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
@@ -496,7 +496,7 @@ noncomputable def elem.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))))))
   (App (Val (GoInstruction (GoLoad go.any))) (Var "$res0")))))
 
-/-- go: type.go:403:16 -/
+/-- go: type.go:408:16 -/
 noncomputable def rtype.Elem.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
@@ -513,7 +513,7 @@ noncomputable def rtype.Elem.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore Type'.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad Type'.ty))) (Var "$res0"))))))
 
-/-- go: type.go:407:18 -/
+/-- go: type.go:412:18 -/
 noncomputable def ChanDir.String.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "d"
   (Lam BAnon
@@ -557,7 +557,7 @@ noncomputable def ChanDir.String.impl [GooseExts] [GoGlobalContext] : val :=
 /-- TypeOf returns the reflection [Type] that represents the dynamic type of i.
     If i is a nil interface value, TypeOf returns nil.
 
-    go: type.go:421:6 -/
+    go: type.go:426:6 -/
 noncomputable def TypeOf.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "i"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc Type'.ty))) (App (Val (GoInstruction (GoZeroVal Type'.ty))) (Val #())))
@@ -583,7 +583,7 @@ noncomputable def TypeOf.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
   (App (Val (GoInstruction (GoLoad Type'.ty))) (Var "$res0")))))
 
-/-- go: type.go:430:6 -/
+/-- go: type.go:435:6 -/
 noncomputable def stringFor.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
@@ -604,7 +604,7 @@ noncomputable def stringFor.impl [GooseExts] [GoGlobalContext] : val :=
     function takes care of ensuring that multiple *rtype for the same
     type are coalesced into a single Type.
 
-    go: type.go:439:6 -/
+    go: type.go:444:6 -/
 noncomputable def toType.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc Type'.ty))) (App (Val (GoInstruction (GoZeroVal Type'.ty))) (Val #())))
@@ -637,7 +637,7 @@ noncomputable def toType.impl [GooseExts] [GoGlobalContext] : val :=
     fields are zero-size (a zero-size last field pads the struct). No type of
     the model is not-in-heap.
 
-    go: type.go:453:6 -/
+    go: type.go:458:6 -/
 noncomputable def isDirectIface.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -725,7 +725,7 @@ noncomputable def isDirectIface.impl [GooseExts] [GoGlobalContext] : val :=
 /-- MODEL: whether t's type has size zero: an array of length zero or of a
     zero-size element, or a struct of zero-size fields.
 
-    go: type.go:476:6 -/
+    go: type.go:481:6 -/
 noncomputable def isZeroSize.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))

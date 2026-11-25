@@ -269,6 +269,11 @@ type Type interface {
 	// CanSeq2 reports whether a [Value] with this type can be iterated over using [Value.Seq2].
 	CanSeq2() bool
 
+	// MODEL: the unexported methods common and uncommon are replaced by tok.
+	// An interface type is never a value's dynamic type, and only the
+	// package's own rtype implements Type in either (so the model's
+	// AssignableTo and Implements answer as real's); reflection does not
+	// observe an interface's methods (no numMethod row).
 	tok() any
 }
 

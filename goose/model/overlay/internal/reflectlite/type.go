@@ -28,7 +28,10 @@ import (
 // so they can be used as map keys.
 // Two Type values are equal if they represent identical types.
 //
-// MODEL: the unexported methods common and uncommon are replaced by tok.
+// MODEL: the unexported methods common and uncommon are replaced by tok. An
+// interface type is never a value's dynamic type, and only the package's own
+// rtype implements Type in either; reflection does not observe an
+// interface's methods (no numMethod row).
 type Type interface {
 	// Methods applicable to all types.
 
