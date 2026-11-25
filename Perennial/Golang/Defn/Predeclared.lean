@@ -46,8 +46,12 @@ def max.impl (t : go.GoType) (n : Nat) : val :=
   | _ => LitV LitPoison
 
 /-- `panic(v)` starts a panic with the value `v` (`Raise`), which unwinds the
-evaluation context up to a `Catch` (a function with `defer`s, `wrapDefer`). -/
-def panic.impl : val := λ: "v", Raise "v"
+evaluation context up to a `Catch` (a function with `defer`s, `wrapDefer`).
+`panic(nil)` is a run-time panic (stuck): Go panics with a `*runtime.PanicNilError`. -/
+def panic.impl : val :=
+  λ: "v",
+    if: "v" =⟨go.InterfaceType []⟩ #interface.nil then Panic "panic called with nil argument"
+    else Raise "v"
 
 end helpers
 

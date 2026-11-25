@@ -1645,3 +1645,26 @@ The sibling `array_length_step` keeps `2^63`: array lengths are bounded by Go's 
 
 **Why.** Upamanyu, 2026-11-24: "I'm ok with constraining executions to only those that have
 strings on the heap that are less than `maxAddr` size."
+
+## Case 52 — ACCEPTED: `panic(nil)` is stuck (branch `panic-nil-stuck`, issue #674)
+
+**Symptom.** Unsound. `panic.impl` raised its argument as is, `nil` included, and
+`wrapDeferRecover` takes a `nil` `$panic` after the deferred chain to mean "recovered", so
+`panic(nil)` in a function with a recovering deferred literal returned normally whether or
+not `recover()` ran, and `recover()` returned `nil`.
+
+**Witness.** `func f() (ok bool) { defer func() { ok = recover() != nil }(); panic(nil) }`:
+Go (1.21 and later, default `GODEBUG`) returns `true`, `recover()` giving a
+`*runtime.PanicNilError`; the model returned `false`. Semantics `panic_nil.go`.
+
+**Taken.** `panic.impl` is `if: v =⟨interface{}⟩ nil then Panic "panic called with nil
+argument" else Raise v`: stuck, like the model's other run-time panics (one test in one
+trusted definition, no new rule). `wp_panic` takes `p : GoInterfaceOk` (a non-`nil`
+argument); its callers already panicked with `interface.ok _`.
+
+**Not taken.** Modelling `*runtime.PanicNilError` (a runtime type, its methods and a value to
+raise, for programs that recover `panic(nil)`, which none needs); changing `$panic`'s
+"not panicking" encoding.
+
+**Why.** The simpler sound option of the issue, chosen by the coordinator (etcd-grove,
+issue #674): it removes a behaviour Go does not have and adds none.

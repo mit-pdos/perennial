@@ -1348,6 +1348,12 @@ noncomputable def testPlusTimes [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def shouldPanic [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.shouldPanic"
 
+noncomputable def recoverPanicNil [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.recoverPanicNil"
+
+noncomputable def testRecoverPanicNil [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRecoverPanicNil"
+
 noncomputable def testOrCompareSimple [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testOrCompareSimple"
 
@@ -10759,6 +10765,48 @@ noncomputable def shouldPanic.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))))
   (Val #())))
 
+/-- recoverPanicNil recovers the panic of panic(nil): since Go 1.21 it panics with
+    a *runtime.PanicNilError, so recover() is not nil.
+
+    go: panic_nil.go:5:6 -/
+noncomputable def recoverPanicNil.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "$res0" (Var "ok")
+  (Seq (App (Val wrapDeferRecover)
+  (Lam "$defer"
+  (Lam "$panic"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.InterfaceType [])))) (Val UntypedNil))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))
+  (App (Val doExecute)
+  (Let "$f" (Lam BAnon
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.InterfaceType [])))) (Pair (App (Val recoverPanic)
+  (Var "$panic")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.InterfaceType [])))) (Val UntypedNil)))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))
+  (Val #())))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Val #()))
+  (App (Var "$oldf") (Val #())))))))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))
+
+/-- go: panic_nil.go:12:6 -/
+noncomputable def testRecoverPanicNil.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve recoverPanicNil []))) (Val #())) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
 /-- go: precedence.go:3:6 -/
 noncomputable def testOrCompareSimple.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -17930,6 +17978,8 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testManyParentheses_unfold : FuncUnfold testManyParentheses [] testManyParentheses.impl
   testPlusTimes_unfold : FuncUnfold testPlusTimes [] testPlusTimes.impl
   shouldPanic_unfold : FuncUnfold shouldPanic [] shouldPanic.impl
+  recoverPanicNil_unfold : FuncUnfold recoverPanicNil [] recoverPanicNil.impl
+  testRecoverPanicNil_unfold : FuncUnfold testRecoverPanicNil [] testRecoverPanicNil.impl
   testOrCompareSimple_unfold : FuncUnfold testOrCompareSimple [] testOrCompareSimple.impl
   testOrCompare_unfold : FuncUnfold testOrCompare [] testOrCompare.impl
   testAndCompare_unfold : FuncUnfold testAndCompare [] testAndCompare.impl
@@ -18412,6 +18462,8 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testManyParentheses_unfold
   Assumptions.testPlusTimes_unfold
   Assumptions.shouldPanic_unfold
+  Assumptions.recoverPanicNil_unfold
+  Assumptions.testRecoverPanicNil_unfold
   Assumptions.testOrCompareSimple_unfold
   Assumptions.testOrCompare_unfold
   Assumptions.testAndCompare_unfold
