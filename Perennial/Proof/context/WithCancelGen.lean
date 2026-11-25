@@ -372,6 +372,7 @@ theorem wp_WithCancel_Background_canceled_of
   iintro %c %γ %cancel ⟨#Hcancel, #Hc, #Hf⟩
   ihave #Hcw := isCancelCtxOfA_of _ _ _ _ $$ Hc
   ihave #Hdl := deadlineSpec_background (GF := GF)
+  iunfold cancelSpec at Hcancel
   iapply HΦ
   isplitl []
   · imodintro
