@@ -138,7 +138,9 @@ class ReflectSemantics : Prop where
         (if typeSetContains t u then #(interface.mkOk t v) else Panic "not modelled")
       else Convert u go.any (Convert t u (Val v)))
   /-- `any(&(*p).f)` for the `i`th field `f` of `*p`. Not an instance: its premises are not
-  found by instance search. -/
+  found by instance search.
+  Not yet used by the reflect Go model (`goose/model/overlay`);
+  planned for S2: `Value.Field`/`FieldByName`. -/
   field_ref_at_step {s : go.GoType} {fs : List go.field_decl} [s ↓u go.StructType fs] (l : Loc)
       (i : w64) (fd : go.field_decl) (hl : l ≠ null) (hi : 0 ≤ sint.Z i)
       (hfd : fs[sint.nat i]? = some fd) (hblank : isBlankField (fieldDeclName fd) = false) :
@@ -146,7 +148,9 @@ class ReflectSemantics : Prop where
       Convert (go.PointerType (fieldDeclType fd)) go.any
         (StructFieldRef s (fieldDeclName fd) (Val #l))
   /-- `any((*p)[:])` for a pointer `p` to an array. Not an instance: its premise is not found by
-  instance search. -/
+  instance search.
+  Not yet used by the reflect Go model (`goose/model/overlay`);
+  planned for S2: `Value.Index` on arrays. -/
   array_slice_at_step {a e : go.GoType} {n : Int} [a ↓u go.ArrayType n e] (l : Loc)
       (hl : l ≠ null) :
     ⟦ArraySliceAt, #(interface.mkOk (go.PointerType a) #l)⟧ ⤳
@@ -155,21 +159,34 @@ class ReflectSemantics : Prop where
   eq_nil_at_step {t u : go.GoType} [t ↓u u] [IsNilable u] (v : val) {z : val}
       [⟦GoZeroVal t, #()⟧ ⤳ Val z] :
     ⟦EqNilAt, #(interface.mkOk t v)⟧ ⤳ GoOp GoEquals t (Val v, Val z)
-  /-- `unsafe.Pointer` of a pointer. -/
+  /-- `unsafe.Pointer` of a pointer.
+  Not yet used by the reflect Go model (`goose/model/overlay`);
+  planned for S5: `DeepEqual`. -/
   pointer_of_at_ptr {t e : go.GoType} [t ↓u go.PointerType e] (l : Loc) :
     ⟦PointerOfAt, #(interface.mkOk t #l)⟧ ⤳ #l
+  /-- An `unsafe.Pointer` itself.
+  Not yet used by the reflect Go model (`goose/model/overlay`);
+  planned for S5: `DeepEqual`. -/
   pointer_of_at_unsafe {t : go.GoType} [t ↓u «unsafe».Pointer] (l : Loc) :
     ⟦PointerOfAt, #(interface.mkOk t #l)⟧ ⤳ #l
-  /-- A map's identity, its cell. -/
+  /-- A map's identity, its cell.
+  Not yet used by the reflect Go model (`goose/model/overlay`);
+  planned for S5: `DeepEqual`. -/
   pointer_of_at_map {t k v : go.GoType} [t ↓u go.MapType k v] (m : GoMap) :
     ⟦PointerOfAt, #(interface.mkOk t #m)⟧ ⤳ #m
+  /-- A channel's identity.
+  Not yet used by the reflect Go model (`goose/model/overlay`);
+  planned for S5: `DeepEqual`. -/
   pointer_of_at_chan {t e : go.GoType} {d : go.ChanDir} [t ↓u go.ChannelType d e] (c : GoChan) :
     ⟦PointerOfAt, #(interface.mkOk t #c)⟧ ⤳ #c
-  /-- A nil slice's data pointer. -/
+  /-- A nil slice's data pointer.
+  Not yet used by the reflect Go model (`goose/model/overlay`);
+  planned for S5: `DeepEqual`. -/
   pointer_of_at_slice_nil {t e : go.GoType} [t ↓u go.SliceType e] :
     ⟦PointerOfAt, #(interface.mkOk t #slice.nil)⟧ ⤳ #null
   /-- The data pointer of a slice of positive capacity. Not an instance: its premise is not found
-  by instance search. -/
+  by instance search.
+  Not yet used by the reflect Go model (`goose/model/overlay`); planned for S5: `DeepEqual`. -/
   pointer_of_at_slice {t e : go.GoType} [t ↓u go.SliceType e] (s : GoSlice)
       (h : 0 < uint.Z s.cap) :
     ⟦PointerOfAt, #(interface.mkOk t #s)⟧ ⤳ #s.ptr

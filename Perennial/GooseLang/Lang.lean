@@ -229,16 +229,21 @@ inductive GoInstruction where
   never emits it; `internal/reflectcore`'s primitive stubs use it. -/
   | ConvertAt
   /-- `&(*p).f` for the `i`th field `f` of `*p`'s struct type, boxed in `any`. Not a Go expression:
-  goose never emits it; `internal/reflectcore`'s primitive stubs use it. -/
+  goose never emits it; `internal/reflectcore`'s primitive stubs use it.
+  Not yet used by the reflect Go model (`goose/model/overlay`);
+  planned for S2: `Value.Field`/`FieldByName`. -/
   | FieldRefAt
   /-- `(*p)[:]` for an interface `p` holding a pointer to an array, boxed in `any`. Not a Go
-  expression: goose never emits it; `internal/reflectcore`'s primitive stubs use it. -/
+  expression: goose never emits it; `internal/reflectcore`'s primitive stubs use it.
+  Not yet used by the reflect Go model (`goose/model/overlay`);
+  planned for S2: `Value.Index` on arrays. -/
   | ArraySliceAt
   /-- `x == nil` at the dynamic type of the interface `x`. Not a Go expression: goose never emits
   it; `internal/reflectcore`'s primitive stubs use it. -/
   | EqNilAt
   /-- The address behind the pointer-like value in the interface `x`, as an `unsafe.Pointer`. Not
-  a Go expression: goose never emits it; `internal/reflectcore`'s primitive stubs use it. -/
+  a Go expression: goose never emits it; `internal/reflectcore`'s primitive stubs use it.
+  Not yet used by the reflect Go model (`goose/model/overlay`); planned for S5: `DeepEqual`. -/
   | PointerOfAt
   /-- The fact `q` about the type `T` of a token `any((*T)(nil))`. Not a Go expression: goose never
   emits it; `internal/reflectcore`'s primitive stubs use it. -/
