@@ -1,6 +1,10 @@
 package util
 
 import (
+	"go/ast"
+	"go/parser"
+	"go/token"
+	"go/types"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -198,6 +202,73 @@ func TestModelParamNames(t *testing.T) {
 		case c.want != "" && (err == nil || !strings.Contains(err.Error(), c.want)):
 			t.Errorf("%s: error %v, want it to contain %q", c.model, err, c.want)
 		}
+	}
+}
+
+// TestModelParamNamesKept: a parameter or result the real declaration names
+// (not blank) keeps its name in the model, so same-typed parameters cannot be
+// swapped; a blank one may be named.
+func TestModelParamNamesKept(t *testing.T) {
+	real := "package p\n\nfunc Index(a, b []byte, _ int) (n int) { return 0 }\n"
+	for _, c := range []struct{ model, want string }{
+		{"func Index(a, b []byte, k int) (n int) { return k }", ""},
+		{"func Index(b, a []byte, _ int) (n int) { return len(a) }",
+			"Index: type func(a []byte, b []byte, _ int) (n int), which the model changes to " +
+				"func(b []byte, a []byte, _ int) (n int)"},
+		{"func Index(a, c []byte, _ int) (n int) { return 0 }", "which the model changes to"},
+		{"func Index(a, b []byte, _ int) (m int) { return 0 }", "which the model changes to"},
+		{"func Index(a, b []byte, _ int) int { return 0 }", "which the model changes to"},
+	} {
+		root := modelModule(t, real, "package p\n\n"+c.model+"\n",
+			"[model]\ndir = \"model\"\nreplaces = [\"Index\"]\n", nil)
+		_, err := buildModels(root, "./p")
+		switch {
+		case c.want == "" && err != nil:
+			t.Errorf("%s: %v", c.model, err)
+		case c.want != "" && (err == nil || !strings.Contains(err.Error(), c.want)):
+			t.Errorf("%s: error %v, want it to contain %q", c.model, err, c.want)
+		}
+	}
+}
+
+// TestModelGenericMethod: a replaced method of a generic type is checked like
+// a function (no go/types panic over its receiver's type parameters): a
+// parameter the real method leaves unnamed may be named, named ones keep
+// their names, and the types are compared.
+func TestModelGenericMethod(t *testing.T) {
+	real := "package p\n\ntype G[T any] struct{ x T }\n\n" +
+		"func (g *G[T]) M(a, b T, _ *T) T { return a }\n\nfunc (g *G[T]) N(T) {}\n"
+	for _, c := range []struct{ model, want string }{
+		{"func (g *G[T]) M(a, b T, p *T) T { return b }\n\nfunc (g *G[T]) N(v T) { g.x = v }", ""},
+		{"func (g *G[T]) M(b, a T, _ *T) T { return a }\n\nfunc (g *G[T]) N(T) {}",
+			"G.M: (*m/p.G[T]) func(a T, b T, _ *T) T, which the model changes to (*m/p.G[T]) func(b T, a T, _ *T) T"},
+		{"func (g *G[T]) M(a, b T, _ *T) T { return a }\n\nfunc (g *G[T]) N(v *T) {}",
+			"G.N: (*m/p.G[T]) func(T), which the model changes to (*m/p.G[T]) func(v *T)"},
+	} {
+		root := modelModule(t, real, "package p\n\n"+c.model+"\n",
+			"[model]\ndir = \"model\"\nreplaces = [\"G.M\", \"G.N\"]\n", nil)
+		_, err := buildModels(root, "./p")
+		switch {
+		case c.want == "" && err != nil:
+			t.Errorf("%s: %v", c.model, err)
+		case c.want != "" && (err == nil || !strings.Contains(err.Error(), c.want)):
+			t.Errorf("%s: error %v, want it to contain %q", c.model, err, c.want)
+		}
+	}
+	// unnamedParams of a generic type's method signature (receiver type
+	// parameters) does not panic and prints the parameters unnamed
+	fset := token.NewFileSet()
+	f, err := parser.ParseFile(fset, "p.go", real, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pkg, err := new(types.Config).Check("m/p", fset, []*ast.File{f}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sig := method(pkg.Scope().Lookup("G").(*types.TypeName), "M").Type()
+	if s := typeString(unnamedParams(sig)); s != "func(T, T, *T) T" {
+		t.Errorf("unnamedParams: %s", s)
 	}
 }
 
