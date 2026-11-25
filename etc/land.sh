@@ -11,7 +11,8 @@
 #            list (etc/meta-lib.py --check), build the touched Lean modules
 #            (and, if framework files changed, Perennial and the regression
 #            tests Perennial/ProgramLogic/*Test.lean), run goose's tests if
-#            goose changed
+#            goose changed; print the Go model overlays' `MODEL:` marker count
+#            (etc/model-deviations.py; visibility only, no gate)
 #        etc/land.sh verdict-path
 #            print the path of the review's verdict file (in the branch's git dir)
 #        etc/land.sh mark-reviewed
@@ -205,6 +206,9 @@ case "$cmd" in
   prepare)
     check_branch; fetch_and_merge; build_changed
     witness_gate || echo "land: WARNING: push will refuse until the witness gate passes (above)"
+    # the Go models' departures from the real Go source, a trust-base measure (no gate);
+    # etcd-grove's models/ too when ETCD_GROVE_DIR is set
+    python3 etc/model-deviations.py || echo "land: WARNING: etc/model-deviations.py failed"
     echo "land: prepared. Next: /review-trusted --fix (it checks every criterion of $CRITERIA" \
          "and writes its verdict to $VERDICT), then etc/land.sh push";;
   verdict-path) echo "$VERDICT";;
