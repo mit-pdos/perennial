@@ -65,10 +65,10 @@ theorem wp_assumeSumNoOverflowSigned (x y : w64) (Φ : val → IProp GF) :
       WP (App (App (Val assumeSumNoOverflowSigned) (Val #x)) (Val #y)) @ s; E {{ Φ }} := by
   iintro HΦ
   wp_call
-  by_cases h1 : sint.Z (W64 0) < sint.Z y
+  by_cases h1 : sint.Z (W64 0) ≤ sint.Z y
   · simp only [decide_eq_true h1, ↓reduceIte]
     wp_pures
-    by_cases h2 : sint.Z x < sint.Z (W64 (2 ^ 63 - 1) - y)
+    by_cases h2 : sint.Z x ≤ sint.Z (W64 (2 ^ 63 - 1) - y)
     · simp only [decide_eq_true h2, ↓reduceIte]
       wp_pures
       wp_apply_core wp_assume
@@ -86,23 +86,18 @@ theorem wp_assumeSumNoOverflowSigned (x y : w64) (Φ : val → IProp GF) :
       exact absurd H (by decide)
   · simp only [decide_eq_false h1, Bool.false_eq_true, ↓reduceIte]
     wp_pures
-    by_cases h3 : sint.Z y < sint.Z (W64 0)
-    · simp only [decide_eq_true h3, ↓reduceIte]
+    have h3 : sint.Z y < sint.Z (W64 0) := by word
+    simp only [decide_eq_true h3, ↓reduceIte]
+    wp_pures
+    by_cases h4 : sint.Z (W64 (-2 ^ 63) - y) ≤ sint.Z x
+    · simp only [decide_eq_true h4, ↓reduceIte]
       wp_pures
-      by_cases h4 : sint.Z (W64 (-2 ^ 63) - y) < sint.Z x
-      · simp only [decide_eq_true h4, ↓reduceIte]
-        wp_pures
-        wp_apply_core wp_assume
-        iintro %_
-        iapply HΦ
-        ipureintro
-        constructor <;> word
-      · simp only [decide_eq_false h4, Bool.false_eq_true, ↓reduceIte]
-        wp_pures
-        wp_apply_core wp_assume
-        iintro %H
-        exact absurd H (by decide)
-    · simp only [decide_eq_false h3, Bool.false_eq_true, ↓reduceIte]
+      wp_apply_core wp_assume
+      iintro %_
+      iapply HΦ
+      ipureintro
+      constructor <;> word
+    · simp only [decide_eq_false h4, Bool.false_eq_true, ↓reduceIte]
       wp_pures
       wp_apply_core wp_assume
       iintro %H
