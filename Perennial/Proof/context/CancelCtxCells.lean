@@ -174,17 +174,84 @@ theorem wp_err_Load_of
       ihave %h := dghostVar_agree _ _ _ _ _ $$ Hcl Hcg
       cases h
   · simp only [he, ↓reduceIte]
-    icases Hcg with ⟨%ht, #Hce, #Hp, #Hc⟩
+    icases Hcg with ⟨%ht, #Hce, #Hp, #Hc, %hA⟩
     imod Hclose $$ [Hdone Hdg Herr] with -
     · inext; iexists od, e; iframe Hdone Hdg Herr
       simp only [he, ↓reduceIte, named]
-      iframe #; ipureintro; exact ht
+      isplitl []; · ipureintro; exact ht
+      isplitl []; · iexact Hce
+      isplitl []; · imodintro; iexact Hp
+      isplitl []; · iexact Hc
+      ipureintro; exact hA
     imodintro
     iapply HΦ
     isplitl []
     · ipureintro; intro _; exact he
     · simp only [he, ↓reduceIte]
       iframe #; ipureintro; exact ht
+
+/-- `wp_err_Load_of` for a `*cancelCtx` whose allowed errors `A` are known
+(`isCancelCtxOfA`): a non-`nil` error is one `A` allows. -/
+theorem wp_err_LoadA_of
+    (wp_VLoad : sync.atomic.Value.Load.spec (GF := GF) (hG := hG))
+    (c : Loc) (γ : ContextNames) (P : IProp GF) (A : GoInterface → Prop) (cl : Bool) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOfA c γ P A ∗
+        (if cl then ContextClosed γ else iprop(True)) }}
+      (App (Val (structFieldRef context.cancelCtx go!"err" c @!!
+        go.GoType.PointerType sync.atomic.Value.ty @!! go!"Load")) (Val #()))
+    {{ (e : GoInterface), RET #e; ⌜cl = true → e ≠ interface.nil⌝ ∗
+        (if e = interface.nil then iprop(True)
+         else iprop(⌜isTypedErr e⌝ ∗ isCtxErr e ∗ □ P ∗ ContextClosed γ ∗ ⌜A e⌝)) }} := by
+  iintro %Φ ⟨#Hpkg, #Hc, Hcl⟩ HΦ
+  unfold isCancelCtxOfA
+  iNamed Hc
+  iapply wp_VLoad _ (DFrac.own 1)
+  · iPkgInit
+  iinv Hinv with Hi Hclose
+  iapply fupd_mask_intro Std.LawfulSet.empty_subset
+  iintro Hmask
+  inext
+  unfold cancelCtxInv
+  icases Hi with ⟨%od, %e, Hdone, Hdg, Herr, Hcg⟩
+  iexists e
+  iframe Herr
+  iintro Herr
+  imod Hmask with -
+  by_cases he : e = interface.nil
+  · subst he
+    cases cl
+    · imod Hclose $$ [Hdone Hdg Herr Hcg] with -
+      · inext; iexists od, GoInterface.nil; iframe
+      imodintro
+      iapply HΦ
+      rw [ite_eq_left rfl]
+      isplitl []
+      · ipureintro; intro h; cases h
+      · itrivial
+    · rw [ite_eq_left rfl] at *
+      simp only [↓reduceIte, ContextClosed]
+      ihave %h := dghostVar_agree _ _ _ _ _ $$ Hcl Hcg
+      cases h
+  · simp only [he, ↓reduceIte]
+    icases Hcg with ⟨%ht, #Hce, #Hp, #Hc, %hA⟩
+    imod Hclose $$ [Hdone Hdg Herr] with -
+    · inext; iexists od, e; iframe Hdone Hdg Herr
+      simp only [he, ↓reduceIte, named]
+      isplitl []; · ipureintro; exact ht
+      isplitl []; · iexact Hce
+      isplitl []; · imodintro; iexact Hp
+      isplitl []; · iexact Hc
+      ipureintro; exact hA
+    imodintro
+    iapply HΦ
+    isplitl []
+    · ipureintro; intro _; exact he
+    · simp only [he, ↓reduceIte]
+      isplitl []; · ipureintro; exact ht
+      isplitl []; · iexact Hce
+      isplitl []; · imodintro; iexact Hp
+      isplitl []; · iexact Hc
+      ipureintro; exact hA
 
 /-- `c.err.Load()` given the lock invariant's half of the closed flag, which determines whether
 the result is `nil`. -/
@@ -227,7 +294,7 @@ theorem wp_err_Load_frag_of
     · ihave %h := dghostVar_agree _ _ _ _ _ $$ Hf Hcg
       cases h
   · simp only [he, ↓reduceIte]
-    icases Hcg with ⟨%ht, #Hce, #Hp, #Hc⟩
+    icases Hcg with ⟨%ht, #Hce, #Hp, #Hc, %hA⟩
     cases closed <;> simp only [closedFrag, Bool.false_eq_true, ↓reduceIte]
     · unfold ContextClosed
       ihave %h := dghostVar_agree _ _ _ _ _ $$ Hf Hc
@@ -235,7 +302,11 @@ theorem wp_err_Load_frag_of
     · imod Hclose $$ [Hdone Hdg Herr] with -
       · inext; iexists od, e; iframe Hdone Hdg Herr
         simp only [he, ↓reduceIte, named]
-        iframe #; ipureintro; exact ht
+        isplitl []; · ipureintro; exact ht
+        isplitl []; · iexact Hce
+        isplitl []; · imodintro; iexact Hp
+        isplitl []; · iexact Hc
+        ipureintro; exact hA
       imodintro
       iapply HΦ
       iframe Hf
