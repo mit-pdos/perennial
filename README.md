@@ -431,7 +431,8 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   the model like any other code; only the primitive stubs it calls have a
   hand-written `.impl`. The trusted claim, for each replaced declaration, is
   that every behaviour of the real one under every use is a behaviour of the
-  model's translation (`review-trusted`, R12).
+  model's translation (`review-trusted`, R12). The plan and its stages:
+  `goose/model-overlays-plan.md`.
 * **Generated code comes from goose.** The translator in `goose/` emits
   `Perennial/Code/**` and `Perennial/GeneratedProof/**`; regenerate with
   `etc/update-goose-new.py` rather than editing them by hand. The translation's

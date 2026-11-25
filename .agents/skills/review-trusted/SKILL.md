@@ -1,6 +1,6 @@
 ---
 name: review-trusted
-description: Review a change to Perennial's trusted base (the Go semantics in GooseLang/Golang/Defn, the goose translator, trusted models in TrustedCode, goose .toml trust lists, adequacy theorem statements, assume/axiom/sorry) for soundness and for trust that should not have been added (above all, trusted models of Go that goose translates or could be extended to translate: trust is only for irreducible primitives, shown by a goose run on the real source), and optionally fix it. Use before committing or merging any change that touches those files, when asked to review a commit, range or PR for trust/soundness, or when asked whether a model assumption or trusted model is acceptable.
+description: Review a change to Perennial's trusted base (the Go semantics in GooseLang/Golang/Defn, the goose translator, trusted models in TrustedCode, goose .toml trust lists, adequacy theorem statements, assume/axiom/sorry) for soundness and for trust that should not have been added (above all, trusted models of Go that goose translates or could be extended to translate: trust is only for irreducible primitives, shown by a goose run on the real source), checked against the user's criteria (CRITERIA.md, including that every semantics addition has a witness that existing lemmas do not cover), and optionally fix it; writes the verdict file `etc/land.sh` checks. Use before committing or merging any change that touches those files, when asked to review a commit, range or PR for trust/soundness, or when asked whether a model assumption or trusted model is acceptable.
 argument-hint: "[commit | A..B | (nothing: branch + working tree)] [--fix]"
 ---
 
@@ -14,6 +14,13 @@ changes; read it once before reviewing, and compare the change against them
 (if it is missing, say so under "Skipped" and proceed). Precedent does not
 lower a grade: a merged change of the same shape means that change also needs
 rework, not that this one is fine (say both).
+
+`CRITERIA.md` (next to this file) is the user's list of criteria for any
+trusted change. Every review reports each of them, `PASS`, `NOTE`, `FAIL` or
+`N/A`, with evidence (step 5), and writes a verdict file that
+`etc/land.sh mark-reviewed` checks (step 7). The review needs no other context
+than this directory, the repository and the target: everything below says
+where to look.
 
 Tiers (what the helper script reports):
 
@@ -60,7 +67,22 @@ file in a `[model].dir` (R12), wherever it sits.
    there is no tier-0 change and no signal in tiers 1-2, say so and stop: this
    review is about trust, `/code-review` is about bugs. `git show TARGET`
    gives the rest of the change (README, docs, proofs) that steps 2 and R8
-   need.
+   need. (With no tier-0 change, still write the verdict file of step 7: every
+   criterion `N/A`, or what applies to the tier 1-3 signals.)
+
+   Also run the witness gate that `etc/land.sh push` applies (criterion 1):
+
+   ```
+   python3 etc/trusted-delta.py --witness-gate <merge-base>..<head>
+   ```
+
+   (`etc/land.sh witness-check` on the current branch, which also lists the
+   witnesses land.sh will exercise). It lists the gated lines (a step rule, a
+   semantics class or instance, a `GoInstruction` constructor, an assume, an
+   angelic exit, an axiom, an extension's semantics, a trusted `.impl`, a Go
+   model overlay's table, replaced names or choice points, on an added tier-0
+   line) and the `Semantics-Witness:`/`Real-use:` trailers of the commits
+   (`git log --format=%B <range>` shows them in full).
 
 2. **Read the commit message / PR description for the *why*.** A trusted
    change must say what it adds to the trusted base and which lower rung of R1
@@ -141,14 +163,82 @@ file in a `[model].dir` (R12), wherever it sits.
    counterexample to case 1 in `cases.md` is two lines of Go, and the people
    who had accepted the author's framing did not look for it.
 
-5. **Report** in the format below. Then, with `--fix`, apply the playbook.
+5. **Apply the criteria and check the witness.** For each item of
+   `CRITERIA.md`, decide `PASS` (the change meets it: cite the line, file or
+   command output that shows it), `NOTE` (met, with something to record),
+   `FAIL` (not met: a finding, REWORK unless a rule above makes it BLOCK; cite
+   the criterion as `[REWORK C<n>]`) or `N/A` (the change has nothing it
+   applies to: say why in a few words). Do not infer a PASS from the author's
+   message: check the diff.
 
-6. **Record the verdict for landing.** When the final verdict is OK (every
-   BLOCK and REWORK fixed and committed, or no trusted change at all) and the
-   target was the current branch, run `etc/land.sh mark-reviewed`: it records
-   the branch's reviewed changes, and `etc/land.sh push` (the `/land` skill)
-   refuses to move `lean` without it. Never record with an open BLOCK or
-   REWORK, and never for a review of some other commit or range.
+   **The witness (criterion 1), for every semantics addition the gate lists.**
+   The point is to find out whether the addition is needed at all, so do it
+   independently of the author's argument:
+   - Read the witness (`Semantics-Witness:`) and the real use (`Real-use:`):
+     the Go code, and the step of its proof the addition is for. Check that the
+     real function exists in a translated package and has the complication the
+     witness has (if the trailer names a repository outside Perennial, read its
+     source; say so if you cannot). A witness that does not exercise the
+     addition, or a real use without the complication: `FAIL`.
+   - Search for what already covers it, on `origin/lean` (`git grep -n
+     <pattern> origin/lean -- Perennial/Golang/Theory Perennial/GooseLang
+     Perennial/Proof Perennial/Golang/Defn`): lemmas about the same
+     instruction, function or predicate (its name; `_not_null`, `_step`,
+     `_inj`, `_lt` facts on the same functions; the typed points-to and
+     ownership lemmas of the values involved: `typedPointsto_not_null` was the
+     answer in perennial#703). List the patterns searched and the candidates.
+   - Attempt the step with the existing lemmas: in a scratch file, state the
+     goal the addition discharges (the witness's stuck goal, or the law's
+     statement over the objects of the witness) and prove it naming none of
+     the declarations the change adds; check it with `lake env lean <file>` (or
+     the project's build wrapper). If it goes through, also confirm the
+     proof's constants exclude the new ones:
+
+     ```lean
+     open Lean in
+     #eval show MetaM Unit from do
+       let c ← getConstInfo `attempt
+       IO.println (c.value?.map (·.getUsedConstants))
+     ```
+
+     If you cannot build, say so under "Skipped" and grade on the search
+     alone.
+   - Grade: the addition is covered by existing lemmas: `FAIL C1` (REWORK:
+     use the lemma, drop the addition; name the lemma and the proof). Not
+     covered: `PASS C1`, with the goal the attempt stopped at and the search.
+     `Semantics-Witness: none (narrowing: ...)`: check the claim, that the
+     change only deletes rules, laws or models or makes the model stuck in
+     more places (no execution of the old model becomes possible); a false
+     claim is `FAIL C1`.
+   For a goose change with no gated line, criterion 1 still asks for the
+   minimal program (the goose unit test or semantics test it adds) and a real
+   use: say whether the message names one.
+
+6. **Report** in the format below. Then, with `--fix`, apply the playbook.
+
+7. **Write the verdict file and record it for landing.** When the target was
+   the current branch, write the short verdict to the path that
+   `etc/land.sh verdict-path` prints (in the branch's git dir, not in the
+   repository):
+
+   ```
+   Verdict: OK | REWORK | BLOCK (n NOTEs)
+   Witness: needed | not needed | narrowing | N/A — <one line: the goal the attempt stopped at, or the lemma that covers it>
+   C1: PASS|NOTE|FAIL|N/A <one line of evidence>
+   ...
+   C13: PASS|NOTE|FAIL|N/A <one line of evidence>
+   Findings: <one line per BLOCK/REWORK still open; none>
+   ```
+
+   When the final verdict is OK (every BLOCK, REWORK and criterion `FAIL`
+   fixed and committed, or no trusted change at all), rewrite the file for the
+   final state and run `etc/land.sh mark-reviewed`: it checks the file (first
+   line `Verdict: OK`; a `C<n>:` line for every criterion, none `FAIL`; when
+   the witness gate fires, `Witness: needed` or `Witness: narrowing`), stamps
+   it with the changes' patch-id and records them; `etc/land.sh push` (the
+   `/land` skill) refuses to move `lean` without that record, and runs the
+   witness gate itself. Never record with an open BLOCK, REWORK or `FAIL`,
+   and never for a review of some other commit or range.
 
 ## Rules
 
@@ -434,8 +524,8 @@ additions only). Goose splices them into the real package and translates them.
 
 ## Report format
 
-Lead with the verdict, then the trust delta, then findings, then what was
-checked. Keep it short enough to act on.
+Lead with the verdict, then the trust delta, then findings, then the
+criteria, then what was checked. Keep it short enough to act on.
 
 ```
 Verdict: BLOCK | REWORK | OK (n NOTEs)
@@ -453,6 +543,12 @@ Findings (most severe first):
    Evidence: <the Go program / spec sentence / diff that shows it>.
    Fix: <the concrete change; name the lower rung for R1, the resource for R3a>.
 2. ...
+
+Witness (C1): <needed | not needed | narrowing | N/A>: <the witness and real use; patterns
+  searched; the attempt and the goal it stopped at, or the lemma that covers it>
+Criteria (CRITERIA.md):
+C1: PASS|NOTE|FAIL|N/A <evidence>
+... (one line for each item)
 
 Checked: <commands run: build, #print axioms, go run, go test, go doc, goose>
 Skipped: <steps not done and why (no build on disk, no toolchain, ...)>
@@ -501,6 +597,11 @@ soundness reason (the message is itself reviewed by R8). Playbook:
   under R2, is not); produce
   the fix as a proposal in the report (diff included) rather than applying
   it, unless the fix is a pure documentation update (R8).
+- **A criterion `FAIL`:** fix what the criterion names (C1 not needed: drop
+  the addition and use the covering lemma in the proof that wanted it; C10:
+  trim the docstring, move the history to the commit message or `docs/`);
+  criteria that need the user's decision (C3, C5, C9) go in the report as a
+  proposal.
 - **Docs (R8):** update `README.md` "Model assumptions" / the relevant doc
   section and the docstring.
 
