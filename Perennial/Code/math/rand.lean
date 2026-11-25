@@ -62,9 +62,11 @@ opaque re [GooseExts] [GoGlobalContext] : val
 
 opaque rn [GooseExts] [GoGlobalContext] : val
 
-opaque rngLen [GooseExts] [GoGlobalContext] : val
+@[reducible] noncomputable def rngLen [GooseExts] [GoGlobalContext] : val :=
+  #(607 : Int)
 
-opaque rngTap [GooseExts] [GoGlobalContext] : val
+@[reducible] noncomputable def rngTap [GooseExts] [GoGlobalContext] : val :=
+  #(273 : Int)
 
 @[reducible] noncomputable def rngMax [GooseExts] [GoGlobalContext] : val :=
   #(9223372036854775808 : Int)
@@ -72,10 +74,14 @@ opaque rngTap [GooseExts] [GoGlobalContext] : val
 @[reducible] noncomputable def rngMask [GooseExts] [GoGlobalContext] : val :=
   #(9223372036854775807 : Int)
 
-opaque int32max [GooseExts] [GoGlobalContext] : val
+@[reducible] noncomputable def int32max [GooseExts] [GoGlobalContext] : val :=
+  #(2147483647 : Int)
 
 noncomputable def globalRandGenerator [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.globalRandGenerator"
+
+noncomputable def rngCooked [GooseExts] [GoGlobalContext] : GoString :=
+  go!"math/rand.rngCooked"
 
 noncomputable def absInt32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.absInt32"
@@ -151,6 +157,76 @@ noncomputable def seedrand [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def NewZipf [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.NewZipf"
+
+/-- NewSource returns a new pseudo-random [Source] seeded with the given value.
+    Unlike the default [Source] used by top-level functions, this source is not
+    safe for concurrent use by multiple goroutines.
+    The returned [Source] implements [Source64].
+
+    go: rand.go:51:6 -/
+noncomputable def NewSource.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "seed"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Source.ty))) (App (Val (GoInstruction (GoZeroVal Source.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "seed" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "seed"))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType rngSource.ty) Source.ty))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.int64))) (Var "seed"))
+  (App (App (Val (GoInstruction (FuncResolve newSource []))) (Val #())) (Var "$a0"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Source.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad Source.ty))) (Var "$res0")))))
+
+/-- go: rand.go:55:6 -/
+noncomputable def newSource.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "seed"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType rngSource.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType rngSource.ty)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "seed" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "seed"))
+  (Let "rng" (App (Val (GoInstruction (GoAlloc rngSource.ty))) (App (Val (GoInstruction (GoZeroVal rngSource.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Var "rng")
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType rngSource.ty)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.int64))) (Var "seed"))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType rngSource.ty) go!"Seed"))) (Var "rng")) (Var "$a0"))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rngSource.ty)))) (Var "$res0")))))
+
+/-- New returns a new [Rand] that uses random values from src
+    to generate other random values.
+
+    go: rand.go:78:6 -/
+noncomputable def New.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "src"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Rand.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType Rand.ty)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "src" (App (Val (GoInstruction (GoAlloc Source.ty))) (Var "src"))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 Source64.ty))) (App (Val (GoInstruction (GoLoad Source.ty))) (Var "src")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "s64" (App (Val (GoInstruction (GoAlloc Source64.ty))) (App (Val (GoInstruction (GoZeroVal Source64.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc Rand.ty))) (Let "$v0" (App (Val (GoInstruction (GoLoad Source.ty))) (Var "src"))
+  (Let "$v1" (App (Val (GoInstruction (GoLoad Source64.ty))) (Var "s64"))
+  (App (Val (GoInstruction (CompositeLiteral Rand.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"src")) (ElementExpression Source.ty (Var "$v0"))), (KeyedElement (some (KeyField go!"s64")) (ElementExpression Source64.ty (Var "$v1")))])))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType Rand.ty)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Var "$r1")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Source64.ty))) (Pair (Var "s64") (Var "$r0")))))))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Rand.ty)))) (Var "$res0")))))
 
 /-- Int63 returns a non-negative pseudo-random 63-bit integer as an int64.
 
@@ -449,6 +525,192 @@ noncomputable def Intn.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
 
+/-- seed rng x[n+1] = 48271 * x[n] mod (2**31 - 1)
+
+    go: rng.go:187:6 -/
+noncomputable def seedrand.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "x"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.int32))) (Var "x"))
+  (let A := #(48271 : Int);
+  (let Q := #(44488 : Int);
+  (let R := #(3399 : Int);
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoDiv go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.int32))) (Val Q))))
+  (Let "hi" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoRemainder go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.int32))) (Val Q))))
+  (Let "lo" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int32))) (Pair (App (Val (GoInstruction (GoOp GoMul go.int32))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.int32))) (Val A)) (App (Val (GoInstruction (GoLoad go.int32))) (Var "lo")))) (App (Val (GoInstruction (GoOp GoMul go.int32))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.int32))) (Val R)) (App (Val (GoInstruction (GoLoad go.int32))) (Var "hi"))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int32))) (Var "x"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "x")) (Val #(W32 0)))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoPlus go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.int32))) (Val int32max)))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "x") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "lo") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "hi") (Var "$r0"))))))))))))
+  (App (Val (GoInstruction (GoLoad go.int32))) (Var "$res0")))))
+
+/-- Seed uses the provided seed value to initialize the generator to a deterministic state.
+
+    go: rng.go:204:23 -/
+noncomputable def rngSource.Seed.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "rng"
+  (Lam "seed"
+  (Seq (App (Val exceptionDo)
+  (Let "rng" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType rngSource.ty)))) (Var "rng"))
+  (Let "seed" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "seed"))
+  (Let "$r0" (Val #(W64 0))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 334))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoRemainder go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "seed")) (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (Val int32max))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.int64 go.int32))) (App (Val (GoInstruction (GoLoad go.int64))) (Var "seed")))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(20 : Int))))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val rngLen)))))) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.int32))) (Var "x"))
+  (App (App (Val (GoInstruction (FuncResolve seedrand []))) (Val #())) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 0)))))
+  (Let "u" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoShiftl go.int64))) (Pair (App (Val (GoInstruction (Convert go.int32 go.int64))) (App (Val (GoInstruction (GoLoad go.int32))) (Var "x"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(40 : Int)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.int32))) (Var "x"))
+  (App (App (Val (GoInstruction (FuncResolve seedrand []))) (Val #())) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.int32))) (Var "x"))
+  (App (App (Val (GoInstruction (FuncResolve seedrand []))) (Val #())) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int64))) (Var "u"))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 607 go.int64)))) (Pair (App (Val (GoInstruction (StructFieldRef rngSource.ty go!"vec"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rngSource.ty)))) (Var "rng"))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "u") (App (Val (GoInstruction (GoOp GoXor go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "u")) (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 607 go.int64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr rngCooked))) (Val #())) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "u") (App (Val (GoInstruction (GoOp GoXor go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "u")) (App (Val (GoInstruction (Convert go.int32 go.int64))) (App (Val (GoInstruction (GoLoad go.int32))) (Var "x")))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "x") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "u") (App (Val (GoInstruction (GoOp GoXor go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "u")) (App (Val (GoInstruction (GoOp GoShiftl go.int64))) (Pair (App (Val (GoInstruction (Convert go.int32 go.int64))) (App (Val (GoInstruction (GoLoad go.int32))) (Var "x"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(20 : Int)))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "x") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "u") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "x") (Var "$r0"))))))))
+  (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "x") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "seed")) (Val #(W64 0)))))
+  (Let "$r0" (Val #(W64 89482311))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "seed") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "seed")) (Val #(W64 0)))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "seed") (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "seed")) (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (Val int32max)))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "seed") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef rngSource.ty go!"feed"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rngSource.ty)))) (Var "rng"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef rngSource.ty go!"tap"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rngSource.ty)))) (Var "rng"))) (Var "$r0")))))))))
+  (Val #()))))
+
+/-- Int63 returns a non-negative pseudo-random 63-bit integer as an int64.
+
+    go: rng.go:233:23 -/
+noncomputable def rngSource.Int63.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "rng"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "rng" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType rngSource.ty)))) (Var "rng"))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.int64))) (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType rngSource.ty) go!"Uint64"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rngSource.ty)))) (Var "rng"))) (Val #())) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val rngMask)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0"))))))
+
+/-- Uint64 returns a non-negative pseudo-random 64-bit integer as a uint64.
+
+    go: rng.go:238:23 -/
+noncomputable def rngSource.Uint64.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "rng"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "rng" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType rngSource.ty)))) (Var "rng"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 607 go.int64)))) (Pair (App (Val (GoInstruction (StructFieldRef rngSource.ty go!"vec"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rngSource.ty)))) (Var "rng"))) (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef rngSource.ty go!"feed"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rngSource.ty)))) (Var "rng"))))))) (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 607 go.int64)))) (Pair (App (Val (GoInstruction (StructFieldRef rngSource.ty go!"vec"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rngSource.ty)))) (Var "rng"))) (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef rngSource.ty go!"tap"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rngSource.ty)))) (Var "rng")))))))))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int64))) (Var "x"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.int64 go.uint64))) (App (Val (GoInstruction (GoLoad go.int64))) (Var "x")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 607 go.int64)))) (Pair (App (Val (GoInstruction (StructFieldRef rngSource.ty go!"vec"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rngSource.ty)))) (Var "rng"))) (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef rngSource.ty go!"feed"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rngSource.ty)))) (Var "rng")))))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "x") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef rngSource.ty go!"feed"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rngSource.ty)))) (Var "rng")))) (Val #(W64 0)))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef rngSource.ty go!"feed"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rngSource.ty)))) (Var "rng"))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef rngSource.ty go!"feed"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rngSource.ty)))) (Var "rng")))) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val rngLen)))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef rngSource.ty go!"feed"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rngSource.ty)))) (Var "rng"))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef rngSource.ty go!"feed"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rngSource.ty)))) (Var "rng")))) (Val #(W64 1))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef rngSource.ty go!"tap"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rngSource.ty)))) (Var "rng")))) (Val #(W64 0)))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef rngSource.ty go!"tap"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rngSource.ty)))) (Var "rng"))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef rngSource.ty go!"tap"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rngSource.ty)))) (Var "rng")))) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val rngLen)))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef rngSource.ty go!"tap"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rngSource.ty)))) (Var "rng"))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef rngSource.ty go!"tap"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType rngSource.ty)))) (Var "rng")))) (Val #(W64 1))))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0"))))))
+
 /-- The package variables goose does not translate (the `skip` entries of the package's
 goose config): no Lean name, allocation or initialization step, so no translated code names
 them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot
@@ -478,9 +740,6 @@ only by `globalRand`, whose trusted model does not read it (TrustedCode/math/ran
 - `randseednop` (`var randseednop = godebug.New("randseednop")`): `godebug.New("randseednop")` (rand.go): `internal/godebug`'s `New(name)` is
 `return &Setting{name: name}`, an allocation: cannot panic, no effect beyond the variable. Read
 only by `Seed`, which is not translated.
-- `rngCooked` (`var // rngCooked used for seeding. See gen_cooked.go for details. rngCooked [rngLen]int64 = [...]int64{ -418179214213375 … [sha256:6033a1889988ebeb]`): The additive lagged Fibonacci generator's seeding table (rng.go): an array literal of constants,
-so the initializer stores constants, cannot panic and has no effect beyond the variable. Read only
-by `rngSource.Seed`, which is not translated.
 -/
 noncomputable def skipped' : List go.SkippedVar := [
   ⟨"math/rand.ke", "The exponential distribution's tables (exp.go): array literals of constants, so the initializers\nstore constants, cannot panic and have no effect beyond the variables. Read only by `ExpFloat64`,\nwhich is not translated.", "var ke = [256]uint32{ 0xe290a139, 0x0, 0x9beadebc, 0xc377ac71, 0xd4ddb990, 0xde893fb8, 0xe4a8e87c, 0xe8dff16a, 0xebf2dea … [sha256:5fbaaf8ae8cb6f2e]"⟩,
@@ -490,8 +749,7 @@ noncomputable def skipped' : List go.SkippedVar := [
   ⟨"math/rand.wn", "The normal distribution's tables (normal.go): array literals of constants, so the initializers\nstore constants, cannot panic and have no effect beyond the variables. Read only by\n`NormFloat64`, which is not translated.", "var wn = [128]float32{ 1.7290405e-09, 1.2680929e-10, 1.6897518e-10, 1.9862688e-10, 2.2232431e-10, 2.4244937e-10, 2.60161 … [sha256:73a066376527a0be]"⟩,
   ⟨"math/rand.fn", "The normal distribution's tables (normal.go): array literals of constants, so the initializers\nstore constants, cannot panic and have no effect beyond the variables. Read only by\n`NormFloat64`, which is not translated.", "var fn = [128]float32{ 1, 0.9635997, 0.9362827, 0.9130436, 0.89228165, 0.87324303, 0.8555006, 0.8387836, 0.8229072, 0.80 … [sha256:5ba7c0b122dd3351]"⟩,
   ⟨"math/rand.randautoseed", "`godebug.New(\"randautoseed\")` (rand.go): `internal/godebug`'s `New(name)` is\n`return &Setting{name: name}`, an allocation: cannot panic, no effect beyond the variable. Read\nonly by `globalRand`, whose trusted model does not read it (TrustedCode/math/rand.lean).", "var randautoseed = godebug.New(\"randautoseed\")"⟩,
-  ⟨"math/rand.randseednop", "`godebug.New(\"randseednop\")` (rand.go): `internal/godebug`'s `New(name)` is\n`return &Setting{name: name}`, an allocation: cannot panic, no effect beyond the variable. Read\nonly by `Seed`, which is not translated.", "var randseednop = godebug.New(\"randseednop\")"⟩,
-  ⟨"math/rand.rngCooked", "The additive lagged Fibonacci generator's seeding table (rng.go): an array literal of constants,\nso the initializer stores constants, cannot panic and has no effect beyond the variable. Read only\nby `rngSource.Seed`, which is not translated.", "var // rngCooked used for seeding. See gen_cooked.go for details. rngCooked [rngLen]int64 = [...]int64{ -418179214213375 … [sha256:6033a1889988ebeb]"⟩]
+  ⟨"math/rand.randseednop", "`godebug.New(\"randseednop\")` (rand.go): `internal/godebug`'s `New(name)` is\n`return &Setting{name: name}`, an allocation: cannot panic, no effect beyond the variable. Read\nonly by `Seed`, which is not translated.", "var randseednop = godebug.New(\"randseednop\")"⟩]
 
 noncomputable instance info' : PkgInfo pkg_id.math.rand where
   pkgImportedPkgs := [pkg_id.sync, pkg_id.sync.atomic]
@@ -504,12 +762,626 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4181792142133755926 : Int))))
+  (Let "$v1" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4576982950128230565 : Int))))
+  (Let "$v2" (Val #(W64 1395769623340756751))
+  (Let "$v3" (Val #(W64 5333664234075297259))
+  (Let "$v4" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6347679516498800754 : Int))))
+  (Let "$v5" (Val #(W64 9033628115061424579))
+  (Let "$v6" (Val #(W64 7143218595135194537))
+  (Let "$v7" (Val #(W64 4812947590706362721))
+  (Let "$v8" (Val #(W64 7937252194349799378))
+  (Let "$v9" (Val #(W64 5307299880338848416))
+  (Let "$v10" (Val #(W64 8209348851763925077))
+  (Let "$v11" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7107630437535961764 : Int))))
+  (Let "$v12" (Val #(W64 4593015457530856296))
+  (Let "$v13" (Val #(W64 8140875735541888011))
+  (Let "$v14" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5903942795589686782 : Int))))
+  (Let "$v15" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(603556388664454774 : Int))))
+  (Let "$v16" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7496297993371156308 : Int))))
+  (Let "$v17" (Val #(W64 113108499721038619))
+  (Let "$v18" (Val #(W64 4569519971459345583))
+  (Let "$v19" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4160538177779461077 : Int))))
+  (Let "$v20" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6835753265595711384 : Int))))
+  (Let "$v21" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6507240692498089696 : Int))))
+  (Let "$v22" (Val #(W64 6559392774825876886))
+  (Let "$v23" (Val #(W64 7650093201692370310))
+  (Let "$v24" (Val #(W64 7684323884043752161))
+  (Let "$v25" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8965504200858744418 : Int))))
+  (Let "$v26" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2629915517445760644 : Int))))
+  (Let "$v27" (Val #(W64 271327514973697897))
+  (Let "$v28" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6433985589514657524 : Int))))
+  (Let "$v29" (Val #(W64 1065192797246149621))
+  (Let "$v30" (Val #(W64 3344507881999356393))
+  (Let "$v31" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4763574095074709175 : Int))))
+  (Let "$v32" (Val #(W64 7465081662728599889))
+  (Let "$v33" (Val #(W64 1014950805555097187))
+  (Let "$v34" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4773931307508785033 : Int))))
+  (Let "$v35" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5742262670416273165 : Int))))
+  (Let "$v36" (Val #(W64 2418672789110888383))
+  (Let "$v37" (Val #(W64 5796562887576294778))
+  (Let "$v38" (Val #(W64 4484266064449540171))
+  (Let "$v39" (Val #(W64 3738982361971787048))
+  (Let "$v40" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4699774852342421385 : Int))))
+  (Let "$v41" (Val #(W64 10530508058128498))
+  (Let "$v42" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(589538253572429690 : Int))))
+  (Let "$v43" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6598062107225984180 : Int))))
+  (Let "$v44" (Val #(W64 8660405965245884302))
+  (Let "$v45" (Val #(W64 10162832508971942))
+  (Let "$v46" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2682657355892958417 : Int))))
+  (Let "$v47" (Val #(W64 7031802312784620857))
+  (Let "$v48" (Val #(W64 6240911277345944669))
+  (Let "$v49" (Val #(W64 831864355460801054))
+  (Let "$v50" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1218937899312622917 : Int))))
+  (Let "$v51" (Val #(W64 2116287251661052151))
+  (Let "$v52" (Val #(W64 2202309800992166967))
+  (Let "$v53" (Val #(W64 9161020366945053561))
+  (Let "$v54" (Val #(W64 4069299552407763864))
+  (Let "$v55" (Val #(W64 4936383537992622449))
+  (Let "$v56" (Val #(W64 457351505131524928))
+  (Let "$v57" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8881176990926596454 : Int))))
+  (Let "$v58" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6375600354038175299 : Int))))
+  (Let "$v59" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7155351920868399290 : Int))))
+  (Let "$v60" (Val #(W64 4368649989588021065))
+  (Let "$v61" (Val #(W64 887231587095185257))
+  (Let "$v62" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3659780529968199312 : Int))))
+  (Let "$v63" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2407146836602825512 : Int))))
+  (Let "$v64" (Val #(W64 5616972787034086048))
+  (Let "$v65" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(751562733459939242 : Int))))
+  (Let "$v66" (Val #(W64 1686575021641186857))
+  (Let "$v67" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5177887698780513806 : Int))))
+  (Let "$v68" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4979215821652996885 : Int))))
+  (Let "$v69" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1375154703071198421 : Int))))
+  (Let "$v70" (Val #(W64 5632136521049761902))
+  (Let "$v71" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8390088894796940536 : Int))))
+  (Let "$v72" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(193645528485698615 : Int))))
+  (Let "$v73" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5979788902190688516 : Int))))
+  (Let "$v74" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4907000935050298721 : Int))))
+  (Let "$v75" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(285522056888777828 : Int))))
+  (Let "$v76" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2776431630044341707 : Int))))
+  (Let "$v77" (Val #(W64 1679342092332374735))
+  (Let "$v78" (Val #(W64 6050638460742422078))
+  (Let "$v79" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2229851317345194226 : Int))))
+  (Let "$v80" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1582494184340482199 : Int))))
+  (Let "$v81" (Val #(W64 5881353426285907985))
+  (Let "$v82" (Val #(W64 812786550756860885))
+  (Let "$v83" (Val #(W64 4541845584483343330))
+  (Let "$v84" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6497901820577766722 : Int))))
+  (Let "$v85" (Val #(W64 4980675660146853729))
+  (Let "$v86" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4012602956251539747 : Int))))
+  (Let "$v87" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(329088717864244987 : Int))))
+  (Let "$v88" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2896929232104691526 : Int))))
+  (Let "$v89" (Val #(W64 1495812843684243920))
+  (Let "$v90" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2153620458055647789 : Int))))
+  (Let "$v91" (Val #(W64 7370257291860230865))
+  (Let "$v92" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2466442761497833547 : Int))))
+  (Let "$v93" (Val #(W64 4706794511633873654))
+  (Let "$v94" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1398851569026877145 : Int))))
+  (Let "$v95" (Val #(W64 8549875090542453214))
+  (Let "$v96" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(9189721207376179652 : Int))))
+  (Let "$v97" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7894453601103453165 : Int))))
+  (Let "$v98" (Val #(W64 7297902601803624459))
+  (Let "$v99" (Val #(W64 1011190183918857495))
+  (Let "$v100" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6985347000036920864 : Int))))
+  (Let "$v101" (Val #(W64 5147159997473910359))
+  (Let "$v102" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8326859945294252826 : Int))))
+  (Let "$v103" (Val #(W64 2659470849286379941))
+  (Let "$v104" (Val #(W64 6097729358393448602))
+  (Let "$v105" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7491646050550022124 : Int))))
+  (Let "$v106" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5117116194870963097 : Int))))
+  (Let "$v107" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(896216826133240300 : Int))))
+  (Let "$v108" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(745860416168701406 : Int))))
+  (Let "$v109" (Val #(W64 5803876044675762232))
+  (Let "$v110" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(787954255994554146 : Int))))
+  (Let "$v111" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3234519180203704564 : Int))))
+  (Let "$v112" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4507534739750823898 : Int))))
+  (Let "$v113" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1657200065590290694 : Int))))
+  (Let "$v114" (Val #(W64 505808562678895611))
+  (Let "$v115" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4153273856159712438 : Int))))
+  (Let "$v116" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8381261370078904295 : Int))))
+  (Let "$v117" (Val #(W64 572156825025677802))
+  (Let "$v118" (Val #(W64 1791881013492340891))
+  (Let "$v119" (Val #(W64 3393267094866038768))
+  (Let "$v120" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5444650186382539299 : Int))))
+  (Let "$v121" (Val #(W64 2352769483186201278))
+  (Let "$v122" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7930912453007408350 : Int))))
+  (Let "$v123" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(325464993179687389 : Int))))
+  (Let "$v124" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3441562999710612272 : Int))))
+  (Let "$v125" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6489413242825283295 : Int))))
+  (Let "$v126" (Val #(W64 5092019688680754699))
+  (Let "$v127" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(227247482082248967 : Int))))
+  (Let "$v128" (Val #(W64 4234737173186232084))
+  (Let "$v129" (Val #(W64 5027558287275472836))
+  (Let "$v130" (Val #(W64 4635198586344772304))
+  (Let "$v131" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(536033143587636457 : Int))))
+  (Let "$v132" (Val #(W64 5907508150730407386))
+  (Let "$v133" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8438615781380831356 : Int))))
+  (Let "$v134" (Val #(W64 972392927514829904))
+  (Let "$v135" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3801314342046600696 : Int))))
+  (Let "$v136" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4064951393885491917 : Int))))
+  (Let "$v137" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(174840358296132583 : Int))))
+  (Let "$v138" (Val #(W64 2407211146698877100))
+  (Let "$v139" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1640089820333676239 : Int))))
+  (Let "$v140" (Val #(W64 3940796514530962282))
+  (Let "$v141" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5882197405809569433 : Int))))
+  (Let "$v142" (Val #(W64 3095313889586102949))
+  (Let "$v143" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1818050141166537098 : Int))))
+  (Let "$v144" (Val #(W64 5832080132947175283))
+  (Let "$v145" (Val #(W64 7890064875145919662))
+  (Let "$v146" (Val #(W64 8184139210799583195))
+  (Let "$v147" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8073512175445549678 : Int))))
+  (Let "$v148" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7758774793014564506 : Int))))
+  (Let "$v149" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4581724029666783935 : Int))))
+  (Let "$v150" (Val #(W64 3516491885471466898))
+  (Let "$v151" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8267083515063118116 : Int))))
+  (Let "$v152" (Val #(W64 6657089965014657519))
+  (Let "$v153" (Val #(W64 5220884358887979358))
+  (Let "$v154" (Val #(W64 1796677326474620641))
+  (Let "$v155" (Val #(W64 5340761970648932916))
+  (Let "$v156" (Val #(W64 1147977171614181568))
+  (Let "$v157" (Val #(W64 5066037465548252321))
+  (Let "$v158" (Val #(W64 2574765911837859848))
+  (Let "$v159" (Val #(W64 1085848279845204775))
+  (Let "$v160" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5873264506986385449 : Int))))
+  (Let "$v161" (Val #(W64 6116438694366558490))
+  (Let "$v162" (Val #(W64 2107701075971293812))
+  (Let "$v163" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7420077970933506541 : Int))))
+  (Let "$v164" (Val #(W64 2469478054175558874))
+  (Let "$v165" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1855128755834809824 : Int))))
+  (Let "$v166" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5431463669011098282 : Int))))
+  (Let "$v167" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(9038325065738319171 : Int))))
+  (Let "$v168" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6966276280341336160 : Int))))
+  (Let "$v169" (Val #(W64 7217693971077460129))
+  (Let "$v170" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8314322083775271549 : Int))))
+  (Let "$v171" (Val #(W64 7196649268545224266))
+  (Let "$v172" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3585711691453906209 : Int))))
+  (Let "$v173" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5267827091426810625 : Int))))
+  (Let "$v174" (Val #(W64 8057528650917418961))
+  (Let "$v175" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5084103596553648165 : Int))))
+  (Let "$v176" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2601445448341207749 : Int))))
+  (Let "$v177" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7850010900052094367 : Int))))
+  (Let "$v178" (Val #(W64 6527366231383600011))
+  (Let "$v179" (Val #(W64 3507654575162700890))
+  (Let "$v180" (Val #(W64 9202058512774729859))
+  (Let "$v181" (Val #(W64 1954818376891585542))
+  (Let "$v182" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2582991129724600103 : Int))))
+  (Let "$v183" (Val #(W64 8299563319178235687))
+  (Let "$v184" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5321504681635821435 : Int))))
+  (Let "$v185" (Val #(W64 7046310742295574065))
+  (Let "$v186" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2376176645520785576 : Int))))
+  (Let "$v187" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7650733936335907755 : Int))))
+  (Let "$v188" (Val #(W64 8850422670118399721))
+  (Let "$v189" (Val #(W64 3631909142291992901))
+  (Let "$v190" (Val #(W64 5158881091950831288))
+  (Let "$v191" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6340413719511654215 : Int))))
+  (Let "$v192" (Val #(W64 4763258931815816403))
+  (Let "$v193" (Val #(W64 6280052734341785344))
+  (Let "$v194" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4979582628649810958 : Int))))
+  (Let "$v195" (Val #(W64 2043464728020827976))
+  (Let "$v196" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2678071570832690343 : Int))))
+  (Let "$v197" (Val #(W64 4562580375758598164))
+  (Let "$v198" (Val #(W64 5495451168795427352))
+  (Let "$v199" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7485059175264624713 : Int))))
+  (Let "$v200" (Val #(W64 553004618757816492))
+  (Let "$v201" (Val #(W64 6895160632757959823))
+  (Let "$v202" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(989748114590090637 : Int))))
+  (Let "$v203" (Val #(W64 7139506338801360852))
+  (Let "$v204" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(672480814466784139 : Int))))
+  (Let "$v205" (Val #(W64 5535668688139305547))
+  (Let "$v206" (Val #(W64 2430933853350256242))
+  (Let "$v207" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3821430778991574732 : Int))))
+  (Let "$v208" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1063731997747047009 : Int))))
+  (Let "$v209" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3065878205254005442 : Int))))
+  (Let "$v210" (Val #(W64 7632066283658143750))
+  (Let "$v211" (Val #(W64 6308328381617103346))
+  (Let "$v212" (Val #(W64 3681878764086140361))
+  (Let "$v213" (Val #(W64 3289686137190109749))
+  (Let "$v214" (Val #(W64 6587997200611086848))
+  (Let "$v215" (Val #(W64 244714774258135476))
+  (Let "$v216" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5143583659437639708 : Int))))
+  (Let "$v217" (Val #(W64 8090302575944624335))
+  (Let "$v218" (Val #(W64 2945117363431356361))
+  (Let "$v219" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8359047641006034763 : Int))))
+  (Let "$v220" (Val #(W64 3009039260312620700))
+  (Let "$v221" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(793344576772241777 : Int))))
+  (Let "$v222" (Val #(W64 401084700045993341))
+  (Let "$v223" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1968749590416080887 : Int))))
+  (Let "$v224" (Val #(W64 4707864159563588614))
+  (Let "$v225" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3583123505891281857 : Int))))
+  (Let "$v226" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3240864324164777915 : Int))))
+  (Let "$v227" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5908273794572565703 : Int))))
+  (Let "$v228" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3719524458082857382 : Int))))
+  (Let "$v229" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5281400669679581926 : Int))))
+  (Let "$v230" (Val #(W64 8118566580304798074))
+  (Let "$v231" (Val #(W64 3839261274019871296))
+  (Let "$v232" (Val #(W64 7062410411742090847))
+  (Let "$v233" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8481991033874568140 : Int))))
+  (Let "$v234" (Val #(W64 6027994129690250817))
+  (Let "$v235" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6725542042704711878 : Int))))
+  (Let "$v236" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2971981702428546974 : Int))))
+  (Let "$v237" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7854441788951256975 : Int))))
+  (Let "$v238" (Val #(W64 8809096399316380241))
+  (Let "$v239" (Val #(W64 6492004350391900708))
+  (Let "$v240" (Val #(W64 2462145737463489636))
+  (Let "$v241" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8818543617934476634 : Int))))
+  (Let "$v242" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5070345602623085213 : Int))))
+  (Let "$v243" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8961586321599299868 : Int))))
+  (Let "$v244" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3758656652254704451 : Int))))
+  (Let "$v245" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8630661632476012791 : Int))))
+  (Let "$v246" (Val #(W64 6764129236657751224))
+  (Let "$v247" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(709716318315418359 : Int))))
+  (Let "$v248" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3403028373052861600 : Int))))
+  (Let "$v249" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8838073512170985897 : Int))))
+  (Let "$v250" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3999237033416576341 : Int))))
+  (Let "$v251" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2920240395515973663 : Int))))
+  (Let "$v252" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2073249475545404416 : Int))))
+  (Let "$v253" (Val #(W64 368107899140673753))
+  (Let "$v254" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6108185202296464250 : Int))))
+  (Let "$v255" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6307735683270494757 : Int))))
+  (Let "$v256" (Val #(W64 4782583894627718279))
+  (Let "$v257" (Val #(W64 6718292300699989587))
+  (Let "$v258" (Val #(W64 8387085186914375220))
+  (Let "$v259" (Val #(W64 3387513132024756289))
+  (Let "$v260" (Val #(W64 4654329375432538231))
+  (Let "$v261" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(292704475491394206 : Int))))
+  (Let "$v262" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3848998599978456535 : Int))))
+  (Let "$v263" (Val #(W64 7623042350483453954))
+  (Let "$v264" (Val #(W64 7725442901813263321))
+  (Let "$v265" (Val #(W64 9186225467561587250))
+  (Let "$v266" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5132344747257272453 : Int))))
+  (Let "$v267" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6865740430362196008 : Int))))
+  (Let "$v268" (Val #(W64 2530936820058611833))
+  (Let "$v269" (Val #(W64 1636551876240043639))
+  (Let "$v270" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3658707362519810009 : Int))))
+  (Let "$v271" (Val #(W64 1452244145334316253))
+  (Let "$v272" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7161729655835084979 : Int))))
+  (Let "$v273" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7943791770359481772 : Int))))
+  (Let "$v274" (Val #(W64 9108481583171221009))
+  (Let "$v275" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3200093350120725999 : Int))))
+  (Let "$v276" (Val #(W64 5007630032676973346))
+  (Let "$v277" (Val #(W64 2153168792952589781))
+  (Let "$v278" (Val #(W64 6720334534964750538))
+  (Let "$v279" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3181825545719981703 : Int))))
+  (Let "$v280" (Val #(W64 3433922409283786309))
+  (Let "$v281" (Val #(W64 2285479922797300912))
+  (Let "$v282" (Val #(W64 3110614940896576130))
+  (Let "$v283" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2856812446131932915 : Int))))
+  (Let "$v284" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3804580617188639299 : Int))))
+  (Let "$v285" (Val #(W64 7163298419643543757))
+  (Let "$v286" (Val #(W64 4891138053923696990))
+  (Let "$v287" (Val #(W64 580618510277907015))
+  (Let "$v288" (Val #(W64 1684034065251686769))
+  (Let "$v289" (Val #(W64 4429514767357295841))
+  (Let "$v290" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8893025458299325803 : Int))))
+  (Let "$v291" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8103734041042601133 : Int))))
+  (Let "$v292" (Val #(W64 7177515271653460134))
+  (Let "$v293" (Val #(W64 4589042248470800257))
+  (Let "$v294" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1530083407795771245 : Int))))
+  (Let "$v295" (Val #(W64 143607045258444228))
+  (Let "$v296" (Val #(W64 246994305896273627))
+  (Let "$v297" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8356954712051676521 : Int))))
+  (Let "$v298" (Val #(W64 6473547110565816071))
+  (Let "$v299" (Val #(W64 3092379936208876896))
+  (Let "$v300" (Val #(W64 2058427839513754051))
+  (Let "$v301" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4089587328327907870 : Int))))
+  (Let "$v302" (Val #(W64 8785882556301281247))
+  (Let "$v303" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3074039370013608197 : Int))))
+  (Let "$v304" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(637529855400303673 : Int))))
+  (Let "$v305" (Val #(W64 6137678347805511274))
+  (Let "$v306" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7152924852417805802 : Int))))
+  (Let "$v307" (Val #(W64 5708223427705576541))
+  (Let "$v308" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3223714144396531304 : Int))))
+  (Let "$v309" (Val #(W64 4358391411789012426))
+  (Let "$v310" (Val #(W64 325123008708389849))
+  (Let "$v311" (Val #(W64 6837621693887290924))
+  (Let "$v312" (Val #(W64 4843721905315627004))
+  (Let "$v313" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3212720814705499393 : Int))))
+  (Let "$v314" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3825019837890901156 : Int))))
+  (Let "$v315" (Val #(W64 4602025990114250980))
+  (Let "$v316" (Val #(W64 1044646352569048800))
+  (Let "$v317" (Val #(W64 9106614159853161675))
+  (Let "$v318" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8394115921626182539 : Int))))
+  (Let "$v319" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4304087667751778808 : Int))))
+  (Let "$v320" (Val #(W64 2681532557646850893))
+  (Let "$v321" (Val #(W64 3681559472488511871))
+  (Let "$v322" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3915372517896561773 : Int))))
+  (Let "$v323" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2889241648411946534 : Int))))
+  (Let "$v324" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6564663803938238204 : Int))))
+  (Let "$v325" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8060058171802589521 : Int))))
+  (Let "$v326" (Val #(W64 581945337509520675))
+  (Let "$v327" (Val #(W64 3648778920718647903))
+  (Let "$v328" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4799698790548231394 : Int))))
+  (Let "$v329" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7602572252857820065 : Int))))
+  (Let "$v330" (Val #(W64 220828013409515943))
+  (Let "$v331" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1072987336855386047 : Int))))
+  (Let "$v332" (Val #(W64 4287360518296753003))
+  (Let "$v333" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4633371852008891965 : Int))))
+  (Let "$v334" (Val #(W64 5513660857261085186))
+  (Let "$v335" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2258542936462001533 : Int))))
+  (Let "$v336" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8744380348503999773 : Int))))
+  (Let "$v337" (Val #(W64 8746140185685648781))
+  (Let "$v338" (Val #(W64 228500091334420247))
+  (Let "$v339" (Val #(W64 1356187007457302238))
+  (Let "$v340" (Val #(W64 3019253992034194581))
+  (Let "$v341" (Val #(W64 3152601605678500003))
+  (Let "$v342" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8793219284148773595 : Int))))
+  (Let "$v343" (Val #(W64 5559581553696971176))
+  (Let "$v344" (Val #(W64 4916432985369275664))
+  (Let "$v345" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8559797105120221417 : Int))))
+  (Let "$v346" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5802598197927043732 : Int))))
+  (Let "$v347" (Val #(W64 2868348622579915573))
+  (Let "$v348" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7224052902810357288 : Int))))
+  (Let "$v349" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5894682518218493085 : Int))))
+  (Let "$v350" (Val #(W64 2587672709781371173))
+  (Let "$v351" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7706116723325376475 : Int))))
+  (Let "$v352" (Val #(W64 3092343956317362483))
+  (Let "$v353" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5561119517847711700 : Int))))
+  (Let "$v354" (Val #(W64 972445599196498113))
+  (Let "$v355" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1558506600978816441 : Int))))
+  (Let "$v356" (Val #(W64 1708913533482282562))
+  (Let "$v357" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2305554874185907314 : Int))))
+  (Let "$v358" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6005743014309462908 : Int))))
+  (Let "$v359" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6653329009633068701 : Int))))
+  (Let "$v360" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(483583197311151195 : Int))))
+  (Let "$v361" (Val #(W64 2488075924621352812))
+  (Let "$v362" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4529369641467339140 : Int))))
+  (Let "$v363" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4663743555056261452 : Int))))
+  (Let "$v364" (Val #(W64 2997203966153298104))
+  (Let "$v365" (Val #(W64 1282559373026354493))
+  (Let "$v366" (Val #(W64 240113143146674385))
+  (Let "$v367" (Val #(W64 8665713329246516443))
+  (Let "$v368" (Val #(W64 628141331766346752))
+  (Let "$v369" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4651421219668005332 : Int))))
+  (Let "$v370" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7750560848702540400 : Int))))
+  (Let "$v371" (Val #(W64 7596648026010355826))
+  (Let "$v372" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3132152619100351065 : Int))))
+  (Let "$v373" (Val #(W64 7834161864828164065))
+  (Let "$v374" (Val #(W64 7103445518877254909))
+  (Let "$v375" (Val #(W64 4390861237357459201))
+  (Let "$v376" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4780718172614204074 : Int))))
+  (Let "$v377" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(319889632007444440 : Int))))
+  (Let "$v378" (Val #(W64 622261699494173647))
+  (Let "$v379" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3186110786557562560 : Int))))
+  (Let "$v380" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8718967088789066690 : Int))))
+  (Let "$v381" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1948156510637662747 : Int))))
+  (Let "$v382" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8212195255998774408 : Int))))
+  (Let "$v383" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7028621931231314745 : Int))))
+  (Let "$v384" (Val #(W64 2623071828615234808))
+  (Let "$v385" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4066058308780939700 : Int))))
+  (Let "$v386" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5484966924888173764 : Int))))
+  (Let "$v387" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6683604512778046238 : Int))))
+  (Let "$v388" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6756087640505506466 : Int))))
+  (Let "$v389" (Val #(W64 5256026990536851868))
+  (Let "$v390" (Val #(W64 7841086888628396109))
+  (Let "$v391" (Val #(W64 6640857538655893162))
+  (Let "$v392" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8021284697816458310 : Int))))
+  (Let "$v393" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7109857044414059830 : Int))))
+  (Let "$v394" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1689021141511844405 : Int))))
+  (Let "$v395" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4298087301956291063 : Int))))
+  (Let "$v396" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4077748265377282003 : Int))))
+  (Let "$v397" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(998231156719803476 : Int))))
+  (Let "$v398" (Val #(W64 2719520354384050532))
+  (Let "$v399" (Val #(W64 9132346697815513771))
+  (Let "$v400" (Val #(W64 4332154495710163773))
+  (Let "$v401" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2085582442760428892 : Int))))
+  (Let "$v402" (Val #(W64 6994721091344268833))
+  (Let "$v403" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2556143461985726874 : Int))))
+  (Let "$v404" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8567931991128098309 : Int))))
+  (Let "$v405" (Val #(W64 59934747298466858))
+  (Let "$v406" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3098398008776739403 : Int))))
+  (Let "$v407" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(265597256199410390 : Int))))
+  (Let "$v408" (Val #(W64 2332206071942466437))
+  (Let "$v409" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7522315324568406181 : Int))))
+  (Let "$v410" (Val #(W64 3154897383618636503))
+  (Let "$v411" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7585605855467168281 : Int))))
+  (Let "$v412" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6762850759087199275 : Int))))
+  (Let "$v413" (Val #(W64 197309393502684135))
+  (Let "$v414" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8579694182469508493 : Int))))
+  (Let "$v415" (Val #(W64 2543179307861934850))
+  (Let "$v416" (Val #(W64 4350769010207485119))
+  (Let "$v417" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4468719947444108136 : Int))))
+  (Let "$v418" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7207776534213261296 : Int))))
+  (Let "$v419" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1224312577878317200 : Int))))
+  (Let "$v420" (Val #(W64 4287946071480840813))
+  (Let "$v421" (Val #(W64 8362686366770308971))
+  (Let "$v422" (Val #(W64 6486469209321732151))
+  (Let "$v423" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5605644191012979782 : Int))))
+  (Let "$v424" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1669018511020473564 : Int))))
+  (Let "$v425" (Val #(W64 4450022655153542367))
+  (Let "$v426" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7618176296641240059 : Int))))
+  (Let "$v427" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3896357471549267421 : Int))))
+  (Let "$v428" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4596796223304447488 : Int))))
+  (Let "$v429" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6531150016257070659 : Int))))
+  (Let "$v430" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8982326463137525940 : Int))))
+  (Let "$v431" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4125325062227681798 : Int))))
+  (Let "$v432" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1306489741394045544 : Int))))
+  (Let "$v433" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8338554946557245229 : Int))))
+  (Let "$v434" (Val #(W64 5329160409530630596))
+  (Let "$v435" (Val #(W64 7790979528857726136))
+  (Let "$v436" (Val #(W64 4955070238059373407))
+  (Let "$v437" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4304834761432101506 : Int))))
+  (Let "$v438" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6215295852904371179 : Int))))
+  (Let "$v439" (Val #(W64 3007769226071157901))
+  (Let "$v440" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6753025801236972788 : Int))))
+  (Let "$v441" (Val #(W64 8928702772696731736))
+  (Let "$v442" (Val #(W64 7856187920214445904))
+  (Let "$v443" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4748497451462800923 : Int))))
+  (Let "$v444" (Val #(W64 7900176660600710914))
+  (Let "$v445" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7082800908938549136 : Int))))
+  (Let "$v446" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6797926979589575837 : Int))))
+  (Let "$v447" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6737316883512927978 : Int))))
+  (Let "$v448" (Val #(W64 4186670094382025798))
+  (Let "$v449" (Val #(W64 1883939007446035042))
+  (Let "$v450" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(414705992779907823 : Int))))
+  (Let "$v451" (Val #(W64 3734134241178479257))
+  (Let "$v452" (Val #(W64 4065968871360089196))
+  (Let "$v453" (Val #(W64 6953124200385847784))
+  (Let "$v454" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7917685222115876751 : Int))))
+  (Let "$v455" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7585632937840318161 : Int))))
+  (Let "$v456" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5567246375906782599 : Int))))
+  (Let "$v457" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5256612402221608788 : Int))))
+  (Let "$v458" (Val #(W64 3106378204088556331))
+  (Let "$v459" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2894472214076325998 : Int))))
+  (Let "$v460" (Val #(W64 4565385105440252958))
+  (Let "$v461" (Val #(W64 1979884289539493806))
+  (Let "$v462" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6891578849933910383 : Int))))
+  (Let "$v463" (Val #(W64 3783206694208922581))
+  (Let "$v464" (Val #(W64 8464961209802336085))
+  (Let "$v465" (Val #(W64 2843963751609577687))
+  (Let "$v466" (Val #(W64 3030678195484896323))
+  (Let "$v467" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4429654462759003204 : Int))))
+  (Let "$v468" (Val #(W64 4459239494808162889))
+  (Let "$v469" (Val #(W64 402587895800087237))
+  (Let "$v470" (Val #(W64 8057891408711167515))
+  (Let "$v471" (Val #(W64 4541888170938985079))
+  (Let "$v472" (Val #(W64 1042662272908816815))
+  (Let "$v473" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3666068979732206850 : Int))))
+  (Let "$v474" (Val #(W64 2647678726283249984))
+  (Let "$v475" (Val #(W64 2144477441549833761))
+  (Let "$v476" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3417019821499388721 : Int))))
+  (Let "$v477" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2105601033380872185 : Int))))
+  (Let "$v478" (Val #(W64 5916597177708541638))
+  (Let "$v479" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8760774321402454447 : Int))))
+  (Let "$v480" (Val #(W64 8833658097025758785))
+  (Let "$v481" (Val #(W64 5970273481425315300))
+  (Let "$v482" (Val #(W64 563813119381731307))
+  (Let "$v483" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6455022486202078793 : Int))))
+  (Let "$v484" (Val #(W64 1598828206250873866))
+  (Let "$v485" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4016978389451217698 : Int))))
+  (Let "$v486" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2988328551145513985 : Int))))
+  (Let "$v487" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6071154634840136312 : Int))))
+  (Let "$v488" (Val #(W64 8469693267274066490))
+  (Let "$v489" (Val #(W64 125672920241807416))
+  (Let "$v490" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3912292412830714870 : Int))))
+  (Let "$v491" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2559617104544284221 : Int))))
+  (Let "$v492" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(486523741806024092 : Int))))
+  (Let "$v493" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4735332261862713930 : Int))))
+  (Let "$v494" (Val #(W64 5923302823487327109))
+  (Let "$v495" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(9082480245771672572 : Int))))
+  (Let "$v496" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1808429243461201518 : Int))))
+  (Let "$v497" (Val #(W64 7990420780896957397))
+  (Let "$v498" (Val #(W64 4317817392807076702))
+  (Let "$v499" (Val #(W64 3625184369705367340))
+  (Let "$v500" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6482649271566653105 : Int))))
+  (Let "$v501" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3480272027152017464 : Int))))
+  (Let "$v502" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3225473396345736649 : Int))))
+  (Let "$v503" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(368878695502291645 : Int))))
+  (Let "$v504" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3981164001421868007 : Int))))
+  (Let "$v505" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8522033136963788610 : Int))))
+  (Let "$v506" (Val #(W64 7609280429197514109))
+  (Let "$v507" (Val #(W64 3020985755112334161))
+  (Let "$v508" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2572049329799262942 : Int))))
+  (Let "$v509" (Val #(W64 2635195723621160615))
+  (Let "$v510" (Val #(W64 5144520864246028816))
+  (Let "$v511" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8188285521126945980 : Int))))
+  (Let "$v512" (Val #(W64 1567242097116389047))
+  (Let "$v513" (Val #(W64 8172389260191636581))
+  (Let "$v514" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2885551685425483535 : Int))))
+  (Let "$v515" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7060359469858316883 : Int))))
+  (Let "$v516" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6480181133964513127 : Int))))
+  (Let "$v517" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7317004403633452381 : Int))))
+  (Let "$v518" (Val #(W64 6011544915663598137))
+  (Let "$v519" (Val #(W64 5932255307352610768))
+  (Let "$v520" (Val #(W64 2241128460406315459))
+  (Let "$v521" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8327867140638080220 : Int))))
+  (Let "$v522" (Val #(W64 3094483003111372717))
+  (Let "$v523" (Val #(W64 4583857460292963101))
+  (Let "$v524" (Val #(W64 9079887171656594975))
+  (Let "$v525" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(384082854924064405 : Int))))
+  (Let "$v526" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3460631649611717935 : Int))))
+  (Let "$v527" (Val #(W64 4225072055348026230))
+  (Let "$v528" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7385151438465742745 : Int))))
+  (Let "$v529" (Val #(W64 3801620336801580414))
+  (Let "$v530" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(399845416774701952 : Int))))
+  (Let "$v531" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7446754431269675473 : Int))))
+  (Let "$v532" (Val #(W64 7899055018877642622))
+  (Let "$v533" (Val #(W64 5421679761463003041))
+  (Let "$v534" (Val #(W64 5521102963086275121))
+  (Let "$v535" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4975092593295409910 : Int))))
+  (Let "$v536" (Val #(W64 8735487530905098534))
+  (Let "$v537" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7462844945281082830 : Int))))
+  (Let "$v538" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2080886987197029914 : Int))))
+  (Let "$v539" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1000715163927557685 : Int))))
+  (Let "$v540" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4253840471931071485 : Int))))
+  (Let "$v541" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5828896094657903328 : Int))))
+  (Let "$v542" (Val #(W64 6424174453260338141))
+  (Let "$v543" (Val #(W64 359248545074932887))
+  (Let "$v544" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(5949720754023045210 : Int))))
+  (Let "$v545" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2426265837057637212 : Int))))
+  (Let "$v546" (Val #(W64 3030918217665093212))
+  (Let "$v547" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(9077771202237461772 : Int))))
+  (Let "$v548" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3186796180789149575 : Int))))
+  (Let "$v549" (Val #(W64 740416251634527158))
+  (Let "$v550" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2142944401404840226 : Int))))
+  (Let "$v551" (Val #(W64 6951781370868335478))
+  (Let "$v552" (Val #(W64 399922722363687927))
+  (Let "$v553" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8928469722407522623 : Int))))
+  (Let "$v554" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1378421100515597285 : Int))))
+  (Let "$v555" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8343051178220066766 : Int))))
+  (Let "$v556" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3030716356046100229 : Int))))
+  (Let "$v557" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8811767350470065420 : Int))))
+  (Let "$v558" (Val #(W64 9026808440365124461))
+  (Let "$v559" (Val #(W64 6440783557497587732))
+  (Let "$v560" (Val #(W64 4615674634722404292))
+  (Let "$v561" (Val #(W64 539897290441580544))
+  (Let "$v562" (Val #(W64 2096238225866883852))
+  (Let "$v563" (Val #(W64 8751955639408182687))
+  (Let "$v564" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7316147128802486205 : Int))))
+  (Let "$v565" (Val #(W64 7381039757301768559))
+  (Let "$v566" (Val #(W64 6157238513393239656))
+  (Let "$v567" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1473377804940618233 : Int))))
+  (Let "$v568" (Val #(W64 8629571604380892756))
+  (Let "$v569" (Val #(W64 5280433031239081479))
+  (Let "$v570" (Val #(W64 7101611890139813254))
+  (Let "$v571" (Val #(W64 2479018537985767835))
+  (Let "$v572" (Val #(W64 7169176924412769570))
+  (Let "$v573" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1281305539061572506 : Int))))
+  (Let "$v574" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7865612307799218120 : Int))))
+  (Let "$v575" (Val #(W64 2278447439451174845))
+  (Let "$v576" (Val #(W64 3625338785743880657))
+  (Let "$v577" (Val #(W64 6477479539006708521))
+  (Let "$v578" (Val #(W64 8976185375579272206))
+  (Let "$v579" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3712000482142939688 : Int))))
+  (Let "$v580" (Val #(W64 1326024180520890843))
+  (Let "$v581" (Val #(W64 7537449876596048829))
+  (Let "$v582" (Val #(W64 5464680203499696154))
+  (Let "$v583" (Val #(W64 3189671183162196045))
+  (Let "$v584" (Val #(W64 6346751753565857109))
+  (Let "$v585" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(8982212049534145501 : Int))))
+  (Let "$v586" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6127578587196093755 : Int))))
+  (Let "$v587" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(245039190118465649 : Int))))
+  (Let "$v588" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6320577374581628592 : Int))))
+  (Let "$v589" (Val #(W64 7208698530190629697))
+  (Let "$v590" (Val #(W64 7276901792339343736))
+  (Let "$v591" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7490986807540332668 : Int))))
+  (Let "$v592" (Val #(W64 4133292154170828382))
+  (Let "$v593" (Val #(W64 2918308698224194548))
+  (Let "$v594" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(7703910638917631350 : Int))))
+  (Let "$v595" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3929437324238184044 : Int))))
+  (Let "$v596" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(4300543082831323144 : Int))))
+  (Let "$v597" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6344160503358350167 : Int))))
+  (Let "$v598" (Val #(W64 5896236396443472108))
+  (Let "$v599" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(758328221503023383 : Int))))
+  (Let "$v600" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1894351639983151068 : Int))))
+  (Let "$v601" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(307900319840287220 : Int))))
+  (Let "$v602" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(6278469401177312761 : Int))))
+  (Let "$v603" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2171292963361310674 : Int))))
+  (Let "$v604" (Val #(W64 8382142935188824023))
+  (Let "$v605" (Val #(W64 9103922860780351547))
+  (Let "$v606" (Val #(W64 4152330101494654406))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 607 go.int64)))) (LiteralValue [(KeyedElement none (ElementExpression go.int64 (Var "$v0"))), (KeyedElement none (ElementExpression go.int64 (Var "$v1"))), (KeyedElement none (ElementExpression go.int64 (Var "$v2"))), (KeyedElement none (ElementExpression go.int64 (Var "$v3"))), (KeyedElement none (ElementExpression go.int64 (Var "$v4"))), (KeyedElement none (ElementExpression go.int64 (Var "$v5"))), (KeyedElement none (ElementExpression go.int64 (Var "$v6"))), (KeyedElement none (ElementExpression go.int64 (Var "$v7"))), (KeyedElement none (ElementExpression go.int64 (Var "$v8"))), (KeyedElement none (ElementExpression go.int64 (Var "$v9"))), (KeyedElement none (ElementExpression go.int64 (Var "$v10"))), (KeyedElement none (ElementExpression go.int64 (Var "$v11"))), (KeyedElement none (ElementExpression go.int64 (Var "$v12"))), (KeyedElement none (ElementExpression go.int64 (Var "$v13"))), (KeyedElement none (ElementExpression go.int64 (Var "$v14"))), (KeyedElement none (ElementExpression go.int64 (Var "$v15"))), (KeyedElement none (ElementExpression go.int64 (Var "$v16"))), (KeyedElement none (ElementExpression go.int64 (Var "$v17"))), (KeyedElement none (ElementExpression go.int64 (Var "$v18"))), (KeyedElement none (ElementExpression go.int64 (Var "$v19"))), (KeyedElement none (ElementExpression go.int64 (Var "$v20"))), (KeyedElement none (ElementExpression go.int64 (Var "$v21"))), (KeyedElement none (ElementExpression go.int64 (Var "$v22"))), (KeyedElement none (ElementExpression go.int64 (Var "$v23"))), (KeyedElement none (ElementExpression go.int64 (Var "$v24"))), (KeyedElement none (ElementExpression go.int64 (Var "$v25"))), (KeyedElement none (ElementExpression go.int64 (Var "$v26"))), (KeyedElement none (ElementExpression go.int64 (Var "$v27"))), (KeyedElement none (ElementExpression go.int64 (Var "$v28"))), (KeyedElement none (ElementExpression go.int64 (Var "$v29"))), (KeyedElement none (ElementExpression go.int64 (Var "$v30"))), (KeyedElement none (ElementExpression go.int64 (Var "$v31"))), (KeyedElement none (ElementExpression go.int64 (Var "$v32"))), (KeyedElement none (ElementExpression go.int64 (Var "$v33"))), (KeyedElement none (ElementExpression go.int64 (Var "$v34"))), (KeyedElement none (ElementExpression go.int64 (Var "$v35"))), (KeyedElement none (ElementExpression go.int64 (Var "$v36"))), (KeyedElement none (ElementExpression go.int64 (Var "$v37"))), (KeyedElement none (ElementExpression go.int64 (Var "$v38"))), (KeyedElement none (ElementExpression go.int64 (Var "$v39"))), (KeyedElement none (ElementExpression go.int64 (Var "$v40"))), (KeyedElement none (ElementExpression go.int64 (Var "$v41"))), (KeyedElement none (ElementExpression go.int64 (Var "$v42"))), (KeyedElement none (ElementExpression go.int64 (Var "$v43"))), (KeyedElement none (ElementExpression go.int64 (Var "$v44"))), (KeyedElement none (ElementExpression go.int64 (Var "$v45"))), (KeyedElement none (ElementExpression go.int64 (Var "$v46"))), (KeyedElement none (ElementExpression go.int64 (Var "$v47"))), (KeyedElement none (ElementExpression go.int64 (Var "$v48"))), (KeyedElement none (ElementExpression go.int64 (Var "$v49"))), (KeyedElement none (ElementExpression go.int64 (Var "$v50"))), (KeyedElement none (ElementExpression go.int64 (Var "$v51"))), (KeyedElement none (ElementExpression go.int64 (Var "$v52"))), (KeyedElement none (ElementExpression go.int64 (Var "$v53"))), (KeyedElement none (ElementExpression go.int64 (Var "$v54"))), (KeyedElement none (ElementExpression go.int64 (Var "$v55"))), (KeyedElement none (ElementExpression go.int64 (Var "$v56"))), (KeyedElement none (ElementExpression go.int64 (Var "$v57"))), (KeyedElement none (ElementExpression go.int64 (Var "$v58"))), (KeyedElement none (ElementExpression go.int64 (Var "$v59"))), (KeyedElement none (ElementExpression go.int64 (Var "$v60"))), (KeyedElement none (ElementExpression go.int64 (Var "$v61"))), (KeyedElement none (ElementExpression go.int64 (Var "$v62"))), (KeyedElement none (ElementExpression go.int64 (Var "$v63"))), (KeyedElement none (ElementExpression go.int64 (Var "$v64"))), (KeyedElement none (ElementExpression go.int64 (Var "$v65"))), (KeyedElement none (ElementExpression go.int64 (Var "$v66"))), (KeyedElement none (ElementExpression go.int64 (Var "$v67"))), (KeyedElement none (ElementExpression go.int64 (Var "$v68"))), (KeyedElement none (ElementExpression go.int64 (Var "$v69"))), (KeyedElement none (ElementExpression go.int64 (Var "$v70"))), (KeyedElement none (ElementExpression go.int64 (Var "$v71"))), (KeyedElement none (ElementExpression go.int64 (Var "$v72"))), (KeyedElement none (ElementExpression go.int64 (Var "$v73"))), (KeyedElement none (ElementExpression go.int64 (Var "$v74"))), (KeyedElement none (ElementExpression go.int64 (Var "$v75"))), (KeyedElement none (ElementExpression go.int64 (Var "$v76"))), (KeyedElement none (ElementExpression go.int64 (Var "$v77"))), (KeyedElement none (ElementExpression go.int64 (Var "$v78"))), (KeyedElement none (ElementExpression go.int64 (Var "$v79"))), (KeyedElement none (ElementExpression go.int64 (Var "$v80"))), (KeyedElement none (ElementExpression go.int64 (Var "$v81"))), (KeyedElement none (ElementExpression go.int64 (Var "$v82"))), (KeyedElement none (ElementExpression go.int64 (Var "$v83"))), (KeyedElement none (ElementExpression go.int64 (Var "$v84"))), (KeyedElement none (ElementExpression go.int64 (Var "$v85"))), (KeyedElement none (ElementExpression go.int64 (Var "$v86"))), (KeyedElement none (ElementExpression go.int64 (Var "$v87"))), (KeyedElement none (ElementExpression go.int64 (Var "$v88"))), (KeyedElement none (ElementExpression go.int64 (Var "$v89"))), (KeyedElement none (ElementExpression go.int64 (Var "$v90"))), (KeyedElement none (ElementExpression go.int64 (Var "$v91"))), (KeyedElement none (ElementExpression go.int64 (Var "$v92"))), (KeyedElement none (ElementExpression go.int64 (Var "$v93"))), (KeyedElement none (ElementExpression go.int64 (Var "$v94"))), (KeyedElement none (ElementExpression go.int64 (Var "$v95"))), (KeyedElement none (ElementExpression go.int64 (Var "$v96"))), (KeyedElement none (ElementExpression go.int64 (Var "$v97"))), (KeyedElement none (ElementExpression go.int64 (Var "$v98"))), (KeyedElement none (ElementExpression go.int64 (Var "$v99"))), (KeyedElement none (ElementExpression go.int64 (Var "$v100"))), (KeyedElement none (ElementExpression go.int64 (Var "$v101"))), (KeyedElement none (ElementExpression go.int64 (Var "$v102"))), (KeyedElement none (ElementExpression go.int64 (Var "$v103"))), (KeyedElement none (ElementExpression go.int64 (Var "$v104"))), (KeyedElement none (ElementExpression go.int64 (Var "$v105"))), (KeyedElement none (ElementExpression go.int64 (Var "$v106"))), (KeyedElement none (ElementExpression go.int64 (Var "$v107"))), (KeyedElement none (ElementExpression go.int64 (Var "$v108"))), (KeyedElement none (ElementExpression go.int64 (Var "$v109"))), (KeyedElement none (ElementExpression go.int64 (Var "$v110"))), (KeyedElement none (ElementExpression go.int64 (Var "$v111"))), (KeyedElement none (ElementExpression go.int64 (Var "$v112"))), (KeyedElement none (ElementExpression go.int64 (Var "$v113"))), (KeyedElement none (ElementExpression go.int64 (Var "$v114"))), (KeyedElement none (ElementExpression go.int64 (Var "$v115"))), (KeyedElement none (ElementExpression go.int64 (Var "$v116"))), (KeyedElement none (ElementExpression go.int64 (Var "$v117"))), (KeyedElement none (ElementExpression go.int64 (Var "$v118"))), (KeyedElement none (ElementExpression go.int64 (Var "$v119"))), (KeyedElement none (ElementExpression go.int64 (Var "$v120"))), (KeyedElement none (ElementExpression go.int64 (Var "$v121"))), (KeyedElement none (ElementExpression go.int64 (Var "$v122"))), (KeyedElement none (ElementExpression go.int64 (Var "$v123"))), (KeyedElement none (ElementExpression go.int64 (Var "$v124"))), (KeyedElement none (ElementExpression go.int64 (Var "$v125"))), (KeyedElement none (ElementExpression go.int64 (Var "$v126"))), (KeyedElement none (ElementExpression go.int64 (Var "$v127"))), (KeyedElement none (ElementExpression go.int64 (Var "$v128"))), (KeyedElement none (ElementExpression go.int64 (Var "$v129"))), (KeyedElement none (ElementExpression go.int64 (Var "$v130"))), (KeyedElement none (ElementExpression go.int64 (Var "$v131"))), (KeyedElement none (ElementExpression go.int64 (Var "$v132"))), (KeyedElement none (ElementExpression go.int64 (Var "$v133"))), (KeyedElement none (ElementExpression go.int64 (Var "$v134"))), (KeyedElement none (ElementExpression go.int64 (Var "$v135"))), (KeyedElement none (ElementExpression go.int64 (Var "$v136"))), (KeyedElement none (ElementExpression go.int64 (Var "$v137"))), (KeyedElement none (ElementExpression go.int64 (Var "$v138"))), (KeyedElement none (ElementExpression go.int64 (Var "$v139"))), (KeyedElement none (ElementExpression go.int64 (Var "$v140"))), (KeyedElement none (ElementExpression go.int64 (Var "$v141"))), (KeyedElement none (ElementExpression go.int64 (Var "$v142"))), (KeyedElement none (ElementExpression go.int64 (Var "$v143"))), (KeyedElement none (ElementExpression go.int64 (Var "$v144"))), (KeyedElement none (ElementExpression go.int64 (Var "$v145"))), (KeyedElement none (ElementExpression go.int64 (Var "$v146"))), (KeyedElement none (ElementExpression go.int64 (Var "$v147"))), (KeyedElement none (ElementExpression go.int64 (Var "$v148"))), (KeyedElement none (ElementExpression go.int64 (Var "$v149"))), (KeyedElement none (ElementExpression go.int64 (Var "$v150"))), (KeyedElement none (ElementExpression go.int64 (Var "$v151"))), (KeyedElement none (ElementExpression go.int64 (Var "$v152"))), (KeyedElement none (ElementExpression go.int64 (Var "$v153"))), (KeyedElement none (ElementExpression go.int64 (Var "$v154"))), (KeyedElement none (ElementExpression go.int64 (Var "$v155"))), (KeyedElement none (ElementExpression go.int64 (Var "$v156"))), (KeyedElement none (ElementExpression go.int64 (Var "$v157"))), (KeyedElement none (ElementExpression go.int64 (Var "$v158"))), (KeyedElement none (ElementExpression go.int64 (Var "$v159"))), (KeyedElement none (ElementExpression go.int64 (Var "$v160"))), (KeyedElement none (ElementExpression go.int64 (Var "$v161"))), (KeyedElement none (ElementExpression go.int64 (Var "$v162"))), (KeyedElement none (ElementExpression go.int64 (Var "$v163"))), (KeyedElement none (ElementExpression go.int64 (Var "$v164"))), (KeyedElement none (ElementExpression go.int64 (Var "$v165"))), (KeyedElement none (ElementExpression go.int64 (Var "$v166"))), (KeyedElement none (ElementExpression go.int64 (Var "$v167"))), (KeyedElement none (ElementExpression go.int64 (Var "$v168"))), (KeyedElement none (ElementExpression go.int64 (Var "$v169"))), (KeyedElement none (ElementExpression go.int64 (Var "$v170"))), (KeyedElement none (ElementExpression go.int64 (Var "$v171"))), (KeyedElement none (ElementExpression go.int64 (Var "$v172"))), (KeyedElement none (ElementExpression go.int64 (Var "$v173"))), (KeyedElement none (ElementExpression go.int64 (Var "$v174"))), (KeyedElement none (ElementExpression go.int64 (Var "$v175"))), (KeyedElement none (ElementExpression go.int64 (Var "$v176"))), (KeyedElement none (ElementExpression go.int64 (Var "$v177"))), (KeyedElement none (ElementExpression go.int64 (Var "$v178"))), (KeyedElement none (ElementExpression go.int64 (Var "$v179"))), (KeyedElement none (ElementExpression go.int64 (Var "$v180"))), (KeyedElement none (ElementExpression go.int64 (Var "$v181"))), (KeyedElement none (ElementExpression go.int64 (Var "$v182"))), (KeyedElement none (ElementExpression go.int64 (Var "$v183"))), (KeyedElement none (ElementExpression go.int64 (Var "$v184"))), (KeyedElement none (ElementExpression go.int64 (Var "$v185"))), (KeyedElement none (ElementExpression go.int64 (Var "$v186"))), (KeyedElement none (ElementExpression go.int64 (Var "$v187"))), (KeyedElement none (ElementExpression go.int64 (Var "$v188"))), (KeyedElement none (ElementExpression go.int64 (Var "$v189"))), (KeyedElement none (ElementExpression go.int64 (Var "$v190"))), (KeyedElement none (ElementExpression go.int64 (Var "$v191"))), (KeyedElement none (ElementExpression go.int64 (Var "$v192"))), (KeyedElement none (ElementExpression go.int64 (Var "$v193"))), (KeyedElement none (ElementExpression go.int64 (Var "$v194"))), (KeyedElement none (ElementExpression go.int64 (Var "$v195"))), (KeyedElement none (ElementExpression go.int64 (Var "$v196"))), (KeyedElement none (ElementExpression go.int64 (Var "$v197"))), (KeyedElement none (ElementExpression go.int64 (Var "$v198"))), (KeyedElement none (ElementExpression go.int64 (Var "$v199"))), (KeyedElement none (ElementExpression go.int64 (Var "$v200"))), (KeyedElement none (ElementExpression go.int64 (Var "$v201"))), (KeyedElement none (ElementExpression go.int64 (Var "$v202"))), (KeyedElement none (ElementExpression go.int64 (Var "$v203"))), (KeyedElement none (ElementExpression go.int64 (Var "$v204"))), (KeyedElement none (ElementExpression go.int64 (Var "$v205"))), (KeyedElement none (ElementExpression go.int64 (Var "$v206"))), (KeyedElement none (ElementExpression go.int64 (Var "$v207"))), (KeyedElement none (ElementExpression go.int64 (Var "$v208"))), (KeyedElement none (ElementExpression go.int64 (Var "$v209"))), (KeyedElement none (ElementExpression go.int64 (Var "$v210"))), (KeyedElement none (ElementExpression go.int64 (Var "$v211"))), (KeyedElement none (ElementExpression go.int64 (Var "$v212"))), (KeyedElement none (ElementExpression go.int64 (Var "$v213"))), (KeyedElement none (ElementExpression go.int64 (Var "$v214"))), (KeyedElement none (ElementExpression go.int64 (Var "$v215"))), (KeyedElement none (ElementExpression go.int64 (Var "$v216"))), (KeyedElement none (ElementExpression go.int64 (Var "$v217"))), (KeyedElement none (ElementExpression go.int64 (Var "$v218"))), (KeyedElement none (ElementExpression go.int64 (Var "$v219"))), (KeyedElement none (ElementExpression go.int64 (Var "$v220"))), (KeyedElement none (ElementExpression go.int64 (Var "$v221"))), (KeyedElement none (ElementExpression go.int64 (Var "$v222"))), (KeyedElement none (ElementExpression go.int64 (Var "$v223"))), (KeyedElement none (ElementExpression go.int64 (Var "$v224"))), (KeyedElement none (ElementExpression go.int64 (Var "$v225"))), (KeyedElement none (ElementExpression go.int64 (Var "$v226"))), (KeyedElement none (ElementExpression go.int64 (Var "$v227"))), (KeyedElement none (ElementExpression go.int64 (Var "$v228"))), (KeyedElement none (ElementExpression go.int64 (Var "$v229"))), (KeyedElement none (ElementExpression go.int64 (Var "$v230"))), (KeyedElement none (ElementExpression go.int64 (Var "$v231"))), (KeyedElement none (ElementExpression go.int64 (Var "$v232"))), (KeyedElement none (ElementExpression go.int64 (Var "$v233"))), (KeyedElement none (ElementExpression go.int64 (Var "$v234"))), (KeyedElement none (ElementExpression go.int64 (Var "$v235"))), (KeyedElement none (ElementExpression go.int64 (Var "$v236"))), (KeyedElement none (ElementExpression go.int64 (Var "$v237"))), (KeyedElement none (ElementExpression go.int64 (Var "$v238"))), (KeyedElement none (ElementExpression go.int64 (Var "$v239"))), (KeyedElement none (ElementExpression go.int64 (Var "$v240"))), (KeyedElement none (ElementExpression go.int64 (Var "$v241"))), (KeyedElement none (ElementExpression go.int64 (Var "$v242"))), (KeyedElement none (ElementExpression go.int64 (Var "$v243"))), (KeyedElement none (ElementExpression go.int64 (Var "$v244"))), (KeyedElement none (ElementExpression go.int64 (Var "$v245"))), (KeyedElement none (ElementExpression go.int64 (Var "$v246"))), (KeyedElement none (ElementExpression go.int64 (Var "$v247"))), (KeyedElement none (ElementExpression go.int64 (Var "$v248"))), (KeyedElement none (ElementExpression go.int64 (Var "$v249"))), (KeyedElement none (ElementExpression go.int64 (Var "$v250"))), (KeyedElement none (ElementExpression go.int64 (Var "$v251"))), (KeyedElement none (ElementExpression go.int64 (Var "$v252"))), (KeyedElement none (ElementExpression go.int64 (Var "$v253"))), (KeyedElement none (ElementExpression go.int64 (Var "$v254"))), (KeyedElement none (ElementExpression go.int64 (Var "$v255"))), (KeyedElement none (ElementExpression go.int64 (Var "$v256"))), (KeyedElement none (ElementExpression go.int64 (Var "$v257"))), (KeyedElement none (ElementExpression go.int64 (Var "$v258"))), (KeyedElement none (ElementExpression go.int64 (Var "$v259"))), (KeyedElement none (ElementExpression go.int64 (Var "$v260"))), (KeyedElement none (ElementExpression go.int64 (Var "$v261"))), (KeyedElement none (ElementExpression go.int64 (Var "$v262"))), (KeyedElement none (ElementExpression go.int64 (Var "$v263"))), (KeyedElement none (ElementExpression go.int64 (Var "$v264"))), (KeyedElement none (ElementExpression go.int64 (Var "$v265"))), (KeyedElement none (ElementExpression go.int64 (Var "$v266"))), (KeyedElement none (ElementExpression go.int64 (Var "$v267"))), (KeyedElement none (ElementExpression go.int64 (Var "$v268"))), (KeyedElement none (ElementExpression go.int64 (Var "$v269"))), (KeyedElement none (ElementExpression go.int64 (Var "$v270"))), (KeyedElement none (ElementExpression go.int64 (Var "$v271"))), (KeyedElement none (ElementExpression go.int64 (Var "$v272"))), (KeyedElement none (ElementExpression go.int64 (Var "$v273"))), (KeyedElement none (ElementExpression go.int64 (Var "$v274"))), (KeyedElement none (ElementExpression go.int64 (Var "$v275"))), (KeyedElement none (ElementExpression go.int64 (Var "$v276"))), (KeyedElement none (ElementExpression go.int64 (Var "$v277"))), (KeyedElement none (ElementExpression go.int64 (Var "$v278"))), (KeyedElement none (ElementExpression go.int64 (Var "$v279"))), (KeyedElement none (ElementExpression go.int64 (Var "$v280"))), (KeyedElement none (ElementExpression go.int64 (Var "$v281"))), (KeyedElement none (ElementExpression go.int64 (Var "$v282"))), (KeyedElement none (ElementExpression go.int64 (Var "$v283"))), (KeyedElement none (ElementExpression go.int64 (Var "$v284"))), (KeyedElement none (ElementExpression go.int64 (Var "$v285"))), (KeyedElement none (ElementExpression go.int64 (Var "$v286"))), (KeyedElement none (ElementExpression go.int64 (Var "$v287"))), (KeyedElement none (ElementExpression go.int64 (Var "$v288"))), (KeyedElement none (ElementExpression go.int64 (Var "$v289"))), (KeyedElement none (ElementExpression go.int64 (Var "$v290"))), (KeyedElement none (ElementExpression go.int64 (Var "$v291"))), (KeyedElement none (ElementExpression go.int64 (Var "$v292"))), (KeyedElement none (ElementExpression go.int64 (Var "$v293"))), (KeyedElement none (ElementExpression go.int64 (Var "$v294"))), (KeyedElement none (ElementExpression go.int64 (Var "$v295"))), (KeyedElement none (ElementExpression go.int64 (Var "$v296"))), (KeyedElement none (ElementExpression go.int64 (Var "$v297"))), (KeyedElement none (ElementExpression go.int64 (Var "$v298"))), (KeyedElement none (ElementExpression go.int64 (Var "$v299"))), (KeyedElement none (ElementExpression go.int64 (Var "$v300"))), (KeyedElement none (ElementExpression go.int64 (Var "$v301"))), (KeyedElement none (ElementExpression go.int64 (Var "$v302"))), (KeyedElement none (ElementExpression go.int64 (Var "$v303"))), (KeyedElement none (ElementExpression go.int64 (Var "$v304"))), (KeyedElement none (ElementExpression go.int64 (Var "$v305"))), (KeyedElement none (ElementExpression go.int64 (Var "$v306"))), (KeyedElement none (ElementExpression go.int64 (Var "$v307"))), (KeyedElement none (ElementExpression go.int64 (Var "$v308"))), (KeyedElement none (ElementExpression go.int64 (Var "$v309"))), (KeyedElement none (ElementExpression go.int64 (Var "$v310"))), (KeyedElement none (ElementExpression go.int64 (Var "$v311"))), (KeyedElement none (ElementExpression go.int64 (Var "$v312"))), (KeyedElement none (ElementExpression go.int64 (Var "$v313"))), (KeyedElement none (ElementExpression go.int64 (Var "$v314"))), (KeyedElement none (ElementExpression go.int64 (Var "$v315"))), (KeyedElement none (ElementExpression go.int64 (Var "$v316"))), (KeyedElement none (ElementExpression go.int64 (Var "$v317"))), (KeyedElement none (ElementExpression go.int64 (Var "$v318"))), (KeyedElement none (ElementExpression go.int64 (Var "$v319"))), (KeyedElement none (ElementExpression go.int64 (Var "$v320"))), (KeyedElement none (ElementExpression go.int64 (Var "$v321"))), (KeyedElement none (ElementExpression go.int64 (Var "$v322"))), (KeyedElement none (ElementExpression go.int64 (Var "$v323"))), (KeyedElement none (ElementExpression go.int64 (Var "$v324"))), (KeyedElement none (ElementExpression go.int64 (Var "$v325"))), (KeyedElement none (ElementExpression go.int64 (Var "$v326"))), (KeyedElement none (ElementExpression go.int64 (Var "$v327"))), (KeyedElement none (ElementExpression go.int64 (Var "$v328"))), (KeyedElement none (ElementExpression go.int64 (Var "$v329"))), (KeyedElement none (ElementExpression go.int64 (Var "$v330"))), (KeyedElement none (ElementExpression go.int64 (Var "$v331"))), (KeyedElement none (ElementExpression go.int64 (Var "$v332"))), (KeyedElement none (ElementExpression go.int64 (Var "$v333"))), (KeyedElement none (ElementExpression go.int64 (Var "$v334"))), (KeyedElement none (ElementExpression go.int64 (Var "$v335"))), (KeyedElement none (ElementExpression go.int64 (Var "$v336"))), (KeyedElement none (ElementExpression go.int64 (Var "$v337"))), (KeyedElement none (ElementExpression go.int64 (Var "$v338"))), (KeyedElement none (ElementExpression go.int64 (Var "$v339"))), (KeyedElement none (ElementExpression go.int64 (Var "$v340"))), (KeyedElement none (ElementExpression go.int64 (Var "$v341"))), (KeyedElement none (ElementExpression go.int64 (Var "$v342"))), (KeyedElement none (ElementExpression go.int64 (Var "$v343"))), (KeyedElement none (ElementExpression go.int64 (Var "$v344"))), (KeyedElement none (ElementExpression go.int64 (Var "$v345"))), (KeyedElement none (ElementExpression go.int64 (Var "$v346"))), (KeyedElement none (ElementExpression go.int64 (Var "$v347"))), (KeyedElement none (ElementExpression go.int64 (Var "$v348"))), (KeyedElement none (ElementExpression go.int64 (Var "$v349"))), (KeyedElement none (ElementExpression go.int64 (Var "$v350"))), (KeyedElement none (ElementExpression go.int64 (Var "$v351"))), (KeyedElement none (ElementExpression go.int64 (Var "$v352"))), (KeyedElement none (ElementExpression go.int64 (Var "$v353"))), (KeyedElement none (ElementExpression go.int64 (Var "$v354"))), (KeyedElement none (ElementExpression go.int64 (Var "$v355"))), (KeyedElement none (ElementExpression go.int64 (Var "$v356"))), (KeyedElement none (ElementExpression go.int64 (Var "$v357"))), (KeyedElement none (ElementExpression go.int64 (Var "$v358"))), (KeyedElement none (ElementExpression go.int64 (Var "$v359"))), (KeyedElement none (ElementExpression go.int64 (Var "$v360"))), (KeyedElement none (ElementExpression go.int64 (Var "$v361"))), (KeyedElement none (ElementExpression go.int64 (Var "$v362"))), (KeyedElement none (ElementExpression go.int64 (Var "$v363"))), (KeyedElement none (ElementExpression go.int64 (Var "$v364"))), (KeyedElement none (ElementExpression go.int64 (Var "$v365"))), (KeyedElement none (ElementExpression go.int64 (Var "$v366"))), (KeyedElement none (ElementExpression go.int64 (Var "$v367"))), (KeyedElement none (ElementExpression go.int64 (Var "$v368"))), (KeyedElement none (ElementExpression go.int64 (Var "$v369"))), (KeyedElement none (ElementExpression go.int64 (Var "$v370"))), (KeyedElement none (ElementExpression go.int64 (Var "$v371"))), (KeyedElement none (ElementExpression go.int64 (Var "$v372"))), (KeyedElement none (ElementExpression go.int64 (Var "$v373"))), (KeyedElement none (ElementExpression go.int64 (Var "$v374"))), (KeyedElement none (ElementExpression go.int64 (Var "$v375"))), (KeyedElement none (ElementExpression go.int64 (Var "$v376"))), (KeyedElement none (ElementExpression go.int64 (Var "$v377"))), (KeyedElement none (ElementExpression go.int64 (Var "$v378"))), (KeyedElement none (ElementExpression go.int64 (Var "$v379"))), (KeyedElement none (ElementExpression go.int64 (Var "$v380"))), (KeyedElement none (ElementExpression go.int64 (Var "$v381"))), (KeyedElement none (ElementExpression go.int64 (Var "$v382"))), (KeyedElement none (ElementExpression go.int64 (Var "$v383"))), (KeyedElement none (ElementExpression go.int64 (Var "$v384"))), (KeyedElement none (ElementExpression go.int64 (Var "$v385"))), (KeyedElement none (ElementExpression go.int64 (Var "$v386"))), (KeyedElement none (ElementExpression go.int64 (Var "$v387"))), (KeyedElement none (ElementExpression go.int64 (Var "$v388"))), (KeyedElement none (ElementExpression go.int64 (Var "$v389"))), (KeyedElement none (ElementExpression go.int64 (Var "$v390"))), (KeyedElement none (ElementExpression go.int64 (Var "$v391"))), (KeyedElement none (ElementExpression go.int64 (Var "$v392"))), (KeyedElement none (ElementExpression go.int64 (Var "$v393"))), (KeyedElement none (ElementExpression go.int64 (Var "$v394"))), (KeyedElement none (ElementExpression go.int64 (Var "$v395"))), (KeyedElement none (ElementExpression go.int64 (Var "$v396"))), (KeyedElement none (ElementExpression go.int64 (Var "$v397"))), (KeyedElement none (ElementExpression go.int64 (Var "$v398"))), (KeyedElement none (ElementExpression go.int64 (Var "$v399"))), (KeyedElement none (ElementExpression go.int64 (Var "$v400"))), (KeyedElement none (ElementExpression go.int64 (Var "$v401"))), (KeyedElement none (ElementExpression go.int64 (Var "$v402"))), (KeyedElement none (ElementExpression go.int64 (Var "$v403"))), (KeyedElement none (ElementExpression go.int64 (Var "$v404"))), (KeyedElement none (ElementExpression go.int64 (Var "$v405"))), (KeyedElement none (ElementExpression go.int64 (Var "$v406"))), (KeyedElement none (ElementExpression go.int64 (Var "$v407"))), (KeyedElement none (ElementExpression go.int64 (Var "$v408"))), (KeyedElement none (ElementExpression go.int64 (Var "$v409"))), (KeyedElement none (ElementExpression go.int64 (Var "$v410"))), (KeyedElement none (ElementExpression go.int64 (Var "$v411"))), (KeyedElement none (ElementExpression go.int64 (Var "$v412"))), (KeyedElement none (ElementExpression go.int64 (Var "$v413"))), (KeyedElement none (ElementExpression go.int64 (Var "$v414"))), (KeyedElement none (ElementExpression go.int64 (Var "$v415"))), (KeyedElement none (ElementExpression go.int64 (Var "$v416"))), (KeyedElement none (ElementExpression go.int64 (Var "$v417"))), (KeyedElement none (ElementExpression go.int64 (Var "$v418"))), (KeyedElement none (ElementExpression go.int64 (Var "$v419"))), (KeyedElement none (ElementExpression go.int64 (Var "$v420"))), (KeyedElement none (ElementExpression go.int64 (Var "$v421"))), (KeyedElement none (ElementExpression go.int64 (Var "$v422"))), (KeyedElement none (ElementExpression go.int64 (Var "$v423"))), (KeyedElement none (ElementExpression go.int64 (Var "$v424"))), (KeyedElement none (ElementExpression go.int64 (Var "$v425"))), (KeyedElement none (ElementExpression go.int64 (Var "$v426"))), (KeyedElement none (ElementExpression go.int64 (Var "$v427"))), (KeyedElement none (ElementExpression go.int64 (Var "$v428"))), (KeyedElement none (ElementExpression go.int64 (Var "$v429"))), (KeyedElement none (ElementExpression go.int64 (Var "$v430"))), (KeyedElement none (ElementExpression go.int64 (Var "$v431"))), (KeyedElement none (ElementExpression go.int64 (Var "$v432"))), (KeyedElement none (ElementExpression go.int64 (Var "$v433"))), (KeyedElement none (ElementExpression go.int64 (Var "$v434"))), (KeyedElement none (ElementExpression go.int64 (Var "$v435"))), (KeyedElement none (ElementExpression go.int64 (Var "$v436"))), (KeyedElement none (ElementExpression go.int64 (Var "$v437"))), (KeyedElement none (ElementExpression go.int64 (Var "$v438"))), (KeyedElement none (ElementExpression go.int64 (Var "$v439"))), (KeyedElement none (ElementExpression go.int64 (Var "$v440"))), (KeyedElement none (ElementExpression go.int64 (Var "$v441"))), (KeyedElement none (ElementExpression go.int64 (Var "$v442"))), (KeyedElement none (ElementExpression go.int64 (Var "$v443"))), (KeyedElement none (ElementExpression go.int64 (Var "$v444"))), (KeyedElement none (ElementExpression go.int64 (Var "$v445"))), (KeyedElement none (ElementExpression go.int64 (Var "$v446"))), (KeyedElement none (ElementExpression go.int64 (Var "$v447"))), (KeyedElement none (ElementExpression go.int64 (Var "$v448"))), (KeyedElement none (ElementExpression go.int64 (Var "$v449"))), (KeyedElement none (ElementExpression go.int64 (Var "$v450"))), (KeyedElement none (ElementExpression go.int64 (Var "$v451"))), (KeyedElement none (ElementExpression go.int64 (Var "$v452"))), (KeyedElement none (ElementExpression go.int64 (Var "$v453"))), (KeyedElement none (ElementExpression go.int64 (Var "$v454"))), (KeyedElement none (ElementExpression go.int64 (Var "$v455"))), (KeyedElement none (ElementExpression go.int64 (Var "$v456"))), (KeyedElement none (ElementExpression go.int64 (Var "$v457"))), (KeyedElement none (ElementExpression go.int64 (Var "$v458"))), (KeyedElement none (ElementExpression go.int64 (Var "$v459"))), (KeyedElement none (ElementExpression go.int64 (Var "$v460"))), (KeyedElement none (ElementExpression go.int64 (Var "$v461"))), (KeyedElement none (ElementExpression go.int64 (Var "$v462"))), (KeyedElement none (ElementExpression go.int64 (Var "$v463"))), (KeyedElement none (ElementExpression go.int64 (Var "$v464"))), (KeyedElement none (ElementExpression go.int64 (Var "$v465"))), (KeyedElement none (ElementExpression go.int64 (Var "$v466"))), (KeyedElement none (ElementExpression go.int64 (Var "$v467"))), (KeyedElement none (ElementExpression go.int64 (Var "$v468"))), (KeyedElement none (ElementExpression go.int64 (Var "$v469"))), (KeyedElement none (ElementExpression go.int64 (Var "$v470"))), (KeyedElement none (ElementExpression go.int64 (Var "$v471"))), (KeyedElement none (ElementExpression go.int64 (Var "$v472"))), (KeyedElement none (ElementExpression go.int64 (Var "$v473"))), (KeyedElement none (ElementExpression go.int64 (Var "$v474"))), (KeyedElement none (ElementExpression go.int64 (Var "$v475"))), (KeyedElement none (ElementExpression go.int64 (Var "$v476"))), (KeyedElement none (ElementExpression go.int64 (Var "$v477"))), (KeyedElement none (ElementExpression go.int64 (Var "$v478"))), (KeyedElement none (ElementExpression go.int64 (Var "$v479"))), (KeyedElement none (ElementExpression go.int64 (Var "$v480"))), (KeyedElement none (ElementExpression go.int64 (Var "$v481"))), (KeyedElement none (ElementExpression go.int64 (Var "$v482"))), (KeyedElement none (ElementExpression go.int64 (Var "$v483"))), (KeyedElement none (ElementExpression go.int64 (Var "$v484"))), (KeyedElement none (ElementExpression go.int64 (Var "$v485"))), (KeyedElement none (ElementExpression go.int64 (Var "$v486"))), (KeyedElement none (ElementExpression go.int64 (Var "$v487"))), (KeyedElement none (ElementExpression go.int64 (Var "$v488"))), (KeyedElement none (ElementExpression go.int64 (Var "$v489"))), (KeyedElement none (ElementExpression go.int64 (Var "$v490"))), (KeyedElement none (ElementExpression go.int64 (Var "$v491"))), (KeyedElement none (ElementExpression go.int64 (Var "$v492"))), (KeyedElement none (ElementExpression go.int64 (Var "$v493"))), (KeyedElement none (ElementExpression go.int64 (Var "$v494"))), (KeyedElement none (ElementExpression go.int64 (Var "$v495"))), (KeyedElement none (ElementExpression go.int64 (Var "$v496"))), (KeyedElement none (ElementExpression go.int64 (Var "$v497"))), (KeyedElement none (ElementExpression go.int64 (Var "$v498"))), (KeyedElement none (ElementExpression go.int64 (Var "$v499"))), (KeyedElement none (ElementExpression go.int64 (Var "$v500"))), (KeyedElement none (ElementExpression go.int64 (Var "$v501"))), (KeyedElement none (ElementExpression go.int64 (Var "$v502"))), (KeyedElement none (ElementExpression go.int64 (Var "$v503"))), (KeyedElement none (ElementExpression go.int64 (Var "$v504"))), (KeyedElement none (ElementExpression go.int64 (Var "$v505"))), (KeyedElement none (ElementExpression go.int64 (Var "$v506"))), (KeyedElement none (ElementExpression go.int64 (Var "$v507"))), (KeyedElement none (ElementExpression go.int64 (Var "$v508"))), (KeyedElement none (ElementExpression go.int64 (Var "$v509"))), (KeyedElement none (ElementExpression go.int64 (Var "$v510"))), (KeyedElement none (ElementExpression go.int64 (Var "$v511"))), (KeyedElement none (ElementExpression go.int64 (Var "$v512"))), (KeyedElement none (ElementExpression go.int64 (Var "$v513"))), (KeyedElement none (ElementExpression go.int64 (Var "$v514"))), (KeyedElement none (ElementExpression go.int64 (Var "$v515"))), (KeyedElement none (ElementExpression go.int64 (Var "$v516"))), (KeyedElement none (ElementExpression go.int64 (Var "$v517"))), (KeyedElement none (ElementExpression go.int64 (Var "$v518"))), (KeyedElement none (ElementExpression go.int64 (Var "$v519"))), (KeyedElement none (ElementExpression go.int64 (Var "$v520"))), (KeyedElement none (ElementExpression go.int64 (Var "$v521"))), (KeyedElement none (ElementExpression go.int64 (Var "$v522"))), (KeyedElement none (ElementExpression go.int64 (Var "$v523"))), (KeyedElement none (ElementExpression go.int64 (Var "$v524"))), (KeyedElement none (ElementExpression go.int64 (Var "$v525"))), (KeyedElement none (ElementExpression go.int64 (Var "$v526"))), (KeyedElement none (ElementExpression go.int64 (Var "$v527"))), (KeyedElement none (ElementExpression go.int64 (Var "$v528"))), (KeyedElement none (ElementExpression go.int64 (Var "$v529"))), (KeyedElement none (ElementExpression go.int64 (Var "$v530"))), (KeyedElement none (ElementExpression go.int64 (Var "$v531"))), (KeyedElement none (ElementExpression go.int64 (Var "$v532"))), (KeyedElement none (ElementExpression go.int64 (Var "$v533"))), (KeyedElement none (ElementExpression go.int64 (Var "$v534"))), (KeyedElement none (ElementExpression go.int64 (Var "$v535"))), (KeyedElement none (ElementExpression go.int64 (Var "$v536"))), (KeyedElement none (ElementExpression go.int64 (Var "$v537"))), (KeyedElement none (ElementExpression go.int64 (Var "$v538"))), (KeyedElement none (ElementExpression go.int64 (Var "$v539"))), (KeyedElement none (ElementExpression go.int64 (Var "$v540"))), (KeyedElement none (ElementExpression go.int64 (Var "$v541"))), (KeyedElement none (ElementExpression go.int64 (Var "$v542"))), (KeyedElement none (ElementExpression go.int64 (Var "$v543"))), (KeyedElement none (ElementExpression go.int64 (Var "$v544"))), (KeyedElement none (ElementExpression go.int64 (Var "$v545"))), (KeyedElement none (ElementExpression go.int64 (Var "$v546"))), (KeyedElement none (ElementExpression go.int64 (Var "$v547"))), (KeyedElement none (ElementExpression go.int64 (Var "$v548"))), (KeyedElement none (ElementExpression go.int64 (Var "$v549"))), (KeyedElement none (ElementExpression go.int64 (Var "$v550"))), (KeyedElement none (ElementExpression go.int64 (Var "$v551"))), (KeyedElement none (ElementExpression go.int64 (Var "$v552"))), (KeyedElement none (ElementExpression go.int64 (Var "$v553"))), (KeyedElement none (ElementExpression go.int64 (Var "$v554"))), (KeyedElement none (ElementExpression go.int64 (Var "$v555"))), (KeyedElement none (ElementExpression go.int64 (Var "$v556"))), (KeyedElement none (ElementExpression go.int64 (Var "$v557"))), (KeyedElement none (ElementExpression go.int64 (Var "$v558"))), (KeyedElement none (ElementExpression go.int64 (Var "$v559"))), (KeyedElement none (ElementExpression go.int64 (Var "$v560"))), (KeyedElement none (ElementExpression go.int64 (Var "$v561"))), (KeyedElement none (ElementExpression go.int64 (Var "$v562"))), (KeyedElement none (ElementExpression go.int64 (Var "$v563"))), (KeyedElement none (ElementExpression go.int64 (Var "$v564"))), (KeyedElement none (ElementExpression go.int64 (Var "$v565"))), (KeyedElement none (ElementExpression go.int64 (Var "$v566"))), (KeyedElement none (ElementExpression go.int64 (Var "$v567"))), (KeyedElement none (ElementExpression go.int64 (Var "$v568"))), (KeyedElement none (ElementExpression go.int64 (Var "$v569"))), (KeyedElement none (ElementExpression go.int64 (Var "$v570"))), (KeyedElement none (ElementExpression go.int64 (Var "$v571"))), (KeyedElement none (ElementExpression go.int64 (Var "$v572"))), (KeyedElement none (ElementExpression go.int64 (Var "$v573"))), (KeyedElement none (ElementExpression go.int64 (Var "$v574"))), (KeyedElement none (ElementExpression go.int64 (Var "$v575"))), (KeyedElement none (ElementExpression go.int64 (Var "$v576"))), (KeyedElement none (ElementExpression go.int64 (Var "$v577"))), (KeyedElement none (ElementExpression go.int64 (Var "$v578"))), (KeyedElement none (ElementExpression go.int64 (Var "$v579"))), (KeyedElement none (ElementExpression go.int64 (Var "$v580"))), (KeyedElement none (ElementExpression go.int64 (Var "$v581"))), (KeyedElement none (ElementExpression go.int64 (Var "$v582"))), (KeyedElement none (ElementExpression go.int64 (Var "$v583"))), (KeyedElement none (ElementExpression go.int64 (Var "$v584"))), (KeyedElement none (ElementExpression go.int64 (Var "$v585"))), (KeyedElement none (ElementExpression go.int64 (Var "$v586"))), (KeyedElement none (ElementExpression go.int64 (Var "$v587"))), (KeyedElement none (ElementExpression go.int64 (Var "$v588"))), (KeyedElement none (ElementExpression go.int64 (Var "$v589"))), (KeyedElement none (ElementExpression go.int64 (Var "$v590"))), (KeyedElement none (ElementExpression go.int64 (Var "$v591"))), (KeyedElement none (ElementExpression go.int64 (Var "$v592"))), (KeyedElement none (ElementExpression go.int64 (Var "$v593"))), (KeyedElement none (ElementExpression go.int64 (Var "$v594"))), (KeyedElement none (ElementExpression go.int64 (Var "$v595"))), (KeyedElement none (ElementExpression go.int64 (Var "$v596"))), (KeyedElement none (ElementExpression go.int64 (Var "$v597"))), (KeyedElement none (ElementExpression go.int64 (Var "$v598"))), (KeyedElement none (ElementExpression go.int64 (Var "$v599"))), (KeyedElement none (ElementExpression go.int64 (Var "$v600"))), (KeyedElement none (ElementExpression go.int64 (Var "$v601"))), (KeyedElement none (ElementExpression go.int64 (Var "$v602"))), (KeyedElement none (ElementExpression go.int64 (Var "$v603"))), (KeyedElement none (ElementExpression go.int64 (Var "$v604"))), (KeyedElement none (ElementExpression go.int64 (Var "$v605"))), (KeyedElement none (ElementExpression go.int64 (Var "$v606")))])))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
   (App (Val doExecute)
-  (App (Val _root_.Perennial.sync.initialize') (Val #())))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 607 go.int64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr rngCooked))) (Val #())) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val _root_.Perennial.sync.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.sync.atomic.initialize') (Val #()))))))
   (App (Val doExecute)
-  (App (Val (go.GlobalAlloc globalRandGenerator (_root_.Perennial.sync.atomic.Pointer.ty Rand.ty))) (Val #()))))))))
+  (App (Val (go.GlobalAlloc globalRandGenerator (_root_.Perennial.sync.atomic.Pointer.ty Rand.ty))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc rngCooked (go.GoType.ArrayType 607 go.int64))) (Val #()))))))))
 
 abbrev Source [GooseExts] : Type := GoInterface
 
@@ -717,6 +1589,9 @@ class rngSource.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   set_vec : ∀ (x : rngSource) (y : (GoArray w64 607)), go.IsGoStepPureDetTagged under (StructFieldSet rngSource.underlying go!"vec") (PairV #x #y) (Val #(({ x with vec' := y } : rngSource)))
   method_set : go.MethodSetIs rngSource.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType rngSource.ty) [(go!"Int63", (some (go.signature.Signature [] false [go.int64]))), (go!"Seed", (some (go.signature.Signature [go.int64] false []))), (go!"Uint64", (some (go.signature.Signature [] false [go.uint64])))]
+  ptr_Int63_unfold : MethodUnfold (go.GoType.PointerType rngSource.ty) go!"Int63" rngSource.Int63.impl
+  ptr_Seed_unfold : MethodUnfold (go.GoType.PointerType rngSource.ty) go!"Seed" rngSource.Seed.impl
+  ptr_Uint64_unfold : MethodUnfold (go.GoType.PointerType rngSource.ty) go!"Uint64" rngSource.Uint64.impl
 
 attribute [instance] rngSource.TypeAssumptions.type_repr
   rngSource.TypeAssumptions.underlying
@@ -728,6 +1603,9 @@ attribute [instance] rngSource.TypeAssumptions.type_repr
   rngSource.TypeAssumptions.set_vec
   rngSource.TypeAssumptions.method_set
   rngSource.TypeAssumptions.ptr_method_set
+  rngSource.TypeAssumptions.ptr_Int63_unfold
+  rngSource.TypeAssumptions.ptr_Seed_unfold
+  rngSource.TypeAssumptions.ptr_Uint64_unfold
 
 structure Zipf [GooseExts] where
   mk ::
@@ -820,6 +1698,9 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   lockedSource_instance : lockedSource.TypeAssumptions
   rngSource_instance : rngSource.TypeAssumptions
   Zipf_instance : Zipf.TypeAssumptions
+  NewSource_unfold : FuncUnfold NewSource [] NewSource.impl
+  newSource_unfold : FuncUnfold newSource [] newSource.impl
+  New_unfold : FuncUnfold New [] New.impl
   globalRand_unfold : FuncUnfold globalRand [] globalRand.impl
   runtime_rand_unfold : FuncUnfold runtime_rand [] runtime_rand.impl
   Int63_unfold : FuncUnfold Int63 [] Int63.impl
@@ -827,6 +1708,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Int63n_unfold : FuncUnfold Int63n [] Int63n.impl
   Int31n_unfold : FuncUnfold Int31n [] Int31n.impl
   Intn_unfold : FuncUnfold Intn [] Intn.impl
+  seedrand_unfold : FuncUnfold seedrand [] seedrand.impl
   import_sync_Assumption : _root_.Perennial.sync.Assumptions
   import_atomic_Assumption : _root_.Perennial.sync.atomic.Assumptions
 
@@ -837,6 +1719,9 @@ attribute [instance] Assumptions.Source_instance
   Assumptions.lockedSource_instance
   Assumptions.rngSource_instance
   Assumptions.Zipf_instance
+  Assumptions.NewSource_unfold
+  Assumptions.newSource_unfold
+  Assumptions.New_unfold
   Assumptions.globalRand_unfold
   Assumptions.runtime_rand_unfold
   Assumptions.Int63_unfold
@@ -844,6 +1729,7 @@ attribute [instance] Assumptions.Source_instance
   Assumptions.Int63n_unfold
   Assumptions.Int31n_unfold
   Assumptions.Intn_unfold
+  Assumptions.seedrand_unfold
   Assumptions.import_sync_Assumption
   Assumptions.import_atomic_Assumption
 

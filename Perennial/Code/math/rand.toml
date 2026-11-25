@@ -1,14 +1,19 @@
 # The top-level functions that draw integers (`Int63`, `Int31`, `Int63n`, `Int31n`, `Intn`), over
 # the global generator (`globalRand`, trusted below) and its runtime source (`runtimeSource`, whose
-# `runtime_rand` is trusted below), and the `Rand` methods they call. The other functions (`Seed`,
-# `Uint64`, `Float64`, `Read`, `Perm`, `Shuffle`, `ExpFloat64`, `NewSource`, ...) are names only:
-# a call of one is stuck.
+# `runtime_rand` is trusted below), and the `Rand` methods they call; a local generator,
+# `New(NewSource(seed))`: `NewSource`, `newSource`, `New` and the additive lagged Fibonacci source
+# `rngSource` (`rng.go`: `Seed`, `Int63`, `Uint64`, with `seedrand` and the table `rngCooked`). The
+# other functions (`Seed`, `Uint64`, `Float64`, `Read`, `Perm`, `Shuffle`, `ExpFloat64`, ...) are
+# names only: a call of one is stuck.
 translate = [
   "Int63", "Int31", "Int63n", "Int31n", "Intn",
   "Rand.Int63", "Rand.Int31", "Rand.Int63n", "Rand.Int31n", "Rand.Intn",
   "runtimeSource.Int63", "runtimeSource.Uint64",
   "rngMax", "rngMask",
   "globalRandGenerator",
+  "NewSource", "newSource", "New",
+  "rngSource.Seed", "rngSource.Int63", "rngSource.Uint64", "seedrand", "rngCooked",
+  "rngLen", "rngTap", "int32max",
 ]
 
 imports = ["!*", "sync", "sync/atomic"]
@@ -48,10 +53,3 @@ reason = """
 The normal distribution's tables (normal.go): array literals of constants, so the initializers
 store constants, cannot panic and have no effect beyond the variables. Read only by
 `NormFloat64`, which is not translated."""
-
-[[skip]]
-names = ["rngCooked"]
-reason = """
-The additive lagged Fibonacci generator's seeding table (rng.go): an array literal of constants,
-so the initializer stores constants, cannot panic and has no effect beyond the variable. Read only
-by `rngSource.Seed`, which is not translated."""

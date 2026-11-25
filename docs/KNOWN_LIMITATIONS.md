@@ -152,24 +152,10 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   Fix, if a program needs it: model the goroutine's panic state and the deferred call
   that is running in the semantics, instead of passing the cell.
 
-- **`panic(nil)` counts as recovered under `with_defer_recover:` (unsound).** Since Go
-  1.21, `panic(nil)` panics with a `*runtime.PanicNilError`, so `recover()` returns a
-  non-nil value and an unrecovered `panic(nil)` crashes. The model raises the nil
-  interface, and `wrapDeferRecover` (`Golang/Defn/Defer.lean`) takes a nil `$panic` after
-  the deferred chain to mean "recovered":
-
-  ```go
-  func F() (r int) {
-  	defer func() { if recover() == nil { r = 1 } }()
-  	panic(nil)
-  }
-  // Go: F() == 0 (recover() returns the PanicNilError); the model: 1. Without the
-  // recover() in that branch, Go crashes and the model returns normally.
-  ```
-
-  Fix: make `panic(nil)` raise a non-nil value, as Go does (or reject it), or stop using
-  nil in `$panic` to mean "not panicking". Found 2026-10-26 by the trusted-base review of
-  the uniform results change.
+- **`panic(nil)` is stuck (incomplete, sound).** Since Go 1.21, `panic(nil)` panics with
+  a `*runtime.PanicNilError` (with `GODEBUG=panicnil=1`, with `nil`); the model makes it a
+  run-time panic (`panic.impl`, `Golang/Defn/Predeclared.lean`), so a proof shows it is
+  unreachable, even under a `recover()`. Witness: semantics `panic_nil.go`.
 
 ## Evaluation order
 
