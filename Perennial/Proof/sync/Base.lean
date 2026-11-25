@@ -55,9 +55,8 @@ instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.sync :=
 instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.sync :=
   build_get_is_pkg_init_wf
 
-/-- `isMutex m R` is a `lock` on the field `mu` of the mutex at `m`, an `internal/sync.Mutex`:
-the trusted spin lock (`TrustedCode/internal/sync.lean`) that `sync.Mutex`'s translated
-methods call. -/
+/-- `isMutex m R` is `isLock` of the field `mu` of the mutex at `m`, an `internal/sync.Mutex`
+(`Proof/internal/sync/Base.lean`), whose methods `sync.Mutex`'s translated methods call. -/
 def isMutexDef (m : Loc) (R : IProp GF) : IProp GF :=
   isLock (structFieldRef sync.Mutex go!"mu" m) R
 /-- This means `m` is a valid mutex with invariant `R` (sealed). -/

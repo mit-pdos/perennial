@@ -1,3 +1,0 @@
-[bootstrap]
-enabled = true
-prelude = ["Perennial.Golang.Defn.Slice", "Perennial.Golang.Defn.Defer"]

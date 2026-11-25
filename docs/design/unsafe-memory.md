@@ -633,12 +633,12 @@ are stuck or vacuous.
 
 **Packages bbolt needs:**
 - **(bbolt) `sync.Pool`** (`db.go:140, 290-294, 1169`, `tx.go:588`): done.
-  The real one is stuck under R3; `Get` and `Put` are modelled
-  (`TrustedCode/sync.lean`) with the Go model `goose/model/pool`, a
-  mutex-protected multiset kept in the pool's field `local`, and proved
+  The real one is stuck under R3; `Get` and `Put` are a Go model
+  (`goose/model/overlay/sync/pool.go`), a mutex-protected multiset kept in the
+  pool's field `local`, and proved
   (`Proof/sync/Pool__Get.lean`, `isPool` in `Proof/sync/PoolDefs.lean`).
   - `Put(nil)` does nothing.
-  - `Put(x)` adds `x` or drops it, chosen by `primitive.RandomUint64`.
+  - `Put(x)` adds `x` or drops it, chosen by `gomodel.Choose`.
   - `Get` either removes and returns some element, or returns `p.New()`
     (`nil` only when `New` is nil), even when the multiset is not empty.
 

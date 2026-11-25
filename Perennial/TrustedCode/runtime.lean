@@ -1,12 +1,11 @@
 /-
-Trusted code for `runtime`: `Gosched.impl`, `buildVersion.init`, and the stack walk and
-symbolization behind `Callers` and `CallersFrames` (`callers.impl`, `Frames.Next.impl`), in
-namespace `runtime`, as the generated package.
+Trusted code for `runtime`: `Gosched.impl`, the stack walk behind `Callers` (`callers.impl`) and the linker-set
+`buildVersion` (`buildVersion.init`), in namespace
+`runtime`, as the generated package.
 -/
 module
 
 public import Perennial.Golang.Defn.Pre
-public import Perennial.TrustedCode.arbitraryString
 
 @[expose] public section
 
@@ -28,6 +27,12 @@ opaque buildVersionValue : GoString
 section code
 variable [GooseExts] [GoGlobalContext]
 
+/-- `Gosched()` (`proc.go`): yields the processor (`checkTimeouts()`, empty on linux, then
+`mcall(gosched_m)`: assembly and the scheduler, which the semantics does not model). The model
+returns: a yield after which the same goroutine runs on is a schedule Go also has, and the
+semantics' interleaving gives every other one; neither can panic. Trusted rather than a Go model
+in the overlay: an overlay replacement would also be what the runtime's own callers run in gc
+builds, and `runtime.GC` loops on `Gosched` while it waits for the sweep. -/
 def Gosched.impl : val :=
   λ: <>,
     #()
@@ -65,179 +70,18 @@ noncomputable def buildVersion.init : val :=
     go.GlobalAlloc go!"runtime.buildVersion" go.string #() ;;
     GlobalVarAddr go!"runtime.buildVersion" #() <-[go.string] #buildVersionValue
 
-/-- `callers(skip int, pcbuf []uintptr) int` (`traceback.go`), which `Callers` (translated) calls
-with a non-empty `pcbuf`: it walks the calling goroutine's stack (`systemstack`, the unwinder) and
-writes the return program counters of the frames after the first `skip` into `pcbuf[0]`,
-`pcbuf[1]`, ..., stopping at the end of the stack or of `pcbuf`, and returns how many it wrote
-(`tracebackPCs`: `pcBuf[n] = pc` only for `n < len(pcBuf)`). It cannot panic: it writes nothing
-past `len(pcbuf)`, and a `skip` past the stack's depth, or negative, writes fewer entries or the
-whole buffer.
-
-**A stack has fewer than `2^39` frames**, and the model reports at most `2^40 - 1`, so
-`callers` returns `n < len(pcbuf)` once `len(pcbuf) ≥ 2^40` (a caller that grows its buffer
-until it is not filled, as zap's `stacktrace.Capture` does, stops; `README.md`, "Model
-assumption (stack depth)"). The frames it reports are the physical frames of the
-goroutine's stack, each expanded into the calls inlined into it:
-- a goroutine's stack is at most `maxstackceiling = 2 * maxstacksize = 2_000_000_000` bytes on
-  64-bit (`runtime/proc.go`, `main`; `newstack` throws "stack overflow" past it,
-  `runtime/stack.go`), whatever `debug.SetMaxStack` later sets: `setMaxStack` changes
-  `maxstacksize` only, never the ceiling. Each physical frame holds at least its 8-byte return
-  address, so there are at most `250_000_000` of them;
-- the calls inlined into one physical frame are nested at most as deep as the inliner's budget
-  allows: a function is inlined only if its cost is within the budget, and its cost counts the
-  call node and the cost of every call inlined into it, so each level of nesting costs at least
-  one node. With the compiler's default flags and experiments the largest budget is
-  `inlineHotMaxBudget + BudgetExpansion = 2000 + 80` (`cmd/compile/internal/inline/inl.go`,
-  `inlineBudget`: the PGO hot-call budget; 80 otherwise, 800 for a closure called once, 16 x 80
-  with SIMD values), so a physical frame expands into at most `2081` frames. (Only debug flags
-  raise it: `-gcflags=-d=pgoinlinebudget=N`, `-d=inlbudgetslack=N`, or `GOEXPERIMENT=newinliner`,
-  whose call-site scores replace costs.)
-That is fewer than `250_000_000 * 2081 < 2^39` frames. (Exceeding the stack limit is a fatal error, not a longer result:
-`goose/model/runtime/callers_test.go`'s `TestStackLimitFatal`.)
-
-The model is goose's translation of
-
-```go
-func callers(skip int, pcbuf []uintptr) int {
-	n := 0
-	for n < len(pcbuf) && n < 1<<40-1 && arbitrary() != 0 {
-		pcbuf[n] = uintptr(arbitrary())
-		n++
-	}
-	return n
-}
-```
-
-with each call `arbitrary()` replaced by `ArbitraryInt` (an arbitrary `uint64`): it writes some
-prefix of `pcbuf` with arbitrary words and returns its length, every `n` from `0` to
-`min(len(pcbuf), 2^40 - 1)` (Go: `n < len(pcbuf)` when the stack is shallower, `0` when `skip`
-is past it, `len(pcbuf)` when the buffer is too short: `goose/model/runtime/callers_test.go`). It
-writes the cells one at a time, as Go does, so a concurrent access to `pcbuf` races in the model
-as in Go. Why trusted: the stack walk reads the goroutine's stack and the binary's tables, which
-the semantics does not model. -/
+/-- `callers(skip int, pcbuf []uintptr) int` (`traceback.go`), which `Callers` calls: Go walks the
+calling goroutine's stack (`getg`, `sys.GetCallerPC`/`GetCallerSP`: compiler intrinsics with no
+Go body, and the unwinder over the binary's tables) and writes return program counters into a
+prefix of `pcbuf`. The model is a call of `callersModel`, translated Go that the overlay adds
+(`goose/model/overlay/runtime/traceback.go`, whose MODEL: comment says why it has every behaviour
+of Go's): it writes a prefix of `pcbuf` with arbitrary words and returns its length, at most `2^40 - 1`: **a stack has
+fewer than `2^39` frames** (`README.md`, "Model assumption (stack depth)", which gives the
+bound's derivation from `maxstackceiling` and the inliner's budget), so a caller that grows its
+buffer until it is not filled (zap's `stacktrace.Capture`) stops. `callers`
+is not replaced by the model, so that gc builds run the real stack walk. -/
 noncomputable def callers.impl : val :=
-  (LamV "skip"
-  (Lam "pcbuf"
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
-  (Seq (App (Val exceptionDo)
-  (Let "pcbuf" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.uintptr)))) (Var "pcbuf"))
-  (Let "skip" (App (Val (GoInstruction (GoAlloc go.int))) (Var "skip"))
-  (Let "$r0" (Val #(W64 0))
-  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (App (App (App (Val doFor) (Lam BAnon
-  (If (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uintptr)))) (Var "pcbuf"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uintptr)]))) (Val #())) (Var "$a0"))))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1099511627775)))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair ArbitraryInt (Val #(W64 0))))) (Val #false)))) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.uintptr))) ArbitraryInt)
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1)))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uintptr))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uintptr)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uintptr)))) (Var "pcbuf")) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))) (Var "$r0"))))))))
-  (Lam BAnon
-  (Val #()))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0"))))))))))
-  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
-
-/-- `(*Frames).Next() (frame Frame, more bool)` (`symtab.go`): the next frame of the program
-counters `ci.callers`, symbolized through the binary's tables (`findfunc`, the inlining tree,
-the cgo symbolizer), and whether another one follows. It reads and writes `*ci` (`ci.callers`,
-`ci.nextPC`, `ci.frames`), so a nil `ci` panics (nil dereference) and a concurrent call on the
-same `Frames` races.
-
-The model is goose's translation of
-
-```go
-func (ci *Frames) Next() (frame Frame, more bool) {
-	ci.callers = ci.callers
-	frame.PC = uintptr(arbitrary())
-	if arbitrary() != 0 {
-		frame.Func = arbitraryFuncPtr()
-	}
-	frame.Function = arbitraryString()
-	frame.File = arbitraryString()
-	frame.Line = int(arbitrary())
-	frame.startLine = int(arbitrary())
-	frame.Entry = uintptr(arbitrary())
-	more = arbitrary() != 0
-	return
-}
-```
-
-with `arbitrary()` replaced by `ArbitraryInt`, `arbitraryString()` by `fmt.arbitraryString`
-(every string), and `arbitraryFuncPtr()` by `GoPrealloc` (some non-null address, owning nothing:
-code that dereferences `frame.Func` cannot be proved). The load and store of `ci.callers` make
-it panic (stuck) on a nil `ci` and race with a concurrent access to `*ci`, as Go's; it leaves
-`*ci` unchanged, where Go advances it, which no caller observes (the fields are unexported). It never reads the
-program counters `ci.callers` points to, which Go's reads (`ci.callers[0]`): a concurrent write
-to that slice races in Go and not in the model. The race is on words Go reads only to look them
-up (any value gives some frames, a garbage one is skipped, and the model's frames are arbitrary),
-so no outcome of it is missing from the model.
-Every exported field of the frame (`PC`, `Func`, nil or not, `Function`, `File`, `Line`,
-`Entry`) and `more` is arbitrary, a superset of what Go returns (`goose/model/runtime/callers_test.go`:
-a nil `Func` for a frame of a function inlined into its caller, `Function`/`File`/`Line` of the
-call sites, the zero frame with `more` false once the frames are exhausted); `funcInfo` is left
-zero (unexported, read only by the runtime). Why trusted: symbolization reads the binary's
-tables, which the semantics does not model. -/
-noncomputable def Frames.Next.impl : val :=
-  (LamV "ci"
-  (Lam BAnon
-  (Let "frame" (App (Val (GoInstruction (GoAlloc (go.GoType.Named go!"runtime.Frame" [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.Named go!"runtime.Frame" [])))) (Val #())))
-  (Let "$res0" (Var "frame")
-  (Let "more" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "$res1" (Var "more")
-  (Seq (App (Val exceptionDo)
-  (Let "ci" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (go.GoType.Named go!"runtime.Frames" []))))) (Var "ci"))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uintptr)))) (App (Val (GoInstruction (StructFieldRef (go.GoType.Named go!"runtime.Frames" []) go!"callers"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"runtime.Frames" []))))) (Var "ci"))))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.uintptr))) ArbitraryInt)
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val fmt.arbitraryString) (Val #()))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val fmt.arbitraryString) (Val #()))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.int))) ArbitraryInt)
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.int))) ArbitraryInt)
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.uintptr))) ArbitraryInt)
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair ArbitraryInt (Val #(W64 0)))))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "more") (Var "$r0"))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uintptr))) (Pair (App (Val (GoInstruction (StructFieldRef (go.GoType.Named go!"runtime.Frame" []) go!"Entry"))) (Var "frame")) (Var "$r0"))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef (go.GoType.Named go!"runtime.Frame" []) go!"startLine"))) (Var "frame")) (Var "$r0"))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef (go.GoType.Named go!"runtime.Frame" []) go!"Line"))) (Var "frame")) (Var "$r0"))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (StructFieldRef (go.GoType.Named go!"runtime.Frame" []) go!"File"))) (Var "frame")) (Var "$r0"))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (StructFieldRef (go.GoType.Named go!"runtime.Frame" []) go!"Function"))) (Var "frame")) (Var "$r0"))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair ArbitraryInt (Val #(W64 0))))))
-  (Let "$r0" (App (Val (GoInstruction GoPrealloc)) (Val #()))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.Named go!"runtime.Func" []))))) (Pair (App (Val (GoInstruction (StructFieldRef (go.GoType.Named go!"runtime.Frame" []) go!"Func"))) (Var "frame")) (Var "$r0")))))
-  (App (Val doExecute)
-  (Val #()))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uintptr))) (Pair (App (Val (GoInstruction (StructFieldRef (go.GoType.Named go!"runtime.Frame" []) go!"PC"))) (Var "frame")) (Var "$r0"))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uintptr)))) (Pair (App (Val (GoInstruction (StructFieldRef (go.GoType.Named go!"runtime.Frames" []) go!"callers"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"runtime.Frames" []))))) (Var "ci"))) (Var "$r0"))))))))
-  (Pair (App (Val (GoInstruction (GoLoad (go.GoType.Named go!"runtime.Frame" [])))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res1"))))))))))
+  λ: "skip" "pcbuf", FuncResolve go!"runtime.callersModel" [] #() "skip" "pcbuf"
 
 end code
 end runtime

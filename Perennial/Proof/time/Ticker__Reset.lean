@@ -1,9 +1,11 @@
 /-
-The proof of `time.Ticker.Reset` (over its trusted model, `TrustedCode/time.lean`).
+The proof of `time.Ticker.Reset`.
 -/
 module
 
 public import Perennial.Spec.time.Ticker__Reset
+public import Perennial.Spec.time.when
+public import Perennial.Spec.time.resetTimerAt
 
 @[expose] public section
 
@@ -20,28 +22,24 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-theorem time.Ticker.Reset.wp_proof : time.Ticker.Reset.spec (GF := GF) (hG := hG) := by
+theorem time.Ticker.Reset.wp_proof
+    (wp_when : time.when.spec (GF := GF) (hG := hG))
+    (wp_resetTimerAt : time.resetTimerAt.spec (GF := GF) (hG := hG)) :
+    time.Ticker.Reset.spec (GF := GF) (hG := hG) := by
   intro t d
   wp_start as ⟨%Hd, %ch, %γ, #Ht⟩
   unfold isTicker
-  icases Ht with ⟨#HC, #Hinit, #Hrt, #Hch⟩
+  icases Ht with ⟨#HC, #Hinit, ⟨%fire, #Hcell, #Hfire⟩, #Hch⟩
+  wp_auto
   wp_if_destruct
   · exfalso; word
-  unfold runtimeTimerCell
-  rw [show go.GoType.Named go!"time.Ticker" [] = time.Ticker.ty by with_unfolding_all rfl]
-  wp_auto
-  unfold runtimeTimerRef runtimeTimerType
-  rw [show go.GoType.Named go!"time.Timer" [] = time.Timer.ty by with_unfolding_all rfl]
-  wp_auto
-  wp_bind (Fork _)
-  iapply wp_fork $$ []
-  · inext
-    unfold noFire
-    wp_auto
-    itrivial
-  inext
-  wp_auto
-  wp_apply wp_ArbitraryInt as %x -
+  try wp_auto
+  wp_apply wp_when as %w %Hw
+  wp_apply wp_resetTimerAt $$ [] as %b -
+  · isplitr
+    · ipureintro; constructor <;> word
+    iexists fire
+    iframe #
   wp_end
 
 end proof

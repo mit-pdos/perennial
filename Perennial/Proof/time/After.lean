@@ -1,9 +1,15 @@
 /-
-The proof of `time.After` (over its trusted model, `TrustedCode/time.lean`).
+The proof of `time.After`.
 -/
 module
 
 public import Perennial.Spec.time.After
+public import Perennial.Spec.time.makeTimerChan
+public import Perennial.Spec.time.runtimeClockNow
+public import Perennial.Spec.time.whenAt
+public import Perennial.Spec.time.checkWhen
+public import Perennial.Spec.time.runtimeClockWaitUntil
+public import Perennial.Spec.time.sendTimes
 
 @[expose] public section
 
@@ -41,42 +47,57 @@ theorem time.after_when_enc (n : Int) (x d w y : w64)
   · have hsum : sint.Z (x + d) = sint.Z x + sint.Z d := by word
     omega
 
-theorem time.After.wp_proof :
+/-- The deadline is positive: the clock's reading `x` is, and so is a saturated sum. -/
+theorem time.after_when_pos (x d w : w64) (hx : 0 < sint.Z x)
+    (hw : (sint.Z d ≤ 0 ∧ w = x) ∨
+      (0 < sint.Z d ∧ sint.Z (x + d) < 0 ∧ w = W64 (2 ^ 63 - 1)) ∨
+      (0 < sint.Z d ∧ 0 ≤ sint.Z (x + d) ∧ w = x + d)) :
+    0 < sint.Z w := by
+  rcases hw with ⟨hd, rfl⟩ | ⟨hd, ht, rfl⟩ | ⟨hd, ht, rfl⟩
+  · exact hx
+  · decide
+  · word
+
+theorem time.After.wp_proof
+    (wp_makeTimerChan : time.makeTimerChan.spec (GF := GF) (hG := hG))
+    (wp_runtimeClockNow : time.runtimeClockNow.spec (GF := GF) (hG := hG))
+    (wp_whenAt : time.whenAt.spec (GF := GF) (hG := hG))
+    (wp_checkWhen : time.checkWhen.spec (GF := GF) (hG := hG))
+    (wp_runtimeClockWaitUntil : time.runtimeClockWaitUntil.spec (GF := GF) (hG := hG))
+    (wp_sendTimes : time.sendTimes.spec (GF := GF) (hG := hG)) :
     time.After.spec (GF := GF) (hG := hG) := by
   intro d n Ψ
   wp_start as ⟨#Hlb, HΨ⟩
-  wp_apply wp_ArbitraryInt as %c -
-  rw [show go.GoType.Named go!"time.Time" [] = time.Time.ty by with_unfolding_all rfl]
-  wp_if_destruct
-  all_goals
-    wp_apply chan.wp_make2 (V := time.Time) $$ [] as %ch %γ ⟨#His, -, Hown⟩
-    · ipureintro; decide
-    wp_apply time.wp_runtimeClockNow n $$ Hlb as %x ⟨%Hx, #Hlbx⟩
-    imod start_bag (fun _ => Ψ (max n (sint.Z x))) _ ch γ trivial $$ His Hown with #Hch
-    wp_pures
-    -- `when(d)`, in its three cases
-    wp_if_destruct
-    rotate_left
-    wp_if_destruct
-    all_goals
-      wp_bind (Fork _)
-      iapply wp_fork $$ [HΨ]
-      · inext
-        wp_pures
-        wp_apply time.wp_runtimeClockWaitUntil (sint.Z x) _ $$ Hlbx as %y ⟨%Hy, #Hlby⟩
-        ihave #HT := time.clockLb_enc (GF := GF) (time.after_when_enc n x d _ y Hx
-          (by first
-            | exact Or.inl ⟨by word, rfl⟩
-            | exact Or.inr (Or.inl ⟨by word, by word, rfl⟩)
-            | exact Or.inr (Or.inr ⟨by word, by word, rfl⟩)) Hy) $$ Hlby
-        ihave HΨT := HΨ $$ %(max n (sint.Z x)) %(by omega) HT
-        wp_apply time.wp_arbitraryTime as %tm -
-        wp_apply wp_bag_send $$ [$Hch $HΨT]
-        itrivial
-      inext
-      wp_pures
-      iapply HΦ $$ %ch %γ %(max n (sint.Z x))
-      isplitr
-      · ipureintro; omega
-      iframe Hch
-      iapply time.clockLb_enc (by unfold time.clockEnc at *; omega) $$ Hlbx
+  wp_auto
+  wp_apply wp_makeTimerChan as %ch %γ Hmk
+  wp_apply wp_runtimeClockNow n $$ Hlb as %x ⟨%Hx, %Hx0, #Hlbx⟩
+  imod Hmk $$ %(fun _ => Ψ (max n (sint.Z x))) with #Hch
+  wp_apply wp_whenAt as %w %Hw
+  wp_apply wp_checkWhen $$ []
+  · ipureintro
+    exact ⟨time.after_when_pos x d w Hx0 Hw, by decide⟩
+  -- `c` and `w` are read by the goroutines, and written by neither
+  ipersist c
+  ipersist w
+  wp_bind (Fork _)
+  iapply wp_fork $$ [HΨ]
+  · inext
+    wp_auto
+    wp_apply wp_runtimeClockWaitUntil (sint.Z x) w $$ Hlbx as %y ⟨%Hy, #Hlby⟩
+    ihave #HT := time.clockLb_enc (GF := GF) (time.after_when_enc n x d w y Hx Hw Hy) $$ Hlby
+    ihave HΨT := HΨ $$ %(max n (sint.Z x)) %(by omega) HT
+    wp_apply (wp_sendTimes ch γ (Ψ (max n (sint.Z x))) (W64 0) (W64 0)) $$ [HΨT]
+    · iframe #
+      iexact HΨT
+    itrivial
+  inext
+  wp_auto
+  iapply HΦ $$ %ch %γ %(max n (sint.Z x))
+  isplitr
+  · ipureintro; omega
+  iframe Hch
+  iapply time.clockLb_enc (by unfold time.clockEnc at *; omega) $$ Hlbx
+
+end proof
+
+end Perennial

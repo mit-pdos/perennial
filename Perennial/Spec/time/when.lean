@@ -20,12 +20,12 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-/-- `when(d)`: some `int64`. -/
+/-- `when(d)`: some positive `int64` (a timer's deadline: `runtimeNano() + d`, saturated). -/
 abbrev time.when.spec : Prop :=
   ∀ (d : time.Duration),
     {{ (True : IProp GF) }}
       (App (Val (@! time.when)) (Val #d))
-    {{ (x : w64), RET #x; True }}
+    {{ (x : w64), RET #x; ⌜0 < sint.Z x⌝ }}
 
 end spec
 

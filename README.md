@@ -368,21 +368,19 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   feature the runtime detects) models irreducible behaviour;
   `errors.errorType` and `math/big.hasADX`, the same kind, are skip entries. Each model's docstring says why it is
   faithful.
-* **`sync.Pool`.** `Get` and `Put` are trusted (`TrustedCode/sync.lean`): the real
-  ones rely on runtime pinning to a P, pointer arithmetic and `eface` layout
-  reinterpretation (`Perennial/Code/sync.toml` has the goose run). They keep Go's
-  `Put(nil)` and `New` handling and replace the per-P pools by the Go model
-  `goose/model/pool`, a lock-protected multiset in the pool's field `local`, where
-  `Put` may drop its value and `Get` may ignore the pool. That is more
-  nondeterministic than gc's pools, victim cache and GC clearing. As with the
-  channel and string models, the model's translation is part of `go.Semantics`
-  (`pool_sem`).
+* **`sync.Pool`.** `Get` and `Put` are a Go model (`goose/model/overlay/sync/pool.go`): the
+  real ones rely on runtime pinning to a P, pointer arithmetic and `eface` layout
+  reinterpretation. They keep Go's `Put(nil)` and `New` handling and replace the per-P
+  pools by a lock-protected multiset (`poolModel`) installed in the pool's field `local`,
+  where `Put` may drop its value and `Get` may ignore the pool. That is more
+  nondeterministic than gc's pools, victim cache and GC clearing. The one primitive stub,
+  `poolModelAt` (`TrustedCode/sync.lean`), converts `local` back to `*poolModel`.
 * **`sync.Mutex`.** Goose translates `sync.Mutex` (`struct { _ noCopy; mu isync.Mutex }`)
-  and its methods, which forward to `internal/sync.Mutex`. That `Mutex` and its `Lock`,
-  `TryLock` and `Unlock` are trusted (`TrustedCode/internal/sync.lean`): Go's have data races
-  (the race detector is disabled on the sync packages) and park on the runtime's semaphores.
-  The model is the spin lock of `Golang/Defn/Lock.lean` on a `bool` (`false` is unlocked),
-  more nondeterministic than Go's (no fairness or starvation mode, and `TryLock` may fail on
+  and its methods, which forward to `internal/sync.Mutex`. That `Mutex` is Go's type,
+  translated, and its `Lock`, `TryLock` and `Unlock` are a Go model
+  (`goose/model/overlay/internal/sync`): Go's have data races (the race detector is disabled
+  on the sync packages) and park on the runtime's semaphores. The model is a spin lock on
+  `state` (0 is unlocked, 1 locked) over `sync/atomic`'s compare-and-swap, more nondeterministic than Go's (no fairness or starvation mode, and `TryLock` may fail on
   an unlocked mutex, as Go's does in starvation mode or when its CAS loses to a waiter);
   `Unlock` of an unlocked mutex is stuck, where Go ends the program (`fatal`). `sync.Mutex{}` is a literal of the
   translated struct, so it steps by the ordinary struct rules to a zero, unlocked mutex.
@@ -433,7 +431,8 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   the model like any other code; only the primitive stubs it calls have a
   hand-written `.impl`. The trusted claim, for each replaced declaration, is
   that every behaviour of the real one under every use is a behaviour of the
-  model's translation (`review-trusted`, R12).
+  model's translation (`review-trusted`, R12). The plan and its stages:
+  `goose/model-overlays-plan.md`.
 * **Generated code comes from goose.** The translator in `goose/` emits
   `Perennial/Code/**` and `Perennial/GeneratedProof/**`; regenerate with
   `etc/update-goose-new.py` rather than editing them by hand. The translation's

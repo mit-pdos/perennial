@@ -4,6 +4,7 @@ The proof of `time.runtimeNow`.
 module
 
 public import Perennial.Spec.time.runtimeNow
+public import Perennial.Spec.time.now_
 
 @[expose] public section
 
@@ -20,12 +21,12 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-theorem time.runtimeNow.wp_proof :
+theorem time.runtimeNow.wp_proof
+    (wp_now : time.now.spec (GF := GF) (hG := hG)) :
     time.runtimeNow.spec (GF := GF) (hG := hG) := by
   wp_start
-  wp_apply wp_ArbitraryInt as %sec -
-  wp_apply wp_ArbitraryInt as %nsec -
-  wp_apply wp_ArbitraryInt as %mono -
+  wp_auto
+  wp_apply wp_now as %sec %nsec %mono -
   wp_end
 
 end proof

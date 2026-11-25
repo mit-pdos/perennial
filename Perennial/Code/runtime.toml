@@ -1,13 +1,28 @@
 # `Caller` is translated with its body: `callers` and `CallersFrames(...).Next()`, below.
 translate = ["!*", "Version", "Caller", "Callers", "CallersFrames"]
 
-imports = ["!*", "internal/runtime/atomic", "internal/runtime/sys"]
-
-# `Gosched` (TrustedCode/runtime.lean); `buildVersion`, which `Version` returns and the linker
-# sets (TrustedCode/runtime.lean: its `init` stores an arbitrary string); `callers`, the stack walk
-# `Callers` and `Caller` call, and `Frames.Next`, the symbolization of program counters (TrustedCode/runtime.lean:
-# arbitrary words, arbitrary frames)
-trusted = ["Gosched", "buildVersion", "callers", "Frames.Next"]
+imports = ["!*", "internal/runtime/atomic", "internal/runtime/sys", "internal/gomodel"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true
+
+# `callers`, the stack walk `Callers` calls (`getg`, `sys.GetCallerPC`: compiler intrinsics), is
+# trusted (TrustedCode/runtime.lean): its model is `callersModel`, a Go function the overlay adds
+# (arbitrary words), which `callers.impl` calls. Not a replacement, so that gc runs the real stack
+# walk (the testing package panics on an empty one).
+# `buildVersion`, which `Version` returns and the linker sets: trusted, `buildVersion.init` stores
+# the opaque `buildVersionValue` (TrustedCode/runtime.lean), which a client's premise about the
+# build can name (an overlay model would make it an arbitrary choice no premise can refer to).
+# `Gosched` (`mcall(gosched_m)`: assembly and the scheduler): trusted, `Gosched.impl` returns. Not an
+# overlay replacement: a replacement would also replace it for the runtime's own callers in gc builds
+# (`runtime.GC` yields with `Gosched` while it waits for the sweep), so a model body that does not yield
+# hangs gc's GC; trusted, gc keeps the real one.
+trusted = ["Gosched", "callers", "buildVersion"]
+
+# The Go model (goose/model/overlay/runtime): each declaration's MODEL: comment says why it has at
+# least Go's behaviours. `Frames.Next`, the
+# symbolization of program counters (the binary's tables; arbitrary frames); and the addition
+# `callersModel` (above).
+[model]
+dir = "goose/model/overlay/runtime"
+replaces = ["Frames.Next"]

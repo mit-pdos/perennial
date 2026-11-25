@@ -32,13 +32,16 @@ theorem sync.NewCond.wp_proof :
   generalize «$r0_ptr» = c at *
   iStructNamed Hc
   ipersist L
-  ipersist notify
+  iStructNamed notify
+  imod inv_alloc notifyListN ⊤ (notifyListInv _) $$ [wait «notify»] with #Hnotify
+  · inext; iexists _, _; iframe
   imod inv_alloc copyCheckerN ⊤ (copyCheckerInv _) $$ [checker] with #Hchecker
   · inext; ileft; iexact checker
   imodintro
   iapply HΦ
   rw [isCond_unseal]; unfold isCondDef
   rw [isCopyChecker_unseal]; unfold isCopyCheckerDef
+  rw [isNotifyList_unseal]; unfold isNotifyListDef
   iframe #
   done
 

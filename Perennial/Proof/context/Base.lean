@@ -116,7 +116,7 @@ Design (see also the comments at each definition):
 * A `*timerCtx` (the context of `WithDeadlineCause`) has Done proposition `True`: its cancel
   function, its `AfterFunc` callback and its parent's cancellation all cancel it with nothing
   to give. `time.AfterFunc` runs the callback in a goroutine (`time.wp_AfterFunc`; the runtime's
-  timer is modeled in `TrustedCode/time.lean`).
+  timer is a Go model, `goose/model/overlay/time`).
 
 Notes:
 * Texan triples nested inside `isContext` are written out as
