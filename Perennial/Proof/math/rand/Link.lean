@@ -10,6 +10,8 @@ public import Perennial.Proof.math.rand.Int31n
 public import Perennial.Proof.math.rand.Int63
 public import Perennial.Proof.math.rand.Int63n
 public import Perennial.Proof.math.rand.Intn
+public import Perennial.Proof.math.rand.New
+public import Perennial.Proof.math.rand.NewSource
 public import Perennial.Proof.math.rand.Rand__Int31
 public import Perennial.Proof.math.rand.Rand__Int31n
 public import Perennial.Proof.math.rand.Rand__Int63
@@ -17,9 +19,14 @@ public import Perennial.Proof.math.rand.Rand__Int63n
 public import Perennial.Proof.math.rand.Rand__Intn
 public import Perennial.Proof.math.rand.globalRand
 public import Perennial.Proof.math.rand.initialize
+public import Perennial.Proof.math.rand.newSource_
+public import Perennial.Proof.math.rand.rngSource__Int63
+public import Perennial.Proof.math.rand.rngSource__Seed
+public import Perennial.Proof.math.rand.rngSource__Uint64
 public import Perennial.Proof.math.rand.runtimeSource__Int63
 public import Perennial.Proof.math.rand.runtimeSource__Uint64
 public import Perennial.Proof.math.rand.runtime_rand
+public import Perennial.Proof.math.rand.seedrand
 public import Perennial.Proof.sync.Link
 public import Perennial.Proof.sync.atomic.Link
 
@@ -75,8 +82,29 @@ theorem math.rand.Rand.wp_Intn : math.rand.Rand.Intn.spec (GF := GF) (hG := hG) 
 theorem math.rand.wp_Intn : math.rand.Intn.spec (GF := GF) (hG := hG) :=
   math.rand.Intn.wp_proof math.rand.wp_globalRand math.rand.Rand.wp_Intn
 
+theorem math.rand.wp_New : math.rand.New.spec (GF := GF) (hG := hG) :=
+  math.rand.New.wp_proof
+
+theorem math.rand.wp_seedrand : math.rand.seedrand.spec (GF := GF) (hG := hG) :=
+  math.rand.seedrand.wp_proof
+
+theorem math.rand.rngSource.wp_Seed : math.rand.rngSource.Seed.spec (GF := GF) (hG := hG) :=
+  math.rand.rngSource.Seed.wp_proof math.rand.wp_seedrand
+
+theorem math.rand.wp_newSource : math.rand.newSource.spec (GF := GF) (hG := hG) :=
+  math.rand.newSource.wp_proof math.rand.rngSource.wp_Seed
+
+theorem math.rand.wp_NewSource : math.rand.NewSource.spec (GF := GF) (hG := hG) :=
+  math.rand.NewSource.wp_proof math.rand.wp_newSource
+
 theorem math.rand.wp_initialize' : math.rand.initialize'.spec (GF := GF) (hG := hG) :=
   math.rand.initialize'.wp_proof sync.wp_initialize' sync.atomic.wp_initialize'
+
+theorem math.rand.rngSource.wp_Uint64 : math.rand.rngSource.Uint64.spec (GF := GF) (hG := hG) :=
+  math.rand.rngSource.Uint64.wp_proof
+
+theorem math.rand.rngSource.wp_Int63 : math.rand.rngSource.Int63.spec (GF := GF) (hG := hG) :=
+  math.rand.rngSource.Int63.wp_proof math.rand.rngSource.wp_Uint64
 
 theorem math.rand.runtimeSource.wp_Uint64 : math.rand.runtimeSource.Uint64.spec (GF := GF) (hG := hG) :=
   math.rand.runtimeSource.Uint64.wp_proof math.rand.wp_runtime_rand
