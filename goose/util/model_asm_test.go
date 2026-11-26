@@ -31,6 +31,9 @@ TEXT fbody<>(SB),NOSPLIT,$0
 	MOVQ	x+0(FP), AX
 	MOVQ	AX, ret+8(FP)
 	RET
+
+DATA fdata<>+0(SB)/8, $1
+GLOBL fdata<>+0(SB), RODATA, $8
 `
 
 // TestModelBlankAsm: a model replaces a function whose body is assembly; the
@@ -99,6 +102,10 @@ func TestModelBlankAsmRefused(t *testing.T) {
 			asmReal,
 			asmFile + "\nGLOBL ·tab(SB), RODATA, $8\n",
 			`"F"`, `"f_amd64.s"`, "defines ·tab"},
+		{"data-offset",
+			asmReal,
+			asmFile + "\nGLOBL ·tab+0(SB), RODATA, $8\n",
+			`"F"`, `"f_amd64.s"`, "defines ·tab,"},
 		{"local-header",
 			asmReal + "\nfunc H()\n",
 			"#include \"defs_amd64.h\"\n" + asmFile + "\nDEF(·H)\n",
