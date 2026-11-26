@@ -216,6 +216,49 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   (`AllocOOMS`, `AllocBytesOOMS`), so a proof covers only the executions that do not run out
   of memory, where gc ends the program with a fatal error.
 
+## Garbage collection and finalizers
+
+- **No garbage collector, so no finalizer or cleanup ever runs (unsound).** GooseLang
+  never frees an allocation, and `runtime.SetFinalizer`/`runtime.AddCleanup` are names
+  only (a call is stuck); the models that stand for Go code registering one leave the
+  registration out. Go's runtime runs them once an object is unreachable,
+  and the standard library uses them to release operating-system resources: `os`'s
+  `newFile` closes the descriptor of a `*File` dropped without `Close` (releasing its
+  `flock` locks and its descriptor number), and `net`'s `netFD` closes a dropped
+  connection or listener (freeing its address). The models of the extensions (the file
+  and network extensions, and the Go models of `os` and `net` over them) keep such a
+  descriptor open forever, so the model lacks Go's executions in which the release
+  happens: after a dropped listener, a second `Listen` at the same address can succeed
+  in Go but always fails in the model (`EADDRINUSE`); after a dropped locked file, a
+  second `flock` can succeed in Go but always fails in the model. A program that
+  misbehaves only when the release has happened (it panics when the second `Listen`
+  succeeds) can verify. Witness (go1.26.11 prints `second listen at the same address
+  succeeded: true <nil>`; with `runtime.KeepAlive(l)` after the second `Listen`, it
+  fails with `bind: address already in use`):
+
+  ```go
+  func main() {
+  	l, err := net.Listen("tcp", "127.0.0.1:20123")
+  	if err != nil {
+  		return
+  	}
+  	_ = l
+  	l = nil
+  	for i := 0; i < 5; i++ {
+  		runtime.GC()
+  		time.Sleep(10 * time.Millisecond)
+  	}
+  	l2, err := net.Listen("tcp", "127.0.0.1:20123")
+  	fmt.Println("second listen at the same address succeeded:", l2 != nil, err)
+  }
+  ```
+
+  The same with `os.Create` and `syscall.Flock(fd, LOCK_EX|LOCK_NB)` on a dropped `*File`
+  and a second descriptor of the file: go1.26.11's second `Flock` returns `nil`. A fix
+  needs either a premise on the environment (the program never drops an open
+  descriptor) or a semantics in which an unreachable object's finalizer may run; neither
+  is chosen yet (no verified program depends on the release).
+
 ## Struct types
 
 - **Unexported field names are not qualified by package (unsound).** Go keeps apart
