@@ -20,6 +20,7 @@ public import Perennial.Proof.strings.Builder__WriteString
 public import Perennial.Proof.strings.Builder__copyCheck
 public import Perennial.Proof.strings.Builder__grow_
 public import Perennial.Proof.strings.Compare
+public import Perennial.Proof.strings.Contains
 public import Perennial.Proof.strings.Count
 public import Perennial.Proof.strings.Cut
 public import Perennial.Proof.strings.Fields
@@ -92,6 +93,9 @@ theorem strings.wp_Compare : strings.Compare.spec (GF := GF) (hG := hG) :=
 
 theorem strings.wp_Index : strings.Index.spec (GF := GF) (hG := hG) :=
   strings.Index.wp_proof internal.stringslite.wp_Index
+
+theorem strings.wp_Contains : strings.Contains.spec (GF := GF) (hG := hG) :=
+  strings.Contains.wp_proof strings.wp_Index
 
 theorem strings.wp_Count : strings.Count.spec (GF := GF) (hG := hG) :=
   strings.Count.wp_proof strings.wp_Index internal.bytealg.wp_CountString unicode.utf8.wp_RuneCountInString
