@@ -303,6 +303,10 @@ func (suite *GoTestSuite) TestFirstClassFunction() {
 	suite.Equal(true, testFirstClassFunction())
 }
 
+func (suite *GoTestSuite) TestFloatIncDec() {
+	suite.Equal(true, testFloatIncDec())
+}
+
 func (suite *GoTestSuite) TestFunctionOrdering() {
 	suite.Equal(true, failing_testFunctionOrdering())
 }

@@ -89,6 +89,11 @@ noncomputable def evalCounter.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] evalCounter.ty
 
+noncomputable def namedFloat64.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.namedFloat64" [])
+
+attribute [irreducible] namedFloat64.ty
+
 noncomputable def Editor.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Editor" [])
 
@@ -867,6 +872,9 @@ noncomputable def ApplyF [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def testFirstClassFunction [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testFirstClassFunction"
+
+noncomputable def testFloatIncDec [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testFloatIncDec"
 
 noncomputable def addFour64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.addFour64"
@@ -4947,6 +4955,49 @@ noncomputable def testFirstClassFunction.impl [GooseExts] [GoGlobalContext] : va
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: float_incdec.go:8:6 -/
+noncomputable def testFloatIncDec.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Val #(W64 4609434218613702656))
+  (Let "f" (App (Val (GoInstruction (GoAlloc go.float64))) (App (Val (GoInstruction (GoZeroVal go.float64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W32 3222274048))
+  (Let "g" (App (Val (GoInstruction (GoAlloc go.float32))) (App (Val (GoInstruction (GoZeroVal go.float32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 4602678819172646912))
+  (Let "h" (App (Val (GoInstruction (GoAlloc namedFloat64.ty))) (App (Val (GoInstruction (GoZeroVal namedFloat64.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (If (App (Val (GoInstruction (GoOp GoEquals go.float64))) (Pair (App (Val (GoInstruction (GoLoad go.float64))) (Var "f")) (Val #(W64 4612811918334230528)))) (App (Val (GoInstruction (GoOp GoEquals go.float32))) (Pair (App (Val (GoInstruction (GoLoad go.float32))) (Var "g")) (Val #(W32 3226468352)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals namedFloat64.ty))) (Pair (App (Val (GoInstruction (GoLoad namedFloat64.ty))) (Var "h")) (Val #(W64 4609434218613702656)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore namedFloat64.ty))) (Pair (Var "h") (App (Val (GoInstruction (GoOp GoPlus namedFloat64.ty))) (Pair (App (Val (GoInstruction (GoLoad namedFloat64.ty))) (Var "h")) (Val #(W64 4607182418800017408))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore namedFloat64.ty))) (Pair (Var "h") (App (Val (GoInstruction (GoOp GoSub namedFloat64.ty))) (Pair (App (Val (GoInstruction (GoLoad namedFloat64.ty))) (Var "h")) (Val #(W64 4607182418800017408))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore namedFloat64.ty))) (Pair (Var "h") (App (Val (GoInstruction (GoOp GoPlus namedFloat64.ty))) (Pair (App (Val (GoInstruction (GoLoad namedFloat64.ty))) (Var "h")) (Val #(W64 4607182418800017408))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore namedFloat64.ty))) (Pair (Var "h") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "g") (App (Val (GoInstruction (GoOp GoSub go.float32))) (Pair (App (Val (GoInstruction (GoLoad go.float32))) (Var "g")) (Val #(W32 1065353216))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float32))) (Pair (Var "g") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "f") (App (Val (GoInstruction (GoOp GoPlus go.float64))) (Pair (App (Val (GoInstruction (GoLoad go.float64))) (Var "f")) (Val #(W64 4607182418800017408))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.float64))) (Pair (Var "f") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- advances the array editor, and returns the value it wrote, storing
@@ -15598,6 +15649,20 @@ attribute [instance] evalCounter.TypeAssumptions.type_repr
   evalCounter.TypeAssumptions.ptr_next_unfold
   evalCounter.TypeAssumptions.ptr_val_unfold
 
+abbrev namedFloat64 [GooseExts] : Type := w64
+
+@[reducible] noncomputable def namedFloat64.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  go.float64
+
+class namedFloat64.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq namedFloat64.ty namedFloat64.underlying
+  method_set : go.MethodSetIs namedFloat64.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType namedFloat64.ty) []
+
+attribute [instance] namedFloat64.TypeAssumptions.underlying
+  namedFloat64.TypeAssumptions.method_set
+  namedFloat64.TypeAssumptions.ptr_method_set
+
 structure Editor [GooseExts] where
   mk ::
   s' : GoSlice
@@ -17651,6 +17716,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   myInt64_instance : myInt64.TypeAssumptions
   myFloat64_instance : myFloat64.TypeAssumptions
   evalCounter_instance : evalCounter.TypeAssumptions
+  namedFloat64_instance : namedFloat64.TypeAssumptions
   Editor_instance : Editor.TypeAssumptions
   Pair_instance : Pair.TypeAssumptions
   Uint32_instance : Uint32.TypeAssumptions
@@ -17818,6 +17884,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   FirstClassFunction_unfold : FuncUnfold FirstClassFunction [] FirstClassFunction.impl
   ApplyF_unfold : FuncUnfold ApplyF [] ApplyF.impl
   testFirstClassFunction_unfold : FuncUnfold testFirstClassFunction [] testFirstClassFunction.impl
+  testFloatIncDec_unfold : FuncUnfold testFloatIncDec [] testFloatIncDec.impl
   addFour64_unfold : FuncUnfold addFour64 [] addFour64.impl
   failing_testFunctionOrdering_unfold : FuncUnfold failing_testFunctionOrdering [] failing_testFunctionOrdering.impl
   storeAndReturn_unfold : FuncUnfold storeAndReturn [] storeAndReturn.impl
@@ -18135,6 +18202,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.myInt64_instance
   Assumptions.myFloat64_instance
   Assumptions.evalCounter_instance
+  Assumptions.namedFloat64_instance
   Assumptions.Editor_instance
   Assumptions.Pair_instance
   Assumptions.Uint32_instance
@@ -18302,6 +18370,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.FirstClassFunction_unfold
   Assumptions.ApplyF_unfold
   Assumptions.testFirstClassFunction_unfold
+  Assumptions.testFloatIncDec_unfold
   Assumptions.addFour64_unfold
   Assumptions.failing_testFunctionOrdering_unfold
   Assumptions.storeAndReturn_unfold
