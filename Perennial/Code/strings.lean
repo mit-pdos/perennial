@@ -853,6 +853,26 @@ noncomputable def Count.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
+/-- Contains reports whether substr is within s.
+
+    go: strings.go:62:6 -/
+noncomputable def Contains.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Lam "substr"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "substr" (App (Val (GoInstruction (GoAlloc go.string))) (Var "substr"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "substr"))
+  (App (App (App (Val (GoInstruction (FuncResolve Index' []))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))
+
 /-- LastIndex returns the index of the last instance of substr in s, or -1 if substr is not present in s.
 
     go: strings.go:82:6 -/
@@ -2310,6 +2330,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Compare_unfold : FuncUnfold Compare [] Compare.impl
   NewReplacer_unfold : FuncUnfold NewReplacer [] NewReplacer.impl
   Count_unfold : FuncUnfold Count [] Count.impl
+  Contains_unfold : FuncUnfold Contains [] Contains.impl
   LastIndex_unfold : FuncUnfold LastIndex [] LastIndex.impl
   IndexByte_unfold : FuncUnfold IndexByte [] IndexByte.impl
   IndexRune_unfold : FuncUnfold IndexRune [] IndexRune.impl
@@ -2349,6 +2370,7 @@ attribute [instance] Assumptions.Builder_instance
   Assumptions.Compare_unfold
   Assumptions.NewReplacer_unfold
   Assumptions.Count_unfold
+  Assumptions.Contains_unfold
   Assumptions.LastIndex_unfold
   Assumptions.IndexByte_unfold
   Assumptions.IndexRune_unfold
