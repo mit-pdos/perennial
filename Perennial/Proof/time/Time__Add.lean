@@ -31,10 +31,10 @@ theorem time.Time.Add.wp_proof
   intro t d
   wp_start
   wp_auto
-  wp_apply wp_Time_nsec $$ [$t] as %ns t
+  wp_apply wp_Time_nsec $$ [$t] as t
   wp_if_destruct <;> (try wp_if_destruct) <;>
     (wp_apply wp_Time_addSec $$ [$t] as %tv' t
-     repeat' (first | wp_if_destruct | wp_apply wp_Time_stripMono $$ [$t] as %tv'' t)
+     repeat' (first | wp_if_destruct | wp_apply wp_Time_stripMono $$ [$t] as t)
      all_goals wp_end)
 
 end proof

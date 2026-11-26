@@ -69,6 +69,7 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFallthroughBreak
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFallthroughReturn
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFloat64ConstExprIsConst
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFloatIncDec
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testGenericToInterface
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIncompleteStruct
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIndexGenericBytes
@@ -362,6 +363,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testF
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testFloat64ConstExprIsConst : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFloat64ConstExprIsConst.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFloat64ConstExprIsConst.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testFloatIncDec : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFloatIncDec.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFloatIncDec.wp_proof
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testGenericToInterface : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testGenericToInterface.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testGenericToInterface.wp_proof

@@ -1722,8 +1722,8 @@ func addedMethodPatternUsed(pattern string, real, over *types.Package) bool {
 }
 
 // asmSymbol matches a line of Go assembly that defines a symbol: TEXT (a
-// function) or GLOBL (data), with the symbol's name.
-var asmSymbol = regexp.MustCompile(`^\s*(TEXT|GLOBL)\s+([^\s(,]+)\(SB\)`)
+// function) or GLOBL (data), with the symbol's name (without an offset: `GLOBL d<>+0(SB)`).
+var asmSymbol = regexp.MustCompile(`^\s*(TEXT|GLOBL)\s+([^\s(,+]+)(?:\+[0-9]+)?\(SB\)`)
 
 // asmInclude matches an #include line of Go assembly, with the header's name.
 var asmInclude = regexp.MustCompile(`^\s*#\s*include\s+["<]([^">]+)[">]`)

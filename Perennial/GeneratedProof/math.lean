@@ -3,6 +3,7 @@ module
 
 public import Perennial.Proof.ProofPrelude
 public import Perennial.ManualProof.math
+public import Perennial.GeneratedProof.internal.gomodel
 public import Perennial.Golang.Theory
 public import Perennial.Code.math
 

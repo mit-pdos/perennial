@@ -20,12 +20,12 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-/-- `(*Time).sec()`: some `int64`; `*t` unchanged. -/
+/-- `(*Time).sec()`: the seconds since January 1, year 1 (`time.Time.secOf`); `*t` unchanged. -/
 abbrev time.Time.sec.spec : Prop :=
   ∀ (t : Loc) (tv : time.Time),
     {{ (t ↦ tv : IProp GF) }}
       (App (Val (t @!! go.GoType.PointerType time.Time.ty @!! go!"sec")) (Val #()))
-    {{ (x : w64), RET #x; t ↦ tv }}
+    {{ RET #(time.Time.secOf tv); t ↦ tv }}
 
 end spec
 

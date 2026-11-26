@@ -49,6 +49,8 @@ theorem context.cancelCtx.propagateCancel.wp_proof
   have wp_parentCancelCtx_self := wp_parentCancelCtx_self_of wp_cancelCtx_Done wp_cancelCtx_Value
       wp_VLoad
   have childCancelSpec_cancelCtx := childCancelSpec_cancelCtx_of wp_cancelCtx_cancel
+  have wp_cancelCtx_Err := wp_cancelCtx_Err_any_of wp_cancelCtx_Err
+  have wp_cancelCtx_cancel := wp_cancelCtx_cancel_any_of wp_cancelCtx_cancel
   have wp_propagateCancel_background : ∀ (c : Loc) (k : GoInterface),
       {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗
           ctxField c ↦ (interface.nil : GoInterface) }}
@@ -76,7 +78,7 @@ theorem context.cancelCtx.propagateCancel.wp_proof
 
   have wp_propagateCancel_cancelCtx : ∀ (c : Loc) (γ : ContextNames) (P : IProp GF)
           (parent : GoInterfaceOk) (s : ContextDesc (IProp GF)),
-      {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOf c γ P ∗
+      {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOfA c γ P (fun _ => True) ∗
           ctxField c ↦ (interface.nil : GoInterface) ∗
           (isContext parent s ∗ isCancelCtxCtx parent s ∗ □ (s.PDone -∗ P)) }}
         (App (App (Val (c @!! go.GoType.PointerType context.cancelCtx.ty @!! go!"propagateCancel"))
@@ -88,7 +90,8 @@ theorem context.cancelCtx.propagateCancel.wp_proof
       iunfold isCancelCtxCtx at Hcc
       icases Hcc with ⟨%p, %hp, #Hp⟩
       subst hp
-      ihave #Hi := isCancelCtxOf_closedchan c γ P $$ Hc
+      ihave #Hcw := isCancelCtxOfA_of c γ P _ $$ Hc
+      ihave #Hi := isCancelCtxOf_closedchan c γ P $$ Hcw
       iunfold isClosedchanInit at Hi
       icases Hi with ⟨%cch, %γc, #Hcch, #Hcchan, #Hcinv⟩
       wp_auto
@@ -175,7 +178,7 @@ theorem context.cancelCtx.propagateCancel.wp_proof
         wp_apply wp_parentCancelCtx_self p s.Done_gn s.PDone ch cch hcc $$ [$Hp $Hdg $Hcch]
         ihave #Hp' := Hp
         iunfold isCancelCtxOf at Hp'
-        icases Hp' with ⟨%Rp, #Hmup, #Hinvp, -⟩
+        icases Hp' with ⟨%Ap, %Rp, #Hmup, #Hinvp, -⟩
         wp_apply wp_Lock $$ [$Hmup] as ⟨Hlocked, Hlk⟩
         iunfold cancelCtxLockInv at Hlk
         icases Hlk with ⟨%children, %cause, %od, %closed, Hchildren, Hcause, Hcl, Hod, HR⟩
@@ -366,7 +369,7 @@ theorem context.cancelCtx.propagateCancel.wp_proof
           iexact Hk
         ihave #Hp' := Hp
         iunfold isCancelCtxOf at Hp'
-        icases Hp' with ⟨%Rp, #Hmup, #Hinvp, -⟩
+        icases Hp' with ⟨%Ap, %Rp, #Hmup, #Hinvp, -⟩
         wp_auto
         wp_apply wp_Lock $$ [$Hmup] as ⟨Hlocked, Hlk⟩
         iunfold cancelCtxLockInv at Hlk

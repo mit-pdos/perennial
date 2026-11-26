@@ -6,6 +6,16 @@ translate = [
   "Sqrt", "Float64bits", "Float64frombits", "IsNaN", "IsInf", "Abs", "NaN",
   "uvnan", "mask", "shift", "bias", "MaxFloat64",
 
+  # `Ceil` and `Pow` (`pow`, over `Exp`, `Log`, `Modf`, `Frexp`, `Ldexp`) with their pure-Go
+  # helpers; their amd64 assembly routines are Go models ([model], below), over the portable
+  # `floor`, `ceil`, `trunc`
+  "Ceil", "haveArchCeil", "Trunc", "haveArchTrunc", "Floor", "haveArchFloor", "floor", "ceil",
+  "trunc", "Modf", "Copysign",
+  "archFloor", "archCeil", "archTrunc", "archExp", "archLog", "chooseNaN",
+  "Pow", "pow", "haveArchPow", "isOddInt", "Signbit", "Inf", "uvinf", "uvneginf",
+  "Exp", "haveArchExp", "Log", "haveArchLog",
+  "Frexp", "haveArchFrexp", "frexp", "Ldexp", "haveArchLdexp", "ldexp", "normalize",
+
   # the package variables (tables of constants), all but `useFMA`
   "_gamP", "_gamQ", "_gamS", "p0R8", "p0S8", "p0R5", "p0S5", "p0R3", "p0S3",
   "p0R2", "p0S2", "q0R8", "q0S8", "q0R5", "q0S5", "q0R3", "q0S3", "q0R2",
@@ -16,8 +26,18 @@ translate = [
   "tanhQ", "mPi4",
 ]
 
-imports = ["!*"]
+imports = ["!*", "internal/gomodel"]
 
 # `useFMA = cpu.X86.HasAVX && cpu.X86.HasFMA` (TrustedCode/math.lean); `sqrt`, which gc compiles
 # to the square-root instruction, not its Go body (TrustedCode/math.lean)
 trusted = ["useFMA", "sqrt"]
+
+# The Go model (goose/model/overlay/math): the amd64 assembly `archFloor`, `archCeil`, `archTrunc`
+# (`floor_amd64.s`), `archExp` (`exp_amd64.s`) and `archLog` (`log_amd64.s`), which have no Go
+# body. Each declaration's MODEL: comment says why it has at least Go's behaviours: the rounding
+# functions are Go's portable bodies on non-NaN inputs and some NaN on NaNs, `archExp` and `archLog`
+# some float64 (differential test: goose/model/difftests/math_test.go).
+[model]
+dir = "goose/model/overlay/math"
+replaces = ["archFloor", "archCeil", "archTrunc", "archExp", "archLog"]
+blank_asm = ["floor_amd64.s", "exp_amd64.s", "log_amd64.s"]

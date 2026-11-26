@@ -20,12 +20,13 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-/-- Spec of `Time.Before`: some `bool`. -/
+/-- Spec of `Time.Before`: whether `t` is before `u` (`time.Time.before`: their monotonic
+readings when both have one, else their wall clocks' `(sec, nsec)`). -/
 abbrev time.Time.Before.spec : Prop :=
   ∀ (t u : time.Time),
     {{ (True : IProp GF) }}
       (App (Val (t @!! time.Time.ty @!! go!"Before")) (Val #u))
-    {{ (b : Bool), RET #b; True }}
+    {{ RET #(time.Time.before t u); True }}
 
 end spec
 

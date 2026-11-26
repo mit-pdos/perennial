@@ -31,8 +31,8 @@ def assumeSumNoOverflowSigned : val :=
   λ: "x" "y",
   let: "max_int" := #(W64 (2^63-1)) in
   let: "min_int" := #(W64 (-2^63)) in
-  assume (((#(W64 0) <⟨go.int⟩ "y") && ("x" <⟨go.int⟩ ("max_int" -⟨go.int⟩ "y"))) ||
-    (("y" <⟨go.int⟩ #(W64 0)) && (("min_int" -⟨go.int⟩ "y") <⟨go.int⟩ "x")))
+  assume (((#(W64 0) ≤⟨go.int⟩ "y") && ("x" ≤⟨go.int⟩ ("max_int" -⟨go.int⟩ "y"))) ||
+    (("y" <⟨go.int⟩ #(W64 0)) && (("min_int" -⟨go.int⟩ "y") ≤⟨go.int⟩ "x")))
 
 /-- Assume "x" + "y" doesn't overflow and return the sum. -/
 def sumAssumeNoOverflowSigned : val :=

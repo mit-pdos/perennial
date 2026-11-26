@@ -1,5 +1,5 @@
 /-
-`cmp.Less`'s spec (at `uint64`).
+`cmp.Less`'s spec (at `uint64`, `string` and `int`).
 -/
 module
 
@@ -21,7 +21,7 @@ variable [sem : go.Semantics]
 variable [package_sem : cmp.Assumptions]
 
 /-- `Less` at `uint64` is `<` on the unsigned values; at `string`, Go's order on strings
-(`go.GoStringLt`, lexicographic on the bytes). -/
+(`go.GoStringLt`, lexicographic on the bytes); at `int`, `<` on the signed values. -/
 abbrev cmp.Less.spec : Prop :=
   (∀ (x y : w64),
     {{ (True : IProp GF) }}
@@ -30,7 +30,11 @@ abbrev cmp.Less.spec : Prop :=
   (∀ (x y : GoString),
     {{ (True : IProp GF) }}
       (App (App (Val #(functions Less [go.string])) (Val #x)) (Val #y))
-    {{ (b : Bool), RET #b; ⌜b = true ↔ go.GoStringLt x y⌝ }})
+    {{ (b : Bool), RET #b; ⌜b = true ↔ go.GoStringLt x y⌝ }}) ∧
+  (∀ (x y : w64),
+    {{ (True : IProp GF) }}
+      (App (App (Val #(functions Less [go.int])) (Val #x)) (Val #y))
+    {{ (b : Bool), RET #b; ⌜b = true ↔ sint.Z x < sint.Z y⌝ }})
 
 end spec
 

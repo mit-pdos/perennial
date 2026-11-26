@@ -26,8 +26,10 @@ theorem time.Time.sec.wp_proof :
   wp_start as Ht
   wp_auto
   wp_if_destruct
-  · iapply HΦ $$ Ht
-  · iapply HΦ $$ Ht
+  · rw [time.Time.secOf_of_not_mono Hif]
+    iapply HΦ $$ Ht
+  · rw [time.Time.secOf_of_mono Hif]
+    iapply HΦ $$ Ht
 
 end proof
 

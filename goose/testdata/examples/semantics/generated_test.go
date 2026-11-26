@@ -303,6 +303,10 @@ func (suite *GoTestSuite) TestFirstClassFunction() {
 	suite.Equal(true, testFirstClassFunction())
 }
 
+func (suite *GoTestSuite) TestFloatIncDec() {
+	suite.Equal(true, testFloatIncDec())
+}
+
 func (suite *GoTestSuite) TestFunctionOrdering() {
 	suite.Equal(true, failing_testFunctionOrdering())
 }
@@ -761,6 +765,10 @@ func (suite *GoTestSuite) TestManyParentheses() {
 
 func (suite *GoTestSuite) TestPlusTimes() {
 	suite.Equal(true, testPlusTimes())
+}
+
+func (suite *GoTestSuite) TestRecoverPanicNil() {
+	suite.Equal(true, testRecoverPanicNil())
 }
 
 func (suite *GoTestSuite) TestOrCompareSimple() {

@@ -28,8 +28,10 @@ theorem time.Time.stripMono.wp_proof
   wp_start as Hl
   wp_auto
   wp_if_destruct
-  · wp_end
-  · wp_apply wp_Time_sec $$ [$Hl] as %x Hl
+  · rw [time.Time.stripMonoOf_of_not_mono Hif]
+    wp_end
+  · wp_apply wp_Time_sec $$ [$Hl] as Hl
+    rw [time.Time.stripMonoOf_of_mono Hif]
     wp_end
 
 end proof

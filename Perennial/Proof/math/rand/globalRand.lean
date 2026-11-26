@@ -31,7 +31,7 @@ theorem math.rand.globalRand.wp_proof
   simp only [math.rand.globalRandGeneratorTy_eq, math.rand.randTy_eq,
     math.rand.runtimeSourceTy_eq, math.rand.globalRandGenerator_name_eq]
   iunfold math.rand.isInit at Hinv
-  icases Hinv with ⟨%γ, #Hinv⟩
+  icases Hinv with ⟨⟨%γ, #Hinv⟩, -⟩
   -- the first `Load`: a generator that is set is returned
   wp_apply_core wp_Load (T' := math.rand.Rand) math.rand.Rand.ty _ (DFrac.own 1) $$ [] [-]
   · iPkgInit
