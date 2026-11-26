@@ -7,9 +7,12 @@ clock (`clockLb`), and the predicates of the timer and ticker specs (`runtimeTim
 
 Notes on the package's specs:
 * The `Time` arithmetic is translated and proved (`Time.wp_Add`, `Time.wp_Sub`,
-  `Time.wp_Before`, `Time.wp_Equal`, `wp_Since`, `wp_Until`, ...); the specs only say that
-  these return some value (no panics; `Sub` saturates, the others wrap or fall back to the wall
-  clock). `Since` and `Until` read the global `startNano`, so they take `isPkgInit`
+  `Time.wp_Before`, `Time.wp_Equal`, `wp_Since`, `wp_Until`, ...). The comparisons
+  (`Before`, `After`, `Equal`) and the helpers `sec`, `nsec` and `stripMono` return Go's
+  functions of the fields (`Time.before`, `Time.after`, `Time.equal`, `Time.secOf`,
+  `Time.nsecOf`, `Time.stripMonoOf`, below); the specs of the others (`Add`, `Sub`, `Unix`,
+  `UnixNano`, ...) only say that they return some value (no panics; `Sub` saturates, the others
+  wrap or fall back to the wall clock). `Since` and `Until` read the global `startNano`, so they take `isPkgInit`
   (`isInit`); they call `Now`, which reads `startNano` and `Local`, so it takes `isPkgInit` too.
 * The runtime's clock readings and timers are a Go model (`goose/model/overlay/time`), translated:
   `runtimeNow` and `runtimeNano` read the primitive stub `now` (arbitrary readings,
@@ -58,6 +61,141 @@ namespace time
 instance Time.countable [GooseExts] : Pos.Countable time.Time :=
   .ofInjective (fun t => Pos.Countable.encode (t.wall', t.ext', t.loc'))
     (by rintro ⟨a, b, c⟩ ⟨d, e, f⟩ h; have h := Pos.encode_inj h; simp_all)
+
+/-! ### A `Time`'s instant, and comparisons
+
+Go's `Time` (`time.go`) keeps an instant in `wall` and `ext`. `wall` holds, from its top bit down,
+the flag `hasMonotonic` (bit 63), a 33-bit seconds field (bits 30-62: the seconds since 1885, set
+only with the flag) and the nanoseconds (bits 0-29, `nsecMask`). With the flag, `ext` is the
+monotonic clock reading; without it, the seconds since January 1, year 1. The functions below are
+Go's (`sec`, `nsec`, `stripMono`, `Before`, `After`, `Equal`), on the values of the fields, with
+Go's constants spelled out (`hasMonotonic = 1 << 63`, `nsecMask = 1<<30 - 1`, `wallToInternal`,
+the seconds from year 1 to 1885); the specs of those methods return them. -/
+
+/-- `t.wall&hasMonotonic != 0`: `t` carries a monotonic clock reading (in `ext`). -/
+def Time.hasMono [GooseExts] (t : time.Time) : Bool :=
+  decide (t.wall' &&& W64 9223372036854775808 ≠ W64 0)
+
+/-- `t.sec()`: the seconds since January 1, year 1, of `t`'s wall clock: with a monotonic
+reading, `wallToInternal` plus `wall`'s seconds field (`wall<<1>>(nsecShift+1)`); otherwise
+`ext`. -/
+def Time.secOf [GooseExts] (t : time.Time) : w64 :=
+  if t.hasMono then W64 59453308800 + (t.wall' <<< W64 1) >>> W64 31 else t.ext'
+
+/-- `t.nsec()`: the nanoseconds of `t`, `int32(wall & nsecMask)` (non-negative, below `2^30`). -/
+def Time.nsecOf [GooseExts] (t : time.Time) : w32 :=
+  W32 (uint.Z (t.wall' &&& W64 1073741823))
+
+/-- `t.Before(u)`: when both carry a monotonic reading, `t.ext < u.ext`; otherwise `t`'s
+`(sec, nsec)` is lexicographically below `u`'s (as signed integers). -/
+def Time.before [GooseExts] (t u : time.Time) : Bool :=
+  if t.hasMono && u.hasMono then decide (sint.Z t.ext' < sint.Z u.ext')
+  else decide (sint.Z t.secOf < sint.Z u.secOf ∨
+    (t.secOf = u.secOf ∧ sint.Z t.nsecOf < sint.Z u.nsecOf))
+
+/-- `t.After(u)`: `u.Before(t)` (Go's `After` is `Before` with the operands swapped). -/
+def Time.after [GooseExts] (t u : time.Time) : Bool := Time.before u t
+
+/-- `t.Equal(u)`: when both carry a monotonic reading, `t.ext == u.ext`; otherwise the same
+`(sec, nsec)`. -/
+def Time.equal [GooseExts] (t u : time.Time) : Bool :=
+  if t.hasMono && u.hasMono then decide (t.ext' = u.ext')
+  else decide (t.secOf = u.secOf ∧ t.nsecOf = u.nsecOf)
+
+/-- `t.stripMono()`'s result: with a monotonic reading, `ext` becomes `t.sec()` and `wall`
+keeps only the nanoseconds (the flag and the seconds field cleared); otherwise `t` unchanged.
+The result has no monotonic reading (`Time.hasMono_stripMonoOf`). -/
+def Time.stripMonoOf [GooseExts] (t : time.Time) : time.Time :=
+  if t.hasMono then { t with wall' := t.wall' &&& W64 1073741823, ext' := t.secOf } else t
+
+/-- The flag `hasMonotonic` of a `wall` is its bit 63. -/
+theorem wall_hasMono_iff (x : w64) :
+    decide (x &&& W64 9223372036854775808 ≠ W64 0) = x.getLsbD 63 := by
+  have h : (W64 9223372036854775808 : w64) = BitVec.twoPow 64 63 := by decide
+  have h0 : (BitVec.twoPow 64 63 : w64) ≠ 0#64 := by decide
+  have hz : (W64 0 : w64) = 0#64 := rfl
+  rw [h, hz, BitVec.and_twoPow]
+  cases hb : x.getLsbD 63 <;> simp [h0]
+
+theorem Time.hasMono_eq_getLsbD [GooseExts] (t : time.Time) :
+    t.hasMono = t.wall'.getLsbD 63 :=
+  wall_hasMono_iff t.wall'
+
+/-- Go's test of both flags at once, `t.wall&u.wall&hasMonotonic != 0`. -/
+theorem Time.hasMono_and [GooseExts] (t u : time.Time) :
+    decide (t.wall' &&& u.wall' &&& W64 9223372036854775808 ≠ W64 0) =
+      (t.hasMono && u.hasMono) := by
+  rw [wall_hasMono_iff, Time.hasMono_eq_getLsbD, Time.hasMono_eq_getLsbD, BitVec.getLsbD_and]
+
+theorem Time.hasMono_stripMonoOf [GooseExts] (t : time.Time) :
+    t.stripMonoOf.hasMono = false := by
+  unfold Time.stripMonoOf
+  split
+  · simp only [Time.hasMono_eq_getLsbD, BitVec.getLsbD_and]
+    simp
+  · simp_all
+
+/-! The cases of Go's tests of the flags, as the proofs of the methods meet them. -/
+
+section cases
+variable [GooseExts] {t u : time.Time}
+
+theorem Time.hasMono_and_true (h : ¬t.wall' &&& u.wall' &&& W64 9223372036854775808 = W64 0) :
+    (t.hasMono && u.hasMono) = true := by
+  rw [← Time.hasMono_and]; exact decide_eq_true h
+
+theorem Time.hasMono_and_false (h : t.wall' &&& u.wall' &&& W64 9223372036854775808 = W64 0) :
+    (t.hasMono && u.hasMono) = false := by
+  rw [← Time.hasMono_and, h]; decide
+
+theorem Time.secOf_of_mono (h : ¬t.wall' &&& W64 9223372036854775808 = W64 0) :
+    t.secOf = W64 59453308800 + t.wall' <<< W64 1 >>> W64 31 := by
+  simp only [Time.secOf, Time.hasMono, ne_eq, h, not_false_eq_true, decide_true, ↓reduceIte]
+
+theorem Time.secOf_of_not_mono (h : t.wall' &&& W64 9223372036854775808 = W64 0) :
+    t.secOf = t.ext' := by
+  simp only [Time.secOf, Time.hasMono, ne_eq, h, not_true_eq_false, decide_false,
+    Bool.false_eq_true, ↓reduceIte]
+
+theorem Time.stripMonoOf_of_mono (h : ¬t.wall' &&& W64 9223372036854775808 = W64 0) :
+    t.stripMonoOf = ⟨t.wall' &&& W64 1073741823, t.secOf, t.loc'⟩ := by
+  simp only [Time.stripMonoOf, Time.hasMono, ne_eq, h, not_false_eq_true, decide_true,
+    ↓reduceIte]
+
+theorem Time.stripMonoOf_of_not_mono (h : t.wall' &&& W64 9223372036854775808 = W64 0) :
+    t.stripMonoOf = t := by
+  simp only [Time.stripMonoOf, Time.hasMono, ne_eq, h, not_true_eq_false, decide_false,
+    Bool.false_eq_true, ↓reduceIte]
+
+theorem Time.before_of_mono (h : ¬t.wall' &&& u.wall' &&& W64 9223372036854775808 = W64 0) :
+    t.before u = decide (sint.Z t.ext' < sint.Z u.ext') := by
+  simp only [Time.before, Time.hasMono_and_true h, ↓reduceIte]
+
+theorem Time.before_of_not_mono (h : t.wall' &&& u.wall' &&& W64 9223372036854775808 = W64 0) :
+    t.before u = decide (sint.Z t.secOf < sint.Z u.secOf ∨
+      (t.secOf = u.secOf ∧ sint.Z t.nsecOf < sint.Z u.nsecOf)) := by
+  simp only [Time.before, Time.hasMono_and_false h, Bool.false_eq_true, ↓reduceIte]
+
+theorem Time.after_of_mono (h : ¬t.wall' &&& u.wall' &&& W64 9223372036854775808 = W64 0) :
+    t.after u = decide (sint.Z u.ext' < sint.Z t.ext') := by
+  simp only [Time.after, Time.before, Bool.and_comm u.hasMono, Time.hasMono_and_true h,
+    ↓reduceIte]
+
+theorem Time.after_of_not_mono (h : t.wall' &&& u.wall' &&& W64 9223372036854775808 = W64 0) :
+    t.after u = decide (sint.Z u.secOf < sint.Z t.secOf ∨
+      (t.secOf = u.secOf ∧ sint.Z u.nsecOf < sint.Z t.nsecOf)) := by
+  simp only [Time.after, Time.before, Bool.and_comm u.hasMono, Time.hasMono_and_false h,
+    Bool.false_eq_true, ↓reduceIte, @eq_comm _ u.secOf t.secOf]
+
+theorem Time.equal_of_mono (h : ¬t.wall' &&& u.wall' &&& W64 9223372036854775808 = W64 0) :
+    t.equal u = decide (t.ext' = u.ext') := by
+  simp only [Time.equal, Time.hasMono_and_true h, ↓reduceIte]
+
+theorem Time.equal_of_not_mono (h : t.wall' &&& u.wall' &&& W64 9223372036854775808 = W64 0) :
+    t.equal u = decide (t.secOf = u.secOf ∧ t.nsecOf = u.nsecOf) := by
+  simp only [Time.equal, Time.hasMono_and_false h, Bool.false_eq_true, ↓reduceIte]
+
+end cases
 
 section clock
 variable [GooseExts] [GooseSemantics] [GooseInterp]

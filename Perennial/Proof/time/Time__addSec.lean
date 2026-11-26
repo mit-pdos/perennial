@@ -32,9 +32,9 @@ theorem time.Time.addSec.wp_proof
   · wp_if_destruct
     · wp_if_destruct
       · wp_end
-      · wp_apply wp_Time_stripMono $$ [$Hl] as %tv' Hl
+      · wp_apply wp_Time_stripMono $$ [$Hl] as Hl
         wp_if_destruct <;> (try wp_if_destruct) <;> wp_end
-    · wp_apply wp_Time_stripMono $$ [$Hl] as %tv' Hl
+    · wp_apply wp_Time_stripMono $$ [$Hl] as Hl
       wp_if_destruct <;> (try wp_if_destruct) <;> wp_end
 
 end proof

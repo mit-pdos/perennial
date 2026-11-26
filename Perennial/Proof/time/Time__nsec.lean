@@ -25,7 +25,8 @@ theorem time.Time.nsec.wp_proof :
   intro t tv
   wp_start as Ht
   wp_auto
-  wp_end
+  rw [show tv.nsecOf = W32 (uint.Z (tv.wall' &&& W64 1073741823)) from rfl]
+  iapply HΦ $$ Ht
 
 end proof
 

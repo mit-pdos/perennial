@@ -20,12 +20,12 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-/-- Spec of `Time.After`: some `bool`. -/
+/-- Spec of `Time.After`: whether `t` is after `u` (`time.Time.after`, which is `u.before t`). -/
 abbrev time.Time.After.spec : Prop :=
   ∀ (t u : time.Time),
     {{ (True : IProp GF) }}
       (App (Val (t @!! time.Time.ty @!! go!"After")) (Val #u))
-    {{ (b : Bool), RET #b; True }}
+    {{ RET #(time.Time.after t u); True }}
 
 end spec
 

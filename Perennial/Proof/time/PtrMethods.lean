@@ -49,7 +49,7 @@ theorem Time.wp_ptr_Before_of (wp_Before : time.Time.Before.spec (GF := GF) (hG 
     {{ (b : Bool), RET #b; l ↦ t }} := by
   wp_start as Hl
   wp_auto
-  wp_apply wp_Before as %b -
+  wp_apply wp_Before
   iapply HΦ $$ Hl
 
 /-- `(*Time).Sub`. -/

@@ -30,7 +30,7 @@ theorem time.Time.UnixNano.wp_proof
   wp_start
   wp_auto
   wp_apply wp_Time_unixSec $$ [$t] as %x t
-  wp_apply wp_Time_nsec $$ [$t] as %y -
+  wp_apply wp_Time_nsec $$ [$t] as -
   wp_end
 
 end proof

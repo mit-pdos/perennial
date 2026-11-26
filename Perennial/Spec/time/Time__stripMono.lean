@@ -20,12 +20,13 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-/-- `(*Time).stripMono()`: some new value of `*t`. -/
+/-- `(*Time).stripMono()`: `*t` becomes `time.Time.stripMonoOf` of it (its monotonic reading
+dropped). -/
 abbrev time.Time.stripMono.spec : Prop :=
   ∀ (l : Loc) (tv : time.Time),
     {{ (l ↦ tv : IProp GF) }}
       (App (Val (l @!! go.GoType.PointerType time.Time.ty @!! go!"stripMono")) (Val #()))
-    {{ (tv' : time.Time), RET #(); l ↦ tv' }}
+    {{ RET #(); l ↦ time.Time.stripMonoOf tv }}
 
 end spec
 
