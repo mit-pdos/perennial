@@ -43,6 +43,17 @@
 #                                     the GC clearing pools: the model of
 #                                     Pool has no GC, its Get may return a
 #                                     value Go's GC would have dropped
+#   math     the tests of the functions over Exp or Log (TestExp, TestLog,
+#            TestLog10, TestLog2, TestPow, TestCosh, TestSinh, TestTanh,
+#            TestAcosh, TestAsinh, TestGamma, TestLgamma, TestErfinv,
+#            TestErfcinv, TestY0, TestY1, TestYn, ExampleExp, ExampleLog,
+#            ExampleLog10, ExampleCosh)  archExp's and archLog's models are
+#                                     some float64 (gomodel.ChooseUint64,
+#                                     which is 0 in gc); Floor, Ceil, Trunc
+#                                     and Modf run in full; their models are
+#                                     also compared with the real assembly
+#                                     and gc's ROUNDSD, without the overlay
+#                                     (goose/model/difftests)
 # internal/stringslite has no tests; bytes, internal/bytealg and internal/sync
 # run in full.
 # runtime: its model (Frames.Next, a choice: gomodel's Go bodies take one value, so
@@ -58,7 +69,7 @@ trap 'rm -rf "$OUT"' EXIT
 cd "$ROOT/goose"
 go build -o "$OUT/goose" ./cmd/goose
 "$OUT/goose" model-overlay -configdir "$ROOT/Perennial/Code" -dir . -tags purego -o "$OUT/ov" \
-  strings bytes errors internal/stringslite internal/bytealg internal/sync sync time
+  strings bytes errors internal/stringslite internal/bytealg internal/sync sync time math
 # go vet does not find the overlay-added internal/gomodel (it changes into the package's directory)
 run() { go test -vet=off -timeout 600s -overlay "$OUT/ov/overlay.json" -tags purego,goose "$@"; }
 run strings -skip '^(TestSplit|ExampleSplit|TestBuilderGrow|TestBuilderAllocs|TestBuilderGrowSizeclasses|TestReplace|TestBuilderCopyPanic)$'
@@ -68,4 +79,8 @@ run sync -skip '^(TestMutexMisuse|TestPool|TestPoolGC|TestPoolRelease)$'
 run ./model/overlaytests/
 run bytes internal/stringslite internal/bytealg internal/sync
 run time -skip '^(TestAfterStop|TestTimerStopStress|TestChan|TestTicker|TestReset|TestTimerModifiedEarlier|TestAdjustTimers|TestTimerGC)$'
+run math -skip '^(TestExp|TestLog|TestLog10|TestLog2|TestPow|TestCosh|TestSinh|TestTanh|TestAcosh|TestAsinh|TestGamma|TestLgamma|TestErfinv|TestErfcinv|TestY0|TestY1|TestYn|ExampleExp|ExampleLog|ExampleLog10|ExampleCosh)$'
+# the differential tests, without the overlay: the real assembly against the models' bodies
+# (math's internal symbols by linkname, which -checklinkname=0 allows)
+go test -vet=off -tags difftests -ldflags=-checklinkname=0 ./model/difftests/
 echo "model-tests: ok"
