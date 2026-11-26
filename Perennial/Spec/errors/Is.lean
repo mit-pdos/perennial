@@ -37,7 +37,7 @@ holding a slice): `ComparableErr` asks that `==` on that type be the equality of
 abbrev errors.Is.spec : Prop :=
   ∀ (S : GoError → Prop) (I : GoInterfaceOk → Bool → Prop)
     (U : GoInterfaceOk → List GoError → Prop) (err target : GoError),
-    ComparableTarget S target →
+    ComparableTarget (GF := GF) S target →
     {{ isPkgInit (PROP := IProp GF) pkg_id.errors ∗ errorWalkTree (GF := GF) S I U target ∗
         ⌜S err⌝ }}
       (App (App (Val (@! Is)) (Val #err)) (Val #target))

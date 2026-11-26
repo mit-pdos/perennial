@@ -30,12 +30,22 @@ theorem time.Time.Before.wp_proof
   wp_start
   wp_auto
   wp_if_destruct
-  · wp_apply wp_Time_sec $$ [$t] as %ts t
-    wp_apply wp_Time_sec $$ [$u] as %us u
-    repeat' (first | wp_if_destruct | wp_apply wp_Time_nsec $$ [$t] as %tn t |
-      wp_apply wp_Time_nsec $$ [$u] as %un u)
-    all_goals wp_end
-  · wp_end
+  · wp_apply wp_Time_sec $$ [$t] as t
+    wp_apply wp_Time_sec $$ [$u] as u
+    repeat' (first | wp_if_destruct | wp_apply wp_Time_nsec $$ [$t] as t |
+      wp_apply wp_Time_nsec $$ [$u] as u)
+    -- each leaf returns a literal: `time.Time.before`'s value there
+    all_goals first
+      | (have hb : t.before u = true := by
+          clear wp_Time_sec wp_Time_nsec
+          rw [time.Time.before_of_not_mono (t := t) (u := u) ‹_›]; simp_all
+         rw [hb]; wp_end)
+      | (have hb : t.before u = false := by
+          clear wp_Time_sec wp_Time_nsec
+          rw [time.Time.before_of_not_mono (t := t) (u := u) ‹_›]; simp_all
+         rw [hb]; wp_end)
+  · rw [time.Time.before_of_mono Hif]
+    wp_end
 
 end proof
 

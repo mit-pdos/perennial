@@ -27,7 +27,7 @@ theorem time.Time.unixSec.wp_proof
   intro t tv
   wp_start as Ht
   wp_auto
-  wp_apply wp_Time_sec $$ [$Ht] as %x Ht
+  wp_apply wp_Time_sec $$ [$Ht] as Ht
   iapply HΦ $$ Ht
 
 end proof

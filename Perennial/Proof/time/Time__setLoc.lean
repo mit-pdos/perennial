@@ -28,7 +28,7 @@ theorem time.Time.setLoc.wp_proof
   wp_start as Hl
   wp_auto
   repeat' (first | wp_if_destruct | wp_auto)
-  all_goals (wp_apply wp_Time_stripMono $$ [$Hl] as %tv' Hl
+  all_goals (wp_apply wp_Time_stripMono $$ [$Hl] as Hl
              (try wp_auto)
              wp_end)
 
