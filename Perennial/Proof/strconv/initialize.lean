@@ -69,53 +69,53 @@ theorem strconv.initialize'.wp_proof
   wp_apply wp_stringslite_initialize _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #Hsl⟩
   wp_apply wp_strconv_initialize _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hisc⟩
   wp_apply wp_errors_initialize _ Hinit.2.1 $$ Hown as ⟨Hown, #Herrors⟩
-  wp_apply wp_slice_literal_size (V := w16) (t := go.uint16) 412 _ _ (by rfl)
+  wp_apply wp_slice_literal_size (V := w16) (t := go.uint16) 424 _ _ (by rfl)
   isplitr
   · ipureintro; rfl
   iintro %sl ⟨Hsl, -⟩
   wp_auto
   ipersist Hsl
   ipersist HP16
-  ihave #THP16 : strconv.tableVar w16 _ 412 $$ []
+  ihave #THP16 : strconv.tableVar w16 _ 424 $$ []
   · iunfold strconv.tableVar
     iexists _, _
     iframe HP16 Hsl
     ipureintro; rfl
   iclear Hsl HP16
-  wp_apply wp_slice_literal_size (V := w16) (t := go.uint16) 132 _ _ (by rfl)
+  wp_apply wp_slice_literal_size (V := w16) (t := go.uint16) 133 _ _ (by rfl)
   isplitr
   · ipureintro; rfl
   iintro %sl ⟨Hsl, -⟩
   wp_auto
   ipersist Hsl
   ipersist HNP16
-  ihave #THNP16 : strconv.tableVar w16 _ 132 $$ []
+  ihave #THNP16 : strconv.tableVar w16 _ 133 $$ []
   · iunfold strconv.tableVar
     iexists _, _
     iframe HNP16 Hsl
     ipureintro; rfl
   iclear Hsl HNP16
-  wp_apply wp_slice_literal_size (V := w32) (t := go.uint32) 566 _ _ (by rfl)
+  wp_apply wp_slice_literal_size (V := w32) (t := go.uint32) 508 _ _ (by rfl)
   isplitr
   · ipureintro; rfl
   iintro %sl ⟨Hsl, -⟩
   wp_auto
   ipersist Hsl
   ipersist HP32
-  ihave #THP32 : strconv.tableVar w32 _ 566 $$ []
+  ihave #THP32 : strconv.tableVar w32 _ 508 $$ []
   · iunfold strconv.tableVar
     iexists _, _
     iframe HP32 Hsl
     ipureintro; rfl
   iclear Hsl HP32
-  wp_apply wp_slice_literal_size (V := w16) (t := go.uint16) 120 _ _ (by rfl)
+  wp_apply wp_slice_literal_size (V := w16) (t := go.uint16) 112 _ _ (by rfl)
   isplitr
   · ipureintro; rfl
   iintro %sl ⟨Hsl, -⟩
   wp_auto
   ipersist Hsl
   ipersist HNP32
-  ihave #THNP32 : strconv.tableVar w16 _ 120 $$ []
+  ihave #THNP32 : strconv.tableVar w16 _ 112 $$ []
   · iunfold strconv.tableVar
     iexists _, _
     iframe HNP32 Hsl

@@ -95,25 +95,25 @@ theorem quoteWith_cap (n : Nat) (h : (n : Int) ≤ 2^47) :
 
 set_option maxRecDepth 100000 in
 /-- `IsPrint`'s indices `i&^1` and `i|1` stay below the length of an even table. -/
-theorem isPrint_idx_bv (i : BitVec 64) (n : BitVec 64) (hn : n = 412#64 ∨ n = 566#64) (h : i < n) :
+theorem isPrint_idx_bv (i : BitVec 64) (n : BitVec 64) (hn : n = 424#64 ∨ n = 508#64) (h : i < n) :
     (i &&& ~~~1#64) < n ∧ (i ||| 1#64) < n := by
-  have htab : ∀ k < 566, k ||| 1 < 566 ∧ (k < 412 → k ||| 1 < 412) := by decide
+  have htab : ∀ k < 508, k ||| 1 < 508 ∧ (k < 424 → k ||| 1 < 424) := by decide
   rw [BitVec.lt_def] at h ⊢
   rw [BitVec.lt_def, BitVec.toNat_and, BitVec.toNat_or]
   have h1 : (1#64).toNat = 1 := rfl
   rw [h1]
   have hle := Nat.and_le_left (n := i.toNat) (m := (~~~1#64).toNat)
   rcases hn with rfl | rfl
-  · have : (412#64).toNat = 412 := rfl
+  · have : (424#64).toNat = 424 := rfl
     rw [this] at h ⊢
     exact ⟨by omega, (htab _ (by omega)).2 h⟩
-  · have : (566#64).toNat = 566 := rfl
+  · have : (508#64).toNat = 508 := rfl
     rw [this] at h ⊢
     exact ⟨by omega, (htab _ h).1⟩
 
 /-- `IsPrint`'s indices `i&^1` and `i|1`, for `0 ≤ i < n`, are in `[0, n)` (`n` the even length of
 `isPrint16` or `isPrint32`). -/
-theorem isPrint_idx (i : w64) (n : Nat) (hn : n = 412 ∨ n = 566) (h0 : 0 ≤ sint.Z i)
+theorem isPrint_idx (i : w64) (n : Nat) (hn : n = 424 ∨ n = 508) (h0 : 0 ≤ sint.Z i)
     (h1 : sint.Z i < n) :
     (0 ≤ sint.Z (i &&& ~~~W64 1) ∧ sint.Z (i &&& ~~~W64 1) < n) ∧
       (0 ≤ sint.Z (i ||| W64 1) ∧ sint.Z (i ||| W64 1) < n) := by
@@ -169,10 +169,10 @@ and `IsPrint`'s tables have their lengths (each `isPrint` table of ranges an eve
 abbrev isInit : IProp GF :=
   iprop("#HErrRange" ∷ errors.newVar ErrRange go!"value out of range" ∗
   "#HErrSyntax" ∷ errors.newVar ErrSyntax go!"invalid syntax" ∗
-  "#HisPrint16" ∷ tableVar w16 isPrint16 412 ∗
-  "#HisNotPrint16" ∷ tableVar w16 isNotPrint16 132 ∗
-  "#HisPrint32" ∷ tableVar w32 isPrint32 566 ∗
-  "#HisNotPrint32" ∷ tableVar w16 isNotPrint32 120)
+  "#HisPrint16" ∷ tableVar w16 isPrint16 424 ∗
+  "#HisNotPrint16" ∷ tableVar w16 isNotPrint16 133 ∗
+  "#HisPrint32" ∷ tableVar w32 isPrint32 508 ∗
+  "#HisNotPrint32" ∷ tableVar w16 isNotPrint32 112)
 
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.strconv :=
   define_is_pkg_init isInit
