@@ -21,7 +21,8 @@ variable [sem : go.Semantics]
 variable [package_sem : cmp.Assumptions]
 
 /-- `Less` at `uint64` is `<` on the unsigned values; at `string`, Go's order on strings
-(`go.GoStringLt`, lexicographic on the bytes); at `int`, `<` on the signed values. -/
+(`go.GoStringLt`, lexicographic on the bytes); at `int`, `<` on the signed values; at `uint8`, `<`
+on the unsigned values. -/
 abbrev cmp.Less.spec : Prop :=
   (∀ (x y : w64),
     {{ (True : IProp GF) }}
@@ -34,7 +35,11 @@ abbrev cmp.Less.spec : Prop :=
   (∀ (x y : w64),
     {{ (True : IProp GF) }}
       (App (App (Val #(functions Less [go.int])) (Val #x)) (Val #y))
-    {{ (b : Bool), RET #b; ⌜b = true ↔ sint.Z x < sint.Z y⌝ }})
+    {{ (b : Bool), RET #b; ⌜b = true ↔ sint.Z x < sint.Z y⌝ }}) ∧
+  (∀ (x y : w8),
+    {{ (True : IProp GF) }}
+      (App (App (Val #(functions Less [go.uint8])) (Val #x)) (Val #y))
+    {{ (b : Bool), RET #b; ⌜b = true ↔ uint.Z x < uint.Z y⌝ }})
 
 end spec
 

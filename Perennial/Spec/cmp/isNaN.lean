@@ -20,7 +20,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : cmp.Assumptions]
 
-/-- `isNaN` at `uint64`, at `string` and at `int` is `false`: `x != x` never holds for an integer or a
+/-- `isNaN` at `uint64`, at `string`, at `int` and at `uint8` is `false`: `x != x` never holds for an integer or a
 string. -/
 abbrev cmp.isNaN.spec : Prop :=
   (∀ (x : w64),
@@ -34,6 +34,10 @@ abbrev cmp.isNaN.spec : Prop :=
   (∀ (x : w64),
     {{ (True : IProp GF) }}
       (App (Val #(functions isNaN [go.int])) (Val #x))
+    {{ RET #false; True }}) ∧
+  (∀ (x : w8),
+    {{ (True : IProp GF) }}
+      (App (Val #(functions isNaN [go.uint8])) (Val #x))
     {{ RET #false; True }})
 
 end spec

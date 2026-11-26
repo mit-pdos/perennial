@@ -2,7 +2,8 @@
 Results of `slices` derived from the linked ones: `wp_siftDownCmpFunc_Trivial` and
 `wp_siftDownOrdered_Trivial` (the second conjuncts of the specs of `siftDownCmpFunc` and
 `siftDownOrdered`, under their old names), `lessImplements_uint64` (from `cmp.wp_Less_uint64`)
-`wp_Sort_uint64` (`Sort` on `[]uint64`) and `wp_ContainsFunc_pure` (`ContainsFunc` of a function
+`wp_Sort_uint64` (`Sort` on `[]uint64`), `lessImplements_uint8` and `wp_Sort_uint8` (the same at
+`uint8`) and `wp_ContainsFunc_pure` (`ContainsFunc` of a function
 computing a pure predicate).
 -/
 module
@@ -79,6 +80,18 @@ theorem lessImplements_uint64 :
   ipureintro
   exact Hb
 
+/-- On `uint8`, `cmp.Less` implements `<` on the unsigned values. -/
+theorem lessImplements_uint8 :
+    ⊢ lessImplements (GF := GF) (Et := go.uint8) (fun (x y : w8) => uint.Z x < uint.Z y) := by
+  unfold lessImplements
+  iintro %x %y
+  imodintro
+  iintro %Φ _ HΦ
+  wp_apply cmp.wp_Less_uint8 x y with %b %Hb
+  iapply HΦ
+  ipureintro
+  exact Hb
+
 end uint64
 
 section uint64
@@ -105,6 +118,32 @@ theorem wp_Sort_uint64 {S : go.GoType} [S ↓u go.SliceType go.uint64] (data : G
   iNamed H
   ihave #Hless := lessImplements_uint64 (GF := GF)
   wp_apply wp_Sort (fun (x y : w64) => uint.Z x < uint.Z y) data xs StrictWeakOrder_unsigned_lt
+    $$ [Hxs] with %xs' ⟨Hxs, %Hperm, %Hsorted⟩
+  · iframe Hxs; iframe #; ipureintro; exact Hlength_bound
+  iapply HΦ
+  iframe Hxs
+  ipureintro
+  refine ⟨Hperm, fun i j xi xj Hi Hj Hij => ?_⟩
+  have := Hsorted i j xi xj Hi Hj Hij
+  omega
+
+/-- `slices.Sort` on a `[]uint8` (any slice type `S` with that underlying type):
+it permutes the slice into ascending order. -/
+theorem wp_Sort_uint8 {S : go.GoType} [S ↓u go.SliceType go.uint8] (data : GoSlice)
+    (xs : List w8) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.slices ∗
+        "Hxs" ∷ data ↦* xs ∗
+        "%Hlength_bound" ∷ ⌜xs.length ≤ 2 ^ 62⌝ }}
+      (App (Val #(functions «Sort» [S, go.uint8])) (Val #data))
+    {{ (xs' : List w8), RET #();
+        "Hxs" ∷ data ↦* xs' ∗
+        "%Hperm" ∷ ⌜xs ≡ₚ xs'⌝ ∗
+        "%Hsorted" ∷ ⌜∀ (i j : Nat) (xi xj : w8), xs'[i]? = some xi → xs'[j]? = some xj →
+          i < j → uint.Z xi ≤ uint.Z xj⌝ }} := by
+  wp_start_folded as H
+  iNamed H
+  ihave #Hless := lessImplements_uint8 (GF := GF)
+  wp_apply wp_Sort (fun (x y : w8) => uint.Z x < uint.Z y) data xs StrictWeakOrder_unsigned_lt_w8
     $$ [Hxs] with %xs' ⟨Hxs, %Hperm, %Hsorted⟩
   · iframe Hxs; iframe #; ipureintro; exact Hlength_bound
   iapply HΦ

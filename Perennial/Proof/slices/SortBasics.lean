@@ -49,6 +49,13 @@ theorem StrictWeakOrder_unsigned_lt :
   strict_weak_order_equiv :=
     ⟨fun _ => by omega, fun h => by omega, fun h1 h2 => by omega⟩
 
+theorem StrictWeakOrder_unsigned_lt_w8 :
+    StrictWeakOrder (fun (a b : w8) => uint.Z a < uint.Z b) where
+  strict_weak_order_irrefl _ := by omega
+  strict_weak_order_trans _ _ _ h1 h2 := by omega
+  strict_weak_order_equiv :=
+    ⟨fun _ => by omega, fun h => by omega, fun h1 h2 => by omega⟩
+
 theorem StrictWeakOrder_signed_lt :
     StrictWeakOrder (fun (a b : w64) => sint.Z a < sint.Z b) where
   strict_weak_order_irrefl _ := by omega

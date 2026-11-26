@@ -75,7 +75,7 @@ theorem lessImplements_int_of (wp_Less : cmp.Less.spec (GF := GF) (hG := hG)) :
   iintro %x %y
   imodintro
   iintro %Φ _ HΦ
-  wp_apply wp_Less.2.2 x y with %b %Hb
+  wp_apply wp_Less.2.2.1 x y with %b %Hb
   iapply HΦ
   ipureintro
   exact Hb
