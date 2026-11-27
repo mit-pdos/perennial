@@ -232,13 +232,13 @@ theorem tagged_steps (t : Tag) :
     ∀ instr args e, ⟦instr, args⟧ ⤳[t] e → ⟦instr, args⟧ ⤳ e := by
   intro _ _ _ h; exact h.isGoStep_det_internal
 
-class UnderlyingEq [GoSemanticsFunctions] (s : go.GoType) (t : outParam go.GoType) : Prop where
+class UnderlyingEq (s : go.GoType) (t : outParam go.GoType) : Prop where
   underlying_eq : underlying s = underlying t
 
 /-- This has a transitive instance, so only declare instances in a way that `t'`
 is strictly "more underlying" than `t`. An instance with `t = t'` will cause an
 infinite loop in typeclass search because of transitivity. -/
-class UnderlyingDirectedEq [GoSemanticsFunctions] (t : go.GoType) (t' : outParam go.GoType) :
+class UnderlyingDirectedEq (t : go.GoType) (t' : outParam go.GoType) :
     Prop where
   underlying_unfold : underlying t = underlying t'
 
@@ -248,7 +248,7 @@ class NotNamed (t : go.GoType) : Prop where
 class NotInterface (t : go.GoType) : Prop where
   not_interface : match t with | go.InterfaceType _ => False | _ => True
 
-class IsUnderlying [GoSemanticsFunctions] (t : go.GoType) (tunder : outParam go.GoType) : Prop where
+class IsUnderlying (t : go.GoType) (tunder : outParam go.GoType) : Prop where
   is_underlying : underlying t = tunder
 
 export UnderlyingEq (underlying_eq)
