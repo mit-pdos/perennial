@@ -19,6 +19,190 @@ translate_types = true
 # hangs gc's GC; trusted, gc keeps the real one.
 trusted = ["Gosched", "callers", "buildVersion"]
 
+# --- skipped package variables (`[[skip]]`, README "Skipped package variables"; review-trusted R11).
+# Every runtime variable with an initializer but `buildVersion` (trusted above): the runtime's own
+# state and tables, read only by runtime code that is not translated (the scheduler, the allocator
+# and GC, signals, tracing, panics raised by compiled code). In gc most of them are not even
+# initialized by code: the linker lays them out in the data segment. The readers named are the
+# untranslated ones (linux/amd64, go1.26.11).
+
+[[skip]]
+names = ["debugPinnerKeepUnpin", "useCheckmark", "doubleCheckReadMemStats", "casgstatusAlwaysTrack",
+  "haveHighResSleep"]
+reason = """
+Boolean constants (debug.go, mcheckmark.go, mstats.go, proc.go, nonwindows_stub.go): each initializer
+stores `false` or `true`, so it terminates, cannot panic and has no effect beyond its variable. Read
+only by untranslated runtime code (`debugPinnerV1`; the GC's checkmark mode, `greyobject` and others;
+`readmemstats_m`; `casgstatus`; `haveHighResSleep` by nothing on linux, and by tests through its
+`go:linkname`)."""
+
+[[skip]]
+names = ["metricsSema", "worldsema", "gcsema", "traceAdvanceSema", "traceShutdownSema"]
+reason = """
+Semaphores' initial counts (metrics.go, proc.go, trace.go): `uint32 = 1`, constants, so each initializer
+terminates, cannot panic and has no effect beyond its variable. Read only by the untranslated
+runtime's `semacquire`/`semrelease` callers (`metricsLock`, `stopTheWorld`, `gcStart`, `traceAdvance`,
+`StartTrace`, ...)."""
+
+[[skip]]
+names = ["adviseUnused", "MemProfileRate", "epfd", "asyncPreemptStack", "minhexdigits",
+  "forcegcperiod", "traceback_cache", "stackPoisonCopy", "maxstacksize", "startingStackSize",
+  "intArgRegs"]
+reason = """
+Integer constants (mem_linux.go `uint32(_MADV_FREE)`, mprof.go `512 * 1024`, netpoll_epoll.go `-1`,
+preempt.go `^uintptr(0)`, print.go `0`, proc.go `2 * 60 * 1e9`, runtime1.go `2 << tracebackShift`,
+stack.go `0`, `1 << 20`, `fixedStack`, stubs.go `abi.IntArgRegs`): each initializer stores a constant,
+so it terminates, cannot panic and has no effect beyond its variable. Read only by untranslated runtime
+code (`sysUnusedOS`; the allocator's sampling, `mallocgc*`; the poller `netpoll*`; `isAsyncSafePoint`;
+`printhex`; `sysmon`; `gotraceback`; `copystack`; `newstack`, `main`; `gfget`; `runFinalizers`).
+`MemProfileRate` is exported, but no translated code reads or writes it."""
+
+[[skip]]
+names = ["maxstackceiling"]
+reason = """
+`maxstackceiling = maxstacksize` (stack.go): a load of the constant-initialized `maxstacksize`
+(also skipped), so it terminates, cannot panic and has no effect beyond the variable. Read only by
+the untranslated `newstack` and `main`."""
+
+[[skip]]
+names = ["sigset_all", "minOffAddr", "maxOffAddr", "vdsoLinuxVersion", "itabTableInit",
+  "emptyTypeAssertCache", "emptyInterfaceSwitchCache", "goroutineProfile"]
+reason = """
+Composite literals of constants (os_linux_generic.go `sigset{^uint32(0), ^uint32(0)}`, mranges.go
+`offAddr{arenaBaseOffset}` and `offAddr{(((1 << heapAddrBits) - 1) + arenaBaseOffset) & uintptrMask}`,
+vdso_linux_amd64.go `vdsoVersionKey{"LINUX_2.6", 0x3ae75f6}`, iface.go `itabTableType{size:
+itabInitSize}`, `abi.TypeAssertCache{Mask: 0}`, `abi.InterfaceSwitchCache{Mask: 0}`, mprof.go's
+anonymous struct `{sema: 1}`): no calls, so each initializer terminates, cannot panic and has no effect
+beyond its variable. Read only by untranslated runtime code (`sigblock`, `newosproc`; the page
+allocator `pageAlloc.*`, `scavengeIndex.*`; `vdsoauxv`; the skipped `itabTable`; the compiler's type-switch
+caches; `doRecordGoroutineProfile`, `newproc1`)."""
+
+[[skip]]
+names = ["boundsErrorFmts", "boundsNegErrorFmts", "lockNames", "gcMarkWorkerModeStrings",
+  "mSpanStateNames", "stwReasonStrings", "waitReasonStrings", "ptrnames", "gStatusStrings",
+  "traceBlockReasonStrings", "traceGoStopReasonStrings"]
+reason = """
+Tables of string constants, array or slice literals (error.go, lockrank.go, mgc.go, mheap.go, proc.go,
+runtime2.go, stack.go, traceback.go, traceruntime.go; their keyed elements are constant indices, which
+the compiler checks): each initializer stores constants (a slice literal allocates its backing array),
+so it terminates, cannot panic and has no effect beyond its variable. Read only by untranslated
+runtime code that prints or names runtime states (`boundsError.Error`, `lockRank.String`,
+`traceRegisterLabelsAndReasons`, `gcDumpObject`, `stwReason.String`, `waitReason.String`,
+`adjustpointers`, `goroutineheader`, `traceStack`)."""
+
+[[skip]]
+names = ["fastlog2Table", "lockPartialOrder", "cleanupFnPtrMask", "finalizer1", "oneptrmask",
+  "levelBits", "levelShift", "levelLogPages", "isWaitingForSuspendG", "isIdleInSynctest", "sigtable"]
+reason = """
+Tables of numeric, boolean or struct constants, array or slice literals (fastlog2table.go,
+lockrank.go, mcleanup.go, mfinal.go, mgcmark.go, mpagealloc_64bit.go, runtime2.go, whose arrays have
+the constant length `len(waitReasonStrings)`, sigtab_linux_generic.go's `sigTabT{flags, name}`): keyed
+by constant indices, no calls, so each initializer stores constants, terminates, cannot panic and has
+no effect beyond its variable. Read only by untranslated runtime code (`fastlog2`, the lock-rank
+checker, `gcScanCleanup`, `queuefinalizer`, `scanstack`, the page allocator, `casgstatus` and the
+stack shrinker, `goroutineheader`, the signal handling `initsig`, `sighandler`, ...)."""
+
+[[skip]]
+names = ["dumphdr", "procAuxv", "sysTHPSizePath", "urandom_dev"]
+reason = """
+`[]byte` conversions of string constants (heapdump.go, os_linux.go: the heap dump's header, the
+NUL-terminated paths of `/proc/self/auxv`, of the transparent-huge-page size and of `/dev/urandom`): each
+allocates and fills a byte slice, so it terminates, cannot panic and has no effect beyond its variable. Read only
+by untranslated runtime code (`mdump`, `sysargs`, `getHugePageSize`, `readRandom`)."""
+
+[[skip]]
+names = ["shiftError", "divideError", "overflowError", "floatError", "memoryError", "simdImmError",
+  "rangeDoneError", "rangePanicError", "rangeExhaustedError", "rangeMissingPanicError"]
+reason = """
+The runtime's error values (panic.go): `error(errorString("..."))`, a string constant converted to
+`errorString` and then to an interface, with no calls, so each initializer terminates, cannot panic
+and has no effect beyond its variable. Read only by the untranslated `panicshift`, `panicdivide`,
+`panicoverflow`, `panicfloat`, `panicmem`, `panicSimdImm` and `panicrangestate`, which compiled code
+calls; the model raises those panics in its semantics. `divideError` and `overflowError` are also
+pulled by `math/bits` (`go:linkname`, bits_errors.go), whose translation declares and allocates its own
+`math/bits.divideError`/`overflowError` (at their zero value: unchanged by this skip, which touches
+only runtime's)."""
+
+[[skip]]
+names = ["maps_errNilAssign"]
+reason = """
+`plainError("assignment to entry in nil map")` (map.go): a conversion of a string constant to
+`plainError` and then to `error`, no calls, so the initializer terminates, cannot panic and has no
+effect beyond the variable. It is pushed by `go:linkname` as `internal/runtime/maps.errNilAssign`,
+read only by that package's map assignment, which is not translated (the model's maps are its
+semantics')."""
+
+[[skip]]
+names = ["containermaxprocs", "updatemaxprocs", "panicnil"]
+reason = """
+`&godebugInc{name: "..."}` (cgroup_linux.go, proc.go, panic.go): allocates a `godebugInc` (`name
+string; inc atomic.Pointer[func()]`) holding a constant, with no calls, so each initializer terminates,
+cannot panic and has no effect beyond its variable. Read only by untranslated runtime code
+(`defaultGOMAXPROCSInit`, `defaultGOMAXPROCSUpdateEnable`, `sysmon`, `gopanic`'s `panic(nil)` check)."""
+
+[[skip]]
+names = ["cgo_yield", "itabTable", "dbgvars", "vdsoSymbolKeys"]
+reason = """
+Addresses of other runtime variables, taken but not written (cgo.go `&_cgo_yield`; iface.go
+`&itabTableInit`; runtime1.go, a slice of `&dbgVar{name: "...", value: &debug.f}` or `atomic:
+&debug.f`, one per `GODEBUG` setting, of the fields of `debug`; vdso_linux_amd64.go, a slice of
+`vdsoSymbolKey{"__vdso_...", hash, gnuHash, &vdsoXSym}`): an address-of and composite literals of
+constants (the slices allocate), no calls, so each initializer terminates, cannot panic and has no
+effect beyond its variable. Read only by untranslated runtime code (`findRunnable`, `sighandler` and
+`sysmon`; `getitab`, `itabAdd`; `parsegodebug`, `parseRuntimeDebugVars`, `reparsedebugvars`;
+`vdsoParseSymbols`)."""
+
+[[skip]]
+names = ["inf"]
+reason = """
+`float64frombits(0x7FF0000000000000)` (float.go): `float64frombits(b)` is `*(*float64)(unsafe.Pointer(&b))`,
+a reinterpretation of its argument's bits, so the initializer terminates, cannot panic and has no
+effect beyond the variable. Read only by the untranslated `complex128div`."""
+
+[[skip]]
+names = ["uint16Eface", "uint32Eface", "uint64Eface", "stringEface", "sliceEface", "pdEface"]
+reason = """
+Interface values of constants (iface.go `uint16InterfacePtr(0)` and the like, conversions of a constant
+to a defined integer, string or slice type; netpoll.go `(*pollDesc)(nil)`), converted to `any`: no
+calls, so each initializer terminates, cannot panic and has no effect beyond its variable. Read only
+by the initializers of `uint16Type`, ..., `pdType`, also skipped."""
+
+[[skip]]
+names = ["uint16Type", "uint32Type", "uint64Type", "stringType", "sliceType", "pdType"]
+reason = """
+`efaceOf(&uint16Eface)._type` and the like (iface.go, netpoll.go): `efaceOf(ep)` is
+`(*eface)(unsafe.Pointer(ep))`, so each initializer loads the type word of an initialized interface
+variable (also skipped; the address is only reinterpreted, not kept or written): it terminates,
+cannot panic and has no effect beyond its variable. Read only
+by the untranslated `convT16`, `convT32`, `convT64`, `convTstring`, `convTslice` (which compiled code
+calls for conversions to interfaces, which the model gives its semantics) and `pollDesc.makeArg`."""
+
+[[skip]]
+names = ["sigsetAllExiting"]
+reason = """
+`func() sigset { res := sigset_all; if GOOS == "linux" && iscgo { sigdelset(&res, 32); sigdelset(&res, 33);
+sigdelset(&res, 34) }; return res }()` (signal_unix.go): loads `sigset_all` (also skipped) and `iscgo`,
+and `sigdelset(mask, i)` (os_linux_generic.go) is `(*mask)[(i-1)/32] &^= 1 << ((uint32(i) - 1) & 31)`, in
+bounds of the two-word `sigset` for `i` in 32..34, on the local copy: so the initializer terminates,
+cannot panic and has no effect beyond the variable. Read only by the untranslated `sigblock`."""
+
+[[skip]]
+names = ["pinnerLeakPanic", "adjustSignalStack2Indirect", "mallocScanTable", "mallocNoScanTable"]
+reason = """
+Function values, not called by the initializers (pinner.go, a closure `func() { panic(...) }`;
+signal_unix.go `adjustSignalStack2`; malloc_tables_generated.go, arrays of 513 references to the
+`mallocgc*` size-class functions and `mallocPanic`): no calls, so each initializer terminates, cannot
+panic and has no effect beyond its variable. Read only by untranslated runtime code (`Pinner.Pin`,
+`adjustSignalStack`, `mallocgc`)."""
+
+[[skip]]
+names = ["chansendpc", "chanrecvpc"]
+reason = """
+`abi.FuncPCABIInternal(chansend)`, `abi.FuncPCABIInternal(chanrecv)` (select.go): a compiler intrinsic
+that evaluates to the entry address of a function, so each initializer terminates, cannot panic and has
+no effect beyond its variable. Read only by the untranslated `selectgo` (race detector hooks); the model's
+`select` is its semantics'."""
+
 # The Go model (goose/model/overlay/runtime): each declaration's MODEL: comment says why it has at
 # least Go's behaviours. `Frames.Next`, the
 # symbolization of program counters (the binary's tables; arbitrary frames); and the addition
