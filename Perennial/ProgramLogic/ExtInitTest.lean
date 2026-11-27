@@ -51,7 +51,7 @@ end step
 
 /-- A node starts with the resource not taken, and a restart gives a fresh one. -/
 instance once_semantics : ExtSemantics onceExt where
-  step := OnceStep
+  step := fun _ => OnceStep
   crash _ s' := s' = false
   initLocal s _ := s = false
 

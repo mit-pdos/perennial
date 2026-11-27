@@ -62,7 +62,7 @@ end step
 
 /-- A crash increments the epoch. -/
 instance epoch_semantics : ExtSemantics epochExt where
-  step := EpochStep
+  step := fun _ => EpochStep
   crash s s' := s' = s + 1
 
 /-! ## Its ghost state -/
