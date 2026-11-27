@@ -224,9 +224,9 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   ```
   No proof reaches it (static conversions type-check, so goose never emits one between such
   types; the reflection proofs do not convert such values). Goose would qualify unexported field
-  names (with their package) when a proof needs it. The same root cause as F3 of the reflection
-  review (etcd-grove#40: such anonymous struct types are one type in Lean); found with the
-  `Convert` narrowing of etcd-grove#59.
+  names (with their package) when a proof needs it. The same root cause as the type-assertion
+  gap reported on etcd-grove#40 (such anonymous struct types are one type in Lean); found with
+  the `Convert` narrowing of etcd-grove#59.
 - **`error` and `interface{ Error() string }` are one type (unsound).** In Go they are
   different types (`error` is a predeclared defined type); the model has one
   (`go.error` is `InterfaceType [Error() string]`), so a type assertion between types that
@@ -247,7 +247,11 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   _ = (<-chan E)(make(chan error))                          // compile error in Go
   reflect.ValueOf([]error{}).Convert(reflect.TypeOf([]E{})) // Go: panics
   ```
-  Pre-existing (not introduced by `reflect`'s model). Fix: `error` as a named predeclared type.
+  The type-assertion part predates `reflect`'s model. The conversion part is reached only through
+  `ConvertAt`, which builds conversions from run-time types: goose emits only conversions that
+  type-check, so no static conversion is between such types. The fix, `error` as a named
+  predeclared type, is its own semantics change, to make if a reflect-using proof needs
+  conversions through `error`-typed composites.
 - **Conversions that involve struct tags are stuck (incomplete, sound).** Every field
   declaration carries its tag (`go.field_decl.Field name type tag`, empty when absent;
   `go.FieldDecl name type` is the untagged shorthand), and goose writes the tags of an unnamed
@@ -265,22 +269,6 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   ```
   Conversions between defined types (`T(u)` for `u` of type `U`) and from untagged struct
   values are unaffected. A rule converting modulo tags would be added when a proof needs one.
-- **A conversion to an interface type does not check that the value implements it (unsound,
-  unreached).** `convert_to_interface` (`Golang/Defn/Interface.lean`) steps from any type to any
-  interface type: a non-interface value becomes `interface.mkOk t v`, an interface value is kept
-  as it is. Go requires that the type implement the interface, and rejects a constraint
-  interface:
-  ```go
-  type I interface{ M() }
-  type C interface{ ~int }
-  _ = error(1)         // Go: int does not implement error; the model converts
-  var a any; _ = I(a)  // Go: any does not implement I; the model converts
-  _ = C(1)             // Go: cannot use interface C in conversion; the model converts
-  ```
-  goose emits only conversions that type-check, and `reflect`'s `ConvertAt` checks the
-  implementation itself (`typeSetContains`) for an interface target, so no proof reaches it.
-  A fix needs an `implements` premise on the rule, which instance search does not find (an
-  interface-to-interface conversion needs method-set inclusion).
 - **A struct type literal with embedded fields has no known method set.** In Go,
   `struct{ T }` has the methods promoted from `T`:
   ```go
