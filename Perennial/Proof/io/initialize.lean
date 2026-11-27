@@ -35,7 +35,7 @@ theorem io.initialize'.wp_proof
   iintro Hown
   wp_auto
   wp_apply wp_GlobalAlloc (V := GoInterface) ErrClosedPipe go.error as HCP
-  wp_apply wp_GlobalAlloc (V := sync.Pool) blackHolePool sync.Pool.ty as _
+  wp_apply wp_GlobalAlloc (V := sync.Pool) blackHolePool sync.Pool.ty as Hbh
   wp_apply wp_GlobalAlloc (V := GoInterface) Discard Writer.ty as HD
   wp_apply wp_GlobalAlloc (V := GoInterface) errOffset go.error as HOff
   wp_apply wp_GlobalAlloc (V := GoInterface) errWhence go.error as HWh
@@ -66,6 +66,26 @@ theorem io.initialize'.wp_proof
   rw [recv_eq_func_mk BAnon BAnon]
   wp_auto
   ipersist HD
+  -- `blackHolePool` is a `sync.Pool` of 8192-byte buffers: its `New` returns a fresh one
+  -- (`init_Pool`'s premise `local = nil` is the last goal)
+  imod sync.init_Pool (globalAddr blackHolePool) _ iprop(True) io.blackHoleElem ⊤ ?_ $$ [Hbh]
+    with #Hpool
+  rotate_left
+  · iframe Hbh
+    iapply sync.newSpec_of_true
+    iright
+    wp_start
+    dsimp only
+    wp_auto
+    wp_apply wp_slice_make2 (V := w8) (W64 8192) as %sl ⟨Hsl, -⟩
+    · ipureintro; decide
+    iapply HΦ
+    unfold io.blackHoleElem
+    iexists b_ptr, sl, _
+    iframe
+    ipureintro
+    refine ⟨rfl, ?_⟩
+    rw [List.length_replicate]
   -- the store into `ErrClosedPipe` ends the initializer: keep an update to make its cell
   -- persistent afterwards
   iapply wp_fupd
@@ -114,9 +134,18 @@ theorem io.initialize'.wp_proof
   is_pkg_init_finish
   imodintro
   iunfold isInit
-  iframe NSW NIW NSB NEOF NUE NNP NWh NOff NCP
-  iexists _
-  iexact HD
+  iframe NSW NIW NSB NEOF NUE NNP NWh NOff NCP HD
+  isplitl []
+  · iexists _
+    iexact HD
+  isplitl []
+  · iexists _
+    iframe Hpool
+    ipureintro
+    simp [func.nil]
+  itrivial
+  -- `init_Pool`'s premise: the literal's field `local` is `nil`
+  rfl
 
 end proof
 

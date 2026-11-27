@@ -5,6 +5,7 @@ Shared definitions of the proofs of the Go `io` package: its `isPkgInit` (the fi
 module
 
 public import Perennial.Proof.sync.Base
+public import Perennial.Proof.sync.PoolDefs
 public import Perennial.Proof.errors.Base
 public import Perennial.Proof.errors.NewVar
 public import Perennial.Code.io
@@ -27,9 +28,19 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : io.Assumptions]
 
+/-- What the pool `blackHolePool` holds (and its `New` returns): an `any` holding a `*[]byte` at
+`l`, whose slice has 8192 bytes (`discard.ReadFrom`'s buffer). -/
+def blackHoleElem (x : GoAny) : IProp GF :=
+  iprop(∃ (l : Loc) (sl : GoSlice) (bs : List w8),
+    ⌜x = interface.mkOk (go.GoType.PointerType (go.GoType.SliceType go.byte)) #l ∧
+      bs.length = 8192⌝ ∗ l ↦ sl ∗ sl ↦* bs)
+
 /-- The package-initialized state (persistent; Go never writes these variables after
 initialization):
 * `"#HDiscard"`: `Discard` holds a fixed `Writer` (`go.etcd.io/raft/v3`'s initializer loads it);
+  `"#HDiscardV"` says which: `discard{}`;
+* `"#HblackHolePool"`: `blackHolePool` is a `sync.Pool` of 8192-byte buffers (`blackHoleElem`),
+  whose `New` is not `nil` and needs nothing (what `discard.ReadFrom` takes its buffer from);
 * `"#HEOF"`, ...: each error variable made by `errors.New` holds that error, a fixed
   `*errorString` whose `Error()` returns its message (`errors.newVar`): what a client comparing
   an error against `io.EOF` (or `ErrUnexpectedEOF`, ...) needs of it. -/
@@ -45,6 +56,10 @@ abbrev isInit : IProp GF :=
   "#HerrWhence" ∷ errors.newVar errWhence go!"Seek: invalid whence" ∗
   "#HerrOffset" ∷ errors.newVar errOffset go!"Seek: invalid offset" ∗
   "#HErrClosedPipe" ∷ errors.newVar ErrClosedPipe go!"io: read/write on closed pipe" ∗
+  "#HDiscardV" ∷ typedPointsto (globalAddr Discard) (interface.mkOk discard.ty #discard.mk)
+    DFrac.discard ∗
+  "#HblackHolePool" ∷ (∃ f : GoFunc, ⌜f ≠ func.nil⌝ ∗
+    sync.isPool (globalAddr blackHolePool) f iprop(True) blackHoleElem) ∗
   "_" ∷ True)
 
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.io :=
