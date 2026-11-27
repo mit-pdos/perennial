@@ -9,7 +9,9 @@
 # grow) and `init.0` (sets `MaxLen`), from their Go models too.
 translate = ["MaxLen", "LastIndexByteString", "PrimeRK", "HashStr", "HashStrRev", "IndexRabinKarp",
   "MaxBruteForce", "Cutover", "IndexByteString", "IndexString", "IndexByte", "Index", "CompareString",
-  "CountString", "MakeNoZero", "init.0"]
+  "CountString", "MakeNoZero", "init.0",
+  # the declarations the model replaces (its Go, translated)
+  "Count"]
 imports = ["!*", "internal/gomodel"]
 
 # The Go models of the four bodyless declarations of indexbyte_native.go and index_native.go,

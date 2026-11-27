@@ -18,7 +18,7 @@ translate = [
   # scan.go: only the package variables
   "!Scan", "!Scanln", "!Scanf", "!Sscan", "!Sscanln", "!Sscanf", "!Fscan", "!Fscanln", "!Fscanf",
   "!isSpace", "!notSpace", "!newScanState", "!indexRune", "!hasX", "!hexDigit", "!errorHandler",
-  "!ss.*", "!readRune.*", "!stringReader.*", "!scanError.*",
+  "!ss.*", "!readRune.*", "!stringReader.*",
 ]
 imports = ["!*", "io", "errors", "sync", "unicode/utf8", "reflect", "strconv", "internal/stringslite",
   "internal/gomodel"]

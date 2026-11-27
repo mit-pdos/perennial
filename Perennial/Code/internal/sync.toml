@@ -1,7 +1,9 @@
 # The real type Mutex and the constant its model uses are translated; Lock, TryLock, Unlock and fatal
 # are the Go model (goose/model/overlay/internal/sync; each MODEL: comment says why it has at least
 # Go's behaviours). The rest of the package (lockSlow, unlockSlow, HashTrieMap) is not translated.
-translate = ["!*", "Mutex", "mutexLocked"]
+translate = ["!*", "Mutex", "mutexLocked",
+  # the declarations the model replaces (its Go, translated)
+  "Mutex.Lock", "Mutex.TryLock", "Mutex.Unlock", "fatal"]
 
 imports = ["!*", "sync/atomic", "internal/gomodel"]
 

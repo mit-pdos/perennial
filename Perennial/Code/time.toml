@@ -67,7 +67,10 @@ translate = [
   "Local", "localLoc", "errLocation", "errBadData", "platformZoneSources",
   "stdZeroMonth", "stdZeroDay", "stdZeroHour12", "stdZeroMinute", "stdZeroSecond",
   "stdYear",
-]
+  # the declarations the model replaces (its Go, translated)
+  "After", "NewTicker", "NewTimer", "Ticker.Reset", "Ticker.Stop", "newTimer", "resetTimer", "runtimeIsBubbled", "runtimeNano", "runtimeNow", "stopTimer",
+  # the model's own helpers
+  "makeTimerChan", "sendTimes", "timerFunc", "checkWhen", "startTimer", "nextWhen", "sleepUntil", "stopTimerAt", "resetTimerAt", "runtimeClockNow", "runtimeClockWaitUntil", "whenAt", "runtimeClock"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

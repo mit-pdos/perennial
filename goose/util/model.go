@@ -1382,7 +1382,9 @@ func (b *builder) check() error {
 			names := declNames(p)
 			for _, e := range pm.Translate {
 				pat := strings.TrimPrefix(e, "!")
-				if pat == "*" {
+				// "_" governs the package's `«_».init`, emitted whether or not
+				// it has blank variables
+				if pat == "*" || pat == "_" {
 					continue
 				}
 				matched := false

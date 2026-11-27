@@ -23,11 +23,13 @@ translate = [
   "NewCond",
   "Locker",
 
-  "expunged",
 
   "init.0",
   "init.1",
-]
+  # the declarations the model replaces (its Go, translated)
+  "Pool.Get", "Pool.Put", "runtime_Semacquire", "runtime_SemacquireRWMutex", "runtime_SemacquireRWMutexR", "runtime_SemacquireWaitGroup", "runtime_Semrelease", "runtime_notifyListAdd", "runtime_notifyListCheck", "runtime_notifyListNotifyAll", "runtime_notifyListNotifyOne", "runtime_notifyListWait", "runtime_registerPoolCleanup",
+  # the model's own helpers
+  "poolModelOf"]
 
 imports = ["sync/atomic", "internal/race", "internal/synctest", "internal/sync", "internal/gomodel"]
 

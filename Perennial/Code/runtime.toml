@@ -1,5 +1,9 @@
 # `Caller` is translated with its body: `callers` and `CallersFrames(...).Next()`, below.
-translate = ["!*", "Version", "Caller", "Callers", "CallersFrames"]
+translate = ["!*", "Version", "Caller", "Callers", "CallersFrames",
+  # the declarations the model replaces (its Go, translated)
+  "Frames.Next",
+  # the model's own helpers
+  "callersModel"]
 
 imports = ["!*", "internal/runtime/atomic", "internal/runtime/sys", "internal/gomodel"]
 

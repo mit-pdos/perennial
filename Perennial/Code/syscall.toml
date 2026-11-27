@@ -19,7 +19,8 @@ translate = ["!*",
   "init.0", "origRlimitNofile", "Getrlimit", "setrlimit", "adjustFileLimit", "errnoErr",
   # the constants these initializers use
   "SYS_FCNTL", "EAGAIN", "EINVAL", "ENOENT", "RLIMIT_NOFILE",
-]
+  # the declarations the model replaces (its Go, translated)
+  "prlimit1"]
 trusted = ["runtime_envs", "Exit"]
 
 imports = ["!*", "sync", "sync/atomic", "internal/gomodel"]
