@@ -191,6 +191,27 @@ def numErrorOf (err : GoInterface) (fn s X : GoString) : IProp GF :=
     ⌜err = interface.mkOk (go.GoType.PointerType NumError.ty) #l⌝ ∗
     l ↦ NumError.mk fn s e ∗ globalAddr X ↦□ e)
 
+/-- **The error `ei`'s `Error()` returns** (some string): what `NumError.Error` needs of its `Err`. -/
+def errorReturns (ei : GoInterfaceOk) : IProp GF :=
+  iprop(∀ Φ : val → IProp GF, ▷ (∀ m : GoString, Φ #m) -∗
+    WP (App (Val #(methods ei.ty go!"Error" ei.v)) (Val #())) {{ Φ }})
+
+/-- **`*NumError`'s method set** (goose's `ptr_method_set`): `Error() string` and `Unwrap() error`;
+no `Is`, `As` or `Format` method. -/
+theorem numError_methodSet :
+    methodSet (go.GoType.PointerType NumError.ty) !! go!"Error" =
+        some (go.signature.Signature [] false [go.string]) ∧
+      methodSet (go.GoType.PointerType NumError.ty) !! go!"Unwrap" =
+        some (go.signature.Signature [] false [go.error]) ∧
+      methodSet (go.GoType.PointerType NumError.ty) !! go!"Is" = none ∧
+      methodSet (go.GoType.PointerType NumError.ty) !! go!"As" = none ∧
+      methodSet (go.GoType.PointerType NumError.ty) !! go!"Format" = none := by
+  have h := fun m => go.method_set_is (t := go.GoType.PointerType NumError.ty) m
+  have hE := h go!"Error"; have hU := h go!"Unwrap"; have hIs := h go!"Is"
+  have hAs := h go!"As"; have hF := h go!"Format"
+  simp only [go.methodSetLookup_cons, go.methodSetLookup_nil, gooseReduceIteDecide] at hE hU hIs hAs hF
+  exact ⟨hE, hU, hIs, hAs, hF⟩
+
 end wps
 
 end strconv

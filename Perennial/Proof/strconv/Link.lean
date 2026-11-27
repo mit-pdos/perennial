@@ -15,6 +15,8 @@ public import Perennial.Proof.strconv.FormatInt
 public import Perennial.Proof.strconv.FormatUint
 public import Perennial.Proof.strconv.IsPrint
 public import Perennial.Proof.strconv.Itoa
+public import Perennial.Proof.strconv.NumError__Error
+public import Perennial.Proof.strconv.NumError__Unwrap
 public import Perennial.Proof.strconv.ParseBool
 public import Perennial.Proof.strconv.ParseInt
 public import Perennial.Proof.strconv.ParseUint
@@ -81,6 +83,18 @@ theorem strconv.wp_FormatUint : strconv.FormatUint.spec (GF := GF) (hG := hG) :=
 theorem strconv.wp_Itoa : strconv.Itoa.spec (GF := GF) (hG := hG) :=
   strconv.Itoa.wp_proof internal.strconv.wp_Itoa
 
+theorem strconv.wp_quoteWith : strconv.quoteWith.spec (GF := GF) (hG := hG) :=
+  strconv.quoteWith.wp_proof strconv.wp_appendQuotedWith
+
+theorem strconv.wp_Quote : strconv.Quote.spec (GF := GF) (hG := hG) :=
+  strconv.Quote.wp_proof strconv.wp_quoteWith
+
+theorem strconv.NumError.wp_Error : strconv.NumError.Error.spec (GF := GF) (hG := hG) :=
+  strconv.NumError.Error.wp_proof strconv.wp_Quote
+
+theorem strconv.NumError.wp_Unwrap : strconv.NumError.Unwrap.spec (GF := GF) (hG := hG) :=
+  strconv.NumError.Unwrap.wp_proof
+
 theorem strconv.wp_ParseBool : strconv.ParseBool.spec (GF := GF) (hG := hG) :=
   strconv.ParseBool.wp_proof internal.strconv.wp_ParseBool strconv.wp_toError
 
@@ -89,12 +103,6 @@ theorem strconv.wp_ParseInt : strconv.ParseInt.spec (GF := GF) (hG := hG) :=
 
 theorem strconv.wp_ParseUint : strconv.ParseUint.spec (GF := GF) (hG := hG) :=
   strconv.ParseUint.wp_proof internal.strconv.wp_ParseUint strconv.wp_toError
-
-theorem strconv.wp_quoteWith : strconv.quoteWith.spec (GF := GF) (hG := hG) :=
-  strconv.quoteWith.wp_proof strconv.wp_appendQuotedWith
-
-theorem strconv.wp_Quote : strconv.Quote.spec (GF := GF) (hG := hG) :=
-  strconv.Quote.wp_proof strconv.wp_quoteWith
 
 theorem strconv.wp_initialize' : strconv.initialize'.spec (GF := GF) (hG := hG) :=
   strconv.initialize'.wp_proof errors.wp_initialize' internal.strconv.wp_initialize' internal.stringslite.wp_initialize' unicode.utf8.wp_initialize'

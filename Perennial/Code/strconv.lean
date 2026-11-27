@@ -605,6 +605,22 @@ noncomputable def toError.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))))))))))
   (App (Val (GoInstruction (GoLoad go.error))) (Var "$res0")))))))))
 
+/-- go: number.go:258:20 -/
+noncomputable def NumError.Error.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "e"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "e" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType NumError.ty)))) (Var "e"))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (Val #(go!"strconv.")) (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef NumError.ty go!"Func"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType NumError.ty)))) (Var "e")))))) (Val #(go!": ")))) (Val #(go!"parsing ")))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef NumError.ty go!"Num"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType NumError.ty)))) (Var "e"))))
+  (App (App (Val (GoInstruction (FuncResolve Quote []))) (Val #())) (Var "$a0"))))) (Val #(go!": ")))) (App (App (Val (GoInstruction (MethodResolve go.error go!"Error"))) (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (StructFieldRef NumError.ty go!"Err"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType NumError.ty)))) (Var "e"))))) (Val #()))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
+
 /-- go: number.go:262:20 -/
 noncomputable def NumError.Unwrap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "e"
@@ -2646,6 +2662,7 @@ class NumError.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [G
   set_Err : ∀ (x : NumError) (y : GoError), go.IsGoStepPureDetTagged under (StructFieldSet NumError.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : NumError)))
   method_set : go.MethodSetIs NumError.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType NumError.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"Unwrap", (some (go.signature.Signature [] false [go.error])))]
+  ptr_Error_unfold : MethodUnfold (go.GoType.PointerType NumError.ty) go!"Error" NumError.Error.impl
   ptr_Unwrap_unfold : MethodUnfold (go.GoType.PointerType NumError.ty) go!"Unwrap" NumError.Unwrap.impl
 
 attribute [instance] NumError.TypeAssumptions.type_repr
@@ -2658,6 +2675,7 @@ attribute [instance] NumError.TypeAssumptions.type_repr
   NumError.TypeAssumptions.set_Err
   NumError.TypeAssumptions.method_set
   NumError.TypeAssumptions.ptr_method_set
+  NumError.TypeAssumptions.ptr_Error_unfold
   NumError.TypeAssumptions.ptr_Unwrap_unfold
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
