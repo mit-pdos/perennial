@@ -26,7 +26,7 @@ namespace Perennial
 
 namespace go
 section defs
-variable [GooseExts] [GoSemanticsFunctions]
+variable [GooseExts] [GoLocalContext] [GoSemanticsFunctions]
 
 /-- The name of a field. -/
 def fieldDeclName : go.field_decl → GoString

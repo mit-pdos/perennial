@@ -226,7 +226,7 @@ undo a write that returned, and `FileAppend` ignores the result of its write,
 so a crash may leave part of it; the TSC restarts. (Nothing proves crash
 safety for Grove yet: there is no `ExtCrashInterp` for it.) -/
 instance grove_semantics : ExtSemantics groveExt where
-  step := GroveStep
+  step := fun _ => GroveStep
   crash _ _ := True
 
 

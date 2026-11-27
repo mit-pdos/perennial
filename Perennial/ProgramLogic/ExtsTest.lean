@@ -45,7 +45,7 @@ inductive TickStep : String → val → GMap Loc (NonAtomic val) → Nat → Uni
 end step
 
 instance tick_semantics : ExtSemantics tickExt where
-  step := TickStep
+  step := fun _ => TickStep
   crash _ _ := True
 
 instance tick_interp : ExtInterp tickExt where

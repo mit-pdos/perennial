@@ -887,11 +887,12 @@ theorem HasExt.globalCtx_acc [G : GooseGlobalGS hlc GF] (w : ExtsGlobalState ext
   exact H
 
 /-- The step of `X`'s operations in the program is `X`'s step. -/
-theorem HasExt.step_iff [GoGlobalContext] (o : String) (v : val) (h : GMap Loc (NonAtomic val))
+theorem HasExt.step_iff [GoGlobalContext] (tf : GoTypeFns) (o : String) (v : val)
+    (h : GMap Loc (NonAtomic val))
     (σ : X.LocalState) (g : X.GlobalState) (e' : Expr) (h' : GMap Loc (NonAtomic val))
     (σ' : X.LocalState) (g' : X.GlobalState) :
-    @ExtSemantics.step X (hX.mem.get GooseSemantics.sems) _ _ o v h σ g e' h' σ' g' ↔
-      ExtSemantics.step o v h σ g e' h' σ' g' := by
+    @ExtSemantics.step X (hX.mem.get GooseSemantics.sems) _ _ tf o v h σ g e' h' σ' g' ↔
+      ExtSemantics.step tf o v h σ g e' h' σ' g' := by
   rw [hX.sem_eq']
 
 end has_ext
@@ -1364,8 +1365,9 @@ theorem wp_extStep {X : GooseExt} [ExtSemantics X] [I : ExtInterp X] [hX : HasEx
     (o : String) (v : val) (Φ : val → IProp GF) (hv : v.isPanic = false) :
     (∀ h σ g, naHeapCtx tls h -∗ I.localCtx (extLocalGS X) σ -∗
       I.globalCtx (extGlobalGS X) g ={E,∅}=∗
-      ⌜∃ e' h' σ' g', ExtSemantics.step o v h σ g e' h' σ' g'⌝ ∗
-      ▷ ∀ e' h' σ' g', ⌜ExtSemantics.step o v h σ g e' h' σ' g'⌝ -∗ £ 1 ={∅,E}=∗
+      ⌜∃ e' h' σ' g', ExtSemantics.step GoLocalContext.typeFns o v h σ g e' h' σ' g'⌝ ∗
+      ▷ ∀ e' h' σ' g', ⌜ExtSemantics.step GoLocalContext.typeFns o v h σ g e' h' σ' g'⌝ -∗
+        £ 1 ={∅,E}=∗
         naHeapCtx tls h' ∗ I.localCtx (extLocalGS X) σ' ∗ I.globalCtx (extGlobalGS X) g' ∗
         WP e' @ s; E {{ Φ }})
     ⊢ WP (ExternalOp X.name o (Val v)) @ s; E {{ Φ }} := by
@@ -1383,12 +1385,14 @@ theorem wp_extStep {X : GooseExt} [ExtSemantics X] [I : ExtInterp X] [hX : HasEx
   · ipureintro
     obtain ⟨e', h', σ', g', Hst⟩ := Hred
     exact ⟨[], e', _, [], BaseStep.ExternalOpS _ _ _ _ σ₁ _
-      ((extStep_named _ _ _ _ _).2 ⟨h', σ', g', (HasExt.step_iff ..).2 Hst, rfl⟩)⟩
+      ((extStep_named _ _ _ _ _).2 ⟨h', σ', g', by rw [Hlctx]; exact (HasExt.step_iff ..).2 Hst,
+        rfl⟩)⟩
   inext
   iintro %e₂ %σ₂ %eₜ %Hbs Hcred
   cases Hbs with
   | ExternalOpS _ _ _ _ _ _ Hst =>
   obtain ⟨h', σ', g', Hst', rfl⟩ := (extStep_named _ _ _ _ _).1 Hst
+  rw [Hlctx] at Hst'
   imod H $$ %e₂ %h' %σ' %g' %((HasExt.step_iff ..).1 Hst') Hcred with ⟨Hheap, Hl, Hg, Hwp⟩
   imodintro
   isplitl [Hheap Hl Hg Hlclose Hgclose Hgs Hproph]

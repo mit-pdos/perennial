@@ -25,7 +25,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 namespace fmt
 
 section defs
-variable [GooseExts] [GoGlobalContext] [GoSemanticsFunctions]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
 
 /-- The signature of `fmt.Formatter`'s `Format(State, rune)`. -/
 def formatSig : go.signature := go.Signature [go.Named go!"fmt.State" [], go.rune] false []

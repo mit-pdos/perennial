@@ -21,7 +21,7 @@ open Iris Iris.BI
 namespace fmt
 
 section defs
-variable [GooseExts] [GoGlobalContext] [GoSemanticsFunctions]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
 
 /-- The signature `() string` of `Error` and `String`, as goose writes it in method sets. -/
 def noArgStringSig : go.signature := go.signature.Signature [] false [go.string]

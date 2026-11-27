@@ -67,7 +67,7 @@ end fs
 
 /-- On a crash, the files survive unchanged. -/
 instance fs_semantics : ExtSemantics fsExt where
-  step := FsStep
+  step := fun _ => FsStep
   crash fs fs' := fs' = fs
 
 end Perennial

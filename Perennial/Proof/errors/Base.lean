@@ -26,19 +26,19 @@ interface type, or it implements `error` (it is in the type set of `error`: its 
 `errors: *target must be interface or implement error` (when `err` is not `nil`). For a
 named type of a translated package, `go_type_set` proves or refutes the second disjunct from
 the type's method set (its package's `Assumptions`). -/
-def AsTarget [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType) : Prop :=
+def AsTarget [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType) : Prop :=
   (∃ elems, underlying T = go.InterfaceType elems) ∨ go.typeSetContains T go.error = true
 
 /-- Whether `As` finds the error `ii` assignable to the element type `T` of its target
 (`reflectlite.TypeOf(err).AssignableTo(T)`, the semantics' `AsAssign`): for an interface `T`,
 whether `ii`'s dynamic type implements it; otherwise whether it is `T`. -/
-noncomputable def asAssignable [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType)
+noncomputable def asAssignable [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType)
     (ii : GoInterfaceOk) : Bool :=
   if go.isInterfaceType (underlying T) then go.typeSetContains ii.ty T else decide (ii.ty = T)
 
 /-- The value `As` stores into its target `*T` when `ii` is assignable to `T`: the interface
 value for an interface `T`, else the dynamic value. -/
-def asStored [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType)
+def asStored [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType)
     (ii : GoInterfaceOk) : val :=
   if go.isInterfaceType (underlying T) then #(interface.ok ii) else ii.v
 
@@ -62,7 +62,7 @@ does not decide; `go.identByName` keeps the model from equating struct types Go 
 their unexported fields' packages; and `undecidedKind` excludes the kinds where Go's identity of
 underlying types is not the translation's: a defined struct type's field tags, which the
 translation drops, and channel directions.) -/
-def AsDecidedTy [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType)
+def AsDecidedTy [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType)
     (ii : GoInterfaceOk) : Prop :=
   go.isInterfaceType (underlying T) = false →
     (ii.ty = T → go.identByName T = true) ∧
@@ -75,7 +75,7 @@ typing: no value has an interface type as its dynamic type) nor untyped nil, has
 a type whose layout a model changes (`go.layoutModelled`: reflection on it is stuck), and its
 `isDirectIface` is defined (`directIfaceN`; for a kind other than array and struct, at any fuel
 `n > 0`). -/
-def asModelled [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (t : go.GoType) : Prop :=
+def asModelled [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] (t : go.GoType) : Prop :=
   go.isInterfaceType (underlying t) = false ∧ go.isUntypedNil (underlying t) = false ∧
   (∃ k, go.kindOf (underlying t) = some k) ∧
   go.layoutModelled t = false ∧
@@ -84,14 +84,14 @@ def asModelled [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (t : go.GoTy
 /-- The model of `As` decides whether `ii` is assignable to `T` (`AsDecidedTy`), and its
 reflection on `ii` and on `T` is defined: `asModelled ii.ty`, and `T` has a kind, is not
 untyped nil and is not a type whose layout a model changes (`go.layoutModelled`). -/
-def AsDecided [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType)
+def AsDecided [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType)
     (ii : GoInterfaceOk) : Prop :=
   asModelled ii.ty ∧ (∃ k, go.kindOf (underlying T) = some k) ∧
     go.isUntypedNil (underlying T) = false ∧ go.layoutModelled T = false ∧ AsDecidedTy T ii
 
 /-- A kind outside struct, channel and function (`undecidedKind`) of a non-interface type is
 another one than `Chan` (18), `Func` (19), `Interface` (20) and `Struct` (25). -/
-theorem kindOf_decided [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] {u : go.GoType}
+theorem kindOf_decided [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] {u : go.GoType}
     {k : Nat} (hk : go.kindOf u = some k) (hd : undecidedKind u = false)
     (hi : go.isInterfaceType u = false) : k ≠ 18 ∧ k ≠ 19 ∧ k ≠ 20 ∧ k ≠ 25 := by
   refine ⟨fun h => ?_, fun h => ?_, internal.reflectlite.kindOf_ne_20 hk hi,
@@ -103,7 +103,7 @@ theorem kindOf_decided [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] {u :
 
 /-- `AsDecidedTy` gives `reflectlite`'s `directlyAssignable(T, ii.ty)` the cases its model
 decides. -/
-theorem asDecided_da [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] {T : go.GoType}
+theorem asDecided_da [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] {T : go.GoType}
     {ii : GoInterfaceOk} {kT ki : Nat} (hkT : go.kindOf (underlying T) = some kT)
     (hki : go.kindOf (underlying ii.ty) = some ki) (hI : go.isInterfaceType (underlying T) = false)
     (h : AsDecidedTy T ii) :
@@ -120,7 +120,7 @@ theorem asDecided_da [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] {T : g
 
 /-- An interface target type that no model changes has a kind (`Interface`), is not untyped nil
 and is not `go.layoutModelled` (`AsDecided`'s facts of `T`). -/
-theorem asTargetKind_interface [GooseExts] [GoGlobalContext] [GoSemanticsFunctions]
+theorem asTargetKind_interface [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
     {T : go.GoType} (h : go.isInterfaceType (underlying T) = true)
     (hm : go.layoutModelled T = false) :
     (∃ k, go.kindOf (underlying T) = some k) ∧ go.isUntypedNil (underlying T) = false ∧
@@ -285,7 +285,7 @@ made those return paths stuck. -/
 `T'` (for an interface type `T` the assertion returns the interface value
 itself, otherwise the dynamic value). This is guaranteed by Go's typing; it is
 not derivable in the model, which has no typing of interface values. -/
-def AsTypeTyped [GoSemanticsFunctions] (T' : Type) (T : go.GoType) (ii : GoInterfaceOk) : Prop :=
+def AsTypeTyped [GoLocalContext] [GoSemanticsFunctions] (T' : Type) (T : go.GoType) (ii : GoInterfaceOk) : Prop :=
   if go.isInterfaceType (underlying T) then
     go.typeSetContains ii.ty T = true → ∃ x : T', (#x : val) = #(interface.ok ii)
   else ii.ty = T → ∃ x : T', (#x : val) = ii.v
@@ -318,7 +318,7 @@ def asTypeNode (S : GoError → Prop) (T' : Type) [ZeroVal T'] [TypedPointsto (G
       else iprop(True)))
 
 omit [GooseSemantics] [GooseInterp] in
-theorem asTypeTyped_val [GoSemanticsFunctions] {T' : Type} [ZeroVal T'] {T : go.GoType}
+theorem asTypeTyped_val [GoLocalContext] [GoSemanticsFunctions] {T' : Type} [ZeroVal T'] {T : go.GoType}
     {ii : GoInterfaceOk} (h : AsTypeTyped T' T ii) :
     ∃ x : T', (if go.isInterfaceType (underlying T) = true then
         (if go.typeSetContains ii.ty T = true then #(interface.ok ii) else #(zero_val T'))
@@ -359,7 +359,7 @@ theorem asTypeHide_elim {P Q : IProp GF} : (□ P -∗ Q) ⊢ (□ asTypeHide P 
 
 /-- A leaf of an error tree: an error without an `As(any) bool` or `Unwrap` method (an
 `errors.New` error, a gRPC status error, ...), so that `AsType` and `As` only check its type. -/
-def isLeafError [GoSemanticsFunctions] (ii : GoInterfaceOk) : Prop :=
+def isLeafError [GoLocalContext] [GoSemanticsFunctions] (ii : GoInterfaceOk) : Prop :=
   methodSet ii.ty !! go!"As" ≠ some (go.Signature [go.any] false [go.bool]) ∧
   methodSet ii.ty !! go!"Unwrap" ≠ some (go.Signature [] false [go.error]) ∧
   methodSet ii.ty !! go!"Unwrap" ≠ some (go.Signature [] false [go.GoType.SliceType go.error])
@@ -392,7 +392,7 @@ def errRepr (T : go.GoType) (e : GoError) : Prop :=
 
 /-- **An error at which `As` stops without a match against `T`**: `nil`, or a leaf error
 (`isLeafError`) not assignable to `T` (`asAssignable`, decided: `AsDecided`). -/
-def asNoMatchLeaf [GoSemanticsFunctions] (T : go.GoType) (e : GoError) : Prop :=
+def asNoMatchLeaf [GoLocalContext] [GoSemanticsFunctions] (T : go.GoType) (e : GoError) : Prop :=
   e = interface.nil ∨ ∃ ii : GoInterfaceOk, e = interface.ok ii ∧ isLeafError ii ∧
     asAssignable T ii = false ∧ AsDecided T ii
 

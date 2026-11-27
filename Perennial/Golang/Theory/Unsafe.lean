@@ -800,12 +800,12 @@ end addresses
 /-! ## Layout rules for `apply` -/
 
 /-- `go.PlainLayout.struct` with the alignment the fields compute checked by an equation. -/
-theorem go.PlainLayout.struct' [GooseExts] [GoSemanticsFunctions] (fds : List go.field_decl)
+theorem go.PlainLayout.struct' [GooseExts] [GoLocalContext] [GoSemanticsFunctions] (fds : List go.field_decl)
     (s a a' : Nat) (hne : fds ≠ []) (hf : go.PlainFields fds 0 s a') (hd : a' ∣ s) (ha : a' = a) :
     go.PlainLayout (go.StructType fds) s a := ha ▸ .struct fds s a' hne hf hd
 
 /-- `go.PlainFields.cons` with named premises, for `apply`. -/
-theorem go.PlainFields.cons_ [GooseExts] [GoSemanticsFunctions] {fd : go.field_decl}
+theorem go.PlainFields.cons_ [GooseExts] [GoLocalContext] [GoSemanticsFunctions] {fd : go.field_decl}
     {fds : List go.field_decl} {off s a stop a' : Nat}
     (hl : go.PlainLayout (go.fieldDeclType fd) s a) (hb : go.isBlankField (go.fieldDeclName fd) = false)
     (hd : a ∣ off) (hr : go.PlainFields fds (off + s) stop a') :

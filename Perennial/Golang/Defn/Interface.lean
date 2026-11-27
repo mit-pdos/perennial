@@ -31,20 +31,24 @@ def identByName (t : go.GoType) : Bool :=
 def isUntypedNil (t : go.GoType) : Bool :=
   match t with | go.Named n [] => decide (n = go!"untyped nil") | _ => false
 
+omit [GoSemanticsFunctions] in
 /-- Based on: https://go.dev/ref/spec#General_interfaces -/
 noncomputable def typeSetTermContains (t : go.GoType) (e : go.type_term) : Bool :=
   match e with
   | go.TypeTerm t' => decide (t = t')
   | go.TypeTermUnderlying t' => decide (underlying t = t')
 
+omit [GoSemanticsFunctions] in
 noncomputable def typeSetElemContains (t : go.GoType) (e : go.InterfaceElem) : Bool :=
   match e with
   | go.MethodElem m signature => decide (methodSet t !! m = some signature)
   | go.TypeElem terms => terms.any (typeSetTermContains t)
 
+omit [GoSemanticsFunctions] in
 noncomputable def typeSetElemsContains (t : go.GoType) (elems : List go.InterfaceElem) : Bool :=
   elems.all (typeSetElemContains t)
 
+omit [GoSemanticsFunctions] in
 /-- Equals `true` iff t is in the type set of t'. goose writes an interface type as the list of
 all its methods (`go.MethodElem`, named by their ids, those of embedded interfaces included),
 followed by its other embedded elements (unions, constraints such as `comparable`), which only

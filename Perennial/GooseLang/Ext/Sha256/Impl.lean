@@ -87,7 +87,7 @@ end sha256
 the model has, so this constrains the model, not the real machines: no real state is
 assumed. -/
 instance sha256_semantics (ok : Sha256Filter) : ExtSemantics (sha256Ext ok) where
-  step := Sha256Step ok
+  step := fun _ => Sha256Step ok
   crash _ _ := True
   initGlobal m := @Eq Sha256State m ∅
 
