@@ -117,8 +117,10 @@ feed). It refuses a model whose `replaces` does not
 match both ways, that shadows a real declaration, or that changes the real
 package's API (a replaced function's, method's or variable's type; a replaced
 type's exported fields, kind or comparability; a real type's method set
-beyond `added_methods`). The model's declarations are translated, except
-those the config trusts (primitive stubs, with a `.impl` in TrustedCode).
+beyond `added_methods`). The config's `translate` and `trusted` govern the
+model's declarations as the real package's: one `translate` excludes is a
+primitive stub if trusted (a `.impl` in TrustedCode) and names-only
+otherwise; `translate` includes every replaced name.
 `goose model-overlay -o DIR <packages>` writes the same overlay for `go
 build/test -overlay DIR/overlay.json`; what is verified is the program built
 with it, under the same build configuration (linux/amd64, `-tags goose,...`:

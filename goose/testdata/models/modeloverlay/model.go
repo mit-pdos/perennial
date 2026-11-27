@@ -37,8 +37,8 @@ func choose() bool {
 	return false
 }
 
-// unmodelled is an addition that names_only lists: translated names-only
-// (its name, no body), although translate matches it.
+// unmodelled is an addition that translate excludes: translated names-only
+// (its name, no body), as an excluded real declaration is.
 func unmodelled() uint64 {
 	panic("unreachable")
 }

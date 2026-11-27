@@ -30,7 +30,7 @@ func main() {
 	load.Register(flag.CommandLine, "")
 	flag.Parse()
 
-	pkgs, models, err := util.LoadPackages(modDir, configDir, false, load.Options(), flag.Args()...)
+	pkgs, _, err := util.LoadPackages(modDir, configDir, false, load.Options(), flag.Args()...)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(2)
@@ -53,7 +53,7 @@ func main() {
 			status = 2
 			continue
 		}
-		for _, w := range skiplint.Check(pkg, models.Filter(pkg, declfilter.New(config))) {
+		for _, w := range skiplint.Check(pkg, declfilter.New(config)) {
 			fmt.Printf("skiplint: warning: %s: %s\n", pkg.PkgPath, w)
 		}
 	}

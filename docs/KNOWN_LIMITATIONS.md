@@ -341,8 +341,8 @@ the reflection primitives of `internal/reflectcore` (`TrustedCode/internal/refle
   `Indirect`, `Kind.String`, `ChanDir.String`, `Type.Kind`, `Type.Elem` and
   `Value.{Kind, Type, IsValid, IsNil, Elem, Interface, CanInterface, CanAddr, CanSet}` are
   translated. Every other function and method, and every exported type other than `Kind`,
-  `ChanDir`, `Type`, `Value` and `ValueError`, is names-only (`unmodelled.go`, `names_only` in
-  `Perennial/Code/reflect.toml`): a call has no semantics, so no proof gets past it.
+  `ChanDir`, `Type`, `Value` and `ValueError`, is names-only (`unmodelled.go`, excluded by `translate`
+  in `Perennial/Code/reflect.toml`): a call has no semantics, so no proof gets past it.
   - `Type.String` is names-only, so `Type.Elem` of a type with no element (real: `panic("reflect:
     Elem of invalid type " + t.String())`) does not reach its panic.
   - `valueMethodName` is names-only (real's walks the stack with `runtime.Callers`; `reflect`

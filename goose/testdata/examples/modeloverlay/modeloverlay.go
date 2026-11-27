@@ -2,7 +2,7 @@
 // config ([model] in github_com/.../modeloverlay.toml): the model, in
 // goose/testdata/models/modeloverlay, replaces the type Counter, its method Inc and the first init
 // function, and adds bump (translated), choose (a primitive stub, in
-// trusted) and unmodelled (names-only, in names_only). The translation has the model's declarations in the real ones'
+// trusted) and unmodelled (names-only: translate excludes it). The translation has the model's declarations in the real ones'
 // places, with go: positions in its model.go, and the real Get, the
 // second init and the variables between them as they are.
 package modeloverlay

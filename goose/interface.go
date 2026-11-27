@@ -90,7 +90,7 @@ func translatePackage(pkg *packages.Package, config declfilter.FilterConfig, con
 			"could not load package %v:\n%v", pkg.PkgPath,
 			pkgErrors(pkg.Errors))
 	}
-	ctx := NewPkgCtx(pkg, util.ExtendFilter(pkg, config, models.Filter(pkg, declfilter.New(config))))
+	ctx := NewPkgCtx(pkg, util.ExtendFilter(pkg, config, declfilter.New(config)))
 	ctx.configDir = configDir
 	f := ctx.initFile(pkg, config)
 	if errs := ctx.checkSkipConfig(pkg, config); len(errs) != 0 {

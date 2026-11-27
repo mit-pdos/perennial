@@ -1,4 +1,4 @@
-translate = ["!*"]
+translate = ["!*", "counter", "counter.*", "W", "W.Get"]
 
 [model]
 dir = "goose/testdata/models/modelwhole"

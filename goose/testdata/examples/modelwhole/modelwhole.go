@@ -1,5 +1,5 @@
 // Package modelwhole is translated with a whole-package Go model
-// (goose/testdata/models/modelwhole, replaces = ["*"], translate = ["!*"]):
+// (goose/testdata/models/modelwhole, replaces = ["*"], translate listing its declarations):
 // every declaration is the model's. W embeds counter, so W's method sets have
 // the methods promoted from it, whose MethodUnfold the translation has
 // although no declaration W.get exists.

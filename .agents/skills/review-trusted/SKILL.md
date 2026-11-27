@@ -402,7 +402,9 @@ own variable; a model that runs `pair()`'s effects in each: REWORK.
 declaration.** A config's `[model]` table names a directory of model files
 (package = the real package's name) and `replaces`, the real declarations they
 redeclare (`f`, `T.m`, `T`, `X`, `init.N`; `["*"]`: the whole package; `[]`:
-additions only). Goose splices them into the real package and translates them.
+additions only). Goose splices them into the real package and translates them as
+real declarations: the ones `translate` excludes are names-only, or, in `trusted`,
+primitive stubs.
 - *Review.* Model Go is TCB: the full R4 review against the real source, which
   `trusted-delta` prints side by side.
 - *The claim.* For each replaced declaration: every behaviour of the real one

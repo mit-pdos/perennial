@@ -16,7 +16,7 @@ import "internal/gomodel"
 // reflect can tell, but the true func representation can be handled
 // by code like Convert and Interface and Assign.
 //
-// MODEL: method values are not modelled (names_only).
+// MODEL: method values are not modelled (names-only: translate excludes it).
 func makeMethodValue(op string, v Value) Value {
 	gomodel.Stuck()
 	panic("unreachable")

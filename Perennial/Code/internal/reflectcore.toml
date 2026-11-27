@@ -3,7 +3,7 @@
 # primitives of the Go models of reflect. The exported functions are primitive
 # stubs, modelled in Perennial/TrustedCode/internal/reflectcore.lean; the
 # generic helpers they instantiate (helpers.go) are translated.
-translate = ["!*"]
+translate = ["!*", "tokOf", "box", "load", "alloc", "ptrTok", "store", "assertOk"]
 trusted = ["TokOf", "Box", "Load", "Alloc", "PtrTok", "Store", "AssertOk", "ConvertAt",
   "FieldRefAt", "ArraySliceAt", "EqNilAt", "TypeKind", "TypeElem", "TypeLen",
   "TypeNumField", "TypeFieldType", "TypeUnderlying", "TypeIdentByName"]

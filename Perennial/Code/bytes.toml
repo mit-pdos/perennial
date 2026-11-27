@@ -1,5 +1,6 @@
 translate = [
   "Clone",
+  "Compare",
   "Equal",
   "ErrTooLarge",
   "errNegativeRead",

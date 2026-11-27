@@ -148,59 +148,61 @@ reason = "r"`, `is named "_@file.go:L"`},
 	}
 }
 
-func TestModelNamesOnly(t *testing.T) {
+func TestModelTranslate(t *testing.T) {
 	c := mustParse(t, `
-translate = ["*", "!Stub"]
+translate = ["*", "!Stub", "!Value.Call*", "!Unmodelled"]
 trusted = ["Stub"]
 [model]
 dir = "m"
 replaces = ["*"]
-names_only = ["Value.Call*", "Unmodelled"]
 `)
 	if errs := c.CheckModel(); len(errs) != 0 {
 		t.Fatalf("unexpected errors: %v", errs)
 	}
-	if !MatchesAny(c.Model.NamesOnly, "Value.CallSlice") || MatchesAny(c.Model.NamesOnly, "Value.Kind") {
-		t.Errorf("names_only patterns match as translate's")
-	}
-	df := WithNamesOnly(WithTranslated(New(c), map[string]bool{"Unmodelled": true, "F": true}),
-		map[string]bool{"Unmodelled": true})
-	if df.GetAction("Unmodelled") != Axiomatize || !df.NamesOnly("Unmodelled") {
-		t.Errorf("a names-only declaration is axiomatized, whatever translate says")
-	}
-	if df.GetAction("F") != Translate || df.NamesOnly("F") {
-		t.Errorf("F should be translated")
-	}
-	// translate_types (WithTranslated over the filter) sees NamesOnly
-	if !WithTranslated(df, map[string]bool{"G": true}).NamesOnly("Unmodelled") {
-		t.Errorf("NamesOnly should pass through WithTranslated")
+	// translate governs model declarations as real ones: excluded and not
+	// trusted is names-only (axiomatized)
+	df := New(c)
+	for name, want := range map[string]Action{"Unmodelled": Axiomatize, "Value.CallSlice": Axiomatize,
+		"Stub": Trust, "Value.Kind": Translate} {
+		if got := df.GetAction(name); got != want {
+			t.Errorf("GetAction(%q) = %v, want %v", name, got, want)
+		}
 	}
 }
 
-func TestModelNamesOnlyErrors(t *testing.T) {
+func TestModelTranslateErrors(t *testing.T) {
 	for _, tc := range []struct{ cfg, want string }{
-		{`[model]
+		{`translate = ["!*"]
+[model]
 dir = "m"
-replaces = ["F"]
-names_only = ["F"]`, "which the model replaces"},
-		{`[model]
+replaces = ["F"]`, `replaces "F", which translate does not include`},
+		{`translate = ["*", "!T.*"]
+[model]
 dir = "m"
-replaces = ["T.m"]
-names_only = ["T.*"]`, "which the model replaces"},
-		{`translate = ["!Stub"]
+replaces = ["T.m"]`, `replaces "T.m", which translate does not include`},
+		{`trusted = ["Stub"]
+[model]
+dir = "m"
+replaces = ["*"]`, `trusted "Stub", which translate includes`},
+		{`translate = ["St*"]
 trusted = ["Stub"]
 [model]
 dir = "m"
-replaces = ["*"]
-names_only = ["St*"]`, "listed in trusted"},
-		{`[model]
-dir = "m"
-replaces = ["*"]
-names_only = [" "]`, "empty entry"},
+replaces = []`, `trusted "Stub", which translate includes`},
 	} {
 		errs := mustParse(t, tc.cfg).CheckModel()
 		if len(errs) != 1 || !strings.Contains(errs[0].Error(), tc.want) {
 			t.Errorf("config\n%s\nerrors %v, want one containing %q", tc.cfg, errs, tc.want)
 		}
+	}
+}
+
+func TestModelUnknownKey(t *testing.T) {
+	_, err := ParseConfig([]byte("translate = [\"*\"]\n[model]\ndir = \"m\"\nreplaces = [\"*\"]\nnames_only = [\"F\"]\n"))
+	if err == nil || !strings.Contains(err.Error(), "[model]") {
+		t.Errorf("a [model] key ModelConfig does not have: error %v, want one", err)
+	}
+	if _, err := ParseConfig([]byte("translate = [\"*\"]\n[model]\ndir = \"m\"\nreplaces = [\"*\"]\nadded_methods = [\"T.m\"]\nblank_asm = []\n")); err != nil {
+		t.Errorf("unexpected error %v", err)
 	}
 }

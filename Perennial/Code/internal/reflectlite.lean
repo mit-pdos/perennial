@@ -1406,8 +1406,6 @@ noncomputable def Value.assignTo.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.internal.reflectlite where
   pkgImportedPkgs := [pkg_id.internal.abi, pkg_id.internal.gomodel, pkg_id.internal.reflectcore]
 
-opaque «_».init [GooseExts] [GoGlobalContext] : val
-
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.internal.reflectlite)) (Lam BAnon

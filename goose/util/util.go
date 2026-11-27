@@ -230,7 +230,7 @@ func ReadConfig(configDir string, pkgPath string) (declfilter.FilterConfig, erro
 
 func Translate(translatePkg PackageTranslator, pkgPatterns []string, outRootDir string, modDir string, configDir string, opts LoadOptions) {
 	red := color.New(color.FgRed).SprintFunc()
-	pkgs, models, err := LoadPackages(modDir, configDir, true, opts, pkgPatterns...)
+	pkgs, _, err := LoadPackages(modDir, configDir, true, opts, pkgPatterns...)
 
 	if err != nil {
 		fmt.Fprintln(os.Stderr, red(err.Error()))
@@ -245,7 +245,7 @@ func Translate(translatePkg PackageTranslator, pkgPatterns []string, outRootDir 
 		if err != nil {
 			panic(fmt.Sprintf("could not parse config for %s:\n%v", pkg.PkgPath, err))
 		}
-		filter := ExtendFilter(pkg, config, models.Filter(pkg, declfilter.New(config)))
+		filter := ExtendFilter(pkg, config, declfilter.New(config))
 
 		extra := translatePkg(w, pkg, config.Bootstrap.Enabled, filter)
 

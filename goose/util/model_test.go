@@ -226,8 +226,12 @@ func (t *T) M() {}
 		{"trusted", "func F(x int) int { return 0 }", `"F"`, "", `replaces "F", which is also listed in trusted`},
 		{"star-and-names", "func F(x int) int { return 0 }", `"*", "F"`, "", `replaces "*" (a whole-package model) together with names`},
 		{"glob", "func F(x int) int { return 0 }", `"F*"`, "", `replaces "F*": a pattern`},
-		{"names-only-unmatched", "func F(x int) int { return 0 }\nfunc G() {}", `"F"`, `names_only = ["G", "H*"]`,
-			`names_only "H*" matches no model declaration`},
+		{"translate-unmatched", "func F(x int) int { return 0 }\nfunc G() {}", `"F"`, `translate = ["*", "!G", "!H*"]`,
+			`translate "!H*" matches no declaration`},
+		{"translate-replaced", "func F(x int) int { return 0 }", `"F"`, `translate = ["*", "!F"]`,
+			`replaces "F", which translate does not include`},
+		{"translate-trusted", "func F(x int) int { return 0 }\nfunc G() {}", `"F"`, `translate = ["F", "G"]` + "\ntrusted = [\"G\"]",
+			`trusted "G", which translate includes`},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			model := "package p\n\n" + c.model + "\n"
@@ -235,6 +239,10 @@ func (t *T) M() {}
 				model = "//go:build goose\n\npackage p\n\nfunc F(x int) int { return 0 }\n"
 			}
 			config := "[model]\ndir = \"model\"\nreplaces = [" + c.replaces + "]\n" + c.extra + "\n"
+			if strings.HasPrefix(c.extra, "translate =") {
+				// a top-level key, before [model]
+				config = c.extra + "\n[model]\ndir = \"model\"\nreplaces = [" + c.replaces + "]\n"
+			}
 			if c.name == "trusted" {
 				config = "trusted = [\"F\"]\n" + config
 			}

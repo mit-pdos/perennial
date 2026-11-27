@@ -5,6 +5,7 @@
 package declfilter
 
 import (
+	"bytes"
 	"fmt"
 	"path/filepath"
 	"regexp"
@@ -62,10 +63,19 @@ type FilterConfig struct {
 // deleted and the model's is put in its place. Replaces = ["*"] replaces
 // every real file (a whole-package model, which may also add a
 // standard-library package that does not exist); Replaces = [] only adds.
-// Every other declaration of the model is an addition; an addition that
-// the config lists in trusted is a primitive stub (its Go body is for gc
-// builds only), a model declaration that NamesOnly matches is translated
-// names-only, and every other model declaration is translated.
+// Every other declaration of the model is an addition.
+//
+// The config's translate, trusted and skip govern the model's declarations
+// as they govern the real package's: a model declaration translate includes
+// is translated; one it excludes is a primitive stub if trusted lists it
+// (its Go body is for gc builds only) and is otherwise translated
+// names-only (axiomatized: a name, and for a type no definition; no body,
+// no FuncUnfold). A whole-package model declares the real package's whole
+// API so that its callers type-check, and translate excludes the
+// declarations it does not model. translate includes every replaced name
+// (a replaced declaration is the model's Go, translated), and each of its
+// entries matches some declaration of the overlaid package
+// (util.BuildModels).
 type ModelConfig struct {
 	// The directory of the model files, relative to the repository root.
 	Dir string `toml:"dir"`
@@ -75,15 +85,6 @@ type ModelConfig struct {
 	// real package's types, which change their method sets: `T.m` or
 	// `*.PbModel*`.
 	AddedMethods []string `toml:"added_methods"`
-	// Patterns (as in translate) of the model declarations that are
-	// translated names-only, whatever translate says: axiomatized (a name,
-	// and for a type no definition; no body and no FuncUnfold), as goose
-	// translates a real declaration that translate excludes. A whole-package
-	// model declares the real package's whole API so that its callers
-	// type-check; the declarations it does not model are names-only. Every
-	// entry matches some model declaration (util.BuildModels), none is
-	// trusted or replaced.
-	NamesOnly []string `toml:"names_only"`
 	// Assembly files of the real package (base names, as built for
 	// linux/amd64) that the overlay blanks, so that the model's Go bodies of
 	// replaced bodyless functions are the definitions instead of the
@@ -103,10 +104,11 @@ func (m *ModelConfig) WholePackage() bool {
 // CheckModel returns the errors of the config's [model] table that the
 // config alone shows: no dir, no replaces (an empty list must be written),
 // an empty, pattern or repeated replaces entry, "*" together with names, a
-// replaced name that is also an exact trusted entry, an exact "!Name" of
-// translate or a skip name, an added_methods entry that is not `T.m`, and
-// an empty names_only entry or one that matches a replaced name or an exact
-// trusted entry. The errors that need the packages are util.BuildModels'.
+// replaced name that is also an exact trusted entry or a skip name, or that
+// translate does not include, an added_methods entry that is not `T.m`, and
+// an exact trusted entry that translate includes (translate takes
+// precedence, so the trusted model would be unused). The errors that need
+// the packages are util.BuildModels'.
 func (c FilterConfig) CheckModel() []error {
 	m := c.Model
 	if m == nil {
@@ -142,36 +144,23 @@ func (c FilterConfig) CheckModel() []error {
 			errs = append(errs, fmt.Errorf("[model] replaces %q twice", n))
 		case slices.Contains(c.Trusted, n):
 			errs = append(errs, fmt.Errorf("[model] replaces %q, which is also listed in trusted", n))
-		case slices.Contains(c.ToTranslate, "!"+n):
-			errs = append(errs, fmt.Errorf(`[model] replaces %q, which translate excludes ("!%s")`, n, n))
 		case skipped[n]:
 			errs = append(errs, fmt.Errorf("[model] replaces %q, which is also a skip name", n))
+		case !MatchesAny(c.translatePatterns(), n):
+			errs = append(errs, fmt.Errorf("[model] replaces %q, which translate does not include "+
+				"(a replaced declaration is the model's Go, translated)", n))
 		}
 		seen[n] = true
+	}
+	for _, n := range c.Trusted {
+		if !isGlob(n) && MatchesAny(c.translatePatterns(), n) {
+			errs = append(errs, fmt.Errorf("trusted %q, which translate includes "+
+				"(translate takes precedence: exclude it with \"!%s\")", n, n))
+		}
 	}
 	for _, p := range m.AddedMethods {
 		if t, f, ok := strings.Cut(p, "."); !ok || t == "" || f == "" || strings.Contains(f, ".") {
 			errs = append(errs, fmt.Errorf("[model] added_methods %q: not of the form T.m", p))
-		}
-	}
-	for _, p := range m.NamesOnly {
-		if strings.TrimSpace(strings.TrimPrefix(p, "!")) == "" {
-			errs = append(errs, fmt.Errorf("[model] names_only has an empty entry"))
-			continue
-		}
-		if strings.HasPrefix(p, "!") {
-			continue
-		}
-		for _, n := range m.Replaces {
-			if n != "*" && MatchesAny([]string{p}, n) {
-				errs = append(errs, fmt.Errorf("[model] names_only %q matches %q, which the model replaces "+
-					"(a replaced declaration is translated)", p, n))
-			}
-		}
-		for _, n := range c.Trusted {
-			if !isGlob(n) && MatchesAny([]string{p}, n) {
-				errs = append(errs, fmt.Errorf("[model] names_only %q matches %q, which is listed in trusted", p, n))
-			}
 		}
 	}
 	seenAsm := make(map[string]bool)
@@ -187,6 +176,14 @@ func (c FilterConfig) CheckModel() []error {
 		seenAsm[f] = true
 	}
 	return errs
+}
+
+// translatePatterns is translate with its default: "*" when empty.
+func (c FilterConfig) translatePatterns() []string {
+	if len(c.ToTranslate) == 0 {
+		return []string{"*"}
+	}
+	return c.ToTranslate
 }
 
 // MatchesAny says whether name is in the set the patterns describe (the
@@ -322,9 +319,6 @@ type DeclFilter interface {
 	// SkipReason returns the reason of a skipped name, and whether it is
 	// skipped.
 	SkipReason(string) (string, bool)
-	// NamesOnly says whether a declaration is a model declaration translated
-	// names-only (ModelConfig.NamesOnly), which nothing translates.
-	NamesOnly(string) bool
 }
 
 // GetAction returns how a declaration is treated. The precedence is skip >
@@ -360,10 +354,6 @@ func (df *declFilter) TrustProofGen() bool {
 func (df *declFilter) SkipReason(name string) (string, bool) {
 	r, ok := df.skip[name]
 	return r, ok
-}
-
-func (df *declFilter) NamesOnly(string) bool {
-	return false
 }
 
 // isGlob says whether a name in a skip entry is a pattern rather than an
@@ -433,10 +423,7 @@ func (c FilterConfig) CheckSkip() []error {
 }
 
 func New(c FilterConfig) DeclFilter {
-	toTranslate := c.ToTranslate
-	if len(toTranslate) == 0 {
-		toTranslate = []string{"*"}
-	}
+	toTranslate := c.translatePatterns()
 
 	imports := c.Imports
 	if len(imports) == 0 {
@@ -480,40 +467,34 @@ func WithTranslated(df DeclFilter, names map[string]bool) DeclFilter {
 	return withTranslated{DeclFilter: df, names: names}
 }
 
-// withNamesOnly overrides a filter to axiomatize the given names.
-type withNamesOnly struct {
-	DeclFilter
-	names map[string]bool
-}
-
-func (df withNamesOnly) GetAction(name string) Action {
-	if df.names[name] && df.DeclFilter.GetAction(name) != Skip {
-		return Axiomatize
-	}
-	return df.DeclFilter.GetAction(name)
-}
-
-func (df withNamesOnly) NamesOnly(name string) bool {
-	return df.names[name] || df.DeclFilter.NamesOnly(name)
-}
-
-// WithNamesOnly returns df, except that the given names are translated
-// names-only (axiomatized), and NamesOnly says so.
-func WithNamesOnly(df DeclFilter, names map[string]bool) DeclFilter {
-	if len(names) == 0 {
-		return df
-	}
-	return withNamesOnly{DeclFilter: df, names: names}
-}
-
 var AxiomatizeConfig FilterConfig = FilterConfig{
 	ToTranslate: []string{"!*"},
 	Imports:     []string{"!*"},
 	Trusted:     nil,
 }
 
+// ParseConfig parses a config. A key of the [model] table that ModelConfig
+// does not have is an error (a model's config is checked, not ignored).
 func ParseConfig(raw []byte) (c FilterConfig, err error) {
-	err = toml.Unmarshal(raw, &c)
+	if err = toml.Unmarshal(raw, &c); err != nil || c.Model == nil {
+		return
+	}
+	var doc struct {
+		Model map[string]any `toml:"model"`
+	}
+	if err = toml.Unmarshal(raw, &doc); err != nil {
+		return
+	}
+	model, err := toml.Marshal(doc.Model)
+	if err != nil {
+		return
+	}
+	d := toml.NewDecoder(bytes.NewReader(model))
+	d.DisallowUnknownFields()
+	var m ModelConfig
+	if err = d.Decode(&m); err != nil {
+		err = fmt.Errorf("[model]: %v", err)
+	}
 	return
 }
 

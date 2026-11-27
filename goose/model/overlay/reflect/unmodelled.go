@@ -2,8 +2,8 @@
 
 // MODEL: the declarations of the real package that the model does not
 // model, with their real signatures, so that every caller type-checks.
-// Each function and method is names-only (its goose config's names_only):
-// goose translates its name and type, not its body, which is
+// Each function and method is names-only (its goose config's translate
+// excludes it): goose translates its name and type, not its body, which is
 // gomodel.Stuck() for gc builds. Each type is names-only too (a struct
 // type with unexported fields is a placeholder); the constants are
 // translated.

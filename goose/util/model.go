@@ -42,6 +42,8 @@ const replaceDirective = "//gomodel:replace "
 type PackageModel struct {
 	PkgPath string
 	Config  declfilter.ModelConfig
+	// Translate is the package config's translate.
+	Translate []string
 	// Dir is the absolute model directory, Files its model files.
 	Dir   string
 	Files []string
@@ -57,8 +59,6 @@ type Models struct {
 	Overlay map[string][]byte
 	// Packages are the models, by import path.
 	Packages map[string]*PackageModel
-	// modelFiles are the absolute paths of all model files.
-	modelFiles map[string]bool
 	// layoutChanged are the types ("path.Name") of the models' packages
 	// whose layout (under gc on linux/amd64, and their underlying type)
 	// differs from the real declaration's (LayoutChanged).
@@ -252,28 +252,6 @@ func (m *Models) merge(opts LoadOptions) (LoadOptions, error) {
 	return opts, nil
 }
 
-// Filter returns df, except that it translates the declarations of the
-// package that come from its model, other than the ones df trusts (the
-// model's primitive stubs) and the ones names_only matches, which it
-// translates names-only.
-func (m *Models) Filter(pkg *packages.Package, df declfilter.DeclFilter) declfilter.DeclFilter {
-	pm := m.pkgModel(pkg.PkgPath)
-	if pm == nil {
-		return df
-	}
-	names := make(map[string]bool)
-	namesOnly := make(map[string]bool)
-	for n := range modelDeclNames(pkg, m.modelFiles) {
-		switch {
-		case declfilter.MatchesAny(pm.Config.NamesOnly, n):
-			namesOnly[n] = true
-		case df.GetAction(n) != declfilter.Trust:
-			names[n] = true
-		}
-	}
-	return declfilter.WithNamesOnly(declfilter.WithTranslated(df, names), namesOnly)
-}
-
 func (m *Models) pkgModel(path string) *PackageModel {
 	if m == nil {
 		return nil
@@ -281,11 +259,10 @@ func (m *Models) pkgModel(path string) *PackageModel {
 	return m.Packages[path]
 }
 
-// modelDeclNames returns the names (as the declaration filter sees them) of
-// the declarations of pkg whose position is in a model file.
-func modelDeclNames(pkg *packages.Package, files map[string]bool) map[string]bool {
+// declNames returns the names (as the declaration filter sees them) of the
+// declarations of pkg.
+func declNames(pkg *packages.Package) map[string]bool {
 	names := make(map[string]bool)
-	in := func(p token.Pos) bool { return files[pkg.Fset.Position(p).Filename] }
 	inits := 0
 	for _, f := range pkg.Syntax {
 		for _, d := range f.Decls {
@@ -296,19 +273,15 @@ func modelDeclNames(pkg *packages.Package, files map[string]bool) map[string]boo
 					name = fmt.Sprintf("init.%d", inits)
 					inits++
 				}
-				if in(d.Name.Pos()) {
-					names[name] = true
-				}
+				names[name] = true
 			case *ast.GenDecl:
 				for _, s := range d.Specs {
 					switch s := s.(type) {
 					case *ast.TypeSpec:
-						if in(s.Name.Pos()) {
-							names[s.Name.Name] = true
-						}
+						names[s.Name.Name] = true
 					case *ast.ValueSpec:
 						for _, n := range s.Names {
-							if in(n.Pos()) && n.Name != "_" {
+							if n.Name != "_" {
 								names[n.Name] = true
 							}
 						}
@@ -392,12 +365,12 @@ func (m *Models) WriteGoOverlay(opts LoadOptions, dir string) (string, error) {
 // overlay adds), the graph is computed again under the overlay until no new
 // model appears. It checks each model (the errors are listed in
 // declfilter.ModelConfig and here): the names of replaces both ways, the
-// splice, the overlaid package's type-checking, the names_only entries, and
+// splice, the overlaid package's type-checking, the translate entries, and
 // that the model keeps the real package's API (CheckAPI).
 func BuildModels(modDir, configDir string, opts LoadOptions, patterns ...string) (*Models, error) {
 	m := &Models{Overlay: make(map[string][]byte), Packages: make(map[string]*PackageModel),
-		modelFiles: make(map[string]bool), layoutChanged: make(map[string]bool),
-		configDir: configDir, trusted: make(map[string]declfilter.DeclFilter)}
+		layoutChanged: make(map[string]bool), configDir: configDir,
+		trusted: make(map[string]declfilter.DeclFilter)}
 	b := &builder{modDir: modDir, configDir: configDir, opts: opts, models: m,
 		real: make(map[string]*packages.Package)}
 	for iter := 0; ; iter++ {
@@ -426,14 +399,7 @@ func BuildModels(modDir, configDir string, opts LoadOptions, patterns ...string)
 			for _, e := range config.CheckModel() {
 				errs = append(errs, errors.Wrapf(e, "model of %s", p))
 			}
-			df := declfilter.New(config)
-			for _, n := range config.Model.Replaces {
-				if a := df.GetAction(n); n != "*" && (a == declfilter.Trust || a == declfilter.Skip) {
-					errs = append(errs, errors.Errorf("model of %s: replaces %q, which the config "+
-						"trusts or skips (a replaced declaration is translated)", p, n))
-				}
-			}
-			pm := &PackageModel{PkgPath: p, Config: *config.Model}
+			pm := &PackageModel{PkgPath: p, Config: *config.Model, Translate: config.ToTranslate}
 			m.Packages[p] = pm
 			newPkgs = append(newPkgs, pm)
 		}
@@ -617,7 +583,6 @@ func (b *builder) readModel(pm *PackageModel) ([]*modelFile, []error) {
 		}
 		mfs = append(mfs, mf)
 		pm.Files = append(pm.Files, path)
-		b.models.modelFiles[path] = true
 	}
 	if len(mfs) == 0 && len(errs) == 0 {
 		errs = append(errs, errors.Errorf("model directory %s has no model files", pm.Dir))
@@ -1323,8 +1288,9 @@ func firstBodyLine(fset *token.FileSet, b *builder, fn *ast.FuncDecl) string {
 	return strings.TrimSpace(string(src[start:end]))
 }
 
-// check type-checks the overlaid model packages, checks that each
-// names_only entry matches a model declaration, records the types whose
+// check type-checks the overlaid model packages, checks that each entry of
+// a model package's translate (but "*" and "!*") matches some declaration
+// of the overlaid package (a real one or the model's), records the types whose
 // layout the models change (LayoutChanged), and checks their API against
 // the real packages' (CheckAPI).
 func (b *builder) check() error {
@@ -1359,17 +1325,18 @@ func (b *builder) check() error {
 		}
 		pm := b.models.Packages[p.PkgPath]
 		if pm != nil {
-			names := modelDeclNames(p, b.models.modelFiles)
-			for _, e := range pm.Config.NamesOnly {
-				if strings.HasPrefix(e, "!") {
+			names := declNames(p)
+			for _, e := range pm.Translate {
+				pat := strings.TrimPrefix(e, "!")
+				if pat == "*" {
 					continue
 				}
 				matched := false
 				for n := range names {
-					matched = matched || declfilter.MatchesAny([]string{e}, n)
+					matched = matched || declfilter.MatchesAny([]string{pat}, n)
 				}
 				if !matched {
-					errs = append(errs, errors.Errorf("model of %s: names_only %q matches no model declaration",
+					errs = append(errs, errors.Errorf("model of %s: translate %q matches no declaration",
 						p.PkgPath, e))
 				}
 			}

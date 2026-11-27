@@ -8,7 +8,7 @@
 # and `Cutover` (index_amd64.go), and `IndexByteString` and `IndexString`, whose bodies on amd64 are
 # assembly: they are translated from their Go models (the [model] table below).
 translate = ["MaxLen", "LastIndexByteString", "PrimeRK", "HashStr", "HashStrRev", "IndexRabinKarp",
-  "MaxBruteForce", "Cutover", "IndexByteString", "IndexString"]
+  "MaxBruteForce", "Cutover", "IndexByteString", "IndexString", "IndexByte", "Index", "CompareString"]
 imports = ["!*", "internal/gomodel"]
 # `init.0` sets `MaxLen` from `cpu.X86.HasAVX2`: trusted, as one of the two values
 # (TrustedCode/internal/bytealg.lean). Goose translates `init.0` itself, to a read of the global

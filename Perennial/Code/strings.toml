@@ -7,7 +7,7 @@
 # has no proof. `LastIndex`, `IndexByte` and `Cut` (over internal/stringslite and internal/bytealg).
 translate = ["Builder", "Builder.*", "asciiSpace", "Compare", "HasPrefix", "HasSuffix", "Join", "maxInt", "TrimPrefix", "TrimSuffix", "NewReplacer",
   "LastIndex", "IndexByte", "Cut",
-  "TrimLeft", "trimLeftByte", "trimLeftASCII", "makeASCIISet", "asciiSet.contains"]
+  "TrimLeft", "trimLeftByte", "trimLeftASCII", "makeASCIISet", "asciiSet.contains", "Split"]
 imports = ["!*", "internal/stringslite", "sync", "io", "internal/bytealg", "unicode/utf8", "internal/gomodel"]
 
 # translate the definitions of all type declarations goose supports
