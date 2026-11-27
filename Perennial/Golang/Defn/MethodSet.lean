@@ -48,7 +48,7 @@ def methodSetLookup : List (GoString × Option go.signature) → GoString → Op
 id `m` is in it iff `ms` has an entry for `m`, with the signature of the entry when that
 is known (`some sig`). goose emits these facts for the named types of a package
 (`T.TypeAssumptions.method_set`, `ptr_method_set`). -/
-class MethodSetIs [GooseExts] [GoLocalContext] [GoSemanticsFunctions] (t : go.GoType)
+class MethodSetIs [GooseExts] [GoLocalContext] (t : go.GoType)
     (ms : outParam (List (GoString × Option go.signature))) : Prop where
   method_set_is (m : GoString) :
     match methodSetLookup ms m with
