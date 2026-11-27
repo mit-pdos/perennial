@@ -1,6 +1,6 @@
 /-
 Method sets (https://go.dev/ref/spec#Method_sets): what the semantics knows of
-`methodSet`, the function of `GoSemanticsFunctions` that `go.typeSetContains`
+`methodSet`, the type function of `GoLocalContext` (`GoTypeFns`) that `go.typeSetContains`
 (`Interface.lean`) consults to decide whether a type implements an interface.
 
 `methodSet t` maps the *id* of each method of `t` to its signature. A method's id
@@ -48,7 +48,7 @@ def methodSetLookup : List (GoString × Option go.signature) → GoString → Op
 id `m` is in it iff `ms` has an entry for `m`, with the signature of the entry when that
 is known (`some sig`). goose emits these facts for the named types of a package
 (`T.TypeAssumptions.method_set`, `ptr_method_set`). -/
-class MethodSetIs [GooseExts] [GoSemanticsFunctions] (t : go.GoType)
+class MethodSetIs [GooseExts] [GoLocalContext] [GoSemanticsFunctions] (t : go.GoType)
     (ms : outParam (List (GoString × Option go.signature))) : Prop where
   method_set_is (m : GoString) :
     match methodSetLookup ms m with

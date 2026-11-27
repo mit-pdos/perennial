@@ -59,15 +59,9 @@ def nil : GoMap := null
 end map
 
 class GoSemanticsFunctions [GooseExts] where
-  underlying : go.GoType → go.GoType
   globalAddr : GoString → Loc
   functions : GoString → List go.GoType → GoFunc
   methods : go.GoType → GoString → val → GoFunc
-
-  /-- The method set of a type: each method's id (its name, qualified by its package path if
-  it is unexported) and signature. Constrained by `go.MethodSetIs` facts
-  (`Golang/Defn/MethodSet.lean`). -/
-  methodSet : go.GoType → GMap GoString go.signature
 
   /-- This uses a Lean `Type` because there are multiple `go.GoType`s that have
   the same `Type` representation (e.g. uint64/int64, *X/*Y), but offsets are
@@ -78,8 +72,15 @@ class GoSemanticsFunctions [GooseExts] where
 
   arrayIndexRef (elem_type : Type) (i : Int) (l : Loc) : Loc
 
-export GoSemanticsFunctions (underlying globalAddr functions methods methodSet structFieldRef
-  arrayIndexRef)
+export GoSemanticsFunctions (globalAddr functions methods structFieldRef arrayIndexRef)
+
+/-- The underlying type of a type: the machine's `GoTypeFns.underlying`. -/
+abbrev underlying [GooseExts] [GoLocalContext] (t : go.GoType) : go.GoType :=
+  GoLocalContext.typeFns.underlying t
+
+/-- The method set of a type: the machine's `GoTypeFns.methodSet`. -/
+abbrev methodSet [GooseExts] [GoLocalContext] (t : go.GoType) : GMap GoString go.signature :=
+  GoLocalContext.typeFns.methodSet t
 
 /-- The class form of `GoSemanticsFunctions.TypeRepr` (`V` is an output). -/
 class TypeRepr [GooseExts] [GoSemanticsFunctions] (t : go.GoType) (V : outParam Type) [ZeroVal V] :

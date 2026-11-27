@@ -79,7 +79,7 @@ end net
 
 /-- On a crash, the node keeps its address. -/
 instance net_semantics : ExtSemantics netExt where
-  step := NetStep
+  step := fun _ => NetStep
   crash me me' := me' = me
 
 end Perennial

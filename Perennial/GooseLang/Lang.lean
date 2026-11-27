@@ -12,8 +12,9 @@ closed list of extensions (`GooseExts`, see `Perennial/GooseLang/Ext.lean`).
   the one the restart begins with (section "Crashes").
 * The base step is an inductive relation (`base_step`). An extension's step
   (`ExtSemantics.step`) is a plain relation, which sees and changes only the
-  heap and the extension's own state; `extStep` dispatches an `ExternalOp` to
-  the extension of its operation.
+  heap and the extension's own state, and also reads the machine's Go type
+  functions (`GoTypeFns`); `extStep` dispatches an `ExternalOp` to the
+  extension of its operation.
 * Panics: a panic outcome is a value, `PanicV p`, which unwinds every evaluation
   frame but that of `Catch e h k` (`Unwinds`); the head step relation `HeadStep`
   is the unwinding together with `base_step` on the redexes that do not unwind.
@@ -419,10 +420,19 @@ theorem isPanic_ite [GooseExts] {c : Prop} [Decidable c] {a b : val} (ha : a.isP
     (#x : val) ≠ PanicV p := by
   intro h; have := isPanic_intoVal x; rw [h] at this; cases this
 
+/-- Go's functions on types: the underlying type of a type, and its method set. -/
+structure GoTypeFns where
+  underlying : go.GoType → go.GoType
+  /-- The method set of a type: each method's id (its name, qualified by its package path if
+  it is unexported) and signature. Constrained by `go.MethodSetIs` facts
+  (`Golang/Defn/MethodSet.lean`). -/
+  methodSet : go.GoType → GMap GoString go.signature
+
 /-- `GoLocalContext` contains several low-level Go functions for typed memory
-access, map updates, etc. -/
+access, map updates, etc., and Go's functions on types. -/
 class GoLocalContext [GooseExts] where
   is_go_step_pure : GoInstruction → val → Expr → Prop
+  typeFns : GoTypeFns
 
 export GoLocalContext (is_go_step_pure)
 
@@ -501,7 +511,7 @@ structure GoState where
   goLctx : GoLocalContext
   packageState : GMap GoString Bool
 
-instance : Inhabited GoLocalContext := ⟨⟨fun _ _ _ => False⟩⟩
+instance : Inhabited GoLocalContext := ⟨⟨fun _ _ _ => False, ⟨id, fun _ => ∅⟩⟩⟩
 instance : Inhabited GoState := ⟨⟨default, ∅⟩⟩
 
 /-- The state of a node (a machine): everything specific to it. -/
@@ -545,10 +555,12 @@ def IsGoStep [GooseExts] [GoGlobalContext] [GoLocalContext]
   | _ => GoLocalContext.is_go_step_pure op arg e' ∧ s = s'
 
 /-- The semantics of the extension `E`, for any list of extensions containing
-it: `step o v h s g e' h' s' g'` says that the operation `o` of `E` applied to
+it: `step tf o v h s g e' h' s' g'` says that the operation `o` of `E` applied to
 `v`, with heap `h` and `E`'s local and global states `s` and `g`, can produce
-`e'`, heap `h'` and states `s'` and `g'`. A step changes nothing else (not the
-other extensions' states, nor the thread count). The step is generic over the
+`e'`, heap `h'` and states `s'` and `g'`, where `tf` is the machine's Go type functions
+(`GoTypeFns`: `underlying`, `methodSet`). Of the Go context it sees only these and, through
+`#`, `GoGlobalContext`; not `GoLocalContext.is_go_step_pure`. A step changes nothing else (not the other extensions' states, nor the
+thread count). The step is generic over the
 list of extensions, and does not depend on it: `E`'s own operations and values in
 `e'` are named by `E`'s name (`ExternalOp E.name op`, `extVal`). An operation name the
 extension does not define has no step.
@@ -562,7 +574,7 @@ top-level theorem assumes of the states its execution starts from (`ExtsInitLoca
 `ExtsInitGlobal`). They belong to the trusted semantics, not to the ghost state
 (`ExtInterp`, `Lifting.lean`), which a proof chooses. -/
 class ExtSemantics (E : GooseExt) where
-  step : ∀ [GooseExts] [GoGlobalContext], String → val →
+  step : ∀ [GooseExts] [GoGlobalContext], GoTypeFns → String → val →
     GMap Loc (NonAtomic val) → E.LocalState → E.GlobalState →
     Expr → GMap Loc (NonAtomic val) → E.LocalState → E.GlobalState → Prop
   crash : E.LocalState → E.LocalState → Prop
@@ -604,7 +616,8 @@ variable [GooseExts] [GooseSemantics] [GoGlobalContext]
 on the heap and its own state. -/
 def extStepAt {E : GooseExt} (m : ExtIn E exts) (o : String) (v : val) (σg : CfgState)
     (e' : Expr) (σg' : CfgState) : Prop :=
-  ∃ h' s' g', @ExtSemantics.step E (m.get GooseSemantics.sems) _ _ o v
+  ∃ h' s' g', @ExtSemantics.step E (m.get GooseSemantics.sems) _ _
+      σg.1.goState.goLctx.typeFns o v
       σg.1.heap (m.get σg.1.world) (m.get σg.2.globalWorld) e' h' s' g' ∧
     σg' = ({ σg.1 with heap := h', world := m.set σg.1.world s' },
       { σg.2 with globalWorld := m.set σg.2.globalWorld g' })
