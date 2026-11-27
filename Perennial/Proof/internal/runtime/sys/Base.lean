@@ -1,6 +1,7 @@
 /-
-Package initialization of `internal/runtime/sys` (only its types are
-translated, for `runtime`, which imports it): its `isPkgInit`.
+Package initialization of `internal/runtime/sys` (its types, for `runtime`, which imports it,
+and its initialized variables, `deBruijn32tab`, `deBruijn64tab` and `DITSupported`, are
+translated): its `isPkgInit`.
 -/
 module
 
