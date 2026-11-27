@@ -15,7 +15,7 @@ namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic
 
 section examples
-variable [GooseExts] [GoSemanticsFunctions]
+variable [GooseExts] [GoLocalContext] [GoSemanticsFunctions]
 
 /-- `struct { a uint32; b uint32 }` is plain, 8 bytes, aligned 4, and `b` is at offset 4 (gc:
 `unsafe.Sizeof` 8, `unsafe.Offsetof(.b)` 4). -/
@@ -38,7 +38,7 @@ example : go.PlainLayout (go.ArrayType 3 go.uint16) 6 2 :=
 end examples
 
 section instances
-variable [GooseExts] [GoSemanticsFunctions]
+variable [GooseExts] [GoLocalContext] [GoSemanticsFunctions]
 
 /-- A plain scalar is plain. -/
 instance isPlain_scalar (t : go.GoType) (w : Nat) [h : go.IsPlainScalar t w] : go.IsPlain t w :=

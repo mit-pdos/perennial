@@ -244,7 +244,7 @@ def parsenumSpec (s : GoString) (start e : Nat) : Nat × Bool × Nat :=
 /-! ## Which Go values the arguments are -/
 
 section args
-variable [GooseExts] [GoGlobalContext] [GoSemanticsFunctions]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
 
 /-- `IntArg x z`: `x` holds the integer `z`, of one of Go's predeclared integer types (signed for
 `int`, ..., `int8`; unsigned for `uint`, ..., `uint8`, `uintptr`), the types `printArg`'s type

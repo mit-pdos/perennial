@@ -23,7 +23,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 namespace fmt
 
 section lemmas
-variable [GooseExts] [GoGlobalContext] [GoSemanticsFunctions]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
 
 theorem wrapArgsFrom_append_noW (j n : Nat) (pre ds : List Directive)
     (h : ∀ d ∈ pre, d.verb ≠ W8 119) :
