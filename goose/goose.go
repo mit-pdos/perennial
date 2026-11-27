@@ -1489,6 +1489,44 @@ func staticArrayLen(t types.Type) bool {
 	return ok
 }
 
+// rangeIterTypes returns the types of the iteration values of a range over a
+// value of type t (Go spec, "For statements with range clause"), nil for a value
+// it does not have. An untyped constant n counts as an int.
+func rangeIterTypes(t types.Type) (key, value types.Type) {
+	u := underlyingType(t)
+	if p, ok := u.(*types.Pointer); ok {
+		u = underlyingType(p.Elem())
+	}
+	switch u := u.(type) {
+	case *types.Map:
+		return u.Key(), u.Elem()
+	case *types.Slice:
+		return types.Typ[types.Int], u.Elem()
+	case *types.Array:
+		return types.Typ[types.Int], u.Elem()
+	case *types.Chan:
+		return u.Elem(), nil
+	case *types.Signature:
+		yield := u.Params().At(0).Type().Underlying().(*types.Signature).Params()
+		if yield.Len() > 0 {
+			key = yield.At(0).Type()
+		}
+		if yield.Len() > 1 {
+			value = yield.At(1).Type()
+		}
+		return key, value
+	case *types.Basic:
+		if u.Info()&types.IsString != 0 {
+			return types.Typ[types.Int], types.Typ[types.Int32]
+		}
+		if u.Info()&types.IsUntyped != 0 {
+			return types.Typ[types.Int], nil
+		}
+		return t, nil
+	}
+	return nil, nil
+}
+
 // rangeStmt translates a range statement with the label label (nil if none).
 func (ctx *Ctx) rangeStmt(s *ast.RangeStmt, label *ast.Ident) glang.Expr {
 	if n, msg, bad := modelcheck.Range(ctx.info, s); bad {
@@ -1505,10 +1543,12 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt, label *ast.Ident) glang.Expr {
 	body := ctx.loopBody(s.Body, label)
 	ctx.recoverCell = recoverCell
 	var shared []*ast.Ident
+	keyT, valueT := rangeIterTypes(ctx.typeOf(s.X))
 	for _, kv := range []struct {
 		x ast.Expr
 		v string
-	}{{s.Key, "$key"}, {s.Value, "$value"}} {
+		t types.Type
+	}{{s.Key, "$key", keyT}, {s.Value, "$value", valueT}} {
 		x, _ := kv.x.(*ast.Ident)
 		switch {
 		case kv.x == nil:
@@ -1521,7 +1561,8 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt, label *ast.Ident) glang.Expr {
 			if s.Tok == token.DEFINE && x.Name != "_" {
 				shared = append(shared, x)
 			}
-			body = ctx.assignFromTo(kv.x, glang.IdentExpr(kv.v), body)
+			body = ctx.assignFromTo(kv.x,
+				ctx.handleImplicitConversion(kv.x, kv.t, ctx.typeOf(kv.x), glang.IdentExpr(kv.v)), body)
 		}
 	}
 
@@ -2445,7 +2486,7 @@ func (ctx *Ctx) selectStmt(s *ast.SelectStmt, cont glang.Expr) (expr glang.Expr)
 		if c, ok := s.Comm.(*ast.SendStmt); ok {
 			expr = glang.LetExpr{
 				Names:   []string{fmt.Sprintf("$v%d", i)},
-				ValExpr: ctx.expr(c.Value),
+				ValExpr: ctx.exprIntoType(c.Value, chanElem(ctx.typeOf(c.Chan))),
 				Cont:    expr,
 			}
 		}

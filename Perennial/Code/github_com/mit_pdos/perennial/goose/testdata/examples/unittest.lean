@@ -31,6 +31,26 @@ noncomputable def Foo.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] Foo.ty
 
+noncomputable def assignT.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignT" [])
+
+attribute [irreducible] assignT.ty
+
+noncomputable def assignNarrow.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignNarrow" [])
+
+attribute [irreducible] assignNarrow.ty
+
+noncomputable def assignWide.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignWide" [])
+
+attribute [irreducible] assignWide.ty
+
+noncomputable def assignS.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignS" [])
+
+attribute [irreducible] assignS.ty
+
 noncomputable def importantStruct.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.importantStruct" [])
 
@@ -487,6 +507,63 @@ noncomputable def arrayLiteralKeyed [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def arrayPointerToSlice [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.arrayPointerToSlice"
+
+noncomputable def assignSelectSend [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignSelectSend"
+
+noncomputable def assignSendPlain [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignSendPlain"
+
+noncomputable def assignSelectSendIface [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignSelectSendIface"
+
+noncomputable def assignSendPlainIface [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignSendPlainIface"
+
+noncomputable def assignReturn [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignReturn"
+
+noncomputable def assignReturnIface [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignReturnIface"
+
+noncomputable def assignReturnMulti [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignReturnMulti"
+
+noncomputable def assignPair [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignPair"
+
+noncomputable def assignReturnTuple [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignReturnTuple"
+
+noncomputable def assignCompositeLits [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignCompositeLits"
+
+noncomputable def assignElementStores [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignElementStores"
+
+noncomputable def assignTakes [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignTakes"
+
+noncomputable def assignTakesVariadic [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignTakesVariadic"
+
+noncomputable def assignCallArgs [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignCallArgs"
+
+noncomputable def assignRange [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignRange"
+
+noncomputable def assignMulti [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignMulti"
+
+noncomputable def assignCommaOk [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignCommaOk"
+
+noncomputable def assignGoDefer [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignGoDefer"
+
+noncomputable def assignSelectRecv [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignSelectRecv"
 
 noncomputable def chanBasic [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.chanBasic"
@@ -1275,6 +1352,634 @@ noncomputable def arrayPointerToSlice.impl [GooseExts] [GoGlobalContext] : val :
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.string)))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "$res0")))))
+
+/-- go: assignability.go:16:19 -/
+noncomputable def assignT.M.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "t"
+  (Lam BAnon
+  (Seq (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType assignT.ty)))) (Var "t"))
+  (App (Val doExecute)
+  (Val #()))))
+  (Val #()))))
+
+/-- go: assignability.go:17:19 -/
+noncomputable def assignT.N.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "t"
+  (Lam BAnon
+  (Seq (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType assignT.ty)))) (Var "t"))
+  (App (Val doExecute)
+  (Val #()))))
+  (Val #()))))
+
+/-- go: assignability.go:19:6 -/
+noncomputable def assignSelectSend.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "ch"
+  (Lam "p"
+  (Lam "done"
+  (Seq (App (Val exceptionDo)
+  (Let "done" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Var "done"))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType assignT.ty)))) (Var "p"))
+  (Let "ch" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.InterfaceType []))))) (Var "ch"))
+  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.InterfaceType []))))) (Var "ch"))
+  (Let "$v0" (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p")))
+  (Let "$ch1" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Var "done"))
+  (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (SendCase (go.GoType.InterfaceType []) (Var "$ch0") (Var "$v0")) (App (Val doExecute)
+  (Val #()))),
+  (CommClause (RecvCase (go.GoType.StructType []) (Var "$ch1")) (Lam "$recvVal"
+  (App (Val doExecute)
+  (Val #()))))])))))))))
+  (Val #())))))
+
+/-- go: assignability.go:26:6 -/
+noncomputable def assignSendPlain.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "ch"
+  (Lam "p"
+  (Seq (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType assignT.ty)))) (Var "p"))
+  (Let "ch" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.InterfaceType []))))) (Var "ch"))
+  (App (Val doExecute)
+  (Let "$chan" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.InterfaceType []))))) (Var "ch"))
+  (Let "$v" (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p")))
+  (App (App (Val (chan.send (go.GoType.InterfaceType []))) (Var "$chan")) (Var "$v"))))))))
+  (Val #()))))
+
+/-- go: assignability.go:30:6 -/
+noncomputable def assignSelectSendIface.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "ch"
+  (Lam "w"
+  (Lam "done"
+  (Seq (App (Val exceptionDo)
+  (Let "done" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Var "done"))
+  (Let "w" (App (Val (GoInstruction (GoAlloc assignWide.ty))) (Var "w"))
+  (Let "ch" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv assignNarrow.ty)))) (Var "ch"))
+  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv assignNarrow.ty)))) (Var "ch"))
+  (Let "$v0" (App (Val (GoInstruction (Convert assignWide.ty assignNarrow.ty))) (App (Val (GoInstruction (GoLoad assignWide.ty))) (Var "w")))
+  (Let "$ch1" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Var "done"))
+  (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (SendCase assignNarrow.ty (Var "$ch0") (Var "$v0")) (App (Val doExecute)
+  (Val #()))),
+  (CommClause (RecvCase (go.GoType.StructType []) (Var "$ch1")) (Lam "$recvVal"
+  (App (Val doExecute)
+  (Val #()))))])))))))))
+  (Val #())))))
+
+/-- go: assignability.go:37:6 -/
+noncomputable def assignSendPlainIface.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "ch"
+  (Lam "w"
+  (Seq (App (Val exceptionDo)
+  (Let "w" (App (Val (GoInstruction (GoAlloc assignWide.ty))) (Var "w"))
+  (Let "ch" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv assignNarrow.ty)))) (Var "ch"))
+  (App (Val doExecute)
+  (Let "$chan" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv assignNarrow.ty)))) (Var "ch"))
+  (Let "$v" (App (Val (GoInstruction (Convert assignWide.ty assignNarrow.ty))) (App (Val (GoInstruction (GoLoad assignWide.ty))) (Var "w")))
+  (App (App (Val (chan.send assignNarrow.ty)) (Var "$chan")) (Var "$v"))))))))
+  (Val #()))))
+
+/-- go: assignability.go:41:6 -/
+noncomputable def assignReturn.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [])))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType assignT.ty)))) (Var "p"))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "$res0")))))
+
+/-- go: assignability.go:45:6 -/
+noncomputable def assignReturnIface.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "w"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc assignNarrow.ty))) (App (Val (GoInstruction (GoZeroVal assignNarrow.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "w" (App (Val (GoInstruction (GoAlloc assignWide.ty))) (Var "w"))
+  (Let "$r0" (App (Val (GoInstruction (Convert assignWide.ty assignNarrow.ty))) (App (Val (GoInstruction (GoLoad assignWide.ty))) (Var "w")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore assignNarrow.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad assignNarrow.ty))) (Var "$res0")))))
+
+/-- go: assignability.go:49:6 -/
+noncomputable def assignReturnMulti.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Lam "w"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [])))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc assignNarrow.ty))) (App (Val (GoInstruction (GoZeroVal assignNarrow.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "w" (App (Val (GoInstruction (GoAlloc assignWide.ty))) (Var "w"))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType assignT.ty)))) (Var "p"))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p")))
+  (Let "$r1" (App (Val (GoInstruction (Convert assignWide.ty assignNarrow.ty))) (App (Val (GoInstruction (GoLoad assignWide.ty))) (Var "w")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore assignNarrow.ty))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "$res0") (Var "$r0"))))))))))
+  (Pair (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "$res0")) (App (Val (GoInstruction (GoLoad assignNarrow.ty))) (Var "$res1"))))))))
+
+/-- go: assignability.go:53:6 -/
+noncomputable def assignPair.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType assignT.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType assignT.ty)))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc assignWide.ty))) (App (Val (GoInstruction (GoZeroVal assignWide.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType assignT.ty)))) (Var "p"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p"))
+  (Let "$r1" (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) assignWide.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore assignWide.ty))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType assignT.ty)))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "$res0")) (App (Val (GoInstruction (GoLoad assignWide.ty))) (Var "$res1")))))))
+
+/-- go: assignability.go:57:6 -/
+noncomputable def assignReturnTuple.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [])))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc assignNarrow.ty))) (App (Val (GoInstruction (GoZeroVal assignNarrow.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType assignT.ty)))) (Var "p"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve assignPair []))) (Val #())) (Var "$a0")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (Var "$ret0"))
+  (Let "$r1" (App (Val (GoInstruction (Convert assignWide.ty assignNarrow.ty))) (Var "$ret1"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore assignNarrow.ty))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "$res0") (Var "$r0"))))))))))))
+  (Pair (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "$res0")) (App (Val (GoInstruction (GoLoad assignNarrow.ty))) (Var "$res1")))))))
+
+/-- go: assignability.go:66:6 -/
+noncomputable def assignCompositeLits.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Lam "w"
+  (Seq (App (Val exceptionDo)
+  (Let "w" (App (Val (GoInstruction (GoAlloc assignWide.ty))) (Var "w"))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType assignT.ty)))) (Var "p"))
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p"))
+  (Let "$v1" (App (Val (GoInstruction (GoLoad assignWide.ty))) (Var "w"))
+  (App (Val (GoInstruction (CompositeLiteral assignS.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"a")) (ElementExpression (go.GoType.PointerType assignT.ty) (Var "$v0"))), (KeyedElement (some (KeyField go!"b")) (ElementExpression assignWide.ty (Var "$v1")))]))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p"))
+  (Let "$v1" (App (Val (GoInstruction (GoLoad assignWide.ty))) (Var "w"))
+  (App (Val (GoInstruction (CompositeLiteral assignS.ty))) (LiteralValue [(KeyedElement none (ElementExpression (go.GoType.PointerType assignT.ty) (Var "$v0"))), (KeyedElement none (ElementExpression assignWide.ty (Var "$v1")))]))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$k0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p"))
+  (Let "$v1" (App (Val (GoInstruction (GoLoad assignWide.ty))) (Var "w"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.MapType (go.GoType.InterfaceType []) assignNarrow.ty)))) (LiteralValue [(KeyedElement (some (KeyExpression (go.GoType.PointerType assignT.ty) (Var "$k0"))) (ElementExpression assignWide.ty (Var "$v1")))]))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p"))
+  (Let "$v1" (App (Val (GoInstruction (GoLoad assignWide.ty))) (Var "w"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType (go.GoType.InterfaceType []))))) (LiteralValue [(KeyedElement none (ElementExpression (go.GoType.PointerType assignT.ty) (Var "$v0"))), (KeyedElement none (ElementExpression assignWide.ty (Var "$v1")))]))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad assignWide.ty))) (Var "w"))
+  (Let "$v1" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 2 assignNarrow.ty)))) (LiteralValue [(KeyedElement none (ElementExpression assignWide.ty (Var "$v0"))), (KeyedElement none (ElementExpression (go.GoType.PointerType assignT.ty) (Var "$v1")))]))))
+  (App (Val doExecute)
+  (Var "$r0")))))
+  (App (Val doExecute)
+  (Var "$r0"))))))
+  (App (Val doExecute)
+  (Var "$r0"))))))
+  (App (Val doExecute)
+  (Var "$r0"))))))
+  (App (Val doExecute)
+  (Var "$r0")))))))
+  (Val #()))))
+
+/-- go: assignability.go:74:6 -/
+noncomputable def assignElementStores.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Lam "w"
+  (Lam "m"
+  (Lam "s"
+  (Lam "a"
+  (Seq (App (Val exceptionDo)
+  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (go.GoType.ArrayType 2 assignNarrow.ty))))) (Var "a"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType (go.GoType.InterfaceType []))))) (Var "s"))
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType (go.GoType.InterfaceType []) assignNarrow.ty)))) (Var "m"))
+  (Let "w" (App (Val (GoInstruction (GoAlloc assignWide.ty))) (Var "w"))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType assignT.ty)))) (Var "p"))
+  (Let "$r0" (App (Val (GoInstruction (Convert assignWide.ty assignNarrow.ty))) (App (Val (GoInstruction (GoLoad assignWide.ty))) (Var "w")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert assignWide.ty assignNarrow.ty))) (App (Val (GoInstruction (GoLoad assignWide.ty))) (Var "w")))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore assignNarrow.ty))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 2 assignNarrow.ty)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.ArrayType 2 assignNarrow.ty))))) (Var "a")) (Val #(W64 1)))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType (go.GoType.InterfaceType []))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType (go.GoType.InterfaceType []))))) (Var "s")) (Val #(W64 0)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (App (App (Val (map.insert (go.GoType.InterfaceType []))) (App (Val (GoInstruction (GoLoad (go.GoType.MapType (go.GoType.InterfaceType []) assignNarrow.ty)))) (Var "m"))) (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p")))) (Var "$r0")))))))))))
+  (Val #())))))))
+
+/-- go: assignability.go:80:6 -/
+noncomputable def assignTakes.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "x"
+  (Lam "n"
+  (Seq (App (Val exceptionDo)
+  (Let "n" (App (Val (GoInstruction (GoAlloc assignNarrow.ty))) (Var "n"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (Var "x"))
+  (App (Val doExecute)
+  (Val #())))))
+  (Val #()))))
+
+/-- go: assignability.go:82:6 -/
+noncomputable def assignTakesVariadic.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "xs"
+  (Seq (App (Val exceptionDo)
+  (Let "xs" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType (go.GoType.InterfaceType []))))) (Var "xs"))
+  (App (Val doExecute)
+  (Val #()))))
+  (Val #())))
+
+/-- go: assignability.go:84:6 -/
+noncomputable def assignCallArgs.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Lam "w"
+  (Seq (App (Val exceptionDo)
+  (Let "w" (App (Val (GoInstruction (GoAlloc assignWide.ty))) (Var "w"))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType assignT.ty)))) (Var "p"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve assignPair []))) (Val #())) (Var "$a0")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (Var "$ret0"))
+  (Let "$a1" (App (Val (GoInstruction (Convert assignWide.ty assignNarrow.ty))) (Var "$ret1"))
+  (App (App (App (Val (GoInstruction (FuncResolve assignTakes []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
+  (App (Val doExecute)
+  (Let "$a0" (Let "$sl0" (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p")))
+  (Let "$sl1" (App (Val (GoInstruction (Convert assignWide.ty (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoLoad assignWide.ty))) (Var "w")))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType (go.GoType.InterfaceType []))))) (LiteralValue [(KeyedElement none (ElementExpression (go.GoType.InterfaceType []) (Var "$sl0"))), (KeyedElement none (ElementExpression (go.GoType.InterfaceType []) (Var "$sl1")))]))))
+  (App (App (Val (GoInstruction (FuncResolve assignTakesVariadic []))) (Val #())) (Var "$a0")))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p")))
+  (Let "$a1" (App (Val (GoInstruction (Convert assignWide.ty assignNarrow.ty))) (App (Val (GoInstruction (GoLoad assignWide.ty))) (Var "w")))
+  (App (App (App (Val (GoInstruction (FuncResolve assignTakes []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))
+  (Val #()))))
+
+/-- go: assignability.go:90:6 -/
+noncomputable def assignRange.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "ps"
+  (Lam "ws"
+  (Lam "ch"
+  (Seq (App (Val exceptionDo)
+  (Let "ch" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType assignT.ty))))) (Var "ch"))
+  (Let "ws" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType (go.GoType.PointerType assignT.ty) assignWide.ty)))) (Var "ws"))
+  (Let "ps" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType (go.GoType.PointerType assignT.ty))))) (Var "ps"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [])))) (Val #())))
+  (Let "n" (App (Val (GoInstruction (GoAlloc assignNarrow.ty))) (App (Val (GoInstruction (GoZeroVal assignNarrow.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "arr" (App (Val (GoInstruction (GoAlloc (go.GoType.ArrayType 2 (go.GoType.PointerType assignT.ty))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ArrayType 2 (go.GoType.PointerType assignT.ty))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "i32" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "x"))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad assignNarrow.ty))) (Var "n"))
+  (Let "$r2" (App (Val (GoInstruction (GoLoad go.int32))) (Var "i32"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Var "$r2"))))
+  (App (Val doExecute)
+  (Var "$r1")))))
+  (App (Val doExecute)
+  (Var "$r0"))))))))
+  (Let "$range" (Lam "yield"
+  (Seq (App (Val exceptionDo)
+  (Let "yield" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType assignT.ty), assignWide.ty] false [go.bool]))))) (Var "yield"))
+  (App (Val doExecute)
+  (Val #()))))
+  (Val #())))
+  (App (App (Val (func.forRange 2)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "x") (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (Var "$key"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore assignNarrow.ty))) (Pair (Var "n") (App (Val (GoInstruction (Convert assignWide.ty assignNarrow.ty))) (Var "$value")))))))))))))
+  (Let "$range" (Val #(W32 3))
+  (Let "$range_i" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "$range_i")) (Var "$range"))))) (Lam BAnon
+  (Let "$key" (App (Val (GoInstruction (GoLoad go.int32))) (Var "$range_i"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "i32") (Var "$key"))))))))
+  (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Val #())))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "$range_i") (App (Val (GoInstruction (GoOp GoPlus go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "$range_i")) (Val #(W32 1))))))))))))))))
+  (Let "$range" (Val #(W64 3))
+  (Let "$range_i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$range_i")) (Var "$range"))))) (Lam BAnon
+  (Let "$key" (App (Val (GoInstruction (GoLoad go.int))) (Var "$range_i"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "x") (App (Val (GoInstruction (Convert go.int (go.GoType.InterfaceType [])))) (Var "$key")))))))))
+  (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Val #())))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$range_i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$range_i")) (Val #(W64 1)))))))))))))))
+  (Let "$range" (Val #(go!"ab"))
+  (App (App (Val string.forRange) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "x") (App (Val (GoInstruction (Convert go.int (go.GoType.InterfaceType [])))) (Var "$key"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "x") (App (Val (GoInstruction (Convert go.int32 (go.GoType.InterfaceType [])))) (Var "$value")))))))))))))
+  (Let "$range" (Var "arr")
+  (App (App (Val (array.forRangePtr 2 (go.GoType.PointerType assignT.ty))) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "x") (App (Val (GoInstruction (Convert go.int (go.GoType.InterfaceType [])))) (Var "$key"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "x") (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (Var "$value"))))))))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType assignT.ty))))) (Var "ch"))
+  (App (App (Val (chan.forRange (go.GoType.PointerType assignT.ty))) (Var "$range"))
+  (Lam "$key"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "x") (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (Var "$key"))))))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType (go.GoType.PointerType assignT.ty))))) (Var "ps"))
+  (App (App (Val (slice.forRange (go.GoType.PointerType assignT.ty))) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Val #()))))
+  (App (Val doExecute)
+  (Var "$key")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "x") (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (Var "$value")))))))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.MapType (go.GoType.PointerType assignT.ty) assignWide.ty)))) (Var "ws"))
+  (App (App (Val (map.forRange (go.GoType.PointerType assignT.ty) assignWide.ty)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "x") (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (Var "$key"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore assignNarrow.ty))) (Pair (Var "n") (App (Val (GoInstruction (Convert assignWide.ty assignNarrow.ty))) (Var "$value")))))))))))))))))
+  (Val #())))))
+
+/-- go: assignability.go:114:6 -/
+noncomputable def assignMulti.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Lam "w"
+  (Seq (App (Val exceptionDo)
+  (Let "w" (App (Val (GoInstruction (GoAlloc assignWide.ty))) (Var "w"))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType assignT.ty)))) (Var "p"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [])))) (Val #())))
+  (Let "n" (App (Val (GoInstruction (GoAlloc assignNarrow.ty))) (App (Val (GoInstruction (GoZeroVal assignNarrow.ty))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p")))
+  (Let "$r1" (App (Val (GoInstruction (Convert assignWide.ty assignNarrow.ty))) (App (Val (GoInstruction (GoLoad assignWide.ty))) (Var "w")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve assignPair []))) (Val #())) (Var "$a0")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (Var "$ret0"))
+  (Let "$r1" (App (Val (GoInstruction (Convert assignWide.ty assignNarrow.ty))) (Var "$ret1"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "x"))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad assignNarrow.ty))) (Var "n"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Var "$r1"))))
+  (App (Val doExecute)
+  (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore assignNarrow.ty))) (Pair (Var "n") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "x") (Var "$r0"))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore assignNarrow.ty))) (Pair (Var "n") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "x") (Var "$r0"))))))))))))
+  (Val #()))))
+
+/-- go: assignability.go:122:6 -/
+noncomputable def assignCommaOk.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "m"
+  (Lam "ch"
+  (Lam "i"
+  (Seq (App (Val exceptionDo)
+  (Let "i" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (Var "i"))
+  (Let "ch" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType assignT.ty))))) (Var "ch"))
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.int (go.GoType.PointerType assignT.ty))))) (Var "m"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [])))) (Val #())))
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "__p" (App (App (Val (map.lookup2 go.int (go.GoType.PointerType assignT.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.int (go.GoType.PointerType assignT.ty))))) (Var "m"))) (Val #(W64 0)))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (Var "$ret0"))
+  (Let "$r1" (Var "$ret1")
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (App (Val (chan.receive (go.GoType.PointerType assignT.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType assignT.ty))))) (Var "ch")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (Var "$ret0"))
+  (Let "$r1" (Var "$ret1")
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.PointerType assignT.ty)))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "i")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (Var "$ret0"))
+  (Let "$r1" (Var "$ret1")
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "x"))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Var "$r1"))))
+  (App (Val doExecute)
+  (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "x") (Var "$r0"))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "x") (Var "$r0"))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "x") (Var "$r0"))))))))))))))))
+  (Val #())))))
+
+/-- go: assignability.go:131:6 -/
+noncomputable def assignGoDefer.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Lam "w"
+  (Seq (App (Val wrapDefer)
+  (Lam "$defer"
+  (Let "w" (App (Val (GoInstruction (GoAlloc assignWide.ty))) (Var "w"))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType assignT.ty)))) (Var "p"))
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p")))
+  (Let "$a1" (App (Val (GoInstruction (Convert assignWide.ty assignNarrow.ty))) (App (Val (GoInstruction (GoLoad assignWide.ty))) (Var "w")))
+  (Let "$go" (App (Val (GoInstruction (FuncResolve assignTakes []))) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$a0" (Let "$sl0" (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p")))
+  (Let "$sl1" (App (Val (GoInstruction (Convert assignWide.ty (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoLoad assignWide.ty))) (Var "w")))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType (go.GoType.InterfaceType []))))) (LiteralValue [(KeyedElement none (ElementExpression (go.GoType.InterfaceType []) (Var "$sl0"))), (KeyedElement none (ElementExpression (go.GoType.InterfaceType []) (Var "$sl1")))]))))
+  (Let "$go" (App (Val (GoInstruction (FuncResolve assignTakesVariadic []))) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (Let "$sl0" (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p")))
+  (Let "$sl1" (App (Val (GoInstruction (Convert assignWide.ty (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoLoad assignWide.ty))) (Var "w")))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType (go.GoType.InterfaceType []))))) (LiteralValue [(KeyedElement none (ElementExpression (go.GoType.InterfaceType []) (Var "$sl0"))), (KeyedElement none (ElementExpression (go.GoType.InterfaceType []) (Var "$sl1")))]))))
+  (Let "$f" (App (Val (GoInstruction (FuncResolve assignTakesVariadic []))) (Val #()))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Var "$a0"))
+  (App (Var "$oldf") (Val #()))))))))))))
+  (App (Val doExecute)
+  (Fork
+  (App (Var "$go") (Var "$a0")))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignT.ty)))) (Var "p")))
+  (Let "$a1" (App (Val (GoInstruction (Convert assignWide.ty assignNarrow.ty))) (App (Val (GoInstruction (GoLoad assignWide.ty))) (Var "w")))
+  (Let "$f" (App (Val (GoInstruction (FuncResolve assignTakes []))) (Val #()))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (App (Var "$f") (Var "$a0")) (Var "$a1"))
+  (App (Var "$oldf") (Val #()))))))))))))))
+  (App (Val doExecute)
+  (Fork
+  (App (App (Var "$go") (Var "$a0")) (Var "$a1"))))))))))))
+  (Val #()))))
+
+/-- go: assignability.go:138:6 -/
+noncomputable def assignSelectRecv.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "ch"
+  (Lam "wch"
+  (Seq (App (Val exceptionDo)
+  (Let "wch" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv assignWide.ty)))) (Var "wch"))
+  (Let "ch" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType assignT.ty))))) (Var "ch"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [])))) (Val #())))
+  (Let "n" (App (Val (GoInstruction (GoAlloc assignNarrow.ty))) (App (Val (GoInstruction (GoZeroVal assignNarrow.ty))) (Val #())))
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "x"))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad assignNarrow.ty))) (Var "n"))
+  (Let "$r2" (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Var "$r2"))))
+  (App (Val doExecute)
+  (Var "$r1")))))
+  (App (Val doExecute)
+  (Var "$r0"))))))))
+  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType assignT.ty))))) (Var "ch"))
+  (Let "$ch1" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv assignWide.ty)))) (Var "wch"))
+  (Let "$ch2" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType assignT.ty))))) (Var "ch"))
+  (Let "$ch3" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv assignWide.ty)))) (Var "wch"))
+  (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (RecvCase (go.GoType.PointerType assignT.ty) (Var "$ch0")) (Lam "$recvVal"
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (Fst (Var "$recvVal")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "x") (Var "$r0")))))))),
+  (CommClause (RecvCase assignWide.ty (Var "$ch1")) (Lam "$recvVal"
+  (Let "$r0" (App (Val (GoInstruction (Convert assignWide.ty assignNarrow.ty))) (Fst (Var "$recvVal")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore assignNarrow.ty))) (Pair (Var "n") (Var "$r0")))))))),
+  (CommClause (RecvCase (go.GoType.PointerType assignT.ty) (Var "$ch2")) (Lam "$recvVal"
+  (Let "__p" (Var "$recvVal")
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType assignT.ty) (go.GoType.InterfaceType [])))) (Var "$ret0"))
+  (Let "$r1" (Var "$ret1")
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "x") (Var "$r0")))))))))))),
+  (CommClause (RecvCase assignWide.ty (Var "$ch3")) (Lam "$recvVal"
+  (Let "__p" (Var "$recvVal")
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (App (Val (GoInstruction (Convert assignWide.ty assignNarrow.ty))) (Var "$ret0"))
+  (Let "$r1" (Var "$ret1")
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore assignNarrow.ty))) (Pair (Var "n") (Var "$r0"))))))))))))])))))))))))))
+  (Val #()))))
 
 /-- go: chan.go:5:6 -/
 noncomputable def chanBasic.impl [GooseExts] [GoGlobalContext] : val :=
@@ -6609,6 +7314,114 @@ attribute [instance] Foo.TypeAssumptions.underlying
   Foo.TypeAssumptions.method_set
   Foo.TypeAssumptions.ptr_method_set
 
+structure assignT [GooseExts] where
+  mk ::
+  x' : w64
+
+noncomputable instance assignT.zero_val [GooseExts] : ZeroVal assignT :=
+  ⟨assignT.mk zeroValDef⟩
+
+@[reducible] noncomputable def assignT.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"x" go.uint64)]
+
+@[irreducible] noncomputable def assignT.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  assignT.fieldsUnsealed
+
+noncomputable instance equals_unfold_assignT [GooseExts] [GoGlobalContext] :
+    EqualsUnfold assignT.fields assignT.fieldsUnsealed :=
+  ⟨by unfold assignT.fields; rfl⟩
+
+@[reducible] noncomputable def assignT.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType assignT.fields)
+
+class assignT.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying assignT.underlying assignT
+  underlying : go.UnderlyingDirectedEq assignT.ty assignT.underlying
+  get_x : ∀ (x : assignT), go.IsGoStepPureDetTagged under (StructFieldGet assignT.underlying go!"x") #x (Val #(x.x'))
+  set_x : ∀ (x : assignT) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet assignT.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : assignT)))
+  method_set : go.MethodSetIs assignT.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType assignT.ty) [(go!"M", (some (go.signature.Signature [] false []))), (go!"N", (some (go.signature.Signature [] false [])))]
+  ptr_M_unfold : MethodUnfold (go.GoType.PointerType assignT.ty) go!"M" assignT.M.impl
+  ptr_N_unfold : MethodUnfold (go.GoType.PointerType assignT.ty) go!"N" assignT.N.impl
+
+attribute [instance] assignT.TypeAssumptions.type_repr
+  assignT.TypeAssumptions.underlying
+  assignT.TypeAssumptions.get_x
+  assignT.TypeAssumptions.set_x
+  assignT.TypeAssumptions.method_set
+  assignT.TypeAssumptions.ptr_method_set
+  assignT.TypeAssumptions.ptr_M_unfold
+  assignT.TypeAssumptions.ptr_N_unfold
+
+abbrev assignNarrow [GooseExts] : Type := GoInterface
+
+@[reducible] noncomputable def assignNarrow.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"M" (go.signature.Signature [] false []))])
+
+class assignNarrow.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq assignNarrow.ty assignNarrow.underlying
+  method_set : go.MethodSetIs assignNarrow.ty [(go!"M", (some (go.signature.Signature [] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType assignNarrow.ty) []
+
+attribute [instance] assignNarrow.TypeAssumptions.underlying
+  assignNarrow.TypeAssumptions.method_set
+  assignNarrow.TypeAssumptions.ptr_method_set
+
+abbrev assignWide [GooseExts] : Type := GoInterface
+
+@[reducible] noncomputable def assignWide.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"M" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"N" (go.signature.Signature [] false []))])
+
+class assignWide.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq assignWide.ty assignWide.underlying
+  method_set : go.MethodSetIs assignWide.ty [(go!"M", (some (go.signature.Signature [] false []))), (go!"N", (some (go.signature.Signature [] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType assignWide.ty) []
+
+attribute [instance] assignWide.TypeAssumptions.underlying
+  assignWide.TypeAssumptions.method_set
+  assignWide.TypeAssumptions.ptr_method_set
+
+structure assignS [GooseExts] where
+  mk ::
+  a' : GoInterface
+  b' : assignNarrow
+
+noncomputable instance assignS.zero_val [GooseExts] : ZeroVal assignS :=
+  ⟨assignS.mk zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def assignS.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"a" (go.GoType.InterfaceType [])),
+(go.field_decl.FieldDecl go!"b" assignNarrow.ty)]
+
+@[irreducible] noncomputable def assignS.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  assignS.fieldsUnsealed
+
+noncomputable instance equals_unfold_assignS [GooseExts] [GoGlobalContext] :
+    EqualsUnfold assignS.fields assignS.fieldsUnsealed :=
+  ⟨by unfold assignS.fields; rfl⟩
+
+@[reducible] noncomputable def assignS.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType assignS.fields)
+
+class assignS.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying assignS.underlying assignS
+  underlying : go.UnderlyingDirectedEq assignS.ty assignS.underlying
+  get_a : ∀ (x : assignS), go.IsGoStepPureDetTagged under (StructFieldGet assignS.underlying go!"a") #x (Val #(x.a'))
+  set_a : ∀ (x : assignS) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet assignS.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : assignS)))
+  get_b : ∀ (x : assignS), go.IsGoStepPureDetTagged under (StructFieldGet assignS.underlying go!"b") #x (Val #(x.b'))
+  set_b : ∀ (x : assignS) (y : assignNarrow), go.IsGoStepPureDetTagged under (StructFieldSet assignS.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : assignS)))
+  method_set : go.MethodSetIs assignS.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType assignS.ty) []
+
+attribute [instance] assignS.TypeAssumptions.type_repr
+  assignS.TypeAssumptions.underlying
+  assignS.TypeAssumptions.get_a
+  assignS.TypeAssumptions.set_a
+  assignS.TypeAssumptions.get_b
+  assignS.TypeAssumptions.set_b
+  assignS.TypeAssumptions.method_set
+  assignS.TypeAssumptions.ptr_method_set
+
 structure importantStruct [GooseExts] where
   mk ::
 
@@ -8368,6 +9181,10 @@ attribute [instance] aliasedStruct.TypeAssumptions.type_repr
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Foo_instance : Foo.TypeAssumptions
+  assignT_instance : assignT.TypeAssumptions
+  assignNarrow_instance : assignNarrow.TypeAssumptions
+  assignWide_instance : assignWide.TypeAssumptions
+  assignS_instance : assignS.TypeAssumptions
   importantStruct_instance : importantStruct.TypeAssumptions
   stringWrapper_instance : stringWrapper.TypeAssumptions
   Uint32_instance : Uint32.TypeAssumptions
@@ -8431,6 +9248,25 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   arrayToSlice_unfold : FuncUnfold arrayToSlice [] arrayToSlice.impl
   arrayLiteralKeyed_unfold : FuncUnfold arrayLiteralKeyed [] arrayLiteralKeyed.impl
   arrayPointerToSlice_unfold : FuncUnfold arrayPointerToSlice [] arrayPointerToSlice.impl
+  assignSelectSend_unfold : FuncUnfold assignSelectSend [] assignSelectSend.impl
+  assignSendPlain_unfold : FuncUnfold assignSendPlain [] assignSendPlain.impl
+  assignSelectSendIface_unfold : FuncUnfold assignSelectSendIface [] assignSelectSendIface.impl
+  assignSendPlainIface_unfold : FuncUnfold assignSendPlainIface [] assignSendPlainIface.impl
+  assignReturn_unfold : FuncUnfold assignReturn [] assignReturn.impl
+  assignReturnIface_unfold : FuncUnfold assignReturnIface [] assignReturnIface.impl
+  assignReturnMulti_unfold : FuncUnfold assignReturnMulti [] assignReturnMulti.impl
+  assignPair_unfold : FuncUnfold assignPair [] assignPair.impl
+  assignReturnTuple_unfold : FuncUnfold assignReturnTuple [] assignReturnTuple.impl
+  assignCompositeLits_unfold : FuncUnfold assignCompositeLits [] assignCompositeLits.impl
+  assignElementStores_unfold : FuncUnfold assignElementStores [] assignElementStores.impl
+  assignTakes_unfold : FuncUnfold assignTakes [] assignTakes.impl
+  assignTakesVariadic_unfold : FuncUnfold assignTakesVariadic [] assignTakesVariadic.impl
+  assignCallArgs_unfold : FuncUnfold assignCallArgs [] assignCallArgs.impl
+  assignRange_unfold : FuncUnfold assignRange [] assignRange.impl
+  assignMulti_unfold : FuncUnfold assignMulti [] assignMulti.impl
+  assignCommaOk_unfold : FuncUnfold assignCommaOk [] assignCommaOk.impl
+  assignGoDefer_unfold : FuncUnfold assignGoDefer [] assignGoDefer.impl
+  assignSelectRecv_unfold : FuncUnfold assignSelectRecv [] assignSelectRecv.impl
   chanBasic_unfold : FuncUnfold chanBasic [] chanBasic.impl
   f_unfold : FuncUnfold f [] f.impl
   chanSelect_unfold : FuncUnfold chanSelect [] chanSelect.impl
@@ -8655,6 +9491,10 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   import_proph_Assumption : _root_.Perennial.github_com.mit_pdos.perennial.proph.Assumptions
 
 attribute [instance] Assumptions.Foo_instance
+  Assumptions.assignT_instance
+  Assumptions.assignNarrow_instance
+  Assumptions.assignWide_instance
+  Assumptions.assignS_instance
   Assumptions.importantStruct_instance
   Assumptions.stringWrapper_instance
   Assumptions.Uint32_instance
@@ -8718,6 +9558,25 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.arrayToSlice_unfold
   Assumptions.arrayLiteralKeyed_unfold
   Assumptions.arrayPointerToSlice_unfold
+  Assumptions.assignSelectSend_unfold
+  Assumptions.assignSendPlain_unfold
+  Assumptions.assignSelectSendIface_unfold
+  Assumptions.assignSendPlainIface_unfold
+  Assumptions.assignReturn_unfold
+  Assumptions.assignReturnIface_unfold
+  Assumptions.assignReturnMulti_unfold
+  Assumptions.assignPair_unfold
+  Assumptions.assignReturnTuple_unfold
+  Assumptions.assignCompositeLits_unfold
+  Assumptions.assignElementStores_unfold
+  Assumptions.assignTakes_unfold
+  Assumptions.assignTakesVariadic_unfold
+  Assumptions.assignCallArgs_unfold
+  Assumptions.assignRange_unfold
+  Assumptions.assignMulti_unfold
+  Assumptions.assignCommaOk_unfold
+  Assumptions.assignGoDefer_unfold
+  Assumptions.assignSelectRecv_unfold
   Assumptions.chanBasic_unfold
   Assumptions.f_unfold
   Assumptions.chanSelect_unfold

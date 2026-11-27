@@ -87,6 +87,14 @@ func (suite *GoTestSuite) TestSliceArrayPointer() {
 	suite.Equal(true, testSliceArrayPointer())
 }
 
+func (suite *GoTestSuite) TestSelectSendInterface() {
+	suite.Equal(true, testSelectSendInterface())
+}
+
+func (suite *GoTestSuite) TestRangeAssignInterface() {
+	suite.Equal(true, testRangeAssignInterface())
+}
+
 func (suite *GoTestSuite) TestBlankFieldEq() {
 	suite.Equal(true, testBlankFieldEq())
 }

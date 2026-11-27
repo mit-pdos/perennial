@@ -22,6 +22,103 @@ open Iris Iris.BI
 noncomputable section
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.unittest
 
+namespace assignT
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions]
+
+noncomputable instance assignT_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignT where
+  typedPointstoDef l v dq := iprop(
+    "x" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignT go!"x" l) v.x' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance assignT_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignT github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignT.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance assignT_access_load_x (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignT) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignT go!"x" l) v.x' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignT go!"x" l) v.x' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance assignT_access_store_x (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignT) (x' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignT go!"x" l) v.x' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignT go!"x" l) x' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with x' := x' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignT) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end assignT
+
+namespace assignS
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions]
+
+noncomputable instance assignS_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignS where
+  typedPointstoDef l v dq := iprop(
+    "a" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignS go!"a" l) v.a' dq ∗
+    "b" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignS go!"b" l) v.b' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance assignS_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignS github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignS.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance assignS_access_load_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignS) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignS go!"a" l) v.a' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignS go!"a" l) v.a' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance assignS_access_store_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignS) (a' : GoInterface) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignS go!"a" l) v.a' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignS go!"a" l) a' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with a' := a' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignS) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance assignS_access_load_b (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignS) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignS go!"b" l) v.b' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignS go!"b" l) v.b' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance assignS_access_store_b (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignS) (b' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignNarrow) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignS go!"b" l) v.b' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignS go!"b" l) b' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with b' := b' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.assignS) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end assignS
+
 namespace importantStruct
 section def_
 

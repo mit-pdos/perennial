@@ -49,6 +49,11 @@ noncomputable def pairs.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] pairs.ty
 
+noncomputable def assignabilityT.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.assignabilityT" [])
+
+attribute [irreducible] assignabilityT.ty
+
 noncomputable def blankFieldStruct.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.blankFieldStruct" [])
 
@@ -659,6 +664,12 @@ noncomputable def testRangeArrayLit [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def testSliceArrayPointer [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testSliceArrayPointer"
+
+noncomputable def testSelectSendInterface [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testSelectSendInterface"
+
+noncomputable def testRangeAssignInterface [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRangeAssignInterface"
 
 noncomputable def testBlankFieldEq [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testBlankFieldEq"
@@ -2583,6 +2594,89 @@ noncomputable def testSliceArrayPointer.impl [GooseExts] [GoGlobalContext] : val
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "s") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.ArrayType 3 go.uint64))))) (Pair (Var "p") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: assignability.go:8:6 -/
+noncomputable def testSelectSendInterface.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.InterfaceType []))]))) (Val #())) (Val #(W64 1)))
+  (Let "ch" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.InterfaceType []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.InterfaceType []))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc assignabilityT.ty))) (Let "$v0" (Val #(W64 1))
+  (App (Val (GoInstruction (CompositeLiteral assignabilityT.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"x")) (ElementExpression go.uint64 (Var "$v0")))]))))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType assignabilityT.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType assignabilityT.ty)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.PointerType assignabilityT.ty)))) (Fst (App (Val (chan.receive (go.GoType.InterfaceType []))) (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.InterfaceType []))))) (Var "ch")))))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "q" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType assignabilityT.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType assignabilityT.ty)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType assignabilityT.ty)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignabilityT.ty)))) (Var "q")) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignabilityT.ty)))) (Var "p")))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType assignabilityT.ty)))) (Pair (Var "q") (Var "$r0"))))))))))))))
+  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.InterfaceType []))))) (Var "ch"))
+  (Let "$v0" (App (Val (GoInstruction (Convert (go.GoType.PointerType assignabilityT.ty) (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignabilityT.ty)))) (Var "p")))
+  (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (SendCase (go.GoType.InterfaceType []) (Var "$ch0") (Var "$v0")) (App (Val doExecute)
+  (Val #())))])))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType assignabilityT.ty)))) (Pair (Var "p") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.InterfaceType []))))) (Pair (Var "ch") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: assignability.go:18:6 -/
+noncomputable def testRangeAssignInterface.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [])))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.PointerType assignabilityT.ty)))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "x")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "q" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType assignabilityT.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType assignabilityT.ty)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef assignabilityT.ty go!"x"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType assignabilityT.ty)))) (Var "q")))) (Val #(W64 2)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType assignabilityT.ty)))) (Pair (Var "q") (Var "$r0"))))))))))))))
+  (Let "$range" (Let "$v0" (Val #(W64 2))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType (go.GoType.PointerType assignabilityT.ty))))) (LiteralValue [(KeyedElement none (ElementLiteralValue [(KeyedElement (some (KeyField go!"x")) (ElementExpression go.uint64 (Var "$v0")))]))])))
+  (App (App (Val (slice.forRange (go.GoType.PointerType assignabilityT.ty))) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Val #()))))
+  (App (Val doExecute)
+  (Var "$key")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "x") (App (Val (GoInstruction (Convert (go.GoType.PointerType assignabilityT.ty) (go.GoType.InterfaceType [])))) (Var "$value")))))))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- go: blank_fields.go:8:6 -/
@@ -15456,6 +15550,41 @@ attribute [instance] pairs.TypeAssumptions.underlying
   pairs.TypeAssumptions.method_set
   pairs.TypeAssumptions.ptr_method_set
 
+structure assignabilityT [GooseExts] where
+  mk ::
+  x' : w64
+
+noncomputable instance assignabilityT.zero_val [GooseExts] : ZeroVal assignabilityT :=
+  ⟨assignabilityT.mk zeroValDef⟩
+
+@[reducible] noncomputable def assignabilityT.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"x" go.uint64)]
+
+@[irreducible] noncomputable def assignabilityT.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  assignabilityT.fieldsUnsealed
+
+noncomputable instance equals_unfold_assignabilityT [GooseExts] [GoGlobalContext] :
+    EqualsUnfold assignabilityT.fields assignabilityT.fieldsUnsealed :=
+  ⟨by unfold assignabilityT.fields; rfl⟩
+
+@[reducible] noncomputable def assignabilityT.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType assignabilityT.fields)
+
+class assignabilityT.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying assignabilityT.underlying assignabilityT
+  underlying : go.UnderlyingDirectedEq assignabilityT.ty assignabilityT.underlying
+  get_x : ∀ (x : assignabilityT), go.IsGoStepPureDetTagged under (StructFieldGet assignabilityT.underlying go!"x") #x (Val #(x.x'))
+  set_x : ∀ (x : assignabilityT) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet assignabilityT.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : assignabilityT)))
+  method_set : go.MethodSetIs assignabilityT.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType assignabilityT.ty) []
+
+attribute [instance] assignabilityT.TypeAssumptions.type_repr
+  assignabilityT.TypeAssumptions.underlying
+  assignabilityT.TypeAssumptions.get_x
+  assignabilityT.TypeAssumptions.set_x
+  assignabilityT.TypeAssumptions.method_set
+  assignabilityT.TypeAssumptions.ptr_method_set
+
 structure blankFieldStruct [GooseExts] where
   mk ::
   x' : w64
@@ -17708,6 +17837,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   localPair_instance : localPair.TypeAssumptions
   pair_instance : pair.TypeAssumptions
   pairs_instance : pairs.TypeAssumptions
+  assignabilityT_instance : assignabilityT.TypeAssumptions
   blankFieldStruct_instance : blankFieldStruct.TypeAssumptions
   minMaxDur_instance : minMaxDur.TypeAssumptions
   myRune_instance : myRune.TypeAssumptions
@@ -17813,6 +17943,8 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   sumArrayLit_unfold : FuncUnfold sumArrayLit [] sumArrayLit.impl
   testRangeArrayLit_unfold : FuncUnfold testRangeArrayLit [] testRangeArrayLit.impl
   testSliceArrayPointer_unfold : FuncUnfold testSliceArrayPointer [] testSliceArrayPointer.impl
+  testSelectSendInterface_unfold : FuncUnfold testSelectSendInterface [] testSelectSendInterface.impl
+  testRangeAssignInterface_unfold : FuncUnfold testRangeAssignInterface [] testRangeAssignInterface.impl
   testBlankFieldEq_unfold : FuncUnfold testBlankFieldEq [] testBlankFieldEq.impl
   testBlankFieldMapKey_unfold : FuncUnfold testBlankFieldMapKey [] testBlankFieldMapKey.impl
   testBlankFieldIdentity_unfold : FuncUnfold testBlankFieldIdentity [] testBlankFieldIdentity.impl
@@ -18194,6 +18326,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.localPair_instance
   Assumptions.pair_instance
   Assumptions.pairs_instance
+  Assumptions.assignabilityT_instance
   Assumptions.blankFieldStruct_instance
   Assumptions.minMaxDur_instance
   Assumptions.myRune_instance
@@ -18299,6 +18432,8 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.sumArrayLit_unfold
   Assumptions.testRangeArrayLit_unfold
   Assumptions.testSliceArrayPointer_unfold
+  Assumptions.testSelectSendInterface_unfold
+  Assumptions.testRangeAssignInterface_unfold
   Assumptions.testBlankFieldEq_unfold
   Assumptions.testBlankFieldMapKey_unfold
   Assumptions.testBlankFieldIdentity_unfold
