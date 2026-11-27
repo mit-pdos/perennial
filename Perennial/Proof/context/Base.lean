@@ -65,6 +65,16 @@ Design (see also the comments at each definition):
     is done; a channel made by `Done()` is fresh by `chan.wp_make1_ne`); once `err` is set, it is
     a typed error (`isTypedErr`) that is `Canceled`'s or `DeadlineExceeded`'s value
     (`isCtxErr`), `□ P` and `ContextClosed γ`.
+    The invariant has a further index, the errors `A : GoInterface → Prop` that `err` may take,
+    fixed when the context is made (`withCancel`'s `A`): `fun _ => True` for every context but a
+    `WithCancel(Background())` child made by `wp_WithCancel_Background_canceled`, whose `A` is
+    `(· = Canceled's value)` (only its own cancel function cancels it), so that its `Err()` returns
+    `Canceled`'s value once it is cancelled (`errIsCanceled`). `isCancelCtxOfA c γ P A` carries
+    it; `c.cancel(rm, err, cause)` needs `isCancelCtxOfA c γ P A` and `A err`, and `c.Err()`
+    returns an error `A` allows. `isCancelCtxOf c γ P` (`∃ A`) is what the other methods,
+    `Value(&cancelCtxKey)` and `parentCancelCtx` need or find: it gives no right to cancel `c`
+    (a cancellation of `c` gets its `isCancelCtxOfA` when `c` is made: its cancel function,
+    the `childCancelSpec` its parent stores, a `*timerCtx`'s `cancel`).
   - `cancelCtxLockInv` (lock invariant of `c.mu`): `children`, `cause`, the other halves of the
     ghost cells, the right to close a Done channel made by `Done()`
     (`ownBroadcastChan .. .Pending`), and, until `c` is canceled, the children (`childrenInv`).
@@ -116,7 +126,7 @@ Design (see also the comments at each definition):
 * A `*timerCtx` (the context of `WithDeadlineCause`) has Done proposition `True`: its cancel
   function, its `AfterFunc` callback and its parent's cancellation all cancel it with nothing
   to give. `time.AfterFunc` runs the callback in a goroutine (`time.wp_AfterFunc`; the runtime's
-  timer is modeled in `TrustedCode/time.lean`).
+  timer is a Go model, `goose/model/overlay/time`).
 
 Notes:
 * Texan triples nested inside `isContext` are written out as
@@ -433,8 +443,13 @@ instance doneFreshT_timeless (γ : ContextNames) (ch : GoChan) :
   `doneFresh` (`ch` is not `closedchan`, or the context is done).
 * `err` holds `e`; while `e = nil`, half of the closed flag `γ.closedGn` (the other half is
   in the lock invariant); once set, `e` is a typed error, `Canceled`'s or `DeadlineExceeded`'s
-  value (`isCtxErr`), `□ P` and `ContextClosed γ`. -/
-def cancelCtxInv (c : Loc) (γ : ContextNames) (P : IProp GF) : IProp GF :=
+  value (`isCtxErr`), `□ P`, `ContextClosed γ` and one of the errors `A` allows (`A` is fixed when
+  `c` is made: `fun _ => True` for a context that any cancellation may cancel with any context
+  error, `(· = Canceled's value)` for a `WithCancel(Background())` child, which only its own
+  `cancel` function cancels). `err` is written once (under `c.mu`, while it is `nil`), so a
+  stored error stays. -/
+def cancelCtxInv (c : Loc) (γ : ContextNames) (P : IProp GF) (A : GoInterface → Prop) :
+    IProp GF :=
   iprop(∃ (od : Option GoChan) (e : GoInterface),
     "Hdone" ∷ sync.atomic.ownValue (structFieldRef context.cancelCtx go!"done" c) (DFrac.own 1)
       (doneAny od) ∗
@@ -443,7 +458,7 @@ def cancelCtxInv (c : Loc) (γ : ContextNames) (P : IProp GF) : IProp GF :=
       | some ch => ∃ γch, isContextDone (cdesc γ P) ch γch ∗ doneFresh γ P ch) ∗
     "Herr" ∷ sync.atomic.ownValue (structFieldRef context.cancelCtx go!"err" c) (DFrac.own 1) e ∗
     "Hcg" ∷ (if e = interface.nil then dghostVar γ.closedGn (.own (1 : Qp).half) false
-      else iprop(⌜isTypedErr e⌝ ∗ isCtxErr e ∗ □ P ∗ ContextClosed γ)))
+      else iprop(⌜isTypedErr e⌝ ∗ isCtxErr e ∗ □ P ∗ ContextClosed γ ∗ ⌜A e⌝)))
 
 /-- The spec a parent `*cancelCtx` (with Done proposition `P`) keeps for each child `k` in its
 `children` map: `k.cancel(false, err, cause)` for a typed error `err` that is `Canceled`'s or
@@ -487,44 +502,104 @@ def cancelCtxLockInv (c : Loc) (γ : ContextNames) (P R : IProp GF) : IProp GF :
            else ∃ γch, ownBroadcastChan ch γch iprop(P ∗ ContextClosed γ) .Pending))) ∗
     "HR" ∷ R)
 
-/-- `c` is a (shared) `*cancelCtx` with ghost names `γ`, Done proposition `P` and extra lock
-resource `R` (`cancelCtxLockInv`); it carries `context`'s `isClosedchanInit` (`"#Hcci"`), which
-its methods need. -/
+/-- `c` is a (shared) `*cancelCtx` with ghost names `γ`, Done proposition `P`, extra lock
+resource `R` (`cancelCtxLockInv`) and allowed errors `A` (`cancelCtxInv`); it carries `context`'s
+`isClosedchanInit` (`"#Hcci"`), which its methods need. -/
+def isCancelCtxOfRA (c : Loc) (γ : ContextNames) (P R : IProp GF) (A : GoInterface → Prop) :
+    IProp GF :=
+  iprop("#Hmu" ∷ sync.isMutex (structFieldRef context.cancelCtx go!"mu" c)
+      (cancelCtxLockInv c γ P R) ∗
+    "#Hinv" ∷ inv cancelCtxN (cancelCtxInv c γ P A) ∗
+    "#Hcci" ∷ isClosedchanInit)
+
+instance isCancelCtxOfRA_pers (c : Loc) (γ : ContextNames) (P R : IProp GF)
+    (A : GoInterface → Prop) : Persistent (isCancelCtxOfRA c γ P R A) := by
+  unfold isCancelCtxOfRA; infer_instance
+
+/-- `isCancelCtxOfRA` for a `*cancelCtx` that may be cancelled with any context error (`A` is
+`fun _ => True`): a `*timerCtx`'s embedded `cancelCtx` (`R` is its `timer`, `timerR`). -/
 def isCancelCtxOfR (c : Loc) (γ : ContextNames) (P R : IProp GF) : IProp GF :=
   iprop("#Hmu" ∷ sync.isMutex (structFieldRef context.cancelCtx go!"mu" c)
       (cancelCtxLockInv c γ P R) ∗
-    "#Hinv" ∷ inv cancelCtxN (cancelCtxInv c γ P) ∗
+    "#Hinv" ∷ inv cancelCtxN (cancelCtxInv c γ P (fun _ => True)) ∗
     "#Hcci" ∷ isClosedchanInit)
 
 instance isCancelCtxOfR_pers (c : Loc) (γ : ContextNames) (P R : IProp GF) :
     Persistent (isCancelCtxOfR c γ P R) := by
   unfold isCancelCtxOfR; infer_instance
 
-/-- `c` is a (shared) `*cancelCtx` with ghost names `γ` and Done proposition `P` (for some
-extra lock resource, `isCancelCtxOfR`). -/
-def isCancelCtxOf (c : Loc) (γ : ContextNames) (P : IProp GF) : IProp GF :=
+/-- `c` is a (shared) `*cancelCtx` with ghost names `γ`, Done proposition `P` and allowed errors
+`A` (for some extra lock resource, `isCancelCtxOfRA`): what its `cancel` needs
+(`context.cancelCtx.cancel.spec`, for an error `A` allows), and its `Err()` returns an error `A`
+allows. -/
+def isCancelCtxOfA (c : Loc) (γ : ContextNames) (P : IProp GF) (A : GoInterface → Prop) :
+    IProp GF :=
   iprop(∃ R : IProp GF,
     "#Hmu" ∷ sync.isMutex (structFieldRef context.cancelCtx go!"mu" c)
       (cancelCtxLockInv c γ P R) ∗
-    "#Hinv" ∷ inv cancelCtxN (cancelCtxInv c γ P) ∗
+    "#Hinv" ∷ inv cancelCtxN (cancelCtxInv c γ P A) ∗
+    "#Hcci" ∷ isClosedchanInit)
+
+instance isCancelCtxOfA_pers (c : Loc) (γ : ContextNames) (P : IProp GF)
+    (A : GoInterface → Prop) : Persistent (isCancelCtxOfA c γ P A) := by
+  unfold isCancelCtxOfA; infer_instance
+
+/-- `c` is a (shared) `*cancelCtx` with ghost names `γ` and Done proposition `P` (for some extra
+lock resource and some allowed errors, `isCancelCtxOfA`): what its methods other than `cancel`
+need, and what a context's `Value(&cancelCtxKey)` and `parentCancelCtx` find. It gives no right to
+call `c.cancel`: the cancellations of `c` get theirs (`isCancelCtxOfA`) when `c` is made. -/
+def isCancelCtxOf (c : Loc) (γ : ContextNames) (P : IProp GF) : IProp GF :=
+  iprop(∃ (A : GoInterface → Prop) (R : IProp GF),
+    "#Hmu" ∷ sync.isMutex (structFieldRef context.cancelCtx go!"mu" c)
+      (cancelCtxLockInv c γ P R) ∗
+    "#Hinv" ∷ inv cancelCtxN (cancelCtxInv c γ P A) ∗
     "#Hcci" ∷ isClosedchanInit)
 
 instance isCancelCtxOf_pers (c : Loc) (γ : ContextNames) (P : IProp GF) :
     Persistent (isCancelCtxOf c γ P) := by
   unfold isCancelCtxOf; infer_instance
 
-theorem isCancelCtxOfR_of (c : Loc) (γ : ContextNames) (P R : IProp GF) :
-    isCancelCtxOfR c γ P R ⊢ isCancelCtxOf c γ P := by
-  unfold isCancelCtxOfR isCancelCtxOf
+theorem isCancelCtxOfRA_A (c : Loc) (γ : ContextNames) (P R : IProp GF)
+    (A : GoInterface → Prop) :
+    isCancelCtxOfRA c γ P R A ⊢ isCancelCtxOfA c γ P A := by
+  unfold isCancelCtxOfRA isCancelCtxOfA
   iintro H
   iexists R
   iexact H
+
+theorem isCancelCtxOfR_A (c : Loc) (γ : ContextNames) (P R : IProp GF) :
+    isCancelCtxOfR c γ P R ⊢ isCancelCtxOfA c γ P (fun _ => True) := by
+  unfold isCancelCtxOfR isCancelCtxOfA
+  iintro H
+  iexists R
+  iexact H
+
+theorem isCancelCtxOfA_of (c : Loc) (γ : ContextNames) (P : IProp GF) (A : GoInterface → Prop) :
+    isCancelCtxOfA c γ P A ⊢ isCancelCtxOf c γ P := by
+  unfold isCancelCtxOfA isCancelCtxOf
+  iintro ⟨%R, H⟩
+  iexists A, R
+  iexact H
+
+theorem isCancelCtxOf_A (c : Loc) (γ : ContextNames) (P : IProp GF) :
+    isCancelCtxOf c γ P ⊢ ∃ A : GoInterface → Prop, isCancelCtxOfA c γ P A := by
+  unfold isCancelCtxOf isCancelCtxOfA
+  iintro ⟨%A, %R, H⟩
+  iexists A
+  iexists R
+  iexact H
+
+theorem isCancelCtxOfR_of (c : Loc) (γ : ContextNames) (P R : IProp GF) :
+    isCancelCtxOfR c γ P R ⊢ isCancelCtxOf c γ P := by
+  iintro #H
+  iapply isCancelCtxOfA_of c γ P (fun _ => True)
+  iapply isCancelCtxOfR_A $$ H
 
 theorem isCancelCtxOf_closedchan (c : Loc) (γ : ContextNames) (P : IProp GF) :
     isCancelCtxOf c γ P ⊢ isClosedchanInit := by
   iintro #Hc
   iunfold isCancelCtxOf at Hc
-  icases Hc with ⟨%R, -, -, #Hcci⟩
+  icases Hc with ⟨%A, %R, -, -, #Hcci⟩
   iexact Hcci
 
 /-- `c` is a (shared) `*cancelCtx`. -/
@@ -996,9 +1071,9 @@ theorem cancelCtx_doneFresh (c : Loc) (γ : ContextNames) (P : IProp GF) (ch : G
       doneFreshT γ ch := by
   iintro #Hc #Hd
   iunfold isCancelCtxOf at Hc
-  icases Hc with ⟨%R, -, #Hinv, -⟩
+  icases Hc with ⟨%A, %R, -, #Hinv, -⟩
   imod inv_acc (E := ⊤) (fun _ _ => CoPset.mem_full) $$ Hinv with ⟨Hi, Hclose⟩
-  ihave Hx : ▷ (cancelCtxInv c γ P ∗ doneFreshT γ ch) $$ [Hi]
+  ihave Hx : ▷ (cancelCtxInv c γ P A ∗ doneFreshT γ ch) $$ [Hi]
   · inext
     unfold cancelCtxInv
     icases Hi with ⟨%od, %e, Hdone, Hdg, Herr, Hcg⟩
@@ -1063,12 +1138,13 @@ theorem childCancelSpec_mono (P Q : IProp GF) (k : GoInterface) :
     iapply H $$ %err %cause %Φ %herr Hce [] HΦ
     imodintro; iapply HQP $$ Hq
 
-/-- A new `*cancelCtx` (all fields zero) with Done proposition `P` and extra lock resource
-`R`: fresh ghost names `γ`, its invariant and the lock invariant of `c.mu`; the `Context` field
-is left out, for `propagateCancel` to set. -/
-theorem cancelCtx_alloc (c : Loc) (P R : IProp GF) :
+/-- A new `*cancelCtx` (all fields zero) with Done proposition `P`, extra lock resource `R` and
+allowed errors `A`: fresh ghost names `γ`, its invariant and the lock invariant of `c.mu`; the
+`Context` field is left out, for `propagateCancel` to set. -/
+theorem cancelCtx_allocA (c : Loc) (P R : IProp GF) (A : GoInterface → Prop) :
     ⊢ isClosedchanInit -∗ c ↦ (zero_val context.cancelCtx) -∗ R -∗ |={⊤}=>
-      ∃ γ : ContextNames, isCancelCtxOfR c γ P R ∗ ctxField c ↦ (interface.nil : GoInterface) := by
+      ∃ γ : ContextNames, isCancelCtxOfRA c γ P R A ∗
+        ctxField c ↦ (interface.nil : GoInterface) := by
   iintro #Hcci Hc HRes
   iStructNamedPrefix Hc "F"
   imod dghostVar_alloc (GF := GF) (none : Option GoChan) with ⟨%gd, Hgd⟩
@@ -1077,7 +1153,7 @@ theorem cancelCtx_alloc (c : Loc) (P R : IProp GF) :
   imod dghostVar_alloc (GF := GF) false with ⟨%gc, Hgc⟩
   icases dghostVar_split _ _ (.own (1 : Qp).half) (.own (1 : Qp).half) $$ [Hgc] with ⟨Hgc1, Hgc2⟩
   · rw [DFrac.op_own, Qp.half_add_half]; iexact Hgc
-  imod inv_alloc cancelCtxN ⊤ (cancelCtxInv c ⟨gd, gc⟩ P) $$ [Fdone Ferr Hgd1 Hgc1]
+  imod inv_alloc cancelCtxN ⊤ (cancelCtxInv c ⟨gd, gc⟩ P A) $$ [Fdone Ferr Hgd1 Hgc1]
     with #Hinv
   · inext
     unfold cancelCtxInv
@@ -1099,7 +1175,13 @@ theorem cancelCtx_alloc (c : Loc) (P R : IProp GF) :
   imod sync.init_Mutex (cancelCtxLockInv c ⟨gd, gc⟩ P R) ⊤ _ $$ Fmu HL with #Hmu
   iexists ⟨gd, gc⟩
   iframe FContext
-  unfold isCancelCtxOfR; iframe #
+  unfold isCancelCtxOfRA; iframe #
+
+/-- `cancelCtx_allocA` for a `*cancelCtx` that may be cancelled with any context error. -/
+theorem cancelCtx_alloc (c : Loc) (P R : IProp GF) :
+    ⊢ isClosedchanInit -∗ c ↦ (zero_val context.cancelCtx) -∗ R -∗ |={⊤}=>
+      ∃ γ : ContextNames, isCancelCtxOfR c γ P R ∗ ctxField c ↦ (interface.nil : GoInterface) :=
+  cancelCtx_allocA c P R (fun _ => True)
 
 /-- The spec of `parent.Deadline()`, returning the deadline `dl`. -/
 def deadlineSpec (parent : GoInterfaceOk) (dl : Option time.Time) : IProp GF :=
@@ -1135,6 +1217,17 @@ theorem cancelSpec_weaken (cancel : GoFunc) (γ : ContextNames) (P P' : IProp GF
   iintro %Φ #Hp' HΦ
   iapply Hc $$ [] HΦ
   imodintro; iapply HP $$ Hp'
+
+/-- **`ctx`'s `Err()` returns `context.Canceled`'s value** (persistent): what a context cancelled
+by its own cancel function, under a parent that is never done, answers from then on
+(`wp_WithCancel_Background_canceled`). -/
+def errIsCanceled (ctx : GoInterfaceOk) : IProp GF :=
+  iprop(∃ e : GoInterface, globalAddr context.Canceled ↦□ e ∗
+    □ (∀ Φ : val → IProp GF, ▷ Φ #e -∗
+      WP (App (Val #(methods ctx.ty go!"Err" ctx.v)) (Val #())) {{ Φ }}))
+
+instance errIsCanceled_pers (ctx : GoInterfaceOk) : Persistent (errIsCanceled (GF := GF) ctx) := by
+  unfold errIsCanceled; infer_instance
 
 /-- The cancel-function spec of `wp_WithCancel` without its `ContextClosed` postcondition (the
 form used before it gave `ContextClosed`). -/

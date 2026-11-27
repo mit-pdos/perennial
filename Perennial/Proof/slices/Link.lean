@@ -15,6 +15,7 @@ public import Perennial.Proof.slices.Concat
 public import Perennial.Proof.slices.ContainsFunc
 public import Perennial.Proof.slices.Grow
 public import Perennial.Proof.slices.IndexFunc
+public import Perennial.Proof.slices.Repeat
 public import Perennial.Proof.slices.Sort
 public import Perennial.Proof.slices.SortFunc
 public import Perennial.Proof.slices.Sorted
@@ -82,6 +83,9 @@ theorem slices.wp_IndexFunc : slices.IndexFunc.spec (GF := GF) (hG := hG) :=
 
 theorem slices.wp_ContainsFunc : slices.ContainsFunc.spec (GF := GF) (hG := hG) :=
   slices.ContainsFunc.wp_proof slices.wp_IndexFunc
+
+theorem slices.wp_Repeat : slices.Repeat.spec (GF := GF) (hG := hG) :=
+  slices.Repeat.wp_proof math.bits.wp_Mul
 
 theorem slices.wp_insertionSortOrdered : slices.insertionSortOrdered.spec (GF := GF) (hG := hG) :=
   slices.insertionSortOrdered.wp_proof

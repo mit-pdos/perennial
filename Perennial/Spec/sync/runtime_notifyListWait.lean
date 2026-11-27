@@ -23,10 +23,10 @@ variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
 abbrev sync.runtime_notifyListWait.spec : Prop :=
-  ∀ (l : Loc) (l_v : notifyList) (t : w32) (dq : DFrac),
-    {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ typedPointsto (GF := GF) l l_v dq }}
+  ∀ (l : Loc) (t : w32),
+    {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isNotifyList (GF := GF) l }}
       (App (App (Val (@! runtime_notifyListWait)) (Val #l)) (Val #t))
-    {{ RET #(); typedPointsto (GF := GF) l l_v dq }}
+    {{ RET #(); True }}
 
 end spec
 

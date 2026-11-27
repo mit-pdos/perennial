@@ -5,6 +5,7 @@ the trusted base. Input to the `review-trusted` skill
 
 Usage: etc/trusted-delta.py [TARGET] [--full] [--no-diff] [--check]
        etc/trusted-delta.py --self-test
+       etc/trusted-delta.py --witness-gate A..B | --witness-paths A..B
 
   TARGET     a commit (reviews that commit: COMMIT^..COMMIT), a range A..B, or
              nothing: the working tree against the merge base with origin/lean
@@ -13,7 +14,12 @@ Usage: etc/trusted-delta.py [TARGET] [--full] [--no-diff] [--check]
   --no-diff  print only the summary and the signal lines
   --check    exit 1 if the change touches the trusted base (tier 0) at all,
              or changes a generated `skipped'` entry, for use in hooks
-  --self-test  check the signal patterns on built-in examples and exit
+  --self-test  check the signal patterns (and the witness gate) on built-in examples and exit
+  --witness-gate A..B   the semantics-witness gate of `etc/land.sh push`: exit 1 if the
+             range adds to the model of Go (a gated signal on an added tier-0 line: see
+             GATE_SIGNALS) and its commits lack a valid `Semantics-Witness:` and `Real-use:`
+             trailer (criterion 1 of .agents/skills/review-trusted/CRITERIA.md)
+  --witness-paths A..B  print the range's valid witness paths (`<kind> <path>`) for land.sh
 
 Skipped package variables: for every variable a goose config newly lists in a
 `[[skip]]` entry (or `skip = [...]`), it prints the reason and the variable's
@@ -471,6 +477,30 @@ def model_owners(rev):
             res[p] = t
     return res
 
+def tier_files(files, rev_old, rev_new):
+    """-> ({tier: [(path, kind)]}, model_owner_of): the changed files by tier, a non-test
+    `.go` file of a `[model].dir` (at either revision) counting as tier 0 `go-model-overlay`;
+    model_owner_of(path) is the set of configs whose `[model].dir` holds `path`."""
+    owners_new, owners_old = model_owners(rev_new), model_owners(rev_old)
+    model_dirs = {}
+    for owners in (owners_old, owners_new):
+        for c, t in owners.items():
+            if t["dir"]:
+                model_dirs.setdefault(t["dir"], set()).add(c)
+
+    def model_owner_of(p):
+        if p.endswith(".go") and not p.endswith("_test.go"):
+            return model_dirs.get(os.path.dirname(p), set())
+        return set()
+
+    tiered = {0: [], 1: [], 2: [], 3: []}
+    for p in sorted(files):
+        t, kind = tier_of(p)
+        if model_owner_of(p):
+            t, kind = 0, "go-model-overlay"
+        tiered[t].append((p, kind))
+    return tiered, model_owner_of
+
 def model_files(rev, d):
     """The model files of a `[model].dir` at `rev`: its non-test `.go` files."""
     if not d:
@@ -810,6 +840,200 @@ def skipped_delta(path, rev_old, rev_new):
             out.append(("-", n, old[n], None))
     return out
 
+# --------------------------------------------------------------- witness gate
+# `etc/land.sh push` refuses a change that adds to the semantics unless its commits
+# carry a witness (criterion 1 of .agents/skills/review-trusted/CRITERIA.md):
+#   Semantics-Witness: <path>    a goose example or Lean test exercising the addition
+#   Real-use: <repo>:<package>.<function>    a real translated function that needs it
+# or, for a change that only removes trust or makes the model stuck in more places,
+#   Semantics-Witness: none (narrowing: <reason>)
+#
+# The gate fires on these signals, on ADDED (or changed) code lines of tier-0 files of
+# the kinds below; a pure deletion never fires it.
+GATE_SIGNALS = {
+    "step-rule",        # a new or changed step rule or unfolding (incl. a changed line inside one)
+    "semantics-class",  # a new semantics class or instance
+    "new-instruction",  # a new constructor of `inductive GoInstruction`
+    "assume",           # a model assumption: removes executions
+    "angelic",          # an angelic exit: removes executions
+    "axiom",            # trusted outright (also in tier 2, where review grades it BLOCK)
+    "extension",        # an extension's semantics: new primitive operations
+    "trusted-impl",     # a hand-written GooseLang model of Go code
+    "model-table",      # a Go model overlay
+    "model-replaces",   # real declarations a Go model replaces / methods it adds
+    "gomodel-replace",  # a Go model of an `init.N`
+    "gomodel-choice",   # a choice or stuck point of a Go model
+}
+# Tier-0 kinds the gate looks at: the model of Go. The translator (`goose/*.go`), its gold
+# files and test configs are not gated: a translator change already needs its gold test.
+GATE_KINDS = {"semantics", "trusted-model", "go-model", "goose-config", "go-model-overlay"}
+# Signals that only ever add trust: the narrowing escape is refused when one of them fires.
+NOT_NARROWING = {"assume", "angelic", "axiom", "new-instruction", "model-table"}
+
+WITNESS_KEY, REAL_USE_KEY = "Semantics-Witness", "Real-use"
+NARROWING_RX = re.compile(r"^none\s*\(narrowing:\s*(\S.*)\)$")
+REAL_USE_RX = re.compile(r"^[^\s:]+:\S+\.[^\s.]+$")
+
+def witness_location(path):
+    """Where a witness path is exercised by `etc/land.sh` (None: nowhere, refused):
+    'go-example' (goose/testdata/examples/**.go: translated and gold-checked by
+    `go test ./goose/...`; examples/semantics also run in Go), or 'lean' (a Lean test or
+    proof under Perennial/ProgramLogic/*Test.lean or Perennial/Proof/**, built by lake)."""
+    if re.match(r"^goose/testdata/examples/.+\.go$", path) and not path.endswith("_test.go"):
+        return "go-example"
+    if re.match(r"^Perennial/ProgramLogic/\w+Test\.lean$", path) or \
+            re.match(r"^Perennial/Proof/.+\.lean$", path):
+        return "lean"
+    return None
+
+def new_instruction_hits(content, added_lns):
+    """Added lines (1-based numbers) of `content` that are constructors of
+    `inductive GoInstruction`. -> [(ln, text)]"""
+    if "inductive GoInstruction" not in content:
+        return []
+    _, _, is_code = decl_statements(content)
+    lines = content.split("\n")
+    inside, in_instr = False, []
+    for i, line in enumerate(lines):
+        if is_code[i] and line[:1].strip():  # a code line at indentation 0 starts a declaration
+            inside = bool(re.match(MODS + r"inductive\s+GoInstruction\b", line))
+        in_instr.append(inside)
+    out = []
+    for ln in added_lns:
+        i = ln - 1
+        if 0 <= i < len(lines) and is_code[i] and in_instr[i] and re.match(r"^\s*\|\s*[A-Za-z_]", lines[i]):
+            out.append((ln, lines[i].strip()))
+    return out
+
+def gate_triggers(files, rev_old, rev_new):
+    """The changed lines that make a change need a witness. -> [(path, ln, signal, text)]"""
+    tiered, _ = tier_files(files, rev_old, rev_new)
+    out = []
+    for t in (0, 1, 2):
+        for p, kind in tiered[t]:
+            gated = t == 0 and kind in GATE_KINDS
+            f = files[p]
+            # in Lean, whether a line is code is read off the whole new file (a line inside a
+            # docstring opened outside the hunk is prose; a constructor `| C` is code)
+            is_code = decl_statements(file_at(rev_new, p))[2] if p.endswith(".lean") else None
+            def code(ln, prose):
+                return (0 < ln <= len(is_code) and is_code[ln - 1]) if is_code is not None else not prose
+            for ln, s, text, prose in f["lines"]:
+                if s != "+" or not code(ln, prose):
+                    continue
+                for name, _ in signals_in(text):
+                    if (gated and name in GATE_SIGNALS) or name == "axiom":
+                        out.append((p, ln, name, text.strip()))
+            if not gated:
+                continue
+            out += [(p, ln, name, text) for ln, s, name, text in step_rule_context_hits(p, f, rev_old, rev_new)
+                    if s == "+"]
+            if p.endswith(".lean"):
+                added = [ln for ln, s, _, prose in f["lines"] if s == "+" and code(ln, prose)]
+                out += [(p, ln, "new-instruction", text)
+                        for ln, text in new_instruction_hits(file_at(rev_new, p), added)]
+    return sorted(set(out))
+
+def commit_trailers(rng, key):
+    """The values of trailer `key` on the commits of `rng` (A..B), in log order."""
+    out = git("log", f"--format=%(trailers:key={key},valueonly,unfold,separator=%x1e)%x1f", rng)
+    vals = []
+    for rec in out.split("\x1f"):
+        vals += [v.strip() for v in rec.split("\x1e") if v.strip()]
+    return vals
+
+def check_witness(triggers, witnesses, real_uses, exists):
+    """The gate's verdict on a change. `exists(path)`: whether the path is in the change's
+    head revision. The gate passes with one valid witness and one well-formed real use, or,
+    when the change adds nothing in NOT_NARROWING, with a narrowing witness; a trailer that
+    is not valid is reported but does not refuse when another one satisfies the gate.
+    -> (problems: the gate refuses if non-empty, warnings)"""
+    if not triggers:
+        return [], []
+    fired = {name for _, _, name, _ in triggers}
+    if not witnesses:
+        return [f"no `{WITNESS_KEY}:` trailer on the branch's commits"], []
+    bad, real, narrowing = [], [], []
+    for w in witnesses:
+        if NARROWING_RX.match(w):
+            narrowing.append(w)
+        elif w.startswith("none"):
+            bad.append(f"`{WITNESS_KEY}: {w}`: the only accepted `none` is `none (narrowing: <reason>)`")
+        elif not exists(w):
+            bad.append(f"`{WITNESS_KEY}: {w}`: no such file in the branch's head")
+        elif witness_location(w) is None:
+            bad.append(f"`{WITNESS_KEY}: {w}`: not a regression test land.sh runs (a goose example "
+                       f"`goose/testdata/examples/**.go`, `Perennial/ProgramLogic/*Test.lean` or "
+                       f"`Perennial/Proof/**.lean`)")
+        else:
+            real.append(w)
+    good_uses = [r for r in real_uses if REAL_USE_RX.match(r)]
+    bad += [f"`{REAL_USE_KEY}: {r}`: not of the form `<repo>:<package>.<function>`"
+            for r in real_uses if not REAL_USE_RX.match(r)]
+    if real and good_uses:
+        return [], bad
+    probs = []
+    if real:
+        probs.append(f"no well-formed `{REAL_USE_KEY}: <repo>:<package>.<function>` trailer")
+    elif narrowing:
+        adds = sorted(fired & NOT_NARROWING)
+        if not adds:
+            return [], bad
+        probs.append(f"`{WITNESS_KEY}: {narrowing[0]}`: a narrowing adds no trust, but the change adds "
+                     f"{', '.join('`' + a + '`' for a in adds)}")
+    else:
+        probs.append(f"no valid `{WITNESS_KEY}:` trailer")
+    return probs + bad, []
+
+def witness_gate(argv, paths_only=False):
+    """`--witness-gate A..B`: check the gate on a range (land.sh passes origin/lean..HEAD);
+    exit 1 if it refuses. `--witness-paths A..B`: print the range's witness paths that land.sh
+    must exercise, one per line, with their location kind."""
+    if not argv or ".." not in argv[0]:
+        sys.exit("trusted-delta: --witness-gate/--witness-paths take a range A..B")
+    rng = argv[0]
+    head = rng.split("..", 1)[1].lstrip(".") or "HEAD"
+    witnesses = commit_trailers(rng, WITNESS_KEY)
+    def exists(p):
+        return subprocess.run(["git", "cat-file", "-e", f"{head}:{p}"], cwd=ROOT,
+                              capture_output=True).returncode == 0
+    if paths_only:
+        for w in witnesses:
+            if exists(w) and witness_location(w):
+                print(f"{witness_location(w)} {w}")
+        return 0
+    real_uses = commit_trailers(rng, REAL_USE_KEY)
+    _, diff_args, rev_new, rev_old = resolve_target([rng])
+    triggers = gate_triggers(parse_diff(diff_args), rev_old, rev_new)
+    if not triggers:
+        print("witness gate: no semantics addition (no gated signal on an added tier-0 line): pass")
+        return 0
+    print(f"witness gate: {len(triggers)} gated line(s) (criterion 1, "
+          f".agents/skills/review-trusted/CRITERIA.md):")
+    for p, ln, name, text in triggers[:40]:
+        print(f"  `{name}` {p}:{ln}: {text[:140]}")
+    if len(triggers) > 40:
+        print(f"  ... and {len(triggers) - 40} more")
+    for w in witnesses:
+        print(f"  {WITNESS_KEY}: {w}")
+    for r in real_uses:
+        print(f"  {REAL_USE_KEY}: {r}")
+    probs, warns = check_witness(triggers, witnesses, real_uses, exists)
+    for w in warns:
+        print(f"witness gate: warning (another trailer satisfies the gate): {w}")
+    for pr in probs:
+        print(f"witness gate: REFUSED: {pr}")
+    if probs:
+        print(f"Add to a commit message of the branch (its last paragraph):\n"
+              f"  {WITNESS_KEY}: <goose/testdata/examples/...go | Perennial/ProgramLogic/...Test.lean"
+              f" | Perennial/Proof/...lean>\n"
+              f"  {REAL_USE_KEY}: <repo>:<package>.<function>\n"
+              f"or, for a change that only removes trust or makes the model stuck in more places,\n"
+              f"  {WITNESS_KEY}: none (narrowing: <reason>)")
+        return 1
+    print("witness gate: pass (the review checks that the witness needs the addition: CRITERIA.md, 1)")
+    return 0
+
 # --------------------------------------------------------------- self-test
 def self_test():
     """The signal patterns on examples of every form they are meant to catch (and a few
@@ -984,6 +1208,56 @@ def self_test():
             and not pattern_contains(["*", "!x"], "x") and pattern_contains(["*", "!x"], "y")
             and pattern_contains(["stub"], "stub") and not pattern_contains(["stub"], "stubs")):
         bad.append("pattern_contains: goose's pattern-set semantics")
+    # the witness gate (criterion 1): new GoInstruction constructors and the trailer check
+    instr = "\n".join([
+        "inductive GoUnaryOperator where",
+        "  | GoPos | GoNeg",
+        "inductive GoInstruction where",
+        "  | AngelicExit",
+        "  /-- doc -/",
+        "  | AsAssign",
+        "  | GoLoad (t : go.GoType)",
+        "def f := 1",
+    ])
+    if new_instruction_hits(instr, [2, 4, 5, 6, 7, 8]) != [(4, "| AngelicExit"), (6, "| AsAssign"),
+                                                          (7, "| GoLoad (t : go.GoType)")]:
+        bad.append(f"new_instruction_hits: {new_instruction_hits(instr, [2, 4, 5, 6, 7, 8])!r}")
+    rule = [("Perennial/Golang/Defn/X.lean", 3, "step-rule", "⟦GoUnOp GoPos t, #v⟧ ⤳ #v")]
+    assume = rule + [("Perennial/GooseLang/Lang.lean", 9, "assume", "assume (n < 2^63)")]
+    ex = {"goose/testdata/examples/semantics/plus.go", "Perennial/ProgramLogic/FooTest.lean",
+          "Perennial/Proof/a/b.lean", "README.md", "goose/testdata/examples/semantics/x_test.go"}
+    real = ["perennial:strconv.Itoa"]
+    gate_cases = [  # (triggers, witnesses, real uses, passes)
+        ([], [], [], True),
+        (rule, [], [], False),
+        (rule, ["goose/testdata/examples/semantics/plus.go"], real, True),
+        (rule, ["Perennial/ProgramLogic/FooTest.lean"], real, True),
+        (rule, ["Perennial/Proof/a/b.lean"], ["etcd-grove:go.etcd.io/raft/v3.(*raft).Step"], True),
+        (rule, ["goose/testdata/examples/semantics/plus.go"], [], False),
+        (rule, ["goose/testdata/examples/semantics/plus.go"], ["strconv.Itoa"], False),
+        (rule, ["goose/testdata/examples/semantics/missing.go"], real, False),
+        (rule, ["README.md"], real, False),
+        (rule, ["goose/testdata/examples/semantics/x_test.go"], real, False),
+        (rule, ["none (narrowing: the rule is now stuck on nil)"], [], True),
+        (rule, ["none"], [], False),
+        (rule, ["none (narrowing: )"], [], False),
+        (assume, ["none (narrowing: tighter)"], [], False),
+        (assume, ["goose/testdata/examples/semantics/plus.go"], real, True),
+        # one valid witness suffices; an invalid or narrowing trailer of another commit only warns
+        (assume, ["none (narrowing: x)", "goose/testdata/examples/semantics/missing.go",
+                  "goose/testdata/examples/semantics/plus.go"], ["bad", "perennial:strings.Count"], True),
+        (rule, ["goose/testdata/examples/semantics/missing.go", "none (narrowing: x)"], [], True),
+        (rule, ["goose/testdata/examples/semantics/missing.go"], [], False),
+    ]
+    for trig, ws, rs, ok in gate_cases:
+        probs, _ = check_witness(trig, ws, rs, lambda p: p in ex)
+        if (not probs) != ok:
+            bad.append(f"check_witness({[t[2] for t in trig]}, {ws}, {rs}): {probs!r}")
+    for p, want in [("goose/testdata/examples/unittest/generics/g.go", "go-example"),
+                    ("Perennial/ProgramLogic/ThreadTokensTest.lean", "lean"),
+                    ("Perennial/ProgramLogic/Bounds.lean", None), ("goose/glang/x.go", None)]:
+        if witness_location(p) != want:
+            bad.append(f"witness_location({p}): {witness_location(p)!r}")
     for b in bad:
         print("FAIL " + b)
     print(f"trusted-delta self-test: {'FAILED' if bad else 'ok'}")
@@ -993,6 +1267,8 @@ def self_test():
 def main(argv):
     if "--self-test" in argv:
         return self_test()
+    if "--witness-gate" in argv or "--witness-paths" in argv:
+        return witness_gate([a for a in argv if not a.startswith("--")], "--witness-paths" in argv)
     full = "--full" in argv
     nodiff = "--no-diff" in argv
     check = "--check" in argv
@@ -1003,25 +1279,7 @@ def main(argv):
         print(f"trusted-delta: {desc}: no changes")
         return 0
 
-    # Go model overlays: every config with a `[model]` table, at either revision
-    owners_new, owners_old = model_owners(rev_new), model_owners(rev_old)
-    model_dirs = {}
-    for owners in (owners_old, owners_new):
-        for c, t in owners.items():
-            if t["dir"]:
-                model_dirs.setdefault(t["dir"], set()).add(c)
-
-    def model_owner_of(p):
-        if p.endswith(".go") and not p.endswith("_test.go"):
-            return model_dirs.get(os.path.dirname(p), set())
-        return set()
-
-    tiered = {0: [], 1: [], 2: [], 3: []}
-    for p in sorted(files):
-        t, kind = tier_of(p)
-        if model_owner_of(p):
-            t, kind = 0, "go-model-overlay"
-        tiered[t].append((p, kind))
+    tiered, model_owner_of = tier_files(files, rev_old, rev_new)
 
     print(f"# Trust delta: {desc}\n")
     print("## Files by tier\n")

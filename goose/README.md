@@ -133,7 +133,8 @@ stuck points are `internal/gomodel`'s `Choose`, `ChooseUint64` and `Stuck`
 shared stuck point, whose `.impl` a model outside the standard library reuses
 for its own stub), a package the overlay adds (the pinned go1.26.11 finds such a package
 through `go/packages`; go1.26.0's `go list` did not). The gold example is
-`testdata/examples/modeloverlay`.
+`testdata/examples/modeloverlay`. The plan that introduced the mechanism, with its
+stages and the decisions taken while implementing them, is `model-overlays-plan.md`.
 
 The output for a large package is split into modules `<pkg>/chunkN` that lake
 checks in parallel, re-exported by the package's module, which downstream code

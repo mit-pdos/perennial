@@ -370,7 +370,7 @@ variable [package_sem : internal.bytealg.Assumptions]
 namespace internal.bytealg
 
 /-- The package-initialized state (persistent: nothing writes `MaxLen` after `init`):
-`MaxLen` holds 31 or 63 (`init.0`, `TrustedCode/internal/bytealg.lean`). -/
+`MaxLen` holds 31 or 63 (`init.0`'s Go model, goose/model/overlay/internal/bytealg/init.go). -/
 abbrev isInit : IProp GF :=
   iprop(∃ m : w64, globalAddr MaxLen ↦□ m ∗ ⌜m = W64 31 ∨ m = W64 63⌝)
 

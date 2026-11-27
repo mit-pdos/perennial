@@ -1,11 +1,12 @@
 /-
-The proofs of the Go `fmt` package. `Sprintf` is the real `fmt`'s, translated (`PrintDefs`: the
-vocabulary of its spec and of its printer; `OutLemmas`: its output without methods); `Errorf`,
-`Printf`, `Fprintf` and `Fprint` are still trusted models (stage 2 of perennial#671), with
+The proofs of the Go `fmt` package. `Sprintf`, `Errorf`, `Fprint` and `Fprintln` are the real `fmt`'s, translated
+(`PrintDefs`: the vocabulary of the specs of the real printer; `OutLemmas`: `Sprintf`'s output
+without methods); `errorf`, `Printf`, `Fprintf`, `pp.doPrint` and `pp.doPrintln` are the Go model of
+`goose/model/overlay/fmt`, which formats with the model printer (also translated), with
 the shared definitions (`Base`: `isPkgInit`, `SprintfOut`,
 the decimals of the integer directives, `ArgsWf`; `Directives`: a format's directives; `Args`:
 the specs' premise on the arguments, `argsOk`, and what `Errorf` returns), the specs of the helpers
-of the model (`SprintfModel`, `VisitModel`, `DoPrintf`; `PrintArgs`: `Fprint`'s premise on its
+of the model printer (`SprintfModel`, `BytesModel`, `VisitModel`, `DoPrintf`; `PrintArgs`: `Fprint`'s premise on its
 operands, `printArgOk`), the linked results (`Link`), `fmt.wp_<F>`
 for each function `F`, and results derived from them (`Results`).
 -/

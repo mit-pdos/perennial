@@ -11,7 +11,7 @@ public import Perennial.Code.runtime
 public import Perennial.GeneratedProof.runtime
 public import Perennial.Proof.internal.runtime.atomic.Base
 public import Perennial.Proof.internal.runtime.sys.Base
-public import Perennial.Proof.arbitraryString
+public import Perennial.Proof.internal.gomodel.Base
 
 @[expose] public section
 

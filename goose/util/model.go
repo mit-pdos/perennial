@@ -419,7 +419,61 @@ func BuildModels(modDir, configDir string, opts LoadOptions, patterns ...string)
 	if len(m.Packages) == 0 {
 		return m, nil
 	}
+	if err := b.dropPushLinknames(); err != nil {
+		return nil, err
+	}
 	return m, b.check()
+}
+
+// dropPushLinknames overlays each file of package runtime that pushes a
+// definition into a replaced function (`//go:linkname local P.F`, the
+// runtime defining P's bodyless F: sync.runtime_Semacquire,
+// internal/bytealg.MakeNoZero) with that directive blanked, so that gc links
+// the model's body of F instead of refusing a duplicated definition. The
+// runtime's function stays, unexported and unlinked. Goose is unaffected: a
+// directive is not translated. The file keeps its offsets (the directive
+// becomes spaces), and a file another model already overlays is edited in
+// that overlay.
+func (b *builder) dropPushLinknames() error {
+	targets := make(map[string]bool)
+	for _, pm := range b.models.Packages {
+		for _, n := range pm.Config.Replaces {
+			if n != "*" && !strings.HasPrefix(n, "init.") {
+				targets[pm.PkgPath+"."+n] = true
+			}
+		}
+	}
+	if len(targets) == 0 {
+		return nil
+	}
+	pkgs, err := packages.Load(b.pkgConfig(packages.NeedName|packages.NeedFiles, b.opts), "runtime")
+	if err != nil {
+		return err
+	}
+	for _, pkg := range pkgs {
+		for _, path := range pkg.GoFiles {
+			src, ok := b.models.Overlay[path]
+			if !ok {
+				if src, err = b.source(path); err != nil {
+					return err
+				}
+			}
+			lines := strings.SplitAfter(string(src), "\n")
+			changed := false
+			for i, line := range lines {
+				fields := strings.Fields(line)
+				if len(fields) == 3 && fields[0] == "//go:linkname" && targets[fields[2]] {
+					lines[i] = strings.Repeat(" ", len(strings.TrimRight(line, "\n"))) +
+						line[len(strings.TrimRight(line, "\n")):]
+					changed = true
+				}
+			}
+			if changed {
+				b.models.Overlay[path] = []byte(strings.Join(lines, ""))
+			}
+		}
+	}
+	return nil
 }
 
 type builder struct {
@@ -1374,10 +1428,90 @@ func typeString(t types.Type) string {
 	return types.TypeString(t, func(p *types.Package) string { return p.Path() })
 }
 
+// sameSignature reports whether the model's type o of a replaced function,
+// method or variable keeps the real type r: their types are identical up to
+// the names of parameters and results (unnamedParams), and every parameter or
+// result the real signature names (not blank) keeps its name in the model, so
+// that a model cannot swap same-typed parameters (`func Index(a, b []byte)`
+// modelled as `func Index(b, a []byte)`). The model may name one the real
+// declaration leaves unnamed or blank, and names inside a parameter's or
+// result's func type (which no body sees) are free.
+func sameSignature(r, o types.Type) bool {
+	if typeString(unnamedParams(r)) != typeString(unnamedParams(o)) {
+		return false
+	}
+	rsig, ok1 := r.(*types.Signature)
+	osig, ok2 := o.(*types.Signature)
+	if !ok1 || !ok2 {
+		return true
+	}
+	namesKept := func(rt, ot *types.Tuple) bool {
+		for i := 0; i < rt.Len(); i++ {
+			if n := rt.At(i).Name(); n != "" && n != "_" && ot.At(i).Name() != n {
+				return false
+			}
+		}
+		return true
+	}
+	return namesKept(rsig.Params(), osig.Params()) && namesKept(rsig.Results(), osig.Results())
+}
+
+// unnamedParams is t with the names of the parameters and results of its
+// function types dropped (in t and in the pointer, slice, array, map and
+// channel types it is built of), which types.Identical ignores too: a model
+// must name a parameter the real bodyless declaration leaves unnamed
+// (`func stopTimer(*Timer) bool`) to use it (sameSignature still compares the
+// names the real declaration gives). Everything else, variadic-ness and type
+// parameters included, is kept. A method's receiver is dropped, as
+// types.TypeString does not print it (the check of a replaced method compares
+// it separately); the receiver's type parameters stay bound to the real
+// receiver and print by name.
+func unnamedParams(t types.Type) types.Type {
+	switch t := t.(type) {
+	case *types.Signature:
+		strip := func(tup *types.Tuple) *types.Tuple {
+			vars := make([]*types.Var, tup.Len())
+			for i := range vars {
+				v := tup.At(i)
+				vars[i] = types.NewParam(v.Pos(), v.Pkg(), "", unnamedParams(v.Type()))
+			}
+			return types.NewTuple(vars...)
+		}
+		// fresh type parameters (one may be bound to one signature only),
+		// printed as the originals
+		tparams := func(l *types.TypeParamList) []*types.TypeParam {
+			var ps []*types.TypeParam
+			for i := 0; i < l.Len(); i++ {
+				tp := l.At(i)
+				ps = append(ps, types.NewTypeParam(
+					types.NewTypeName(tp.Obj().Pos(), tp.Obj().Pkg(), tp.Obj().Name(), nil), tp.Constraint()))
+			}
+			return ps
+		}
+		// no receiver type parameters: go/types refuses them without a
+		// receiver ("function with receiver type parameters must have a
+		// receiver")
+		return types.NewSignatureType(nil, nil, tparams(t.TypeParams()),
+			strip(t.Params()), strip(t.Results()), t.Variadic())
+	case *types.Pointer:
+		return types.NewPointer(unnamedParams(t.Elem()))
+	case *types.Slice:
+		return types.NewSlice(unnamedParams(t.Elem()))
+	case *types.Array:
+		return types.NewArray(unnamedParams(t.Elem()), t.Len())
+	case *types.Map:
+		return types.NewMap(unnamedParams(t.Key()), unnamedParams(t.Elem()))
+	case *types.Chan:
+		return types.NewChan(t.Dir(), unnamedParams(t.Elem()))
+	}
+	return t
+}
+
 // CheckAPI checks that the overlaid package over keeps the API of the real
 // package real (D5): a replaced function, method or variable has an
 // identical type (printed with package paths, so type parameters keep their
-// names too); a replaced type keeps its exported fields (names, order,
+// names too; parameter and result names as sameSignature says); a replaced
+// type keeps its exported fields (names, order,
 // types, embedding and tags, and the exported fields its embedded fields
 // promote), and an exported one also its kind (alias or defined, struct or
 // not), its underlying type if it is not a struct, and its comparability;
@@ -1422,7 +1556,7 @@ func CheckAPI(real, over *types.Package, config declfilter.ModelConfig) []error 
 		}
 		switch r := r.(type) {
 		case *types.Func, *types.Var:
-			if typeString(r.Type()) != typeString(o.Type()) {
+			if !sameSignature(r.Type(), o.Type()) {
 				errs = append(errs, errors.Errorf("%s: type %s, which the model changes to %s",
 					name, typeString(r.Type()), typeString(o.Type())))
 			}
@@ -1465,7 +1599,7 @@ func CheckAPI(real, over *types.Package, config declfilter.ModelConfig) []error 
 			continue
 		}
 		rr, or := typeString(rm.Signature().Recv().Type()), typeString(om.Signature().Recv().Type())
-		if rr != or || typeString(rm.Type()) != typeString(om.Type()) {
+		if rr != or || !sameSignature(rm.Type(), om.Type()) {
 			errs = append(errs, errors.Errorf("%s: (%s) %s, which the model changes to (%s) %s",
 				n, rr, typeString(rm.Type()), or, typeString(om.Type())))
 		}
@@ -1640,11 +1774,19 @@ func hasUnexportedMethod(t *types.Interface) bool {
 	return false
 }
 
-// methodSet describes the method set of t: each method's type, receiver and
-// the embedded fields it is promoted through (the selection's index without
-// its last element, the method's position in its type's declarations).
-func methodSet(t types.Type) map[string]string {
-	ms := make(map[string]string)
+// methodEntry is a method of a method set: its type, and where it is
+// declared (receiver and embedding path).
+type methodEntry struct {
+	typ   types.Type
+	where string
+}
+
+func (m methodEntry) String() string {
+	return typeString(m.typ) + " " + m.where
+}
+
+func methodSet(t types.Type) map[string]methodEntry {
+	ms := make(map[string]methodEntry)
 	set := types.NewMethodSet(t)
 	for i := range set.Len() {
 		sel := set.At(i)
@@ -1654,7 +1796,7 @@ func methodSet(t types.Type) map[string]string {
 			recv = typeString(r.Type())
 		}
 		path := sel.Index()
-		ms[f.Name()] = fmt.Sprintf("%s (declared on %s, at embedding path %v)", typeString(f.Type()), recv, path[:len(path)-1])
+		ms[f.Name()] = methodEntry{f.Type(), fmt.Sprintf("(declared on %s, at embedding path %v)", recv, path[:len(path)-1])}
 	}
 	return ms
 }
@@ -1701,7 +1843,7 @@ func checkMethods(name string, r, o *types.TypeName, config declfilter.ModelConf
 					errs = append(errs, errors.Errorf("%s: the model adds the method %s to %s, "+
 						"which added_methods does not list", name, n, recv))
 				}
-			case rs != ovsig:
+			case rs.where != ovsig.where || !sameSignature(rs.typ, ovsig.typ):
 				errs = append(errs, errors.Errorf("%s: method %s of %s has type %s, which the model changes to %s",
 					name, n, recv, rs, ovsig))
 			}
@@ -1740,8 +1882,8 @@ func addedMethodPatternUsed(pattern string, real, over *types.Package) bool {
 }
 
 // asmSymbol matches a line of Go assembly that defines a symbol: TEXT (a
-// function) or GLOBL (data), with the symbol's name.
-var asmSymbol = regexp.MustCompile(`^\s*(TEXT|GLOBL)\s+([^\s(,]+)\(SB\)`)
+// function) or GLOBL (data), with the symbol's name (without an offset: `GLOBL d<>+0(SB)`).
+var asmSymbol = regexp.MustCompile(`^\s*(TEXT|GLOBL)\s+([^\s(,+]+)(?:\+[0-9]+)?\(SB\)`)
 
 // asmInclude matches an #include line of Go assembly, with the header's name.
 var asmInclude = regexp.MustCompile(`^\s*#\s*include\s+["<]([^">]+)[">]`)
@@ -1749,8 +1891,10 @@ var asmInclude = regexp.MustCompile(`^\s*#\s*include\s+["<]([^">]+)[">]`)
 // asmHeaders are the toolchain's headers, which define no symbols and no
 // macro that does: a blanked file may include only these, since a macro of
 // another header could expand to a TEXT or GLOBL line that asmDefs, which
-// reads lines of the file itself, does not see.
-var asmHeaders = map[string]bool{"textflag.h": true, "go_asm.h": true, "funcdata.h": true, "go_tls.h": true}
+// reads lines of the file itself, does not see. (asm_amd64.h, runtime's,
+// defines only the feature flags of a GOAMD64 level: hasPOPCNT, hasAVX2, ...)
+var asmHeaders = map[string]bool{"textflag.h": true, "go_asm.h": true, "funcdata.h": true, "go_tls.h": true,
+	"asm_amd64.h": true}
 
 // asmDefs returns the symbols an assembly file defines, with their lines, and
 // the headers it includes other than asmHeaders, with theirs.

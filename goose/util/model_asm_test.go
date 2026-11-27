@@ -31,6 +31,9 @@ TEXT fbody<>(SB),NOSPLIT,$0
 	MOVQ	x+0(FP), AX
 	MOVQ	AX, ret+8(FP)
 	RET
+
+DATA fdata<>+0(SB)/8, $1
+GLOBL fdata<>+0(SB), RODATA, $8
 `
 
 // TestModelBlankAsm: a model replaces a function whose body is assembly; the
@@ -66,6 +69,22 @@ func TestModelBlankAsm(t *testing.T) {
 	}
 }
 
+// TestModelBlankAsmAmd64Header: a file that includes the toolchain's
+// asm_amd64.h (only GOAMD64 feature flags, as internal/bytealg's
+// count_amd64.s does) is blanked like one that includes textflag.h only.
+func TestModelBlankAsmAmd64Header(t *testing.T) {
+	root := modelModule(t, asmReal, asmModel,
+		"[model]\ndir = \"model\"\nreplaces = [\"F\"]\nblank_asm = [\"f_amd64.s\"]\n",
+		map[string]string{"p/f_amd64.s": "#include \"asm_amd64.h\"\n" + asmFile})
+	models, err := buildModels(root, "./p")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s := string(models.Overlay[filepath.Join(root, "p", "f_amd64.s")]); !strings.Contains(s, "blanked") {
+		t.Fatalf("f_amd64.s is not blanked: %q", s)
+	}
+}
+
 // TestModelBlankAsmRefused: the checks that guard the blanking.
 func TestModelBlankAsmRefused(t *testing.T) {
 	for _, c := range []struct {
@@ -83,6 +102,10 @@ func TestModelBlankAsmRefused(t *testing.T) {
 			asmReal,
 			asmFile + "\nGLOBL ·tab(SB), RODATA, $8\n",
 			`"F"`, `"f_amd64.s"`, "defines ·tab"},
+		{"data-offset",
+			asmReal,
+			asmFile + "\nGLOBL ·tab+0(SB), RODATA, $8\n",
+			`"F"`, `"f_amd64.s"`, "defines ·tab,"},
 		{"local-header",
 			asmReal + "\nfunc H()\n",
 			"#include \"defs_amd64.h\"\n" + asmFile + "\nDEF(·H)\n",
@@ -115,8 +138,12 @@ func TestModelBlankAsmRefused(t *testing.T) {
 // TestModelBytealgDifftest is the difftest of internal/bytealg's model
 // (Perennial/Code/internal/bytealg.toml, goose/model/overlay/internal/bytealg):
 // the standard library's own strings and bytes tests, under the overlay that
-// replaces IndexByte, IndexByteString, Index and IndexString by their Go
-// models and blanks indexbyte_amd64.s and index_amd64.s. It runs only under
+// replaces IndexByte, IndexByteString, Index, IndexString, Count, CountString,
+// MakeNoZero and init.0 by their Go models and blanks indexbyte_amd64.s,
+// index_amd64.s and count_amd64.s (and runtime/slice.go's go:linkname of
+// MakeNoZero). TestBuilderGrowSizeclasses is left out: it counts allocations
+// of gc's size classes, and MakeNoZero's Go body (gomodel.ChooseUint64 is 0
+// in Go) allocates exactly the length asked for. It runs only under
 // the toolchain the translations are generated with (the model is of its
 // sources), and not with -short. go vet is off: it cannot enter internal/gomodel,
 // a directory only the overlay adds.
@@ -149,7 +176,7 @@ func TestModelBytealgDifftest(t *testing.T) {
 	if models.Packages["internal/bytealg"] == nil {
 		t.Fatalf("no model of internal/bytealg: %v", models.Packages)
 	}
-	for _, s := range []string{"indexbyte_amd64.s", "index_amd64.s"} {
+	for _, s := range []string{"indexbyte_amd64.s", "index_amd64.s", "count_amd64.s"} {
 		found := false
 		for p, c := range models.Overlay {
 			if filepath.Base(p) == s && strings.Contains(string(c), "blanked") {
@@ -164,7 +191,8 @@ func TestModelBytealgDifftest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cmd := exec.Command("go", "test", "-count=1", "-vet=off", "-overlay", ov, "strings", "bytes")
+	cmd := exec.Command("go", "test", "-count=1", "-vet=off", "-overlay", ov,
+		"-skip", "^TestBuilderGrowSizeclasses$", "strings", "bytes")
 	cmd.Dir = root
 	cmd.Env = append(os.Environ(), "GOOS=linux", "GOARCH=amd64")
 	if out, err := cmd.CombinedOutput(); err != nil {

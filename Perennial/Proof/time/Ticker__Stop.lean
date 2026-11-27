@@ -1,9 +1,10 @@
 /-
-The proof of `time.Ticker.Stop` (over its trusted model, `TrustedCode/time.lean`).
+The proof of `time.Ticker.Stop`.
 -/
 module
 
 public import Perennial.Spec.time.Ticker__Stop
+public import Perennial.Spec.time.stopTimerAt
 
 @[expose] public section
 
@@ -20,18 +21,18 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-theorem time.Ticker.Stop.wp_proof : time.Ticker.Stop.spec (GF := GF) (hG := hG) := by
+theorem time.Ticker.Stop.wp_proof
+    (wp_stopTimerAt : time.stopTimerAt.spec (GF := GF) (hG := hG)) :
+    time.Ticker.Stop.spec (GF := GF) (hG := hG) := by
   intro t
   wp_start as ⟨%ch, %γ, #Ht⟩
   unfold isTicker
-  icases Ht with ⟨#HC, #Hinit, #Hrt, #Hch⟩
-  unfold runtimeTimerCell
-  rw [show go.GoType.Named go!"time.Ticker" [] = time.Ticker.ty by with_unfolding_all rfl]
+  icases Ht with ⟨#HC, #Hinit, ⟨%fire, #Hcell, #Hfire⟩, #Hch⟩
   wp_auto
-  unfold runtimeTimerRef runtimeTimerType
-  rw [show go.GoType.Named go!"time.Timer" [] = time.Timer.ty by with_unfolding_all rfl]
-  wp_auto
-  wp_apply wp_ArbitraryInt as %x -
+  wp_apply wp_stopTimerAt $$ [] as %b -
+  · unfold isRuntimeTimer
+    iexists fire
+    iexact Hcell
   wp_end
 
 end proof

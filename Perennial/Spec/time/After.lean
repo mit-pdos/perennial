@@ -24,10 +24,12 @@ variable [package_sem : time.Assumptions]
 runtime clock has reached `T + d`, for `T` the clock's reading at the call, at least any bound
 `clockLb n` the caller holds (`time.clockLb`, `Proof/time/Base.lean`). Each value carries `Ψ T`,
 for the `Ψ` the caller chooses and derives from `clockLb (T + d)` (the wand, used once, by the
-goroutine that sends). For any `d` (a non-positive one: the clock has already reached `T + d`). -/
+goroutine that sends). For any `d` (a non-positive one: the clock has already reached `T + d`).
+The goroutine sends `Now()` (`sendTimes`), which reads the package's globals, hence `isPkgInit`. -/
 abbrev time.After.spec : Prop :=
   ∀ (d : time.Duration) (n : Int) (Ψ : Int → IProp GF),
-    {{ time.clockLb n ∗ (∀ T : Int, ⌜n ≤ T⌝ -∗ time.clockLb (T + sint.Z d) -∗ Ψ T) }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.time ∗ time.clockLb n ∗
+        (∀ T : Int, ⌜n ≤ T⌝ -∗ time.clockLb (T + sint.Z d) -∗ Ψ T) }}
       (App (Val (@! time.After)) (Val #d))
     {{ (ch : Loc) (γ : ChanNames) (T : Int), RET #ch; ⌜n ≤ T⌝ ∗ time.clockLb T ∗
         isChanBag γ ch (V := time.Time) (fun _ => Ψ T) }}

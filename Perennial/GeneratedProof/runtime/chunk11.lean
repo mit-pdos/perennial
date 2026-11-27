@@ -3,6 +3,7 @@ module
 
 public import Perennial.Proof.ProofPrelude
 public import Perennial.ManualProof.runtime
+public import Perennial.GeneratedProof.internal.gomodel
 public import Perennial.GeneratedProof.internal.runtime.atomic
 public import Perennial.GeneratedProof.internal.runtime.sys
 public import Perennial.Golang.Theory

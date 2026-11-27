@@ -3,8 +3,9 @@ Results of `context` derived from the linked ones, under their old names: the me
 `*cancelCtx` and `*timerCtx` (`wp_cancelCtx_Done`, ..., `wp_timerCtx_cancel`, the Link's
 `cancelCtx.wp_Done`, ...), the promoted methods of `*timerCtx` (`wp_timerCtx_Done`, ...), the
 three cases of `propagateCancel`'s spec (`wp_propagateCancel_background`, `_background_any`,
-`_todo`, `_todo_any`, `_cancelCtx`, `_ctx`, `_any`), the other triples of `WithCancel` (`wp_WithCancel_gen`,
-`wp_WithCancel_ctx`, `wp_WithCancel_any`, `wp_WithCancel_Background`, `wp_WithCancel_TODO`), of the deadline constructors (`wp_WithDeadlineCause_Background`,
+`_todo`, `_todo_any`, `_cancelCtx`, `_ctx`, `_any`), the other triples of `WithCancel` (`wp_WithCancel_gen`, `wp_WithCancel_genA`,
+`wp_WithCancel_ctx`, `wp_WithCancel_any`, `wp_WithCancel_Background`,
+`wp_WithCancel_Background_canceled`, `wp_WithCancel_TODO`), of the deadline constructors (`wp_WithDeadlineCause_Background`,
 `wp_WithDeadline_Background`, `wp_WithTimeout_Background`) and of `parentCancelCtx` (`wp_parentCancelCtx_self`,
 `wp_parentCancelCtx_timer`), the `atomic.Value` cells (`wp_done_Load`, ...) and the `isContext`s of
 `*cancelCtx` and `*timerCtx`: each the shared `_of` lemma applied to the linked results.
@@ -129,7 +130,8 @@ theorem wp_parentCancelCtx_self (p : Loc) (γ : ContextNames) (P : IProp GF) (ch
 /-- The `childCancelSpec` of a `*cancelCtx` child whose Done proposition follows from the
 parent's. -/
 theorem childCancelSpec_cancelCtx (c : Loc) (γ : ContextNames) (P Q : IProp GF) :
-    isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOf c γ P ∗ □ (Q -∗ P) ⊢
+    isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOfA c γ P (fun _ => True) ∗
+        □ (Q -∗ P) ⊢
       childCancelSpec Q (interface.mkOk (go.GoType.PointerType context.cancelCtx.ty) #c) :=
   childCancelSpec_cancelCtx_of cancelCtx.wp_cancel c γ P Q
 
@@ -168,7 +170,7 @@ Done proposition implies `c`'s: either the parent is already done (then `c` is c
 or `c` is added to the parent's `children` (with its `childCancelSpec`). -/
 theorem wp_propagateCancel_cancelCtx (c : Loc) (γ : ContextNames) (P : IProp GF)
     (parent : GoInterfaceOk) (s : ContextDesc (IProp GF)) :
-    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOf c γ P ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOfA c γ P (fun _ => True) ∗
         ctxField c ↦ (interface.nil : GoInterface) ∗
         (isContext parent s ∗ isCancelCtxCtx parent s ∗ □ (s.PDone -∗ P)) }}
       (App (App (Val (c @!! go.GoType.PointerType context.cancelCtx.ty @!! go!"propagateCancel"))
@@ -213,7 +215,7 @@ theorem wp_propagateCancel_any (c : Loc) (parent : GoInterfaceOk) (s : ContextDe
 the new `*cancelCtx` and its cancel function. -/
 theorem wp_WithCancel_gen (parent : GoInterfaceOk) (P Pre : IProp GF)
     (Hprop : ∀ (c : Loc) (γ : ContextNames),
-      {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOf c γ P ∗
+      {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOfA c γ P (fun _ => True) ∗
           ctxField c ↦ (interface.nil : GoInterface) ∗ Pre }}
         (App (App (Val (c @!! go.GoType.PointerType context.cancelCtx.ty @!! go!"propagateCancel"))
           (Val #(interface.ok parent)))
@@ -227,6 +229,27 @@ theorem wp_WithCancel_gen (parent : GoInterfaceOk) (P Pre : IProp GF)
         cancelSpec cancel γ P ∗ isCancelCtxOf c γ P ∗
         ctxField c ↦□ (interface.ok parent : GoInterface) }} :=
   wp_WithCancel_gen_of wp_withCancel cancelCtx.wp_cancel parent P Pre Hprop
+
+/-- `WithCancel(parent)` for a new `*cancelCtx` with allowed errors `A` (which allow `Canceled`'s
+value), given the spec of `c.propagateCancel(parent, c)`: `wp_WithCancel_genA_of` applied to the
+linked results. -/
+theorem wp_WithCancel_genA (parent : GoInterfaceOk) (P Pre : IProp GF) (A : GoInterface → Prop)
+    (Hprop : ∀ (c : Loc) (γ : ContextNames),
+      {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOfA c γ P A ∗
+          ctxField c ↦ (interface.nil : GoInterface) ∗ Pre }}
+        (App (App (Val (c @!! go.GoType.PointerType context.cancelCtx.ty @!! go!"propagateCancel"))
+          (Val #(interface.ok parent)))
+          (Val #(interface.mkOk (go.GoType.PointerType context.cancelCtx.ty) #c)))
+      {{ RET #(); ctxField c ↦ (interface.ok parent : GoInterface) }}) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isClosedchanInit ∗ Pre ∗
+        isParentCtx parent ∗
+        □ (∀ e : GoInterface, globalAddr context.Canceled ↦□ e -∗ ⌜A e⌝) }}
+      (App (Val (@! context.WithCancel)) (Val #(interface.ok parent)))
+    {{ (c : Loc) (γ : ContextNames) (cancel : GoFunc),
+        RET (PairV #(interface.mkOk (go.GoType.PointerType context.cancelCtx.ty) #c) #cancel);
+        cancelSpec cancel γ P ∗ isCancelCtxOfA c γ P A ∗
+        ctxField c ↦□ (interface.ok parent : GoInterface) }} :=
+  wp_WithCancel_genA_of wp_withCancel cancelCtx.wp_cancel parent P Pre A Hprop
 
 /-- `WithCancel(parent)` for any context `parent` (`isContext`, described by `s`) and any
 proposition `PDone'`: the new context is a `*cancelCtx` with the parent's deadline, whose Done
@@ -274,6 +297,27 @@ theorem wp_WithCancel_Background (PDone' : IProp GF) :
         ctxValueFrom backgroundCtxVal ctx' }} :=
   wp_WithCancel_Background_of wp_withCancel cancelCtx.wp_cancel cancelCtx.wp_propagateCancel
     cancelCtx.wp_Done cancelCtx.wp_Err cancelCtx.wp_Value sync.atomic.Value.wp_Load PDone'
+
+/-- **`WithCancel(Background())`, whose cancel function makes `Err()` return `Canceled`'s value**
+(`errIsCanceled`): `wp_WithCancel_Background_canceled_of` applied to the linked results (see
+there). -/
+theorem wp_WithCancel_Background_canceled :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context }}
+      (App (Val (@! context.WithCancel)) (Val #(interface.ok backgroundCtxVal)))
+    {{ (c : Loc) (γ : ContextNames) (cancel : GoFunc),
+        RET (PairV #(interface.mkOk (go.GoType.PointerType context.cancelCtx.ty) #c) #cancel);
+        □ (∀ Φ : val → IProp GF,
+            ▷ (ContextClosed γ -∗
+                errIsCanceled (interface.mk (go.GoType.PointerType context.cancelCtx.ty) #c) -∗
+                Φ #()) -∗
+            WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
+        isContext (interface.mk (go.GoType.PointerType context.cancelCtx.ty) #c)
+          { Values := ∅, Deadline := none, Done_gn := γ, PDone := iprop(True) } ∗
+        isCancelCtxCtx (interface.mk (go.GoType.PointerType context.cancelCtx.ty) #c)
+          { Values := ∅, Deadline := none, Done_gn := γ, PDone := iprop(True) } ∗
+        ctxField c ↦□ (interface.ok backgroundCtxVal : GoInterface) }} :=
+  wp_WithCancel_Background_canceled_of wp_withCancel cancelCtx.wp_cancel cancelCtx.wp_propagateCancel
+    cancelCtx.wp_Done cancelCtx.wp_Err cancelCtx.wp_Value sync.atomic.Value.wp_Load
 
 /-- `WithCancel(TODO())`: as `wp_WithCancel_Background` (`TODO()` is never done, and has no values
 and no deadline). -/

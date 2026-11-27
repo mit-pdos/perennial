@@ -207,6 +207,10 @@ func (suite *GoTestSuite) TestByteToString() {
 	suite.Equal(true, testByteToString())
 }
 
+func (suite *GoTestSuite) TestRuneToString() {
+	suite.Equal(true, testRuneToString())
+}
+
 func (suite *GoTestSuite) TestUntypedRuneConst() {
 	suite.Equal(true, testUntypedRuneConst())
 }
@@ -297,6 +301,10 @@ func (suite *GoTestSuite) TestSelectSendOrder() {
 
 func (suite *GoTestSuite) TestFirstClassFunction() {
 	suite.Equal(true, testFirstClassFunction())
+}
+
+func (suite *GoTestSuite) TestFloatIncDec() {
+	suite.Equal(true, testFloatIncDec())
 }
 
 func (suite *GoTestSuite) TestFunctionOrdering() {
@@ -757,6 +765,10 @@ func (suite *GoTestSuite) TestManyParentheses() {
 
 func (suite *GoTestSuite) TestPlusTimes() {
 	suite.Equal(true, testPlusTimes())
+}
+
+func (suite *GoTestSuite) TestRecoverPanicNil() {
+	suite.Equal(true, testRecoverPanicNil())
 }
 
 func (suite *GoTestSuite) TestOrCompareSimple() {

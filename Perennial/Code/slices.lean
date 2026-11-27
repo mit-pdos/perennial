@@ -568,6 +568,83 @@ noncomputable def Concat.impl [GooseExts] [GoGlobalContext] (S E : go.GoType) : 
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "size") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad S))) (Var "$res0")))))
 
+/-- Repeat returns a new slice that repeats the provided slice the given number of times.
+    The result has length and capacity (len(x) * count).
+    The result is never nil.
+    Repeat panics if count is negative or if the result of (len(x) * count)
+    overflows.
+
+    go: slices.go:512:6 -/
+noncomputable def Repeat.impl [GooseExts] [GoGlobalContext] (S E : go.GoType) : val :=
+  (LamV "x"
+  (Lam "count"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc S))) (App (Val (GoInstruction (GoZeroVal S))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "count" (App (Val (GoInstruction (GoAlloc go.int))) (Var "count"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc S))) (Var "x"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (let maxInt := #(W64 9223372036854775807);
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (Convert go.int go.uint))) (Let "$a0" (App (Val (GoInstruction (GoLoad S))) (Var "x"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [S]))) (Val #())) (Var "$a0"))))
+  (Let "$a1" (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoLoad go.int))) (Var "count")))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.math.bits.Mul []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "lo" (App (Val (GoInstruction (GoAlloc go.uint))) (App (Val (GoInstruction (GoZeroVal go.uint))) (Val #())))
+  (Let "hi" (App (Val (GoInstruction (GoAlloc go.uint))) (App (Val (GoInstruction (GoZeroVal go.uint))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [S]))) (Val #())) (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoLoad go.uint))) (Var "lo"))))
+  (Let "newslice" (App (Val (GoInstruction (GoAlloc S))) (App (Val (GoInstruction (GoZeroVal S))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad S))) (Var "newslice"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad S))) (Var "x"))
+  (App (App (App (Val (GoInstruction (FuncResolve go.copy [S]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad S))) (Var "newslice"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore S))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Let "$a0" (App (Val (GoInstruction (GoLoad S))) (Var "newslice"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [S]))) (Val #())) (Var "$a0"))))))) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Let "$a0" (Let "$s" (App (Val (GoInstruction (GoLoad S))) (Var "newslice"))
+  (App (Val (GoInstruction (Slice S))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))) (App (App (Val (GoInstruction (FuncResolve go.len [S]))) (Val #())) (Var "$s")))))
+  (Let "$a1" (Let "$s" (App (Val (GoInstruction (GoLoad S))) (Var "newslice"))
+  (App (Val (GoInstruction (Slice S))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))))
+  (App (App (App (Val (GoInstruction (FuncResolve go.copy [S]))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (Lam BAnon
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore S))) (Pair (Var "newslice") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoGt go.uint))) (Pair (App (Val (GoInstruction (GoLoad go.uint))) (Var "hi")) (Val #(W64 0)))) (Val #true) (App (Val (GoInstruction (GoOp GoGt go.uint))) (Pair (App (Val (GoInstruction (GoLoad go.uint))) (Var "lo")) (Val maxInt)))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"the result of (len(x) * count) overflows")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint))) (Pair (Var "lo") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint))) (Pair (Var "hi") (Var "$r0")))))))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "count")) (Val #(W64 0)))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"cannot be negative")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val (GoInstruction (GoLoad S))) (Var "$res0"))))))
+
 /-- Sort sorts a slice of any ordered type in ascending order.
     When sorting floating-point numbers, NaNs are ordered before other values.
 
@@ -3862,6 +3939,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Clone_unfold : ∀ (S E : go.GoType), FuncUnfold Clone [S, E] (Clone.impl S E)
   Grow_unfold : ∀ (S E : go.GoType), FuncUnfold Grow [S, E] (Grow.impl S E)
   Concat_unfold : ∀ (S E : go.GoType), FuncUnfold Concat [S, E] (Concat.impl S E)
+  Repeat_unfold : ∀ (S E : go.GoType), FuncUnfold Repeat [S, E] (Repeat.impl S E)
   Sort_unfold : ∀ (S E : go.GoType), FuncUnfold «Sort» [S, E] («Sort».impl S E)
   SortFunc_unfold : ∀ (S E : go.GoType), FuncUnfold SortFunc [S, E] (SortFunc.impl S E)
   nextPowerOfTwo_unfold : FuncUnfold nextPowerOfTwo [] nextPowerOfTwo.impl
@@ -3913,6 +3991,7 @@ attribute [instance] Assumptions.sortedHint_instance
   Assumptions.Clone_unfold
   Assumptions.Grow_unfold
   Assumptions.Concat_unfold
+  Assumptions.Repeat_unfold
   Assumptions.Sort_unfold
   Assumptions.SortFunc_unfold
   Assumptions.nextPowerOfTwo_unfold

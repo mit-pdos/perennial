@@ -21,6 +21,12 @@ end pkg_id
 
 namespace internal.gomodel
 
+noncomputable def ChooseString [GooseExts] [GoGlobalContext] : GoString :=
+  go!"internal/gomodel.ChooseString"
+
+noncomputable def ChooseStrings [GooseExts] [GoGlobalContext] : GoString :=
+  go!"internal/gomodel.ChooseStrings"
+
 noncomputable def Choose [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/gomodel.Choose"
 
@@ -32,6 +38,75 @@ noncomputable def Stuck [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def StartRead [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/gomodel.StartRead"
+
+/-- ChooseString is an arbitrary string: every string is a result (and the loop
+    may also not terminate). It is translated Go over Choose and ChooseUint64,
+    not a primitive: a model uses it where Go's value is outside what the model
+    tracks (a linker-set string, a symbol name, a command-line argument). In Go
+    it is "".
+
+    go: choose.go:8:6 -/
+noncomputable def ChooseString.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (App (Val (GoInstruction (FuncResolve Choose []))) (Val #())) (Val #())))) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (Convert go.uint64 go.byte))) (App (App (Val (GoInstruction (FuncResolve ChooseUint64 []))) (Val #())) (Val #())))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.byte)))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$sl0")))])))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b") (Var "$r0")))))))
+  (Lam BAnon
+  (Val #()))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")))))
+
+/-- ChooseStrings is an arbitrary []string (nil or not, of any length, every
+    element any string; in particular both nil and a non-nil empty slice: Go's
+    os.runtime_args and syscall.runtime_envs return append([]string{}, ...),
+    never nil). It is translated Go over Choose and ChooseString. In Go it is
+    nil.
+
+    go: choose.go:21:6 -/
+noncomputable def ChooseStrings.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.string)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.string)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "a"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.string)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (App (Val (GoInstruction (FuncResolve Choose []))) (Val #())) (Val #())))) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "a"))
+  (Let "$a1" (Let "$sl0" (App (App (Val (GoInstruction (FuncResolve ChooseString []))) (Val #())) (Val #()))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.string)))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$sl0")))])))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.string)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.string)))) (Pair (Var "a") (Var "$r0")))))))
+  (Lam BAnon
+  (Val #()))))))
+  (If (App (App (Val (GoInstruction (FuncResolve Choose []))) (Val #())) (Val #()))
+  (Let "$r0" (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.string)))) (LiteralValue []))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.string)))) (Pair (Var "a") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "$res0")))))
 
 noncomputable instance info' : PkgInfo pkg_id.internal.gomodel where
   pkgImportedPkgs := []
@@ -46,12 +121,16 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  ChooseString_unfold : FuncUnfold ChooseString [] ChooseString.impl
+  ChooseStrings_unfold : FuncUnfold ChooseStrings [] ChooseStrings.impl
   Choose_unfold : FuncUnfold Choose [] Choose.impl
   ChooseUint64_unfold : FuncUnfold ChooseUint64 [] ChooseUint64.impl
   Stuck_unfold : FuncUnfold Stuck [] Stuck.impl
   StartRead_unfold : ∀ (T : go.GoType), FuncUnfold StartRead [T] (StartRead.impl T)
 
-attribute [instance] Assumptions.Choose_unfold
+attribute [instance] Assumptions.ChooseString_unfold
+  Assumptions.ChooseStrings_unfold
+  Assumptions.Choose_unfold
   Assumptions.ChooseUint64_unfold
   Assumptions.Stuck_unfold
   Assumptions.StartRead_unfold

@@ -20,14 +20,15 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : strings.Assumptions]
 
-/-- `makeASCIISet(chars)`, for an ASCII `chars` (every byte below 128): the set of the bytes of
-`chars` (`strings.asciiSetHas`) and `true`. -/
+/-- `makeASCIISet(chars)`: whether `chars` is ASCII (every byte below 128) and, if it is, the set
+of its bytes (`strings.asciiSetHas`). -/
 abbrev strings.makeASCIISet.spec : Prop :=
   ∀ (chars : GoString),
-    {{ (⌜∀ b ∈ chars, uint.Z b < 128⌝ : IProp GF) }}
+    {{ (True : IProp GF) }}
       (App (Val (@! makeASCIISet)) (Val #chars))
-    {{ (aset : GoArray w32 8), RET (PairV #aset #true);
-        ⌜aset.arr.length = 8 ∧ ∀ c, strings.asciiSetHas aset c = decide (c ∈ chars)⌝ }}
+    {{ (aset : GoArray w32 8) (ok : Bool), RET (PairV #aset #ok);
+        ⌜(ok = true ↔ ∀ b ∈ chars, uint.Z b < 128) ∧ aset.arr.length = 8 ∧
+          (ok = true → ∀ c, strings.asciiSetHas aset c = decide (c ∈ chars))⌝ }}
 
 end spec
 

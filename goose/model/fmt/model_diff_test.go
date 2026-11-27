@@ -1,12 +1,13 @@
 package fmt_test
 
-// Differential tests of the model of fmt (model_test.go, the Go that the docstrings of
-// Perennial/TrustedCode/fmt.lean quote) against Go's fmt: on every call the model does not get
-// stuck on, its output matches Go's (each arbitrary string in it standing for any string), it
-// calls exactly the methods Go calls, in the same order, and its Errorf returns an error of the
-// same kind (errors.New, one wrapped error, several) wrapping the same errors. And on every call
-// the specs admit (argsOk, a transcription of fmt.argsOk of Perennial/Proof/fmt/Base.lean), the
-// model does not get stuck.
+// Differential tests of the Go model of fmt (goose/model/overlay/fmt: the model printer of
+// printmodel.go, copied into model_test.go, and the replaced declarations of print.go, mirrored in
+// model_harness_test.go) against Go's fmt: on every call the model does not get stuck on, its
+// output matches Go's (each arbitrary string in it standing for any string), it calls exactly the
+// methods Go calls, in the same order, and its Errorf returns an error of the same kind
+// (errors.New, one wrapped error, several) wrapping the same errors. And on every call the specs
+// admit (argsOk, a transcription of fmt.argsOk of Perennial/Proof/fmt/Args.lean), the model does
+// not get stuck.
 
 import (
 	"errors"
@@ -374,6 +375,7 @@ func TestModelSprintf(t *testing.T) {
 	t.Logf("%d calls admitted, %d where the model is stuck", admitted, stuckN)
 }
 
+// TestModelPrintf: the formatting of the trusted Printf (printfFormat) calls what Go's Printf calls.
 func TestModelPrintf(t *testing.T) {
 	for _, format := range testFormats {
 		for _, a := range argTuples() {
@@ -381,7 +383,7 @@ func TestModelPrintf(t *testing.T) {
 			_ = fmt.Sprintf(format, a...) // Printf formats as Sprintf does
 			goCalls := calls
 			calls = nil
-			stuck := runModel(func() { modelPrintf(format, a...) })
+			stuck := runModel(func() { modelPrintfFormat(format, a...) })
 			if stuck {
 				continue
 			}
@@ -550,6 +552,62 @@ func TestModelFprint(t *testing.T) {
 			}
 			if gn != mn || gerr != merr {
 				t.Errorf("Fprint(%s) = %d, %v; the model's %d, %v", describe("", a), gn, gerr, mn,
+					merr)
+			}
+		}
+	}
+	t.Logf("%d operand lists admitted", admitted)
+}
+
+// Fprintln, as Fprint (over pp.doPrintln): the calls Go's printArg makes of each operand under %v,
+// in order, then one Write, returning what Write returns; the output is arbitrary. Admitted (the
+// spec's fmt.printArgOk): each operand as argOkAt admits it under %v.
+func TestModelFprintln(t *testing.T) {
+	werr := errors.New("w")
+	admitted := 0
+	for _, a := range argTuples() {
+		ok := true
+		for _, x := range a {
+			if !argOkAt("vsxXq", directive{'v', false}, x) {
+				ok = false
+			}
+		}
+		if ok {
+			admitted++
+		}
+		for _, res := range []struct {
+			n   int
+			err error
+		}{{3, nil}, {0, werr}} {
+			calls = nil
+			gw := &recWriter{n: res.n, err: res.err}
+			gn, gerr := fmt.Fprintln(gw, a...)
+			goCalls := calls
+			calls = nil
+			mw := &recWriter{n: res.n, err: res.err}
+			var mn int
+			var merr error
+			stuck := runModel(func() { mn, merr = modelFprintln(mw, a...) })
+			if stuck {
+				if ok {
+					t.Errorf("Fprintln(%s): admitted, but the model is stuck", describe("", a))
+				}
+				continue
+			}
+			if !reflect.DeepEqual(goCalls, calls) {
+				t.Errorf("Fprintln(%s): Go calls %v, the model %v", describe("", a), goCalls, calls)
+			}
+			if len(gw.writes) != 1 || len(mw.writes) != 1 {
+				t.Errorf("Fprintln(%s): Go writes %d times, the model %d", describe("", a),
+					len(gw.writes), len(mw.writes))
+				continue
+			}
+			if !matches(string(mw.writes[0]), string(gw.writes[0])) {
+				t.Errorf("Fprintln(%s) writes %q, the model %q", describe("", a), gw.writes[0],
+					mw.writes[0])
+			}
+			if gn != mn || gerr != merr {
+				t.Errorf("Fprintln(%s) = %d, %v; the model's %d, %v", describe("", a), gn, gerr, mn,
 					merr)
 			}
 		}

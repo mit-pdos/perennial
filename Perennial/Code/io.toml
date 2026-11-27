@@ -9,6 +9,7 @@ translate = [
   "EOF",
   "Discard",
   "discard",
+  "discard.ReadFrom",
   "multiReader",
   "multiReader.Read",
   "MultiReader",

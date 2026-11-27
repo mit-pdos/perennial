@@ -1,12 +1,12 @@
 /-
-Specs of the helpers of the model of `fmt.Sprintf` (`Perennial/TrustedCode/fmt.lean`), which
-are not functions of package `fmt`: `formatInt`, `formatHex`, `intVerb`,
-`intArg`, `namedIntArg`, `anyIntArg` and `formatArg`.
+Specs of the helpers of the model printer of `fmt` (`goose/model/overlay/fmt`): `chooseString`,
+the calls of the primitive `underlyingAs[T]`, and `formatInt`, `formatHex`, `intVerb`, `intArg`,
+`namedIntArg`, `anyIntArg`, `strArg` and `formatArg`.
 -/
 module
 
 public import Perennial.Proof.fmt.Directives
-public import Perennial.Proof.arbitraryString
+public import Perennial.Spec.internal.gomodel.ChooseUint64
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.model.strings.Base
 
 @[expose] public section
@@ -25,6 +25,59 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
+
+theorem State_ty_eq : State.ty = go.GoType.Named go!"fmt.State" [] := by
+  unfold State.ty; rfl
+
+/-- A call of the primitive `underlyingAs[T]` is the instruction `TypeAssertUnderlying2 T`. -/
+theorem underlyingAs_call (T : go.GoType) :
+    #(functions underlyingAs [T]) =
+      (LamV "x" (App (Val (GoInstruction (TypeAssertUnderlying2 T))) (Var "x"))) :=
+  func_unfold
+
+/-- A call of `kindIs[T]` is its body. -/
+theorem kindIs_call (T : go.GoType) : #(functions kindIs [T]) = kindIs.impl T :=
+  func_unfold
+
+/-- `wp_auto`, also stepping into the calls of `underlyingAs[T]` and `kindIs[T]`, whose results
+are those of the instruction `TypeAssertUnderlying2 T`; fails if it makes no progress. -/
+macro "wp_auto_kind" : tactic =>
+  `(tactic| (first | wp_auto | (rw [underlyingAs_call]; try wp_auto) | (rw [kindIs_call]; unfold kindIs.impl; try wp_auto)) <;> repeat (first | (rw [underlyingAs_call]; try wp_auto) | (rw [kindIs_call]; unfold kindIs.impl; try wp_auto)))
+
+/-- `fmt.chooseString` (the model printer's arbitrary string) returns some string. -/
+theorem wp_chooseString
+    (wp_ChooseUint64 : internal.gomodel.ChooseUint64.spec (GF := GF) (hG := hG)) :
+    {{ (True : IProp GF) }}
+      (App (Val (@! chooseString)) (Val #()))
+    {{ (s : GoString), RET #s; True }} := by
+  wp_start
+  wp_auto
+  ihave IH : iprop(∃ str : GoString, "s" ∷ s_ptr ↦ str) $$ [s]
+  · iexists _; iframe
+  wp_for IH
+  wp_apply wp_ChooseUint64 as %c -
+  wp_if_destruct
+  · wp_apply wp_ChooseUint64 as %b -
+    wp_bind (App (Val (GoInstruction (CompositeLiteral (go.SliceType go.byte))))
+      (Val (LiteralValueV _)))
+    iapply wp_slice_literal (V := w8) (t := go.byte) [W8 (uint.Z b)]
+    wp_auto
+    rw [show go.arrayLiteralSize
+      [KeyedElement none (ElementExpression go.byte #(W8 (uint.Z b)))] = 1 from rfl]
+    isplitl []
+    · ipureintro; rfl
+    iintro %sl_ptr ⟨Hsl, -⟩
+    wp_apply wp_bytes_to_string $$ Hsl as -
+    wp_for_post
+    iframe
+    iexists _
+    iframe
+  · have Hf : (!decide (c = W64 0)) = false := by
+      revert Hif; cases (!decide (c = W64 0)) <;> simp
+    rw [Hf]
+    simp only [_root_.decide_true, ↓reduceIte]
+    wp_auto
+    iapply HΦ; itrivial
 
 /-- The integer of sign `neg` and magnitude `mag`. -/
 def signedValue (neg : Bool) (mag : w64) : Int := if neg then -uint.Z mag else uint.Z mag
@@ -46,10 +99,9 @@ and magnitude `mag` (non-zero if `neg`), zero-padded to `width`. -/
 theorem wp_formatInt (neg : Bool) (mag width : w64) (hneg : neg = true → uint.Z mag ≠ 0)
     (hw : 0 ≤ sint.Z width ∧ sint.Z width ≤ 1000000) :
     {{ (True : IProp GF) }}
-      (App (App (App (Val formatInt) (Val #neg)) (Val #mag)) (Val #width))
+      (App (App (App (Val (@! formatInt)) (Val #neg)) (Val #mag)) (Val #width))
     {{ RET #(decimalPad (sint.nat width) (signedValue neg mag)); True }} := by
-  iintro %Φ - HΦ
-  unfold formatInt
+  wp_start
   wp_auto
   ihave IH : iprop(∃ (m : w64) (ds : GoString),
       "mag" ∷ mag_ptr ↦ m ∗
@@ -166,10 +218,9 @@ theorem hexadecimal_signedValue (neg : Bool) (mag : w64) (hneg : neg = true → 
 of sign `neg` and magnitude `mag` (non-zero if `neg`). -/
 theorem wp_formatHex (neg : Bool) (mag : w64) (hneg : neg = true → uint.Z mag ≠ 0) :
     {{ (True : IProp GF) }}
-      (App (App (Val formatHex) (Val #neg)) (Val #mag))
+      (App (App (Val (@! formatHex)) (Val #neg)) (Val #mag))
     {{ RET #(hexadecimal (signedValue neg mag)); True }} := by
-  iintro %Φ - HΦ
-  unfold formatHex
+  wp_start
   wp_auto
   ihave IH : iprop(∃ (m : w64) (ds : GoString),
       "mag" ∷ mag_ptr ↦ m ∗
@@ -235,15 +286,14 @@ it. -/
 theorem wp_intVerb (format : GoString) (i : w64)
     (Hi : 0 ≤ sint.Z i ∧ sint.Z i < (format.length : Int)) :
     {{ (True : IProp GF) }}
-      (App (App (Val intVerb) (Val #format)) (Val #i))
+      (App (App (Val (@! intVerb)) (Val #format)) (Val #i))
     {{ (w next : w64) (ok : Bool), RET (PairV (PairV #w #next) #ok);
         ⌜ok = true → parseIntVerb (format.drop (sint.nat i + 1)) =
             some (sint.nat w, format.drop (sint.nat next)) ∧
           0 ≤ sint.Z w ∧ sint.Z w ≤ 1000000 ∧ sint.Z i < sint.Z next ∧
           sint.Z next ≤ (format.length : Int)⌝ ∗
         ⌜ok = false → parseIntVerb (format.drop (sint.nat i + 1)) = none⌝ }} := by
-  iintro %Φ - HΦ
-  unfold intVerb
+  wp_start
   wp_auto
   wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %Hflen
   wp_if_destruct
@@ -454,13 +504,12 @@ set_option maxRecDepth 100000 in
 argument holds, if its dynamic type is one of Go's integer types. -/
 theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf ii) :
     {{ (True : IProp GF) }}
-      (App (Val intArg) (Val #x))
+      (App (Val (@! intArg)) (Val #x))
     {{ (neg : Bool) (mag : w64) (ok : Bool), RET (PairV (PairV #neg #mag) #ok);
         ⌜ok = true → ∃ ii, x = interface.ok ii ∧ IntArgValue ii (signedValue neg mag) ∧
           (neg = true → uint.Z mag ≠ 0)⌝ ∗
         ⌜ok = false → ∀ ii, x = interface.ok ii → ¬ IsIntType ii.ty⌝ }} := by
-  iintro %Φ - HΦ
-  unfold intArg
+  wp_start
   wp_auto
   cases x with
   | nil =>
@@ -709,40 +758,39 @@ whose underlying type is an integer type and that implements none of `fmt.Format
 `fmt.Stringer` and `error` holds. -/
 theorem wp_namedIntArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf ii) :
     {{ (True : IProp GF) }}
-      (App (Val namedIntArg) (Val #x))
+      (App (Val (@! namedIntArg)) (Val #x))
     {{ (neg : Bool) (mag : w64) (ok : Bool), RET (PairV (PairV #neg #mag) #ok);
         ⌜ok = true → ∃ ii, x = interface.ok ii ∧ IntArgValue ii (signedValue neg mag) ∧
           (neg = true → uint.Z mag ≠ 0)⌝ ∗
         ⌜ok = false → ∀ ii, x = interface.ok ii →
           ¬ (IsIntType (underlying ii.ty) ∧ NoFmtMethods ii.ty)⌝ }} := by
-  iintro %Φ - HΦ
-  unfold namedIntArg
-  wp_auto
+  wp_start
+  wp_auto_kind
   cases x with
   | nil =>
-    wp_auto
+    wp_auto_kind
     iapply HΦ
     isplitl []
     · ipureintro; simp
     · ipureintro; intro _ ii h; cases h
   | ok ii =>
     obtain ⟨ty, v⟩ := ii
-    simp only
+    simp only [State_ty_eq]
     by_cases hF : go.typeSetContains ty (go.InterfaceType [go.MethodElem go!"Format"
         (go.Signature [go.Named go!"fmt.State" [], go.rune] false [])]) = true
     · simp only [hF, ↓reduceIte]
-      wp_auto
+      wp_auto_kind
       iapply HΦ
       isplitl []
       · ipureintro; intro h; cases h
       · ipureintro; intro _ ii h; cases h
         exact fun ⟨_, hm⟩ => not_noFmtMethods_of (.inl rfl) hF hm
     simp only [hF, Bool.false_eq_true, ↓reduceIte]
-    wp_auto
+    wp_auto_kind
     by_cases hS : go.typeSetContains ty (go.InterfaceType [go.MethodElem go!"String"
         (go.Signature [] false [go.string])]) = true
     · rw [hS]
-      wp_auto
+      wp_auto_kind
       iapply HΦ
       isplitl []
       · ipureintro; intro h; cases h
@@ -750,22 +798,22 @@ theorem wp_namedIntArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → A
         exact fun ⟨_, hm⟩ => not_noFmtMethods_of (.inr (.inr rfl)) hS hm
     rw [Bool.not_eq_true] at hS
     rw [hS]
-    wp_auto
+    wp_auto_kind
     by_cases hE : go.typeSetContains ty go.error = true
     · simp only [hE, ↓reduceIte]
-      wp_auto
+      wp_auto_kind
       iapply HΦ
       isplitl []
       · ipureintro; intro h; cases h
       · ipureintro; intro _ ii h; cases h
         exact fun ⟨_, hm⟩ => not_noFmtMethods_of (.inr (.inl rfl)) hE hm
     simp only [hE, Bool.false_eq_true, ↓reduceIte]
-    wp_auto
+    wp_auto_kind
     by_cases hu1 : underlying ty = go.int
     · obtain ⟨z, hz, hz'⟩ := argWf_value (Hx _ rfl) hu1 (by simp [IsIntType])
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_int hz'
       simp only [hu1, ↓reduceIte, _root_.decide_true]
-      wp_auto
+      wp_auto_kind
       wp_if_destruct
       · iapply HΦ
         isplitl []
@@ -779,12 +827,12 @@ theorem wp_namedIntArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → A
             fun h => by cases h⟩
         · ipureintro; intro h; cases h
     simp only [hu1, ↓reduceIte, decide_false]
-    wp_auto
+    wp_auto_kind
     by_cases hu2 : underlying ty = go.int64
     · obtain ⟨z, hz, hz'⟩ := argWf_value (Hx _ rfl) hu2 (by simp [IsIntType])
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_int64 hz'
       simp only [hu2, ↓reduceIte, _root_.decide_true]
-      wp_auto
+      wp_auto_kind
       wp_if_destruct
       · iapply HΦ
         isplitl []
@@ -798,12 +846,12 @@ theorem wp_namedIntArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → A
             fun h => by cases h⟩
         · ipureintro; intro h; cases h
     simp only [hu2, ↓reduceIte, decide_false]
-    wp_auto
+    wp_auto_kind
     by_cases hu3 : underlying ty = go.int32
     · obtain ⟨z, hz, hz'⟩ := argWf_value (Hx _ rfl) hu3 (by simp [IsIntType])
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_int32 hz'
       simp only [hu3, ↓reduceIte, _root_.decide_true]
-      wp_auto
+      wp_auto_kind
       wp_if_destruct
       · iapply HΦ
         isplitl []
@@ -817,12 +865,12 @@ theorem wp_namedIntArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → A
             fun h => by cases h⟩
         · ipureintro; intro h; cases h
     simp only [hu3, ↓reduceIte, decide_false]
-    wp_auto
+    wp_auto_kind
     by_cases hu4 : underlying ty = go.int16
     · obtain ⟨z, hz, hz'⟩ := argWf_value (Hx _ rfl) hu4 (by simp [IsIntType])
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_int16 hz'
       simp only [hu4, ↓reduceIte, _root_.decide_true]
-      wp_auto
+      wp_auto_kind
       wp_if_destruct
       · iapply HΦ
         isplitl []
@@ -836,12 +884,12 @@ theorem wp_namedIntArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → A
             fun h => by cases h⟩
         · ipureintro; intro h; cases h
     simp only [hu4, ↓reduceIte, decide_false]
-    wp_auto
+    wp_auto_kind
     by_cases hu5 : underlying ty = go.int8
     · obtain ⟨z, hz, hz'⟩ := argWf_value (Hx _ rfl) hu5 (by simp [IsIntType])
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_int8 hz'
       simp only [hu5, ↓reduceIte, _root_.decide_true]
-      wp_auto
+      wp_auto_kind
       wp_if_destruct
       · iapply HΦ
         isplitl []
@@ -855,12 +903,12 @@ theorem wp_namedIntArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → A
             fun h => by cases h⟩
         · ipureintro; intro h; cases h
     simp only [hu5, ↓reduceIte, decide_false]
-    wp_auto
+    wp_auto_kind
     by_cases hu6 : underlying ty = go.uint
     · obtain ⟨z, hz, hz'⟩ := argWf_value (Hx _ rfl) hu6 (by simp [IsIntType])
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_uint hz'
       simp only [hu6, ↓reduceIte, _root_.decide_true]
-      wp_auto
+      wp_auto_kind
       iapply HΦ
       isplitl []
       · ipureintro; intro _
@@ -868,12 +916,12 @@ theorem wp_namedIntArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → A
           fun h => by cases h⟩
       · ipureintro; intro h; cases h
     simp only [hu6, ↓reduceIte, decide_false]
-    wp_auto
+    wp_auto_kind
     by_cases hu7 : underlying ty = go.uint64
     · obtain ⟨z, hz, hz'⟩ := argWf_value (Hx _ rfl) hu7 (by simp [IsIntType])
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_uint64 hz'
       simp only [hu7, ↓reduceIte, _root_.decide_true]
-      wp_auto
+      wp_auto_kind
       iapply HΦ
       isplitl []
       · ipureintro; intro _
@@ -881,12 +929,12 @@ theorem wp_namedIntArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → A
           fun h => by cases h⟩
       · ipureintro; intro h; cases h
     simp only [hu7, ↓reduceIte, decide_false]
-    wp_auto
+    wp_auto_kind
     by_cases hu8 : underlying ty = go.uint32
     · obtain ⟨z, hz, hz'⟩ := argWf_value (Hx _ rfl) hu8 (by simp [IsIntType])
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_uint32 hz'
       simp only [hu8, ↓reduceIte, _root_.decide_true]
-      wp_auto
+      wp_auto_kind
       iapply HΦ
       isplitl []
       · ipureintro; intro _
@@ -894,12 +942,12 @@ theorem wp_namedIntArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → A
           fun h => by cases h⟩
       · ipureintro; intro h; cases h
     simp only [hu8, ↓reduceIte, decide_false]
-    wp_auto
+    wp_auto_kind
     by_cases hu9 : underlying ty = go.uint16
     · obtain ⟨z, hz, hz'⟩ := argWf_value (Hx _ rfl) hu9 (by simp [IsIntType])
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_uint16 hz'
       simp only [hu9, ↓reduceIte, _root_.decide_true]
-      wp_auto
+      wp_auto_kind
       iapply HΦ
       isplitl []
       · ipureintro; intro _
@@ -907,12 +955,12 @@ theorem wp_namedIntArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → A
           fun h => by cases h⟩
       · ipureintro; intro h; cases h
     simp only [hu9, ↓reduceIte, decide_false]
-    wp_auto
+    wp_auto_kind
     by_cases hu10 : underlying ty = go.uint8
     · obtain ⟨z, hz, hz'⟩ := argWf_value (Hx _ rfl) hu10 (by simp [IsIntType])
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_uint8 hz'
       simp only [hu10, ↓reduceIte, _root_.decide_true]
-      wp_auto
+      wp_auto_kind
       iapply HΦ
       isplitl []
       · ipureintro; intro _
@@ -920,7 +968,7 @@ theorem wp_namedIntArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → A
           fun h => by cases h⟩
       · ipureintro; intro h; cases h
     simp only [hu10, ↓reduceIte, decide_false]
-    wp_auto
+    wp_auto_kind
     iapply HΦ
     isplitl []
     · ipureintro; intro h; cases h
@@ -935,13 +983,12 @@ theorem wp_namedIntArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → A
 integer types, or of a named integer type without formatting methods, holds. -/
 theorem wp_anyIntArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf ii) :
     {{ (True : IProp GF) }}
-      (App (Val anyIntArg) (Val #x))
+      (App (Val (@! anyIntArg)) (Val #x))
     {{ (neg : Bool) (mag : w64) (ok : Bool), RET (PairV (PairV #neg #mag) #ok);
         ⌜ok = true → ∃ ii, x = interface.ok ii ∧ IntArgValue ii (signedValue neg mag) ∧
           (neg = true → uint.Z mag ≠ 0)⌝ ∗
         ⌜ok = false → ∀ ii, x = interface.ok ii → ¬ IsIntArgType ii.ty⌝ }} := by
-  iintro %Φ - HΦ
-  unfold anyIntArg
+  wp_start
   wp_auto
   wp_apply wp_intArg x Hx as %neg %mag %ok ⟨%Ha1, %Ha2⟩
   cases ok
@@ -989,38 +1036,37 @@ theorem not_isStrArgType_of {t : go.GoType} {m : GoString} {sig : go.signature}
 or of a named string type without formatting methods, holds. -/
 theorem wp_strArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf ii) :
     {{ (True : IProp GF) }}
-      (App (Val strArg) (Val #x))
+      (App (Val (@! strArg)) (Val #x))
     {{ (s : GoString) (ok : Bool), RET (PairV #s #ok);
         ⌜ok = true → ∃ ii, x = interface.ok ii ∧ StrArgValue ii s⌝ ∗
         ⌜ok = false → ∀ ii, x = interface.ok ii → ¬ IsStrArgType ii.ty⌝ }} := by
-  iintro %Φ - HΦ
-  unfold strArg
-  wp_auto
+  wp_start
+  wp_auto_kind
   cases x with
   | nil =>
-    wp_auto
+    wp_auto_kind
     iapply HΦ
     isplitl []
     · ipureintro; simp
     · ipureintro; intro _ ii h; cases h
   | ok ii =>
     obtain ⟨ty, v⟩ := ii
-    simp only
+    simp only [State_ty_eq]
     by_cases hF : go.typeSetContains ty (go.InterfaceType [go.MethodElem go!"Format"
         (go.Signature [go.Named go!"fmt.State" [], go.rune] false [])]) = true
     · simp only [hF, ↓reduceIte]
-      wp_auto
+      wp_auto_kind
       iapply HΦ
       isplitl []
       · ipureintro; intro h; cases h
       · ipureintro; intro _ ii h; cases h
         exact not_isStrArgType_of (.inl rfl) hF
     simp only [hF, Bool.false_eq_true, ↓reduceIte]
-    wp_auto
+    wp_auto_kind
     by_cases hS : go.typeSetContains ty (go.InterfaceType [go.MethodElem go!"String"
         (go.Signature [] false [go.string])]) = true
     · rw [hS]
-      wp_auto
+      wp_auto_kind
       iapply HΦ
       isplitl []
       · ipureintro; intro h; cases h
@@ -1028,29 +1074,29 @@ theorem wp_strArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
         exact not_isStrArgType_of (.inr (.inr rfl)) hS
     rw [Bool.not_eq_true] at hS
     rw [hS]
-    wp_auto
+    wp_auto_kind
     by_cases hE : go.typeSetContains ty go.error = true
     · simp only [hE]
-      wp_auto
+      wp_auto_kind
       iapply HΦ
       isplitl []
       · ipureintro; intro h; cases h
       · ipureintro; intro _ ii h; cases h
         exact not_isStrArgType_of (.inr (.inl rfl)) hE
     simp only [hE]
-    wp_auto
+    wp_auto_kind
     by_cases hu : underlying ty = go.string
     · obtain ⟨s, hs⟩ := argWf_str_value (Hx _ rfl) hu
       have hv : v = #s := hs.2
       subst hv
       simp only [hu, ↓reduceIte, _root_.decide_true]
-      wp_auto
+      wp_auto_kind
       iapply HΦ
       isplitl []
       · ipureintro; intro _; exact ⟨_, rfl, hs⟩
       · ipureintro; intro h; cases h
     · simp only [hu, ↓reduceIte, decide_false]
-      wp_auto
+      wp_auto_kind
       iapply HΦ
       isplitl []
       · ipureintro; intro h; cases h
@@ -1109,7 +1155,7 @@ theorem wp_formatArg (B : GoInterface → Option Lent) (format : GoString) (i : 
         (parseIntVerb (format.drop (sint.nat i + 1))).isSome) →
       ∀ ii, x = interface.ok ii → ArgWf ii) :
     {{ (True : IProp GF) }}
-      (App (App (App (Val formatArg) (Val #format)) (Val #i)) (Val #x))
+      (App (App (App (Val (@! formatArg)) (Val #format)) (Val #i)) (Val #x))
     {{ (s : GoString) (next : w64) (ok : Bool), RET (PairV (PairV #s #next) #ok);
         ⌜ok = true → sint.Z i < sint.Z next ∧ sint.Z next ≤ (format.length : Int) ∧
           (∀ args r, SprintfOutB B (format.drop (sint.nat next)) args r →
@@ -1117,8 +1163,7 @@ theorem wp_formatArg (B : GoInterface → Option Lent) (format : GoString) (i : 
           AuxStep format (sint.nat i) (sint.nat next)⌝ ∗
         ⌜ok = false → (format.drop (sint.nat i + 1)).head? ≠ some (W8 37) →
           ∀ args, ¬ SimpleDirective (format.drop (sint.nat i + 1)) (x :: args)⌝ }} := by
-  iintro %Φ - HΦ
-  unfold formatArg
+  wp_start
   wp_auto
   wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %Hflen
   wp_if_destruct

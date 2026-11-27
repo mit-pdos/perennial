@@ -1,5 +1,7 @@
-translate = ["!*"]
+# the package initializer's variables (`deBruijn32tab`, `deBruijn64tab` and `DITSupported`,
+# `false` off arm64: no_dit.go), translated with their bodies: the initializer runs them, no opaque `X.init`
+translate = ["!*", "deBruijn32tab", "deBruijn64tab", "DITSupported"]
 imports = ["!*"]
 
-# only the type declarations are translated (for runtime)
+# the type declarations are translated (for runtime)
 translate_types = true

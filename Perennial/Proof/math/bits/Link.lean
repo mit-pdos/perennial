@@ -7,6 +7,8 @@ module
 
 public import Perennial.Proof.math.bits.Len
 public import Perennial.Proof.math.bits.Len64
+public import Perennial.Proof.math.bits.Mul
+public import Perennial.Proof.math.bits.Mul64
 public import Perennial.Proof.math.bits.RotateLeft32
 public import Perennial.Proof.math.bits.TrailingZeros
 public import Perennial.Proof.math.bits.TrailingZeros64
@@ -31,6 +33,12 @@ theorem math.bits.wp_Len64 : math.bits.Len64.spec (GF := GF) (hG := hG) :=
 
 theorem math.bits.wp_Len : math.bits.Len.spec (GF := GF) (hG := hG) :=
   math.bits.Len.wp_proof math.bits.wp_Len64
+
+theorem math.bits.wp_Mul64 : math.bits.Mul64.spec (GF := GF) (hG := hG) :=
+  math.bits.Mul64.wp_proof
+
+theorem math.bits.wp_Mul : math.bits.Mul.spec (GF := GF) (hG := hG) :=
+  math.bits.Mul.wp_proof math.bits.wp_Mul64
 
 theorem math.bits.wp_RotateLeft32 : math.bits.RotateLeft32.spec (GF := GF) (hG := hG) :=
   math.bits.RotateLeft32.wp_proof

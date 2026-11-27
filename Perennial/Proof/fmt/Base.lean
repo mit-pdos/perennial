@@ -12,6 +12,8 @@ public import Perennial.Proof.errors.Base
 public import Perennial.Proof.reflect.Base
 public import Perennial.Proof.strconv.Base
 public import Perennial.Proof.unicode.utf8.Base
+public import Perennial.Proof.internal.stringslite.Base
+public import Perennial.Proof.internal.gomodel.Base
 public import Perennial.Code.fmt
 public import Perennial.GeneratedProof.fmt
 
@@ -298,8 +300,8 @@ example : hexadecimal (-2 ^ 63) = go!"-8000000000000000" := by
 
 /-! ## The output of `Sprintf`
 
-`SprintfOut format args out`: `out` is a possible result of the model of `Sprintf`
-(`Perennial/TrustedCode/fmt.lean`) on `format` and the arguments `args`. Bytes are `w8`:
+`SprintfOut format args out`: `out` is a possible result of the model printer's `doPrintf`
+(`goose/model/overlay/fmt/printmodel.go`) on `format` and the arguments `args`. Bytes are `w8`:
 `W8 37` is `%`, `W8 115` is `s`, `W8 100` is `d`, `W8 118` is `v`, `W8 120` is `x`, `W8 48` is
 `0`. -/
 

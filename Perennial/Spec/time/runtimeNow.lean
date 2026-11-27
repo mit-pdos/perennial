@@ -20,8 +20,8 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-/-- `runtimeNow()` (the `go:linkname`ed wall and monotonic clocks, modeled in
-`TrustedCode/time.lean`): some `(sec, nsec, mono)` of its result types. -/
+/-- `runtimeNow()` (the runtime's wall and monotonic clocks; its Go model returns `now()`, the
+primitive stub): some `(sec, nsec, mono)` of its result types. -/
 abbrev time.runtimeNow.spec : Prop :=
     {{ (True : IProp GF) }}
       (App (Val (@! time.runtimeNow)) (Val #()))

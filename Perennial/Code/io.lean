@@ -881,6 +881,70 @@ noncomputable def SectionReader.Read.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))))))
   (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1"))))))))))
 
+/-- go: io.go:662:16 -/
+noncomputable def discard.ReadFrom.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Lam "r"
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Let "$res0" (Var "n")
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Let "$res1" (Var "err")
+  (Seq (App (Val exceptionDo)
+  (Let "r" (App (Val (GoInstruction (GoAlloc Reader.ty))) (Var "r"))
+  (Let "$r0" (App (Val (GoInstruction (TypeAssert (go.GoType.PointerType (go.GoType.SliceType go.byte))))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Pool.ty) go!"Get"))) (App (Val (GoInstruction (GlobalVarAddr blackHolePool))) (Val #()))) (Val #())))
+  (Let "bufp" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (go.GoType.SliceType go.byte))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (go.GoType.SliceType go.byte))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 0))
+  (Let "readSize" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
+  (Val #true))) (Lam BAnon
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.SliceType go.byte))))) (Var "bufp")))
+  (App (App (Val (GoInstruction (MethodResolve Reader.ty go!"Read"))) (App (Val (GoInstruction (GoLoad Reader.ty))) (Var "r"))) (Var "$a0")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr EOF))) (Val #()))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int64))) (Var "n"))
+  (Let "$r1" (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType (go.GoType.SliceType go.byte)) go.any))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.SliceType go.byte))))) (Var "bufp")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Pool.ty) go!"Put"))) (App (Val (GoInstruction (GlobalVarAddr blackHolePool))) (Val #()))) (Var "$a0")))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "n")) (App (Val (GoInstruction (Convert go.int go.int64))) (App (Val (GoInstruction (GoLoad go.int))) (Var "readSize")))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "readSize") (Var "$r0"))))))))))))
+  (Lam BAnon
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "readSize") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.SliceType go.byte))))) (Pair (Var "bufp") (Var "$r0")))))))))
+  (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1"))))))))))
+
 /-- ReadAll reads from r until an error or EOF and returns the data it read.
     A successful call returns err == nil, not err == EOF. Because ReadAll is
     defined to read from src until EOF, it does not treat an EOF from Read
@@ -1818,11 +1882,16 @@ class discard.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   underlying : go.UnderlyingDirectedEq discard.ty discard.underlying
   method_set : go.MethodSetIs discard.ty [(go!"ReadFrom", (some (go.signature.Signature [Reader.ty] false [go.int64, go.error]))), (go!"Write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"WriteString", (some (go.signature.Signature [go.string] false [go.int, go.error])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType discard.ty) [(go!"ReadFrom", (some (go.signature.Signature [Reader.ty] false [go.int64, go.error]))), (go!"Write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"WriteString", (some (go.signature.Signature [go.string] false [go.int, go.error])))]
+  ReadFrom_unfold : MethodUnfold discard.ty go!"ReadFrom" discard.ReadFrom.impl
+  ptr_ReadFrom_unfold : MethodUnfold (go.GoType.PointerType discard.ty) go!"ReadFrom" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve discard.ty go!"ReadFrom"))) (App (Val (GoInstruction (GoLoad discard.ty))) (Var "$r"))))
 
 attribute [instance] discard.TypeAssumptions.type_repr
   discard.TypeAssumptions.underlying
   discard.TypeAssumptions.method_set
   discard.TypeAssumptions.ptr_method_set
+  discard.TypeAssumptions.ReadFrom_unfold
+  discard.TypeAssumptions.ptr_ReadFrom_unfold
 
 structure nopCloser [GooseExts] where
   mk ::

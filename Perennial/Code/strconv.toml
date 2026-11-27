@@ -2,6 +2,8 @@
 translate = [
   "ParseUint", "toError", "syntaxError", "rangeError", "baseError", "bitSizeError", "ErrRange",
   "ErrSyntax", "NumError", "NumError.Unwrap",
+  # `NumError.Error` (`"strconv." + Func + ": parsing " + Quote(Num) + ": " + Err.Error()`)
+  "NumError.Error",
   "ParseBool", "FormatBool",
   "FormatUint", "FormatInt", "Itoa", "ParseInt",
   # `Atoi`, over `internal/strconv`'s

@@ -4,6 +4,8 @@ module
 public import Perennial.Proof.ProofPrelude
 public import Perennial.ManualProof.time
 public import Perennial.GeneratedProof.errors
+public import Perennial.GeneratedProof.internal.gomodel
+public import Perennial.GeneratedProof.sync.atomic
 public import Perennial.Golang.Theory
 public import Perennial.Code.time
 

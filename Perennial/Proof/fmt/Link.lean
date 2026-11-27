@@ -9,6 +9,7 @@ public import Perennial.Proof.errors.Link
 public import Perennial.Proof.fmt.Errorf
 public import Perennial.Proof.fmt.Fprint
 public import Perennial.Proof.fmt.Fprintf
+public import Perennial.Proof.fmt.Fprintln
 public import Perennial.Proof.fmt.Printf
 public import Perennial.Proof.fmt.Sprintf
 public import Perennial.Proof.fmt.buffer__write
@@ -43,6 +44,8 @@ public import Perennial.Proof.fmt.pp__free
 public import Perennial.Proof.fmt.pp__handleMethods
 public import Perennial.Proof.fmt.pp__printArg
 public import Perennial.Proof.fmt.tooLarge
+public import Perennial.Proof.internal.gomodel.Link
+public import Perennial.Proof.internal.stringslite.Link
 public import Perennial.Proof.io.Link
 public import Perennial.Proof.reflect.Link
 public import Perennial.Proof.strconv.Link
@@ -62,18 +65,6 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
 
-theorem fmt.wp_Errorf : fmt.Errorf.spec (GF := GF) (hG := hG) :=
-  fmt.Errorf.wp_proof
-
-theorem fmt.wp_Fprint : fmt.Fprint.spec (GF := GF) (hG := hG) :=
-  fmt.Fprint.wp_proof
-
-theorem fmt.wp_Fprintf : fmt.Fprintf.spec (GF := GF) (hG := hG) :=
-  fmt.Fprintf.wp_proof
-
-theorem fmt.wp_Printf : fmt.Printf.spec (GF := GF) (hG := hG) :=
-  fmt.Printf.wp_proof
-
 theorem fmt.fmt.wp_clearflags : fmt.fmt.clearflags.spec (GF := GF) (hG := hG) :=
   fmt.fmt.clearflags.wp_proof
 
@@ -85,6 +76,24 @@ theorem fmt.wp_newPrinter : fmt.newPrinter.spec (GF := GF) (hG := hG) :=
 
 theorem fmt.buffer.wp_writeString : fmt.buffer.writeString.spec (GF := GF) (hG := hG) :=
   fmt.buffer.writeString.wp_proof
+
+theorem fmt.pp.wp_free : fmt.pp.free.spec (GF := GF) (hG := hG) :=
+  fmt.pp.free.wp_proof sync.Pool.wp_Put
+
+theorem fmt.wp_Errorf : fmt.Errorf.spec (GF := GF) (hG := hG) :=
+  fmt.Errorf.wp_proof internal.stringslite.wp_IndexByte fmt.wp_newPrinter fmt.buffer.wp_writeString fmt.pp.wp_free internal.gomodel.wp_Choose internal.gomodel.wp_ChooseUint64
+
+theorem fmt.wp_Fprint : fmt.Fprint.spec (GF := GF) (hG := hG) :=
+  fmt.Fprint.wp_proof fmt.wp_newPrinter fmt.buffer.wp_writeString fmt.pp.wp_free internal.gomodel.wp_Choose internal.gomodel.wp_ChooseUint64
+
+theorem fmt.wp_Fprintf : fmt.Fprintf.spec (GF := GF) (hG := hG) :=
+  fmt.Fprintf.wp_proof fmt.wp_newPrinter fmt.buffer.wp_writeString fmt.pp.wp_free internal.gomodel.wp_Choose internal.gomodel.wp_ChooseUint64
+
+theorem fmt.wp_Fprintln : fmt.Fprintln.spec (GF := GF) (hG := hG) :=
+  fmt.Fprintln.wp_proof fmt.wp_newPrinter fmt.buffer.wp_writeString fmt.pp.wp_free internal.gomodel.wp_Choose internal.gomodel.wp_ChooseUint64
+
+theorem fmt.wp_Printf : fmt.Printf.spec (GF := GF) (hG := hG) :=
+  fmt.Printf.wp_proof fmt.wp_newPrinter fmt.buffer.wp_writeString fmt.pp.wp_free internal.gomodel.wp_Choose internal.gomodel.wp_ChooseUint64
 
 theorem fmt.buffer.wp_writeByte : fmt.buffer.writeByte.spec (GF := GF) (hG := hG) :=
   fmt.buffer.writeByte.wp_proof
@@ -164,14 +173,11 @@ theorem fmt.pp.wp_printArg : fmt.pp.printArg.spec (GF := GF) (hG := hG) :=
 theorem fmt.pp.wp_doPrintf : fmt.pp.doPrintf.spec (GF := GF) (hG := hG) :=
   fmt.pp.doPrintf.wp_proof fmt.buffer.wp_writeString fmt.buffer.wp_writeByte fmt.fmt.wp_clearflags fmt.pp.wp_argNumber fmt.wp_parsenum unicode.utf8.wp_DecodeRuneInString fmt.pp.wp_printArg
 
-theorem fmt.pp.wp_free : fmt.pp.free.spec (GF := GF) (hG := hG) :=
-  fmt.pp.free.wp_proof sync.Pool.wp_Put
-
 theorem fmt.wp_Sprintf : fmt.Sprintf.spec (GF := GF) (hG := hG) :=
   fmt.Sprintf.wp_proof fmt.wp_newPrinter fmt.pp.wp_doPrintf fmt.pp.wp_free
 
 theorem fmt.wp_initialize' : fmt.initialize'.spec (GF := GF) (hG := hG) :=
-  fmt.initialize'.wp_proof sync.wp_initialize' io.wp_initialize' errors.wp_initialize' unicode.utf8.wp_initialize' reflect.wp_initialize' strconv.wp_initialize' errors.wp_New
+  fmt.initialize'.wp_proof sync.wp_initialize' io.wp_initialize' errors.wp_initialize' unicode.utf8.wp_initialize' reflect.wp_initialize' strconv.wp_initialize' errors.wp_New internal.gomodel.wp_initialize' internal.stringslite.wp_initialize'
 
 end link
 

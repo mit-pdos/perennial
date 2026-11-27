@@ -798,8 +798,10 @@ loads them at the end.
 
 ### Panics
 
-A panic outcome is a value, `PanicV p` (`GooseLang/Lang.lean`): `panic(p)` steps
-to it (`wp_panic : Φ (PanicV #p) ⊢ WP (@! go.panic #p) {{ Φ }}`), and it unwinds
+A panic outcome is a value, `PanicV p` (`GooseLang/Lang.lean`): `panic(p)` with a
+non-`nil` `p` steps to it (`wp_panic : Φ (PanicV #(interface.ok p)) ⊢
+WP (@! go.panic #(interface.ok p)) {{ Φ }}`; `panic(nil)` is stuck, as Go panics
+with a `*runtime.PanicNilError` there), and it unwinds
 every evaluation frame but that of `Catch e h k`, which continues with `h p` (a
 panic) or `k v` (a value). So a postcondition `Φ` also receives panics, while a
 spec `{{ P }} e {{ RET v; Q }}` names a normal value (`#x` is never a panic,

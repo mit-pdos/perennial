@@ -7,6 +7,8 @@ translate = [
   "medianAdjacent", "reverseRange", "swapRange", "stable", "symMerge", "rotate",
   # the string helpers: SearchStrings over Search, Strings over slices.Sort
   "SearchStrings", "Strings",
+  # Ints over slices.Sort
+  "Ints",
   # StringSlice's sort.Interface and its Sort method
   "StringSlice.Len", "StringSlice.Less", "StringSlice.Swap", "StringSlice.Sort",
 ]

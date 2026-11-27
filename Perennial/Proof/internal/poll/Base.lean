@@ -27,16 +27,23 @@ variable [sem : go.Semantics]
 variable [package_sem : internal.poll.Assumptions]
 
 /-- The package-initialized state (persistent; Go never writes these variables after
-initialization): `ErrNoDeadline` holds its `errors.New` error, `ErrDeadlineExceeded` some error
-value (`&DeadlineExceededError{}`). `os`'s initializer copies both. -/
+initialization): `ErrNoDeadline` and `ErrNotPollable` hold their `errors.New` errors,
+`ErrDeadlineExceeded` some error value (`&DeadlineExceededError{}`). `os`'s initializer copies
+`ErrNoDeadline` and `ErrDeadlineExceeded`; fmt's model of `os.Stdout`'s `Write` returns
+`ErrNotPollable`. -/
 abbrev isInit : IProp GF :=
   iprop("#HErrNoDeadline" ∷ errors.newVar ErrNoDeadline go!"file type does not support deadline" ∗
-  "#HErrDeadlineExceeded" ∷ ∃ e : GoInterface, globalAddr ErrDeadlineExceeded ↦□ e)
+  "#HErrDeadlineExceeded" ∷ (∃ e : GoInterface, globalAddr ErrDeadlineExceeded ↦□ e) ∗
+  "#HErrNotPollable" ∷ errors.newVar ErrNotPollable go!"not pollable")
 
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.internal.poll :=
   define_is_pkg_init isInit
 instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.internal.poll :=
   build_get_is_pkg_init_wf
+
+theorem isInit_access :
+    isPkgInit (PROP := IProp GF) pkg_id.internal.poll ⊢ isInit (GF := GF) := by
+  with_unfolding_all exact isPkgInit_access (PROP := IProp GF) pkg_id.internal.poll
 
 end init
 

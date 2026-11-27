@@ -781,6 +781,98 @@ noncomputable def NewReplacer.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
   (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Replacer.ty)))) (Var "$res0")))))
 
+/-- Count counts the number of non-overlapping instances of substr in s.
+    If substr is an empty string, Count returns 1 + the number of Unicode code points in s.
+
+    go: strings.go:42:6 -/
+noncomputable def Count.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Lam "substr"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "substr" (App (Val (GoInstruction (GoAlloc go.string))) (Var "substr"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 0))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
+  (Val #true))) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "substr"))
+  (App (App (App (Val (GoInstruction (FuncResolve Index' []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "substr"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int)))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))))
+  (Lam BAnon
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "substr"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (Val #(W64 1)))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "$a1" (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "substr")) (Val #(W64 0))))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.bytealg.CountString []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "substr"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.unicode.utf8.RuneCountInString []))) (Val #())) (Var "$a0"))) (Val #(W64 1))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
+
+/-- Contains reports whether substr is within s.
+
+    go: strings.go:62:6 -/
+noncomputable def Contains.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Lam "substr"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "substr" (App (Val (GoInstruction (GoAlloc go.string))) (Var "substr"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "substr"))
+  (App (App (App (Val (GoInstruction (FuncResolve Index' []))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W64 0))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))
+
 /-- LastIndex returns the index of the last instance of substr in s, or -1 if substr is not present in s.
 
     go: strings.go:82:6 -/
@@ -949,15 +1041,227 @@ noncomputable def IndexByte.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
+/-- MODEL: IndexRune(s, r) is the index of the first instance of the Unicode
+    code point r in s, or -1. The first three cases are Go's, verbatim: an ASCII
+    r is searched for as a byte, utf8.RuneError as the first rune a range loop
+    over s decodes to RuneError (an invalid UTF-8 sequence, or U+FFFD itself),
+    and an invalid r is in no string. Go's last case, a valid non-ASCII r, uses
+    goto, which goose does not translate: it searches for the last byte of
+    rs := string(r) with IndexByte, compares the bytes before it, and after
+    bytealg.Cutover failed candidates hands the rest of s to
+    bytealg.IndexString(s[i-last:], rs); each step skips only positions where rs
+    does not start, so it returns the first index of rs in s, or -1. The model
+    computes that with Index(s, string(r)) (stringslite.Index, whose search
+    ends in the same bytealg.IndexString).
+
+    go: strings.go:56:6 -/
+noncomputable def IndexRune.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Lam "r"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.rune))) (Var "r"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (Let "$sw" (Val #true)
+  (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (If (App (Val (GoInstruction (GoOp GoLe go.rune))) (Pair (Val #(W32 0)) (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")))) (App (Val (GoInstruction (GoOp GoLt go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (Val #(W32 128)))) (Val #false))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "$a1" (App (Val (GoInstruction (Convert go.rune go.byte))) (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")))
+  (App (App (App (Val (GoInstruction (FuncResolve IndexByte []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (App (Val (GoInstruction (GoOp GoEquals go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (Val #(W32 65533))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val string.forRange) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (Val #(W32 65533)))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$key")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "r") (Var "$value"))))))))))))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.rune))) (Var "r"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.unicode.utf8.ValidRune []))) (Val #())) (Var "$a0"))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "$a1" (App (Val (GoInstruction (Convert go.rune go.string))) (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")))
+  (App (App (App (Val (GoInstruction (FuncResolve Index' []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
+
+/-- IndexAny returns the index of the first instance of any Unicode code point
+    from chars in s, or -1 if no Unicode code point from chars is present in s.
+
+    go: strings.go:201:6 -/
+noncomputable def IndexAny.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Lam "chars"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "chars" (App (Val (GoInstruction (GoAlloc go.string))) (Var "chars"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "c" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val string.forRange) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "chars"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.rune))) (Var "c"))
+  (App (App (App (Val (GoInstruction (FuncResolve IndexRune []))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W64 0)))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$key")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "c") (Var "$value"))))))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (Val #(W64 8)))))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "chars"))
+  (App (App (Val (GoInstruction (FuncResolve makeASCIISet []))) (Val #())) (Var "$a0")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "isASCII" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "as" (App (Val (GoInstruction (GoAlloc asciiSet.ty))) (App (Val (GoInstruction (GoZeroVal asciiSet.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "isASCII"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$r0" (Val #(W64 0))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))))))) (Lam BAnon
+  (If (Let "$a0" (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType asciiSet.ty) go!"contains"))) (Var "as")) (Var "$a0")))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "isASCII") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore asciiSet.ty))) (Pair (Var "as") (Var "$r0"))))))))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "chars"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (Val #(W64 1)))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.byte go.rune))) (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "chars")) (Val #(W64 0)))))
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.rune))) (Var "r"))
+  (App (App (App (Val (GoInstruction (FuncResolve IndexRune []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (Val #(W32 128)))))
+  (Let "$r0" (Val #(W32 65533))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "r") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "r") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "chars")) (Val #(go!"")))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
+
 /-- MODEL: Split(s, sep) is the substrings of s between the occurrences of sep
     (found left to right, not overlapping), as Go's genSplit(s, sep, 0, -1)
     computes them. The model finds the occurrences by testing HasPrefix at each
-    position: Go's genSplit counts them with Count and finds them with Index,
-    both of which end in internal/bytealg's assembly. For an empty sep, Go
-    splits s into its UTF-8 sequences (explode); the model is stuck there, so
-    every spec of Split requires sep to be non-empty.
+    position, where Go's genSplit counts them with Count and finds them with
+    Index. Goose translates the real Split, but at len(s) = 2^63-1 (a string gc
+    cannot hold) genSplit's len(s)+1 overflows and it panics, so its spec would
+    need a bound on len(s) that Split's spec does not have
+    (Perennial/Code/strings.toml). The model returns the same fields as
+    genSplit wherever genSplit does not panic, and there only: building such a
+    string needs an allocation gc refuses, which the semantics allows
+    (docs/KNOWN_LIMITATIONS.md, "No limit on allocation size"). For an empty
+    sep, Go splits s into its UTF-8 sequences (explode); the model is stuck
+    there, so every spec of Split requires sep to be non-empty.
 
-    go: strings.go:15:6 -/
+    go: strings.go:24:6 -/
 noncomputable def Split.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "sep"
@@ -1423,6 +1727,26 @@ noncomputable def TrimSuffix.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
+
+/-- Index returns the index of the first instance of substr in s, or -1 if substr is not present in s.
+
+    go: strings.go:1265:6 -/
+noncomputable def Index.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Lam "substr"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "substr" (App (Val (GoInstruction (GoAlloc go.string))) (Var "substr"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "substr"))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.stringslite.Index' []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
 /-- Cut slices s around the first instance of sep,
     returning the text before and after sep.
@@ -2005,8 +2329,12 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   asciiSet_instance : asciiSet.TypeAssumptions
   Compare_unfold : FuncUnfold Compare [] Compare.impl
   NewReplacer_unfold : FuncUnfold NewReplacer [] NewReplacer.impl
+  Count_unfold : FuncUnfold Count [] Count.impl
+  Contains_unfold : FuncUnfold Contains [] Contains.impl
   LastIndex_unfold : FuncUnfold LastIndex [] LastIndex.impl
   IndexByte_unfold : FuncUnfold IndexByte [] IndexByte.impl
+  IndexRune_unfold : FuncUnfold IndexRune [] IndexRune.impl
+  IndexAny_unfold : FuncUnfold IndexAny [] IndexAny.impl
   Split_unfold : FuncUnfold Split [] Split.impl
   Join_unfold : FuncUnfold Join [] Join.impl
   HasPrefix_unfold : FuncUnfold HasPrefix [] HasPrefix.impl
@@ -2017,6 +2345,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   trimLeftASCII_unfold : FuncUnfold trimLeftASCII [] trimLeftASCII.impl
   TrimPrefix_unfold : FuncUnfold TrimPrefix [] TrimPrefix.impl
   TrimSuffix_unfold : FuncUnfold TrimSuffix [] TrimSuffix.impl
+  Index_unfold : FuncUnfold Index' [] Index.impl
   Cut_unfold : FuncUnfold Cut [] Cut.impl
   import_gomodel_Assumption : _root_.Perennial.internal.gomodel.Assumptions
   import_bytealg_Assumption : _root_.Perennial.internal.bytealg.Assumptions
@@ -2040,8 +2369,12 @@ attribute [instance] Assumptions.Builder_instance
   Assumptions.asciiSet_instance
   Assumptions.Compare_unfold
   Assumptions.NewReplacer_unfold
+  Assumptions.Count_unfold
+  Assumptions.Contains_unfold
   Assumptions.LastIndex_unfold
   Assumptions.IndexByte_unfold
+  Assumptions.IndexRune_unfold
+  Assumptions.IndexAny_unfold
   Assumptions.Split_unfold
   Assumptions.Join_unfold
   Assumptions.HasPrefix_unfold
@@ -2052,6 +2385,7 @@ attribute [instance] Assumptions.Builder_instance
   Assumptions.trimLeftASCII_unfold
   Assumptions.TrimPrefix_unfold
   Assumptions.TrimSuffix_unfold
+  Assumptions.Index_unfold
   Assumptions.Cut_unfold
   Assumptions.import_gomodel_Assumption
   Assumptions.import_bytealg_Assumption

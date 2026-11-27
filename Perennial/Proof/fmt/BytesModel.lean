@@ -1,6 +1,6 @@
 /-
-Specs of the helpers of the model of `fmt` (`Perennial/TrustedCode/fmt.lean`) that format a `[]byte`
-argument: `hexNibble`, `quoteByte`, `quoteBytes` and `formatSlice`.
+Specs of the helpers of the model printer of `fmt` (`goose/model/overlay/fmt/printmodel.go`) that
+format a `[]byte` argument: `hexNibble`, `quoteByte`, `quoteBytes` and `formatSlice`.
 -/
 module
 
@@ -27,10 +27,9 @@ variable [package_sem : fmt.Assumptions]
 /-- The helper `fmt.hexNibble`: the hexadecimal digit of `d` (below 16). -/
 theorem wp_hexNibble (d : w8) (upper : Bool) (hd : uint.nat d < 16) :
     {{ (True : IProp GF) }}
-      (App (App (Val hexNibble) (Val #d)) (Val #upper))
+      (App (App (Val (@! hexNibble)) (Val #d)) (Val #upper))
     {{ (r : w8), RET #r; ⌜r = hexNibbleByte upper (uint.nat d)⌝ }} := by
-  iintro %Φ - HΦ
-  unfold hexNibble
+  wp_start
   wp_auto
   wp_if_destruct
   · iapply HΦ; ipureintro
@@ -123,10 +122,9 @@ set_option maxHeartbeats 4000000 in
 /-- The helper `fmt.quoteByte`: the byte `c` as `strconv.Quote` writes it (`quotedByte`). -/
 theorem wp_quoteByte (c : w8) :
     {{ (True : IProp GF) }}
-      (App (Val quoteByte) (Val #c))
+      (App (Val (@! quoteByte)) (Val #c))
     {{ (s : GoString), RET #s; ⌜s = quotedByte c⌝ }} := by
-  iintro %Φ - HΦ
-  unfold quoteByte
+  wp_start
   wp_auto
   repeat' (first | wp_if_destruct | wp_auto)
   all_goals first
@@ -157,11 +155,10 @@ set_option maxHeartbeats 2000000 in
 is not; it reads the bytes and gives them back. -/
 theorem wp_quoteBytes (sl : GoSlice) (bs : GoString) (dq : DFrac) :
     {{ (sl ↦*{dq} bs : IProp GF) }}
-      (App (Val quoteBytes) (Val #sl))
+      (App (Val (@! quoteBytes)) (Val #sl))
     {{ (s : GoString) (ok : Bool), RET (PairV #s #ok); sl ↦*{dq} bs ∗
         ⌜(ok = true ↔ ∀ b ∈ bs, uint.nat b < 128) ∧ (ok = true → s = quoteASCII bs)⌝ }} := by
-  iintro %Φ Hsl HΦ
-  unfold quoteBytes
+  wp_start as Hsl
   wp_auto
   ihave %Hlen := ownSlice_len $$ Hsl
   ihave IH : iprop(∃ (i : w64) (o : GoString) (cv : w8),
@@ -227,10 +224,9 @@ set_option maxHeartbeats 2000000 in
 /-- The helper `fmt.hexBytes`: `bytesHex upper bs`; it reads the bytes and gives them back. -/
 theorem wp_hexBytes (sl : GoSlice) (bs : GoString) (dq : DFrac) (upper : Bool) :
     {{ (sl ↦*{dq} bs : IProp GF) }}
-      (App (App (Val hexBytes) (Val #sl)) (Val #upper))
+      (App (App (Val (@! hexBytes)) (Val #sl)) (Val #upper))
     {{ (s : GoString), RET #s; sl ↦*{dq} bs ∗ ⌜s = bytesHex upper bs⌝ }} := by
-  iintro %Φ Hsl HΦ
-  unfold hexBytes
+  wp_start as Hsl
   wp_auto
   ihave %Hlen := ownSlice_len $$ Hsl
   ihave IH : iprop(∃ (i : w64) (o : GoString) (cv : w8),
@@ -285,10 +281,9 @@ set_option maxHeartbeats 2000000 in
 /-- The helper `fmt.decBytes`: `bytesDec bs`; it reads the bytes and gives them back. -/
 theorem wp_decBytes (sl : GoSlice) (bs : GoString) (dq : DFrac) :
     {{ (sl ↦*{dq} bs : IProp GF) }}
-      (App (Val decBytes) (Val #sl))
+      (App (Val (@! decBytes)) (Val #sl))
     {{ (s : GoString), RET #s; sl ↦*{dq} bs ∗ ⌜s = bytesDec bs⌝ }} := by
-  iintro %Φ Hsl HΦ
-  unfold decBytes
+  wp_start as Hsl
   wp_auto
   ihave %Hlen := ownSlice_len $$ Hsl
   ihave IH : iprop(∃ (i : w64) (o : GoString) (kv : w64) (cv : w8),
@@ -369,10 +364,9 @@ set_option maxHeartbeats 2000000 in
 /-- The helper `fmt.joinStrings`: `stringsJoin ss`; it reads the strings and gives them back. -/
 theorem wp_joinStrings (sl : GoSlice) (ss : List GoString) (dq : DFrac) :
     {{ (sl ↦*{dq} ss : IProp GF) }}
-      (App (Val joinStrings) (Val #sl))
+      (App (Val (@! joinStrings)) (Val #sl))
     {{ (s : GoString), RET #s; sl ↦*{dq} ss ∗ ⌜s = stringsJoin ss⌝ }} := by
-  iintro %Φ Hsl HΦ
-  unfold joinStrings
+  wp_start as Hsl
   wp_auto
   ihave %Hlen := ownSlice_len $$ Hsl
   ihave IH : iprop(∃ (i : w64) (o : GoString) (kv : w64) (sv : GoString),
@@ -450,7 +444,7 @@ theorem wp_formatSliceB (B : GoInterface → Option Lent) (dqb : DFrac) (format 
       ∀ ii, x = interface.ok ii → (ii.ty = go.SliceType go.byte ∨ ii.ty = go.SliceType go.string) →
         (B x).isSome) :
     {{ bytesArgOwn (GF := GF) dqb B x }}
-      (App (App (App (Val formatSlice) (Val #format)) (Val #i)) (Val #x))
+      (App (App (App (Val (@! formatSlice)) (Val #format)) (Val #i)) (Val #x))
     {{ (s : GoString) (next : w64) (ok : Bool), RET (PairV (PairV #s #next) #ok);
         bytesArgOwn dqb B x ∗
         ⌜ok = true → sint.Z next = sint.Z i + 2 ∧ sint.Z i < sint.Z next ∧
@@ -460,8 +454,7 @@ theorem wp_formatSliceB (B : GoInterface → Option Lent) (dqb : DFrac) (format 
           AuxStep format (sint.nat i) (sint.nat next)⌝ ∗
         ⌜ok = false → ∀ args, ¬ BytesSimple B (format.drop (sint.nat i + 1)) (x :: args) ∧
           ¬ StringsSimple B (format.drop (sint.nat i + 1)) (x :: args)⌝ }} := by
-  iintro %Φ Hown HΦ
-  unfold formatSlice
+  wp_start as Hown
   wp_auto
   wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %Hflen
   wp_if_destruct
@@ -739,173 +732,6 @@ theorem wp_formatSliceB (B : GoInterface → Option Lent) (dqb : DFrac) (format 
       rw [Hdrop2] at hr
       rw [Hq.2 rfl]
       exact SprintfOutB.bytesQ ii bs _ args r hty hbs (Hq.1.1 rfl) hr
-
-omit package_sem in
-/-- A byte's typed points-to is its heap points-to. -/
-theorem w8_typedPointsto_heap (l : Loc) (b : w8) (dq : DFrac) :
-    typedPointsto (GF := GF) l b dq ⊢ heapPointsto l dq #b := by
-  rw [typedPointsto_unseal_eq]
-  change iprop(heapPointsto l dq #b ∗ ⌜l ≠ null⌝) ⊢ _
-  iintro ⟨H, -⟩
-  iexact H
-
-omit package_sem in
-theorem sliceIndexRef_slice0 (s : GoSlice) (high : w64) :
-    sliceIndexRef w8 0 (slice.slice s w8 (W64 0) high) = sliceIndexRef w8 0 s := by
-  simp [slice.slice, sliceIndexRef, go.arrayIndexRef_0]
-
-set_option maxHeartbeats 2000000 in
-/-- The model's `retireLoop s`: a write begun and never finished on each byte of `s`, which takes
-the bytes for good. -/
-theorem wp_retireLoop :
-    ⊢ ∀ (s : GoSlice) (vs : List w8) (Φ : val → IProp GF),
-      (s ↦* vs : IProp GF) -∗ Φ #() -∗ WP (App (Val retireLoop) (Val #s)) {{ Φ }} := by
-  unfold retireLoop
-  iloeb as IH
-  iintro %s %vs %Φ Hs HΦ
-  ihave %Hlen := ownSlice_len $$ Hs
-  ihave %Hwf := ownSlice_wf s _ vs $$ Hs
-  wp_pures
-  wp_if_destruct
-  · obtain ⟨v, hv⟩ : ∃ v, vs[0]? = some v := ⟨_, List.getElem?_eq_getElem (by word)⟩
-    icases (ownSlice_split_all (W64 1) s _ vs ⟨by decide, by word⟩).1 $$ Hs with ⟨H0, Hrest⟩
-    have hv0 : (vs.take (sint.nat (W64 1)))[(0 : Int).toNat]? = some v := by
-      rw [show sint.nat (W64 1) = 1 from rfl]; simpa using hv
-    icases ownSlice_elem_acc 0 v _ _ _ (Int.le_refl 0) hv0 $$ H0 with ⟨Hv, -⟩
-    rw [sliceIndexRef_slice0] at *
-    ihave Hv := w8_typedPointsto_heap _ _ _ $$ Hv
-    wp_pures
-    rw [if_pos ⟨Int.le_refl _, by word⟩]
-    rw [show sint.Z (W64 0) = 0 from rfl]
-    wp_bind (PrepareWrite _)
-    wp_apply_core (wp_prepare_write (sliceIndexRef w8 0 s) #v) $$ Hv
-    iintro -
-    wp_pures
-    rw [if_pos ⟨by decide, by word, Hwf.2⟩]
-    iapply IH $$ Hrest HΦ
-  · iexact HΦ
-
-set_option maxHeartbeats 2000000 in
-/-- The model's `fillArbitraryBytes s`: an arbitrary byte in each element of `s`. -/
-theorem wp_fillArbitraryBytes :
-    ⊢ ∀ (s : GoSlice) (vs : List w8) (Φ : val → IProp GF),
-      (s ↦* vs : IProp GF) -∗
-      (∀ vs' : List w8, s ↦* vs' -∗ ⌜vs'.length = vs.length⌝ -∗ Φ #()) -∗
-      WP (App (Val fillArbitraryBytes) (Val #s)) {{ Φ }} := by
-  unfold fillArbitraryBytes
-  iloeb as IH
-  iintro %s %vs %Φ Hs HΦ
-  ihave %Hlen := ownSlice_len $$ Hs
-  ihave %Hwf := ownSlice_wf s _ vs $$ Hs
-  wp_pures
-  wp_if_destruct
-  · wp_pures
-    rw [if_pos ⟨Int.le_refl _, by word⟩]
-    wp_apply wp_ArbitraryInt as %x -
-    wp_pures
-    rw [show sint.Z (W64 0) = 0 from rfl]
-    wp_apply (wp_store_slice_index s 0 vs (W8 (uint.Z x)) (V := w8) (t := go.byte)) $$ [$Hs]
-      as Hs
-    · ipureintro; constructor <;> word
-    icases (ownSlice_split_all (W64 1) s _ _ ⟨by decide, by word⟩).1 $$ Hs with ⟨H0, Hrest⟩
-    wp_pures
-    rw [if_pos ⟨by decide, by word, Hwf.2⟩]
-    iapply IH $$ Hrest
-    iintro %vs' Hrest %Hl
-    have hAlen : ((vs.set (Int.toNat 0) (W8 (uint.Z x))).take (sint.nat (W64 1))).length =
-        sint.nat (W64 1) := by
-      rw [List.length_take, List.length_set, show sint.nat (W64 1) = 1 from rfl]; word
-    iapply HΦ $$ %(((vs.set (Int.toNat 0) (W8 (uint.Z x))).take (sint.nat (W64 1))) ++ vs') [H0 Hrest]
-    · iapply (ownSlice_split_all (W64 1) s _
-        (((vs.set (Int.toNat 0) (W8 (uint.Z x))).take (sint.nat (W64 1))) ++ vs')
-        ⟨by decide, by word⟩).2
-      rw [List.take_left' hAlen, List.drop_left' hAlen]
-      iframe
-    · ipureintro
-      rw [List.length_append, hAlen, Hl, List.length_drop, List.length_set]
-      word
-  · iapply HΦ $$ Hs
-    ipureintro; rfl
-
-set_option maxHeartbeats 2000000 in
-/-- The model's `printerAlloc n`: a slice of `n` zeros with its capacity (`nil` for some `n = 0`). -/
-theorem wp_printerAlloc (n : w64) (hn : 0 ≤ sint.Z n) :
-    {{ (True : IProp GF) }}
-      (App (Val printerAlloc) (Val #n))
-    {{ (b : GoSlice), RET #b; b ↦* List.replicate (sint.nat n) (zero_val w8) ∗
-        ownSliceCap w8 b (DFrac.own 1) }} := by
-  iintro %Φ - HΦ
-  unfold printerAlloc
-  wp_pures
-  wp_if_destruct
-  · wp_apply wp_ArbitraryInt as %x -
-    wp_pures
-    wp_if_destruct
-    · iapply HΦ
-      rw [show sint.nat (W64 0) = 0 from rfl, List.replicate_zero]
-      isplitl []
-      · iapply ownSlice_nil
-      · iapply ownSliceCap_nil
-    · wp_apply wp_new_cap as %c %Hc
-      wp_apply (wp_slice_make3 (V := w8) _ c ⟨by word, Hc⟩) as %b ⟨Hb, Hcap, -⟩
-      iapply HΦ; iframe
-  · wp_apply wp_new_cap as %c %Hc
-    wp_apply (wp_slice_make3 (V := w8) n c ⟨hn, Hc⟩) as %b ⟨Hb, Hcap, -⟩
-    iapply HΦ; iframe
-
-set_option maxHeartbeats 2000000 in
-/-- The model's `printerBuf s`: a new slice holding `s`, with its spare capacity (some bytes). -/
-theorem wp_printerBuf (s : GoString) :
-    {{ (True : IProp GF) }}
-      (App (Val printerBuf) (Val #s))
-    {{ (b : GoSlice), RET #b; b ↦* s ∗ ∃ vs : List w8, slice.slice b w8 b.len b.cap ↦* vs }} := by
-  iintro %Φ - HΦ
-  unfold printerBuf
-  wp_pures
-  wp_apply wp_string_to_bytes s as %src ⟨Hsrc, -⟩
-  ihave %Hsl := ownSlice_len $$ Hsrc
-  wp_pures
-  wp_apply (wp_printerAlloc src.len Hsl.2) as %b ⟨Hb, Hcap⟩
-  ihave %Hblen := ownSlice_len $$ Hb
-  ihave %Hbwf := ownSlice_wf b _ _ $$ Hb
-  icases ownSliceCap_split (V := w8) b.cap b $$ [$Hcap] with ⟨%vs0, Hspare, -⟩
-  · ipureintro; constructor <;> word
-  have hbl : src.len = b.len := by
-    have := Hblen.1; rw [List.length_replicate] at this; word
-  wp_pures
-  rw [hbl, if_pos ⟨Hbwf.1, Hbwf.2, by word⟩]
-  wp_bind (App (Val fillArbitraryBytes) _)
-  iapply wp_fillArbitraryBytes $$ Hspare
-  iintro %vs' Hspare %-
-  wp_pures
-  wp_apply (wp_slice_copy (V := w8) b _ src s (DFrac.own 1)) $$ [$Hb $Hsrc] as %m ⟨%Hm, Hb, -⟩
-  wp_pures
-  iapply HΦ
-  have hsb : s.length = sint.nat b.len := by rw [Hsl.1, hbl]
-  have hlist : List.take (List.replicate (sint.nat b.len) (zero_val w8)).length s ++
-      List.drop s.length (List.replicate (sint.nat b.len) (zero_val w8)) = s := by
-    rw [List.length_replicate, ← hsb, List.take_length, List.drop_eq_nil_of_le (by simp),
-      List.append_nil]
-  rw [hlist]
-  iframe
-
-/-- The model's `retire b`: a write begun and never finished on each byte of `b` up to its capacity,
-which takes the bytes and the spare capacity for good. -/
-theorem wp_retire (b : GoSlice) (bs vs : List w8) :
-    {{ (b ↦* bs ∗ slice.slice b w8 b.len b.cap ↦* vs : IProp GF) }}
-      (App (Val retire) (Val #b))
-    {{ RET #(); True }} := by
-  iintro %Φ ⟨Hb, Hs⟩ HΦ
-  ihave %Hwf := ownSlice_wf b _ bs $$ Hb
-  unfold retire
-  wp_pures
-  wp_bind (App (Val retireLoop) (Val #b))
-  iapply wp_retireLoop $$ Hb
-  wp_pures
-  rw [if_pos ⟨Hwf.1, Hwf.2, by word⟩]
-  iapply wp_retireLoop $$ Hs
-  iapply HΦ
-  itrivial
 
 end wps
 

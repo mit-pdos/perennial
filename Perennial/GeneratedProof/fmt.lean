@@ -4,6 +4,8 @@ module
 public import Perennial.Proof.ProofPrelude
 public import Perennial.ManualProof.fmt
 public import Perennial.GeneratedProof.errors
+public import Perennial.GeneratedProof.internal.gomodel
+public import Perennial.GeneratedProof.internal.stringslite
 public import Perennial.GeneratedProof.io
 public import Perennial.GeneratedProof.reflect
 public import Perennial.GeneratedProof.strconv

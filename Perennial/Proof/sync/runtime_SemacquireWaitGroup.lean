@@ -28,9 +28,18 @@ theorem sync.runtime_SemacquireWaitGroup.wp_proof
     sync.runtime_SemacquireWaitGroup.spec (GF := GF) (hG := hG) := by
   intro sema γ N
   wp_start as #Hsem
-  rw [show (go!"sync.runtime_Semacquire" : GoString) = runtime_Semacquire from rfl]
-  wp_apply_core wp_runtime_Semacquire sema γ N $$ [] HΦ
-  iframe #
+  wp_auto
+  wp_apply_core wp_runtime_Semacquire sema γ N $$ [] [-]
+  · iframe #
+  imod HΦ with ⟨%v, Hv, HΦ⟩
+  imodintro
+  iexists v
+  iframe Hv
+  iintro %Hpos Hv
+  imod HΦ $$ %Hpos Hv with HΦ
+  imodintro
+  wp_auto
+  iexact HΦ
 
 end proof
 

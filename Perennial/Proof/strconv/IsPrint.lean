@@ -38,15 +38,15 @@ theorem strconv.IsPrint.wp_proof (wp_bsearch : strconv.bsearch.spec (GF := GF) (
     all_goals (iapply HΦ; itrivial)
   ihave %Hp16 := ownSlice_len _ _ _ $$ Sp16
   ihave %Hp32 := ownSlice_len _ _ _ $$ Sp32
-  have hp16 : sint.Z p16.len = 412 := by
+  have hp16 : sint.Z p16.len = 424 := by
     obtain ⟨h1, h2⟩ := Hp16; simp only [sint.nat, sint.Z] at h1 h2 ⊢; omega
-  have hp32 : sint.Z p32.len = 566 := by
+  have hp32 : sint.Z p32.len = 508 := by
     obtain ⟨h1, h2⟩ := Hp32; simp only [sint.nat, sint.Z] at h1 h2 ⊢; omega
   repeat' (first | wp_if_destruct | wp_auto)
   · wp_apply wp_bsearch.1 p16 xp16 _ DFrac.discard $$ [$Sp16] as %i %found ⟨-, %Hi⟩
     wp_if_destruct
     · iapply HΦ; itrivial
-    have hidx := strconv.isPrint_idx i 412 (Or.inl rfl) Hi.1 (by omega)
+    have hidx := strconv.isPrint_idx i 424 (Or.inl rfl) Hi.1 (by omega)
     rw [ite_eq_left (by omega)]
     obtain ⟨x0, hx0⟩ : ∃ x, xp16[(sint.Z (i &&& ~~~W64 1)).toNat]? = some x :=
       ⟨_, List.getElem?_eq_getElem (by omega)⟩
@@ -67,7 +67,7 @@ theorem strconv.IsPrint.wp_proof (wp_bsearch : strconv.bsearch.spec (GF := GF) (
     wp_apply wp_bsearch.2 p32 xp32 _ DFrac.discard $$ [$Sp32] as %i %found ⟨-, %Hi⟩
     wp_if_destruct
     · iapply HΦ; itrivial
-    have hidx := strconv.isPrint_idx i 566 (Or.inr rfl) Hi.1 (by omega)
+    have hidx := strconv.isPrint_idx i 508 (Or.inr rfl) Hi.1 (by omega)
     rw [ite_eq_left (by omega)]
     obtain ⟨x0, hx0⟩ : ∃ x, xp32[(sint.Z (i &&& ~~~W64 1)).toNat]? = some x :=
       ⟨_, List.getElem?_eq_getElem (by omega)⟩

@@ -343,7 +343,6 @@ def main():
     if args.models:
         run_goose(goose_dir, "./model/channel")
         run_goose(goose_dir, "./model/strings")
-        run_goose(goose_dir, "./model/pool")
 
     if args.proph:
         run_goose(path.join(perennial_dir, "proph"))

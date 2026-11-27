@@ -1,30 +1,10 @@
-imports = ["!*", "errors"]
-trusted = [
-  # TODO: these are for verifying (rather than modeling) `After`, but the proof
-  # would be blocked by the lack of support for type assertions (needed in time.sendTime)
-  "runtimeNano", # go:linkname runtimeNano
-  "newTimer",    # go:linkname newTimer
-  "syncTimer",
-  "runtimeIsBubbled", # go:linkname runtimeIsBubbled (true only inside a synctest bubble)
-  "runtimeNow",  # go:linkname runtimeNow (the wall clock and the monotonic clock)
-  "stopTimer",   # go:linkname stopTimer
-  "resetTimer",  # go:linkname resetTimer
-  # "sendTime",
+imports = ["!*", "errors", "sync/atomic", "internal/gomodel"]
+# Primitive stubs (Perennial/TrustedCode/time.lean): `now` and `Sleep` are bodyless functions the
+# runtime defines (gc links them to the runtime's clock and sleep); `newRuntimeTimer`,
+# `newRuntimeTicker` and `runtimeTimerFire` are additions of the model (goose/model/overlay/time),
+# the runtime's state of a timer.
+trusted = ["now", "Sleep", "newRuntimeTimer", "newRuntimeTicker", "runtimeTimerFire"]
 
-  "After",
-  "Sleep",
-
-  # the runtime makes their channel synchronous (cap 0), which goose's `make` cannot express
-  "NewTimer",
-  "NewTicker",
-  # `(*Timer)(unsafe.Pointer(t))` is stuck: `Timer` is not plain
-  "Ticker.Stop",
-  "Ticker.Reset",
-
-  # `asynctimerchan = godebug.New(...)`: `internal/godebug` is not translated
-  # (TrustedCode/time.lean)
-  "asynctimerchan",
-]
 translate = [
   "Time",
   "Duration",
@@ -44,6 +24,8 @@ translate = [
   "Time.Add",
   "Time.addSec",
   "Time.stripMono",
+  "Time.UTC",
+  "Time.setLoc",
   "Time.Sub",
   "Time.Before",
   "Time.After",
@@ -89,3 +71,25 @@ translate = [
 
 # translate the definitions of all type declarations goose supports
 translate_types = true
+
+[[skip]]
+names = ["asynctimerchan"]
+reason = """
+`godebug.New("asynctimerchan")` (sleep.go): `internal/godebug` is not translated. Go's `New(name)` is
+`return &Setting{name: name}`, an allocation, so the initializer cannot panic and has no effect beyond
+the variable. Its only reader is `syncTimer`, which nothing in the model calls (`NewTimer`'s and
+`NewTicker`'s models choose their channel's kind themselves), so no translated code reads the
+unallocated variable.
+"""
+
+# The Go model (goose/model/overlay/time): each declaration's MODEL: comment says why it has at least
+# Go's behaviours. The runtime's bodyless clock readings (`runtimeNow`, `runtimeNano`,
+# `runtimeIsBubbled`, over the stub `now`) and timers (`newTimer`, `stopTimer`, `resetTimer`:
+# goroutines over the stubs of the runtime's timer state); `NewTimer`, `NewTicker` and `After` (the
+# runtime makes their channel synchronous, which `make` cannot express; `After` also waits on the
+# model's runtime clock, which `time.clockLb` speaks of); `Ticker.Stop` and `Ticker.Reset` (a
+# `*Ticker` to `*Timer` conversion through `unsafe.Pointer`).
+[model]
+dir = "goose/model/overlay/time"
+replaces = ["runtimeNow", "runtimeNano", "runtimeIsBubbled", "newTimer", "stopTimer", "resetTimer",
+  "NewTimer", "After", "NewTicker", "Ticker.Stop", "Ticker.Reset"]

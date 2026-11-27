@@ -1,12 +1,11 @@
-// Package fmt_test checks, against Go's fmt, the behaviour of fmt.Sprintf that the trusted model's
-// doPrintf in Perennial/TrustedCode/fmt.lean (formatArg) relies on; Printf, Fprintf and Errorf
-// format with it (Sprintf itself is the real fmt's, translated). Only tests: nothing here is
-// translated.
+// Package fmt_test checks, against Go's fmt, the behaviour of fmt.Sprintf that the model printer's
+// doPrintf (goose/model/overlay/fmt/printmodel.go: formatArg, strArg) relies on; the models of
+// errorf, Fprintf and Printf format with it (Sprintf itself is the real fmt's, translated). Only
+// tests: nothing here is translated.
 package fmt_test
 
 import (
 	"fmt"
-	"reflect"
 	"testing"
 )
 
@@ -42,28 +41,6 @@ func (s oddStringName) String() int { return 0 }
 type ptrStringName string
 
 func (s *ptrStringName) String() string { return "P" }
-
-// The model's strArg (Perennial/TrustedCode/fmt.lean), with underlyingAs[string] as
-// reflect.ValueOf(x).String() at kind String (TypeAssertUnderlying2 go.string).
-func strArg(x any) (string, bool) {
-	if _, ok := x.(interface{ Format(fmt.State, rune) }); ok {
-		return "", false
-	}
-	if _, ok := x.(interface{ String() string }); ok {
-		return "", false
-	}
-	if _, ok := x.(error); ok {
-		return "", false
-	}
-	if x == nil {
-		return "", false
-	}
-	v := reflect.ValueOf(x)
-	if v.Kind() != reflect.String {
-		return "", false
-	}
-	return v.String(), true
-}
 
 // %v of a string is the string itself, byte for byte, as %s gives it; alone, inside other text,
 // and next to other directives. (The model formats %v of an interface holding a `string` so.)

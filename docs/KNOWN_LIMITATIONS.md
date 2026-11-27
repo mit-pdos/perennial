@@ -26,6 +26,32 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   There a proof can claim "no panic" for an `unsafe.Slice` that gc rejects. See
   `README.md`, "Platform".
 
+## Blocking and deadlock
+
+- **A goroutine that blocks forever spins forever in the model; Go's deadlock detector is
+  not modelled (partial correctness, sound).** Go parks a goroutine that waits on a
+  `sync.Mutex`, a semaphore (`WaitGroup.Wait`, `RWMutex`), a `sync.Cond` or a
+  `primitive.Mutex`; the models spin instead (`goose/model/overlay/internal/sync`'s
+  `Mutex.Lock`, `goose/model/overlay/sync`'s `runtime_Semacquire*` and
+  `runtime_notifyListWait`, the spin lock `lock.lock` of
+  `TrustedCode/github_com/goose_lang/primitive.lean`). They return in exactly the
+  schedules where Go's return. When every goroutine is blocked, gc's runtime ends the
+  program with the fatal error `all goroutines are asleep - deadlock!`; the model has no
+  such step, so the program diverges. Perennial's specs are partial correctness, which
+  says nothing about a program that never returns, so no proof is wrong; but a proof does
+  not show that a program does not deadlock (or crash on the detector). Witness:
+
+  ```go
+  func main() {
+  	var mu sync.Mutex
+  	c := sync.NewCond(&mu)
+  	mu.Lock()
+  	c.Wait() // gc: fatal error: all goroutines are asleep - deadlock!
+  }
+  ```
+
+  (the model spins in `runtime_notifyListWait` forever).
+
 ## Maps
 
 - **A key that `==` cannot test fully is accepted (unsound).** Go hashes every component
@@ -126,24 +152,10 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   Fix, if a program needs it: model the goroutine's panic state and the deferred call
   that is running in the semantics, instead of passing the cell.
 
-- **`panic(nil)` counts as recovered under `with_defer_recover:` (unsound).** Since Go
-  1.21, `panic(nil)` panics with a `*runtime.PanicNilError`, so `recover()` returns a
-  non-nil value and an unrecovered `panic(nil)` crashes. The model raises the nil
-  interface, and `wrapDeferRecover` (`Golang/Defn/Defer.lean`) takes a nil `$panic` after
-  the deferred chain to mean "recovered":
-
-  ```go
-  func F() (r int) {
-  	defer func() { if recover() == nil { r = 1 } }()
-  	panic(nil)
-  }
-  // Go: F() == 0 (recover() returns the PanicNilError); the model: 1. Without the
-  // recover() in that branch, Go crashes and the model returns normally.
-  ```
-
-  Fix: make `panic(nil)` raise a non-nil value, as Go does (or reject it), or stop using
-  nil in `$panic` to mean "not panicking". Found 2026-10-26 by the trusted-base review of
-  the uniform results change.
+- **`panic(nil)` is stuck (incomplete, sound).** Since Go 1.21, `panic(nil)` panics with
+  a `*runtime.PanicNilError` (with `GODEBUG=panicnil=1`, with `nil`); the model makes it a
+  run-time panic (`panic.impl`, `Golang/Defn/Predeclared.lean`), so a proof shows it is
+  unreachable, even under a `recover()`. Witness: semantics `panic_nil.go`.
 
 ## Evaluation order
 
@@ -203,6 +215,49 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   linux/amd64, "Platform" above). When no free range is left, an allocation steps to itself forever
   (`AllocOOMS`, `AllocBytesOOMS`), so a proof covers only the executions that do not run out
   of memory, where gc ends the program with a fatal error.
+
+## Garbage collection and finalizers
+
+- **No garbage collector, so no finalizer or cleanup ever runs (unsound).** GooseLang
+  never frees an allocation, and `runtime.SetFinalizer`/`runtime.AddCleanup` are names
+  only (a call is stuck); the models that stand for Go code registering one leave the
+  registration out. Go's runtime runs them once an object is unreachable,
+  and the standard library uses them to release operating-system resources: `os`'s
+  `newFile` closes the descriptor of a `*File` dropped without `Close` (releasing its
+  `flock` locks and its descriptor number), and `net`'s `netFD` closes a dropped
+  connection or listener (freeing its address). The models of the extensions (the file
+  and network extensions, and the Go models of `os` and `net` over them) keep such a
+  descriptor open forever, so the model lacks Go's executions in which the release
+  happens: after a dropped listener, a second `Listen` at the same address can succeed
+  in Go but always fails in the model (`EADDRINUSE`); after a dropped locked file, a
+  second `flock` can succeed in Go but always fails in the model. A program that
+  misbehaves only when the release has happened (it panics when the second `Listen`
+  succeeds) can verify. Witness (go1.26.11 prints `second listen at the same address
+  succeeded: true <nil>`; with `runtime.KeepAlive(l)` after the second `Listen`, it
+  fails with `bind: address already in use`):
+
+  ```go
+  func main() {
+  	l, err := net.Listen("tcp", "127.0.0.1:20123")
+  	if err != nil {
+  		return
+  	}
+  	_ = l
+  	l = nil
+  	for i := 0; i < 5; i++ {
+  		runtime.GC()
+  		time.Sleep(10 * time.Millisecond)
+  	}
+  	l2, err := net.Listen("tcp", "127.0.0.1:20123")
+  	fmt.Println("second listen at the same address succeeded:", l2 != nil, err)
+  }
+  ```
+
+  The same with `os.Create` and `syscall.Flock(fd, LOCK_EX|LOCK_NB)` on a dropped `*File`
+  and a second descriptor of the file: go1.26.11's second `Flock` returns `nil`. A fix
+  needs either a premise on the environment (the program never drops an open
+  descriptor) or a semantics in which an unreachable object's finalizer may run; neither
+  is chosen yet (no verified program depends on the release).
 
 ## Struct types
 
@@ -390,6 +445,26 @@ the reflection primitives of `internal/reflectcore` (`TrustedCode/internal/refle
   func g[T ~float32]() T { return T(-1e-50) } // gc: -0; model: +0
   func h[T ~int64]() T { return T(1e18 + 1) } // gc: 1000000000000000000; model: 1000000000000000001
   ```
+
+## time
+
+- **GODEBUG changed while the program runs (sound only while setenv of `GODEBUG` is stuck).**
+  The Go model of the timers (`goose/model/overlay/time/sleep.go`, `makeTimerChan`) fixes a
+  timer channel's kind, synchronous (capacity 0) or asynchronous (capacity 1), when it is
+  made. gc's runtime instead re-reads `GODEBUG=asynctimerchan` on every `cap`, `len` and
+  send of a timer channel, so a program that changes the setting mid-run sees one timer's
+  `cap(t.C)` change from 0 to 1, which no model channel does. Witness (go1.26.11 prints
+  `0 0 1 1 1` and panics):
+  ```go
+  t := time.NewTimer(time.Hour)
+  c0 := cap(t.C)
+  os.Setenv("GODEBUG", "asynctimerchan=1")
+  if c0 != cap(t.C) { panic("cap of a timer channel changed") }
+  ```
+  The model cannot reach this: `os.Setenv`/`syscall.Setenv` have no body (stuck), and the
+  runtime-provided setenv hook is to be stuck on the key `GODEBUG` (as
+  `TrustedCode/crypto/fips140.lean` fixes its own GODEBUG setting for the run). A model of
+  `Setenv` that lets `GODEBUG` change would make this entry unsound.
 
 ## Grove (`grove_ffi`)
 

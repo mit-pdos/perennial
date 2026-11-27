@@ -1,2 +1,2 @@
-translate = ["AppendSeq", "Collect", "Sorted", "Sort", "*Ordered", "SortFunc", "*CmpFunc", "xorshift", "xorshift.*", "*Hint", "nextPowerOfTwo", "Clone", "Concat", "Grow", "IndexFunc", "ContainsFunc"]
+translate = ["AppendSeq", "Collect", "Sorted", "Sort", "*Ordered", "SortFunc", "*CmpFunc", "xorshift", "xorshift.*", "*Hint", "nextPowerOfTwo", "Clone", "Concat", "Grow", "IndexFunc", "ContainsFunc", "Repeat"]
 imports = ["!*", "math/bits", "cmp", "iter"]

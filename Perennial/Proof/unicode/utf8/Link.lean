@@ -8,6 +8,7 @@ module
 public import Perennial.Proof.unicode.utf8.AppendRune
 public import Perennial.Proof.unicode.utf8.DecodeRuneInString
 public import Perennial.Proof.unicode.utf8.RuneCount
+public import Perennial.Proof.unicode.utf8.RuneCountInString
 public import Perennial.Proof.unicode.utf8.ValidRune
 public import Perennial.Proof.unicode.utf8.appendRuneNonASCII
 public import Perennial.Proof.unicode.utf8.decodeRuneInStringSlow
@@ -41,6 +42,9 @@ theorem unicode.utf8.wp_DecodeRuneInString : unicode.utf8.DecodeRuneInString.spe
 
 theorem unicode.utf8.wp_RuneCount : unicode.utf8.RuneCount.spec (GF := GF) (hG := hG) :=
   unicode.utf8.RuneCount.wp_proof
+
+theorem unicode.utf8.wp_RuneCountInString : unicode.utf8.RuneCountInString.spec (GF := GF) (hG := hG) :=
+  unicode.utf8.RuneCountInString.wp_proof
 
 theorem unicode.utf8.wp_ValidRune : unicode.utf8.ValidRune.spec (GF := GF) (hG := hG) :=
   unicode.utf8.ValidRune.wp_proof

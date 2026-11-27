@@ -2009,6 +2009,11 @@ func (ctx *Ctx) incDecStmt(stmt *ast.IncDecStmt, cont glang.Expr) glang.Expr {
 			y = glang.Int16Val{Value: one}
 		case types.Uint8, types.Int8:
 			y = glang.Int8Val{Value: one}
+		// a float's 1 is the bit pattern of 1.0, as constantLiteral emits a typed float constant
+		case types.Float64:
+			y = glang.Int64Val{Value: glang.ZLiteral{Value: new(big.Int).SetUint64(math.Float64bits(1))}}
+		case types.Float32:
+			y = glang.Int32Val{Value: glang.ZLiteral{Value: new(big.Int).SetUint64(uint64(math.Float32bits(1)))}}
 		default:
 			ctx.unsupported(stmt.X, "inc or dec statement with unsupported type %v", ctx.typeOf(stmt.X))
 		}
