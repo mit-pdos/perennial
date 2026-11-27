@@ -21,7 +21,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 namespace fmt
 
 section defs
-variable [GooseExts] [GoGlobalContext] [GoSemanticsFunctions]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
 
 /-- The Go values `xs` are the arguments `args`, none of which calls a method: `nil`, a `bool`, a
 value of a predeclared integer type (`IntArg`) or a `string`. -/

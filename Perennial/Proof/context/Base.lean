@@ -193,12 +193,12 @@ def closedchanN : Namespace := nroot .@ "context.closedchan"
 assertion `e.(error)` succeeds). Every error value has this property in Go; in the model it is a
 fact about the error's dynamic type (`go_type_set` proves it from the type's method set), so it
 is tracked explicitly. -/
-def isTypedErr [GoSemanticsFunctions] (e : GoInterface) : Prop :=
+def isTypedErr [GoLocalContext] [GoSemanticsFunctions] (e : GoInterface) : Prop :=
   match e with
   | .ok ii => go.typeSetContains ii.ty go.error = true
   | .nil => False
 
-theorem isTypedErr_ne_nil [GoSemanticsFunctions] {e : GoInterface} (h : isTypedErr e) : e ≠ interface.nil := by
+theorem isTypedErr_ne_nil [GoLocalContext] [GoSemanticsFunctions] {e : GoInterface} (h : isTypedErr e) : e ≠ interface.nil := by
   cases e <;> simp_all [isTypedErr]
 
 /-- `context`'s package-init fact about `closedchan`: the global `closedchan` holds a fixed
