@@ -32,7 +32,7 @@ theorem internal.reflectlite.unpackEface.wp_proof
     internal.reflectlite.unpackEface.spec (GF := GF) (hG := hG) := by
   intro V _ _ t u hu _ k n b x hk hi hd
   unfold internal.reflectlite.valueOfRepr
-  have hU : GoSemanticsFunctions.underlying t = u := go.is_underlying
+  have hU : underlying t = u := go.is_underlying
   haveI : go.NotLayoutModelled t := ⟨reflect.notLayoutModelled_of_directIfaceN hd⟩
   wp_start as #Hinit
   wp_auto

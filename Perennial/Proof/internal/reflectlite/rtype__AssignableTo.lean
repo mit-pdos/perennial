@@ -43,8 +43,8 @@ theorem internal.reflectlite.rtype.AssignableTo.wp_proof
       iapply HΦ
       itrivial
   · intro T elems _ _ W _ _ V uV _ _ _ kV hkV hi hn
-    have hUT : GoSemanticsFunctions.underlying T = go.InterfaceType elems := go.is_underlying
-    have hUV : GoSemanticsFunctions.underlying V = uV := go.is_underlying
+    have hUT : _root_.Perennial.underlying T = go.InterfaceType elems := go.is_underlying
+    have hUV : _root_.Perennial.underlying V = uV := go.is_underlying
     have hkT : go.kindOf (go.InterfaceType elems) = some 20 := internal.reflectlite.kindOf_interface
     have hTV : T ≠ V := by
       intro h; subst h; rw [hUT] at hUV; subst hUV; simp [go.isInterfaceType] at hi

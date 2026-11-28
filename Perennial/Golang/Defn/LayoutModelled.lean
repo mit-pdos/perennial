@@ -10,7 +10,7 @@ Perennial/TrustedCode). goose refuses `unsafe.Sizeof`/`Alignof`/`Offsetof` of a 
 a type declared over one (`type M N`, directly or through other defined types: its underlying
 type would be the model's, and this list does not name it), so every translated type whose
 underlying type a model changes is in the list; reflection treats each as opaque
-(`go.typeQuery`, Perennial/Golang/Defn/Reflect.lean).
+(`GoTypeFns.typeQuery`, Perennial/GooseLang/Ext/Reflect/Impl.lean).
 -/
 module
 
@@ -24,19 +24,20 @@ namespace go
 
 /-- The names (`path.Name`) of the named types whose layout a Go model changes. -/
 def layoutModelledNames : List GoString := [
+  go!"fmt.pp",
   go!"github.com/goose-lang/primitive.Mutex",
   go!"github.com/goose-lang/primitive.ProphId",
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/modeloverlay.Counter",
   go!"github.com/mit-pdos/perennial/proph.ProphId",
   go!"internal/reflectlite.Value",
   go!"internal/reflectlite.rtype",
-  go!"internal/sync.Mutex",
   go!"reflect.MapIter",
   go!"reflect.Method",
   go!"reflect.SelectCase",
   go!"reflect.Value",
   go!"reflect.rtype",
-  go!"sync.copyChecker"
+  go!"sync.copyChecker",
+  go!"sync.poolModel"
 ]
 
 /-- Whether a Go model changes the layout of `t`: a named type (with any type arguments) of

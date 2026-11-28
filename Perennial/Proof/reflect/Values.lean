@@ -36,7 +36,7 @@ theorem elemFlag_bits (k : Nat) (hk : k < 27) :
   revert k; decide
 
 section vocab
-variable [GooseExts] [go_gctx : GoGlobalContext] [GoSemanticsFunctions]
+variable [GooseExts] [GoLocalContext] [go_gctx : GoGlobalContext] [GoSemanticsFunctions]
 
 /-- `rt` is the `reflect.Type` of `T`: the interface holding the model's `rtype` of `T`'s token. -/
 def reflType (rt : reflect.Type') (T : go.GoType) : Prop :=
@@ -49,7 +49,7 @@ def reflPtr (w : reflect.Value) (T : go.GoType) (p : Loc) : Prop :=
 /-- `v` is the addressable `reflect.Value` of the `T` at `p` (`Elem()` of a `reflPtr`): it holds
 `any(p)`, and its flag is `T`'s kind with `flagIndir` (128) and `flagAddr` (256). -/
 def reflElem (v : reflect.Value) (T : go.GoType) (p : Loc) : Prop :=
-  ∃ k : Nat, go.kindOf (GoSemanticsFunctions.underlying T) = some k ∧
+  ∃ k : Nat, go.kindOf (underlying T) = some k ∧
     v = reflect.Value.mk (go.tok T) (interface.mkOk (go.PointerType T) #p)
       (W64 k ||| W64 128 ||| W64 256)
 

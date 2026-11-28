@@ -21,7 +21,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 namespace errors
 
 /-- An error not assignable to `T` needs no typing of its stored value. -/
-theorem asTypeTyped_of_not_assignable [GooseExts] [GoGlobalContext] [GoSemanticsFunctions]
+theorem asTypeTyped_of_not_assignable [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
     {T' : Type} {T : go.GoType} {ii : GoInterfaceOk} (h : asAssignable T ii = false) :
     AsTypeTyped T' T ii := by
   unfold AsTypeTyped

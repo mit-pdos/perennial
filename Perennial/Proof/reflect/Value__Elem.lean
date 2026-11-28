@@ -50,7 +50,7 @@ theorem reflect.Value.Elem.wp_proof
   wp_if_destruct
   · iapply HΦ
     itrivial
-  · haveI : T ↓u (GoSemanticsFunctions.underlying T) := ⟨rfl⟩
+  · haveI : T ↓u (_root_.Perennial.underlying T) := ⟨rfl⟩
     wp_method_call; wp_call
     wp_auto
     wp_method_call; wp_call

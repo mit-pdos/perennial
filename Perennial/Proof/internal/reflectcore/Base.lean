@@ -38,7 +38,7 @@ namespace reflect
 /-! ## The shapes of types: `isZeroSize` and `isDirectIface` -/
 
 section shapes
-variable [GooseExts] [go_gctx : GoGlobalContext] [GoSemanticsFunctions]
+variable [GooseExts] [GoLocalContext] [go_gctx : GoGlobalContext] [GoSemanticsFunctions]
 
 /-- The kinds whose values an interface stores in its data word: `Chan` (18), `Func` (19),
 `Map` (21), `Pointer` (22), `UnsafePointer` (26). -/
@@ -98,7 +98,7 @@ def directIfaceN : Nat → go.GoType → Option Bool
     | u => (go.kindOf u).map directKind
 
 
-omit [GooseExts] go_gctx [GoSemanticsFunctions] in
+omit [GooseExts] [GoLocalContext] go_gctx [GoSemanticsFunctions] in
 /-- Only an array type has kind `Array`, and only a struct type kind `Struct`. -/
 theorem kindOf_ne_17_25 {u : go.GoType} {k : Nat} (hk : go.kindOf u = some k)
     (ha : ∀ len e, u = go.ArrayType len e → False) (hs : ∀ fs, u = go.StructType fs → False) :

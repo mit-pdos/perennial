@@ -31,8 +31,8 @@ theorem internal.reflectlite.directlyAssignable.wp_proof
     (wp_isDefined : internal.reflectlite.isDefined.spec (GF := GF) (hG := hG)) :
     internal.reflectlite.directlyAssignable.spec (GF := GF) (hG := hG) :=
     @fun T V uT uV _ _ _ _ kT kV hkT hkV hid hne => by
-  have hUT : GoSemanticsFunctions.underlying T = uT := go.is_underlying
-  have hUV : GoSemanticsFunctions.underlying V = uV := go.is_underlying
+  have hUT : underlying T = uT := go.is_underlying
+  have hUV : underlying V = uV := go.is_underlying
   have hlt := internal.reflectlite.kindOf_lt hkT
   wp_start as #Hinit
   try wp_auto
@@ -43,7 +43,7 @@ theorem internal.reflectlite.directlyAssignable.wp_proof
     wp_apply wp_TypeIdentByName T null
     rw [hid rfl]
     try wp_auto
-    simp only [decide_true]
+    simp only [_root_.decide_true]
     iapply HΦ
     itrivial
   · have hneq : go.PointerType T ≠ go.PointerType V := by simpa using hTV
@@ -68,7 +68,7 @@ theorem internal.reflectlite.directlyAssignable.wp_proof
           · simp [hdT] at h
           · exact absurd rfl h
           · exact h
-        try simp only [decide_true, Bool.not_true]
+        try simp only [_root_.decide_true, Bool.not_true]
         try wp_auto
         iterate 4 ((try simp only [decide_eq_false (internal.reflectlite.kne_25 kT hlt h25), decide_eq_false (internal.reflectlite.kne_20 kT hlt h20), decide_eq_false (internal.reflectlite.kne_19 kT hlt h19), decide_eq_false (internal.reflectlite.kne_18 kT hlt h18), Bool.false_eq_true, ↓reduceIte]); (try wp_auto))
         wp_apply wp_TypeUnderlying T null
@@ -101,7 +101,7 @@ theorem internal.reflectlite.directlyAssignable.wp_proof
             · simp [hdT, hdV] at h
             · exact absurd rfl h
             · exact h
-          try simp only [decide_true, Bool.not_true]
+          try simp only [_root_.decide_true, Bool.not_true]
           try wp_auto
           iterate 4 ((try simp only [decide_eq_false (internal.reflectlite.kne_25 kT hlt h25), decide_eq_false (internal.reflectlite.kne_20 kT hlt h20), decide_eq_false (internal.reflectlite.kne_19 kT hlt h19), decide_eq_false (internal.reflectlite.kne_18 kT hlt h18), Bool.false_eq_true, ↓reduceIte]); (try wp_auto))
           wp_apply wp_TypeUnderlying T null

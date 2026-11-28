@@ -30,10 +30,10 @@ theorem internal.reflectlite.isDefined.wp_proof
     (wp_TypeElem : internal.reflectcore.TypeElem.spec (GF := GF) (hG := hG))
     (wp_PtrTok : internal.reflectcore.PtrTok.spec (GF := GF) (hG := hG)) :
     internal.reflectlite.isDefined.spec (GF := GF) (hG := hG) := @fun T u _ _ k hk => by
-  have hU : GoSemanticsFunctions.underlying T = u := go.is_underlying
+  have hU : underlying T = u := go.is_underlying
   have hptr : ∀ X, T = go.PointerType X → u = go.PointerType X := by
     intro X hTX
-    have hp : GoSemanticsFunctions.underlying (go.PointerType X) = go.PointerType X :=
+    have hp : underlying (go.PointerType X) = go.PointerType X :=
       go.is_underlying
     rw [← hU, hTX, hp]
   wp_start as #Hinit

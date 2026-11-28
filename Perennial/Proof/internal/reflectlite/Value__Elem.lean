@@ -50,7 +50,7 @@ theorem internal.reflectlite.Value.Elem.wp_proof
   wp_if_destruct
   · iapply HΦ
     itrivial
-  · haveI : T ↓u (GoSemanticsFunctions.underlying T) := ⟨rfl⟩
+  · haveI : T ↓u (_root_.Perennial.underlying T) := ⟨rfl⟩
     wp_meths
     rw [htyp]
     have he : go.typeQuery .elem (go.PointerType T) 0 = some #(go.tok T) := by

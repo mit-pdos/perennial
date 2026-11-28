@@ -207,7 +207,7 @@ macro "wp_meth1" : tactic => `(tactic| (wp_method_call; wp_call; try wp_auto))
 macro "wp_meths" : tactic => `(tactic| repeat (wp_method_call; wp_call; try wp_auto))
 
 section layout
-variable [GooseExts] [go_gctx : GoGlobalContext] [GoSemanticsFunctions]
+variable [GooseExts] [GoLocalContext] [go_gctx : GoGlobalContext] [GoSemanticsFunctions]
 
 omit go_gctx in
 /-- A struct type whose `directIfaceN` is defined has fewer than `2^63` fields. -/

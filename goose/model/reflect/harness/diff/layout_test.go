@@ -2,7 +2,6 @@ package diff
 
 import (
 	"reflect"
-	"sync"
 	"testing"
 
 	"github.com/mit-pdos/perennial/goose/model/reflect/harness/reflectcore"
@@ -24,13 +23,6 @@ type MS struct {
 	n  int
 }
 
-// SM is MS with the real sync.Mutex, whose field mu is internal/sync.Mutex, a trusted type
-// (Perennial/TrustedCode/internal/sync.lean: underlying bool) in go.layoutModelledNames.
-type SM struct {
-	mu sync.Mutex
-	n  int
-}
-
 func init() {
 	reflectcore.ExtraLayoutModelled[reflect.TypeFor[Mutex]()] = true
 }
@@ -41,17 +33,12 @@ func tq(q reflectcore.TypeQ, tok any, i int) any { return reflectcore.TypeQuery(
 // address of field 1 (Value.Field(1)'s primitive) answer as in Go; every question about Mutex
 // itself, or one that recurses into it or depends on its size, is stuck.
 func TestLayoutModelledOpaque(t *testing.T) {
-	isyncMutex := reflect.TypeFor[sync.Mutex]().Field(1).Type
-	if isyncMutex.PkgPath() != "internal/sync" || !reflectcore.LayoutModelled(isyncMutex) {
-		t.Fatalf("sync.Mutex's field %v (%s) is not layoutModelled", isyncMutex, isyncMutex.PkgPath())
-	}
 	for _, c := range []struct {
 		name string
 		T    reflect.Type
 		tok  any
 	}{
 		{"MS", reflect.TypeFor[MS](), tk[MS]()},
-		{"SM", reflect.TypeFor[SM](), tk[SM]()},
 	} {
 		T := c.T
 		if got := reflectcore.TypeKind(c.tok); got != int(T.Kind()) {
@@ -82,10 +69,6 @@ func TestLayoutModelledOpaque(t *testing.T) {
 	if got, ok := v.Interface().(MS); !ok || got != s {
 		t.Errorf("ValueOf(s).Interface() = %v", v.Interface())
 	}
-	vm := rm.ValueOf(SM{n: 7})
-	if vm.Kind() != rm.Struct {
-		t.Errorf("ValueOf(SM{}).Kind() = %v", vm.Kind())
-	}
 	// Value.Field(1)'s primitive: the address of field 1 of *MS, and of field 0 (a *Mutex)
 	if p, ok := reflectcore.FieldRefAt(&s, 1).(*int); !ok || p != &s.n {
 		t.Errorf("FieldRefAt(&s, 1) = %v", reflectcore.FieldRefAt(&s, 1))
@@ -103,17 +86,15 @@ func TestLayoutModelledOpaque(t *testing.T) {
 	if got := reflectcore.TypeIdentByName(tk[Mutex]()); !got {
 		t.Errorf("identByName(Mutex) = false")
 	}
-	m, ms := &s.mu, &SM{}
+	m := &s.mu
 	for name, f := range map[string]func(){
-		"Kind(Mutex)":               func() { reflectcore.TypeKind(tk[Mutex]()) },
-		"NumField(Mutex)":           func() { reflectcore.TypeNumField(tk[Mutex]()) },
-		"FieldType(Mutex, 0)":       func() { reflectcore.TypeFieldType(tk[Mutex](), 0) },
-		"Underlying(Mutex)":         func() { reflectcore.TypeUnderlying(tk[Mutex]()) },
-		"Kind(internal/sync.Mutex)": func() { reflectcore.TypeKind(reflectcore.Token(isyncMutex)) },
-		"ValueOf(&s.mu).Elem()":     func() { rm.ValueOf(&s).Elem(); rm.ValueOf(m).Elem() },
-		"ValueOf(Mutex{})":          func() { rm.ValueOf(Mutex{}) },
-		"ValueOf(&ms.mu.mu).Elem()": func() { rm.ValueOf(&ms.mu).Elem(); rm.ValueOf(reflectcore.FieldRefAt(&ms.mu, 1)).Elem() },
-		"FieldRefAt(&m, 0)":         func() { reflectcore.FieldRefAt(m, 0) },
+		"Kind(Mutex)":           func() { reflectcore.TypeKind(tk[Mutex]()) },
+		"NumField(Mutex)":       func() { reflectcore.TypeNumField(tk[Mutex]()) },
+		"FieldType(Mutex, 0)":   func() { reflectcore.TypeFieldType(tk[Mutex](), 0) },
+		"Underlying(Mutex)":     func() { reflectcore.TypeUnderlying(tk[Mutex]()) },
+		"ValueOf(&s.mu).Elem()": func() { rm.ValueOf(&s).Elem(); rm.ValueOf(m).Elem() },
+		"ValueOf(Mutex{})":      func() { rm.ValueOf(Mutex{}) },
+		"FieldRefAt(&m, 0)":     func() { reflectcore.FieldRefAt(m, 0) },
 		"isZeroSize(MS) (struct{MS; *int})": func() {
 			rm.ValueOf(struct {
 				s MS
