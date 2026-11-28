@@ -1,6 +1,6 @@
 // Package reflectcore is the harness's internal/reflectcore: each primitive stub of
 // goose/model/overlay/internal/reflectcore/core.go written in Go over the real reflect and
-// unsafe. A stub steps where its GooseLang rule (Perennial/Golang/Defn/Reflect.lean) steps, with
+// unsafe. A stub steps where its case of the reflection extension (Perennial/GooseLang/Ext/Reflect/Impl.lean) steps, with
 // the rule's result, and panics "stuck: ..." where the rule has no step. helpers.go, the
 // translated generic helpers, is copied from the overlay by ../gen.sh. Test-only.
 //

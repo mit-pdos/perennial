@@ -66,6 +66,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : Assumptions]
+variable [HasExt reflectExt]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta.wp_sum64 : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta.sum64.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta.sum64.wp_proof
@@ -144,6 +145,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Assumptions]
+variable [HasExt reflectExt]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testAddPastEnd : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testAddPastEnd.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testAddPastEnd.wp_proof
@@ -156,6 +158,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : Assumptions]
+variable [HasExt reflectExt]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_writeInodeToPage : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.writeInodeToPage.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.writeInodeToPage.wp_proof github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_unsafeByteSlice github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page.wp_pageElementSize github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page.wp_leafPageElement github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page.wp_branchPageElement
@@ -186,6 +189,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Assumptions]
+variable [HasExt reflectExt]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testFloatBits : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFloatBits.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFloatBits.wp_proof
@@ -199,6 +203,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : Assumptions]
+variable [HasExt reflectExt]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testFreelistOverflow : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFreelistOverflow.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFreelistOverflow.wp_proof
@@ -211,6 +216,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : Assumptions]
+variable [HasExt reflectExt]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testFreelistRoundTrip : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFreelistRoundTrip.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFreelistRoundTrip.wp_proof
@@ -233,6 +239,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : Assumptions]
+variable [HasExt reflectExt]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testMetaChecksum : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testMetaChecksum.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testMetaChecksum.wp_proof github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_pageAt github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page.wp_meta github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta.wp_write github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Meta.wp_validate
@@ -245,6 +252,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Assumptions]
+variable [HasExt reflectExt]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testMixedWidthAtomics : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testMixedWidthAtomics.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testMixedWidthAtomics.wp_proof
@@ -258,6 +266,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : Assumptions]
+variable [HasExt reflectExt]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testOverlappingCopyViaTemp : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testOverlappingCopyViaTemp.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testOverlappingCopyViaTemp.wp_proof
@@ -270,6 +279,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : Assumptions]
+variable [HasExt reflectExt]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testOverlappingLoads : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testOverlappingLoads.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testOverlappingLoads.wp_proof
@@ -288,6 +298,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Assumptions]
+variable [HasExt reflectExt]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testStatsConcurrent : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testStatsConcurrent.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testStatsConcurrent.wp_proof sync.WaitGroup.wp_Add sync.WaitGroup.wp_Done sync.WaitGroup.wp_Wait

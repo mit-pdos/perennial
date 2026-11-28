@@ -137,37 +137,6 @@ inductive GoUnaryOperator where
   | GoPos | GoNeg | GoNot | GoComplement
 deriving DecidableEq
 
-namespace go
-
-instance : DecidableEq ChanDir := fun a b => by
-  cases a <;> cases b <;> first | exact isTrue rfl | exact isFalse nofun
-
-/-- How the dynamic type `d` of a dispatch argument of `FuncResolveAt` gives type arguments
-(`shapeArgs`). -/
-inductive Shape where
-  /-- `[d]` -/
-  | self
-  /-- `[d, e]` for `d`'s underlying type `[]e` -/
-  | slice
-  /-- `[d, k, v]` for `d`'s underlying type `map[k]v` -/
-  | map
-  /-- `[d, e]` for `d`'s underlying type `*e` -/
-  | ptr
-  /-- `[d, e]` for `d`'s underlying type `chan e` of direction `c` -/
-  | chan (c : ChanDir)
-  /-- `s` applied to `t`, for `d` the unnamed `*t` -/
-  | deref (s : Shape)
-deriving DecidableEq
-
-/-- A fact about a type that `TypeQuery` reads (`typeQuery`). -/
-inductive TypeQ where
-  | kind | name | numTypeArgs | pkgName | elem | key | len | chanDir | numField
-  | fieldName | fieldType | fieldTag | fieldEmbedded | fieldPkg | numIn | inType | numOut
-  | outType | variadic | numMethod | methodId | methodType | underlying | identByName
-deriving DecidableEq
-
-end go
-
 inductive GoInstruction where
   | AngelicExit
   | Convert (from_ to : go.GoType)
@@ -223,29 +192,6 @@ inductive GoInstruction where
   | InternalMapLookupId
   /-- a copy of the map behind an interface holding a map (`maps.clone`) -/
   | InternalMapClone
-  /-- `FuncResolve f ts` with `ts` read from the dispatch interfaces' dynamic types by `shs`. Not
-  a Go expression: goose never emits it; `internal/reflectcore`'s primitive stubs use it. -/
-  | FuncResolveAt (shs : List go.Shape) (f : GoString)
-  /-- `U(x)` boxed in `any`, for an interface `x` and a token of `U`, where Go converts `x`'s
-  dynamic type to `U`. Not a Go expression: goose never emits it; `internal/reflectcore`'s
-  primitive stubs use it. -/
-  | ConvertAt
-  /-- `&(*p).f` for the `i`th field `f` of `*p`'s struct type, boxed in `any`. Not a Go expression:
-  goose never emits it; `internal/reflectcore`'s primitive stubs use it.
-  Not yet used by the reflect Go model (`goose/model/overlay`);
-  planned for S2: `Value.Field`/`FieldByName`. -/
-  | FieldRefAt
-  /-- `(*p)[:]` for an interface `p` holding a pointer to an array, boxed in `any`. Not a Go
-  expression: goose never emits it; `internal/reflectcore`'s primitive stubs use it.
-  Not yet used by the reflect Go model (`goose/model/overlay`);
-  planned for S2: `Value.Index` on arrays. -/
-  | ArraySliceAt
-  /-- `x == nil` at the dynamic type of the interface `x`. Not a Go expression: goose never emits
-  it; `internal/reflectcore`'s primitive stubs use it. -/
-  | EqNilAt
-  /-- The fact `q` about the type `T` of a token `any((*T)(nil))`. Not a Go expression: goose never
-  emits it; `internal/reflectcore`'s primitive stubs use it. -/
-  | TypeQuery (q : go.TypeQ)
   | CompositeLiteral (t : go.GoType)
   | SelectStmt
   | InternalStringLen
@@ -380,8 +326,7 @@ export GoInstruction (AngelicExit Convert GoOp GoUnOp CheckComparable GoLoad GoS
   InternalSliceLen InternalSliceCap InternalDynamicArrayAlloc InternalMakeSlice IndexRef Index
   Slice FullSlice ArraySet ArrayLength InternalMapCheckKey InternalMapLookup InternalMapInsert
   InternalMapDelete InternalMapLength InternalMapForRange InternalMapMake InternalMapLookupId
-  InternalMapClone InternalBytesTo InternalUnsafeSlice FuncResolveAt ConvertAt FieldRefAt
-  ArraySliceAt EqNilAt TypeQuery
+  InternalMapClone InternalBytesTo InternalUnsafeSlice
   CompositeLiteral SelectStmt InternalStringLen)
 
 section derived

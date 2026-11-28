@@ -1,5 +1,5 @@
 /-
-`kindOf` and `typeQuery` (`Perennial/Golang/Defn/Reflect.lean`) on unnamed and predeclared types:
+`kindOf` and `typeQuery` (`Perennial/GooseLang/Ext/Reflect/`) on unnamed and predeclared types:
 the rows reflect gives.
 -/
 module
@@ -77,26 +77,22 @@ example :
 example : go.typeQuery .numTypeArgs go.int 0 = some #(W64 0) := by
   simp [go.typeQuery, go.int]
 
-example (e : go.GoType) : go.typeQuery .name (go.SliceType e) 0 = none := by
-  simp [go.typeQuery]
-
 /-! ## Types a model changes (`go.layoutModelled`) are opaque
 
 The minimal program of Upamanyu's rule (etcd-grove#40): `type S struct{ mu sync.Mutex; n int }`
-with a redefined `Mutex`. Here the redefined `Mutex` is `internal/sync.Mutex` (the field of the real
-`sync.Mutex`), whose Lean definition is trusted (`TrustedCode/internal/sync.lean`: underlying
-`bool`, Go's is a struct) and which goose lists in `go.layoutModelledNames`. -/
+with a redefined `Mutex`. Here the redefined type is `sync.copyChecker`, which `sync`'s Go model
+redefines and goose lists in `go.layoutModelledNames`. -/
 
-/-- `internal/sync.Mutex`. -/
-abbrev isyncMutex : go.GoType := go.Named go!"internal/sync.Mutex" []
+/-- `sync.copyChecker`. -/
+abbrev modelledTy : go.GoType := go.Named go!"sync.copyChecker" []
 
-example : go.layoutModelled isyncMutex = true := by decide
+example : go.layoutModelled modelledTy = true := by decide
 example : go.layoutModelled (go.Named go!"reflect.rtype" []) = true := by decide
 example : go.layoutModelled (go.Named go!"internal/reflectlite.rtype" []) = true := by decide
 example : go.layoutModelled (go.Named go!"sync.Mutex" []) = false := by decide
 
-/-- The fields of `S`: `mu isync.Mutex; n int`. -/
-abbrev sFields : List go.field_decl := [go.FieldDecl go!"mu" isyncMutex, go.FieldDecl go!"n" go.int]
+/-- The fields of `S`: `mu sync.copyChecker; n int`. -/
+abbrev sFields : List go.field_decl := [go.FieldDecl go!"mu" modelledTy, go.FieldDecl go!"n" go.int]
 
 /-- `Kind(S)`, `NumField(S)`, `Field(i).Name` and `Field(i).Type` answer as in Go, for a defined
 `S` (not itself changed by a model) of underlying type `struct{ mu Mutex; n int }`. -/
@@ -105,18 +101,18 @@ example (S : go.GoType) [S ↓u go.StructType sFields] (hS : go.layoutModelled S
     go.typeQuery .numField S 0 = some #(W64 2) ∧
     go.typeQuery .fieldName S 0 = some #go!"mu" ∧
     go.typeQuery .fieldName S 1 = some #go!"n" ∧
-    go.typeQuery .fieldType S 0 = some #(go.tok isyncMutex) ∧
+    go.typeQuery .fieldType S 0 = some #(go.tok modelledTy) ∧
     go.typeQuery .fieldType S 1 = some #(go.tok go.int) := by
   simp [go.typeQuery, go.is_underlying, hS, go.listAt, go.fieldNameOf, go.fieldDeclName,
     go.fieldDeclType, go.isBlankField]
 
 /-- Every question about `Mutex` itself is stuck (none), except `identByName`, which reads only
 its name. -/
-example (q : go.TypeQ) (hq : q ≠ .identByName) (i : Int) : go.typeQuery q isyncMutex i = none := by
+example (q : go.TypeQ) (hq : q ≠ .identByName) (i : Int) : go.typeQuery q modelledTy i = none := by
   unfold go.typeQuery
   rw [if_pos ⟨by decide, hq⟩]
 
-example : go.typeQuery .identByName isyncMutex 0 = some #true := by
+example : go.typeQuery .identByName modelledTy 0 = some #true := by
   simp [go.typeQuery, go.identByName]
 
 /-- `TypeOf(reflect.TypeOf(0)).Kind()`: `TypeOf` of a `Type` gives the token of the model's

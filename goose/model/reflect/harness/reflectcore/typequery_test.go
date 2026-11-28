@@ -6,7 +6,7 @@ import (
 	"unsafe"
 )
 
-// leanKindOf is a copy of the Lean kindOf table (Perennial/Golang/Defn/Reflect.lean): the
+// leanKindOf is a copy of the Lean kindOf table (Perennial/GooseLang/Ext/Reflect/Impl.lean): the
 // reflect.Kind number of each predeclared type and type constructor.
 var leanKindOf = map[string]int{
 	"bool": 1, "int": 2, "int8": 3, "int16": 4, "int32": 5, "int64": 6,

@@ -29,6 +29,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : errors.Assumptions]
+variable [HasExt reflectExt]
 
 theorem errors.wp_as : errors.«as».spec (GF := GF) (hG := hG) :=
   errors.«as».wp_proof internal.reflectlite.wp_TypeOf internal.reflectlite.rtype.wp_AssignableTo internal.reflectlite.wp_ValueOf internal.reflectlite.Value.wp_Elem internal.reflectlite.Value.wp_Set

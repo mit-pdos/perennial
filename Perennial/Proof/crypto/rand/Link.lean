@@ -22,6 +22,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : crypto.rand.Assumptions]
+variable [HasExt reflectExt]
 
 theorem crypto.rand.wp_Int : crypto.rand.Int.spec (GF := GF) (hG := hG) :=
   crypto.rand.Int.wp_proof math.big.wp_NewInt

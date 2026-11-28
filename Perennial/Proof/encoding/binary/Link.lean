@@ -37,6 +37,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : encoding.binary.Assumptions]
+variable [HasExt reflectExt]
 
 theorem encoding.binary.wp_PutUvarint : encoding.binary.PutUvarint.spec (GF := GF) (hG := hG) :=
   encoding.binary.PutUvarint.wp_proof

@@ -64,6 +64,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
+variable [HasExt reflectExt]
 
 theorem fmt.fmt.wp_clearflags : fmt.fmt.clearflags.spec (GF := GF) (hG := hG) :=
   fmt.fmt.clearflags.wp_proof

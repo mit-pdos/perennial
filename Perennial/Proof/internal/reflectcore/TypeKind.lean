@@ -15,6 +15,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 
 section proof
 variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [HasExt reflectExt]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]

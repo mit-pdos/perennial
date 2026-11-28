@@ -26,6 +26,7 @@ variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.Assumptions]
+variable [HasExt reflectExt]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack.wp_Pop : github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack.Pop.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.LockedStack.Pop.wp_proof sync.Mutex.wp_Lock sync.Mutex.wp_Unlock

@@ -44,7 +44,6 @@ public import Perennial.Golang.Defn.PostLang
 public import Perennial.Golang.Defn.Pre
 public import Perennial.Golang.Defn.PreLang
 public import Perennial.Golang.Defn.Predeclared
-public import Perennial.Golang.Defn.Reflect
 public import Perennial.Golang.Defn.Slice
 public import Perennial.Golang.Defn.String
 public import Perennial.Golang.Theory
@@ -90,6 +89,8 @@ public import Perennial.GooseLang.Ext.Grove.Impl
 public import Perennial.GooseLang.Ext.Grove.Specs
 public import Perennial.GooseLang.Ext.Net.Impl
 public import Perennial.GooseLang.Ext.Net.Specs
+public import Perennial.GooseLang.Ext.Reflect.Impl
+public import Perennial.GooseLang.Ext.Reflect.Specs
 public import Perennial.GooseLang.IPersist
 public import Perennial.GooseLang.Lang
 public import Perennial.GooseLang.Lifting

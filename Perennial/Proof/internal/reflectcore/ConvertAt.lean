@@ -15,6 +15,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 
 section proof
 variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [HasExt reflectExt]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
@@ -24,16 +25,13 @@ theorem internal.reflectcore.ConvertAt.wp_proof :
     internal.reflectcore.ConvertAt.spec (GF := GF) (hG := hG) := by
   constructor
   · intro t u uu _ X Y x y _ l hu hn het heu
-    haveI := go.convert_at_step (t := t) (u := u) #x l
-      (by rw [go.is_underlying (t := u), hu]; exact fun h => nomatch h) het heu
     wp_start
-    repeat (first | wp_auto | simp only [go.is_underlying, hu, hn, Bool.false_eq_true, ↓reduceIte])
+    wp_apply wp_ConvertAt hu hn x y l het heu
     iapply HΦ
     itrivial
   · intro t u uu _ v l hu himpl het heu
-    haveI := go.convert_at_step (t := t) (u := u) v l (fun _ => himpl) het heu
     wp_start
-    repeat (first | wp_auto | simp only [go.is_underlying, hu, ↓reduceIte])
+    wp_apply wp_ConvertAt_interface hu himpl v l het heu
     iapply HΦ
     itrivial
 

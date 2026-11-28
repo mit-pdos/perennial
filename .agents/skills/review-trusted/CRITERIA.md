@@ -22,9 +22,9 @@ to judge it, the item names the rule and does not repeat it.
    only where goose and the semantics cannot express the code.
    *Why:* a model is trust; the translation is checked. (R1, R2.)
 3. **No package-specific instructions in core GooseLang.** A new
-   `GoInstruction` or step rule must be a general Go primitive (as the
-   reflection primitives are); package behaviour goes in a trusted model or a
-   Go model overlay.
+   `GoInstruction` or step rule must be a general Go primitive; package
+   behaviour goes in a trusted model, a Go model overlay, or a GooseLang
+   extension (as the reflection primitives do: `GooseLang/Ext/Reflect`).
    *Why:* every special case in the core is a carve-out every proof and
    reviewer must know about (`AsAssign` for `errors.As` is the precedent not to
    repeat).

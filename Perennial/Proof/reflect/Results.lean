@@ -39,6 +39,7 @@ theorem isNil_panic_kinds :
 
 section results
 variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [HasExt reflectExt]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
@@ -114,7 +115,7 @@ theorem Value.wp_Kind_reflPtr (w : Value) (T : go.GoType) (p : Loc) (h : reflPtr
   rwa [hf, ptrFlag_bits.1] at h
 
 theorem Value.wp_Kind_reflElem (v : Value) (T : go.GoType) (p : Loc) (k : Nat)
-    (h : reflElem v T p) (hk : go.kindOf (GoSemanticsFunctions.underlying T) = some k) :
+    (h : reflElem v T p) (hk : go.kindOf (_root_.Perennial.underlying T) = some k) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (v @!! Value.ty @!! go!"Kind")) (Val #()))
     {{ RET #(W64 k); True }} := by
@@ -263,7 +264,7 @@ theorem Value.wp_Interface_reflPtr (w : Value) (T : go.GoType) (p : Loc) (h : re
 /-- `w.Elem()` of a `reflPtr` for a non-nil `p`: a `reflElem`. -/
 theorem Value.wp_Elem_reflPtr (w : Value) (T : go.GoType) [go.NotLayoutModelled T] (p : Loc)
     (k : Nat)
-    (h : reflPtr w T p) (hk : go.kindOf (GoSemanticsFunctions.underlying T) = some k)
+    (h : reflPtr w T p) (hk : go.kindOf (_root_.Perennial.underlying T) = some k)
     (hp : p ≠ null) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (w @!! Value.ty @!! go!"Elem")) (Val #()))
@@ -280,7 +281,7 @@ theorem Value.wp_Elem_reflPtr (w : Value) (T : go.GoType) [go.NotLayoutModelled 
 /-- `w.Elem()` of a `reflPtr` for a nil `p`: the zero `Value`. -/
 theorem Value.wp_Elem_reflPtr_nil (w : Value) (T : go.GoType) [go.NotLayoutModelled T]
     (k : Nat)
-    (h : reflPtr w T null) (hk : go.kindOf (GoSemanticsFunctions.underlying T) = some k) :
+    (h : reflPtr w T null) (hk : go.kindOf (_root_.Perennial.underlying T) = some k) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (w @!! Value.ty @!! go!"Elem")) (Val #()))
     {{ RET #(_root_.Perennial.zero_val reflect.Value); True }} := by
@@ -309,7 +310,7 @@ theorem Value.wp_IsNil_reflElem_slice (v : Value) (T : go.GoType) (p : Loc) (dq 
   obtain ⟨k, hk, hv⟩ := h
   have hk23 : k = 23 := by
     have : go.kindOf (go.SliceType T) = some 23 := by simp [go.kindOf]
-    rw [show GoSemanticsFunctions.underlying (go.SliceType T) = go.SliceType T from
+    rw [show _root_.Perennial.underlying (go.SliceType T) = go.SliceType T from
       go.is_underlying, this] at hk
     cases hk; rfl
   subst hk23
@@ -334,7 +335,7 @@ theorem Value.wp_IsNil_zero (Φ : val → IProp GF) :
 /-- `v.IsNil()` of a `reflElem` of a struct variable: Go's panic
 `&ValueError{"reflect.Value.IsNil", Struct}`. -/
 theorem Value.wp_IsNil_reflElem_struct (v : Value) (T : go.GoType) (p : Loc)
-    (h : reflElem v T p) (hk : go.kindOf (GoSemanticsFunctions.underlying T) = some 25)
+    (h : reflElem v T p) (hk : go.kindOf (_root_.Perennial.underlying T) = some 25)
     (Φ : val → IProp GF) :
     isPkgInit (PROP := IProp GF) pkg_id.reflect ∗
       (∀ l : Loc, l ↦ ValueError.mk go!"reflect.Value.IsNil" (W64 25) -∗

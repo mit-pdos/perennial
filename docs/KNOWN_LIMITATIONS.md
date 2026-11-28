@@ -270,7 +270,8 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   qualifying field names everywhere.
   Conversions inherit it: the model converts between `struct{ x int }` of two packages, and
   between pointers to them (`is_convert_underlying_same`, `convert_pointer_same_underlying`,
-  which `reflect`'s `ConvertAt` reaches at run-time types), where Go rejects the conversion:
+  which `reflect`'s `ConvertAt`, an operation of the reflection extension
+  `GooseLang/Ext/Reflect/Impl.lean`, reaches at run-time types), where Go rejects the conversion:
   ```go
   // package p: type T struct{ x int }; func Mk() any { return struct{ x int }{} }
   // package q: type U struct{ x int }
@@ -378,7 +379,8 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
 ## `reflect`
 
 `reflect` is a whole-package Go model (`goose/model/overlay/reflect`, from the real files) over
-the reflection primitives of `internal/reflectcore` (`TrustedCode/internal/reflectcore.lean`).
+the reflection primitives of `internal/reflectcore` (`TrustedCode/internal/reflectcore.lean`,
+the operations of the reflection extension `GooseLang/Ext/Reflect/Impl.lean`).
 
 - **Most of `reflect` has no behaviour yet (incomplete, sound).** Only `TypeOf`, `ValueOf`,
   `Indirect`, `Kind.String`, `ChanDir.String`, `Type.Kind`, `Type.Elem` and

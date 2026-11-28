@@ -31,6 +31,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : crypto.sha1.Assumptions]
+variable [HasExt reflectExt]
 
 theorem crypto.sha1.digest.wp_Reset : crypto.sha1.digest.Reset.spec (GF := GF) (hG := hG) :=
   crypto.sha1.digest.Reset.wp_proof

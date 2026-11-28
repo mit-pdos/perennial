@@ -47,6 +47,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : internal.reflectlite.Assumptions]
+variable [HasExt reflectExt]
 
 theorem internal.reflectlite.wp_toRType : internal.reflectlite.toRType.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.toRType.wp_proof

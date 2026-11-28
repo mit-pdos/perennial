@@ -10,7 +10,6 @@ public import Perennial.Golang.Defn.Predeclared
 public import Perennial.Golang.Defn.Plain
 public import Perennial.Golang.Defn.Defer
 public import Perennial.Golang.Defn.Interface
-public import Perennial.Golang.Defn.Reflect
 
 @[expose] public section
 
@@ -31,13 +30,10 @@ class PreSemantics [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFu
   [slice_sem : go.SliceSemantics]
   [predeclared_sem : go.PredeclaredSemantics]
   [plain_sem : go.PlainSemantics]
-  [reflect_sem : go.ReflectSemantics]
 
 attribute [instance] PreSemantics.core_sem PreSemantics.interface_sem PreSemantics.array_sem
   PreSemantics.map_sem PreSemantics.slice_sem PreSemantics.predeclared_sem PreSemantics.plain_sem
-  PreSemantics.reflect_sem
-export PreSemantics (interface_sem array_sem map_sem slice_sem predeclared_sem plain_sem
-  reflect_sem)
+export PreSemantics (interface_sem array_sem map_sem slice_sem predeclared_sem plain_sem)
 
 end go
 

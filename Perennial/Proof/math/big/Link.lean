@@ -24,6 +24,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : math.big.Assumptions]
+variable [HasExt reflectExt]
 
 theorem math.big.wp_low64 : math.big.low64.spec (GF := GF) (hG := hG) :=
   math.big.low64.wp_proof

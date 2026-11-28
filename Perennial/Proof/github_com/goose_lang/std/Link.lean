@@ -34,6 +34,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.goose_lang.std.Assumptions]
+variable [HasExt reflectExt]
 
 theorem github_com.goose_lang.std.wp_Assert : github_com.goose_lang.std.Assert.spec (GF := GF) (hG := hG) :=
   github_com.goose_lang.std.Assert.wp_proof

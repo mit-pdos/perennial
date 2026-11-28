@@ -20,6 +20,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : internal.oserror.Assumptions]
+variable [HasExt reflectExt]
 
 theorem internal.oserror.wp_initialize' : internal.oserror.initialize'.spec (GF := GF) (hG := hG) :=
   internal.oserror.initialize'.wp_proof errors.wp_initialize'

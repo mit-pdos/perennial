@@ -24,6 +24,7 @@ variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Assumptions]
+variable [HasExt reflectExt]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.wp_process : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.process.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.process.wp_proof strings.wp_Fields sync.atomic.Int64.wp_Add
@@ -39,6 +40,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Assumptions]
+variable [HasExt reflectExt]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.wp_initialize' : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.initialize'.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.initialize'.wp_proof sync.atomic.wp_initialize' strings.wp_initialize'
@@ -51,6 +53,7 @@ variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Assumptions]
+variable [HasExt reflectExt]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.wp_wordCount : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.wordCount.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.wordCount.wp_proof sync.atomic.Int64.wp_Store sync.atomic.Int64.wp_Load github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Worker.wp_run

@@ -25,6 +25,7 @@ namespace encoding.binary
 
 section results
 variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [HasExt reflectExt]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]

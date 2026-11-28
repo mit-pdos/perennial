@@ -27,6 +27,7 @@ variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.channel.etcd_session.Assumptions]
+variable [HasExt reflectExt]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.etcd_session.wp_initialize' : github_com.mit_pdos.perennial.goose.testdata.examples.channel.etcd_session.initialize'.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.channel.etcd_session.initialize'.wp_proof github_com.goose_lang.primitive.wp_initialize' time.wp_initialize' sync.wp_initialize' errors.wp_initialize'

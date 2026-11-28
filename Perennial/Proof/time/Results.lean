@@ -23,6 +23,7 @@ namespace time
 
 section results
 variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [HasExt reflectExt]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
@@ -71,6 +72,7 @@ end results
 
 section chan_results
 variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [HasExt reflectExt]
 variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]

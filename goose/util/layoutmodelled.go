@@ -118,7 +118,7 @@ Perennial/TrustedCode). goose refuses ` + "`unsafe.Sizeof`/`Alignof`/`Offsetof`"
 a type declared over one (` + "`type M N`" + `, directly or through other defined types: its underlying
 type would be the model's, and this list does not name it), so every translated type whose
 underlying type a model changes is in the list; reflection treats each as opaque
-(` + "`go.typeQuery`" + `, Perennial/Golang/Defn/Reflect.lean).
+(` + "`GoTypeFns.typeQuery`" + `, Perennial/GooseLang/Ext/Reflect/Impl.lean).
 -/
 module
 

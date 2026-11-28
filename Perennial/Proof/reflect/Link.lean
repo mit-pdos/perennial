@@ -45,6 +45,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : reflect.Assumptions]
+variable [HasExt reflectExt]
 
 theorem reflect.Kind.wp_String : reflect.Kind.String.spec (GF := GF) (hG := hG) :=
   reflect.Kind.String.wp_proof

@@ -42,6 +42,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : internal.reflectcore.Assumptions]
+variable [HasExt reflectExt]
 
 theorem internal.reflectcore.wp_alloc : internal.reflectcore.alloc.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.alloc.wp_proof

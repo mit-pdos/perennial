@@ -229,6 +229,31 @@ def main():
                         f"lower-case name", os.path.relpath(d, base))
                 seen[f.lower()] = f
 
+    # The extensions a package's results need (`[HasExt X]` binders): those its own proofs
+    # declare and, through its callees' results, those of the packages it calls.
+    ext_memo = {}
+
+    def ext_vars(pkg, stack=()):
+        if pkg in ext_memo:
+            return ext_memo[pkg]
+        if pkg in stack:
+            return []
+        out = []
+        for path, hyps, ctx in packages.get(pkg, {}).values():
+            for v in ctx:
+                if v.startswith("variable "):
+                    for b in re.findall(r"\[HasExt [^\]]*\]", v):
+                        if b not in out:
+                            out.append(b)
+            for _, callee in hyps:
+                cpkg = specs.get(callee, (None, None))[0]
+                if cpkg is not None and cpkg != pkg:
+                    for v in ext_vars(cpkg, stack + (pkg,)):
+                        if v not in out:
+                            out.append(v)
+        ext_memo[pkg] = out
+        return out
+
     outputs = {}
     for pkg, proofs in sorted(packages.items()):
         if selected and pkg not in selected:
@@ -281,6 +306,7 @@ def main():
         lines += [f"public import {m}" for m in sorted(imports)]
         lines += ["", "@[expose] public section", "", "namespace Perennial", ""]
         lines += [v for v in context if v.startswith("open ")]
+        ext = ext_vars(pkg)
         # One `section link` with the union of the proofs' `variable`s, unless two of
         # them declare a binder differently (e.g. `[hG : HeapGS HasLC.hasLC GF]` for a
         # proof that needs later credits): then a section per run of proofs with the
@@ -309,7 +335,7 @@ def main():
             else:
                 lines += [""]
             lines += ["section link"]
-            lines += vs
+            lines += vs + [f"variable {b}" for b in ext if not any(b in v for v in vs)]
             for n in ns:
                 _, hyps, _ = proofs[n]
                 args = "".join(f" {link_arg(c, n)}" for _, c in hyps)

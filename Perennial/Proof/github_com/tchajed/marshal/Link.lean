@@ -34,6 +34,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.tchajed.marshal.Assumptions]
+variable [HasExt reflectExt]
 
 theorem github_com.tchajed.marshal.wp_ReadBool : github_com.tchajed.marshal.ReadBool.spec (GF := GF) (hG := hG) :=
   github_com.tchajed.marshal.ReadBool.wp_proof

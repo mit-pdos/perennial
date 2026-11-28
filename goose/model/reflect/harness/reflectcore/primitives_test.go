@@ -1,7 +1,7 @@
 package reflectcore
 
-// Per-primitive tests: each stub of core_harness.go (a GooseLang rule of
-// Perennial/Golang/Defn/Reflect.lean, written over the real reflect) against the static Go
+// Per-primitive tests: each stub of core_harness.go (a case of the reflection extension,
+// Perennial/GooseLang/Ext/Reflect/Impl.lean, written over the real reflect) against the static Go
 // operation the rule claims it is, over the corpus of corpus_test.go; and each stuck point of a
 // rule where real Go panics, or where the rule is less defined than Go.
 

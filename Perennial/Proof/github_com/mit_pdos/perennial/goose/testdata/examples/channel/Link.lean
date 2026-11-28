@@ -43,6 +43,7 @@ variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.channel.Assumptions]
+variable [HasExt reflectExt]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.wp_BroadcastExample : github_com.mit_pdos.perennial.goose.testdata.examples.channel.BroadcastExample.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.channel.BroadcastExample.wp_proof

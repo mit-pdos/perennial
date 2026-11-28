@@ -35,6 +35,7 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : bytes.Assumptions]
+variable [HasExt reflectExt]
 
 theorem bytes.Buffer.wp_Bytes : bytes.Buffer.Bytes.spec (GF := GF) (hG := hG) :=
   bytes.Buffer.Bytes.wp_proof
