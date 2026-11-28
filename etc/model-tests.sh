@@ -99,11 +99,12 @@
 #            gomodel's choices driven (testdata/alias/gomodel_driven.go): the
 #            printer's buffer seen through a slice a writer kept.
 #
-# The overlay of a package's import graph includes the whole-package model of
-# internal/reflectlite (errors imports it), whose reflection primitives
-# (internal/reflectcore) have placeholder Go bodies that panic: the script
-# drops it from the overlay, so the tests run over the real reflectlite (its
-# model's evidence is goose/model/reflect/harness).
+# The overlay of a package's import graph includes the whole-package models of
+# internal/reflectlite (errors imports it) and reflect (encoding/json, imported
+# by the syscall and os tests), whose reflection primitives
+# (internal/reflectcore) have placeholder Go bodies that panic or block: the
+# script drops both from the overlay, so the tests run over the real packages
+# (the models' evidence is goose/model/reflect/harness).
 #
 # usage: etc/model-tests.sh
 set -euo pipefail
@@ -112,24 +113,24 @@ OUT=$(mktemp -d)
 trap 'rm -rf "$OUT"' EXIT
 cd "$ROOT/goose"
 go build -o "$OUT/goose" ./cmd/goose
-drop_reflectlite() {
-  python3 - "$1" "$(go env GOROOT)/src/internal/reflectlite/" <<'PY'
+drop_reflect() {
+  python3 - "$1" "$(go env GOROOT)/src/internal/reflectlite/" "$(go env GOROOT)/src/reflect/" <<'PY'
 import json, sys
-path, drop = sys.argv[1], sys.argv[2]
+path, drops = sys.argv[1], tuple(sys.argv[2:])
 with open(path) as f:
     ov = json.load(f)
-ov["Replace"] = {k: v for k, v in ov["Replace"].items() if not k.startswith(drop)}
+ov["Replace"] = {k: v for k, v in ov["Replace"].items() if not k.startswith(drops)}
 with open(path, "w") as f:
     json.dump(ov, f, indent="\t")
 PY
 }
 "$OUT/goose" model-overlay -configdir "$ROOT/Perennial/Code" -dir . -tags purego -o "$OUT/ov" \
   strings bytes errors internal/stringslite internal/bytealg internal/sync sync time math
-drop_reflectlite "$OUT/ov/overlay.json"
+drop_reflect "$OUT/ov/overlay.json"
 # the choice models, in an overlay of their own
 "$OUT/goose" model-overlay -configdir "$ROOT/Perennial/Code" -dir . -tags purego -o "$OUT/ovc" \
   runtime syscall log
-drop_reflectlite "$OUT/ovc/overlay.json"
+drop_reflect "$OUT/ovc/overlay.json"
 # go vet does not find the overlay-added internal/gomodel (it changes into the package's directory)
 run() { go test -vet=off -timeout 600s -overlay "$OUT/ov/overlay.json" -tags purego,goose "$@"; }
 run strings -skip '^(TestSplit|ExampleSplit|TestBuilderGrow|TestBuilderAllocs|TestBuilderGrowSizeclasses|TestReplace|TestBuilderCopyPanic)$'
@@ -153,7 +154,7 @@ runcdebug
 go build -overlay "$OUT/ovc/overlay.json" -tags purego,goose runtime internal/synctest
 # fmt: TestModelAlias, on the real fmt, then on its models with the driven gomodel
 "$OUT/goose" model-overlay -configdir "$ROOT/Perennial/Code" -dir . -tags purego -o "$OUT/ovfmt" fmt
-drop_reflectlite "$OUT/ovfmt/overlay.json"
+drop_reflect "$OUT/ovfmt/overlay.json"
 ALIAS="$ROOT/goose/model/fmt/testdata/alias"
 python3 - "$(go env GOROOT)/src" "$ALIAS" "$OUT/ovfmt/overlay.json" "$OUT" <<'PY'
 import json, sys
