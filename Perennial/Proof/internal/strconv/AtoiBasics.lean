@@ -68,8 +68,8 @@ theorem parseIntOf_of_ok {neg : Bool} {t : GoString} {base bitSize v : Nat}
   unfold parseIntOf
   rw [h]
   simp only
-  rw [ite_eq_right (by intro h'; cases neg <;> (simp at h'; omega)),
-    ite_eq_right (by intro h'; cases neg <;> (simp at h'; omega))]
+  rw [ite_eq_right (by rintro ⟨-, h'⟩; omega),
+    ite_eq_right (by rintro ⟨-, h'⟩; omega)]
 
 /-- `parseIntOf_of_ok` in base 10 at bit size 0 (`int64`). -/
 theorem parseIntOf_of_ok10 {neg : Bool} {t : GoString} {v : Nat}
