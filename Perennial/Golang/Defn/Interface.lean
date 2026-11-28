@@ -83,7 +83,7 @@ class InterfaceSemantics : Prop where
   /-- `T(x)` for an interface type `T`. The rule does not check that `x`'s type implements
   `T`: it relies on goose emitting only conversions that type-check. A trusted primitive that
   constructs a conversion at run time must check it itself (`ConvertAt`'s premise `hi`,
-  `Reflect.lean`). -/
+  `GooseLang/Ext/Reflect/Impl.lean`). -/
   convert_to_interface (v : val) {from_ funder to : go.GoType} {elems : List go.InterfaceElem}
     [from_ ↓u funder] [to ≤u go.InterfaceType elems] :
     ⟦Convert from_ to, v⟧ ⤳
