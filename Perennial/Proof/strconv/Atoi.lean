@@ -29,25 +29,28 @@ theorem strconv.Atoi.wp_proof
   intro s
   wp_start
   wp_auto
-  wp_apply wp_Atoi s as %x %err %Herr
-  rcases Herr with rfl | rfl | rfl
+  wp_apply wp_Atoi s as %x %err %Hout
+  rcases hres : internal.strconv.parseInt s 10 0 with n | _ | n <;> rw [hres] at Hout <;>
+    obtain ⟨rfl, rfl⟩ := Hout
   · wp_auto
     iapply HΦ
-    ileft; ipureintro; rfl
+    ipureintro; exact ⟨rfl, rfl⟩
   · wp_auto
     have H := wp_toError go!"Atoi" s (W64 0) (W64 0) true
     simp only [ite_true] at H
     wp_apply H as %e He
     iapply HΦ
-    iright; ileft
-    iexact He
+    isplitr
+    · ipureintro; rfl
+    · iexact He
   · wp_auto
     have H := wp_toError go!"Atoi" s (W64 0) (W64 0) false
     simp only [Bool.false_eq_true, ite_false] at H
     wp_apply H as %e He
     iapply HΦ
-    iright; iright
-    iexact He
+    isplitr
+    · ipureintro; rfl
+    · iexact He
 
 end proof
 
