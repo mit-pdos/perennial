@@ -24,7 +24,6 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : math.big.Assumptions]
-variable [HasExt reflectExt]
 
 theorem math.big.wp_low64 : math.big.low64.spec (GF := GF) (hG := hG) :=
   math.big.low64.wp_proof
@@ -35,7 +34,7 @@ theorem math.big.Int.wp_Int64 : math.big.Int.Int64.spec (GF := GF) (hG := hG) :=
 theorem math.big.wp_NewInt : math.big.NewInt.spec (GF := GF) (hG := hG) :=
   math.big.NewInt.wp_proof
 
-theorem math.big.wp_initialize' : math.big.initialize'.spec (GF := GF) (hG := hG) :=
+theorem math.big.wp_initialize' [HasExt reflectExt] : math.big.initialize'.spec (GF := GF) (hG := hG) :=
   math.big.initialize'.wp_proof fmt.wp_initialize' errors.wp_initialize' errors.wp_New
 
 end link

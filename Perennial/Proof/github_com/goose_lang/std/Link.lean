@@ -34,7 +34,6 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.goose_lang.std.Assumptions]
-variable [HasExt reflectExt]
 
 theorem github_com.goose_lang.std.wp_Assert : github_com.goose_lang.std.Assert.spec (GF := GF) (hG := hG) :=
   github_com.goose_lang.std.Assert.wp_proof
@@ -66,7 +65,7 @@ theorem github_com.goose_lang.std.wp_SumAssumeNoOverflow : github_com.goose_lang
 theorem github_com.goose_lang.std.wp_SumNoOverflow : github_com.goose_lang.std.SumNoOverflow.spec (GF := GF) (hG := hG) :=
   github_com.goose_lang.std.SumNoOverflow.wp_proof github_com.goose_lang.std.std_core.wp_SumNoOverflow
 
-theorem github_com.goose_lang.std.wp_initialize' : github_com.goose_lang.std.initialize'.spec (GF := GF) (hG := hG) :=
+theorem github_com.goose_lang.std.wp_initialize' [HasExt reflectExt] : github_com.goose_lang.std.initialize'.spec (GF := GF) (hG := hG) :=
   github_com.goose_lang.std.initialize'.wp_proof github_com.goose_lang.std.std_core.wp_initialize' github_com.goose_lang.primitive.wp_initialize' time.wp_initialize' sync.wp_initialize' math.wp_initialize'
 
 end link

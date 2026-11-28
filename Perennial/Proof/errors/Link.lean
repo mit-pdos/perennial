@@ -29,12 +29,11 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : errors.Assumptions]
-variable [HasExt reflectExt]
 
-theorem errors.wp_as : errors.«as».spec (GF := GF) (hG := hG) :=
+theorem errors.wp_as [HasExt reflectExt] : errors.«as».spec (GF := GF) (hG := hG) :=
   errors.«as».wp_proof internal.reflectlite.wp_TypeOf internal.reflectlite.rtype.wp_AssignableTo internal.reflectlite.wp_ValueOf internal.reflectlite.Value.wp_Elem internal.reflectlite.Value.wp_Set
 
-theorem errors.wp_As : errors.As.spec (GF := GF) (hG := hG) :=
+theorem errors.wp_As [HasExt reflectExt] : errors.As.spec (GF := GF) (hG := hG) :=
   errors.As.wp_proof internal.reflectlite.wp_ValueOf internal.reflectlite.Value.wp_Type internal.reflectlite.Value.wp_IsNil internal.reflectlite.rtype.wp_Kind internal.reflectlite.rtype.wp_Elem internal.reflectlite.rtype.wp_Implements errors.wp_as
 
 theorem errors.wp_asType : errors.asType.spec (GF := GF) (hG := hG) :=
@@ -58,7 +57,7 @@ theorem errors.wp_New : errors.New.spec (GF := GF) (hG := hG) :=
 theorem errors.wp_Unwrap : errors.Unwrap.spec (GF := GF) (hG := hG) :=
   errors.Unwrap.wp_proof
 
-theorem errors.wp_initialize' : errors.initialize'.spec (GF := GF) (hG := hG) :=
+theorem errors.wp_initialize' [HasExt reflectExt] : errors.initialize'.spec (GF := GF) (hG := hG) :=
   errors.initialize'.wp_proof internal.reflectlite.wp_initialize' internal.reflectlite.wp_TypeOf internal.reflectlite.rtype.wp_Elem
 
 end link

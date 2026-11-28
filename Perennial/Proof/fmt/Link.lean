@@ -64,7 +64,6 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
-variable [HasExt reflectExt]
 
 theorem fmt.fmt.wp_clearflags : fmt.fmt.clearflags.spec (GF := GF) (hG := hG) :=
   fmt.fmt.clearflags.wp_proof
@@ -177,7 +176,7 @@ theorem fmt.pp.wp_doPrintf : fmt.pp.doPrintf.spec (GF := GF) (hG := hG) :=
 theorem fmt.wp_Sprintf : fmt.Sprintf.spec (GF := GF) (hG := hG) :=
   fmt.Sprintf.wp_proof fmt.wp_newPrinter fmt.pp.wp_doPrintf fmt.pp.wp_free
 
-theorem fmt.wp_initialize' : fmt.initialize'.spec (GF := GF) (hG := hG) :=
+theorem fmt.wp_initialize' [HasExt reflectExt] : fmt.initialize'.spec (GF := GF) (hG := hG) :=
   fmt.initialize'.wp_proof sync.wp_initialize' io.wp_initialize' errors.wp_initialize' unicode.utf8.wp_initialize' reflect.wp_initialize' strconv.wp_initialize' errors.wp_New internal.gomodel.wp_initialize' internal.stringslite.wp_initialize'
 
 end link

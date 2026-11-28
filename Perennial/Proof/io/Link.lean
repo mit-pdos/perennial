@@ -27,7 +27,6 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : io.Assumptions]
-variable [HasExt reflectExt]
 
 theorem io.wp_MultiReader : io.MultiReader.spec (GF := GF) (hG := hG) :=
   io.MultiReader.wp_proof
@@ -44,7 +43,7 @@ theorem io.wp_ReadFull : io.ReadFull.spec (GF := GF) (hG := hG) :=
 theorem io.eofReader.wp_Read : io.eofReader.Read.spec (GF := GF) (hG := hG) :=
   io.eofReader.Read.wp_proof
 
-theorem io.wp_initialize' : io.initialize'.spec (GF := GF) (hG := hG) :=
+theorem io.wp_initialize' [HasExt reflectExt] : io.initialize'.spec (GF := GF) (hG := hG) :=
   io.initialize'.wp_proof sync.wp_initialize' errors.wp_initialize'
 
 theorem io.multiReader.wp_Read : io.multiReader.Read.spec (GF := GF) (hG := hG) :=

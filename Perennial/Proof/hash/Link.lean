@@ -20,9 +20,8 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : hash.Assumptions]
-variable [HasExt reflectExt]
 
-theorem hash.wp_initialize' : hash.initialize'.spec (GF := GF) (hG := hG) :=
+theorem hash.wp_initialize' [HasExt reflectExt] : hash.initialize'.spec (GF := GF) (hG := hG) :=
   hash.initialize'.wp_proof io.wp_initialize'
 
 end link

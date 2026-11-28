@@ -47,81 +47,80 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : internal.reflectlite.Assumptions]
-variable [HasExt reflectExt]
 
 theorem internal.reflectlite.wp_toRType : internal.reflectlite.toRType.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.toRType.wp_proof
 
-theorem internal.reflectlite.wp_TypeOf : internal.reflectlite.TypeOf.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectlite.wp_TypeOf [HasExt reflectExt] : internal.reflectlite.TypeOf.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.TypeOf.wp_proof internal.reflectcore.wp_TokOf internal.reflectlite.wp_toRType
 
 theorem internal.reflectlite.flag.wp_kind : internal.reflectlite.flag.kind.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.flag.kind.wp_proof
 
-theorem internal.reflectlite.Value.wp_Elem : internal.reflectlite.Value.Elem.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectlite.Value.wp_Elem [HasExt reflectExt] : internal.reflectlite.Value.Elem.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.Value.Elem.wp_proof internal.reflectlite.flag.wp_kind internal.reflectcore.wp_EqNilAt internal.reflectcore.wp_TypeElem internal.reflectcore.wp_TypeKind internal.reflectcore.wp_PtrTok internal.reflectcore.wp_ConvertAt
 
-theorem internal.reflectlite.Value.wp_IsNil : internal.reflectlite.Value.IsNil.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectlite.Value.wp_IsNil [HasExt reflectExt] : internal.reflectlite.Value.IsNil.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.Value.IsNil.wp_proof internal.reflectlite.flag.wp_kind internal.reflectcore.wp_EqNilAt
 
 theorem internal.reflectlite.Value.wp_Kind : internal.reflectlite.Value.Kind.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.Value.Kind.wp_proof internal.reflectlite.flag.wp_kind
 
-theorem internal.reflectlite.wp_isDefined : internal.reflectlite.isDefined.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectlite.wp_isDefined [HasExt reflectExt] : internal.reflectlite.isDefined.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.isDefined.wp_proof internal.reflectcore.wp_TypeIdentByName internal.reflectcore.wp_TypeKind internal.reflectcore.wp_TypeElem internal.reflectcore.wp_PtrTok
 
-theorem internal.reflectlite.wp_directlyAssignable : internal.reflectlite.directlyAssignable.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectlite.wp_directlyAssignable [HasExt reflectExt] : internal.reflectlite.directlyAssignable.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.directlyAssignable.wp_proof internal.reflectcore.wp_TypeIdentByName internal.reflectcore.wp_TypeKind internal.reflectcore.wp_TypeUnderlying internal.reflectlite.wp_isDefined
 
-theorem internal.reflectlite.wp_implements : internal.reflectlite.implements.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectlite.wp_implements [HasExt reflectExt] : internal.reflectlite.implements.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.implements.wp_proof internal.reflectcore.wp_TypeKind internal.reflectcore.wp_Alloc internal.reflectcore.wp_Load internal.reflectcore.wp_AssertOk
 
-theorem internal.reflectlite.wp_isZeroSize : internal.reflectlite.isZeroSize.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectlite.wp_isZeroSize [HasExt reflectExt] : internal.reflectlite.isZeroSize.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.isZeroSize.wp_proof internal.reflectcore.wp_TypeKind internal.reflectcore.wp_TypeLen internal.reflectcore.wp_TypeElem internal.reflectcore.wp_TypeNumField internal.reflectcore.wp_TypeFieldType
 
-theorem internal.reflectlite.wp_isDirectIface : internal.reflectlite.isDirectIface.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectlite.wp_isDirectIface [HasExt reflectExt] : internal.reflectlite.isDirectIface.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.isDirectIface.wp_proof internal.reflectcore.wp_TypeKind internal.reflectcore.wp_TypeLen internal.reflectcore.wp_TypeElem internal.reflectcore.wp_TypeNumField internal.reflectcore.wp_TypeFieldType internal.reflectlite.wp_isZeroSize
 
-theorem internal.reflectlite.wp_packEface : internal.reflectlite.packEface.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectlite.wp_packEface [HasExt reflectExt] : internal.reflectlite.packEface.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.packEface.wp_proof internal.reflectlite.wp_isDirectIface internal.reflectcore.wp_Load
 
-theorem internal.reflectlite.wp_valueInterface : internal.reflectlite.valueInterface.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectlite.wp_valueInterface [HasExt reflectExt] : internal.reflectlite.valueInterface.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.valueInterface.wp_proof internal.reflectlite.flag.wp_kind internal.reflectlite.wp_packEface
 
-theorem internal.reflectlite.Value.wp_assignTo : internal.reflectlite.Value.assignTo.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectlite.Value.wp_assignTo [HasExt reflectExt] : internal.reflectlite.Value.assignTo.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.Value.assignTo.wp_proof internal.reflectlite.wp_directlyAssignable internal.reflectlite.wp_implements internal.reflectcore.wp_TypeKind internal.reflectlite.Value.wp_Kind internal.reflectlite.wp_valueInterface internal.reflectcore.wp_Store
 
-theorem internal.reflectlite.Value.wp_Set : internal.reflectlite.Value.Set.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectlite.Value.wp_Set [HasExt reflectExt] : internal.reflectlite.Value.Set.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.Value.Set.wp_proof internal.reflectlite.flag.wp_kind internal.reflectlite.Value.wp_assignTo internal.reflectcore.wp_Load internal.reflectcore.wp_Store
 
 theorem internal.reflectlite.Value.wp_Type : internal.reflectlite.Value.Type.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.Value.Type.wp_proof internal.reflectlite.wp_toRType
 
-theorem internal.reflectlite.wp_unpackEface : internal.reflectlite.unpackEface.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectlite.wp_unpackEface [HasExt reflectExt] : internal.reflectlite.unpackEface.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.unpackEface.wp_proof internal.reflectcore.wp_TokOf internal.reflectcore.wp_TypeKind internal.reflectlite.wp_isDirectIface internal.reflectcore.wp_Box
 
-theorem internal.reflectlite.wp_ValueOf : internal.reflectlite.ValueOf.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectlite.wp_ValueOf [HasExt reflectExt] : internal.reflectlite.ValueOf.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.ValueOf.wp_proof internal.reflectlite.wp_unpackEface
 
-theorem internal.reflectlite.wp_elem : internal.reflectlite.elem.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectlite.wp_elem [HasExt reflectExt] : internal.reflectlite.elem.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.elem.wp_proof internal.reflectcore.wp_TypeKind internal.reflectcore.wp_TypeElem
 
 theorem internal.reflectlite.wp_initialize' : internal.reflectlite.initialize'.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.initialize'.wp_proof internal.abi.wp_initialize' internal.gomodel.wp_initialize' internal.reflectcore.wp_initialize'
 
-theorem internal.reflectlite.rtype.wp_AssignableTo : internal.reflectlite.rtype.AssignableTo.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectlite.rtype.wp_AssignableTo [HasExt reflectExt] : internal.reflectlite.rtype.AssignableTo.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.rtype.AssignableTo.wp_proof internal.reflectlite.wp_directlyAssignable internal.reflectlite.wp_implements
 
 theorem internal.reflectlite.wp_toType : internal.reflectlite.toType.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.toType.wp_proof internal.reflectlite.wp_toRType
 
-theorem internal.reflectlite.rtype.wp_Elem : internal.reflectlite.rtype.Elem.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectlite.rtype.wp_Elem [HasExt reflectExt] : internal.reflectlite.rtype.Elem.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.rtype.Elem.wp_proof internal.reflectlite.wp_elem internal.reflectlite.wp_toType
 
-theorem internal.reflectlite.rtype.wp_Kind : internal.reflectlite.rtype.Kind.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectlite.rtype.wp_Kind [HasExt reflectExt] : internal.reflectlite.rtype.Kind.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.rtype.Kind.wp_proof internal.reflectcore.wp_TypeKind
 
-theorem internal.reflectlite.rtype.wp_Implements : internal.reflectlite.rtype.Implements.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectlite.rtype.wp_Implements [HasExt reflectExt] : internal.reflectlite.rtype.Implements.spec (GF := GF) (hG := hG) :=
   internal.reflectlite.rtype.Implements.wp_proof internal.reflectlite.rtype.wp_Kind internal.reflectlite.wp_implements
 
 end link

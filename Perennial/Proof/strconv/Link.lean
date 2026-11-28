@@ -43,7 +43,6 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : strconv.Assumptions]
-variable [HasExt reflectExt]
 
 theorem strconv.wp_bsearch : strconv.bsearch.spec (GF := GF) (hG := hG) :=
   strconv.bsearch.wp_proof
@@ -105,7 +104,7 @@ theorem strconv.wp_ParseInt : strconv.ParseInt.spec (GF := GF) (hG := hG) :=
 theorem strconv.wp_ParseUint : strconv.ParseUint.spec (GF := GF) (hG := hG) :=
   strconv.ParseUint.wp_proof internal.strconv.wp_ParseUint strconv.wp_toError
 
-theorem strconv.wp_initialize' : strconv.initialize'.spec (GF := GF) (hG := hG) :=
+theorem strconv.wp_initialize' [HasExt reflectExt] : strconv.initialize'.spec (GF := GF) (hG := hG) :=
   strconv.initialize'.wp_proof errors.wp_initialize' internal.strconv.wp_initialize' internal.stringslite.wp_initialize' unicode.utf8.wp_initialize'
 
 end link

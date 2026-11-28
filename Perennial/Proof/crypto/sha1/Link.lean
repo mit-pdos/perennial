@@ -31,7 +31,6 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : crypto.sha1.Assumptions]
-variable [HasExt reflectExt]
 
 theorem crypto.sha1.digest.wp_Reset : crypto.sha1.digest.Reset.spec (GF := GF) (hG := hG) :=
   crypto.sha1.digest.Reset.wp_proof
@@ -51,7 +50,7 @@ theorem crypto.sha1.digest.wp_checkSum : crypto.sha1.digest.checkSum.spec (GF :=
 theorem crypto.sha1.wp_Sum : crypto.sha1.Sum.spec (GF := GF) (hG := hG) :=
   crypto.sha1.Sum.wp_proof crypto.internal.fips140only.wp_Enforced crypto.sha1.digest.wp_Reset crypto.sha1.digest.wp_Write crypto.sha1.digest.wp_checkSum
 
-theorem crypto.sha1.wp_initialize' : crypto.sha1.initialize'.spec (GF := GF) (hG := hG) :=
+theorem crypto.sha1.wp_initialize' [HasExt reflectExt] : crypto.sha1.initialize'.spec (GF := GF) (hG := hG) :=
   crypto.sha1.initialize'.wp_proof crypto.internal.boring.wp_initialize' crypto.internal.fips140only.wp_initialize' errors.wp_initialize' hash.wp_initialize' internal.byteorder.wp_initialize' math.bits.wp_initialize'
 
 end link

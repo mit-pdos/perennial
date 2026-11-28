@@ -37,7 +37,6 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : encoding.binary.Assumptions]
-variable [HasExt reflectExt]
 
 theorem encoding.binary.wp_PutUvarint : encoding.binary.PutUvarint.spec (GF := GF) (hG := hG) :=
   encoding.binary.PutUvarint.wp_proof
@@ -63,7 +62,7 @@ theorem encoding.binary.bigEndian.wp_Uint32 : encoding.binary.bigEndian.Uint32.s
 theorem encoding.binary.bigEndian.wp_Uint64 : encoding.binary.bigEndian.Uint64.spec (GF := GF) (hG := hG) :=
   encoding.binary.bigEndian.Uint64.wp_proof
 
-theorem encoding.binary.wp_initialize' : encoding.binary.initialize'.spec (GF := GF) (hG := hG) :=
+theorem encoding.binary.wp_initialize' [HasExt reflectExt] : encoding.binary.initialize'.spec (GF := GF) (hG := hG) :=
   encoding.binary.initialize'.wp_proof sync.wp_initialize' slices.wp_initialize' math.wp_initialize' reflect.wp_initialize' io.wp_initialize' errors.wp_initialize' errors.wp_New
 
 theorem encoding.binary.littleEndian.wp_PutUint32 : encoding.binary.littleEndian.PutUint32.spec (GF := GF) (hG := hG) :=

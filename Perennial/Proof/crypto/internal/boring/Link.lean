@@ -22,12 +22,11 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : crypto.internal.boring.Assumptions]
-variable [HasExt reflectExt]
 
 theorem crypto.internal.boring.wp_Unreachable : crypto.internal.boring.Unreachable.spec (GF := GF) (hG := hG) :=
   crypto.internal.boring.Unreachable.wp_proof crypto.internal.boring.sig.wp_StandardCrypto
 
-theorem crypto.internal.boring.wp_initialize' : crypto.internal.boring.initialize'.spec (GF := GF) (hG := hG) :=
+theorem crypto.internal.boring.wp_initialize' [HasExt reflectExt] : crypto.internal.boring.initialize'.spec (GF := GF) (hG := hG) :=
   crypto.internal.boring.initialize'.wp_proof crypto.internal.boring.sig.wp_initialize' hash.wp_initialize'
 
 end link

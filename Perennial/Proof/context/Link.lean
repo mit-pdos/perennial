@@ -39,7 +39,6 @@ variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : context.Assumptions]
-variable [HasExt reflectExt]
 
 theorem context.wp_Background : context.Background.spec (GF := GF) (hG := hG) :=
   context.Background.wp_proof
@@ -89,7 +88,7 @@ theorem context.wp_WithDeadline : context.WithDeadline.spec (GF := GF) (hG := hG
 theorem context.wp_WithTimeout : context.WithTimeout.spec (GF := GF) (hG := hG) :=
   context.WithTimeout.wp_proof time.Time.wp_Add time.wp_Now context.wp_WithDeadline
 
-theorem context.wp_initialize' : context.initialize'.spec (GF := GF) (hG := hG) :=
+theorem context.wp_initialize' [HasExt reflectExt] : context.initialize'.spec (GF := GF) (hG := hG) :=
   context.initialize'.wp_proof time.wp_initialize' sync.atomic.wp_initialize' sync.wp_initialize' errors.wp_initialize'
 
 end link

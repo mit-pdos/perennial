@@ -85,7 +85,6 @@ variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
-variable [HasExt reflectExt]
 
 theorem time.wp_makeTimerChan : time.makeTimerChan.spec (GF := GF) (hG := hG) :=
   time.makeTimerChan.wp_proof internal.gomodel.wp_Choose
@@ -98,7 +97,6 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
-variable [HasExt reflectExt]
 
 theorem time.wp_now : time.now.spec (GF := GF) (hG := hG) :=
   time.now.wp_proof
@@ -150,7 +148,6 @@ variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
-variable [HasExt reflectExt]
 
 theorem time.wp_sendTimes : time.sendTimes.spec (GF := GF) (hG := hG) :=
   time.sendTimes.wp_proof time.wp_Now time.Time.wp_Add
@@ -175,7 +172,6 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
-variable [HasExt reflectExt]
 
 theorem time.wp_sleepUntil : time.sleepUntil.spec (GF := GF) (hG := hG) :=
   time.sleepUntil.wp_proof time.wp_runtimeNano time.wp_Sleep
@@ -191,7 +187,6 @@ variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
-variable [HasExt reflectExt]
 
 theorem time.wp_startTimer : time.startTimer.spec (GF := GF) (hG := hG) :=
   time.startTimer.wp_proof time.wp_sleepUntil time.wp_nextWhen
@@ -210,7 +205,6 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
-variable [HasExt reflectExt]
 
 theorem time.Duration.wp_Abs : time.Duration.Abs.spec (GF := GF) (hG := hG) :=
   time.Duration.Abs.wp_proof
@@ -247,7 +241,6 @@ variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
-variable [HasExt reflectExt]
 
 theorem time.wp_newRuntimeTicker : time.newRuntimeTicker.spec (GF := GF) (hG := hG) :=
   time.newRuntimeTicker.wp_proof
@@ -266,7 +259,6 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
-variable [HasExt reflectExt]
 
 theorem time.wp_runtimeIsBubbled : time.runtimeIsBubbled.spec (GF := GF) (hG := hG) :=
   time.runtimeIsBubbled.wp_proof internal.gomodel.wp_Choose
@@ -294,7 +286,6 @@ variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
-variable [HasExt reflectExt]
 
 theorem time.wp_runtimeTimerFire : time.runtimeTimerFire.spec (GF := GF) (hG := hG) :=
   time.runtimeTimerFire.wp_proof
@@ -319,7 +310,6 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
-variable [HasExt reflectExt]
 
 theorem time.Time.wp_After : time.Time.After.spec (GF := GF) (hG := hG) :=
   time.Time.After.wp_proof time.Time.wp_sec time.Time.wp_nsec
@@ -353,7 +343,6 @@ variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
-variable [HasExt reflectExt]
 
 theorem time.wp_resetTimer : time.resetTimer.spec (GF := GF) (hG := hG) :=
   time.resetTimer.wp_proof time.wp_resetTimerAt
@@ -375,7 +364,6 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
-variable [HasExt reflectExt]
 
 theorem time.wp_unixTime : time.unixTime.spec (GF := GF) (hG := hG) :=
   time.unixTime.wp_proof
@@ -386,7 +374,7 @@ theorem time.wp_Unix : time.Unix.spec (GF := GF) (hG := hG) :=
 theorem time.wp_Until : time.Until.spec (GF := GF) (hG := hG) :=
   time.Until.wp_proof time.wp_runtimeIsBubbled time.wp_runtimeNano time.wp_subMono time.wp_Now time.Time.wp_Sub
 
-theorem time.wp_initialize' : time.initialize'.spec (GF := GF) (hG := hG) :=
+theorem time.wp_initialize' [HasExt reflectExt] : time.initialize'.spec (GF := GF) (hG := hG) :=
   time.initialize'.wp_proof errors.wp_initialize' internal.gomodel.wp_initialize' sync.atomic.wp_initialize' errors.wp_New time.wp_runtimeNano
 
 end link

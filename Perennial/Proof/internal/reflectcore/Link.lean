@@ -42,75 +42,74 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : internal.reflectcore.Assumptions]
-variable [HasExt reflectExt]
 
 theorem internal.reflectcore.wp_alloc : internal.reflectcore.alloc.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.alloc.wp_proof
 
-theorem internal.reflectcore.wp_Alloc : internal.reflectcore.Alloc.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectcore.wp_Alloc [HasExt reflectExt] : internal.reflectcore.Alloc.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.Alloc.wp_proof internal.reflectcore.wp_alloc
 
 theorem internal.reflectcore.wp_assertOk : internal.reflectcore.assertOk.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.assertOk.wp_proof
 
-theorem internal.reflectcore.wp_AssertOk : internal.reflectcore.AssertOk.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectcore.wp_AssertOk [HasExt reflectExt] : internal.reflectcore.AssertOk.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.AssertOk.wp_proof internal.reflectcore.wp_assertOk
 
 theorem internal.reflectcore.wp_box : internal.reflectcore.box.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.box.wp_proof
 
-theorem internal.reflectcore.wp_Box : internal.reflectcore.Box.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectcore.wp_Box [HasExt reflectExt] : internal.reflectcore.Box.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.Box.wp_proof internal.reflectcore.wp_box
 
-theorem internal.reflectcore.wp_ConvertAt : internal.reflectcore.ConvertAt.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectcore.wp_ConvertAt [HasExt reflectExt] : internal.reflectcore.ConvertAt.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.ConvertAt.wp_proof
 
-theorem internal.reflectcore.wp_EqNilAt : internal.reflectcore.EqNilAt.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectcore.wp_EqNilAt [HasExt reflectExt] : internal.reflectcore.EqNilAt.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.EqNilAt.wp_proof
 
 theorem internal.reflectcore.wp_load : internal.reflectcore.load.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.load.wp_proof
 
-theorem internal.reflectcore.wp_Load : internal.reflectcore.Load.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectcore.wp_Load [HasExt reflectExt] : internal.reflectcore.Load.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.Load.wp_proof internal.reflectcore.wp_load
 
 theorem internal.reflectcore.wp_ptrTok : internal.reflectcore.ptrTok.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.ptrTok.wp_proof
 
-theorem internal.reflectcore.wp_PtrTok : internal.reflectcore.PtrTok.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectcore.wp_PtrTok [HasExt reflectExt] : internal.reflectcore.PtrTok.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.PtrTok.wp_proof internal.reflectcore.wp_ptrTok
 
 theorem internal.reflectcore.wp_store : internal.reflectcore.store.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.store.wp_proof
 
-theorem internal.reflectcore.wp_Store : internal.reflectcore.Store.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectcore.wp_Store [HasExt reflectExt] : internal.reflectcore.Store.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.Store.wp_proof internal.reflectcore.wp_store
 
 theorem internal.reflectcore.wp_tokOf : internal.reflectcore.tokOf.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.tokOf.wp_proof
 
-theorem internal.reflectcore.wp_TokOf : internal.reflectcore.TokOf.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectcore.wp_TokOf [HasExt reflectExt] : internal.reflectcore.TokOf.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.TokOf.wp_proof internal.reflectcore.wp_tokOf
 
-theorem internal.reflectcore.wp_TypeElem : internal.reflectcore.TypeElem.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectcore.wp_TypeElem [HasExt reflectExt] : internal.reflectcore.TypeElem.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.TypeElem.wp_proof
 
-theorem internal.reflectcore.wp_TypeFieldType : internal.reflectcore.TypeFieldType.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectcore.wp_TypeFieldType [HasExt reflectExt] : internal.reflectcore.TypeFieldType.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.TypeFieldType.wp_proof
 
-theorem internal.reflectcore.wp_TypeIdentByName : internal.reflectcore.TypeIdentByName.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectcore.wp_TypeIdentByName [HasExt reflectExt] : internal.reflectcore.TypeIdentByName.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.TypeIdentByName.wp_proof
 
-theorem internal.reflectcore.wp_TypeKind : internal.reflectcore.TypeKind.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectcore.wp_TypeKind [HasExt reflectExt] : internal.reflectcore.TypeKind.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.TypeKind.wp_proof
 
-theorem internal.reflectcore.wp_TypeLen : internal.reflectcore.TypeLen.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectcore.wp_TypeLen [HasExt reflectExt] : internal.reflectcore.TypeLen.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.TypeLen.wp_proof
 
-theorem internal.reflectcore.wp_TypeNumField : internal.reflectcore.TypeNumField.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectcore.wp_TypeNumField [HasExt reflectExt] : internal.reflectcore.TypeNumField.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.TypeNumField.wp_proof
 
-theorem internal.reflectcore.wp_TypeUnderlying : internal.reflectcore.TypeUnderlying.spec (GF := GF) (hG := hG) :=
+theorem internal.reflectcore.wp_TypeUnderlying [HasExt reflectExt] : internal.reflectcore.TypeUnderlying.spec (GF := GF) (hG := hG) :=
   internal.reflectcore.TypeUnderlying.wp_proof
 
 theorem internal.reflectcore.wp_initialize' : internal.reflectcore.initialize'.spec (GF := GF) (hG := hG) :=

@@ -229,30 +229,36 @@ def main():
                         f"lower-case name", os.path.relpath(d, base))
                 seen[f.lower()] = f
 
-    # The extensions a package's results need (`[HasExt X]` binders): those its own proofs
-    # declare and, through its callees' results, those of the packages it calls.
+    # The extensions a result needs (`[HasExt X]` binders): those its proof file declares and,
+    # through its callees' results, those its callees' results need. A `variable` line holding
+    # only such binders is not copied into the Link's section: each result takes the binders it
+    # needs as its own, so that a result whose proof uses no extension does not take one (an
+    # instance-implicit section variable would be included in every theorem of the section).
+    EXT_BINDER = re.compile(r"\[HasExt [^\]]*\]")
+    proof_of = {n: v for ps in packages.values() for n, v in ps.items()}
     ext_memo = {}
 
-    def ext_vars(pkg, stack=()):
-        if pkg in ext_memo:
-            return ext_memo[pkg]
-        if pkg in stack:
+    def ext_binders(n, stack=()):
+        if n in ext_memo:
+            return ext_memo[n]
+        if n in stack or n not in proof_of:
             return []
+        _, hyps, ctx = proof_of[n]
         out = []
-        for path, hyps, ctx in packages.get(pkg, {}).values():
-            for v in ctx:
-                if v.startswith("variable "):
-                    for b in re.findall(r"\[HasExt [^\]]*\]", v):
-                        if b not in out:
-                            out.append(b)
-            for _, callee in hyps:
-                cpkg = specs.get(callee, (None, None))[0]
-                if cpkg is not None and cpkg != pkg:
-                    for v in ext_vars(cpkg, stack + (pkg,)):
-                        if v not in out:
-                            out.append(v)
-        ext_memo[pkg] = out
+        for v in ctx:
+            if v.startswith("variable "):
+                for b in EXT_BINDER.findall(v):
+                    if b not in out:
+                        out.append(b)
+        for _, callee in hyps:
+            for b in ext_binders(callee, stack + (n,)):
+                if b not in out:
+                    out.append(b)
+        ext_memo[n] = out
         return out
+
+    def ext_only(v):
+        return v.startswith("variable ") and EXT_BINDER.sub("", v[len("variable "):]).strip() == ""
 
     outputs = {}
     for pkg, proofs in sorted(packages.items()):
@@ -306,7 +312,6 @@ def main():
         lines += [f"public import {m}" for m in sorted(imports)]
         lines += ["", "@[expose] public section", "", "namespace Perennial", ""]
         lines += [v for v in context if v.startswith("open ")]
-        ext = ext_vars(pkg)
         # One `section link` with the union of the proofs' `variable`s, unless two of
         # them declare a binder differently (e.g. `[hG : HeapGS HasLC.hasLC GF]` for a
         # proof that needs later credits): then a section per run of proofs with the
@@ -335,11 +340,13 @@ def main():
             else:
                 lines += [""]
             lines += ["section link"]
-            lines += vs + [f"variable {b}" for b in ext if not any(b in v for v in vs)]
+            vs = [v for v in vs if not ext_only(v)]
+            lines += vs
             for n in ns:
                 _, hyps, _ = proofs[n]
                 args = "".join(f" {link_arg(c, n)}" for _, c in hyps)
-                lines += ["", f"theorem {result_name(n)} : {n}.spec (GF := GF) (hG := hG) :=",
+                bs = "".join(f" {b}" for b in ext_binders(n) if not any(b in v for v in vs))
+                lines += ["", f"theorem {result_name(n)}{bs} : {n}.spec (GF := GF) (hG := hG) :=",
                           f"  {n}.wp_proof{args}"]
         lines += ["", "end link", "", "end Perennial", ""]
         outputs[os.path.join(PROOF, pkg, "Link.lean")] = "\n".join(lines)

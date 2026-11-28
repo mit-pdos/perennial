@@ -34,7 +34,6 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.tchajed.marshal.Assumptions]
-variable [HasExt reflectExt]
 
 theorem github_com.tchajed.marshal.wp_ReadBool : github_com.tchajed.marshal.ReadBool.spec (GF := GF) (hG := hG) :=
   github_com.tchajed.marshal.ReadBool.wp_proof
@@ -75,7 +74,7 @@ theorem github_com.tchajed.marshal.wp_WriteInt32 : github_com.tchajed.marshal.Wr
 theorem github_com.tchajed.marshal.wp_WriteLenPrefixedBytes : github_com.tchajed.marshal.WriteLenPrefixedBytes.spec (GF := GF) (hG := hG) :=
   github_com.tchajed.marshal.WriteLenPrefixedBytes.wp_proof github_com.tchajed.marshal.wp_WriteInt github_com.tchajed.marshal.wp_WriteBytes
 
-theorem github_com.tchajed.marshal.wp_initialize' : github_com.tchajed.marshal.initialize'.spec (GF := GF) (hG := hG) :=
+theorem github_com.tchajed.marshal.wp_initialize' [HasExt reflectExt] : github_com.tchajed.marshal.initialize'.spec (GF := GF) (hG := hG) :=
   github_com.tchajed.marshal.initialize'.wp_proof github_com.goose_lang.std.wp_initialize' encoding.binary.wp_initialize'
 
 end link

@@ -39,7 +39,6 @@ theorem isNil_panic_kinds :
 
 section results
 variable [GooseExts] [GooseSemantics] [GooseInterp]
-variable [HasExt reflectExt]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
@@ -52,7 +51,7 @@ theorem pointerType_ne_rtype (T : go.GoType) : go.PointerType T ≠ rtype.ty := 
   unfold rtype.ty; simp
 
 /-- `ValueOf(any(p))` for `p : *T`: a `reflPtr`. -/
-theorem wp_ValueOf_reflPtr (T : go.GoType) (p : Loc) :
+theorem wp_ValueOf_reflPtr [HasExt reflectExt] (T : go.GoType) (p : Loc) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (@! ValueOf)) (Val #(interface.mkOk (go.PointerType T) #p)))
     {{ (w : Value), RET #w; ⌜reflPtr w T p⌝ }} := by
@@ -69,7 +68,7 @@ theorem wp_ValueOf_reflPtr (T : go.GoType) (p : Loc) :
 whose last field's type has a kind outside `directKind`, `Array` and `Struct`, such as `int64`:
 `directIfaceN_struct_last`): the indirect `Value` of kind `Struct` holding a new variable `q`
 holding `x`, on which `IsNil` panics (`Value.wp_IsNil_struct_value`). -/
-theorem wp_ValueOf_struct_indirect {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
+theorem wp_ValueOf_struct_indirect [HasExt reflectExt] {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
     {t : go.GoType} {fs : List go.field_decl} [t ↓u go.StructType fs]
     [IntoValTyped (GF := GF) V t] (x : V) (n : Nat) (hd : directIfaceN n t = some false) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
@@ -80,14 +79,14 @@ theorem wp_ValueOf_struct_indirect {V : Type} [ZeroVal V] [TypedPointsto (GF := 
     (by simp [go.kindOf]) hd (by simp [go.isInterfaceType])
 
 /-- `ValueOf(nil)`: the zero `Value`. -/
-theorem wp_ValueOf_nil :
+theorem wp_ValueOf_nil [HasExt reflectExt] :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (@! ValueOf)) (Val #(interface.nil : GoInterface)))
     {{ RET #(_root_.Perennial.zero_val reflect.Value); True }} :=
   (reflect.wp_ValueOf (GF := GF) (hG := hG)).2.2
 
 /-- `TypeOf(i)` for `i` holding a value of type `t`: a `reflType`. -/
-theorem wp_TypeOf_reflType (t : go.GoType) (v : val) :
+theorem wp_TypeOf_reflType [HasExt reflectExt] (t : go.GoType) (v : val) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (@! TypeOf)) (Val #(interface.mkOk t v)))
     {{ (rt : Type'), RET #rt; ⌜reflType rt t⌝ }} := by
@@ -98,7 +97,7 @@ theorem wp_TypeOf_reflType (t : go.GoType) (v : val) :
   rfl
 
 /-- `TypeOf(nil)`: the nil `Type`. -/
-theorem wp_TypeOf_nil :
+theorem wp_TypeOf_nil [HasExt reflectExt] :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (@! TypeOf)) (Val #(interface.nil : GoInterface)))
     {{ RET #(interface.nil : GoInterface); True }} :=
@@ -251,7 +250,7 @@ theorem Value.wp_Type_reflElem (v : Value) (T : go.GoType) (p : Loc) (h : reflEl
 /-! ## `Value.Interface` -/
 
 /-- `w.Interface()` of a `reflPtr`: `any(p)`. -/
-theorem Value.wp_Interface_reflPtr (w : Value) (T : go.GoType) (p : Loc) (h : reflPtr w T p) :
+theorem Value.wp_Interface_reflPtr [HasExt reflectExt] (w : Value) (T : go.GoType) (p : Loc) (h : reflPtr w T p) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (w @!! Value.ty @!! go!"Interface")) (Val #()))
     {{ RET #(interface.mkOk (go.PointerType T) #p); True }} := by
@@ -262,7 +261,7 @@ theorem Value.wp_Interface_reflPtr (w : Value) (T : go.GoType) (p : Loc) (h : re
 /-! ## `Value.Elem` -/
 
 /-- `w.Elem()` of a `reflPtr` for a non-nil `p`: a `reflElem`. -/
-theorem Value.wp_Elem_reflPtr (w : Value) (T : go.GoType) [go.NotLayoutModelled T] (p : Loc)
+theorem Value.wp_Elem_reflPtr [HasExt reflectExt] (w : Value) (T : go.GoType) [go.NotLayoutModelled T] (p : Loc)
     (k : Nat)
     (h : reflPtr w T p) (hk : go.kindOf (_root_.Perennial.underlying T) = some k)
     (hp : p ≠ null) :
@@ -279,7 +278,7 @@ theorem Value.wp_Elem_reflPtr (w : Value) (T : go.GoType) [go.NotLayoutModelled 
   exact ⟨k, hk, rfl⟩
 
 /-- `w.Elem()` of a `reflPtr` for a nil `p`: the zero `Value`. -/
-theorem Value.wp_Elem_reflPtr_nil (w : Value) (T : go.GoType) [go.NotLayoutModelled T]
+theorem Value.wp_Elem_reflPtr_nil [HasExt reflectExt] (w : Value) (T : go.GoType) [go.NotLayoutModelled T]
     (k : Nat)
     (h : reflPtr w T null) (hk : go.kindOf (_root_.Perennial.underlying T) = some k) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
@@ -293,7 +292,7 @@ theorem Value.wp_Elem_reflPtr_nil (w : Value) (T : go.GoType) [go.NotLayoutModel
 /-! ## `Value.IsNil` -/
 
 /-- `w.IsNil()` of a `reflPtr`: whether `p` is nil. -/
-theorem Value.wp_IsNil_reflPtr (w : Value) (T : go.GoType) (p : Loc) (h : reflPtr w T p) :
+theorem Value.wp_IsNil_reflPtr [HasExt reflectExt] (w : Value) (T : go.GoType) (p : Loc) (h : reflPtr w T p) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (Val (w @!! Value.ty @!! go!"IsNil")) (Val #()))
     {{ RET #(decide (p = null)); True }} := by
@@ -302,7 +301,7 @@ theorem Value.wp_IsNil_reflPtr (w : Value) (T : go.GoType) (p : Loc) (h : reflPt
     (by rw [hf]; exact ptrFlag_bits.1) (by rw [hf]; exact ptrFlag_bits.2.2.2.2.2.2.1) (by rw [h])
 
 /-- `v.IsNil()` of a `reflElem` of a slice variable `p`: whether the slice `*p` is nil. -/
-theorem Value.wp_IsNil_reflElem_slice (v : Value) (T : go.GoType) (p : Loc) (dq : DFrac)
+theorem Value.wp_IsNil_reflElem_slice [HasExt reflectExt] (v : Value) (T : go.GoType) (p : Loc) (dq : DFrac)
     (s : GoSlice) (h : reflElem v (go.SliceType T) p) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect ∗ p ↦{dq} s }}
       (App (Val (v @!! Value.ty @!! go!"IsNil")) (Val #()))
@@ -319,7 +318,7 @@ theorem Value.wp_IsNil_reflElem_slice (v : Value) (T : go.GoType) (p : Loc) (dq 
     (by rw [hf]; exact (elemFlag_bits 23 (by omega)).1) (by rw [hv])
 
 /-- `IsNil()` of the zero `Value`: Go's panic `&ValueError{"reflect.Value.IsNil", Invalid}`. -/
-theorem Value.wp_IsNil_zero (Φ : val → IProp GF) :
+theorem Value.wp_IsNil_zero [HasExt reflectExt] (Φ : val → IProp GF) :
     isPkgInit (PROP := IProp GF) pkg_id.reflect ∗
       (∀ l : Loc, l ↦ ValueError.mk go!"reflect.Value.IsNil" (W64 0) -∗
         Φ (PanicV #(interface.mkOk (go.PointerType ValueError.ty) #l))) ⊢
@@ -334,7 +333,7 @@ theorem Value.wp_IsNil_zero (Φ : val → IProp GF) :
 
 /-- `v.IsNil()` of a `reflElem` of a struct variable: Go's panic
 `&ValueError{"reflect.Value.IsNil", Struct}`. -/
-theorem Value.wp_IsNil_reflElem_struct (v : Value) (T : go.GoType) (p : Loc)
+theorem Value.wp_IsNil_reflElem_struct [HasExt reflectExt] (v : Value) (T : go.GoType) (p : Loc)
     (h : reflElem v T p) (hk : go.kindOf (_root_.Perennial.underlying T) = some 25)
     (Φ : val → IProp GF) :
     isPkgInit (PROP := IProp GF) pkg_id.reflect ∗
@@ -353,7 +352,7 @@ theorem Value.wp_IsNil_reflElem_struct (v : Value) (T : go.GoType) (p : Loc)
 
 /-- `w.IsNil()` of the `Value` that `ValueOf` returns for a struct value that is not direct
 (`wp_ValueOf_struct_indirect`): Go's panic `&ValueError{"reflect.Value.IsNil", Struct}`. -/
-theorem Value.wp_IsNil_struct_value (t : go.GoType) (q : Loc) (Φ : val → IProp GF) :
+theorem Value.wp_IsNil_struct_value [HasExt reflectExt] (t : go.GoType) (q : Loc) (Φ : val → IProp GF) :
     isPkgInit (PROP := IProp GF) pkg_id.reflect ∗
       (∀ l : Loc, l ↦ ValueError.mk go!"reflect.Value.IsNil" (W64 25) -∗
         Φ (PanicV #(interface.mkOk (go.PointerType ValueError.ty) #l))) ⊢
@@ -372,7 +371,7 @@ theorem Value.wp_IsNil_struct_value (t : go.GoType) (q : Loc) (Φ : val → IPro
 
 /-- `rt.Elem()` of the `Type` of an array, channel, map, pointer or slice type `T`: the `Type` of
 its element type `e`. -/
-theorem Type.wp_Elem (rt : Type') (T e : go.GoType) {u : go.GoType} [T ↓u u]
+theorem Type.wp_Elem [HasExt reflectExt] (rt : Type') (T e : go.GoType) {u : go.GoType} [T ↓u u]
     (h : reflType rt T) (he : go.typeQuery .elem T 0 = some #(go.tok e)) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (App (Val (GoInstruction (MethodResolve Type'.ty go!"Elem"))) (Val #rt)) (Val #()))
@@ -386,20 +385,20 @@ theorem Type.wp_Elem (rt : Type') (T e : go.GoType) {u : go.GoType} [T ↓u u]
   ipureintro
   rfl
 
-theorem Type.wp_Elem_slice (rt : Type') (T : go.GoType) (h : reflType rt (go.SliceType T)) :
+theorem Type.wp_Elem_slice [HasExt reflectExt] (rt : Type') (T : go.GoType) (h : reflType rt (go.SliceType T)) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (App (Val (GoInstruction (MethodResolve Type'.ty go!"Elem"))) (Val #rt)) (Val #()))
     {{ (et : Type'), RET #et; ⌜reflType et T⌝ }} :=
   Type.wp_Elem rt (go.SliceType T) T h (by simp [go.typeQuery, go.is_underlying, go.NotLayoutModelled.not_layout_modelled])
 
-theorem Type.wp_Elem_pointer (rt : Type') (T : go.GoType) (h : reflType rt (go.PointerType T)) :
+theorem Type.wp_Elem_pointer [HasExt reflectExt] (rt : Type') (T : go.GoType) (h : reflType rt (go.PointerType T)) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}
       (App (App (Val (GoInstruction (MethodResolve Type'.ty go!"Elem"))) (Val #rt)) (Val #()))
     {{ (et : Type'), RET #et; ⌜reflType et T⌝ }} :=
   Type.wp_Elem rt (go.PointerType T) T h (by simp [go.typeQuery, go.is_underlying, go.NotLayoutModelled.not_layout_modelled])
 
 /-- `rt.Kind()` of the `Type` of `T`: `T`'s kind. -/
-theorem Type.wp_Kind (rt : Type') (T : go.GoType) {u : go.GoType} [T ↓u u] [go.NotLayoutModelled T]
+theorem Type.wp_Kind [HasExt reflectExt] (rt : Type') (T : go.GoType) {u : go.GoType} [T ↓u u] [go.NotLayoutModelled T]
     (k : Nat)
     (h : reflType rt T) (hk : go.kindOf u = some k) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.reflect }}

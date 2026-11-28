@@ -57,7 +57,6 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : strings.Assumptions]
-variable [HasExt reflectExt]
 
 theorem strings.Builder.wp_Cap : strings.Builder.Cap.spec (GF := GF) (hG := hG) :=
   strings.Builder.Cap.wp_proof
@@ -155,7 +154,7 @@ theorem strings.wp_TrimPrefix : strings.TrimPrefix.spec (GF := GF) (hG := hG) :=
 theorem strings.wp_TrimSuffix : strings.TrimSuffix.spec (GF := GF) (hG := hG) :=
   strings.TrimSuffix.wp_proof internal.stringslite.wp_TrimSuffix
 
-theorem strings.wp_initialize' : strings.initialize'.spec (GF := GF) (hG := hG) :=
+theorem strings.wp_initialize' [HasExt reflectExt] : strings.initialize'.spec (GF := GF) (hG := hG) :=
   strings.initialize'.wp_proof internal.stringslite.wp_initialize' io.wp_initialize' sync.wp_initialize' internal.bytealg.wp_initialize' unicode.utf8.wp_initialize' internal.gomodel.wp_initialize'
 
 end link

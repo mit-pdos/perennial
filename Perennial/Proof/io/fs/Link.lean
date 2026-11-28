@@ -23,9 +23,8 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : io.fs.Assumptions]
-variable [HasExt reflectExt]
 
-theorem io.fs.wp_initialize' : io.fs.initialize'.spec (GF := GF) (hG := hG) :=
+theorem io.fs.wp_initialize' [HasExt reflectExt] : io.fs.initialize'.spec (GF := GF) (hG := hG) :=
   io.fs.initialize'.wp_proof time.wp_initialize' internal.oserror.wp_initialize' errors.wp_initialize' io.wp_initialize'
 
 end link

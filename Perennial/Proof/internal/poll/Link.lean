@@ -23,9 +23,8 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : internal.poll.Assumptions]
-variable [HasExt reflectExt]
 
-theorem internal.poll.wp_initialize' : internal.poll.initialize'.spec (GF := GF) (hG := hG) :=
+theorem internal.poll.wp_initialize' [HasExt reflectExt] : internal.poll.initialize'.spec (GF := GF) (hG := hG) :=
   internal.poll.initialize'.wp_proof internal.syscall.unix.wp_initialize' _root_.Perennial.sync.wp_initialize' syscall.wp_initialize' errors.wp_initialize' sync.wp_OnceValue
 
 end link
